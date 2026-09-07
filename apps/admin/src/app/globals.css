@@ -1,0 +1,61 @@
+/* Design tokens from spec §6.2. Same values as the Flutter theme —
+   they are the one visual contract shared across surfaces. */
+:root {
+  --paper: #edebe4;
+  --paper-2: #e4e1d8;
+  --ink: #17171a;
+  --ink-60: #5e5d58;
+  --ink-35: #95938c;
+  --rule: #c9c6bb;
+  --pine: #1e6b47;
+  --amber: #a8641b;
+  --oxide: #9e2b21;
+  --radius: 2px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 48px 18px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Archivo, 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+main { max-width: 640px; margin: 0 auto; }
+
+.eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-35);
+}
+
+h1 {
+  margin: 4px 0 14px;
+  font-size: 44px;
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.lede { margin: 0; color: var(--ink-60); }
+
+/* Section separation is a hairline, not a card border (§6.4). */
+hr { border: 0; border-top: 1px solid var(--rule); margin: 22px 0 14px; }
+
+dl { margin: 0; display: grid; grid-template-columns: 140px 1fr; gap: 8px 16px; }
+dt { font-weight: 600; font-size: 13px; }
+dd { margin: 0; color: var(--ink-60); font-size: 13px; }
+
+code {
+  background: var(--paper-2);
+  border-radius: var(--radius);
+  padding: 1px 5px;
+  font-size: 12px;
+}

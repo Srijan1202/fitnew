@@ -1,0 +1,50 @@
+# Spec §25 — packages/core must pass independently of the API and the app.
+#
+# This runs on its own because packages/core is the deterministic domain layer:
+# if it breaks, every calorie target, progression decision and plate suggestion
+# in the product is wrong. It must never be able to go red unnoticed because an
+# unrelated app failed first.
+name: ci-core
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-core-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    name: packages/core
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck (strict, noUncheckedIndexedAccess)
+        run: pnpm --filter @fitos/core typecheck
+
+      - name: Test
+        run: pnpm --filter @fitos/core test
+
+      # The end-to-end walkthrough runs the real pipeline over the captured mess
+      # fixtures. It is not a test, but if it throws, the public API of the
+      # package has changed in a way the tests did not catch.
+      - name: Demo walkthrough
+        run: pnpm --filter @fitos/core demo

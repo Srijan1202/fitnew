@@ -1,0 +1,81 @@
+# Spec §25 — lint, typecheck, test against an ephemeral Postgres, Docker build.
+name: ci-api
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-api-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: apps/api
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Postgres 16 to match docker/docker-compose.yml and the production target.
+    # The health integration test and, from Phase 1, the migration check run
+    # against this rather than against a mock.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: fitos
+          POSTGRES_PASSWORD: fitos
+          POSTGRES_DB: fitos
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fitos -d fitos"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgres://fitos:fitos@localhost:5432/fitos
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Create extensions
+        # Mirrors docker/init/01-extensions.sql so CI and local behave identically.
+        run: |
+          PGPASSWORD=fitos psql -h localhost -U fitos -d fitos \
+            -c 'CREATE EXTENSION IF NOT EXISTS pgcrypto;' \
+            -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm;'
+
+      - name: Typecheck
+        run: pnpm --filter @fitos/api typecheck
+
+      - name: Lint
+        run: pnpm --filter @fitos/api lint
+
+      # With DATABASE_URL set, health.integration.test.ts stops skipping and
+      # asserts a real 200 against real Postgres.
+      - name: Test
+        run: pnpm --filter @fitos/api test
+
+      - name: Build
+        run: pnpm --filter @fitos/api build
+
+      # Phase 1 adds: drizzle-kit migrations applied here, then re-applied to
+      # confirm they are idempotent, before the Docker build.
+
+      - name: Docker build
+        run: docker build -f docker/Dockerfile.api -t fitos-api:ci .

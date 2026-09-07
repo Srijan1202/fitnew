@@ -1,0 +1,179 @@
+{
+  "_capture": {
+    "source": "https://messit.vinnovateit.com/menu-data/hostel-2-mess-1.json",
+    "capturedAt": "2026-09-07",
+    "note": "REAL RESPONSE, truncated from 30 dates to 8. Women's special mess. FRESH at capture (full September 2026-09-01..09-30, including the capture date), unlike the men's endpoints. Dates arrive already sorted. Labels BOTH 'Veg :' and 'Non Veg :' inline, with all three spacing variants in one file: 'Non Veg : Chicken gravy', 'Non Veg: Boiled Egg' (no space), 'Non Veg :Pepper Chicken Gravy' (no space after colon, 09-04 outside this slice). Real defects retained verbatim: double comma ('Mix Dhal,,', 'Rasam,,'), missing space after comma ('Roti,Channa Masala', 'Dhal,White Rice'), double space after colon ('Veg :  Mixed Sprouts Sundal', 'Sweet :  Gulab Jamun'), trailing space inside a labelled dish ('Veg : Chettinad Veg Biriyani '), and a period inside a dish name ('Veg. Cutlet (2 Nos)'). Contains the genuinely ambiguous dish 'Salna' (09-06/09-20), which must stay `unknown` here because this mess serves meat. Kept dates preserve four 14-day cycle pairs: 01==15, 02==16, 06==20, 07==21."
+  },
+  "hostel": 2,
+  "mess": 1,
+  "menu": [
+    {
+      "date": "2026-09-01",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Vada Pav, Mint Chutney, Idly, Sambar, Chutney, Veg :  Mixed Sprouts Sundal, Non Veg : Scrambled Egg, Mint Lemon, Chocos"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal Tadka, Carrot rice, Bittergourd fry, White Rice, Keerai Sambar, Rasam, Cup Curd, Green Gram Sprouts, Fryums, Veg : Baby corn gravy, Non Veg : Chicken gravy, Sweet :  Gulab Jamun"
+        },
+        {
+          "type": 3,
+          "menu": "Veg. Cutlet (2 Nos)"
+        },
+        {
+          "type": 4,
+          "menu": "Methi Chapathi, Mix Dhal,  Tomato Thokku, White Rice, Sambar, Rasam, Loose Curd, Cluster beans poriyal, Spring onion Soup, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-02",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Pongal, Sambar, Chutney, Vadai, Pasta, Veg : Boiled Sweet Corn, Non Veg : French Toast, Mixed Fruit Juice"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal Makani,  Rasam, Cup Curd, White Rice, Moore kulambu, Tomato rice, Raw Banana Fry, Rice Papad, Sweet : Kova Mysorepaku"
+        },
+        {
+          "type": 3,
+          "menu": "Brownie Cake"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Mix Dhal,, White Rice, Sambar, Rasam, Loose Curd, Veg : Gobi Manchurian, Non Veg : Chilli Chicken, Veg Chettinadu Soup, Papaya"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-06",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Poori, Potato masala, Brown Bread, Chocos, Veg : Vegetable Salad, Non Veg : Egg bhurji, Water Melon Juice"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal,White Rice, Rasam, Appalam, Cucumber Raitha, Salna, Veg : Chettinad Veg Biriyani , Gobi 65, Non Veg : Chicken Biriyani, Sweet : Payasam"
+        },
+        {
+          "type": 3,
+          "menu": "Veg Puff"
+        },
+        {
+          "type": 4,
+          "menu": "Chapathi, Dhal Punjabi, White Rice, Sambar, Rasam, Loose Curd, Peas Pulao, Mixed Veg gravy, Veg Clear Soup,  Papaya"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-07",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Set Dosai, Vada curry, Chutney, Pasta, Veg : Multi Grain Sundal, Non Veg: Boiled Egg, Pineapple Juice"
+        },
+        {
+          "type": 2,
+          "menu": "Roti, Veg Sai Kurma, Toor Dhal, Jeera rice, Butter milk,, White Rice, Knol Khol  Sambar, Rasam, wheel chips, Sweet : Rava Laddu"
+        },
+        {
+          "type": 3,
+          "menu": "Aloo Tikka Chat"
+        },
+        {
+          "type": 4,
+          "menu": "Chole Bhatura, Curd Rice, White Rice, Sambar, Rasam, Bottlegourd Sabji, Veg Noodle Soup, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-15",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Vada Pav, Mint Chutney, Idly, Sambar, Chutney, Veg :  Mixed Sprouts Sundal, Non Veg : Scrambled Egg, Mint Lemon, Chocos"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal Tadka, Carrot rice, Bittergourd fry, White Rice, Keerai Sambar, Rasam, Cup Curd, Green Gram Sprouts, Fryums, Veg : Baby corn gravy, Non Veg : Chicken gravy, Sweet :  Gulab Jamun"
+        },
+        {
+          "type": 3,
+          "menu": "Veg. Cutlet (2 Nos)"
+        },
+        {
+          "type": 4,
+          "menu": "Methi Chapathi, Mix Dhal,  Tomato Thokku, White Rice, Sambar, Rasam, Loose Curd, Cluster beans poriyal, Spring onion Soup, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-16",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Pongal, Sambar, Chutney, Vadai, Pasta, Veg : Boiled Sweet Corn, Non Veg : French Toast, Mixed Fruit Juice"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal Makani,  Rasam, Cup Curd, White Rice, Moore kulambu, Tomato rice, Raw Banana Fry, Rice Papad, Sweet : Kova Mysorepaku"
+        },
+        {
+          "type": 3,
+          "menu": "Brownie Cake"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Mix Dhal,, White Rice, Sambar, Rasam, Loose Curd, Veg : Gobi Manchurian, Non Veg : Chilli Chicken, Veg Chettinadu Soup, Papaya"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-20",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Poori, Potato masala, Brown Bread, Chocos, Veg : Vegetable Salad, Non Veg : Egg bhurji, Water Melon Juice"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal,White Rice, Rasam, Appalam, Cucumber Raitha, Salna, Veg : Chettinad Veg Biriyani , Gobi 65, Non Veg : Chicken Biriyani, Sweet : Payasam"
+        },
+        {
+          "type": 3,
+          "menu": "Veg Puff"
+        },
+        {
+          "type": 4,
+          "menu": "Chapathi, Dhal Punjabi, White Rice, Sambar, Rasam, Loose Curd, Peas Pulao, Mixed Veg gravy, Veg Clear Soup,  Papaya"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-21",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Set Dosai, Vada curry, Chutney, Pasta, Veg : Multi Grain Sundal, Non Veg: Boiled Egg, Pineapple Juice"
+        },
+        {
+          "type": 2,
+          "menu": "Roti, Veg Sai Kurma, Toor Dhal, Jeera rice, Butter milk,, White Rice, Knol Khol  Sambar, Rasam, wheel chips, Sweet : Rava Laddu"
+        },
+        {
+          "type": 3,
+          "menu": "Aloo Tikka Chat"
+        },
+        {
+          "type": 4,
+          "menu": "Chole Bhatura, Curd Rice, White Rice, Sambar, Rasam, Bottlegourd Sabji, Veg Noodle Soup, Seasonal Fruit"
+        }
+      ]
+    }
+  ]
+}

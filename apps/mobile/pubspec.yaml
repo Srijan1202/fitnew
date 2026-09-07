@@ -1,0 +1,69 @@
+name: fitos
+description: FitOS — a personal fitness operating system.
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+  flutter: '>=3.24.0'
+
+# Versions are pinned exactly, not floated (spec §7.1). Run `flutter pub get`
+# and commit pubspec.lock before Phase 1.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State (§7.1) — Riverpod 3.x, the consolidated community default.
+  flutter_riverpod: 3.0.0
+  riverpod_annotation: 3.0.0
+
+  # Routing
+  go_router: 14.6.2
+
+  # Networking — dio + interceptors for retry and auth refresh.
+  dio: 5.7.0
+
+  # Local database for offline workout logging (§33).
+  drift: 2.23.1
+  sqlite3_flutter_libs: 0.5.27
+  path_provider: 2.1.5
+  path: 1.9.0
+
+  # Storage
+  shared_preferences: 2.3.5
+  flutter_secure_storage: 9.2.4
+
+  # Models — freezed models MenuResolution as a real union (§7.1).
+  freezed_annotation: 2.4.4
+  json_annotation: 4.9.0
+
+  connectivity_plus: 6.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: 5.0.0
+  build_runner: 2.4.14
+  freezed: 2.5.7
+  json_serializable: 6.9.0
+  riverpod_generator: 3.0.0
+  custom_lint: 0.7.0
+  riverpod_lint: 3.0.0
+
+flutter:
+  uses-material-design: true
+
+  # §6.3 — Anton for large metrics, Archivo for everything else.
+  # Font binaries are not in the repo yet; until they are added here the theme
+  # falls back to the platform sans-serif. Tracked as a Phase 0 known issue.
+  # fonts:
+  #   - family: Anton
+  #     fonts:
+  #       - asset: assets/fonts/Anton-Regular.ttf
+  #   - family: Archivo
+  #     fonts:
+  #       - asset: assets/fonts/Archivo-Regular.ttf
+  #       - asset: assets/fonts/Archivo-SemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/Archivo-Bold.ttf
+  #         weight: 700

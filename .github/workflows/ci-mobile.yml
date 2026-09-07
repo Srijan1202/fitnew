@@ -1,0 +1,54 @@
+# Spec §25 — dart analyze, flutter test, build APK.
+name: ci-mobile
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-mobile-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: apps/mobile
+
+jobs:
+  mobile:
+    name: apps/mobile
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      # `dart analyze` must be clean, not merely warning-free: the standing
+      # quality bar in the spec requires it.
+      - name: Analyze
+        run: dart analyze --fatal-infos
+
+      - name: Format check
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Test
+        run: flutter test
+
+      # Debug APK is enough to prove the app assembles. Release signing is set
+      # up in Phase 19 with the Play Store internal track.
+      - name: Build APK
+        run: flutter build apk --debug

@@ -1,0 +1,20 @@
+{
+  "name": "@fitos/config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./eslint": "./eslint.config.js"
+  },
+  "scripts": {
+    "test": "echo \"@fitos/config: no tests (config only)\" && exit 0",
+    "typecheck": "echo \"@fitos/config: nothing to typecheck\" && exit 0",
+    "lint": "echo \"@fitos/config: nothing to lint\" && exit 0"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.18.0",
+    "eslint": "9.18.0",
+    "typescript-eslint": "8.20.0"
+  }
+}
