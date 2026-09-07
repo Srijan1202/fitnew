@@ -1,0 +1,32 @@
+# @fitos/core
+
+Framework-free domain layer. No React, no database, no network except the
+`MessProvider` adapter. Every calculation is deterministic and unit-tested.
+
+```bash
+npm install
+npm test          # 82 tests
+npm run typecheck # strict, noUncheckedIndexedAccess
+npm run demo      # end-to-end walkthrough on real mess data
+```
+
+## Layout
+
+| Path | Responsibility |
+|---|---|
+| `src/mess/` | Menu parsing, diet classification, nutrition estimates, plate search |
+| `src/mess/providers/vit/` | The six MessIT endpoints + adapter. Only place URLs appear. |
+| `src/nutrition/` | Mifflin-St Jeor targets, EWMA trend, adaptive TDEE |
+| `src/training/` | Double progression, RIR autoregulation, deload detection |
+| `src/recommend/` | The TODAY decision layer |
+
+## Rules
+
+1. **No AI in any calculation.** LLMs parse language and rephrase reasons the
+   engines produced. They never produce or alter a number.
+2. **Estimates are ranges.** `MacroRange` has no point field, and there is no
+   `formatPoint`. Rendering fake precision requires going out of your way.
+3. **Diet classification fails safe.** Unclassifiable dishes are excluded from
+   vegetarian plates.
+4. **An inferred menu is never shown as published.** `MenuResolution` forces the
+   caller to handle `cycle-inferred` and `unavailable`.

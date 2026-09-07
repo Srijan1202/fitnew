@@ -1,0 +1,42 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+build/
+*.tsbuildinfo
+
+# env & secrets — never commit
+.env
+.env.*
+!.env.example
+*-service-account.json
+google-credentials.json
+
+# flutter / dart
+apps/mobile/.dart_tool/
+apps/mobile/.flutter-plugins
+apps/mobile/.flutter-plugins-dependencies
+apps/mobile/build/
+apps/mobile/ios/Pods/
+apps/mobile/android/.gradle/
+apps/mobile/android/local.properties
+apps/mobile/.idea/
+
+# next.js
+apps/admin/.next/
+apps/admin/out/
+
+# test / coverage
+coverage/
+.vitest/
+
+# editor / os
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+
+# npm lockfile — this repo uses pnpm (spec §29)
+package-lock.json

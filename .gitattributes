@@ -1,0 +1,13 @@
+# Normalise to LF in the repository regardless of contributor platform.
+* text=auto eol=lf
+
+# Captured upstream responses. Line endings are normalised, but the menu
+# strings themselves contain no newlines, so the verbatim requirement in
+# spec §14 is unaffected.
+packages/core/test/fixtures/*.json text eol=lf
+
+# Binary
+*.png binary
+*.jpg binary
+*.ttf binary
+*.otf binary

@@ -1,0 +1,43 @@
+# Local development stack (spec §25).
+# Postgres 16 to match the production target (§9.1: "Postgres 16+").
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fitos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fitos
+      POSTGRES_PASSWORD: fitos
+      POSTGRES_DB: fitos
+    ports:
+      - '5432:5432'
+    volumes:
+      - fitos-pgdata:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # The API waits on this: starting it before Postgres accepts connections
+      # makes /health flap on every `compose up`.
+      test: ['CMD-SHELL', 'pg_isready -U fitos -d fitos']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    container_name: fitos-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 8080
+      LOG_LEVEL: debug
+      DATABASE_URL: postgres://fitos:fitos@postgres:5432/fitos
+    ports:
+      - '8080:8080'
+
+volumes:
+  fitos-pgdata:

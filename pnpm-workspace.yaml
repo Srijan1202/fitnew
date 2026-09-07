@@ -1,0 +1,7 @@
+# Spec §29 — monorepo via pnpm workspaces.
+# apps/mobile is Flutter and deliberately NOT a workspace member.
+packages:
+  - 'apps/api'
+  - 'apps/admin'
+  - 'packages/core'
+  - 'packages/config'

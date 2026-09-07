@@ -1,17 +1,24 @@
 {
-  "name": "@fitos/core",
+  "name": "fitos",
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "demo": "tsx test/e2e.demo.ts"
+    "test": "pnpm -r --stream test",
+    "typecheck": "pnpm -r --stream typecheck",
+    "lint": "pnpm -r --stream lint",
+    "build": "pnpm -r --stream build",
+    "test:core": "pnpm --filter @fitos/core test",
+    "dev:api": "pnpm --filter @fitos/api dev",
+    "dev:admin": "pnpm --filter @fitos/admin dev",
+    "db:up": "docker compose -f docker/docker-compose.yml up -d",
+    "db:down": "docker compose -f docker/docker-compose.yml down"
   },
   "devDependencies": {
-    "@types/node": "^22.20.1",
-    "tsx": "^4.23.13",
-    "typescript": "^5.6.3",
-    "vitest": "^2.1.8"
+    "typescript": "5.6.3"
   }
 }
