@@ -1,0 +1,116 @@
+{
+  "_capture": {
+    "source": "https://messit.vinnovateit.com/menu-data/hostel-1-mess-2.json",
+    "capturedAt": "2026-09-07",
+    "note": "REAL RESPONSE, truncated to representative dates. Verbatim strings, no cleanup. Includes real cycle repeats (09-01==09-15, 09-04==09-18)."
+  },
+  "hostel": 1,
+  "mess": 2,
+  "menu": [
+    {
+      "date": "2026-09-07",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Poori, Potato Masala, Semiya Kichidi, Chutney"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Toor Dhal, Butter milk, Kadai Panneer, White Rice, Sambar, Rasam, wheel chips, Poriyal"
+        },
+        {
+          "type": 3,
+          "menu": "Aloo Tikka Chat"
+        },
+        {
+          "type": 4,
+          "menu": "Roti, Bindi Dopiyaza, Masala Uthappam, Tomato Chutney, Curd Rice, White Rice, Sambar, Rasam, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-01",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Poha Namkeen, Idly, Sambar, Chutney"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal Tadka, Bisibela Bath, Veg Jal Frezi, White Rice, Rasam, Curd, Green Gram Sprouts, Potato Chips, Gulab Jamun"
+        },
+        {
+          "type": 3,
+          "menu": "Veg Cutlet (2 Nos)"
+        },
+        {
+          "type": 4,
+          "menu": "Mix Dhal, Methi Chapathi, Veg Fried Rice, White Rice, Sambar, Rasam, Loose Curd, Gobi Manchurian, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-15",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Poha Namkeen, Idly, Sambar, Chutney"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal Tadka, Bisibela Bath, Veg Jal Frezi, White Rice, Rasam, Curd, Green Gram Sprouts, Potato Chips, Gulab Jamun"
+        },
+        {
+          "type": 3,
+          "menu": "Veg Cutlet (2 Nos)"
+        },
+        {
+          "type": 4,
+          "menu": "Mix Dhal, Methi Chapathi, Veg Fried Rice, White Rice, Sambar, Rasam, Loose Curd, Gobi Manchurian, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-04",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Gobi Paratha, Curd, Pickle, Kitchadi, Coconut Chutney"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal, Panneer Butter Masala, White Rice, Sambar, Rasam, Curd, Appalam, Jalebi"
+        },
+        {
+          "type": 3,
+          "menu": "Masala Vada"
+        },
+        {
+          "type": 4,
+          "menu": "Chapathi, Yellow Dhal, Sambar, Idly, Peanut Chutney, White Rice, Rasam, Subji, Beet Root Poriyal, Loose Curd, Banana"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-18",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Gobi Paratha, Curd, Pickle, Kitchadi, Coconut Chutney"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal, Panneer Butter Masala, White Rice, Sambar, Rasam, Curd, Appalam, Jalebi"
+        },
+        {
+          "type": 3,
+          "menu": "Masala Vada"
+        },
+        {
+          "type": 4,
+          "menu": "Chapathi, Yellow Dhal, Sambar, Idly, Peanut Chutney, White Rice, Rasam, Subji, Beet Root Poriyal, Loose Curd, Banana"
+        }
+      ]
+    }
+  ]
+}

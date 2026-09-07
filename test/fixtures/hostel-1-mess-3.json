@@ -1,0 +1,137 @@
+{
+  "_capture": {
+    "source": "https://messit.vinnovateit.com/menu-data/hostel-1-mess-3.json",
+    "capturedAt": "2026-09-07",
+    "note": "REAL RESPONSE, truncated. NOTE: this endpoint was STALE at capture time - latest date 2026-08-31, no data for 2026-09-07. Dates arrive UNSORTED (08-23 first). Contains a real data defect: 'White, Egg Fried Rice' (a broken 'White Rice'). Non-veg items are NOT label-prefixed here. Includes the real 14-day cycle repeats (08-01==08-15, 08-10==08-24) so cycle detection is exercised against genuine data."
+  },
+  "hostel": 1,
+  "mess": 3,
+  "menu": [
+    {
+      "date": "2026-08-23",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Podi Idly, Vada, Poha Namkeen, Sambar, Chutney, Omelette (2 Nos), Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Toor Dal, White Rice, Rasam, Masala Papad, Onion Raitha, Chicken Biryani, Oil Brinjal, Sweet: Ice Cream"
+        },
+        {
+          "type": 3,
+          "menu": "Egg Puffs, Sauce, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Toor Dal, White Rice, Rasam, Sambar, Butter Milk, Aloo Capsicum Muttar Masala, Fruits: Cut Fruits"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-01",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Aloo Paratha, Curd, Pickle, Kitchadi, Mint Chutney, Sambar, Fried Egg (2 Nos), Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dal Maharani, White Rice, Rasam, Kara Kozhambu, Dahi Vada, Aloo Capsicum Masala, Fryums"
+        },
+        {
+          "type": 3,
+          "menu": "Samosa Chat, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Rajma Masala, White, Egg Fried Rice, White Rice, Rasam, Sambar, Curd, Veg Manchurian, Fruits: Banana"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-31",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Poori, Aloo, Semiya, Coconut Chutney, French Toast, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dal Ajwain, White Rice, Sambar, Rasam, Fried Rice, Egg Manchurian (Dry), Butter Milk, Bottle Gourd Poriyal, Sweet: Boondhi Laddu"
+        },
+        {
+          "type": 3,
+          "menu": "Veg Roll, Sauce, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Roti, Dal, White Rice, Dum Aloo, Rasam, Drumstick Sambar, Loose Curd, Plain Dosa, Coriander Chutney, Fruits: Grapes"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-15",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Aloo Paratha, Curd, Pickle, Kitchadi, Mint Chutney, Sambar, Fried Egg (2 Nos), Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dal Maharani, White Rice, Rasam, Kara Kozhambu, Dahi Vada, Aloo Capsicum Masala, Fryums"
+        },
+        {
+          "type": 3,
+          "menu": "Samosa Chat, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Rajma Masala, White, Egg Fried Rice, White Rice, Rasam, Sambar, Curd, Veg Manchurian, Fruits: Banana"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-10",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Poori, Aloo Masala, Poha Namkeen, Mint Chutney, Fried Egg Masala, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dal Fry, White Rice, Sambar, Rasam, Loose Curd, Onion Rings, Kadai Chicken, Bottle Gourd Kootu, Sweet: Coconut Laddu"
+        },
+        {
+          "type": 3,
+          "menu": "Masala Peanuts, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Methi Roti, Dal, Plain Dosa, Sambar, Tomato Chutney, White Rice, Rasam, Curd Rice, Bhindi Do Pyaza, Fruits: Grapes"
+        }
+      ]
+    },
+    {
+      "date": "2026-08-24",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Poori, Aloo Masala, Poha Namkeen, Mint Chutney, Fried Egg Masala, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dal Fry, White Rice, Sambar, Rasam, Loose Curd, Onion Rings, Kadai Chicken, Bottle Gourd Kootu, Sweet: Coconut Laddu"
+        },
+        {
+          "type": 3,
+          "menu": "Masala Peanuts, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Methi Roti, Dal, Plain Dosa, Sambar, Tomato Chutney, White Rice, Rasam, Curd Rice, Bhindi Do Pyaza, Fruits: Grapes"
+        }
+      ]
+    }
+  ]
+}

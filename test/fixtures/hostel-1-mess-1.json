@@ -1,0 +1,29 @@
+{
+  "_capture": {
+    "source": "https://messit.vinnovateit.com/menu-data/hostel-1-mess-1.json",
+    "capturedAt": "2026-09-07",
+    "note": "REAL RESPONSE, truncated. Special mess. STALE at capture (August only). Contains '/' alternatives ('Coconut Rice / Tamarind Rice'), a duplicate token ('Tea, Coffee, Milk, Tea'), and a doubled word defect ('Cream of Tomato Soup Soup')."
+  },
+  "hostel": 1,
+  "mess": 1,
+  "menu": [
+    {
+      "date": "2026-08-10",
+      "menu": [
+        { "type": 1, "menu": "Poori, Aloo Masala, Poha Namkeen, Banana Milk Shake, Cold Milk, Chocos, Bread, Butter, Jam, Tea, Coffee, Milk, Mint Chutney, Cow Peas Salad, Cheese Omelette" },
+        { "type": 2, "menu": "Diamond Chapathi, Chicken Rogan Josh, Dal Fry, Paneer Butter Masala, Carrot Beans Poriyal, White Rice, Sambar, Pepper Rasam, Loose Curd, Wheel Chips, Sweet: Motichoor Laddu" },
+        { "type": 3, "menu": "Donut, Chocolate Sauce, Tea, Coffee, Milk" },
+        { "type": 4, "menu": "Methi Roti, Dal, Plain Dosa, Sambar, Tomato Chutney, White Rice, Coconut Rice / Tamarind Rice, Aloo Podimas, Rasam, Mulligatawny Soup, Fruits: Grapes" }
+      ]
+    },
+    {
+      "date": "2026-08-06",
+      "menu": [
+        { "type": 1, "menu": "Aloo Paratha, Curd, Pickle, Semiya Upma, Coconut Chutney, Dates Milk Shake, Cold Milk, Corn Flakes, Bread, Butter, Jam, Tea, Coffee, Milk, Sweet Corn Salad, Fried Egg Masala" },
+        { "type": 2, "menu": "Chapathi, Fish Fry, Paneer Tikka, White Rice, Sambar, Rasam, Aloo Baigan, Fryums, Dal Panchamela, Loose Curd, Sweet: Bread Halwa / Shahi Tukra" },
+        { "type": 3, "menu": "Masala Vada, Tea, Coffee, Milk, Tea" },
+        { "type": 4, "menu": "Poori, Channa Masala, White Rice, Rasam, Sambar, Curd Rice, Beetroot Poriyal, Lentil Soup, Fruits: Water Melon" }
+      ]
+    }
+  ]
+}

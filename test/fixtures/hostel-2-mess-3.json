@@ -1,0 +1,47 @@
+{
+  "_capture": {
+    "source": "https://messit.vinnovateit.com/menu-data/hostel-2-mess-3.json",
+    "capturedAt": "2026-09-07",
+    "note": "REAL RESPONSE, truncated. Women's non-veg mess TAGS non-veg inline with a 'Non Veg :' prefix (inconsistent spacing, sometimes 'Non Veg:'). Contains real defects: double commas, missing commas ('Roti,Channa Masala,,'), double spaces after colon."
+  },
+  "hostel": 2,
+  "mess": 3,
+  "menu": [
+    {
+      "date": "2026-09-07",
+      "menu": [
+        { "type": 1, "menu": "Set Dosai, Vada curry, Chutney, Pasta, Non Veg: Boiled Egg" },
+        { "type": 2, "menu": "Roti, Veg Sai Kurma, Toor Dhal, Jeera rice, Butter milk,, White Rice, Knol Khol  Sambar, Rasam, wheel chips" },
+        { "type": 3, "menu": "Aloo Tikka Chat" },
+        { "type": 4, "menu": "Chole Bhatura,  Curd Rice, White Rice, Sambar, Rasam, Bottlegourd Sabji, Seasonal Fruit" }
+      ]
+    },
+    {
+      "date": "2026-09-01",
+      "menu": [
+        { "type": 1, "menu": "Vada Pav, Mint Chutney, Idly, Sambar, Chutney, Non Veg : Scrambled Egg" },
+        { "type": 2, "menu": "Phulka, Dhal Tadka, Carrot rice, Bittergourd fry, White Rice, Keerai Sambar, Rasam, Cup Curd, Green Gram Sprouts, Fryums, Non Veg : Chicken gravy, Sweet :  Gulab Jamun" },
+        { "type": 3, "menu": "Veg. Cutlet (2 Nos)" },
+        { "type": 4, "menu": "Methi Chapathi, Mix Dhal, Tomato Thokku, White Rice, Sambar, Rasam, Loose Curd, Cluster beans poriyal, Seasonal Fruit" }
+      ]
+    },
+    {
+      "date": "2026-09-11",
+      "menu": [
+        { "type": 1, "menu": "Mixed Veg Paratha, Curd, Rava kitchadi, Chutney, Non Veg : French Toast" },
+        { "type": 2, "menu": "Phulka, Dhal, Tomato Rice, White Rice, Bottlegourd Sambar, Rasam, Cup Curd, Yam Fry, Rice Papad, Sweet :  Bread halwa" },
+        { "type": 3, "menu": "Suzhiyam" },
+        { "type": 4, "menu": "Roti, Dhal, Urapadai, Chutney, White rice, Sambar, Rasam, Butter Milk, Non Veg : Tandoori Chicken, Banana" }
+      ]
+    },
+    {
+      "date": "2026-09-03",
+      "menu": [
+        { "type": 1, "menu": "Poha Namkeen, Onion Uthappam, Sambar, Peanut Chutney, Non Veg : Scrambled Egg" },
+        { "type": 2, "menu": "Roti,Channa Masala,, Bisibela Bath, White Rice, Rasam, Cup Curd, Potato Chips, Carrot Poriyal" },
+        { "type": 3, "menu": "Veg Club Sandwich" },
+        { "type": 4, "menu": "Diamond Chapathi, Capsicum Paneer Masala, White Rice, Sambar, Rasam, Chow Chow Kootu, Curd rice, Seasonal Fruit" }
+      ]
+    }
+  ]
+}
