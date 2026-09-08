@@ -453,20 +453,24 @@ describe("women's special mess (hostel-2-mess-1)", () => {
   });
 
   /**
-   * SLOW (~36s) AND DELIBERATELY LEFT THAT WAY.
+   * THE PERFORMANCE CANARY. Keep this test on this menu.
    *
-   * This menu yields 9 plate candidates where every previous fixture yielded 6,
-   * which enumerates 7,374 serving combinations instead of 574. Measured on
-   * 2026-09-07: 574 combos = 131ms, 7,374 combos = 38,803ms. That is ~13x the
-   * search space for ~296x the time, because `suggestPlates` dedupes its
-   * results with an O(n^2) `findIndex` that recomputes each plate's key string
-   * on every comparison.
+   * This menu yields 9 plate candidates where every earlier fixture yielded 6,
+   * which enumerates 7,374 serving combinations instead of 574. That made it
+   * the first input to expose two quadratic defects in `suggestPlates`, and it
+   * is the only fixture in the suite that would catch them coming back.
    *
-   * Spec §31 Phase 10 requires plate recommendation under 100ms, so this is a
-   * real defect that Phase 10 must fix — not a property of this test. The test
-   * is kept on the expensive menu on purpose: shrinking the input to make the
-   * suite fast would hide the only evidence we have that the recommender does
-   * not scale to a full mess menu.
+   * Measured 2026-09-08, median of 5 (see ADR-002):
+   *
+   *   menu                       candidates    before      after
+   *   men's veg lunch                     6     152ms      0.8ms
+   *   women's nonveg dinner               6     170ms      0.9ms
+   *   women's special lunch (this)        9   89,629ms     16.1ms
+   *   women's veg lunch                   7   1,272ms      1.7ms
+   *
+   * All four are now inside the 100ms budget that spec §31 Phase 10 requires.
+   * Output was verified byte-identical to the previous implementation on all
+   * four menus, so the fix changed cost and nothing else.
    *
    * The assertion itself is the load-bearing one from §14.5: a vegetarian must
    * never be served a non-veg dish, checked against a menu that really does

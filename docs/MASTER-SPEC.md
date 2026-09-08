@@ -636,15 +636,51 @@ Base: `https://messit.vinnovateit.com/menu-data`
 
 **The response contains no nutrition, no serving sizes, no dish IDs, and no categories.** All nutritional data is ours and must be labelled as an estimate.
 
-### 14.2 Seven real defects (each has a passing test)
+### 14.2 Nine real defects (each has a passing test)
 
-1. **Endpoints are not equally fresh.** At capture, men's non-veg and men's special had August data only — nothing for that day.
+> `RESEARCH` — amended 2026-09-08 from a second live capture, of
+> `hostel-2-mess-1` (women's special) and `hostel-2-mess-2` (women's veg), the
+> two endpoints missing from the original capture. Defects #1 and #3 were
+> corrected against that evidence and #8 and #9 are new. Amendments are marked
+> inline. Fixture notes carry the per-file detail.
+
+1. **Freshness varies per endpoint, and is not predictable.**
+   `AMENDED 2026-09-08 — the original wording, "half the endpoints are stale", does not generalise.`
+   On 2026-09-07 the two men's endpoints (non-veg, special) carried August data
+   only, with nothing for that day — while on the *same date* both women's
+   endpoints served a complete, already-sorted September 1–30, including that
+   day. Staleness is a property of an individual endpoint at a moment in time,
+   not of the provider and not of a fixed half of the six.
+   **Mirroring (§14.6) is still required**, and for a stronger reason than
+   before: if any endpoint can go stale at any time with no signal and no SLA,
+   the app cannot depend on a live read for any of them.
 2. **Dates arrive unsorted** (men's non-veg begins at `2026-08-23`, then `2026-08-01`).
-3. **Non-veg is labelled in one mess and not the other.** Women's uses `"Non Veg : Chicken gravy"`; men's writes `"Chicken Biryani"` inline with no marker.
+   Both women's endpoints happened to arrive sorted, so sorting must stay
+   defensive rather than conditional on the mess.
+3. **Label usage is inconsistent across messes and inconsistent within a file.**
+   `AMENDED 2026-09-08 — widened; the original covered only "Non Veg" and only across messes.`
+   - Men's non-veg labels nothing: `"Chicken Biryani"` appears inline with no marker.
+   - Women's non-veg labels non-veg only.
+   - Women's special labels **both** classes: `"Veg : Baby corn gravy"` alongside
+     `"Non Veg : Chicken gravy"`.
+   - All **three** spacing variants occur, in a single file:
+     `"Non Veg : Chicken gravy"` · `"Non Veg: Boiled Egg"` ·
+     `"Non Veg :Pepper Chicken Gravy"`.
+   This is why the label alone can never decide diet, and why `resolveDiet`
+   combines it with keyword classification (§14.5).
 4. **Broken names:** `"Rajma Masala, White, Egg Fried Rice"` — `"White Rice"` split by a stray comma.
 5. **Malformed separators:** `"Butter milk,,"`, `"Roti,Channa Masala,,"`, `"Sweet :  Gulab Jamun"`, `"Non Veg:"` vs `"Non Veg :"`.
 6. **Duplicates within a meal:** `"Masala Vada, Tea, Coffee, Milk, Tea"`.
 7. **Slash alternatives:** `"Coconut Rice / Tamarind Rice"`.
+   Present in the men's special mess; absent from both women's endpoints.
+8. **Trailing space inside a labelled dish.** `NEW 2026-09-08 — live capture.`
+   `"Veg : Chettinad Veg Biriyani ,"` — the name carries a trailing space before
+   the comma. It must be trimmed, or the dish slug and every user correction
+   keyed to it fragment into two.
+9. **A period inside a dish name.** `NEW 2026-09-08 — live capture.`
+   `"Veg. Cutlet (2 Nos)"` — an abbreviation, not a sentence end. `slugifyDish`
+   must yield `veg-cutlet` here and for `"Veg Cutlet (2 Nos)"` alike, so the two
+   spellings do not become two dishes.
 
 ### 14.3 The 14-day cycle
 
@@ -945,6 +981,18 @@ Local (docker compose: postgres + api) → GitHub → CI (lint, typecheck, test,
 
 **Monitoring:** Cloud Logging + Crashlytics. Alerts on 5xx rate >1%, p95 latency >2s, and any MessIT endpoint failing to sync for 48h.
 
+### Environment traps
+
+`RESEARCH` — recorded 2026-09-08 after each cost real debugging time. Check
+these before diagnosing anything else on a new machine.
+
+| Trap | Symptom | Fix |
+|---|---|---|
+| **Flutter SDK installed to a path containing a space** (e.g. `D:\New folder\flutter`) | `'D:\New' is not recognized as an internal or external command` from the native-assets hook runner. Blocks `flutter test`, `flutter run` and `build_runner`. | Install the SDK to a space-free path. There is no workaround: `objective_c` (pulled in transitively by `path_provider_foundation`) *requires* the native-assets feature, so `flutter config --no-enable-native-assets` fails with "require the dart assets feature to be enabled". A junction to a space-free path proves the diagnosis but is a stopgap. |
+| `dart format` output violating our own `require_trailing_commas` lint | `dart analyze` passes, then fails after `format` rewraps a call | Run `dart format` **before** `dart analyze`, which is the order `ci-mobile.yml` uses. Add the trailing comma in source so both agree. |
+| Docker build: `COPY <dir> ./<dir>` after `pnpm install` | `tsc` reported `MODULE_NOT_FOUND` in the image | The COPY replaces the directory and deletes the `node_modules`/`.bin` symlinks pnpm created. Re-run the filtered install after copying source. A `.dockerignore` excluding `node_modules` is mandatory, not optional. |
+| `build_runner` `--delete-conflicting-outputs` | `W These options have been removed and were ignored` | Removed in build_runner 2.15.x. Drop the flag. |
+
 ---
 
 ## 26. Testing Strategy
@@ -1212,7 +1260,7 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 **DB:** all `mess_*` tables.
 **APIs:** `/mess/providers`, `/mess/providers/{slug}/messes`, `/mess/menu`, `POST /mess/dishes/{slug}/correction`.
 **UI:** mess picker (onboarding), MESS screen with menu by slot, **resolution banner for `cycle-inferred`**, dish tap-to-log.
-**Tests:** all six endpoints as fixtures · the seven defects · cycle inference · stale endpoint · malformed payload rejection · diet classification both labelled and unlabelled · mirroring dedupe by `payload_hash`.
+**Tests:** all six endpoints as fixtures · the nine defects · cycle inference · stale endpoint · malformed payload rejection · diet classification both labelled and unlabelled · mirroring dedupe by `payload_hash`.
 **Acceptance:** all six messes render · a stale endpoint shows a **clearly qualified** inferred menu · upstream outage still serves the mirror · dish tap logs correct estimated macros.
 **Manual:** select each of the six messes; compare against the live endpoint; confirm the inferred-menu qualifier is visible and unambiguous.
 
@@ -1516,7 +1564,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 **Phase 8** — [ ] log tables · [ ] daily rollup · [ ] timezone-correct boundaries · [ ] snapshot macros · [ ] EAT screen · [ ] saved meals · [ ] quick add
 
-**Phase 9** — [ ] mess tables · [ ] provider wired · [ ] **mirroring job** · [ ] enrichment by slug · [ ] mess picker · [ ] MESS screen · [ ] **resolution banner** · [ ] correction submission · [ ] all 6 endpoints tested · [ ] 7 defects tested
+**Phase 9** — [ ] mess tables · [ ] provider wired · [ ] **mirroring job** · [ ] enrichment by slug · [ ] mess picker · [ ] MESS screen · [ ] **resolution banner** · [ ] correction submission · [ ] all 6 endpoints tested · [ ] 9 defects tested
 
 **Phase 10** — [ ] plate recommender wired · [ ] carb/fat/variety/budget/timing scoring · [ ] thali UI · [ ] log-this-plate · [ ] **veg safety test** · [ ] allergy filter test · [ ] honest shortfall test
 
