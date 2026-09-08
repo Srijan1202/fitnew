@@ -28,7 +28,10 @@ class HairlineSection extends StatelessWidget {
         const Divider(color: FitColors.rule, thickness: 1, height: 1),
         const SizedBox(height: FitSpacing.afterRule),
         if (label != null) ...<Widget>[
-          Text(label.toUpperCase(), style: Theme.of(context).textTheme.labelSmall),
+          Text(
+            label.toUpperCase(),
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
           const SizedBox(height: FitSpacing.sm),
         ],
         child,
