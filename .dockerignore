@@ -1,0 +1,30 @@
+# Never ship the host's install into the image — it is platform-specific and
+# would silently shadow the one pnpm builds inside the container.
+node_modules
+**/node_modules
+
+# Build output
+dist
+**/dist
+.next
+**/.next
+build
+**/build
+*.tsbuildinfo
+
+# Flutter is not part of the API image at all.
+apps/mobile
+
+# Secrets must come from Secret Manager / compose env, never from a layer (§24).
+.env
+**/.env
+*-service-account.json
+
+# Noise
+.git
+.github
+.idea
+.vscode
+docs
+coverage
+**/.dart_tool

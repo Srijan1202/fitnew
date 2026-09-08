@@ -7,17 +7,26 @@ RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 WORKDIR /app
 
 # ---- dependencies -----------------------------------------------------------
+# Manifests only, so this layer is reused whenever source changes but
+# dependencies do not. Every workspace member's package.json must be present or
+# pnpm cannot read the workspace; `--filter @fitos/api...` then installs only
+# the API and the packages it actually depends on.
 FROM base AS deps
-COPY pnpm-workspace.yaml package.json .npmrc ./
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json .npmrc ./
 COPY packages/core/package.json ./packages/core/
 COPY packages/config/package.json ./packages/config/
 COPY apps/api/package.json ./apps/api/
-RUN pnpm install --frozen-lockfile=false
+COPY apps/admin/package.json ./apps/admin/
+RUN pnpm install --frozen-lockfile --filter @fitos/api...
 
 # ---- build ------------------------------------------------------------------
 FROM deps AS build
 COPY packages ./packages
 COPY apps/api ./apps/api
+# The two COPYs above replace those directories wholesale, which removes the
+# node_modules and .bin symlinks pnpm created in the deps stage — tsc would be
+# missing. Re-link them; the package store is already warm so this is fast.
+RUN pnpm install --frozen-lockfile --filter @fitos/api...
 RUN pnpm --filter @fitos/api build
 
 # ---- runtime ----------------------------------------------------------------
