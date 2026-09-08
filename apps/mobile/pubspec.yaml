@@ -26,7 +26,19 @@ dependencies:
 
   # Local database for offline workout logging (§33).
   drift: 2.23.1
-  sqlite3_flutter_libs: 0.5.27
+  # 0.5.42, not 0.5.27: the plugin hardcodes its own compileSdk, and 0.5.27
+  # pins `compileSdkVersion 32` while its transitive AndroidX deps
+  # (androidx.fragment 1.7.1, androidx.window 1.2.0) now require 34+. That
+  # fails `assembleDebug` with 20 AAR-metadata errors. 0.5.42 declares
+  # compileSdk 35.
+  #
+  # Deliberately NOT 0.6.0+eol: that release is an intentional no-op stub for
+  # apps that have migrated to package:sqlite3 3.x. drift 2.23.1 depends on
+  # sqlite3 ^2.4.6, so we are on 2.x and still need the real 0.5.x native
+  # build scripts. Taking 0.6.0 would silently drop the bundled SQLite and
+  # break offline logging (§33) at runtime rather than at build time.
+  # TODO(Phase 5): revisit as part of the sqlite3 3.x / drift upgrade.
+  sqlite3_flutter_libs: 0.5.42
   path_provider: 2.1.5
   # 1.9.1, not 1.9.0: flutter_test from the SDK requires ^1.9.1.
   path: 1.9.1
