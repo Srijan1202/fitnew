@@ -182,6 +182,31 @@ function buildReasons(
 }
 
 /**
+ * A plate that has been scored but not yet explained.
+ *
+ * `chosen` is retained so `buildReasons` can run after the top N are selected;
+ * see ADR-002.
+ */
+interface ScoredPlate {
+  readonly items: readonly PlateItem[];
+  readonly macros: MacroRange;
+  readonly confidence: 'high' | 'medium' | 'low';
+  readonly score: number;
+  readonly chosen: readonly MessDish[];
+}
+
+/**
+ * Identity of a plate: which dishes, at which serving counts. Order-independent,
+ * so the same plate reached by a different enumeration path collapses to one.
+ */
+function plateKey(items: readonly PlateItem[]): string {
+  return items
+    .map((it) => `${it.dishId}x${it.servings}`)
+    .sort()
+    .join('|');
+}
+
+/**
  * Bounded depth-first enumeration. The candidate list is capped at 9 dishes and
  * total servings at 8, so the search space stays small and the result is
  * deterministic for a given menu and request.
@@ -190,7 +215,7 @@ export function suggestPlates(request: PlateRequest, maxResults = 3): PlateSugge
   const candidates = selectCandidates(request);
   if (candidates.length === 0) return [];
 
-  const results: PlateSuggestion[] = [];
+  const results: ScoredPlate[] = [];
 
   const chosenCounts = new Array<number>(candidates.length).fill(0);
 
@@ -232,12 +257,16 @@ export function suggestPlates(request: PlateRequest, maxResults = 3): PlateSugge
         totalServings,
         request,
       });
+      // `reasons` is deliberately NOT built here. The search enumerates
+      // thousands of combinations and returns at most `maxResults`, so building
+      // a reason set per combination discards ~99.9% of the work. `chosen` is
+      // carried instead, and reasons are built once the survivors are known.
       results.push({
         items,
         macros,
-        reasons: buildReasons(macros, chosen, request),
         confidence: worstConfidence(chosen),
         score,
+        chosen,
       });
       return;
     }
@@ -258,15 +287,32 @@ export function suggestPlates(request: PlateRequest, maxResults = 3): PlateSugge
 
   walk(0, 0, 0);
 
-  return results
-    .sort((a, b) => b.score - a.score)
-    .filter((plate, i, all) => {
-      // Drop near-duplicates so the three shown options are actually different.
-      const key = (p: PlateSuggestion): string =>
-        p.items.map((it) => `${it.dishId}x${it.servings}`).sort().join('|');
-      return all.findIndex((other) => key(other) === key(plate)) === i;
-    })
-    .slice(0, maxResults);
+  results.sort((a, b) => b.score - a.score);
+
+  // Drop near-duplicates so the options shown are actually different.
+  //
+  // Walking the sorted list and keeping the first plate for each distinct key
+  // is exactly what the previous `filter(... findIndex(...) === i)` did, but
+  // each key is computed once instead of on both sides of every pairwise
+  // comparison. The length guard sits before the push so `maxResults <= 0`
+  // still yields an empty list, matching the old trailing `.slice()`.
+  const seen = new Set<string>();
+  const survivors: ScoredPlate[] = [];
+  for (const plate of results) {
+    if (survivors.length >= maxResults) break;
+    const key = plateKey(plate.items);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    survivors.push(plate);
+  }
+
+  return survivors.map((plate) => ({
+    items: plate.items,
+    macros: plate.macros,
+    reasons: buildReasons(plate.macros, plate.chosen, request),
+    confidence: plate.confidence,
+    score: plate.score,
+  }));
 }
 
 /** Convenience: pick the meal a user is about to eat, given local time. */
