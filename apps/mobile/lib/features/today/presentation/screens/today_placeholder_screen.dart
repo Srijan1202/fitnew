@@ -43,11 +43,11 @@ class TodayPlaceholderScreen extends StatelessWidget {
               ),
               const SizedBox(height: FitSpacing.lg),
 
-              HairlineSection(
+              const HairlineSection(
                 label: 'What this screen proves',
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const <Widget>[
+                  children: <Widget>[
                     _Line(text: 'Paper ground, ink type, hairline sections.'),
                     _Line(text: 'Type scale carries hierarchy, not boxes.'),
                     _Line(text: 'Riverpod, go_router and the theme are wired.'),
@@ -56,10 +56,10 @@ class TodayPlaceholderScreen extends StatelessWidget {
               ),
               const SizedBox(height: FitSpacing.lg),
 
-              HairlineSection(
+              const HairlineSection(
                 label: 'Semantic colour',
                 child: Row(
-                  children: const <Widget>[
+                  children: <Widget>[
                     _Swatch(color: FitColors.pine, label: 'On track'),
                     SizedBox(width: FitSpacing.md),
                     _Swatch(color: FitColors.amber, label: 'Estimated'),
