@@ -15,6 +15,7 @@ class AuthFormField extends StatelessWidget {
     this.textInputAction,
     this.validator,
     this.onFieldSubmitted,
+    this.onChanged,
     this.enabled = true,
     this.fieldKey,
     super.key,
@@ -28,6 +29,7 @@ class AuthFormField extends StatelessWidget {
   final TextInputAction? textInputAction;
   final String? Function(String?)? validator;
   final void Function(String)? onFieldSubmitted;
+  final void Function(String)? onChanged;
   final bool enabled;
 
   /// Key on the inner [TextFormField], so tests can target one field without
@@ -51,6 +53,7 @@ class AuthFormField extends StatelessWidget {
           textInputAction: textInputAction,
           validator: validator,
           onFieldSubmitted: onFieldSubmitted,
+          onChanged: onChanged,
           enabled: enabled,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           style: textTheme.bodyLarge,

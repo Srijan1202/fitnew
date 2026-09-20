@@ -1,0 +1,6060 @@
+[
+  {
+    "slug": "barbell-back-squat",
+    "name": "Barbell Back Squat",
+    "movementPattern": "squat",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Set the bar across your upper back, hands just outside your shoulders, and unrack it with feet about shoulder-width apart.",
+      "Brace your trunk, then sit down and back, keeping your knees tracking over your toes.",
+      "Descend until your thighs are at least parallel to the floor, then drive through the whole foot to stand.",
+      "Keep your chest up throughout; the bar should travel in a straight vertical line."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "barbell-front-squat",
+        "reason": "preference"
+      },
+      {
+        "slug": "box-squat",
+        "reason": "preference"
+      },
+      {
+        "slug": "dumbbell-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "goblet-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "hack-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "leg-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "leg-press",
+        "reason": "injury"
+      },
+      {
+        "slug": "smith-machine-squat",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "hip",
+      "knee",
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "barbell-front-squat",
+    "name": "Barbell Front Squat",
+    "movementPattern": "squat",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "advanced",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Rack the bar on the front of your shoulders with elbows high and fingertips under the bar.",
+      "Keep your elbows up and torso vertical as you sit straight down between your feet.",
+      "Go as deep as you can hold your torso upright, then stand up driving the elbows up."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads"
+    ],
+    "secondaryMuscles": [
+      "glutes",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-back-squat",
+        "reason": "preference"
+      },
+      {
+        "slug": "goblet-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "hack-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "leg-press",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "elbow",
+      "knee",
+      "wrist"
+    ]
+  },
+  {
+    "slug": "goblet-squat",
+    "name": "Goblet Squat",
+    "movementPattern": "squat",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold one dumbbell vertically against your chest with both hands cupping the top end.",
+      "Feet shoulder-width, toes slightly out. Sit down between your knees, elbows tracking inside them.",
+      "Pause at the bottom, then push the floor away to stand tall."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-back-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "barbell-front-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "bodyweight-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "hack-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "kettlebell-goblet-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "leg-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "sumo-squat",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "kettlebell-goblet-squat",
+    "name": "Kettlebell Goblet Squat",
+    "movementPattern": "squat",
+    "equipment": [
+      "kettlebell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 4,
+    "instructions": [
+      "Hold the kettlebell by the horns against your chest, elbows pointing down.",
+      "Sit down between your knees with your chest up and heels planted.",
+      "Drive back up through the whole foot and squeeze your glutes at the top."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "bodyweight-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "goblet-squat",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "dumbbell-squat",
+    "name": "Dumbbell Squat",
+    "movementPattern": "squat",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Stand with a dumbbell in each hand at your sides, feet shoulder-width apart.",
+      "Squat down keeping your chest tall and the dumbbells close to your legs.",
+      "Stand back up without letting your knees cave inward."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-back-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "bodyweight-squat",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "bodyweight-squat",
+    "name": "Bodyweight Squat",
+    "movementPattern": "squat",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Feet shoulder-width apart, arms out in front for balance.",
+      "Sit your hips down and back until your thighs are parallel or lower.",
+      "Stand up fully, squeezing your glutes at the top. Add a pause or tempo to progress."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "goblet-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "kettlebell-goblet-squat",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "leg-press",
+    "name": "Leg Press",
+    "movementPattern": "squat",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Sit with your back and hips flat against the pad, feet hip-width on the platform.",
+      "Release the safeties and lower the platform until your knees reach about 90 degrees.",
+      "Press back up without locking the knees out hard, and keep your lower back on the pad."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-back-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "goblet-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "hack-squat",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "hack-squat",
+    "name": "Hack Squat",
+    "movementPattern": "squat",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Set your shoulders under the pads with your feet mid-platform, shoulder-width apart.",
+      "Lower under control until your thighs are around parallel.",
+      "Drive up through the whole foot; do not let your heels lift."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads"
+    ],
+    "secondaryMuscles": [
+      "glutes"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-back-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "barbell-front-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "goblet-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "leg-press",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "smith-machine-squat",
+    "name": "Smith Machine Squat",
+    "movementPattern": "squat",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Set the bar on your upper back and place your feet slightly ahead of the bar.",
+      "Unhook, then squat down keeping your torso upright against the fixed bar path.",
+      "Press up and re-hook at the end of the set."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-back-squat",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "knee",
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "box-squat",
+    "name": "Box Squat",
+    "movementPattern": "squat",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Set a box or bench at a height that puts your thighs at parallel when seated.",
+      "Squat back onto the box, sit fully but stay braced, then stand without rocking.",
+      "Useful for learning depth and building starting strength out of the hole."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-back-squat",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "knee",
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "sumo-squat",
+    "name": "Sumo Squat",
+    "movementPattern": "squat",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Stand wide with toes turned out, holding one dumbbell hanging between your legs.",
+      "Squat straight down, pushing your knees out over your toes.",
+      "Drive up and squeeze your glutes; keep the dumbbell close to your body."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "goblet-squat",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "hip",
+      "knee"
+    ]
+  },
+  {
+    "slug": "band-squat",
+    "name": "Resistance Band Squat",
+    "movementPattern": "squat",
+    "equipment": [
+      "resistance-band"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Stand on the band with both feet and bring the handles or loop up to your shoulders.",
+      "Squat down under control; the band gets lighter at the bottom and heavier at the top.",
+      "Stand tall against the band. Shorten the band or double it to progress."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-back-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "bodyweight-squat",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "jump-squat",
+    "name": "Jump Squat",
+    "movementPattern": "squat",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Squat to about parallel, then jump as high as you can.",
+      "Land softly on the balls of your feet and sink straight into the next rep.",
+      "Stop the set when your landings get loud or your knees start to cave."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "calves",
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "bodyweight-squat",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "ankle",
+      "knee",
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "pistol-squat",
+    "name": "Pistol Squat",
+    "movementPattern": "squat",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "advanced",
+    "isUnilateral": true,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Stand on one leg with the other leg held straight out in front.",
+      "Squat all the way down on the standing leg, arms forward for balance.",
+      "Stand up without touching the free foot down. Hold a support to regress."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "bodyweight-squat",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "ankle",
+      "hip",
+      "knee"
+    ]
+  },
+  {
+    "slug": "conventional-deadlift",
+    "name": "Conventional Deadlift",
+    "movementPattern": "hinge",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Stand with the bar over mid-foot, feet hip-width. Hinge down and grip just outside your legs.",
+      "Flatten your back, pull the slack out of the bar, and push the floor away.",
+      "Keep the bar against your legs the whole way; stand tall without leaning back.",
+      "Lower by pushing your hips back first, then bending the knees once the bar passes them."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "hamstrings",
+      "glutes",
+      "back"
+    ],
+    "secondaryMuscles": [
+      "quads",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "dumbbell-romanian-deadlift",
+        "reason": "equipment"
+      },
+      {
+        "slug": "hip-thrust",
+        "reason": "injury"
+      },
+      {
+        "slug": "kettlebell-deadlift",
+        "reason": "equipment"
+      },
+      {
+        "slug": "romanian-deadlift",
+        "reason": "preference"
+      },
+      {
+        "slug": "sumo-deadlift",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "hip",
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "sumo-deadlift",
+    "name": "Sumo Deadlift",
+    "movementPattern": "hinge",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Take a wide stance with toes out and grip the bar inside your legs.",
+      "Push your knees out, chest up, and drive the floor apart as you stand.",
+      "Lock out by squeezing your glutes; keep the bar close on the way down."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "glutes",
+      "quads",
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "back",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "conventional-deadlift",
+        "reason": "preference"
+      },
+      {
+        "slug": "kettlebell-deadlift",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "hip",
+      "knee",
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "romanian-deadlift",
+    "name": "Romanian Deadlift",
+    "movementPattern": "hinge",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Start standing with the bar at your hips, knees slightly bent.",
+      "Push your hips back and slide the bar down your thighs, keeping your back flat.",
+      "Stop when you feel a strong hamstring stretch (usually just below the knee), then drive your hips forward to stand."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "back-extension",
+        "reason": "equipment"
+      },
+      {
+        "slug": "band-good-morning",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-pull-through",
+        "reason": "equipment"
+      },
+      {
+        "slug": "conventional-deadlift",
+        "reason": "preference"
+      },
+      {
+        "slug": "dumbbell-romanian-deadlift",
+        "reason": "equipment"
+      },
+      {
+        "slug": "good-morning",
+        "reason": "preference"
+      },
+      {
+        "slug": "hip-thrust",
+        "reason": "injury"
+      },
+      {
+        "slug": "kettlebell-deadlift",
+        "reason": "equipment"
+      },
+      {
+        "slug": "stiff-leg-deadlift",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "dumbbell-romanian-deadlift",
+    "name": "Dumbbell Romanian Deadlift",
+    "movementPattern": "hinge",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold a dumbbell in each hand in front of your thighs.",
+      "Hinge at the hips with a flat back until the dumbbells reach mid-shin.",
+      "Drive the hips forward to stand; keep the dumbbells close to your legs."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-good-morning",
+        "reason": "equipment"
+      },
+      {
+        "slug": "conventional-deadlift",
+        "reason": "equipment"
+      },
+      {
+        "slug": "kettlebell-deadlift",
+        "reason": "equipment"
+      },
+      {
+        "slug": "romanian-deadlift",
+        "reason": "equipment"
+      },
+      {
+        "slug": "single-leg-romanian-deadlift",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "single-leg-romanian-deadlift",
+    "name": "Single-Leg Romanian Deadlift",
+    "movementPattern": "hinge",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold a dumbbell in the hand opposite your standing leg.",
+      "Hinge forward, letting the free leg travel back, until your torso is near parallel.",
+      "Return to standing by driving the standing hip forward. Keep your hips square."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "back",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "dumbbell-romanian-deadlift",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "ankle",
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "kettlebell-swing",
+    "name": "Kettlebell Swing",
+    "movementPattern": "hinge",
+    "equipment": [
+      "kettlebell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 4,
+    "instructions": [
+      "Start with the bell a step in front of you, hinge and hike it back between your legs.",
+      "Snap your hips forward to float the bell to chest height; your arms only guide it.",
+      "Let it fall, hinge again as it passes your thighs, and repeat. Never squat the swing."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "back",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "cable-pull-through",
+        "reason": "equipment"
+      },
+      {
+        "slug": "kettlebell-deadlift",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "kettlebell-deadlift",
+    "name": "Kettlebell Deadlift",
+    "movementPattern": "hinge",
+    "equipment": [
+      "kettlebell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 4,
+    "instructions": [
+      "Stand over the bell with feet hip-width and hinge down to grip the handle.",
+      "Flat back, chest up, then stand by pushing the floor away.",
+      "Lower it under control by pushing your hips back."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "back",
+      "quads"
+    ],
+    "alternatives": [
+      {
+        "slug": "conventional-deadlift",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-romanian-deadlift",
+        "reason": "equipment"
+      },
+      {
+        "slug": "kettlebell-swing",
+        "reason": "preference"
+      },
+      {
+        "slug": "romanian-deadlift",
+        "reason": "equipment"
+      },
+      {
+        "slug": "sumo-deadlift",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "good-morning",
+    "name": "Good Morning",
+    "movementPattern": "hinge",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "advanced",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Bar on your upper back, knees soft, feet hip-width.",
+      "Hinge forward at the hips with a flat back until you feel a hamstring stretch.",
+      "Return by driving the hips forward. Start light; this loads the lower back."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-good-morning",
+        "reason": "equipment"
+      },
+      {
+        "slug": "hip-thrust",
+        "reason": "injury"
+      },
+      {
+        "slug": "romanian-deadlift",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "lower-back",
+      "neck"
+    ]
+  },
+  {
+    "slug": "hip-thrust",
+    "name": "Barbell Hip Thrust",
+    "movementPattern": "hinge",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Sit with your upper back against a bench and a padded bar across your hips.",
+      "Drive through your heels to lift your hips until your torso and thighs are level.",
+      "Squeeze hard at the top with a neutral chin, then lower under control."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "dumbbell-hip-thrust",
+        "reason": "equipment"
+      },
+      {
+        "slug": "glute-bridge",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "hip"
+    ]
+  },
+  {
+    "slug": "dumbbell-hip-thrust",
+    "name": "Dumbbell Hip Thrust",
+    "movementPattern": "hinge",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Upper back on a bench, one dumbbell resting across your hips.",
+      "Drive your hips up until they are level with your knees and shoulders.",
+      "Pause at the top, then lower until your hips nearly touch the floor."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "glute-bridge",
+        "reason": "equipment"
+      },
+      {
+        "slug": "hip-thrust",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "hip"
+    ]
+  },
+  {
+    "slug": "glute-bridge",
+    "name": "Glute Bridge",
+    "movementPattern": "hinge",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Lie on your back, knees bent, feet flat and hip-width.",
+      "Push through your heels to lift your hips until your body is straight from shoulders to knees.",
+      "Squeeze your glutes at the top for a second, then lower slowly."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "back-extension",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-hip-thrust",
+        "reason": "equipment"
+      },
+      {
+        "slug": "hip-thrust",
+        "reason": "equipment"
+      },
+      {
+        "slug": "single-leg-glute-bridge",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "single-leg-glute-bridge",
+    "name": "Single-Leg Glute Bridge",
+    "movementPattern": "hinge",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Lie on your back with one foot flat and the other leg held up.",
+      "Drive the planted heel down to lift your hips, keeping them level.",
+      "Lower slowly and complete all reps before switching legs."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "glute-bridge",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "back-extension",
+    "name": "Back Extension",
+    "movementPattern": "hinge",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set the pad just below your hip bones on the extension bench, feet locked in.",
+      "Hinge down with a flat back until you feel a hamstring stretch.",
+      "Rise until your body is straight; do not hyperextend past neutral."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "glute-bridge",
+        "reason": "equipment"
+      },
+      {
+        "slug": "romanian-deadlift",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "cable-pull-through",
+    "name": "Cable Pull-Through",
+    "movementPattern": "hinge",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Face away from a low pulley with the rope between your legs.",
+      "Hinge at the hips, letting the rope travel back, keeping your back flat.",
+      "Drive the hips forward to stand tall and squeeze your glutes."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "kettlebell-swing",
+        "reason": "equipment"
+      },
+      {
+        "slug": "romanian-deadlift",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "stiff-leg-deadlift",
+    "name": "Stiff-Leg Deadlift",
+    "movementPattern": "hinge",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "advanced",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Stand with the bar at your hips and knees nearly straight.",
+      "Hinge down with a flat back as far as your hamstrings allow.",
+      "Return by driving the hips forward. Range of motion is set by flexibility, not the floor."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "glutes",
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "dumbbell-romanian-deadlift",
+        "reason": "injury"
+      },
+      {
+        "slug": "romanian-deadlift",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "band-good-morning",
+    "name": "Band Good Morning",
+    "movementPattern": "hinge",
+    "equipment": [
+      "resistance-band"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Stand on the band and loop the other end behind your neck across your upper back.",
+      "Hinge forward with a flat back, then drive your hips through to stand.",
+      "Keep the tension on the band by standing fully tall at the top."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "dumbbell-romanian-deadlift",
+        "reason": "equipment"
+      },
+      {
+        "slug": "good-morning",
+        "reason": "equipment"
+      },
+      {
+        "slug": "romanian-deadlift",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "walking-lunge",
+    "name": "Walking Lunge",
+    "movementPattern": "lunge",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold a dumbbell in each hand and step forward into a lunge.",
+      "Lower until the back knee nearly touches the floor, front shin vertical.",
+      "Push through the front foot and step straight into the next lunge with the other leg, alternating as you walk."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-lunge",
+        "reason": "equipment"
+      },
+      {
+        "slug": "bodyweight-lunge",
+        "reason": "equipment"
+      },
+      {
+        "slug": "reverse-lunge",
+        "reason": "injury"
+      },
+      {
+        "slug": "reverse-lunge",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "reverse-lunge",
+    "name": "Reverse Lunge",
+    "movementPattern": "lunge",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold dumbbells at your sides and step one foot back.",
+      "Lower until the back knee is just off the floor, keeping the front knee over the foot.",
+      "Push through the front foot to return. Easier on the knees than a forward lunge."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-lunge",
+        "reason": "equipment"
+      },
+      {
+        "slug": "bodyweight-lunge",
+        "reason": "equipment"
+      },
+      {
+        "slug": "bulgarian-split-squat",
+        "reason": "preference"
+      },
+      {
+        "slug": "split-squat",
+        "reason": "preference"
+      },
+      {
+        "slug": "step-up",
+        "reason": "preference"
+      },
+      {
+        "slug": "walking-lunge",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "bodyweight-lunge",
+    "name": "Bodyweight Lunge",
+    "movementPattern": "lunge",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Step forward and lower until both knees are at about 90 degrees.",
+      "Keep your torso upright and the front knee over the foot.",
+      "Push back to standing and alternate legs."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "reverse-lunge",
+        "reason": "equipment"
+      },
+      {
+        "slug": "split-squat",
+        "reason": "injury"
+      },
+      {
+        "slug": "walking-lunge",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "bulgarian-split-squat",
+    "name": "Bulgarian Split Squat",
+    "movementPattern": "lunge",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Rest the top of your rear foot on a bench behind you, holding dumbbells.",
+      "Lower straight down until the front thigh is parallel.",
+      "Drive up through the front foot. Complete all reps on one leg before switching."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-bulgarian-split-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "reverse-lunge",
+        "reason": "preference"
+      },
+      {
+        "slug": "split-squat",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "barbell-bulgarian-split-squat",
+    "name": "Barbell Bulgarian Split Squat",
+    "movementPattern": "lunge",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "advanced",
+    "isUnilateral": true,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Bar on your upper back, rear foot on a bench behind you.",
+      "Descend under control until the front thigh is parallel.",
+      "Stand by driving through the front foot, keeping the torso tall. Finish all reps before switching legs."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "bulgarian-split-squat",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "knee",
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "barbell-lunge",
+    "name": "Barbell Lunge",
+    "movementPattern": "lunge",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": true,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Bar on your upper back, step forward into a lunge.",
+      "Lower until the rear knee is just off the floor.",
+      "Push back to the start and alternate legs. Keep the bar steady and your torso upright."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "reverse-lunge",
+        "reason": "equipment"
+      },
+      {
+        "slug": "reverse-lunge",
+        "reason": "injury"
+      },
+      {
+        "slug": "walking-lunge",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "knee",
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "step-up",
+    "name": "Dumbbell Step-Up",
+    "movementPattern": "lunge",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold dumbbells and place one whole foot on a knee-high box.",
+      "Drive through that foot to stand on the box without pushing off the floor.",
+      "Step down under control. Finish the reps on one side before switching."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "bodyweight-step-up",
+        "reason": "equipment"
+      },
+      {
+        "slug": "reverse-lunge",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "bodyweight-step-up",
+    "name": "Bodyweight Step-Up",
+    "movementPattern": "lunge",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Place one foot fully on a step or bench.",
+      "Stand up on it using only the top leg, then lower slowly.",
+      "Raise the step height to progress."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "split-squat",
+        "reason": "preference"
+      },
+      {
+        "slug": "step-up",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "lateral-lunge",
+    "name": "Lateral Lunge",
+    "movementPattern": "lunge",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold one dumbbell at your chest and step wide to one side.",
+      "Sit back into that hip, keeping the other leg straight and both feet flat.",
+      "Push back to standing and repeat on the other side."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "curtsy-lunge",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "hip",
+      "knee"
+    ]
+  },
+  {
+    "slug": "curtsy-lunge",
+    "name": "Curtsy Lunge",
+    "movementPattern": "lunge",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold dumbbells and step one leg back and across behind the other.",
+      "Lower until the front thigh is near parallel, hips facing forward.",
+      "Drive back up through the front foot."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "glutes",
+      "quads"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "lateral-lunge",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "hip",
+      "knee"
+    ]
+  },
+  {
+    "slug": "split-squat",
+    "name": "Split Squat",
+    "movementPattern": "lunge",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Take a long stride stance and stay there for the set.",
+      "Lower straight down until the rear knee is just off the floor.",
+      "Push up through the front foot. Finish all reps, then switch legs. Hold a wall for balance if needed."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "bodyweight-step-up",
+        "reason": "preference"
+      },
+      {
+        "slug": "bulgarian-split-squat",
+        "reason": "equipment"
+      },
+      {
+        "slug": "reverse-lunge",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "barbell-bench-press",
+    "name": "Barbell Bench Press",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Lie on the bench with your eyes under the bar, feet planted, shoulder blades pulled together.",
+      "Grip just wider than shoulder-width, unrack, and lower the bar to your lower chest.",
+      "Press up and slightly back toward the rack, keeping your wrists straight and elbows tucked at about 45 degrees."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-chest-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-bench-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "floor-press",
+        "reason": "injury"
+      },
+      {
+        "slug": "incline-barbell-bench-press",
+        "reason": "preference"
+      },
+      {
+        "slug": "machine-chest-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "push-up",
+        "reason": "equipment"
+      },
+      {
+        "slug": "smith-machine-bench-press",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder",
+      "wrist"
+    ]
+  },
+  {
+    "slug": "incline-barbell-bench-press",
+    "name": "Incline Barbell Bench Press",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set the bench to 30 degrees and lie back with your shoulder blades set.",
+      "Lower the bar to your upper chest, elbows tucked slightly.",
+      "Press straight up over the shoulders."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "triceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-bench-press",
+        "reason": "preference"
+      },
+      {
+        "slug": "decline-push-up",
+        "reason": "equipment"
+      },
+      {
+        "slug": "floor-press",
+        "reason": "injury"
+      },
+      {
+        "slug": "incline-dumbbell-bench-press",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "decline-barbell-bench-press",
+    "name": "Decline Barbell Bench Press",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "advanced",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Lock your legs into the decline bench and set your shoulder blades.",
+      "Lower the bar to your lower chest under control.",
+      "Press back up; have a spotter for the unrack and rerack."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "triceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "dumbbell-bench-press",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "dumbbell-bench-press",
+    "name": "Dumbbell Bench Press",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Lie back with a dumbbell in each hand at chest level, palms forward.",
+      "Press both dumbbells up and slightly together over your chest.",
+      "Lower until your elbows are just below the bench, then press again."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-bench-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "decline-barbell-bench-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "floor-press",
+        "reason": "injury"
+      },
+      {
+        "slug": "floor-press",
+        "reason": "preference"
+      },
+      {
+        "slug": "incline-dumbbell-bench-press",
+        "reason": "preference"
+      },
+      {
+        "slug": "machine-chest-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "push-up",
+        "reason": "equipment"
+      },
+      {
+        "slug": "smith-machine-bench-press",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "incline-dumbbell-bench-press",
+    "name": "Incline Dumbbell Bench Press",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set the bench to 30 degrees and start with dumbbells at your upper chest.",
+      "Press up and together, then lower under control to a full stretch.",
+      "Keep your shoulder blades pinned to the bench."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "triceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "dumbbell-bench-press",
+        "reason": "preference"
+      },
+      {
+        "slug": "incline-barbell-bench-press",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "floor-press",
+    "name": "Dumbbell Floor Press",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Lie on the floor with knees bent, dumbbells pressed up over your chest.",
+      "Lower until your upper arms touch the floor, pause briefly.",
+      "Press back up. The floor limits range, making this shoulder-friendly."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest",
+      "triceps"
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "dumbbell-bench-press",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "push-up",
+    "name": "Push-Up",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Hands slightly wider than shoulders, body in a straight line from head to heels.",
+      "Lower your chest to just above the floor, elbows at about 45 degrees.",
+      "Press back up without letting your hips sag or pike. Elevate your hands to make it easier."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-chest-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "barbell-bench-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "decline-push-up",
+        "reason": "preference"
+      },
+      {
+        "slug": "dumbbell-bench-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "incline-push-up",
+        "reason": "injury"
+      },
+      {
+        "slug": "incline-push-up",
+        "reason": "preference"
+      },
+      {
+        "slug": "machine-chest-press",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "wrist"
+    ]
+  },
+  {
+    "slug": "incline-push-up",
+    "name": "Incline Push-Up",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Place your hands on a bench or wall, body straight.",
+      "Lower your chest to the surface, then press back up.",
+      "The lower the surface, the harder it gets."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "push-up",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "wrist"
+    ]
+  },
+  {
+    "slug": "decline-push-up",
+    "name": "Decline Push-Up",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Feet on a bench, hands on the floor, body straight.",
+      "Lower your chest to the floor keeping your hips in line.",
+      "Press back to the start. Emphasises the upper chest and shoulders."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "triceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "incline-barbell-bench-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "push-up",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "shoulder",
+      "wrist"
+    ]
+  },
+  {
+    "slug": "diamond-push-up",
+    "name": "Diamond Push-Up",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Place your hands together under your chest so thumbs and index fingers form a diamond.",
+      "Lower your chest to your hands, elbows staying close to your sides.",
+      "Press back up fully."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "triceps",
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "close-grip-bench-press",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow",
+      "wrist"
+    ]
+  },
+  {
+    "slug": "machine-chest-press",
+    "name": "Machine Chest Press",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Adjust the seat so the handles are level with your mid-chest.",
+      "Press the handles forward until your arms are nearly straight.",
+      "Return slowly until you feel a stretch across your chest."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-chest-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "barbell-bench-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-bench-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "push-up",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "smith-machine-bench-press",
+    "name": "Smith Machine Bench Press",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Position the bench so the bar lowers to your lower chest.",
+      "Unhook and lower the bar under control to your chest.",
+      "Press up and re-hook at the end."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-bench-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-bench-press",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "close-grip-bench-press",
+    "name": "Close-Grip Bench Press",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Grip the bar at about shoulder-width, no narrower.",
+      "Lower to your lower chest with elbows tucked close to your sides.",
+      "Press up, finishing with your arms straight over your shoulders."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "triceps",
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "diamond-push-up",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow",
+      "shoulder",
+      "wrist"
+    ]
+  },
+  {
+    "slug": "band-chest-press",
+    "name": "Band Chest Press",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "resistance-band"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Anchor the band behind you at chest height and hold a handle in each hand.",
+      "Step forward to tension the band, then press both hands forward until straight.",
+      "Return under control. Step further forward to progress."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-bench-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "machine-chest-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "push-up",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "overhead-press",
+    "name": "Barbell Overhead Press",
+    "movementPattern": "vertical-push",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold the bar at your collarbones, grip just outside shoulder-width, elbows slightly in front.",
+      "Brace your glutes and trunk, then press the bar straight up, moving your head back out of the way.",
+      "Finish with the bar over the middle of your foot and your head through. Lower to the start."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-shoulder-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "kettlebell-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "landmine-press",
+        "reason": "injury"
+      },
+      {
+        "slug": "landmine-press",
+        "reason": "preference"
+      },
+      {
+        "slug": "machine-shoulder-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "pike-push-up",
+        "reason": "equipment"
+      },
+      {
+        "slug": "push-press",
+        "reason": "preference"
+      },
+      {
+        "slug": "seated-dumbbell-shoulder-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "standing-dumbbell-shoulder-press",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "lower-back",
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "seated-dumbbell-shoulder-press",
+    "name": "Seated Dumbbell Shoulder Press",
+    "movementPattern": "vertical-push",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Sit upright with a dumbbell at each shoulder, palms forward.",
+      "Press both dumbbells overhead until your arms are straight.",
+      "Lower until the dumbbells are level with your ears, then repeat."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "triceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "arnold-press",
+        "reason": "preference"
+      },
+      {
+        "slug": "band-shoulder-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "kettlebell-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "landmine-press",
+        "reason": "injury"
+      },
+      {
+        "slug": "machine-shoulder-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "overhead-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "pike-push-up",
+        "reason": "equipment"
+      },
+      {
+        "slug": "standing-dumbbell-shoulder-press",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "standing-dumbbell-shoulder-press",
+    "name": "Standing Dumbbell Shoulder Press",
+    "movementPattern": "vertical-push",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Stand with a dumbbell at each shoulder and your trunk braced.",
+      "Press overhead without leaning back; ribs down.",
+      "Lower under control to shoulder height."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "overhead-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "seated-dumbbell-shoulder-press",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "lower-back",
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "arnold-press",
+    "name": "Arnold Press",
+    "movementPattern": "vertical-push",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Start seated with dumbbells in front of your shoulders, palms facing you.",
+      "Rotate your palms outward as you press overhead.",
+      "Reverse the motion on the way down."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "triceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "seated-dumbbell-shoulder-press",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "machine-shoulder-press",
+    "name": "Machine Shoulder Press",
+    "movementPattern": "vertical-push",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set the seat so the handles start at shoulder height.",
+      "Press overhead until your arms are nearly straight.",
+      "Lower slowly back to the start."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "triceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-shoulder-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "overhead-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "pike-push-up",
+        "reason": "equipment"
+      },
+      {
+        "slug": "seated-dumbbell-shoulder-press",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "push-press",
+    "name": "Push Press",
+    "movementPattern": "vertical-push",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "advanced",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold the bar at your collarbones as for an overhead press.",
+      "Dip a few inches by bending your knees, then drive up explosively and press the bar overhead.",
+      "Lock out overhead, then lower to the shoulders and reset."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "quads",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "overhead-press",
+        "reason": "injury"
+      },
+      {
+        "slug": "overhead-press",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "knee",
+      "lower-back",
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "pike-push-up",
+    "name": "Pike Push-Up",
+    "movementPattern": "vertical-push",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "From a push-up position, walk your feet in so your hips are high and your body forms an inverted V.",
+      "Bend your elbows to lower the top of your head toward the floor.",
+      "Press back up. Raise your feet on a bench to progress."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "triceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-shoulder-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "handstand-push-up",
+        "reason": "preference"
+      },
+      {
+        "slug": "machine-shoulder-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "overhead-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "seated-dumbbell-shoulder-press",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder",
+      "wrist"
+    ]
+  },
+  {
+    "slug": "handstand-push-up",
+    "name": "Handstand Push-Up",
+    "movementPattern": "vertical-push",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "advanced",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Kick up into a handstand against a wall, hands shoulder-width.",
+      "Lower until your head lightly touches the floor.",
+      "Press back to full lockout. Stack pads under your head to shorten the range."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "pike-push-up",
+        "reason": "injury"
+      },
+      {
+        "slug": "pike-push-up",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "neck",
+      "shoulder",
+      "wrist"
+    ]
+  },
+  {
+    "slug": "landmine-press",
+    "name": "Landmine Press",
+    "movementPattern": "vertical-push",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Anchor one end of a barbell in a corner or landmine and hold the other end at your shoulder.",
+      "Press up and forward along the arc of the bar until your arm is straight.",
+      "Lower under control, then switch arms. The angle makes this shoulder-friendly."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "chest",
+      "triceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "overhead-press",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "kettlebell-press",
+    "name": "Kettlebell Press",
+    "movementPattern": "vertical-push",
+    "equipment": [
+      "kettlebell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": true,
+    "defaultIncrementKg": 4,
+    "instructions": [
+      "Clean the bell to the rack position at your shoulder, forearm vertical.",
+      "Press it straight overhead, rotating the palm to face forward at the top.",
+      "Lower back to the rack. Complete the reps, then switch sides."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "overhead-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "seated-dumbbell-shoulder-press",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "band-shoulder-press",
+    "name": "Band Shoulder Press",
+    "movementPattern": "vertical-push",
+    "equipment": [
+      "resistance-band"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Stand on the band and bring the handles to your shoulders.",
+      "Press straight overhead until your arms are straight.",
+      "Lower slowly back to shoulder height."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "triceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "machine-shoulder-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "overhead-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "pike-push-up",
+        "reason": "equipment"
+      },
+      {
+        "slug": "seated-dumbbell-shoulder-press",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "barbell-row",
+    "name": "Barbell Row",
+    "movementPattern": "horizontal-pull",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hinge to about 45 degrees with a flat back, holding the bar at arm's length.",
+      "Pull the bar to your lower ribs, driving your elbows back.",
+      "Lower under control without letting your torso rise."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "chest-supported-dumbbell-row",
+        "reason": "injury"
+      },
+      {
+        "slug": "dumbbell-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "inverted-row",
+        "reason": "preference"
+      },
+      {
+        "slug": "kettlebell-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "machine-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "pendlay-row",
+        "reason": "preference"
+      },
+      {
+        "slug": "seated-cable-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "t-bar-row",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "pendlay-row",
+    "name": "Pendlay Row",
+    "movementPattern": "horizontal-pull",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "advanced",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set up with your torso parallel to the floor and the bar on the ground.",
+      "Pull explosively to your lower chest, then return the bar fully to the floor.",
+      "Every rep starts dead from the floor."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps",
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-row",
+        "reason": "preference"
+      },
+      {
+        "slug": "chest-supported-dumbbell-row",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "dumbbell-row",
+    "name": "Single-Arm Dumbbell Row",
+    "movementPattern": "horizontal-pull",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Place one hand and knee on a bench, the other foot on the floor, back flat.",
+      "Row the dumbbell to your hip, keeping your elbow close to your body.",
+      "Lower to a full stretch. Finish all reps before switching sides."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "barbell-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "chest-supported-dumbbell-row",
+        "reason": "preference"
+      },
+      {
+        "slug": "inverted-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "kettlebell-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "machine-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "seated-cable-row",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "chest-supported-dumbbell-row",
+    "name": "Chest-Supported Dumbbell Row",
+    "movementPattern": "horizontal-pull",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Lie face down on an incline bench with a dumbbell in each hand.",
+      "Row both dumbbells up, squeezing your shoulder blades together.",
+      "Lower slowly. The bench removes any lower-back strain."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps",
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "dumbbell-row",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "seated-cable-row",
+    "name": "Seated Cable Row",
+    "movementPattern": "horizontal-pull",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Sit tall with feet braced and a slight bend in the knees.",
+      "Pull the handle to your stomach, driving your elbows back and chest up.",
+      "Let your arms straighten fully without rounding your back."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "barbell-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "inverted-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "machine-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "machine-row",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "machine-row",
+    "name": "Machine Row",
+    "movementPattern": "horizontal-pull",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set the chest pad so the handles are level with your lower chest.",
+      "Pull the handles back, squeezing your shoulder blades together.",
+      "Return until your arms are straight and your lats are stretched."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "barbell-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "inverted-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "seated-cable-row",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "t-bar-row",
+    "name": "T-Bar Row",
+    "movementPattern": "horizontal-pull",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Straddle a landmine bar with a V-handle under it, hinge to about 45 degrees.",
+      "Row the handle to your chest with a flat back.",
+      "Lower under control without letting your hips rise."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-row",
+        "reason": "preference"
+      },
+      {
+        "slug": "machine-row",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "inverted-row",
+    "name": "Inverted Row",
+    "movementPattern": "horizontal-pull",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Set a barbell in a rack at about hip height and hang beneath it, body straight, heels on the floor.",
+      "Pull your chest to the bar, squeezing your shoulder blades.",
+      "Lower slowly. Lower the bar or raise your feet to progress."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "barbell-row",
+        "reason": "preference"
+      },
+      {
+        "slug": "dumbbell-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "machine-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "seated-cable-row",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "band-row",
+    "name": "Band Row",
+    "movementPattern": "horizontal-pull",
+    "equipment": [
+      "resistance-band"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Anchor the band in front of you at chest height, or loop it around your feet while seated.",
+      "Row the handles to your ribs, elbows close to your sides.",
+      "Return slowly, letting your shoulder blades spread."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "inverted-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "machine-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "seated-cable-row",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "kettlebell-row",
+    "name": "Kettlebell Row",
+    "movementPattern": "horizontal-pull",
+    "equipment": [
+      "kettlebell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 4,
+    "instructions": [
+      "Hinge with a flat back, one hand braced on your thigh or a bench.",
+      "Row the bell to your hip, elbow close to your body.",
+      "Lower to a full stretch. Switch sides after all reps."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "chest-supported-dumbbell-row",
+        "reason": "injury"
+      },
+      {
+        "slug": "dumbbell-row",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "face-pull",
+    "name": "Cable Face Pull",
+    "movementPattern": "horizontal-pull",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set a rope at face height and grip it with palms facing in.",
+      "Pull toward your face, flaring your elbows and pulling the rope apart.",
+      "Finish with your hands beside your ears, then return slowly."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-face-pull",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "band-face-pull",
+    "name": "Band Face Pull",
+    "movementPattern": "horizontal-pull",
+    "equipment": [
+      "resistance-band"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Anchor the band at face height and grip with palms in.",
+      "Pull toward your face, elbows high and wide.",
+      "Squeeze your shoulder blades, then return under control."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "face-pull",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "pull-up",
+    "name": "Pull-Up",
+    "movementPattern": "vertical-pull",
+    "equipment": [
+      "pull-up-bar"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Hang from the bar with palms facing away, hands just wider than shoulders.",
+      "Pull your chest toward the bar, driving your elbows down and back.",
+      "Lower until your arms are fully straight. Add weight or reps to progress."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps",
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-assisted-pull-up",
+        "reason": "preference"
+      },
+      {
+        "slug": "band-lat-pulldown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "chin-up",
+        "reason": "preference"
+      },
+      {
+        "slug": "lat-pulldown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "neutral-grip-pull-up",
+        "reason": "injury"
+      },
+      {
+        "slug": "neutral-grip-pull-up",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "elbow",
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "chin-up",
+    "name": "Chin-Up",
+    "movementPattern": "vertical-pull",
+    "equipment": [
+      "pull-up-bar"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Hang with palms facing you, hands shoulder-width.",
+      "Pull until your chin clears the bar.",
+      "Lower all the way to straight arms."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back",
+      "biceps"
+    ],
+    "secondaryMuscles": [
+      "abs"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-assisted-pull-up",
+        "reason": "preference"
+      },
+      {
+        "slug": "close-grip-lat-pulldown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "neutral-grip-pull-up",
+        "reason": "injury"
+      },
+      {
+        "slug": "pull-up",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "neutral-grip-pull-up",
+    "name": "Neutral-Grip Pull-Up",
+    "movementPattern": "vertical-pull",
+    "equipment": [
+      "pull-up-bar"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Hang from parallel handles with palms facing each other.",
+      "Pull your chest to your hands, elbows driving down.",
+      "Lower fully. Usually the easiest grip on the shoulders and elbows."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "close-grip-lat-pulldown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "pull-up",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "band-assisted-pull-up",
+    "name": "Band-Assisted Pull-Up",
+    "movementPattern": "vertical-pull",
+    "equipment": [
+      "pull-up-bar",
+      "resistance-band"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Loop a band over the bar and place one knee or foot in it.",
+      "Pull up until your chin is over the bar; the band helps most at the bottom.",
+      "Lower slowly. Use a thinner band as you get stronger."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "chin-up",
+        "reason": "preference"
+      },
+      {
+        "slug": "lat-pulldown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "pull-up",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "elbow",
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "lat-pulldown",
+    "name": "Lat Pulldown",
+    "movementPattern": "vertical-pull",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Sit with your thighs under the pad and grip the bar just wider than shoulders.",
+      "Pull the bar to your upper chest, leaning back only slightly.",
+      "Return slowly until your arms are straight and your lats stretch."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-assisted-pull-up",
+        "reason": "equipment"
+      },
+      {
+        "slug": "band-lat-pulldown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "close-grip-lat-pulldown",
+        "reason": "injury"
+      },
+      {
+        "slug": "close-grip-lat-pulldown",
+        "reason": "preference"
+      },
+      {
+        "slug": "pull-up",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "close-grip-lat-pulldown",
+    "name": "Close-Grip Lat Pulldown",
+    "movementPattern": "vertical-pull",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Use a V-handle and sit with your thighs secured.",
+      "Pull the handle to your upper chest with your elbows close.",
+      "Return fully under control."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-lat-pulldown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "chin-up",
+        "reason": "equipment"
+      },
+      {
+        "slug": "lat-pulldown",
+        "reason": "preference"
+      },
+      {
+        "slug": "neutral-grip-pull-up",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "band-lat-pulldown",
+    "name": "Band Lat Pulldown",
+    "movementPattern": "vertical-pull",
+    "equipment": [
+      "resistance-band"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Anchor the band high and kneel or sit facing it.",
+      "Pull the handles down to your shoulders, elbows driving to your sides.",
+      "Return slowly overhead."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "close-grip-lat-pulldown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "lat-pulldown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "pull-up",
+        "reason": "equipment"
+      },
+      {
+        "slug": "straight-arm-pulldown",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "straight-arm-pulldown",
+    "name": "Straight-Arm Pulldown",
+    "movementPattern": "vertical-pull",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Stand facing a high pulley with a straight bar, arms nearly straight.",
+      "Pull the bar down in an arc to your thighs, keeping your arms straight.",
+      "Return slowly until your arms are overhead."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "triceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-lat-pulldown",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "barbell-curl",
+    "name": "Barbell Curl",
+    "movementPattern": "elbow-flexion",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Stand holding the bar with an underhand grip at shoulder-width.",
+      "Curl the bar to your shoulders without swinging; elbows stay at your sides.",
+      "Lower under control to straight arms."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "band-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "hammer-curl",
+        "reason": "injury"
+      },
+      {
+        "slug": "machine-preacher-curl",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow",
+      "wrist"
+    ]
+  },
+  {
+    "slug": "dumbbell-curl",
+    "name": "Dumbbell Curl",
+    "movementPattern": "elbow-flexion",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Stand with a dumbbell in each hand, palms forward.",
+      "Curl both dumbbells to your shoulders, elbows pinned to your sides.",
+      "Lower slowly. Alternate arms if you prefer."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "band-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "barbell-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "concentration-curl",
+        "reason": "preference"
+      },
+      {
+        "slug": "hammer-curl",
+        "reason": "preference"
+      },
+      {
+        "slug": "incline-dumbbell-curl",
+        "reason": "preference"
+      },
+      {
+        "slug": "machine-preacher-curl",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "hammer-curl",
+    "name": "Hammer Curl",
+    "movementPattern": "elbow-flexion",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold dumbbells with palms facing each other.",
+      "Curl up keeping the palms facing in the whole way.",
+      "Lower under control."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "dumbbell-curl",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "incline-dumbbell-curl",
+    "name": "Incline Dumbbell Curl",
+    "movementPattern": "elbow-flexion",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Sit back on a 45-degree bench with your arms hanging straight down.",
+      "Curl the dumbbells up without letting your elbows drift forward.",
+      "Lower to a full stretch at the bottom."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "dumbbell-curl",
+        "reason": "injury"
+      },
+      {
+        "slug": "dumbbell-curl",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "elbow",
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "machine-preacher-curl",
+    "name": "Machine Preacher Curl",
+    "movementPattern": "elbow-flexion",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set the seat so your armpits rest on top of the pad.",
+      "Curl the handles up to full contraction.",
+      "Lower slowly until your arms are almost straight."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "barbell-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-curl",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "cable-curl",
+    "name": "Cable Curl",
+    "movementPattern": "elbow-flexion",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Attach a straight bar to a low pulley and stand close.",
+      "Curl the bar to your shoulders, elbows fixed at your sides.",
+      "Lower under constant tension."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "band-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "barbell-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "machine-preacher-curl",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "concentration-curl",
+    "name": "Concentration Curl",
+    "movementPattern": "elbow-flexion",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Sit with your elbow braced against the inside of your thigh.",
+      "Curl the dumbbell up to your shoulder.",
+      "Lower slowly. Do all reps on one arm before switching."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "dumbbell-curl",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "band-curl",
+    "name": "Band Curl",
+    "movementPattern": "elbow-flexion",
+    "equipment": [
+      "resistance-band"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Stand on the band and hold the handles, palms up.",
+      "Curl to your shoulders with elbows still.",
+      "Lower slowly against the band."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "barbell-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-curl",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "triceps-pushdown",
+    "name": "Cable Triceps Pushdown",
+    "movementPattern": "elbow-extension",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Grip a straight bar on a high pulley, elbows pinned to your sides.",
+      "Push the bar down until your arms are straight.",
+      "Return until your forearms pass parallel; keep your elbows still."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "band-pushdown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "bench-dip",
+        "reason": "equipment"
+      },
+      {
+        "slug": "machine-triceps-extension",
+        "reason": "equipment"
+      },
+      {
+        "slug": "rope-pushdown",
+        "reason": "preference"
+      },
+      {
+        "slug": "triceps-kickback",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "rope-pushdown",
+    "name": "Rope Triceps Pushdown",
+    "movementPattern": "elbow-extension",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold a rope attachment at a high pulley, elbows at your sides.",
+      "Push down and pull the rope ends apart at the bottom.",
+      "Return under control."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "band-pushdown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "triceps-pushdown",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "overhead-triceps-extension",
+    "name": "Overhead Dumbbell Triceps Extension",
+    "movementPattern": "elbow-extension",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold one dumbbell overhead with both hands cupping the top end.",
+      "Lower it behind your head by bending only the elbows.",
+      "Press back to straight arms; keep your elbows pointing forward."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "band-pushdown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-overhead-triceps-extension",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-skull-crusher",
+        "reason": "preference"
+      },
+      {
+        "slug": "skull-crusher",
+        "reason": "preference"
+      },
+      {
+        "slug": "triceps-pushdown",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "elbow",
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "cable-overhead-triceps-extension",
+    "name": "Cable Overhead Triceps Extension",
+    "movementPattern": "elbow-extension",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Face away from a low pulley holding a rope overhead.",
+      "Lower the rope behind your head, elbows pointing up.",
+      "Extend to straight arms."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "overhead-triceps-extension",
+        "reason": "equipment"
+      },
+      {
+        "slug": "rope-pushdown",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "elbow",
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "skull-crusher",
+    "name": "Barbell Skull Crusher",
+    "movementPattern": "elbow-extension",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Lie on a bench holding the bar over your chest, hands shoulder-width.",
+      "Bend only your elbows to lower the bar to just above your forehead.",
+      "Extend back to the start without moving your upper arms."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "dumbbell-skull-crusher",
+        "reason": "equipment"
+      },
+      {
+        "slug": "overhead-triceps-extension",
+        "reason": "preference"
+      },
+      {
+        "slug": "triceps-pushdown",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "elbow",
+      "wrist"
+    ]
+  },
+  {
+    "slug": "dumbbell-skull-crusher",
+    "name": "Dumbbell Skull Crusher",
+    "movementPattern": "elbow-extension",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Lie back with a dumbbell in each hand over your chest, palms facing.",
+      "Lower them beside your head by bending the elbows.",
+      "Extend back up, elbows pointing at the ceiling."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "overhead-triceps-extension",
+        "reason": "preference"
+      },
+      {
+        "slug": "skull-crusher",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "bench-dip",
+    "name": "Bench Dip",
+    "movementPattern": "elbow-extension",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Sit on the edge of a bench, hands beside your hips, then slide your hips off.",
+      "Lower by bending the elbows to about 90 degrees; keep them pointing back.",
+      "Press back up. Straighten your legs to progress."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "secondaryMuscles": [
+      "chest",
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-pushdown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "rope-pushdown",
+        "reason": "injury"
+      },
+      {
+        "slug": "triceps-pushdown",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder",
+      "wrist"
+    ]
+  },
+  {
+    "slug": "triceps-kickback",
+    "name": "Dumbbell Triceps Kickback",
+    "movementPattern": "elbow-extension",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hinge forward with your upper arm parallel to the floor and elbow bent.",
+      "Extend your arm straight back, squeezing the triceps.",
+      "Return without dropping the elbow. Complete the reps, then switch arms."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "band-pushdown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "triceps-pushdown",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "band-pushdown",
+    "name": "Band Triceps Pushdown",
+    "movementPattern": "elbow-extension",
+    "equipment": [
+      "resistance-band"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Anchor the band high and hold the ends with elbows at your sides.",
+      "Push down to straight arms.",
+      "Return slowly, keeping the elbows still."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "bench-dip",
+        "reason": "equipment"
+      },
+      {
+        "slug": "machine-triceps-extension",
+        "reason": "equipment"
+      },
+      {
+        "slug": "overhead-triceps-extension",
+        "reason": "equipment"
+      },
+      {
+        "slug": "rope-pushdown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "triceps-kickback",
+        "reason": "equipment"
+      },
+      {
+        "slug": "triceps-pushdown",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "machine-triceps-extension",
+    "name": "Machine Triceps Extension",
+    "movementPattern": "elbow-extension",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set the seat so your upper arms rest on the pad.",
+      "Extend the handles until your arms are straight.",
+      "Return slowly to the start."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "band-pushdown",
+        "reason": "equipment"
+      },
+      {
+        "slug": "triceps-pushdown",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "dumbbell-lateral-raise",
+    "name": "Dumbbell Lateral Raise",
+    "movementPattern": "shoulder-isolation",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Stand with dumbbells at your sides, a slight bend in the elbows.",
+      "Raise both arms out to the side until they are level with your shoulders.",
+      "Lower slowly. Lead with the elbows, not the hands."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "band-lateral-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-lateral-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "front-raise",
+        "reason": "preference"
+      },
+      {
+        "slug": "machine-lateral-raise",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "cable-lateral-raise",
+    "name": "Cable Lateral Raise",
+    "movementPattern": "shoulder-isolation",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Stand side-on to a low pulley with the handle in the far hand.",
+      "Raise the arm out to the side to shoulder height.",
+      "Lower under constant tension. Switch sides after all reps."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "band-lateral-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-lateral-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "machine-lateral-raise",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "machine-lateral-raise",
+    "name": "Machine Lateral Raise",
+    "movementPattern": "shoulder-isolation",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Sit with the pads against the outside of your upper arms.",
+      "Raise your arms out to shoulder height.",
+      "Lower slowly."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "band-lateral-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-lateral-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-lateral-raise",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "band-lateral-raise",
+    "name": "Band Lateral Raise",
+    "movementPattern": "shoulder-isolation",
+    "equipment": [
+      "resistance-band"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Stand on the band holding the handles at your sides.",
+      "Raise your arms out to shoulder height.",
+      "Lower slowly against the band."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "cable-lateral-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-lateral-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "machine-lateral-raise",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "rear-delt-fly",
+    "name": "Dumbbell Rear Delt Fly",
+    "movementPattern": "shoulder-isolation",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hinge forward with a flat back, dumbbells hanging below your chest.",
+      "Raise both arms out to the sides, squeezing your shoulder blades.",
+      "Lower under control."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-pull-apart",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-rear-delt-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "reverse-pec-deck",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "reverse-pec-deck",
+    "name": "Reverse Pec Deck",
+    "movementPattern": "shoulder-isolation",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Sit facing the pad with the handles in front of you.",
+      "Pull your arms out and back, squeezing your rear shoulders.",
+      "Return slowly."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-pull-apart",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-rear-delt-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "rear-delt-fly",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "cable-rear-delt-fly",
+    "name": "Cable Rear Delt Fly",
+    "movementPattern": "shoulder-isolation",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Stand side-on to a high pulley and grip the handle with the far hand.",
+      "Pull the handle across and out to the side with a straight arm.",
+      "Return slowly. Switch sides after all reps."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-pull-apart",
+        "reason": "equipment"
+      },
+      {
+        "slug": "rear-delt-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "reverse-pec-deck",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "front-raise",
+    "name": "Dumbbell Front Raise",
+    "movementPattern": "shoulder-isolation",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold dumbbells in front of your thighs.",
+      "Raise them straight in front to shoulder height.",
+      "Lower under control without swinging."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "dumbbell-lateral-raise",
+        "reason": "injury"
+      },
+      {
+        "slug": "dumbbell-lateral-raise",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "band-pull-apart",
+    "name": "Band Pull-Apart",
+    "movementPattern": "shoulder-isolation",
+    "equipment": [
+      "resistance-band"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Hold the band in front of you at shoulder height, arms straight.",
+      "Pull the band apart until it touches your chest, squeezing your shoulder blades.",
+      "Return slowly."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "cable-rear-delt-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "rear-delt-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "reverse-pec-deck",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "dumbbell-fly",
+    "name": "Dumbbell Fly",
+    "movementPattern": "chest-isolation",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Lie on a bench with dumbbells over your chest, palms facing, elbows slightly bent.",
+      "Open your arms in a wide arc until you feel a chest stretch.",
+      "Bring the dumbbells back together over your chest."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "incline-dumbbell-fly",
+        "reason": "preference"
+      },
+      {
+        "slug": "pec-deck",
+        "reason": "equipment"
+      },
+      {
+        "slug": "pec-deck",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "incline-dumbbell-fly",
+    "name": "Incline Dumbbell Fly",
+    "movementPattern": "chest-isolation",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set the bench to 30 degrees and hold dumbbells over your upper chest.",
+      "Lower in a wide arc with a slight elbow bend.",
+      "Squeeze back to the top."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "dumbbell-fly",
+        "reason": "preference"
+      },
+      {
+        "slug": "low-to-high-cable-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "pec-deck",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "cable-fly",
+    "name": "Cable Fly",
+    "movementPattern": "chest-isolation",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set both pulleys at chest height and stand a step forward with a handle in each hand.",
+      "Bring your hands together in front of your chest in an arc.",
+      "Return slowly until you feel a stretch."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "low-to-high-cable-fly",
+        "reason": "preference"
+      },
+      {
+        "slug": "pec-deck",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "low-to-high-cable-fly",
+    "name": "Low-to-High Cable Fly",
+    "movementPattern": "chest-isolation",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set both pulleys low and hold a handle in each hand.",
+      "Sweep your hands up and together to eye level.",
+      "Lower slowly. Emphasises the upper chest."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "cable-fly",
+        "reason": "preference"
+      },
+      {
+        "slug": "incline-dumbbell-fly",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "pec-deck",
+    "name": "Pec Deck",
+    "movementPattern": "chest-isolation",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Sit with your back flat and your forearms or hands on the pads.",
+      "Bring the pads together in front of your chest.",
+      "Return slowly to a comfortable stretch."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "band-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-fly",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "band-fly",
+    "name": "Band Chest Fly",
+    "movementPattern": "chest-isolation",
+    "equipment": [
+      "resistance-band"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Anchor the band behind you at chest height, one handle in each hand.",
+      "Bring your hands together in front of your chest in an arc.",
+      "Return slowly under tension."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "cable-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "pec-deck",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "leg-extension",
+    "name": "Leg Extension",
+    "movementPattern": "leg-isolation",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Sit with the pad on your shins and your knees in line with the machine pivot.",
+      "Extend your legs until straight, pausing at the top.",
+      "Lower slowly. Use a smaller range if your knees complain."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "sissy-squat",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "seated-leg-curl",
+    "name": "Seated Leg Curl",
+    "movementPattern": "leg-isolation",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Sit with the pad above your heels and the thigh pad locked down.",
+      "Curl your heels under the seat as far as possible.",
+      "Return slowly to straight legs."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "lying-leg-curl",
+        "reason": "preference"
+      },
+      {
+        "slug": "nordic-hamstring-curl",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "lying-leg-curl",
+    "name": "Lying Leg Curl",
+    "movementPattern": "leg-isolation",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Lie face down with the pad just above your heels.",
+      "Curl your heels toward your glutes.",
+      "Lower slowly without lifting your hips."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "nordic-hamstring-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "seated-leg-curl",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "nordic-hamstring-curl",
+    "name": "Nordic Hamstring Curl",
+    "movementPattern": "leg-isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "advanced",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Kneel with your ankles anchored under something solid or held by a partner.",
+      "Lower your body forward as slowly as possible, hips straight.",
+      "Catch yourself with your hands and push back up to help the return."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "glutes"
+    ],
+    "alternatives": [
+      {
+        "slug": "lying-leg-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "seated-leg-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "seated-leg-curl",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "hip-abduction-machine",
+    "name": "Hip Abduction Machine",
+    "movementPattern": "leg-isolation",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Sit with the pads against the outside of your knees.",
+      "Push your knees apart as far as you can.",
+      "Return slowly to the start."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "band-lateral-walk",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-hip-abduction",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "hip"
+    ]
+  },
+  {
+    "slug": "cable-hip-abduction",
+    "name": "Cable Hip Abduction",
+    "movementPattern": "leg-isolation",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Attach an ankle strap to a low pulley and stand side-on with the far leg strapped.",
+      "Lift the leg out to the side against the cable.",
+      "Return slowly. Switch legs after all reps."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "band-lateral-walk",
+        "reason": "equipment"
+      },
+      {
+        "slug": "hip-abduction-machine",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "hip"
+    ]
+  },
+  {
+    "slug": "band-lateral-walk",
+    "name": "Band Lateral Walk",
+    "movementPattern": "leg-isolation",
+    "equipment": [
+      "resistance-band"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Loop a band just above your knees and sit into a quarter squat.",
+      "Step sideways, keeping tension on the band and your knees pushed out.",
+      "Take the same number of steps back the other way."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "cable-hip-abduction",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-kickback",
+        "reason": "equipment"
+      },
+      {
+        "slug": "hip-abduction-machine",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "hip"
+    ]
+  },
+  {
+    "slug": "cable-kickback",
+    "name": "Cable Glute Kickback",
+    "movementPattern": "leg-isolation",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Strap one ankle to a low pulley and face the machine, hands on the frame.",
+      "Kick the leg straight back, squeezing the glute, without arching your back.",
+      "Return slowly. Switch legs after all reps."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-lateral-walk",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "hip",
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "sissy-squat",
+    "name": "Sissy Squat",
+    "movementPattern": "leg-isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "advanced",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Stand holding a support, rise onto the balls of your feet.",
+      "Lean back and bend your knees, keeping your hips straight, until your knees are near the floor.",
+      "Pull yourself back up with your quads."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "leg-extension",
+        "reason": "equipment"
+      },
+      {
+        "slug": "leg-extension",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "standing-calf-raise",
+    "name": "Standing Calf Raise",
+    "movementPattern": "calf-raise",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Stand with the balls of your feet on the platform and shoulders under the pads.",
+      "Rise as high as possible onto your toes.",
+      "Lower until your heels drop below the platform for a full stretch."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "dumbbell-calf-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "seated-calf-raise",
+        "reason": "preference"
+      },
+      {
+        "slug": "single-leg-calf-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "smith-machine-calf-raise",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "ankle"
+    ]
+  },
+  {
+    "slug": "seated-calf-raise",
+    "name": "Seated Calf Raise",
+    "movementPattern": "calf-raise",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Sit with the pad on your thighs and the balls of your feet on the platform.",
+      "Raise your heels as high as possible.",
+      "Lower slowly into a stretch."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "dumbbell-calf-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "standing-calf-raise",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "ankle"
+    ]
+  },
+  {
+    "slug": "dumbbell-calf-raise",
+    "name": "Dumbbell Calf Raise",
+    "movementPattern": "calf-raise",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold dumbbells and stand with the balls of your feet on a step.",
+      "Rise onto your toes as high as you can.",
+      "Lower your heels below the step and pause."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "seated-calf-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "single-leg-calf-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "smith-machine-calf-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "standing-calf-raise",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "ankle"
+    ]
+  },
+  {
+    "slug": "single-leg-calf-raise",
+    "name": "Single-Leg Calf Raise",
+    "movementPattern": "calf-raise",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Stand on one foot on a step, holding a support for balance.",
+      "Rise onto your toes, pause, then lower below the step.",
+      "Finish all reps before switching legs."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "dumbbell-calf-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "standing-calf-raise",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "ankle"
+    ]
+  },
+  {
+    "slug": "smith-machine-calf-raise",
+    "name": "Smith Machine Calf Raise",
+    "movementPattern": "calf-raise",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Set a block under the bar and stand on it with the balls of your feet, bar on your upper back.",
+      "Rise onto your toes as high as possible.",
+      "Lower into a full stretch under control."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "dumbbell-calf-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "standing-calf-raise",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "ankle"
+    ]
+  },
+  {
+    "slug": "plank",
+    "name": "Plank",
+    "movementPattern": "core",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Forearms on the floor, elbows under shoulders, body in a straight line.",
+      "Squeeze your glutes and brace your abs so your hips neither sag nor pike.",
+      "Hold for time; stop when your form breaks."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "dead-bug",
+        "reason": "injury"
+      },
+      {
+        "slug": "dead-bug",
+        "reason": "preference"
+      },
+      {
+        "slug": "side-plank",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "side-plank",
+    "name": "Side Plank",
+    "movementPattern": "core",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Lie on your side with your elbow under your shoulder and feet stacked.",
+      "Lift your hips so your body is a straight line.",
+      "Hold, then switch sides."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "glutes"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-pallof-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "pallof-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "plank",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "dead-bug",
+    "name": "Dead Bug",
+    "movementPattern": "core",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Lie on your back with arms up and knees bent over your hips, lower back pressed into the floor.",
+      "Lower one arm overhead and the opposite leg toward the floor.",
+      "Return and alternate. The lower back never leaves the floor."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "bird-dog",
+        "reason": "preference"
+      },
+      {
+        "slug": "mountain-climber",
+        "reason": "preference"
+      },
+      {
+        "slug": "plank",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "hanging-leg-raise",
+    "name": "Hanging Leg Raise",
+    "movementPattern": "core",
+    "equipment": [
+      "pull-up-bar"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Hang from the bar with straight arms.",
+      "Raise your straight legs until they are at least parallel to the floor, curling your pelvis up.",
+      "Lower slowly without swinging."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "dead-bug",
+        "reason": "injury"
+      },
+      {
+        "slug": "hanging-knee-raise",
+        "reason": "preference"
+      },
+      {
+        "slug": "reverse-crunch",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "lower-back",
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "hanging-knee-raise",
+    "name": "Hanging Knee Raise",
+    "movementPattern": "core",
+    "equipment": [
+      "pull-up-bar"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Hang from the bar with straight arms.",
+      "Draw your knees up toward your chest, tilting your pelvis up at the top.",
+      "Lower under control."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "hanging-leg-raise",
+        "reason": "preference"
+      },
+      {
+        "slug": "reverse-crunch",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "cable-crunch",
+    "name": "Cable Crunch",
+    "movementPattern": "core",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Kneel facing a high pulley holding a rope beside your head.",
+      "Crunch down, bringing your elbows toward your knees by rounding your spine.",
+      "Return slowly, keeping your hips still."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "crunch",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dead-bug",
+        "reason": "injury"
+      },
+      {
+        "slug": "machine-crunch",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "neck"
+    ]
+  },
+  {
+    "slug": "crunch",
+    "name": "Crunch",
+    "movementPattern": "core",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Lie on your back with knees bent and hands beside your head.",
+      "Curl your shoulders off the floor, keeping your lower back down.",
+      "Lower slowly. Do not pull on your neck."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "bicycle-crunch",
+        "reason": "preference"
+      },
+      {
+        "slug": "cable-crunch",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dead-bug",
+        "reason": "injury"
+      },
+      {
+        "slug": "machine-crunch",
+        "reason": "equipment"
+      },
+      {
+        "slug": "reverse-crunch",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "neck"
+    ]
+  },
+  {
+    "slug": "reverse-crunch",
+    "name": "Reverse Crunch",
+    "movementPattern": "core",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Lie on your back with knees bent over your hips.",
+      "Curl your pelvis up, lifting your hips off the floor.",
+      "Lower slowly without arching your back."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "crunch",
+        "reason": "preference"
+      },
+      {
+        "slug": "hanging-knee-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "hanging-leg-raise",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "bicycle-crunch",
+    "name": "Bicycle Crunch",
+    "movementPattern": "core",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Lie on your back, hands beside your head, legs raised.",
+      "Bring one knee in while rotating the opposite elbow toward it.",
+      "Alternate sides in a slow, controlled rhythm."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "crunch",
+        "reason": "preference"
+      },
+      {
+        "slug": "dead-bug",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "lower-back",
+      "neck"
+    ]
+  },
+  {
+    "slug": "pallof-press",
+    "name": "Cable Pallof Press",
+    "movementPattern": "core",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Stand side-on to a cable at chest height, holding the handle at your chest with both hands.",
+      "Press your hands straight out in front and resist the pull to rotate.",
+      "Return to your chest. Switch sides after all reps."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "band-pallof-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "side-plank",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "band-pallof-press",
+    "name": "Band Pallof Press",
+    "movementPattern": "core",
+    "equipment": [
+      "resistance-band"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Anchor the band at chest height and stand side-on holding it at your chest.",
+      "Press straight out and hold against the rotation.",
+      "Return and repeat; switch sides."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "pallof-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "side-plank",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "mountain-climber",
+    "name": "Mountain Climber",
+    "movementPattern": "core",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Start in a push-up position with your hands under your shoulders.",
+      "Drive one knee toward your chest, then switch legs quickly.",
+      "Keep your hips low and your back flat."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "dead-bug",
+        "reason": "injury"
+      },
+      {
+        "slug": "dead-bug",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "wrist"
+    ]
+  },
+  {
+    "slug": "bird-dog",
+    "name": "Bird Dog",
+    "movementPattern": "core",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Start on all fours with a flat back.",
+      "Extend one arm and the opposite leg until they are level with your torso.",
+      "Hold briefly, return, and alternate. Keep your hips level."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs",
+      "back"
+    ],
+    "secondaryMuscles": [
+      "glutes"
+    ],
+    "alternatives": [
+      {
+        "slug": "dead-bug",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "machine-crunch",
+    "name": "Machine Crunch",
+    "movementPattern": "core",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Sit with the pads against your chest or hold the handles.",
+      "Crunch forward, rounding your upper back.",
+      "Return slowly to the start."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "cable-crunch",
+        "reason": "equipment"
+      },
+      {
+        "slug": "crunch",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "neck"
+    ]
+  },
+  {
+    "slug": "farmers-carry",
+    "name": "Dumbbell Farmer's Carry",
+    "movementPattern": "carry",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Pick up a heavy dumbbell in each hand with a flat back.",
+      "Walk tall with your shoulders back and ribs down.",
+      "Walk for distance or time, then set the weights down with a flat back."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs",
+      "back"
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "calves"
+    ],
+    "alternatives": [
+      {
+        "slug": "kettlebell-farmers-carry",
+        "reason": "equipment"
+      },
+      {
+        "slug": "suitcase-carry",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "kettlebell-farmers-carry",
+    "name": "Kettlebell Farmer's Carry",
+    "movementPattern": "carry",
+    "equipment": [
+      "kettlebell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 4,
+    "instructions": [
+      "Deadlift a kettlebell in each hand.",
+      "Walk tall, shoulders packed, without leaning.",
+      "Set them down under control."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs",
+      "back"
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "calves"
+    ],
+    "alternatives": [
+      {
+        "slug": "farmers-carry",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "suitcase-carry",
+    "name": "Suitcase Carry",
+    "movementPattern": "carry",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": true,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Hold one heavy dumbbell at your side.",
+      "Walk tall without leaning toward or away from the weight.",
+      "Switch hands and repeat the same distance."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [
+      "back",
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "farmers-carry",
+        "reason": "injury"
+      },
+      {
+        "slug": "farmers-carry",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": []
+  },
+  {
+    "slug": "overhead-carry",
+    "name": "Kettlebell Overhead Carry",
+    "movementPattern": "carry",
+    "equipment": [
+      "kettlebell"
+    ],
+    "difficulty": "advanced",
+    "isUnilateral": true,
+    "defaultIncrementKg": 4,
+    "instructions": [
+      "Press a kettlebell overhead and lock the arm out, biceps by your ear.",
+      "Walk with ribs down and the bell steady overhead.",
+      "Switch sides after the distance."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders",
+      "abs"
+    ],
+    "secondaryMuscles": [
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "farmers-carry",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "lower-back",
+      "shoulder"
+    ]
+  }
+]

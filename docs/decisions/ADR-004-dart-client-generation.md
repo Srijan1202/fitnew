@@ -1,6 +1,9 @@
 # ADR-004 — Dart API client: hand-written DTOs with a contract-conformance test, not openapi-generator
 
-**Status** PROPOSED — awaiting the owner's decision (contract rule 4)
+**Status** ACCEPTED — ratified by the owner 2026-09-21: keep hand-written DTOs with
+`apps/mobile/test/contracts/contract_conformance_test.dart` as the enforcement
+mechanism; do not replace with generated Dart DTOs unless a later phase
+demonstrates a concrete maintenance or correctness problem.
 **Date** 2026-09-21
 **Phase** 2
 **Affects** MASTER-SPEC.md §7.1 ("API client: openapi-generator (Dart) — generated from backend OpenAPI, contracts can't drift")

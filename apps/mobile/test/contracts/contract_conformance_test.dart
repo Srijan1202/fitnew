@@ -2,12 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:fitos/features/auth/domain/entities/user_profile.dart';
+import 'package:fitos/features/exercise/domain/entities/exercise.dart';
 import 'package:fitos/features/onboarding/domain/entities/onboarding.dart';
 import 'package:fitos/features/profile/domain/entities/profile.dart';
 import 'package:fitos/features/profile/domain/entities/vocabulary.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../support/fake_auth_repository.dart';
+import '../support/fake_exercise_repository.dart';
 import '../support/fake_onboarding_repository.dart';
 
 /// ADR-004: the Dart DTOs are hand-written, so this test is what stops them
@@ -345,6 +347,99 @@ void main() {
           properties(variant('about'))['consent'] as Map<String, dynamic>;
       const grant = ConsentGrant(policyVersion: 'v', types: ConsentType.values);
       expect(grant.toJson().keys.toSet(), keysOf(consent));
+    });
+  });
+
+  group('exercise library (Phase 3)', () {
+    late Map<String, dynamic> detail;
+    late List<Map<String, dynamic>> params;
+
+    setUpAll(() {
+      detail = properties(schemaOf('/exercises/{id}', 'get'));
+      final op = ((doc['paths'] as Map<String, dynamic>)['/exercises']
+          as Map<String, dynamic>)['get'] as Map<String, dynamic>;
+      params = (op['parameters'] as List<dynamic>).cast<Map<String, dynamic>>();
+    });
+
+    Map<String, dynamic> param(String name) =>
+        params.firstWhere((p) => p['name'] == name)['schema']
+            as Map<String, dynamic>;
+
+    test(
+        'MuscleGroup, MovementPattern, Difficulty, MuscleRole, AlternativeReason, BodyPart',
+        () {
+      expect(
+        MuscleGroup.values.map((m) => m.wire).toList(),
+        enumOf(detail['primaryMuscles'] as Map<String, dynamic>),
+      );
+      expect(
+        MovementPattern.values.map((p) => p.wire).toList(),
+        enumOf(detail['movementPattern'] as Map<String, dynamic>),
+      );
+      expect(
+        Difficulty.values.map((d) => d.wire).toList(),
+        enumOf(detail['difficulty'] as Map<String, dynamic>),
+      );
+      final muscle = (detail['muscles'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      expect(
+        MuscleRole.values.map((r) => r.wire).toList(),
+        enumOf(properties(muscle)['role'] as Map<String, dynamic>),
+      );
+      final alt = (detail['alternatives'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      expect(
+        AlternativeReason.values.map((r) => r.wire).toList(),
+        enumOf(properties(alt)['reason'] as Map<String, dynamic>),
+      );
+      expect(
+        BodyPart.values.map((b) => b.wire).toList(),
+        enumOf(detail['contraindications'] as Map<String, dynamic>),
+      );
+    });
+
+    test('ExerciseSummary, ExerciseDetail, ExerciseListResponse shapes', () {
+      final list = schemaOf('/exercises', 'get');
+      const page = ExerciseListResponse(
+        items: [squat],
+        total: 1,
+        limit: 200,
+        offset: 0,
+      );
+      expect(page.toJson().keys.toSet(), keysOf(list));
+      final item = (properties(list)['items'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      expect(squat.toJson().keys.toSet(), keysOf(item));
+      expect(
+        squatDetail.toJson().keys.toSet(),
+        keysOf(schemaOf('/exercises/{id}', 'get')),
+      );
+      final muscle = (detail['muscles'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      expect(squatDetail.muscles.first.toJson().keys.toSet(), keysOf(muscle));
+      final alt = (detail['alternatives'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      expect(squatDetail.alternatives.first.toJson().keys.toSet(), keysOf(alt));
+    });
+
+    test('ExerciseQuery sends exactly the documented query parameters', () {
+      final documented = params.map((p) => p['name'] as String).toSet();
+      const full = ExerciseQuery(
+        q: 'x',
+        equipment: {Equipment.barbell},
+        muscle: MuscleGroup.chest,
+        pattern: MovementPattern.squat,
+      );
+      expect(full.toQueryParameters().keys.toSet(), documented);
+      // Equipment is the enum list, sent comma-separated; limit within bounds.
+      expect(
+        enumOf(param('equipment')),
+        Equipment.values.map((e) => e.wire).toList(),
+      );
+      expect(
+        const ExerciseQuery().limit,
+        lessThanOrEqualTo(param('limit')['maximum'] as int),
+      );
     });
   });
 

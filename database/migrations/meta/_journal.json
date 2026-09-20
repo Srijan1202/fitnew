@@ -15,6 +15,13 @@
       "when": 1789935768371,
       "tag": "0001_profile_goals_targets",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789942625305,
+      "tag": "0002_exercise_library",
+      "breakpoints": true
     }
   ]
 }

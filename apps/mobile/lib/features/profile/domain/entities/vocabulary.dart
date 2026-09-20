@@ -264,3 +264,28 @@ enum ConsentType {
   const ConsentType(this.wire);
   final String wire;
 }
+
+/// Body parts a `user_limitations` row can name and an exercise can be
+/// contraindicated for (§9.2). Shown on exercise detail from Phase 3.
+enum BodyPart {
+  @JsonValue('neck')
+  neck('neck', 'Neck'),
+  @JsonValue('shoulder')
+  shoulder('shoulder', 'Shoulder'),
+  @JsonValue('elbow')
+  elbow('elbow', 'Elbow'),
+  @JsonValue('wrist')
+  wrist('wrist', 'Wrist'),
+  @JsonValue('lower-back')
+  lowerBack('lower-back', 'Lower back'),
+  @JsonValue('hip')
+  hip('hip', 'Hip'),
+  @JsonValue('knee')
+  knee('knee', 'Knee'),
+  @JsonValue('ankle')
+  ankle('ankle', 'Ankle');
+
+  const BodyPart(this.wire, this.label);
+  final String wire;
+  final String label;
+}

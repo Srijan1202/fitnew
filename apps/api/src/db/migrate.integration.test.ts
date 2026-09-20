@@ -55,7 +55,10 @@ describeIfDb('migrations (real Postgres)', () => {
     'user_allergies', 'user_limitations', 'consent_records', 'nutrition_targets',
     'body_metrics',
   ];
-  const TOTAL_MIGRATIONS = 2;
+  const PHASE3_TABLES = [
+    'exercises', 'exercise_muscles', 'exercise_alternatives', 'exercise_contraindications',
+  ];
+  const TOTAL_MIGRATIONS = 3;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -93,6 +96,32 @@ describeIfDb('migrations (real Postgres)', () => {
     expect(types.map((t) => t.typname)).toEqual(
       expect.arrayContaining(['goal_type', 'sex', 'diet_type', 'allergen', 'consent_type', 'onboarding_stage']),
     );
+  });
+
+  it('up creates the Phase 3 exercise library with its integrity rules', async () => {
+    for (const t of PHASE3_TABLES) expect(await tableExists(client, t), t).toBe(true);
+    // An exercise with no equipment is rejected by the table, not just by Zod.
+    await expect(
+      client`insert into exercises (slug, name, movement_pattern, equipment, difficulty, default_increment_kg, instructions)
+             values ('mig-x', 'X', 'squat', '{}', 'beginner', 2.5, '{"a"}')`,
+    ).rejects.toThrow(/exercises_equipment_nonempty/);
+    // A muscle cannot be both primary and secondary for one exercise.
+    const [x] = await client<{ id: string }[]>`
+      insert into exercises (slug, name, movement_pattern, equipment, difficulty, default_increment_kg, instructions)
+      values ('mig-x', 'X', 'squat', '{barbell}', 'beginner', 2.5, '{"a"}') returning id`;
+    await client`insert into exercise_muscles values (${x!.id}, 'quads', 'primary', 1)`;
+    await expect(
+      client`insert into exercise_muscles values (${x!.id}, 'quads', 'secondary', 0.5)`,
+    ).rejects.toThrow(/exercise_muscles_exercise_id_muscle_group_pk/);
+    // An exercise cannot be its own alternative.
+    await expect(
+      client`insert into exercise_alternatives values (${x!.id}, ${x!.id}, 'preference')`,
+    ).rejects.toThrow(/exercise_alternatives_not_self/);
+    // Deleting an exercise cascades through its rows.
+    await client`insert into exercise_contraindications values (${x!.id}, 'knee')`;
+    await client`delete from exercises where id = ${x!.id}`;
+    expect((await client`select 1 from exercise_muscles where exercise_id = ${x!.id}`).length).toBe(0);
+    expect((await client`select 1 from exercise_contraindications where exercise_id = ${x!.id}`).length).toBe(0);
   });
 
   it('one active goal per user is a database fact', async () => {
@@ -149,7 +178,14 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'uid-dup'`;
   });
 
-  it('down removes the Phase 2 tables and types, one migration at a time', async () => {
+  it('down removes the Phase 3, then Phase 2 tables and types, one migration at a time', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0002_exercise_library');
+    for (const t of PHASE3_TABLES) expect(await tableExists(client, t), t).toBe(false);
+    const types3 = await client<{ typname: string }[]>`select typname from pg_type where typtype = 'e'`;
+    expect(types3.map((t) => t.typname)).not.toContain('muscle_group');
+    expect(types3.map((t) => t.typname)).toContain('body_part'); // 0001 still applied
+    expect(await appliedCount(client)).toBe(2);
+
     expect(await rollbackLastMigration(connectionString)).toBe('0001_profile_goals_targets');
     for (const t of PHASE2_TABLES) expect(await tableExists(client, t), t).toBe(false);
     const types = await client<{ typname: string }[]>`select typname from pg_type where typtype = 'e'`;
@@ -170,6 +206,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await migrateUp(connectionString);
     expect(await tableExists(client, 'users')).toBe(true);
     for (const t of PHASE2_TABLES) expect(await tableExists(client, t), t).toBe(true);
+    for (const t of PHASE3_TABLES) expect(await tableExists(client, t), t).toBe(true);
     expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
   });
 });

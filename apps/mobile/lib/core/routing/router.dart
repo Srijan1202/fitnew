@@ -6,6 +6,8 @@ import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/auth/presentation/screens/splash_gate_screen.dart';
+import '../../features/exercise/presentation/screens/exercise_browser_screen.dart';
+import '../../features/exercise/presentation/screens/exercise_detail_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_flow_screen.dart';
 import '../../features/profile/presentation/screens/goal_editor_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -22,6 +24,8 @@ abstract final class Routes {
   static const String onboarding = '/onboarding';
   static const String profile = '/profile';
   static const String goalEditor = '/profile/goal';
+  static const String exercises = '/exercises';
+  static String exerciseDetail(String id) => '/exercises/$id';
   static const String today = '/';
 
   /// Screens a signed-out user may see. Everything else needs a session.
@@ -72,6 +76,19 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: 'goal',
             name: 'goal-editor',
             builder: (context, state) => const GoalEditorScreen(),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: Routes.exercises,
+        name: 'exercises',
+        builder: (context, state) => const ExerciseBrowserScreen(),
+        routes: <RouteBase>[
+          GoRoute(
+            path: ':id',
+            name: 'exercise-detail',
+            builder: (context, state) =>
+                ExerciseDetailScreen(id: state.pathParameters['id']!),
           ),
         ],
       ),

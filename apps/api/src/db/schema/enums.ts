@@ -12,9 +12,14 @@ import { pgEnum } from 'drizzle-orm/pg-core';
 
 import {
   ALLERGENS,
+  ALTERNATIVE_REASONS,
   CONSENT_TYPES,
+  DIFFICULTIES,
   EQUIPMENT,
   GOAL_TYPES,
+  MOVEMENT_PATTERNS,
+  MUSCLE_GROUPS,
+  MUSCLE_ROLES,
   ONBOARDING_STEPS,
   ONBOARDING_COMPLETE,
 } from '@fitos/contracts';
@@ -36,3 +41,10 @@ export const budgetTierEnum = pgEnum('budget_tier', ['low', 'medium', 'high']);
 export const consentTypeEnum = pgEnum('consent_type', CONSENT_TYPES);
 export const onboardingStageEnum = pgEnum('onboarding_stage', [...ONBOARDING_STEPS, ONBOARDING_COMPLETE]);
 export const weightSourceEnum = pgEnum('weight_source', ['onboarding', 'manual', 'health-sync']);
+
+// Phase 3 — exercise library
+export const muscleGroupEnum = pgEnum('muscle_group', MUSCLE_GROUPS);
+export const movementPatternEnum = pgEnum('movement_pattern', MOVEMENT_PATTERNS);
+export const difficultyEnum = pgEnum('difficulty', DIFFICULTIES);
+export const muscleRoleEnum = pgEnum('muscle_role', MUSCLE_ROLES);
+export const alternativeReasonEnum = pgEnum('alternative_reason', ALTERNATIVE_REASONS);

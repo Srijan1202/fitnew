@@ -41,10 +41,10 @@ class TodayPlaceholderScreen extends ConsumerWidget {
               // Numbers are the hero (§6.3). This one is a literal, not a
               // computed value — the engine that produces it lives on the
               // backend and is wired in Phase 11.
-              Text('Phase 2', style: textTheme.displayMedium),
+              Text('Phase 3', style: textTheme.displayMedium),
               const SizedBox(height: FitSpacing.sm),
               Text(
-                'Signed in and onboarded. Your targets are on your profile.',
+                'Signed in and onboarded. Targets on your profile; the exercise library is open.',
                 style: textTheme.bodyLarge,
               ),
               const SizedBox(height: FitSpacing.lg),
@@ -89,6 +89,11 @@ class TodayPlaceholderScreen extends ConsumerWidget {
               FilledButton(
                 onPressed: () => context.push(Routes.profile),
                 child: const Text('Profile and targets'),
+              ),
+              const SizedBox(height: FitSpacing.md),
+              OutlinedButton(
+                onPressed: () => context.push(Routes.exercises),
+                child: const Text('Exercise library'),
               ),
               const SizedBox(height: FitSpacing.md),
               OutlinedButton(

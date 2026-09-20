@@ -21,6 +21,7 @@ import dbPlugin from './plugins/db.js';
 import errorHandlerPlugin from './plugins/error-handler.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { healthRoutes } from './modules/health/routes.js';
+import { exerciseRoutes } from './modules/exercise/routes.js';
 import { onboardingRoutes } from './modules/onboarding/routes.js';
 import { userRoutes } from './modules/user/routes.js';
 import { users } from './db/schema.js';
@@ -125,6 +126,7 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
       await v1.register(authRoutes);
       await v1.register(userRoutes);
       await v1.register(onboardingRoutes, { ipSalt: env.CONSENT_IP_SALT });
+      await v1.register(exerciseRoutes);
     },
     { prefix: PROTECTED_PREFIX },
   );
