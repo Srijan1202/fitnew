@@ -6,13 +6,21 @@ import 'package:fitos/features/auth/domain/entities/auth_state.dart';
 import 'package:fitos/features/auth/domain/entities/user_profile.dart';
 import 'package:fitos/features/auth/domain/repositories/auth_repository.dart';
 
+/// A signed-in user who has finished onboarding — the common case.
 final testProfile = UserProfile(
   id: '4f0b9a2e-1c2d-4e3f-8a9b-0c1d2e3f4a5b',
   email: 'student@vit.ac.in',
   timezone: 'Asia/Kolkata',
   locale: 'en-IN',
   createdAt: DateTime.utc(2026, 9, 20, 10),
+  onboardingStage: 'complete',
 );
+
+/// The same user straight after sign-up: nothing answered yet.
+final newUserProfile = testProfile.copyWith(onboardingStage: 'goal');
+
+/// Quit halfway; the server remembers.
+final midOnboardingProfile = testProfile.copyWith(onboardingStage: 'training');
 
 /// Scripted AuthRepository. Every method returns what the test told it to and
 /// records that it was called.
@@ -69,6 +77,11 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<void> signOut() async {
     calls.add('signOut');
+  }
+
+  @override
+  Future<void> cacheOnboardingStage(String stage) async {
+    calls.add('cacheOnboardingStage:$stage');
   }
 
   void dispose() => _changes.close();

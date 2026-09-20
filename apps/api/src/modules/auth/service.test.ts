@@ -31,7 +31,8 @@ function mockRepo(inserted: boolean) {
       },
     }),
   );
-  return { repo: { upsertByFirebaseUid } as unknown as UsersRepository, upsertByFirebaseUid };
+  const onboardingStage = vi.fn(async () => 'goal');
+  return { repo: { upsertByFirebaseUid, onboardingStage } as unknown as UsersRepository, upsertByFirebaseUid };
 }
 
 describe('AuthService.createSession', () => {
@@ -78,6 +79,7 @@ describe('AuthService.createSession', () => {
       timezone: 'Asia/Kolkata',
       locale: 'en-IN',
       createdAt: '2026-09-20T10:00:00.000Z',
+      onboardingStage: 'goal',
     });
     // The Firebase uid is an internal join key, not part of the app profile.
     expect(result.user).not.toHaveProperty('firebaseUid');

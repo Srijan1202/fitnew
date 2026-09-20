@@ -90,8 +90,15 @@ describeIfDb('onboarding (real Postgres)', () => {
       expect(r.statusCode, a.step as string).toBe(200);
     }
     const s = await state(token);
-    expect(s.json().stage).toBe('complete');
+    expect(s.json().stage).toBe('complete'); // ready for screen 7
+    expect(s.json().completed).toBe(false); // but targets not yet computed
     expect(s.json().missing).toEqual([]);
+    // The session must NOT yet route this user to TODAY.
+    const preSession = await app.inject({
+      method: 'POST', url: '/v1/auth/session',
+      headers: { authorization: `Bearer ${token}`, 'x-forwarded-for': `198.51.100.${n}` }, payload: {},
+    });
+    expect(preSession.json().user.onboardingStage).not.toBe('complete');
 
     const done = await complete(token);
     expect(done.statusCode).toBe(200);
@@ -116,6 +123,12 @@ describeIfDb('onboarding (real Postgres)', () => {
     expect(targets.effectiveFrom).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 
     expect(profile.onboardingStage).toBe('complete');
+    expect((await state(token)).json().completed).toBe(true);
+    const postSession = await app.inject({
+      method: 'POST', url: '/v1/auth/session',
+      headers: { authorization: `Bearer ${token}`, 'x-forwarded-for': `198.51.100.${n}` }, payload: {},
+    });
+    expect(postSession.json().user.onboardingStage).toBe('complete');
     expect(profile.mess).toEqual({ providerId: 'vit-vellore', hostelId: 'womens', messId: 'veg' });
     expect(profile.latestWeightKg).toBe(59);
     expect(goal.goalType).toBe('muscle-gain');

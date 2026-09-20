@@ -126,6 +126,22 @@ class AuthRepositoryImpl implements AuthRepository {
       _credentials.sendPasswordReset(email);
 
   @override
+  Future<void> cacheOnboardingStage(String stage) async {
+    final cached = await _store.readProfileJson();
+    if (cached == null) return;
+    try {
+      final profile = UserProfile.fromJson(
+        jsonDecode(cached) as Map<String, dynamic>,
+      );
+      await _store.writeProfileJson(
+        jsonEncode(profile.copyWith(onboardingStage: stage).toJson()),
+      );
+    } on FormatException {
+      // A corrupt cache is rebuilt on the next restore; nothing to do here.
+    }
+  }
+
+  @override
   Future<void> signOut() async {
     // Server first while we still hold a valid token; best effort.
     await _session.deleteSession();

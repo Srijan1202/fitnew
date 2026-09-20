@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/env.dart';
+import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/hairline_section.dart';
 import '../../../auth/domain/entities/auth_state.dart';
@@ -39,10 +41,10 @@ class TodayPlaceholderScreen extends ConsumerWidget {
               // Numbers are the hero (§6.3). This one is a literal, not a
               // computed value — the engine that produces it lives on the
               // backend and is wired in Phase 11.
-              Text('Phase 1', style: textTheme.displayMedium),
+              Text('Phase 2', style: textTheme.displayMedium),
               const SizedBox(height: FitSpacing.sm),
               Text(
-                'Signed in. No features are wired yet.',
+                'Signed in and onboarded. Your targets are on your profile.',
                 style: textTheme.bodyLarge,
               ),
               const SizedBox(height: FitSpacing.lg),
@@ -84,6 +86,11 @@ class TodayPlaceholderScreen extends ConsumerWidget {
               ),
               const SizedBox(height: FitSpacing.xl),
 
+              FilledButton(
+                onPressed: () => context.push(Routes.profile),
+                child: const Text('Profile and targets'),
+              ),
+              const SizedBox(height: FitSpacing.md),
               OutlinedButton(
                 onPressed: auth.isLoading
                     ? null

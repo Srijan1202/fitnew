@@ -92,6 +92,12 @@ export const userProfileSchema = z.object({
   timezone: timeZoneSchema,
   locale: localeSchema,
   createdAt: z.string().datetime(),
+  /**
+   * Next onboarding step, or 'complete'. Carried on the session so the
+   * client can route at cold start with one round trip: a returning user who
+   * abandoned onboarding goes back into it, not to TODAY. Phase 2.
+   */
+  onboardingStage: z.string(),
 });
 
 export type UserProfile = z.infer<typeof userProfileSchema>;

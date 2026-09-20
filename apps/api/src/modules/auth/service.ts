@@ -36,6 +36,7 @@ export class AuthService {
         timezone: row.timezone,
         locale: row.locale,
         createdAt: row.createdAt.toISOString(),
+        onboardingStage: await this.users.onboardingStage(row.id),
       },
       isNewUser: inserted,
     };

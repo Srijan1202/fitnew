@@ -20,6 +20,9 @@ mixin _$UserProfile {
   String get locale;
   DateTime get createdAt;
 
+  /// Next onboarding step or 'complete' (Phase 2). Drives the route guard.
+  String get onboardingStage;
+
   /// Create a copy of UserProfile
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -41,17 +44,19 @@ mixin _$UserProfile {
                 other.timezone == timezone) &&
             (identical(other.locale, locale) || other.locale == locale) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.onboardingStage, onboardingStage) ||
+                other.onboardingStage == onboardingStage));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, email, timezone, locale, createdAt);
+  int get hashCode => Object.hash(
+      runtimeType, id, email, timezone, locale, createdAt, onboardingStage);
 
   @override
   String toString() {
-    return 'UserProfile(id: $id, email: $email, timezone: $timezone, locale: $locale, createdAt: $createdAt)';
+    return 'UserProfile(id: $id, email: $email, timezone: $timezone, locale: $locale, createdAt: $createdAt, onboardingStage: $onboardingStage)';
   }
 }
 
@@ -66,7 +71,8 @@ abstract mixin class $UserProfileCopyWith<$Res> {
       String? email,
       String timezone,
       String locale,
-      DateTime createdAt});
+      DateTime createdAt,
+      String onboardingStage});
 }
 
 /// @nodoc
@@ -86,6 +92,7 @@ class _$UserProfileCopyWithImpl<$Res> implements $UserProfileCopyWith<$Res> {
     Object? timezone = null,
     Object? locale = null,
     Object? createdAt = null,
+    Object? onboardingStage = null,
   }) {
     return _then(_self.copyWith(
       id: null == id
@@ -108,6 +115,10 @@ class _$UserProfileCopyWithImpl<$Res> implements $UserProfileCopyWith<$Res> {
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      onboardingStage: null == onboardingStage
+          ? _self.onboardingStage
+          : onboardingStage // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -206,7 +217,7 @@ extension UserProfilePatterns on UserProfile {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(String id, String? email, String timezone, String locale,
-            DateTime createdAt)?
+            DateTime createdAt, String onboardingStage)?
         $default, {
     required TResult orElse(),
   }) {
@@ -214,7 +225,7 @@ extension UserProfilePatterns on UserProfile {
     switch (_that) {
       case _UserProfile() when $default != null:
         return $default(_that.id, _that.email, _that.timezone, _that.locale,
-            _that.createdAt);
+            _that.createdAt, _that.onboardingStage);
       case _:
         return orElse();
     }
@@ -236,14 +247,14 @@ extension UserProfilePatterns on UserProfile {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(String id, String? email, String timezone, String locale,
-            DateTime createdAt)
+            DateTime createdAt, String onboardingStage)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _UserProfile():
         return $default(_that.id, _that.email, _that.timezone, _that.locale,
-            _that.createdAt);
+            _that.createdAt, _that.onboardingStage);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -264,14 +275,14 @@ extension UserProfilePatterns on UserProfile {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(String id, String? email, String timezone, String locale,
-            DateTime createdAt)?
+            DateTime createdAt, String onboardingStage)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _UserProfile() when $default != null:
         return $default(_that.id, _that.email, _that.timezone, _that.locale,
-            _that.createdAt);
+            _that.createdAt, _that.onboardingStage);
       case _:
         return null;
     }
@@ -286,7 +297,8 @@ class _UserProfile implements UserProfile {
       required this.email,
       required this.timezone,
       required this.locale,
-      required this.createdAt});
+      required this.createdAt,
+      this.onboardingStage = 'goal'});
   factory _UserProfile.fromJson(Map<String, dynamic> json) =>
       _$UserProfileFromJson(json);
 
@@ -300,6 +312,11 @@ class _UserProfile implements UserProfile {
   final String locale;
   @override
   final DateTime createdAt;
+
+  /// Next onboarding step or 'complete' (Phase 2). Drives the route guard.
+  @override
+  @JsonKey()
+  final String onboardingStage;
 
   /// Create a copy of UserProfile
   /// with the given fields replaced by the non-null parameter values.
@@ -327,17 +344,19 @@ class _UserProfile implements UserProfile {
                 other.timezone == timezone) &&
             (identical(other.locale, locale) || other.locale == locale) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.onboardingStage, onboardingStage) ||
+                other.onboardingStage == onboardingStage));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, email, timezone, locale, createdAt);
+  int get hashCode => Object.hash(
+      runtimeType, id, email, timezone, locale, createdAt, onboardingStage);
 
   @override
   String toString() {
-    return 'UserProfile(id: $id, email: $email, timezone: $timezone, locale: $locale, createdAt: $createdAt)';
+    return 'UserProfile(id: $id, email: $email, timezone: $timezone, locale: $locale, createdAt: $createdAt, onboardingStage: $onboardingStage)';
   }
 }
 
@@ -354,7 +373,8 @@ abstract mixin class _$UserProfileCopyWith<$Res>
       String? email,
       String timezone,
       String locale,
-      DateTime createdAt});
+      DateTime createdAt,
+      String onboardingStage});
 }
 
 /// @nodoc
@@ -374,6 +394,7 @@ class __$UserProfileCopyWithImpl<$Res> implements _$UserProfileCopyWith<$Res> {
     Object? timezone = null,
     Object? locale = null,
     Object? createdAt = null,
+    Object? onboardingStage = null,
   }) {
     return _then(_UserProfile(
       id: null == id
@@ -396,6 +417,10 @@ class __$UserProfileCopyWithImpl<$Res> implements _$UserProfileCopyWith<$Res> {
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      onboardingStage: null == onboardingStage
+          ? _self.onboardingStage
+          : onboardingStage // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }

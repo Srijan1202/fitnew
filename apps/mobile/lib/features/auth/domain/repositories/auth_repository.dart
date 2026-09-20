@@ -33,4 +33,9 @@ abstract class AuthRepository {
   /// Revokes on the server (best effort — works offline), signs out of
   /// Firebase and Google, clears local storage. Always ends `signedOut`.
   Future<void> signOut();
+
+  /// Updates the cached profile so the next cold start routes correctly.
+  /// Called after `/onboarding/complete` succeeds; the server is already
+  /// authoritative, this keeps the local fast path in step with it.
+  Future<void> cacheOnboardingStage(String stage);
 }

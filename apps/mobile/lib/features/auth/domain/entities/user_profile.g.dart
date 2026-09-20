@@ -12,6 +12,7 @@ _UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => _UserProfile(
       timezone: json['timezone'] as String,
       locale: json['locale'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      onboardingStage: json['onboardingStage'] as String? ?? 'goal',
     );
 
 Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
@@ -21,4 +22,5 @@ Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
       'timezone': instance.timezone,
       'locale': instance.locale,
       'createdAt': instance.createdAt.toIso8601String(),
+      'onboardingStage': instance.onboardingStage,
     };

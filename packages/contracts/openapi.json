@@ -178,6 +178,9 @@
                         "createdAt": {
                           "type": "string",
                           "format": "date-time"
+                        },
+                        "onboardingStage": {
+                          "type": "string"
                         }
                       },
                       "required": [
@@ -185,7 +188,8 @@
                         "email",
                         "timezone",
                         "locale",
-                        "createdAt"
+                        "createdAt",
+                        "onboardingStage"
                       ],
                       "additionalProperties": false
                     },
@@ -3176,6 +3180,9 @@
                         "complete"
                       ]
                     },
+                    "completed": {
+                      "type": "boolean"
+                    },
                     "answered": {
                       "type": "array",
                       "items": {
@@ -3395,6 +3402,7 @@
                   },
                   "required": [
                     "stage",
+                    "completed",
                     "answered",
                     "missing",
                     "profile",
@@ -3992,6 +4000,9 @@
                         "complete"
                       ]
                     },
+                    "completed": {
+                      "type": "boolean"
+                    },
                     "answered": {
                       "type": "array",
                       "items": {
@@ -4211,6 +4222,7 @@
                   },
                   "required": [
                     "stage",
+                    "completed",
                     "answered",
                     "missing",
                     "profile",

@@ -76,6 +76,20 @@ class AuthController extends AsyncNotifier<AuthState> {
     state = const AsyncData(AuthState.signedOut());
   }
 
+  /// Onboarding finished: the guard must open TODAY now and on every later
+  /// cold start, so both the live state and the cached profile change.
+  Future<void> markOnboardingComplete() async {
+    final current = state.value;
+    if (current is AuthSignedIn) {
+      state = AsyncData(
+        AuthState.signedIn(
+          current.profile.copyWith(onboardingStage: 'complete'),
+        ),
+      );
+    }
+    await _repo.cacheOnboardingStage('complete');
+  }
+
   /// After the gate has routed a new user into onboarding once, clear the
   /// flag so a rebuild does not route them again.
   void acknowledgeNewUser() {

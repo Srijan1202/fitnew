@@ -6,6 +6,9 @@ import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/auth/presentation/screens/splash_gate_screen.dart';
+import '../../features/onboarding/presentation/screens/onboarding_flow_screen.dart';
+import '../../features/profile/presentation/screens/goal_editor_screen.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/today/presentation/screens/today_placeholder_screen.dart';
 import 'guards.dart';
 
@@ -16,6 +19,9 @@ abstract final class Routes {
   static const String signIn = '/sign-in';
   static const String signUp = '/sign-up';
   static const String forgotPassword = '/forgot-password';
+  static const String onboarding = '/onboarding';
+  static const String profile = '/profile';
+  static const String goalEditor = '/profile/goal';
   static const String today = '/';
 
   /// Screens a signed-out user may see. Everything else needs a session.
@@ -51,6 +57,23 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.forgotPassword,
         name: 'forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: Routes.onboarding,
+        name: 'onboarding',
+        builder: (context, state) => const OnboardingFlowScreen(),
+      ),
+      GoRoute(
+        path: Routes.profile,
+        name: 'profile',
+        builder: (context, state) => const ProfileScreen(),
+        routes: <RouteBase>[
+          GoRoute(
+            path: 'goal',
+            name: 'goal-editor',
+            builder: (context, state) => const GoalEditorScreen(),
+          ),
+        ],
       ),
       GoRoute(
         path: Routes.today,

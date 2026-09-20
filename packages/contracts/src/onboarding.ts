@@ -147,7 +147,10 @@ export type OnboardingAnswer = z.infer<typeof onboardingAnswerSchema>;
  * resume, and lets "back" show what was chosen rather than a blank form.
  */
 export const onboardingStateSchema = z.object({
+  /** Next unanswered step, or 'complete' when every step is answered (= ready for screen 7). */
   stage: onboardingStageSchema,
+  /** True only once POST /onboarding/complete has computed targets. */
+  completed: z.boolean(),
   /** Steps with a stored answer, in §32 order. */
   answered: z.array(onboardingStepSchema),
   /** Required steps still missing; empty means `complete` may be called. */

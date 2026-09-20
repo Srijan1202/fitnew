@@ -14,6 +14,9 @@ abstract class UserProfile with _$UserProfile {
     required String timezone,
     required String locale,
     required DateTime createdAt,
+
+    /// Next onboarding step or 'complete' (Phase 2). Drives the route guard.
+    @Default('goal') String onboardingStage,
   }) = _UserProfile;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>

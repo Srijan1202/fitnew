@@ -89,6 +89,7 @@ export class OnboardingService {
     const completed = bundle.profile?.onboardingStage === ONBOARDING_COMPLETE;
     return {
       stage: nextStage(answered, completed),
+      completed,
       answered,
       missing: missingRequired(answered),
       profile: profileDetailFrom(bundle),
@@ -190,11 +191,18 @@ export class OnboardingService {
         break;
     }
 
-    // Keep the stored stage current so a cold read is right even before the
-    // next GET; and never regress a completed profile back to in-progress.
+    // Keep the stored stage current so the session response routes right at
+    // cold start; never regress a completed profile back to in-progress. The
+    // stored value is capped at the last step: only /complete may write
+    // 'complete', because that is the call that computes targets. Without the
+    // cap a user who answered all six screens but never saw screen 7 would be
+    // routed to TODAY with no targets — found while writing the client flow.
     const after = await this.bundleOrThrow(userId);
     if (after.profile?.onboardingStage !== ONBOARDING_COMPLETE) {
-      await this.repo.upsertProfile(userId, { onboardingStage: nextStage(answeredSteps(after), false) });
+      const next = nextStage(answeredSteps(after), false);
+      await this.repo.upsertProfile(userId, {
+        onboardingStage: next === ONBOARDING_COMPLETE ? 'vit' : next,
+      });
     }
     return this.stateFrom(await this.bundleOrThrow(userId));
   }

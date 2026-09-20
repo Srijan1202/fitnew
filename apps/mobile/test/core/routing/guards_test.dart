@@ -12,6 +12,8 @@ void main() {
   const loading = AsyncLoading<AuthState>();
   const signedOut = AsyncData<AuthState>(AuthState.signedOut());
   final signedIn = AsyncData<AuthState>(AuthState.signedIn(testProfile));
+  final unfinished =
+      AsyncData<AuthState>(AuthState.signedIn(midOnboardingProfile));
 
   group('while restoring', () {
     test('holds on the splash, never flashes sign-in', () {
@@ -46,6 +48,36 @@ void main() {
     test('goes where it likes otherwise', () {
       expect(authRedirect(signedIn, Routes.today), isNull);
       expect(authRedirect(signedIn, '/train'), isNull);
+      expect(authRedirect(signedIn, Routes.profile), isNull);
+    });
+
+    test('may revisit the plan screen once onboarded', () {
+      // Screen 7 marks the session complete while still on screen; the guard
+      // must not yank it away (§32: the plan is shown, not flashed).
+      expect(authRedirect(signedIn, Routes.onboarding), isNull);
+    });
+  });
+
+  group('signed in, onboarding unfinished', () {
+    test('is sent to onboarding from anywhere but onboarding', () {
+      expect(authRedirect(unfinished, Routes.today), Routes.onboarding);
+      expect(authRedirect(unfinished, Routes.profile), Routes.onboarding);
+      expect(authRedirect(unfinished, Routes.splash), Routes.onboarding);
+      for (final r in Routes.authRoutes) {
+        expect(authRedirect(unfinished, r), Routes.onboarding, reason: r);
+      }
+    });
+
+    test('stays on onboarding', () {
+      expect(authRedirect(unfinished, Routes.onboarding), isNull);
+    });
+
+    test('a fresh sign-up is treated the same as a resume', () {
+      final fresh = AsyncData<AuthState>(
+        AuthState.signedIn(newUserProfile, isNewUser: true),
+      );
+      expect(authRedirect(fresh, Routes.today), Routes.onboarding);
+      expect(authRedirect(fresh, Routes.onboarding), isNull);
     });
   });
 

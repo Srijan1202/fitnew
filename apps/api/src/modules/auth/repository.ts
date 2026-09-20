@@ -2,10 +2,10 @@
  * users persistence. Drizzle queries only — no fitness rules, no identity
  * logic (§8.3). The one piece of cleverness is documented inline.
  */
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 import type { DatabaseHandle } from '../../db/client.js';
-import { users, type UserRow } from '../../db/schema.js';
+import { userProfiles, users, type UserRow } from '../../db/schema.js';
 
 export interface UpsertUserInput {
   readonly firebaseUid: string;
@@ -70,5 +70,15 @@ export class UsersRepository {
     }
     const { inserted, ...row } = first;
     return { row, inserted };
+  }
+
+  /** Next onboarding step for the session response; 'goal' when no profile row exists yet. */
+  async onboardingStage(userId: string): Promise<string> {
+    const [p] = await this.db
+      .select({ stage: userProfiles.onboardingStage })
+      .from(userProfiles)
+      .where(eq(userProfiles.userId, userId))
+      .limit(1);
+    return p?.stage ?? 'goal';
   }
 }
