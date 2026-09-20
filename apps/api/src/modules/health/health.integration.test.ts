@@ -8,11 +8,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 
-import { buildApp } from '../../app.js';
-import type { Env } from '../../lib/env.js';
+import { buildDbApp, databaseUrl } from '../../test/build-test-app.js';
 
-const databaseUrl = process.env['DATABASE_URL'];
-const describeIfDb = databaseUrl !== undefined && databaseUrl !== '' ? describe : describe.skip;
+const describeIfDb = databaseUrl !== undefined ? describe : describe.skip;
 
 let app: FastifyInstance | undefined;
 
@@ -23,13 +21,7 @@ afterEach(async () => {
 
 describeIfDb('GET /health (real Postgres)', () => {
   it('returns 200 and a real round-trip latency', async () => {
-    const env: Env = {
-      NODE_ENV: 'test',
-      PORT: 0,
-      LOG_LEVEL: 'fatal',
-      DATABASE_URL: databaseUrl as string,
-    };
-    app = await buildApp(env);
+    ({ app } = await buildDbApp(databaseUrl as string));
     const response = await app.inject({ method: 'GET', url: '/health' });
 
     expect(response.statusCode).toBe(200);

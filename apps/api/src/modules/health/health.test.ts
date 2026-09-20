@@ -7,28 +7,8 @@
  */
 import { afterEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import type postgres from 'postgres';
 
-import { buildApp } from '../../app.js';
-import type { DatabaseHandle } from '../../db/client.js';
-import type { Env } from '../../lib/env.js';
-
-const ENV: Env = {
-  NODE_ENV: 'test',
-  PORT: 0,
-  LOG_LEVEL: 'fatal',
-  DATABASE_URL: 'postgres://unused:unused@localhost:5432/unused',
-};
-
-/** A stub that satisfies the two calls the app actually makes on the client. */
-function stubHandle(behaviour: 'ok' | 'down'): DatabaseHandle {
-  const client = (async () => {
-    if (behaviour === 'down') throw new Error('connection refused');
-    return [{ '?column?': 1 }];
-  }) as unknown as postgres.Sql;
-  (client as unknown as { end: () => Promise<void> }).end = async () => undefined;
-  return { db: {} as DatabaseHandle['db'], client };
-}
+import { buildStubApp } from '../../test/build-test-app.js';
 
 let app: FastifyInstance | undefined;
 
@@ -39,7 +19,7 @@ afterEach(async () => {
 
 describe('GET /health', () => {
   it('returns 200 with database latency when the database answers', async () => {
-    app = await buildApp(ENV, { database: stubHandle('ok') });
+    ({ app } = await buildStubApp('ok'));
     const response = await app.inject({ method: 'GET', url: '/health' });
 
     expect(response.statusCode).toBe(200);
@@ -51,7 +31,7 @@ describe('GET /health', () => {
   });
 
   it('returns 503, not a cheerful 200, when the database is unreachable', async () => {
-    app = await buildApp(ENV, { database: stubHandle('down') });
+    ({ app } = await buildStubApp('down'));
     const response = await app.inject({ method: 'GET', url: '/health' });
 
     expect(response.statusCode).toBe(503);
@@ -61,7 +41,7 @@ describe('GET /health', () => {
 
 describe('error envelope', () => {
   it('returns the §10 envelope shape for an unknown route', async () => {
-    app = await buildApp(ENV, { database: stubHandle('ok') });
+    ({ app } = await buildStubApp('ok'));
     const response = await app.inject({ method: 'GET', url: '/does-not-exist' });
 
     expect(response.statusCode).toBe(404);

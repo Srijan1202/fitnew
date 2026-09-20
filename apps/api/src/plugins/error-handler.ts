@@ -8,6 +8,10 @@
 import fp from 'fastify-plugin';
 import type { FastifyInstance } from 'fastify';
 import { ZodError } from 'zod';
+import {
+  hasZodFastifySchemaValidationErrors,
+  isResponseSerializationError,
+} from 'fastify-type-provider-zod';
 
 import { AppError, HTTP_STATUS_FOR_CODE, type ErrorCode } from '../lib/errors.js';
 
@@ -44,6 +48,19 @@ export default fp(
         return;
       }
 
+      // Request validation. Fastify wraps the Zod failure as FST_ERR_VALIDATION
+      // (statusCode 400) with the original issues under `validation[].params.issue`;
+      // a bare ZodError only reaches here if a handler parses manually.
+      if (hasZodFastifySchemaValidationErrors(error)) {
+        const details = error.validation.map((v) => ({
+          path: v.params.issue.path.join('.'),
+          issue: v.params.issue.message,
+        }));
+        void reply
+          .status(HTTP_STATUS_FOR_CODE.VALIDATION_FAILED)
+          .send(envelope('VALIDATION_FAILED', 'Request failed validation.', request.id, details));
+        return;
+      }
       if (error instanceof ZodError) {
         const details = error.issues.map((issue) => ({
           path: issue.path.join('.'),
@@ -52,6 +69,16 @@ export default fp(
         void reply
           .status(HTTP_STATUS_FOR_CODE.VALIDATION_FAILED)
           .send(envelope('VALIDATION_FAILED', 'Request failed validation.', request.id, details));
+        return;
+      }
+
+      // Response serialization: OUR bug, never the client's. 500, logged loudly
+      // with the schema path so it is findable, message kept generic.
+      if (isResponseSerializationError(error)) {
+        request.log.error({ err: error, path: error.cause }, 'Response failed its own schema');
+        void reply
+          .status(500)
+          .send(envelope('INTERNAL', 'Something went wrong on our side.', request.id));
         return;
       }
 

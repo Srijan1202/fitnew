@@ -1,0 +1,25 @@
+{
+  "name": "@fitos/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.18.0",
+    "@fitos/config": "workspace:*",
+    "eslint": "9.18.0",
+    "typescript": "5.6.3",
+    "typescript-eslint": "8.20.0",
+    "vitest": "2.1.9"
+  }
+}

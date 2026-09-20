@@ -12,7 +12,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
-import * as schema from './schema/index.js';
+import * as schema from './schema.js';
 
 export interface DatabaseHandle {
   readonly db: ReturnType<typeof drizzle<typeof schema>>;

@@ -2,7 +2,7 @@
  * Fastify assembly. Kept separate from `server.ts` so tests can build an app
  * without binding a port.
  */
-import Fastify, { type FastifyInstance } from 'fastify';
+import Fastify, { type FastifyInstance, type RouteOptions } from 'fastify';
 import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
@@ -15,13 +15,23 @@ import {
 import type { Env } from './lib/env.js';
 import type { DatabaseHandle } from './db/client.js';
 import { loggerOptions } from './lib/logger.js';
+import { FirebaseTokenVerifier, type TokenVerifier } from './lib/token-verifier.js';
+import authPlugin, { PROTECTED_PREFIX } from './plugins/auth.js';
 import dbPlugin from './plugins/db.js';
 import errorHandlerPlugin from './plugins/error-handler.js';
+import { authRoutes } from './modules/auth/routes.js';
 import { healthRoutes } from './modules/health/routes.js';
 
 export interface BuildAppOptions {
   /** Supplied by tests to exercise routes without a live Postgres. */
   readonly database?: DatabaseHandle;
+  /** Supplied by tests to verify scripted tokens without Firebase. */
+  readonly tokenVerifier?: TokenVerifier;
+  /**
+   * Observes every route as it is registered. Used by the default-deny sweep
+   * test so a route added in any later phase is checked automatically.
+   */
+  readonly onRoute?: (route: RouteOptions) => void;
 }
 
 export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise<FastifyInstance> {
@@ -32,6 +42,8 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
     trustProxy: true,
     disableRequestLogging: false,
   });
+
+  if (options.onRoute !== undefined) app.addHook('onRoute', options.onRoute);
 
   // Zod drives validation, serialisation and the OpenAPI document (§8.1).
   app.setValidatorCompiler(validatorCompiler);
@@ -48,14 +60,24 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
           'Deterministic fitness engine API. Every number is computed in packages/core, never by a language model (spec §19.1).',
         version: '0.1.0',
       },
-      servers: [{ url: '/v1', description: 'Versioned base path' }],
+      servers: [{ url: PROTECTED_PREFIX, description: 'Versioned base path' }],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'Firebase ID token',
+            description: 'Required on every /v1 route except those marked public (§10).',
+          },
+        },
+      },
     },
     transform: jsonSchemaTransform,
   });
   await app.register(swaggerUi, { routePrefix: '/docs' });
 
-  // §10: default 120 req/min/user. Stricter buckets land with the routes that
-  // need them (auth 10/min/IP, AI 20/hour/user) in Phases 1 and 14.
+  // §10: default 120 req/min/user. /auth/session tightens this to 10/min/IP on
+  // its own routes; AI routes tighten further in Phase 14.
   await app.register(rateLimit, {
     max: 120,
     timeWindow: '1 minute',
@@ -68,9 +90,26 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
       : { connectionString: env.DATABASE_URL },
   );
 
+  await app.register(authPlugin, {
+    verifier:
+      options.tokenVerifier ??
+      new FirebaseTokenVerifier({
+        projectId: env.FIREBASE_PROJECT_ID,
+        credentialsPath: env.GOOGLE_APPLICATION_CREDENTIALS,
+      }),
+  });
+
   // /health is intentionally unversioned — probes should not have to track
   // an API version to know whether the service is alive.
   await app.register(healthRoutes);
+
+  // Everything under /v1 is authenticated by default (plugins/auth.ts).
+  await app.register(
+    async (v1) => {
+      await v1.register(authRoutes);
+    },
+    { prefix: PROTECTED_PREFIX },
+  );
 
   return app;
 }
