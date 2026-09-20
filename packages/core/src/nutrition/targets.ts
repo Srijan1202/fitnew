@@ -11,7 +11,17 @@
  */
 
 export type Sex = 'male' | 'female';
-export type Goal = 'muscle-gain' | 'fat-loss' | 'strength' | 'general';
+/**
+ * Six goals per spec §12.1. `recomposition` and `maintenance` added in Phase 2
+ * (scoped exception to the preserve-only rule, approved 2026-09-21).
+ */
+export type Goal =
+  | 'muscle-gain'
+  | 'fat-loss'
+  | 'recomposition'
+  | 'strength'
+  | 'general'
+  | 'maintenance';
 
 export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'high';
 
@@ -67,9 +77,13 @@ function goalOffset(goal: Goal): number {
       return 0.1; // ~10% surplus: enough to build, slow enough to limit fat gain
     case 'fat-loss':
       return -0.2; // ~20% deficit: sustainable, protects training quality
+    case 'recomposition':
+      return -0.05; // slight deficit: lose fat while holding muscle (§12.1)
     case 'strength':
       return 0.05;
     case 'general':
+      return 0;
+    case 'maintenance':
       return 0;
   }
 }
@@ -81,10 +95,35 @@ export function proteinPerKg(goal: Goal): number {
       return 1.8;
     case 'fat-loss':
       return 2.2;
+    case 'recomposition':
+      return 2.2; // in a deficit, so the same ceiling as fat loss (§12.1)
     case 'strength':
       return 1.8;
     case 'general':
       return 1.6;
+    case 'maintenance':
+      return 1.6;
+  }
+}
+
+/**
+ * One line explaining the calorie offset. Exhaustive so a new goal cannot
+ * silently fall through to a wrong description — the previous ternary chain
+ * would have called recomposition "at maintenance".
+ */
+function offsetRationale(goal: Goal): string {
+  switch (goal) {
+    case 'fat-loss':
+      return 'Target set 20% below maintenance for steady fat loss.';
+    case 'recomposition':
+      return 'Target set 5% below maintenance to lose fat while keeping muscle.';
+    case 'muscle-gain':
+      return 'Target set 10% above maintenance to support muscle gain without excess fat.';
+    case 'strength':
+      return 'Target set slightly above maintenance to support strength work.';
+    case 'general':
+    case 'maintenance':
+      return 'Target set at maintenance.';
   }
 }
 
@@ -108,13 +147,7 @@ export function computeTargets(input: TargetInput): MacroTargets {
   const rationale = [
     `Resting metabolic rate ${bmr} kcal (Mifflin-St Jeor).`,
     `Maintenance ${tdee} kcal from ${input.activity} daily activity plus ${input.trainingDaysPerWeek} training days.`,
-    input.goal === 'fat-loss'
-      ? `Target set 20% below maintenance for steady fat loss.`
-      : input.goal === 'muscle-gain'
-        ? `Target set 10% above maintenance to support muscle gain without excess fat.`
-        : input.goal === 'strength'
-          ? `Target set slightly above maintenance to support strength work.`
-          : `Target set at maintenance.`,
+    offsetRationale(input.goal),
     `Protein at ${gPerKg} g/kg bodyweight.`,
   ];
 

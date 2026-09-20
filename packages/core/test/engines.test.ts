@@ -55,6 +55,70 @@ describe('calorie and macro targets', () => {
     expect(t.rationale.join(' ')).toContain('Mifflin-St Jeor');
   });
 
+  // ---- Phase 2: the two goals added to the engine (§12.1) ----------------
+
+  const ALL_GOALS = ['muscle-gain', 'fat-loss', 'recomposition', 'strength', 'general', 'maintenance'] as const;
+
+  it('never prescribes protein above 2.2 g/kg for ANY goal (Morton 2018 ceiling)', () => {
+    for (const goal of ALL_GOALS) {
+      expect(proteinPerKg(goal), goal).toBeLessThanOrEqual(2.2);
+      expect(proteinPerKg(goal), goal).toBeGreaterThanOrEqual(1.6);
+    }
+  });
+
+  it('recomposition sits in a small deficit with fat-loss protein', () => {
+    const base = {
+      sex: 'male' as const, ageYears: 21, heightCm: 175, weightKg: 70,
+      activity: 'light' as const, trainingDaysPerWeek: 4,
+    };
+    const recomp = computeTargets({ ...base, goal: 'recomposition' });
+    const loss = computeTargets({ ...base, goal: 'fat-loss' });
+    const maint = computeTargets({ ...base, goal: 'maintenance' });
+
+    // -5% of TDEE, between fat loss (-20%) and maintenance (0%).
+    expect(recomp.kcal).toBe(Math.round(recomp.tdee * 0.95));
+    expect(recomp.kcal).toBeGreaterThan(loss.kcal);
+    expect(recomp.kcal).toBeLessThan(maint.kcal);
+    // Protein matches fat loss: it is a deficit, and lean mass is the point.
+    expect(recomp.proteinG).toBe(loss.proteinG);
+    expect(recomp.proteinG).toBe(Math.round(70 * 2.2));
+    expect(recomp.rationale.join(' ')).toContain('5% below maintenance');
+  });
+
+  it('maintenance is exactly TDEE with the general-fitness protein floor', () => {
+    const base = {
+      sex: 'female' as const, ageYears: 20, heightCm: 163, weightKg: 59,
+      activity: 'light' as const, trainingDaysPerWeek: 4,
+    };
+    const maint = computeTargets({ ...base, goal: 'maintenance' });
+    const general = computeTargets({ ...base, goal: 'general' });
+
+    expect(maint.kcal).toBe(maint.tdee);
+    expect(maint.kcal).toBe(general.kcal);
+    expect(maint.proteinG).toBe(Math.round(59 * 1.6));
+    expect(maint.rationale.join(' ')).toContain('at maintenance');
+  });
+
+  it('every goal yields a self-consistent, explained target', () => {
+    const base = {
+      sex: 'male' as const, ageYears: 25, heightCm: 178, weightKg: 75,
+      activity: 'moderate' as const, trainingDaysPerWeek: 3,
+    };
+    const seen = new Set<string>();
+    for (const goal of ALL_GOALS) {
+      const t = computeTargets({ ...base, goal });
+      const fromMacros = t.proteinG * 4 + t.carbG * 4 + t.fatG * 9;
+      expect(Math.abs(fromMacros - t.kcal), goal).toBeLessThanOrEqual(6);
+      expect(t.rationale.length, goal).toBeGreaterThanOrEqual(4);
+      // The offset line must be specific to the goal, never a fall-through.
+      const offsetLine = t.rationale[2] ?? '';
+      expect(offsetLine, goal).toMatch(/Target set/);
+      seen.add(`${goal}:${offsetLine}`);
+    }
+    // general and maintenance legitimately share a line; the other four differ.
+    expect(seen.size).toBe(ALL_GOALS.length);
+  });
+
   it('never reports negative remaining macros', () => {
     const targets = computeTargets({
       sex: 'male', ageYears: 21, heightCm: 175, weightKg: 59,
