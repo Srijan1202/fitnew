@@ -19,6 +19,7 @@ const env: Env = {
   LOG_LEVEL: 'fatal',
   DATABASE_URL: 'postgres://unused:unused@localhost:5432/unused',
   FIREBASE_PROJECT_ID: 'openapi-export',
+  CONSENT_IP_SALT: 'export-salt-not-secret',
 };
 
 const out = fileURLToPath(new URL('../../../../packages/contracts/openapi.json', import.meta.url));

@@ -16,6 +16,11 @@ const envSchema = z.object({
   // apps/api/.secrets/ (§24: never in the repo, never in the Flutter binary).
   FIREBASE_PROJECT_ID: z.string().min(1, 'FIREBASE_PROJECT_ID is required'),
   GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1).optional(),
+
+  // Phase 2 — salt for the consent-record IP hash (§23). Any value works for
+  // development; production sets a real secret via Secret Manager so hashes
+  // cannot be brute-forced against the IPv4 space.
+  CONSENT_IP_SALT: z.string().min(8).default('dev-only-salt-not-secret'),
 });
 
 export type Env = z.infer<typeof envSchema>;

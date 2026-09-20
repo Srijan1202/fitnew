@@ -11,7 +11,11 @@ import { defineConfig } from 'drizzle-kit';
  */
 export default defineConfig({
   dialect: 'postgresql',
-  schema: './src/db/schema/*.ts',
+  // The COMPILED schema, not src. drizzle-kit's loader is CommonJS and cannot
+  // resolve the `.js` extensions ESM source needs between leaf files; the
+  // build output has real .js files that resolve. `pnpm db:generate` builds
+  // first so this is never stale.
+  schema: './dist/db/schema/*.js',
   out: '../../database/migrations',
   dbCredentials: {
     url: process.env['DATABASE_URL'] ?? 'postgres://fitos:fitos@localhost:5432/fitos',

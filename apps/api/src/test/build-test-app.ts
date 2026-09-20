@@ -17,6 +17,7 @@ export function testEnv(overrides: Partial<Env> = {}): Env {
     LOG_LEVEL: 'fatal',
     DATABASE_URL: 'postgres://unused:unused@localhost:5432/unused',
     FIREBASE_PROJECT_ID: 'fitos-test',
+    CONSENT_IP_SALT: 'test-salt-not-secret',
     ...overrides,
   };
 }
@@ -39,7 +40,11 @@ export interface TestApp {
 /** App on a stub database — for anything that does not touch a table. */
 export async function buildStubApp(dbBehaviour: 'ok' | 'down' = 'ok'): Promise<TestApp> {
   const verifier = new FakeTokenVerifier();
-  const app = await buildApp(testEnv(), { database: stubDatabase(dbBehaviour), tokenVerifier: verifier });
+  const app = await buildApp(testEnv(), {
+    database: stubDatabase(dbBehaviour),
+    tokenVerifier: verifier,
+    resolveUserId: async () => null,
+  });
   return { app, verifier };
 }
 

@@ -8,5 +8,12 @@
  * touches this file. App code imports from here.
  *
  *   Phase 1  users
+ *   Phase 2  user_profiles, user_goals, user_preferences, diet_preferences,
+ *            user_allergies, user_limitations, consent_records,
+ *            nutrition_targets, body_metrics (pulled forward from Phase 12)
  */
+export * from './schema/enums.js';
 export * from './schema/users.js';
+export * from './schema/profile.js';
+export * from './schema/diet.js';
+export * from './schema/records.js';

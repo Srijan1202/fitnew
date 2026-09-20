@@ -21,12 +21,18 @@ import dbPlugin from './plugins/db.js';
 import errorHandlerPlugin from './plugins/error-handler.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { healthRoutes } from './modules/health/routes.js';
+import { onboardingRoutes } from './modules/onboarding/routes.js';
+import { userRoutes } from './modules/user/routes.js';
+import { users } from './db/schema.js';
+import { eq } from 'drizzle-orm';
 
 export interface BuildAppOptions {
   /** Supplied by tests to exercise routes without a live Postgres. */
   readonly database?: DatabaseHandle;
   /** Supplied by tests to verify scripted tokens without Firebase. */
   readonly tokenVerifier?: TokenVerifier;
+  /** Supplied by tests that have no database to map uid → users.id. */
+  readonly resolveUserId?: (firebaseUid: string) => Promise<string | null>;
   /**
    * Observes every route as it is registered. Used by the default-deny sweep
    * test so a route added in any later phase is checked automatically.
@@ -97,6 +103,16 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
         projectId: env.FIREBASE_PROJECT_ID,
         credentialsPath: env.GOOGLE_APPLICATION_CREDENTIALS,
       }),
+    resolveUserId:
+      options.resolveUserId ??
+      (async (firebaseUid) => {
+        const [row] = await app.database.db
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.firebaseUid, firebaseUid))
+          .limit(1);
+        return row?.id ?? null;
+      }),
   });
 
   // /health is intentionally unversioned — probes should not have to track
@@ -107,6 +123,8 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
   await app.register(
     async (v1) => {
       await v1.register(authRoutes);
+      await v1.register(userRoutes);
+      await v1.register(onboardingRoutes, { ipSalt: env.CONSENT_IP_SALT });
     },
     { prefix: PROTECTED_PREFIX },
   );

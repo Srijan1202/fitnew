@@ -23,6 +23,12 @@ declare module 'fastify' {
   interface FastifyRequest {
     /** Set by the auth hook on protected routes; null on public ones. */
     identity: VerifiedIdentity | null;
+    /**
+     * Our `users.id` for the verified identity, or null when the Firebase
+     * account has not exchanged a session yet (POST /auth/session creates
+     * the row). Routes that need a user row read this, never a body field.
+     */
+    userId: string | null;
   }
   interface FastifyContextConfig {
     /** Opt a /v1 route out of authentication. Use sparingly; §10 names two. */
@@ -61,15 +67,19 @@ export async function requireAdmin(request: FastifyRequest, _reply: FastifyReply
 
 export interface AuthPluginOptions {
   readonly verifier: TokenVerifier;
+  /** Maps a Firebase uid to `users.id`. Stubbed in tests that have no database. */
+  readonly resolveUserId?: (firebaseUid: string) => Promise<string | null>;
 }
 
 export default fp(
   async function authPlugin(app: FastifyInstance, opts: AuthPluginOptions) {
     app.decorate('tokenVerifier', opts.verifier);
     app.decorateRequest('identity', null);
+    app.decorateRequest('userId', null);
 
     app.addHook('onRequest', async (request) => {
       request.identity = null;
+      request.userId = null;
       const { url, routeOptions } = request;
       if (!isProtectedRoute(routeOptions.url ?? url, routeOptions.config)) return;
 
@@ -80,6 +90,7 @@ export default fp(
 
       try {
         request.identity = await opts.verifier.verifyIdToken(token);
+        request.userId = opts.resolveUserId !== undefined ? await opts.resolveUserId(request.identity.uid) : null;
       } catch (error) {
         if (error instanceof TokenVerificationError) {
           // Reason goes to the log for debugging; the client only learns 401

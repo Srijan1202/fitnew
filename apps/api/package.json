@@ -10,7 +10,7 @@
     "typecheck": "pnpm --filter @fitos/contracts build && tsc --noEmit",
     "test": "pnpm --filter @fitos/contracts build && vitest run",
     "lint": "eslint src",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "pnpm build && drizzle-kit generate",
     "db:migrate": "tsx --env-file-if-exists=.env src/db/migrate.ts up",
     "db:rollback": "tsx --env-file-if-exists=.env src/db/migrate.ts down",
     "openapi:export": "pnpm --filter @fitos/contracts build && tsx src/scripts/export-openapi.ts"

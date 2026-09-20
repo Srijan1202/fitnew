@@ -53,20 +53,23 @@ export async function rollbackLastMigration(connectionString: string): Promise<s
   const client = postgres(connectionString, { max: 1 });
   try {
     const journal = readJournal();
-    const last = journal[journal.length - 1];
-    if (last === undefined) return null;
 
-    // Is it actually applied? drizzle keeps one row per applied file.
+    // drizzle keeps one row per applied file, in order. The migration to
+    // revert is the last APPLIED one — journal[appliedCount - 1] — not the
+    // last one listed: a freshly generated, not-yet-applied migration must
+    // not block rolling back the one before it.
     const applied = await client<{ count: string }[]>`
       select count(*)::text as count from drizzle.__drizzle_migrations
     `.catch(() => [{ count: '0' }]);
     const appliedCount = Number(applied[0]?.count ?? 0);
     if (appliedCount === 0) return null;
-    if (appliedCount !== journal.length) {
+    if (appliedCount > journal.length) {
       throw new Error(
-        `Journal has ${journal.length} migrations but ${appliedCount} are applied; refusing to guess which to roll back.`,
+        `${appliedCount} migrations are applied but the journal lists only ${journal.length}; the checkout is behind the database.`,
       );
     }
+    const last = journal[appliedCount - 1];
+    if (last === undefined) return null;
 
     const downSql = readFileSync(`${MIGRATIONS_DIR}down/${last.tag}.down.sql`, 'utf8');
 
