@@ -200,6 +200,6 @@ complete until items 1 and 2 above are done.
    verification without a real Firebase project.
 2. **§36 open question 2 — Cloud Run free tier in `asia-south1`.** Fallback is
    `us-central1` at roughly 200ms extra latency for Indian users.
-3. **§36 open question 3 — does iOS ship in V1?** Determines whether Apple
-   Sign-In is required in Phase 1 and whether the ~₹8,000/year Apple Developer
-   cost is incurred. `ios/` exists, but nothing iOS-specific has been built.
+3. ~~**§36 open question 3 — does iOS ship in V1?**~~ **RESOLVED 2026-09-20:
+   no.** V1 is Android only (ADR-003). Phase 1 implements email + Google
+   Sign-In only; Apple Sign-In moves to V2 with the iOS build.

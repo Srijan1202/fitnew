@@ -500,7 +500,9 @@ Codes: `UNAUTHENTICATED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `VALIDATIO
 
 ## 11. Authentication
 
-`DECISION` — **Firebase Authentication.** Email/password + Google Sign-In. Apple Sign-In required before iOS submission (`OPEN QUESTION` — needed only if shipping iOS in V1).
+`DECISION` — **Firebase Authentication.** Email/password + Google Sign-In.
+
+`DECISION` (2026-09-20, ADR-003) — **Apple Sign-In is out of scope for V1.** V1 ships Android only, so the App Store rule that forces Apple Sign-In alongside other social providers does not apply. Phase 1 implements email and Google only. When iOS lands, Apple Sign-In becomes a prerequisite of that submission, not of Phase 1.
 
 **Flow:** Flutter authenticates with Firebase → receives ID token → `POST /auth/session` → backend verifies via `firebase-admin`, creates/fetches the `users` row, returns the app profile. Firebase owns credentials; the backend owns everything else. **No passwords ever reach our database.**
 
@@ -1374,7 +1376,8 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 ### PHASE 19 — Beta
 
 **Prereq:** 18.
-**Tasks:** staging → production Cloud Run; Play Store internal testing; TestFlight (if iOS); Crashlytics; billing alerts; feedback channel.
+**Tasks:** staging → production Cloud Run; Play Store internal testing; Crashlytics; billing alerts; feedback channel.
+`AMENDED 2026-09-20 (ADR-003)` — TestFlight removed: V1 is Android only.
 **Acceptance:** installable build · crash-free rate >99% over one week with 20 real users.
 **Manual:** 20 VIT students complete onboarding and log a week.
 
@@ -1512,7 +1515,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 1. **IFCT 2017 / INDB licensing** — blocks Phase 7 bulk import. *Needed before Phase 7.*
 2. **Cloud Run free tier in `asia-south1`** — verify before deploying. *Phase 0.*
-3. **iOS in V1?** — determines Apple Sign-In and Apple Developer cost (~₹8,000/yr). *Phase 0.*
+3. ~~**iOS in V1?**~~ — **RESOLVED 2026-09-20: no.** V1 is Android only (ADR-003). Apple Sign-In is out of Phase 1 scope and the ~₹8,000/yr Apple Developer cost is not incurred. iOS moves to the V2 roadmap (§37).
 4. **Open Food Facts Indian barcode coverage** — determines whether barcode logging is worth V1.5. *Before V1.5.*
 5. **DPDP obligations for a small operator** — legal review. *Before Phase 19.*
 6. **Mess data redistribution** — is republishing MessIT-derived menus acceptable to VIT/VinnovateIT? Worth asking them directly; a partnership would be strictly better than a grey area. *Before Phase 19.*
@@ -1533,6 +1536,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 | Exam-week reduced training | Medium | Low | Low | V2 |
 | Semester periodisation | Medium | Medium | Low | V2 |
 | Budget-aware nutrition | Medium | Medium | Low | V2 |
+| **iOS build + Apple Sign-In** | Medium | Medium | Low | **V2** |
 | Other VIT campuses | High | Low | Low | V2 |
 | Other universities | High | Medium | Low | V3 |
 | Voice logging | Medium | Medium | Medium | V3 |
