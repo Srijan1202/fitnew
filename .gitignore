@@ -69,3 +69,6 @@ Thumbs.db
 
 # npm lockfile — this repo uses pnpm (spec §29)
 package-lock.json
+
+# IDE
+.vscode/
