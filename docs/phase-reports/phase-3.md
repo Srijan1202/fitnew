@@ -155,13 +155,21 @@ plus the two-item case (band-assisted pull-up needs bar AND band).
 
 ## KNOWN ISSUES
 
-1. **Manual acceptance (§31 "browse and filter on device") not yet executed.**
-   The local DB is seeded and the container rebuilt; the app needs a
-   rebuild (new screens). Open TODAY → "Exercise library".
+1. ~~Manual acceptance not yet executed.~~ **Executed 2026-09-21 on the
+   emulator by the owner**: browsed, filtered (barbell + horizontal push →
+   13 exercises, all performable), opened details. Passed.
+   **Owner's verdict on the browser UI: rough.** The three filter rails
+   scroll horizontally with no edge hint so labels look cut off, and each
+   filter tap drops the list to a skeleton instead of keeping the previous
+   rows while the request runs. Deliberately left as-is: the browser is a
+   secondary screen (TODAY is the hub, §16); the detail screen is what
+   Phase 5's session will open. Fix when the browser gets a real place in
+   navigation.
 2. **Bodyweight alone cannot train biceps as a primary mover** (a chin-up
-   needs a bar). Stated by a seed test rather than hidden; the Phase 4
-   generator must handle a user with no equipment by treating biceps as
-   covered by pulling secondaries or by saying so.
+   needs a bar). Stated by a seed test rather than hidden. **Owner decision
+   2026-09-21: keep the gap. Phase 4's generator must handle
+   equipment-constrained muscle coverage itself; no exercise will be added
+   that violates the equipment rules.
 3. `videoUrl` is `null` for every seeded exercise. The column and contract
    exist; no videos are hosted. The detail screen shows nothing for it.
 4. The library is fetched on every browser open (no client cache). §33 does
@@ -210,9 +218,6 @@ All deliberate; each with the reason.
 
 **Blockers:**
 
-1. **Manual acceptance on the emulator** — owner: browse and filter on
-   device (rebuild the app first).
-2. Phase 4 needs a decision on the bodyweight-only biceps gap (known issue 2):
-   accept "covered by pull secondaries" or require a bar/band for a full
-   programme. I will propose the former in Phase 4 unless told otherwise.
+1. ~~Manual acceptance on the emulator~~ — done 2026-09-21.
+2. ~~Biceps/bodyweight decision~~ — decided, see known issue 2.
 3. Neon dev still has no migrations or seed applied. Not blocking.
