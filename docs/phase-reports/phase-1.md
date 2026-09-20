@@ -117,13 +117,21 @@ Spec §31 Phase 1 test requirements, each satisfied:
 
 ## KNOWN ISSUES
 
-1. **The manual acceptance has not been executed.** "Sign up → sign in →
-   token persists across restart → sign out clears it, on a physical device"
-   needs an Android app registered in the Firebase console, its config values
-   passed as `--dart-define`, a SHA-1 registered for Google Sign-In, and a
-   device or emulator — none of which exist on this machine (no Android SDK).
-   Every automated path that the manual cycle exercises is tested; the cycle
-   itself is yours to run. Instructions in `apps/mobile/README.md`.
+1. ~~The manual acceptance has not been executed.~~ **Executed 2026-09-21 on
+   an Android 16 emulator** (`sdk gphone16k x86_64`, Android SDK 36) against
+   the Docker API and the real `fitos-dev-3208b` project:
+   - email sign-up → Firebase account created → `POST /v1/auth/session` 200
+     → TODAY; `users` row present (`Asia/Kolkata`, locale `en-US` from the
+     emulator, sanitised by `deviceLocaleTag`)
+   - **Google Sign-In** with SHA-1 registered and `GOOGLE_WEB_CLIENT_ID`
+     passed → second `users` row with a distinct Firebase uid
+   - restart-persistence and sign-out: reported working by the owner
+
+   Getting there surfaced three defects, all fixed and pushed (`2a5d65c`,
+   `43608ae`): Kotlin incremental compilation fails across drive roots on
+   Windows; `@fitos/contracts` exported `.ts` so the Docker image
+   crash-looped; and `ci-api` never ran the image it built. `ci-api` now
+   boots the image and asserts `/health` 200 and the auth route present.
 2. **Time zone is not sent by the client in Phase 1.** See deviations.
    Every user gets the server default `Asia/Kolkata`, which is correct for the
    entire V1 wedge but must become explicit in Phase 2.
@@ -186,10 +194,7 @@ All deliberate; each with the reason.
 
 **Blockers:**
 
-1. **The Phase 1 manual acceptance should be run first** — a phase is not
-   complete while its acceptance is unexecuted, and Phase 2's onboarding
-   starts from `isNewUser`, which only a real sign-in produces. Register the
-   Android app in Firebase, pass the defines, run the cycle on a device.
+1. ~~The Phase 1 manual acceptance should be run first~~ — done 2026-09-21.
 2. **§36 Q2 — Cloud Run free tier in `asia-south1`** — still open; gates the
    first deploy, not Phase 2.
 3. Neon dev database has not yet had `0000_users` applied. Not blocking (local
