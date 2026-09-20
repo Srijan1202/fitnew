@@ -166,17 +166,17 @@ describeIfDb('/v1/training/program (real Postgres, real seed)', () => {
       }
     }
     // 18 users × 5 generations; only one programme per user is active.
-    const [{ active }] = await sql<{ active: string }[]>`
+    const [activeRow] = await sql<{ active: string }[]>`
       select count(*)::text as active from programs where active and user_id in (select id from users where firebase_uid like 'tr-%')`;
-    const [{ users }] = await sql<{ users: string }[]>`
+    const [usersRow] = await sql<{ users: string }[]>`
       select count(distinct user_id)::text as users from programs where user_id in (select id from users where firebase_uid like 'tr-%')`;
-    expect(Number(active)).toBe(Number(users));
+    expect(Number(activeRow!.active)).toBe(Number(usersRow!.users));
   }, 60_000);
 
   it('a limitation on file excludes contraindicated lifts and the rationale says so', async () => {
     const token = await onboarded();
-    const [{ id }] = await sql<{ id: string }[]>`select id from users where firebase_uid = ${`tr-uid-${n}`}`;
-    await sql`insert into user_limitations (user_id, body_part, note) values (${id}, 'knee', 'meniscus')`;
+    const [user] = await sql<{ id: string }[]>`select id from users where firebase_uid = ${`tr-uid-${n}`}`;
+    await sql`insert into user_limitations (user_id, body_part, note) values (${user!.id}, 'knee', 'meniscus')`;
     const r = await generate(token);
     expect(r.statusCode).toBe(200);
     const p: Program = r.json();
@@ -267,7 +267,8 @@ describeIfDb('/v1/training/program (real Postgres, real seed)', () => {
     const token = await onboarded();
     const p: Program = (await generate(token)).json();
     const day = p.days.find((d) => !d.isRest)!;
-    const [{ id: curlId }] = await sql<{ id: string }[]>`select id from exercises where slug = 'dumbbell-curl'`;
+    const [curl] = await sql<{ id: string }[]>`select id from exercises where slug = 'dumbbell-curl'`;
+    const curlId = curl!.id;
 
     const renamed = await app.inject({ method: 'PATCH', url: `/v1/training/program/days/${day.id}`, headers: auth(token), payload: { sessionName: 'Arms day' } });
     expect(renamed.statusCode, renamed.body).toBe(200);
