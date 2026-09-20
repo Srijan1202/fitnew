@@ -45,7 +45,7 @@ docker/       docker-compose.yml (Postgres 16) + Dockerfile.api
 |---|---|---|
 | Node | 22+ | api, admin, core |
 | pnpm | 9.15.4 | everything except mobile |
-| Docker | any recent | local Postgres |
+| Docker | any recent | local Postgres 18 |
 | Flutter | 3.24+ stable | mobile only |
 
 ## Getting started
@@ -53,7 +53,7 @@ docker/       docker-compose.yml (Postgres 16) + Dockerfile.api
 ```bash
 pnpm install
 
-# Local Postgres 16 on :5432, with pgcrypto and pg_trgm created at first boot.
+# Local Postgres 18 on :5432 (matches Neon), with pgcrypto and pg_trgm created at first boot.
 pnpm db:up
 
 cp apps/api/.env.example apps/api/.env

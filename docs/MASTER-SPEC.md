@@ -319,6 +319,7 @@ Everything else in your preferred stack is kept: Cloud Run, Firebase Auth, FCM, 
 ### 9.1 Conventions
 
 - Postgres 16+. All ids `uuid` (`gen_random_uuid()`).
+  `DECISION` (2026-09-20) — **local Docker, CI and Neon all run Postgres 18.** Neon provisions 18 for new projects (18.6 verified live); local and CI were bumped from 16 to match, because migrations must be tested on the engine they will run against. The nightly `pg_dump` client (§24) must be ≥ the server major, so it is 18 as well. Bump all three together.
 - `created_at`/`updated_at` `timestamptz NOT NULL DEFAULT now()`.
 - Soft delete (`deleted_at timestamptz`) **only** on user-authored content: `workout_sessions`, `food_logs`, `body_metrics`, `programs`. Everything else hard-deletes.
 - Money/mass/energy stored as `numeric`, never float. Weight in **kg**, energy in **kcal**; unit conversion is presentation-only.
@@ -994,6 +995,7 @@ these before diagnosing anything else on a new machine.
 | `dart format` output violating our own `require_trailing_commas` lint | `dart analyze` passes, then fails after `format` rewraps a call | Run `dart format` **before** `dart analyze`, which is the order `ci-mobile.yml` uses. Add the trailing comma in source so both agree. |
 | Docker build: `COPY <dir> ./<dir>` after `pnpm install` | `tsc` reported `MODULE_NOT_FOUND` in the image | The COPY replaces the directory and deletes the `node_modules`/`.bin` symlinks pnpm created. Re-run the filtered install after copying source. A `.dockerignore` excluding `node_modules` is mandatory, not optional. |
 | `build_runner` `--delete-conflicting-outputs` | `W These options have been removed and were ignored` | Removed in build_runner 2.15.x. Drop the flag. |
+| **`postgres:18+` Docker image mounted at `/var/lib/postgresql/data`** | Container crash-loops: `in 18+, these Docker images are configured to store database data in ... major-version-specific directory names` | Mount the parent, `/var/lib/postgresql`. The 16 image used `/data`; 18 keeps data in a versioned subdirectory so `pg_upgrade --link` works. Recorded 2026-09-20 when local was bumped to match Neon 18.6. |
 
 ---
 

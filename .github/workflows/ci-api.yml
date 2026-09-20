@@ -17,12 +17,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    # Postgres 16 to match docker/docker-compose.yml and the production target.
+    # Postgres 18 to match docker/docker-compose.yml and Neon (18.6 verified
+    # 2026-09-20). Keep all three on the same major.
     # The health integration test and, from Phase 1, the migration check run
     # against this rather than against a mock.
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: fitos
           POSTGRES_PASSWORD: fitos

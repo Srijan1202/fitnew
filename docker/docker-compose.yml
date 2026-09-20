@@ -1,8 +1,11 @@
 # Local development stack (spec §25).
-# Postgres 16 to match the production target (§9.1: "Postgres 16+").
+# Postgres 18 to match the production target. §9.1 requires 16+; Neon
+# provisions 18 for new projects (verified 2026-09-20: 18.6), and local must
+# match what migrations will actually run against. Bump this, ci-api.yml and
+# the pg_dump client together — never one without the others.
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     container_name: fitos-postgres
     restart: unless-stopped
     environment:
@@ -12,7 +15,11 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - fitos-pgdata:/var/lib/postgresql/data
+      # 18+ images changed the layout: mount the PARENT, not /data. The image
+      # then keeps data in a major-version subdirectory so pg_upgrade --link
+      # works across a mount boundary. Mounting /data as the 16 image did
+      # makes 18 refuse to start. See docker-library/postgres#1259.
+      - fitos-pgdata:/var/lib/postgresql
       - ./init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       # The API waits on this: starting it before Postgres accepts connections
