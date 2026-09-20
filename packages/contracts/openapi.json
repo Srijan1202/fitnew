@@ -5911,6 +5911,2794 @@
           }
         }
       }
+    },
+    "/training/program": {
+      "get": {
+        "summary": "Active programme with its week",
+        "tags": [
+          "training"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "splitType": {
+                      "type": "string",
+                      "enum": [
+                        "full-body",
+                        "upper-lower",
+                        "push-pull-legs",
+                        "upper-lower-full",
+                        "ppl-upper-lower",
+                        "custom"
+                      ]
+                    },
+                    "daysPerWeek": {
+                      "type": "integer",
+                      "minimum": 2,
+                      "maximum": 6
+                    },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "generated",
+                        "custom"
+                      ]
+                    },
+                    "mesocycleWeek": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "active": {
+                      "type": "boolean"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "days": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "dayOfWeek": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 7
+                          },
+                          "sessionName": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "focus": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "chest",
+                                "back",
+                                "quads",
+                                "hamstrings",
+                                "glutes",
+                                "shoulders",
+                                "biceps",
+                                "triceps",
+                                "calves",
+                                "abs"
+                              ]
+                            }
+                          },
+                          "isRest": {
+                            "type": "boolean"
+                          },
+                          "estimatedMinutes": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "exercises": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "exerciseId": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "slug": {
+                                  "type": "string",
+                                  "minLength": 2,
+                                  "maxLength": 64,
+                                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "movementPattern": {
+                                  "type": "string",
+                                  "enum": [
+                                    "squat",
+                                    "hinge",
+                                    "lunge",
+                                    "horizontal-push",
+                                    "vertical-push",
+                                    "horizontal-pull",
+                                    "vertical-pull",
+                                    "elbow-flexion",
+                                    "elbow-extension",
+                                    "shoulder-isolation",
+                                    "chest-isolation",
+                                    "leg-isolation",
+                                    "calf-raise",
+                                    "core",
+                                    "carry"
+                                  ]
+                                },
+                                "equipment": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "barbell",
+                                      "dumbbell",
+                                      "machine",
+                                      "cable",
+                                      "kettlebell",
+                                      "resistance-band",
+                                      "pull-up-bar",
+                                      "bodyweight"
+                                    ]
+                                  },
+                                  "minItems": 1
+                                },
+                                "difficulty": {
+                                  "type": "string",
+                                  "enum": [
+                                    "beginner",
+                                    "intermediate",
+                                    "advanced"
+                                  ]
+                                },
+                                "isUnilateral": {
+                                  "type": "boolean"
+                                },
+                                "primaryMuscles": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "chest",
+                                      "back",
+                                      "quads",
+                                      "hamstrings",
+                                      "glutes",
+                                      "shoulders",
+                                      "biceps",
+                                      "triceps",
+                                      "calves",
+                                      "abs"
+                                    ]
+                                  }
+                                },
+                                "orderIndex": {
+                                  "type": "integer",
+                                  "minimum": 0
+                                },
+                                "setCount": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 10
+                                },
+                                "repMin": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "repMax": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "targetRir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                },
+                                "incrementKg": {
+                                  "type": "number",
+                                  "exclusiveMinimum": true,
+                                  "minimum": 0
+                                },
+                                "reason": {
+                                  "type": "string",
+                                  "nullable": true
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "exerciseId",
+                                "slug",
+                                "name",
+                                "movementPattern",
+                                "equipment",
+                                "difficulty",
+                                "isUnilateral",
+                                "primaryMuscles",
+                                "orderIndex",
+                                "setCount",
+                                "repMin",
+                                "repMax",
+                                "targetRir",
+                                "incrementKg",
+                                "reason"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "dayOfWeek",
+                          "sessionName",
+                          "focus",
+                          "isRest",
+                          "estimatedMinutes",
+                          "exercises"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 7,
+                      "maxItems": 7
+                    },
+                    "weeklyVolume": {
+                      "type": "object",
+                      "required": [
+                        "chest",
+                        "back",
+                        "quads",
+                        "hamstrings",
+                        "glutes",
+                        "shoulders",
+                        "biceps",
+                        "triceps",
+                        "calves",
+                        "abs"
+                      ],
+                      "properties": {
+                        "chest": {
+                          "type": "number"
+                        },
+                        "back": {
+                          "type": "number"
+                        },
+                        "quads": {
+                          "type": "number"
+                        },
+                        "hamstrings": {
+                          "type": "number"
+                        },
+                        "glutes": {
+                          "type": "number"
+                        },
+                        "shoulders": {
+                          "type": "number"
+                        },
+                        "biceps": {
+                          "type": "number"
+                        },
+                        "triceps": {
+                          "type": "number"
+                        },
+                        "calves": {
+                          "type": "number"
+                        },
+                        "abs": {
+                          "type": "number"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "rationale": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "shortfalls": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "muscle": {
+                            "type": "string",
+                            "enum": [
+                              "chest",
+                              "back",
+                              "quads",
+                              "hamstrings",
+                              "glutes",
+                              "shoulders",
+                              "biceps",
+                              "triceps",
+                              "calves",
+                              "abs"
+                            ]
+                          },
+                          "targetSets": {
+                            "type": "number"
+                          },
+                          "plannedSets": {
+                            "type": "number"
+                          },
+                          "reason": {
+                            "type": "string",
+                            "enum": [
+                              "no-performable-exercise",
+                              "session-time",
+                              "limitation"
+                            ]
+                          },
+                          "detail": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "muscle",
+                          "targetSets",
+                          "plannedSets",
+                          "reason",
+                          "detail"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "splitType",
+                    "daysPerWeek",
+                    "source",
+                    "mesocycleWeek",
+                    "active",
+                    "createdAt",
+                    "days",
+                    "weeklyVolume",
+                    "rationale",
+                    "shortfalls"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Replace the active programme with a custom one",
+        "tags": [
+          "training"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60
+                  },
+                  "days": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "dayOfWeek": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 7
+                        },
+                        "sessionName": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 40
+                        },
+                        "exercises": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "exerciseId": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "setCount": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 10
+                              },
+                              "repMin": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                              },
+                              "repMax": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 50
+                              },
+                              "targetRir": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "incrementKg": {
+                                "type": "number",
+                                "exclusiveMinimum": true,
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "exerciseId",
+                              "setCount",
+                              "repMin",
+                              "repMax",
+                              "targetRir"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "maxItems": 15
+                        }
+                      },
+                      "required": [
+                        "dayOfWeek",
+                        "sessionName",
+                        "exercises"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 2,
+                    "maxItems": 6
+                  }
+                },
+                "required": [
+                  "name",
+                  "days"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "splitType": {
+                      "type": "string",
+                      "enum": [
+                        "full-body",
+                        "upper-lower",
+                        "push-pull-legs",
+                        "upper-lower-full",
+                        "ppl-upper-lower",
+                        "custom"
+                      ]
+                    },
+                    "daysPerWeek": {
+                      "type": "integer",
+                      "minimum": 2,
+                      "maximum": 6
+                    },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "generated",
+                        "custom"
+                      ]
+                    },
+                    "mesocycleWeek": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "active": {
+                      "type": "boolean"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "days": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "dayOfWeek": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 7
+                          },
+                          "sessionName": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "focus": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "chest",
+                                "back",
+                                "quads",
+                                "hamstrings",
+                                "glutes",
+                                "shoulders",
+                                "biceps",
+                                "triceps",
+                                "calves",
+                                "abs"
+                              ]
+                            }
+                          },
+                          "isRest": {
+                            "type": "boolean"
+                          },
+                          "estimatedMinutes": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "exercises": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "exerciseId": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "slug": {
+                                  "type": "string",
+                                  "minLength": 2,
+                                  "maxLength": 64,
+                                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "movementPattern": {
+                                  "type": "string",
+                                  "enum": [
+                                    "squat",
+                                    "hinge",
+                                    "lunge",
+                                    "horizontal-push",
+                                    "vertical-push",
+                                    "horizontal-pull",
+                                    "vertical-pull",
+                                    "elbow-flexion",
+                                    "elbow-extension",
+                                    "shoulder-isolation",
+                                    "chest-isolation",
+                                    "leg-isolation",
+                                    "calf-raise",
+                                    "core",
+                                    "carry"
+                                  ]
+                                },
+                                "equipment": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "barbell",
+                                      "dumbbell",
+                                      "machine",
+                                      "cable",
+                                      "kettlebell",
+                                      "resistance-band",
+                                      "pull-up-bar",
+                                      "bodyweight"
+                                    ]
+                                  },
+                                  "minItems": 1
+                                },
+                                "difficulty": {
+                                  "type": "string",
+                                  "enum": [
+                                    "beginner",
+                                    "intermediate",
+                                    "advanced"
+                                  ]
+                                },
+                                "isUnilateral": {
+                                  "type": "boolean"
+                                },
+                                "primaryMuscles": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "chest",
+                                      "back",
+                                      "quads",
+                                      "hamstrings",
+                                      "glutes",
+                                      "shoulders",
+                                      "biceps",
+                                      "triceps",
+                                      "calves",
+                                      "abs"
+                                    ]
+                                  }
+                                },
+                                "orderIndex": {
+                                  "type": "integer",
+                                  "minimum": 0
+                                },
+                                "setCount": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 10
+                                },
+                                "repMin": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "repMax": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "targetRir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                },
+                                "incrementKg": {
+                                  "type": "number",
+                                  "exclusiveMinimum": true,
+                                  "minimum": 0
+                                },
+                                "reason": {
+                                  "type": "string",
+                                  "nullable": true
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "exerciseId",
+                                "slug",
+                                "name",
+                                "movementPattern",
+                                "equipment",
+                                "difficulty",
+                                "isUnilateral",
+                                "primaryMuscles",
+                                "orderIndex",
+                                "setCount",
+                                "repMin",
+                                "repMax",
+                                "targetRir",
+                                "incrementKg",
+                                "reason"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "dayOfWeek",
+                          "sessionName",
+                          "focus",
+                          "isRest",
+                          "estimatedMinutes",
+                          "exercises"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 7,
+                      "maxItems": 7
+                    },
+                    "weeklyVolume": {
+                      "type": "object",
+                      "required": [
+                        "chest",
+                        "back",
+                        "quads",
+                        "hamstrings",
+                        "glutes",
+                        "shoulders",
+                        "biceps",
+                        "triceps",
+                        "calves",
+                        "abs"
+                      ],
+                      "properties": {
+                        "chest": {
+                          "type": "number"
+                        },
+                        "back": {
+                          "type": "number"
+                        },
+                        "quads": {
+                          "type": "number"
+                        },
+                        "hamstrings": {
+                          "type": "number"
+                        },
+                        "glutes": {
+                          "type": "number"
+                        },
+                        "shoulders": {
+                          "type": "number"
+                        },
+                        "biceps": {
+                          "type": "number"
+                        },
+                        "triceps": {
+                          "type": "number"
+                        },
+                        "calves": {
+                          "type": "number"
+                        },
+                        "abs": {
+                          "type": "number"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "rationale": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "shortfalls": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "muscle": {
+                            "type": "string",
+                            "enum": [
+                              "chest",
+                              "back",
+                              "quads",
+                              "hamstrings",
+                              "glutes",
+                              "shoulders",
+                              "biceps",
+                              "triceps",
+                              "calves",
+                              "abs"
+                            ]
+                          },
+                          "targetSets": {
+                            "type": "number"
+                          },
+                          "plannedSets": {
+                            "type": "number"
+                          },
+                          "reason": {
+                            "type": "string",
+                            "enum": [
+                              "no-performable-exercise",
+                              "session-time",
+                              "limitation"
+                            ]
+                          },
+                          "detail": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "muscle",
+                          "targetSets",
+                          "plannedSets",
+                          "reason",
+                          "detail"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "splitType",
+                    "daysPerWeek",
+                    "source",
+                    "mesocycleWeek",
+                    "active",
+                    "createdAt",
+                    "days",
+                    "weeklyVolume",
+                    "rationale",
+                    "shortfalls"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/training/program/generate": {
+      "post": {
+        "summary": "Generate from the profile (goal, experience, days, equipment, limitations); replaces the active programme",
+        "tags": [
+          "training"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "not": {}
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "daysPerWeek": {
+                        "type": "integer",
+                        "minimum": 2,
+                        "maximum": 6
+                      },
+                      "preferredSessionMinutes": {
+                        "type": "integer",
+                        "minimum": 15,
+                        "maximum": 180
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "splitType": {
+                      "type": "string",
+                      "enum": [
+                        "full-body",
+                        "upper-lower",
+                        "push-pull-legs",
+                        "upper-lower-full",
+                        "ppl-upper-lower",
+                        "custom"
+                      ]
+                    },
+                    "daysPerWeek": {
+                      "type": "integer",
+                      "minimum": 2,
+                      "maximum": 6
+                    },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "generated",
+                        "custom"
+                      ]
+                    },
+                    "mesocycleWeek": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "active": {
+                      "type": "boolean"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "days": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "dayOfWeek": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 7
+                          },
+                          "sessionName": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "focus": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "chest",
+                                "back",
+                                "quads",
+                                "hamstrings",
+                                "glutes",
+                                "shoulders",
+                                "biceps",
+                                "triceps",
+                                "calves",
+                                "abs"
+                              ]
+                            }
+                          },
+                          "isRest": {
+                            "type": "boolean"
+                          },
+                          "estimatedMinutes": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "exercises": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "exerciseId": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "slug": {
+                                  "type": "string",
+                                  "minLength": 2,
+                                  "maxLength": 64,
+                                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "movementPattern": {
+                                  "type": "string",
+                                  "enum": [
+                                    "squat",
+                                    "hinge",
+                                    "lunge",
+                                    "horizontal-push",
+                                    "vertical-push",
+                                    "horizontal-pull",
+                                    "vertical-pull",
+                                    "elbow-flexion",
+                                    "elbow-extension",
+                                    "shoulder-isolation",
+                                    "chest-isolation",
+                                    "leg-isolation",
+                                    "calf-raise",
+                                    "core",
+                                    "carry"
+                                  ]
+                                },
+                                "equipment": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "barbell",
+                                      "dumbbell",
+                                      "machine",
+                                      "cable",
+                                      "kettlebell",
+                                      "resistance-band",
+                                      "pull-up-bar",
+                                      "bodyweight"
+                                    ]
+                                  },
+                                  "minItems": 1
+                                },
+                                "difficulty": {
+                                  "type": "string",
+                                  "enum": [
+                                    "beginner",
+                                    "intermediate",
+                                    "advanced"
+                                  ]
+                                },
+                                "isUnilateral": {
+                                  "type": "boolean"
+                                },
+                                "primaryMuscles": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "chest",
+                                      "back",
+                                      "quads",
+                                      "hamstrings",
+                                      "glutes",
+                                      "shoulders",
+                                      "biceps",
+                                      "triceps",
+                                      "calves",
+                                      "abs"
+                                    ]
+                                  }
+                                },
+                                "orderIndex": {
+                                  "type": "integer",
+                                  "minimum": 0
+                                },
+                                "setCount": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 10
+                                },
+                                "repMin": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "repMax": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "targetRir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                },
+                                "incrementKg": {
+                                  "type": "number",
+                                  "exclusiveMinimum": true,
+                                  "minimum": 0
+                                },
+                                "reason": {
+                                  "type": "string",
+                                  "nullable": true
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "exerciseId",
+                                "slug",
+                                "name",
+                                "movementPattern",
+                                "equipment",
+                                "difficulty",
+                                "isUnilateral",
+                                "primaryMuscles",
+                                "orderIndex",
+                                "setCount",
+                                "repMin",
+                                "repMax",
+                                "targetRir",
+                                "incrementKg",
+                                "reason"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "dayOfWeek",
+                          "sessionName",
+                          "focus",
+                          "isRest",
+                          "estimatedMinutes",
+                          "exercises"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 7,
+                      "maxItems": 7
+                    },
+                    "weeklyVolume": {
+                      "type": "object",
+                      "required": [
+                        "chest",
+                        "back",
+                        "quads",
+                        "hamstrings",
+                        "glutes",
+                        "shoulders",
+                        "biceps",
+                        "triceps",
+                        "calves",
+                        "abs"
+                      ],
+                      "properties": {
+                        "chest": {
+                          "type": "number"
+                        },
+                        "back": {
+                          "type": "number"
+                        },
+                        "quads": {
+                          "type": "number"
+                        },
+                        "hamstrings": {
+                          "type": "number"
+                        },
+                        "glutes": {
+                          "type": "number"
+                        },
+                        "shoulders": {
+                          "type": "number"
+                        },
+                        "biceps": {
+                          "type": "number"
+                        },
+                        "triceps": {
+                          "type": "number"
+                        },
+                        "calves": {
+                          "type": "number"
+                        },
+                        "abs": {
+                          "type": "number"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "rationale": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "shortfalls": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "muscle": {
+                            "type": "string",
+                            "enum": [
+                              "chest",
+                              "back",
+                              "quads",
+                              "hamstrings",
+                              "glutes",
+                              "shoulders",
+                              "biceps",
+                              "triceps",
+                              "calves",
+                              "abs"
+                            ]
+                          },
+                          "targetSets": {
+                            "type": "number"
+                          },
+                          "plannedSets": {
+                            "type": "number"
+                          },
+                          "reason": {
+                            "type": "string",
+                            "enum": [
+                              "no-performable-exercise",
+                              "session-time",
+                              "limitation"
+                            ]
+                          },
+                          "detail": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "muscle",
+                          "targetSets",
+                          "plannedSets",
+                          "reason",
+                          "detail"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "splitType",
+                    "daysPerWeek",
+                    "source",
+                    "mesocycleWeek",
+                    "active",
+                    "createdAt",
+                    "days",
+                    "weeklyVolume",
+                    "rationale",
+                    "shortfalls"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/training/program/days/{id}": {
+      "patch": {
+        "summary": "Edit one day of the active programme (name and/or exercises)",
+        "tags": [
+          "training"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sessionName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "exercises": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "exerciseId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "setCount": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 10
+                        },
+                        "repMin": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 50
+                        },
+                        "repMax": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 50
+                        },
+                        "targetRir": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 5
+                        },
+                        "incrementKg": {
+                          "type": "number",
+                          "exclusiveMinimum": true,
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "exerciseId",
+                        "setCount",
+                        "repMin",
+                        "repMax",
+                        "targetRir"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 15
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "splitType": {
+                      "type": "string",
+                      "enum": [
+                        "full-body",
+                        "upper-lower",
+                        "push-pull-legs",
+                        "upper-lower-full",
+                        "ppl-upper-lower",
+                        "custom"
+                      ]
+                    },
+                    "daysPerWeek": {
+                      "type": "integer",
+                      "minimum": 2,
+                      "maximum": 6
+                    },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "generated",
+                        "custom"
+                      ]
+                    },
+                    "mesocycleWeek": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "active": {
+                      "type": "boolean"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "days": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "dayOfWeek": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 7
+                          },
+                          "sessionName": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "focus": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "chest",
+                                "back",
+                                "quads",
+                                "hamstrings",
+                                "glutes",
+                                "shoulders",
+                                "biceps",
+                                "triceps",
+                                "calves",
+                                "abs"
+                              ]
+                            }
+                          },
+                          "isRest": {
+                            "type": "boolean"
+                          },
+                          "estimatedMinutes": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "exercises": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "exerciseId": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "slug": {
+                                  "type": "string",
+                                  "minLength": 2,
+                                  "maxLength": 64,
+                                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "movementPattern": {
+                                  "type": "string",
+                                  "enum": [
+                                    "squat",
+                                    "hinge",
+                                    "lunge",
+                                    "horizontal-push",
+                                    "vertical-push",
+                                    "horizontal-pull",
+                                    "vertical-pull",
+                                    "elbow-flexion",
+                                    "elbow-extension",
+                                    "shoulder-isolation",
+                                    "chest-isolation",
+                                    "leg-isolation",
+                                    "calf-raise",
+                                    "core",
+                                    "carry"
+                                  ]
+                                },
+                                "equipment": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "barbell",
+                                      "dumbbell",
+                                      "machine",
+                                      "cable",
+                                      "kettlebell",
+                                      "resistance-band",
+                                      "pull-up-bar",
+                                      "bodyweight"
+                                    ]
+                                  },
+                                  "minItems": 1
+                                },
+                                "difficulty": {
+                                  "type": "string",
+                                  "enum": [
+                                    "beginner",
+                                    "intermediate",
+                                    "advanced"
+                                  ]
+                                },
+                                "isUnilateral": {
+                                  "type": "boolean"
+                                },
+                                "primaryMuscles": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "chest",
+                                      "back",
+                                      "quads",
+                                      "hamstrings",
+                                      "glutes",
+                                      "shoulders",
+                                      "biceps",
+                                      "triceps",
+                                      "calves",
+                                      "abs"
+                                    ]
+                                  }
+                                },
+                                "orderIndex": {
+                                  "type": "integer",
+                                  "minimum": 0
+                                },
+                                "setCount": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 10
+                                },
+                                "repMin": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "repMax": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "targetRir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                },
+                                "incrementKg": {
+                                  "type": "number",
+                                  "exclusiveMinimum": true,
+                                  "minimum": 0
+                                },
+                                "reason": {
+                                  "type": "string",
+                                  "nullable": true
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "exerciseId",
+                                "slug",
+                                "name",
+                                "movementPattern",
+                                "equipment",
+                                "difficulty",
+                                "isUnilateral",
+                                "primaryMuscles",
+                                "orderIndex",
+                                "setCount",
+                                "repMin",
+                                "repMax",
+                                "targetRir",
+                                "incrementKg",
+                                "reason"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "dayOfWeek",
+                          "sessionName",
+                          "focus",
+                          "isRest",
+                          "estimatedMinutes",
+                          "exercises"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 7,
+                      "maxItems": 7
+                    },
+                    "weeklyVolume": {
+                      "type": "object",
+                      "required": [
+                        "chest",
+                        "back",
+                        "quads",
+                        "hamstrings",
+                        "glutes",
+                        "shoulders",
+                        "biceps",
+                        "triceps",
+                        "calves",
+                        "abs"
+                      ],
+                      "properties": {
+                        "chest": {
+                          "type": "number"
+                        },
+                        "back": {
+                          "type": "number"
+                        },
+                        "quads": {
+                          "type": "number"
+                        },
+                        "hamstrings": {
+                          "type": "number"
+                        },
+                        "glutes": {
+                          "type": "number"
+                        },
+                        "shoulders": {
+                          "type": "number"
+                        },
+                        "biceps": {
+                          "type": "number"
+                        },
+                        "triceps": {
+                          "type": "number"
+                        },
+                        "calves": {
+                          "type": "number"
+                        },
+                        "abs": {
+                          "type": "number"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "rationale": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "shortfalls": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "muscle": {
+                            "type": "string",
+                            "enum": [
+                              "chest",
+                              "back",
+                              "quads",
+                              "hamstrings",
+                              "glutes",
+                              "shoulders",
+                              "biceps",
+                              "triceps",
+                              "calves",
+                              "abs"
+                            ]
+                          },
+                          "targetSets": {
+                            "type": "number"
+                          },
+                          "plannedSets": {
+                            "type": "number"
+                          },
+                          "reason": {
+                            "type": "string",
+                            "enum": [
+                              "no-performable-exercise",
+                              "session-time",
+                              "limitation"
+                            ]
+                          },
+                          "detail": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "muscle",
+                          "targetSets",
+                          "plannedSets",
+                          "reason",
+                          "detail"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "splitType",
+                    "daysPerWeek",
+                    "source",
+                    "mesocycleWeek",
+                    "active",
+                    "createdAt",
+                    "days",
+                    "weeklyVolume",
+                    "rationale",
+                    "shortfalls"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "servers": [

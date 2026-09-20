@@ -41,7 +41,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Continue with Google'), findsOneWidget);
-    expect(find.text('Phase 3'), findsNothing);
+    expect(find.text('Phase 4'), findsNothing);
 
     final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
     final theme = Theme.of(tester.element(find.byType(Scaffold).first));
@@ -57,7 +57,7 @@ void main() {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
-    expect(find.text('Phase 3'), findsOneWidget);
+    expect(find.text('Phase 4'), findsOneWidget);
     expect(find.text('student@vit.ac.in'), findsOneWidget);
     expect(find.text('Continue with Google'), findsNothing);
   });
@@ -73,7 +73,7 @@ void main() {
 
     expect(repo.calls, contains('signOut'));
     expect(find.text('Continue with Google'), findsOneWidget);
-    expect(find.text('Phase 3'), findsNothing);
+    expect(find.text('Phase 4'), findsNothing);
   });
 
   testWidgets('uses ink, not colour, for the primary type', (tester) async {
@@ -81,8 +81,8 @@ void main() {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
-    final heading = tester.widget<Text>(find.text('Phase 3'));
-    final context = tester.element(find.text('Phase 3'));
+    final heading = tester.widget<Text>(find.text('Phase 4'));
+    final context = tester.element(find.text('Phase 4'));
     final style = heading.style ?? Theme.of(context).textTheme.displayMedium!;
     expect(style.color, FitColors.ink);
   });
@@ -97,7 +97,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('STEP 4 OF 7'), findsOneWidget);
-    expect(find.text('Phase 3'), findsNothing);
+    expect(find.text('Phase 4'), findsNothing);
     expect(onboarding.calls, contains('getState'));
   });
 
@@ -135,10 +135,10 @@ void main() {
     expect(find.text('106'), findsOneWidget);
     expect(find.text('Mifflin-St Jeor BMR 1348 kcal'), findsOneWidget);
     // Still on the plan — the guard did not yank the screen away.
-    expect(find.text('Phase 3'), findsNothing);
+    expect(find.text('Phase 4'), findsNothing);
 
     await tester.tap(find.text('Start'));
     await tester.pumpAndSettle();
-    expect(find.text('Phase 3'), findsOneWidget);
+    expect(find.text('Phase 4'), findsOneWidget);
   });
 }

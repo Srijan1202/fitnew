@@ -17,7 +17,11 @@ import '../widgets/filter_rail.dart';
 /// you have, a muscle, a pattern. Every change is a request; the list is
 /// whatever the server says is performable.
 class ExerciseBrowserScreen extends ConsumerStatefulWidget {
-  const ExerciseBrowserScreen({super.key});
+  const ExerciseBrowserScreen({this.pickMode = false, super.key});
+
+  /// When true, tapping a row returns it to the caller (`context.pop(item)`)
+  /// instead of opening its detail — the programme editors use this.
+  final bool pickMode;
 
   @override
   ConsumerState<ExerciseBrowserScreen> createState() =>
@@ -71,9 +75,15 @@ class _ExerciseBrowserScreenState extends ConsumerState<ExerciseBrowserScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text('LIBRARY', style: textTheme.labelSmall),
+                  Text(
+                    widget.pickMode ? 'ADD TO YOUR DAY' : 'LIBRARY',
+                    style: textTheme.labelSmall,
+                  ),
                   const SizedBox(height: FitSpacing.xs),
-                  Text('Exercises', style: textTheme.displaySmall),
+                  Text(
+                    widget.pickMode ? 'Pick an exercise' : 'Exercises',
+                    style: textTheme.displaySmall,
+                  ),
                   const SizedBox(height: FitSpacing.md),
                   AuthFormField(
                     fieldKey: const ValueKey('exercises.search'),
@@ -124,6 +134,7 @@ class _ExerciseBrowserScreenState extends ConsumerState<ExerciseBrowserScreen> {
                 ),
                 data: (page) => _ExerciseList(
                   page: page,
+                  pickMode: widget.pickMode,
                   hasFilters: filters.hasFilters,
                   onClear: () {
                     _search.clear();
@@ -142,11 +153,13 @@ class _ExerciseBrowserScreenState extends ConsumerState<ExerciseBrowserScreen> {
 class _ExerciseList extends StatelessWidget {
   const _ExerciseList({
     required this.page,
+    required this.pickMode,
     required this.hasFilters,
     required this.onClear,
   });
 
   final ExerciseListResponse page;
+  final bool pickMode;
   final bool hasFilters;
   final VoidCallback onClear;
 
@@ -201,16 +214,17 @@ class _ExerciseList extends StatelessWidget {
           );
         }
         final item = page.items[index - 1];
-        return _ExerciseRow(item: item);
+        return _ExerciseRow(item: item, pickMode: pickMode);
       },
     );
   }
 }
 
 class _ExerciseRow extends StatelessWidget {
-  const _ExerciseRow({required this.item});
+  const _ExerciseRow({required this.item, required this.pickMode});
 
   final ExerciseSummary item;
+  final bool pickMode;
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +233,9 @@ class _ExerciseRow extends StatelessWidget {
     final kit = item.equipment.map((e) => e.label).join(' + ');
     return InkWell(
       key: ValueKey('exercise.${item.slug}'),
-      onTap: () => context.push(Routes.exerciseDetail(item.id)),
+      onTap: () => pickMode
+          ? context.pop(item)
+          : context.push(Routes.exerciseDetail(item.id)),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: FitSpacing.screen,

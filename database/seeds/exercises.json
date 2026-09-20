@@ -606,10 +606,10 @@
     "videoUrl": null,
     "primaryMuscles": [
       "hamstrings",
-      "glutes",
-      "back"
+      "glutes"
     ],
     "secondaryMuscles": [
+      "back",
       "quads",
       "abs"
     ],
@@ -658,10 +658,10 @@
     "videoUrl": null,
     "primaryMuscles": [
       "glutes",
-      "quads",
       "hamstrings"
     ],
     "secondaryMuscles": [
+      "quads",
       "back",
       "abs"
     ],
@@ -1122,11 +1122,11 @@
     ],
     "videoUrl": null,
     "primaryMuscles": [
-      "back",
-      "glutes"
+      "glutes",
+      "hamstrings"
     ],
     "secondaryMuscles": [
-      "hamstrings"
+      "back"
     ],
     "alternatives": [
       {
@@ -1946,10 +1946,10 @@
     ],
     "videoUrl": null,
     "primaryMuscles": [
-      "chest",
-      "triceps"
+      "chest"
     ],
     "secondaryMuscles": [
+      "triceps",
       "shoulders"
     ],
     "alternatives": [

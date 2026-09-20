@@ -6,10 +6,12 @@ import 'package:fitos/features/exercise/domain/entities/exercise.dart';
 import 'package:fitos/features/onboarding/domain/entities/onboarding.dart';
 import 'package:fitos/features/profile/domain/entities/profile.dart';
 import 'package:fitos/features/profile/domain/entities/vocabulary.dart';
+import 'package:fitos/features/training/domain/entities/program.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../support/fake_auth_repository.dart';
 import '../support/fake_exercise_repository.dart';
+import '../support/fake_training_repository.dart';
 import '../support/fake_onboarding_repository.dart';
 
 /// ADR-004: the Dart DTOs are hand-written, so this test is what stops them
@@ -440,6 +442,111 @@ void main() {
         const ExerciseQuery().limit,
         lessThanOrEqualTo(param('limit')['maximum'] as int),
       );
+    });
+  });
+
+  group('training programme (Phase 4)', () {
+    late Map<String, dynamic> program;
+
+    setUpAll(() {
+      program = schemaOf('/training/program', 'get');
+    });
+
+    test('SplitType, ProgramSource, ShortfallReason', () {
+      final props = properties(program);
+      expect(
+        SplitType.values.map((s) => s.wire).toList(),
+        enumOf(props['splitType'] as Map<String, dynamic>),
+      );
+      expect(
+        ProgramSource.values.map((s) => s.wire).toList(),
+        enumOf(props['source'] as Map<String, dynamic>),
+      );
+      final shortfall = (props['shortfalls'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      expect(
+        ShortfallReason.values.map((r) => r.wire).toList(),
+        enumOf(properties(shortfall)['reason'] as Map<String, dynamic>),
+      );
+    });
+
+    test('Program, ProgramDay, PlannedExercise, VolumeShortfall shapes', () {
+      expect(generatedProgram.toJson().keys.toSet(), keysOf(program));
+      final day = (properties(program)['days'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      expect(generatedProgram.days.first.toJson().keys.toSet(), keysOf(day));
+      final px = (properties(day)['exercises'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      expect(plannedSquat.toJson().keys.toSet(), keysOf(px));
+      final shortfall = (properties(program)['shortfalls']
+          as Map<String, dynamic>)['items'] as Map<String, dynamic>;
+      expect(
+        generatedProgram.shortfalls.first.toJson().keys.toSet(),
+        keysOf(shortfall),
+      );
+      // Every day and exercise the server can send parses back.
+      expect(
+        Program.fromJson(
+          jsonDecode(jsonEncode(generatedProgram.toJson()))
+              as Map<String, dynamic>,
+        ),
+        generatedProgram,
+      );
+    });
+
+    test('request bodies send exactly the accepted properties', () {
+      // generate: the body is optional; when sent, only the two overrides.
+      final gen = schemaOf('/training/program/generate', 'post', request: true);
+      final variant = (gen['anyOf'] as List<dynamic>)
+          .cast<Map<String, dynamic>>()
+          .firstWhere((v) => v.containsKey('properties'));
+      const full = GenerateProgramRequest(
+        daysPerWeek: 3,
+        preferredSessionMinutes: 45,
+      );
+      expect(withoutNulls(full.toJson()).keys.toSet(), keysOf(variant));
+      expect(withoutNulls(const GenerateProgramRequest().toJson()), isEmpty);
+
+      // put: name + days; each day; each exercise (incrementKg optional).
+      final put = schemaOf('/training/program', 'put', request: true);
+      const exercise = CustomExercise(
+        exerciseId: 'x',
+        setCount: 3,
+        repMin: 6,
+        repMax: 12,
+        targetRir: 2,
+        incrementKg: 2.5,
+      );
+      const body = PutProgramRequest(
+        name: 'n',
+        days: [
+          CustomDay(dayOfWeek: 1, sessionName: 'A', exercises: [exercise]),
+        ],
+      );
+      expect(body.toJson().keys.toSet(), keysOf(put));
+      final day = (properties(put)['days'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      expect(body.days.first.toJson().keys.toSet(), keysOf(day));
+      final px = (properties(day)['exercises'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      expect(exercise.toJson().keys.toSet(), keysOf(px));
+      expect(
+        (px['required'] as List<dynamic>).cast<String>().toSet(),
+        withoutNulls(exercise.toJson()..remove('incrementKg')).keys.toSet(),
+        reason: 'incrementKg is the only optional field',
+      );
+
+      // patch: both optional; at least one sent.
+      final patch = schemaOf(
+        '/training/program/days/{id}',
+        'patch',
+        request: true,
+      );
+      const patchBody = PatchProgramDayRequest(
+        sessionName: 's',
+        exercises: [exercise],
+      );
+      expect(withoutNulls(patchBody.toJson()).keys.toSet(), keysOf(patch));
     });
   });
 

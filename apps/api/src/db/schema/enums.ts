@@ -22,6 +22,8 @@ import {
   MUSCLE_ROLES,
   ONBOARDING_STEPS,
   ONBOARDING_COMPLETE,
+  PROGRAM_SOURCES,
+  SPLIT_TYPES,
 } from '@fitos/contracts';
 
 export const goalTypeEnum = pgEnum('goal_type', GOAL_TYPES);
@@ -48,3 +50,7 @@ export const movementPatternEnum = pgEnum('movement_pattern', MOVEMENT_PATTERNS)
 export const difficultyEnum = pgEnum('difficulty', DIFFICULTIES);
 export const muscleRoleEnum = pgEnum('muscle_role', MUSCLE_ROLES);
 export const alternativeReasonEnum = pgEnum('alternative_reason', ALTERNATIVE_REASONS);
+
+// Phase 4 — programmes
+export const splitTypeEnum = pgEnum('split_type', SPLIT_TYPES);
+export const programSourceEnum = pgEnum('program_source', PROGRAM_SOURCES);

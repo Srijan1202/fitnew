@@ -9,6 +9,9 @@ import '../../features/auth/presentation/screens/splash_gate_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_browser_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_detail_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_flow_screen.dart';
+import '../../features/training/presentation/screens/custom_builder_screen.dart';
+import '../../features/training/presentation/screens/day_editor_screen.dart';
+import '../../features/training/presentation/screens/weekly_plan_screen.dart';
 import '../../features/profile/presentation/screens/goal_editor_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/today/presentation/screens/today_placeholder_screen.dart';
@@ -26,6 +29,12 @@ abstract final class Routes {
   static const String goalEditor = '/profile/goal';
   static const String exercises = '/exercises';
   static String exerciseDetail(String id) => '/exercises/$id';
+
+  /// Same browser, returning the tapped exercise to the caller.
+  static const String exercisePicker = '/exercises/pick';
+  static const String plan = '/plan';
+  static const String planBuilder = '/plan/build';
+  static String planDay(String dayId) => '/plan/days/$dayId';
   static const String today = '/';
 
   /// Screens a signed-out user may see. Everything else needs a session.
@@ -85,10 +94,34 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ExerciseBrowserScreen(),
         routes: <RouteBase>[
           GoRoute(
+            path: 'pick',
+            name: 'exercise-picker',
+            builder: (context, state) =>
+                const ExerciseBrowserScreen(pickMode: true),
+          ),
+          GoRoute(
             path: ':id',
             name: 'exercise-detail',
             builder: (context, state) =>
                 ExerciseDetailScreen(id: state.pathParameters['id']!),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: Routes.plan,
+        name: 'plan',
+        builder: (context, state) => const WeeklyPlanScreen(),
+        routes: <RouteBase>[
+          GoRoute(
+            path: 'build',
+            name: 'plan-builder',
+            builder: (context, state) => const CustomBuilderScreen(),
+          ),
+          GoRoute(
+            path: 'days/:dayId',
+            name: 'plan-day',
+            builder: (context, state) =>
+                DayEditorScreen(dayId: state.pathParameters['dayId']!),
           ),
         ],
       ),

@@ -58,7 +58,8 @@ describeIfDb('migrations (real Postgres)', () => {
   const PHASE3_TABLES = [
     'exercises', 'exercise_muscles', 'exercise_alternatives', 'exercise_contraindications',
   ];
-  const TOTAL_MIGRATIONS = 3;
+  const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
+  const TOTAL_MIGRATIONS = 4;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -124,6 +125,33 @@ describeIfDb('migrations (real Postgres)', () => {
     expect((await client`select 1 from exercise_contraindications where exercise_id = ${x!.id}`).length).toBe(0);
   });
 
+  it('up creates the Phase 4 programme tables; one active programme per user is a database fact', async () => {
+    for (const t of PHASE4_TABLES) expect(await tableExists(client, t), t).toBe(true);
+    await client`insert into users (firebase_uid) values ('mig-prog')`;
+    const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-prog'`;
+    await client`insert into programs (user_id, name, split_type, days_per_week, source) values (${u!.id}, 'A', 'full-body', 3, 'generated')`;
+    await expect(
+      client`insert into programs (user_id, name, split_type, days_per_week, source) values (${u!.id}, 'B', 'custom', 2, 'custom')`,
+    ).rejects.toThrow(/one_active_program/);
+    // Deactivating (or soft-deleting) the first frees the slot.
+    await client`update programs set active = false where user_id = ${u!.id}`;
+    await client`insert into programs (user_id, name, split_type, days_per_week, source) values (${u!.id}, 'B', 'custom', 2, 'custom')`;
+    // Days per week outside 2–6 and an inverted rep range are rejected by the table.
+    await expect(
+      client`insert into programs (user_id, name, split_type, days_per_week, source, active) values (${u!.id}, 'C', 'custom', 7, 'custom', false)`,
+    ).rejects.toThrow(/programs_days_range/);
+    const [p] = await client<{ id: string }[]>`select id from programs where user_id = ${u!.id} and active`;
+    const [d] = await client<{ id: string }[]>`insert into program_days (program_id, day_of_week, session_name) values (${p!.id}, 1, 'A') returning id`;
+    const [x] = await client<{ id: string }[]>`select id from exercises limit 1`;
+    if (x !== undefined) {
+      await expect(
+        client`insert into planned_exercises (program_day_id, exercise_id, order_index, set_count, rep_min, rep_max, target_rir, increment_kg) values (${d!.id}, ${x.id}, 0, 3, 12, 6, 2, 2.5)`,
+      ).rejects.toThrow(/planned_exercises_reps_ordered/);
+    }
+    await client`delete from users where firebase_uid = 'mig-prog'`;
+    expect((await client`select 1 from programs where user_id = ${u!.id}`).length).toBe(0);
+  });
+
   it('one active goal per user is a database fact', async () => {
     await client`insert into users (firebase_uid) values ('mig-goal')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-goal'`;
@@ -178,7 +206,11 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'uid-dup'`;
   });
 
-  it('down removes the Phase 3, then Phase 2 tables and types, one migration at a time', async () => {
+  it('down removes the Phase 4, 3, then 2 tables and types, one migration at a time', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0003_programs');
+    for (const t of PHASE4_TABLES) expect(await tableExists(client, t), t).toBe(false);
+    expect(await appliedCount(client)).toBe(3);
+
     expect(await rollbackLastMigration(connectionString)).toBe('0002_exercise_library');
     for (const t of PHASE3_TABLES) expect(await tableExists(client, t), t).toBe(false);
     const types3 = await client<{ typname: string }[]>`select typname from pg_type where typtype = 'e'`;
@@ -207,6 +239,7 @@ describeIfDb('migrations (real Postgres)', () => {
     expect(await tableExists(client, 'users')).toBe(true);
     for (const t of PHASE2_TABLES) expect(await tableExists(client, t), t).toBe(true);
     for (const t of PHASE3_TABLES) expect(await tableExists(client, t), t).toBe(true);
+    for (const t of PHASE4_TABLES) expect(await tableExists(client, t), t).toBe(true);
     expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
   });
 });
