@@ -43,6 +43,15 @@ services:
       PORT: 8080
       LOG_LEVEL: debug
       DATABASE_URL: postgres://fitos:fitos@postgres:5432/fitos
+      # Phase 1. Both come from docker/.env (gitignored; see docker/.env.example).
+      # `:?` makes compose fail with a clear message rather than letting the API
+      # crash-loop on a missing FIREBASE_PROJECT_ID.
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:?set FIREBASE_PROJECT_ID in docker/.env}
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase/${FIREBASE_KEY_FILE:?set FIREBASE_KEY_FILE in docker/.env}
+    volumes:
+      # The service-account key never enters the image (.dockerignore); it is
+      # mounted read-only at runtime from the gitignored .secrets/ directory.
+      - ../apps/api/.secrets:/run/secrets/firebase:ro
     ports:
       - '8080:8080'
 

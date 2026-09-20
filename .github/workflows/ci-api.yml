@@ -80,3 +80,22 @@ jobs:
 
       - name: Docker build
         run: docker build -f docker/Dockerfile.api -t fitos-api:ci .
+
+      # A green `docker build` proved nothing about whether the image RUNS.
+      # Phase 1 shipped an image that crash-looped (contracts exported .ts,
+      # which plain Node cannot load) and CI was green. Boot it and hit it.
+      - name: Docker image boots and serves
+        run: |
+          docker run -d --name api-smoke --network host             -e DATABASE_URL="$DATABASE_URL"             -e FIREBASE_PROJECT_ID=ci-smoke             -e LOG_LEVEL=warn             fitos-api:ci
+          for i in $(seq 1 20); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/health || true)
+            [ "$code" = "200" ] && break
+            sleep 2
+          done
+          echo "GET /health -> $code"
+          [ "$code" = "200" ] || { docker logs api-smoke; exit 1; }
+          # Route must exist (401), not be missing (404) from a stale build.
+          auth=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/v1/auth/session             -H 'content-type: application/json' -d '{}')
+          echo "POST /v1/auth/session -> $auth"
+          [ "$auth" = "401" ] || { docker logs api-smoke; exit 1; }
+          docker rm -f api-smoke
