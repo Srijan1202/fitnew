@@ -82,6 +82,21 @@ export default fp(
         return;
       }
 
+      // Fastify's own client-side rejections — an unparseable or empty JSON
+      // body (FST_ERR_CTP_*), a body over the limit, an unsupported media
+      // type. The request was malformed, so it is the client's 4xx, not a
+      // 500 that pages someone. Found by Dio sending `Content-Type:
+      // application/json` with no body on POST /onboarding/complete.
+      if (typeof error.statusCode === 'number' && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 429) {
+        request.log.warn({ code: error.code }, error.message);
+        void reply
+          .status(HTTP_STATUS_FOR_CODE.VALIDATION_FAILED)
+          .send(envelope('VALIDATION_FAILED', 'Request could not be read.', request.id, [
+            { path: 'body', issue: error.message },
+          ]));
+        return;
+      }
+
       if (error.statusCode === 429) {
         void reply
           .status(429)

@@ -44,7 +44,13 @@ class DioOnboardingRepository implements OnboardingRepository {
 
   @override
   Future<Result<OnboardingCompleteResponse>> complete() => _guard(
-        () => _dio.post<Map<String, dynamic>>('/v1/onboarding/complete'),
+        // Dio sets Content-Type: application/json on every request; a POST
+        // with no body then trips Fastify's empty-JSON-body rejection. Send
+        // an empty object so the header is honest.
+        () => _dio.post<Map<String, dynamic>>(
+          '/v1/onboarding/complete',
+          data: const <String, dynamic>{},
+        ),
         OnboardingCompleteResponse.fromJson,
       );
 }

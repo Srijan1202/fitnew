@@ -248,6 +248,31 @@ describeIfDb('onboarding (real Postgres)', () => {
     expect((await complete(token)).statusCode).toBe(200);
   });
 
+  it('complete tolerates the ways an HTTP client sends "no body"', async () => {
+    // Dio sends Content-Type: application/json on every request, body or
+    // not. Fastify rejects an empty JSON body; that must be the client's 422
+    // in the §10 envelope, never a 500 — and an empty object must simply work.
+    // Found on the emulator: screen 7 never appeared.
+    const bare = await app.inject({
+      method: 'POST',
+      url: '/v1/onboarding/complete',
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+    });
+    expect(bare.statusCode).toBe(422);
+    expect(bare.json().error.code).toBe('VALIDATION_FAILED');
+    expect(bare.json().error.requestId).toBeTruthy();
+
+    for (const a of personaC.slice(0, 5)) await answer(token, a);
+    const withObject = await app.inject({
+      method: 'POST',
+      url: '/v1/onboarding/complete',
+      headers: { authorization: `Bearer ${token}` },
+      payload: {},
+    });
+    expect(withObject.statusCode).toBe(200);
+    expect(withObject.json().targets.kcal).toBeGreaterThan(0);
+  });
+
   it('a Firebase account with no session row gets 401, not a crash', async () => {
     verifier.accept('ob-nosession', { uid: 'ob-uid-nosession' });
     const r = await state('ob-nosession');
