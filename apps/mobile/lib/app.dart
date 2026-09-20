@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/routing/router.dart';
 import 'core/theme/app_theme.dart';
 
-/// Root widget. Owns the router and the theme, nothing else.
-class FitOSApp extends StatefulWidget {
+/// Root widget. Owns the theme; the router comes from Riverpod so the auth
+/// guard can read the same provider the screens do.
+class FitOSApp extends ConsumerWidget {
   const FitOSApp({super.key});
 
   @override
-  State<FitOSApp> createState() => _FitOSAppState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
 
-class _FitOSAppState extends State<FitOSApp> {
-  late final router = buildRouter();
-
-  @override
-  Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'FitOS',
       debugShowCheckedModeBanner: false,

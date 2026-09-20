@@ -55,6 +55,12 @@ dependencies:
 
   connectivity_plus: 6.1.1
 
+  # Auth (§11) — Firebase owns credentials; the app holds only the public
+  # Firebase config, never a service account (§24). Pinned from pubspec.lock.
+  firebase_core: 4.15.0
+  firebase_auth: 6.7.0
+  google_sign_in: 7.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

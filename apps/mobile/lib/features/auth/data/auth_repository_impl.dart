@@ -1,0 +1,135 @@
+import 'dart:convert';
+
+import '../../../core/errors/result.dart';
+import '../../../core/storage/secure_storage.dart';
+import '../domain/entities/auth_state.dart';
+import '../domain/entities/user_profile.dart';
+import '../domain/repositories/auth_repository.dart';
+import 'dtos/session_dto.dart';
+import 'firebase_auth_data_source.dart';
+import 'session_remote_data_source.dart';
+
+/// Composes the §11 flow:
+///   Firebase authenticates → ID token → POST /auth/session → profile.
+///
+/// This class decides nothing about the user. It moves a credential to the
+/// backend and stores what the backend says back.
+class AuthRepositoryImpl implements AuthRepository {
+  AuthRepositoryImpl({
+    required CredentialSource credentials,
+    required SessionRemoteDataSource session,
+    required SessionStore store,
+    required String? Function() timeZoneName,
+    required String? Function() localeTag,
+  })  : _credentials = credentials,
+        _session = session,
+        _store = store,
+        _timeZoneName = timeZoneName,
+        _localeTag = localeTag;
+
+  final CredentialSource _credentials;
+  final SessionRemoteDataSource _session;
+  final SessionStore _store;
+  final String? Function() _timeZoneName;
+  final String? Function() _localeTag;
+
+  @override
+  Future<AuthState> restore() async {
+    if (_credentials.currentUid == null) {
+      await _store.clear();
+      return const AuthState.signedOut();
+    }
+    // Fast path: the profile we stored last time. No network at cold start.
+    final cached = await _store.readProfileJson();
+    if (cached != null) {
+      try {
+        final profile = UserProfile.fromJson(
+          jsonDecode(cached) as Map<String, dynamic>,
+        );
+        return AuthState.signedIn(profile);
+      } on FormatException {
+        // Corrupt cache: fall through and re-fetch.
+      }
+    }
+    // Firebase has a user but we have no profile (fresh install with a
+    // restored Firebase session, or a cleared cache): ask the server.
+    final exchanged = await _exchange();
+    return exchanged.when(
+      ok: (state) => state,
+      err: (_) => const AuthState.signedOut(),
+    );
+  }
+
+  @override
+  Stream<AuthState> changes() async* {
+    await for (final uid in _credentials.uidChanges()) {
+      if (uid == null) {
+        await _store.clear();
+        yield const AuthState.signedOut();
+      } else {
+        yield await restore();
+      }
+    }
+  }
+
+  /// The token exchange. Runs after every successful Firebase sign-in.
+  Future<Result<AuthState>> _exchange() async {
+    final token = await _credentials.idToken();
+    if (token != null) await _store.writeIdToken(token);
+
+    final result = await _session.createSession(
+      CreateSessionRequest(timezone: _timeZoneName(), locale: _localeTag()),
+    );
+    return result.when(
+      ok: (response) async {
+        await _store.writeProfileJson(jsonEncode(response.user.toJson()));
+        return Ok(
+          AuthState.signedIn(response.user, isNewUser: response.isNewUser),
+        );
+      },
+      err: (failure) async {
+        // Firebase accepted the credential but the backend did not create a
+        // session. Do not leave a half-signed-in state behind.
+        await _credentials.signOut();
+        await _store.clear();
+        return Err<AuthState>(failure);
+      },
+    );
+  }
+
+  Future<Result<AuthState>> _afterCredential(Result<void> signIn) =>
+      signIn.when(
+        ok: (_) => _exchange(),
+        err: (failure) async => Err(failure),
+      );
+
+  @override
+  Future<Result<AuthState>> signInWithEmail({
+    required String email,
+    required String password,
+  }) async =>
+      _afterCredential(await _credentials.signInWithEmail(email, password));
+
+  @override
+  Future<Result<AuthState>> signUpWithEmail({
+    required String email,
+    required String password,
+  }) async =>
+      _afterCredential(await _credentials.signUpWithEmail(email, password));
+
+  @override
+  Future<Result<AuthState>> signInWithGoogle() async =>
+      _afterCredential(await _credentials.signInWithGoogle());
+
+  @override
+  Future<Result<void>> sendPasswordReset({required String email}) =>
+      _credentials.sendPasswordReset(email);
+
+  @override
+  Future<void> signOut() async {
+    // Server first while we still hold a valid token; best effort.
+    await _session.deleteSession();
+    await _credentials.signOut();
+    await _store.clear();
+  }
+}

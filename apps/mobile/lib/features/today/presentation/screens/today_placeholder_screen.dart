@@ -1,23 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/config/env.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/hairline_section.dart';
+import '../../../auth/domain/entities/auth_state.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 
-/// Phase 0 placeholder for the TODAY screen.
+/// Placeholder for the TODAY screen, now behind the auth gate.
 ///
-/// It renders the design language from §6 and nothing else. There is
-/// deliberately no data, no API call and no computation here: §7.3 and §30
-/// place every fitness calculation on the backend, and §"Never fake
-/// functionality" forbids a mocked dashboard that looks like a working one.
-///
-/// The real screen is built in Phase 11, fed by `GET /today`.
-class TodayPlaceholderScreen extends StatelessWidget {
+/// It renders the design language from §6 and the signed-in profile the
+/// backend returned, and offers sign-out. There is still no data, no engine
+/// output and no computation here (§7.3, §30): the real screen is built in
+/// Phase 11, fed by `GET /today`.
+class TodayPlaceholderScreen extends ConsumerWidget {
   const TodayPlaceholderScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
+    final auth = ref.watch(authControllerProvider);
+    final state = auth.value;
+    final profile = state is AuthSignedIn ? state.profile : null;
 
     return Scaffold(
       body: SafeArea(
@@ -35,25 +39,26 @@ class TodayPlaceholderScreen extends StatelessWidget {
               // Numbers are the hero (§6.3). This one is a literal, not a
               // computed value — the engine that produces it lives on the
               // backend and is wired in Phase 11.
-              Text('Phase 0', style: textTheme.displayMedium),
+              Text('Phase 1', style: textTheme.displayMedium),
               const SizedBox(height: FitSpacing.sm),
               Text(
-                'Foundation only. No features are wired yet.',
+                'Signed in. No features are wired yet.',
                 style: textTheme.bodyLarge,
               ),
               const SizedBox(height: FitSpacing.lg),
 
-              const HairlineSection(
-                label: 'What this screen proves',
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    _Line(text: 'Paper ground, ink type, hairline sections.'),
-                    _Line(text: 'Type scale carries hierarchy, not boxes.'),
-                    _Line(text: 'Riverpod, go_router and the theme are wired.'),
-                  ],
+              if (profile != null)
+                HairlineSection(
+                  label: 'Your session',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      _Line(text: profile.email ?? 'No email on this account'),
+                      _Line(text: 'Time zone ${profile.timezone}'),
+                      _Line(text: 'Locale ${profile.locale}'),
+                    ],
+                  ),
                 ),
-              ),
               const SizedBox(height: FitSpacing.lg),
 
               const HairlineSection(
@@ -76,6 +81,22 @@ class TodayPlaceholderScreen extends StatelessWidget {
                   'Flavour ${Env.flavor} · API ${Env.apiBaseUrl}',
                   style: textTheme.bodyMedium,
                 ),
+              ),
+              const SizedBox(height: FitSpacing.xl),
+
+              OutlinedButton(
+                onPressed: auth.isLoading
+                    ? null
+                    : () => ref.read(authControllerProvider.notifier).signOut(),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: FitColors.ink,
+                  side: const BorderSide(color: FitColors.ink),
+                  minimumSize: const Size(88, 48),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(FitRadius.small),
+                  ),
+                ),
+                child: const Text('Sign out'),
               ),
             ],
           ),

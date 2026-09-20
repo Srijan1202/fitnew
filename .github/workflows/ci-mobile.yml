@@ -37,6 +37,13 @@ jobs:
       - name: Resolve dependencies
         run: flutter pub get
 
+      # Generated .g.dart/.freezed.dart files are committed so a clone builds
+      # without codegen. This regenerates and fails if the checkin is stale.
+      - name: Codegen is current
+        run: |
+          dart run build_runner build
+          git diff --exit-code -- '*.g.dart' '*.freezed.dart'
+
       # `dart analyze` must be clean, not merely warning-free: the standing
       # quality bar in the spec requires it.
       - name: Analyze
