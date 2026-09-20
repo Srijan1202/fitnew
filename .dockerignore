@@ -18,7 +18,21 @@ apps/mobile
 # Secrets must come from Secret Manager / compose env, never from a layer (§24).
 .env
 **/.env
-*-service-account.json
+.secrets
+**/.secrets
+*service-account*.json
+*serviceaccount*.json
+*service_account*.json
+*-adminsdk-*.json
+*firebase-adminsdk*.json
+serviceAccountKey.json
+google-credentials.json
+gcp-credentials.json
+*.pem
+*.p12
+*.key
+*.keystore
+*.jks
 
 # Noise
 .git

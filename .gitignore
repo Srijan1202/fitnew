@@ -7,12 +7,41 @@ dist/
 build/
 *.tsbuildinfo
 
-# env & secrets — never commit
+# env & secrets — never commit (§24)
 .env
 .env.*
 !.env.example
-*-service-account.json
+
+# Service-account keys. Firebase downloads these as
+# <project>-firebase-adminsdk-<hash>.json, which no narrow pattern catches, so
+# these are deliberately broad. A leaked admin key is full read/write on every
+# user's data.
+*service-account*.json
+*serviceaccount*.json
+*service_account*.json
+*-adminsdk-*.json
+*firebase-adminsdk*.json
+serviceAccountKey.json
 google-credentials.json
+gcp-credentials.json
+
+# Keys, certs and signing material
+*.pem
+*.p12
+*.pfx
+*.key
+*.keystore
+*.jks
+apps/mobile/android/key.properties
+
+# Firebase CLI local state
+.firebase/
+firebase-debug.log
+
+# Conventional home for local credential files. Anything in here is ignored
+# wholesale, so a key dropped in the wrong place still cannot be committed.
+.secrets/
+**/.secrets/
 
 # flutter / dart
 apps/mobile/.dart_tool/
