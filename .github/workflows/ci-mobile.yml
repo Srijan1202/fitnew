@@ -49,6 +49,10 @@ jobs:
       - name: Analyze
         run: dart analyze --fatal-infos
 
+      # riverpod_lint: provider misuse, missing ref disposal, etc.
+      - name: Riverpod lint
+        run: dart run custom_lint
+
       - name: Format check
         run: dart format --output=none --set-exit-if-changed .
 

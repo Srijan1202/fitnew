@@ -1,6 +1,9 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
+  # riverpod_lint runs via `dart run custom_lint` (also a ci-mobile step), not
+  # as an analyzer plugin: the legacy `plugins:` key is deprecated in Dart 3.13
+  # and trips --fatal-infos. IDE integration is a per-developer choice.
   language:
     strict-casts: true
     strict-inference: true

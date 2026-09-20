@@ -69,12 +69,11 @@ dev_dependencies:
   freezed: 3.2.3
   json_serializable: 6.11.2
   riverpod_generator: 3.0.0
-  # TODO(Phase 1): re-add custom_lint and riverpod_lint.
-  # Dropped at Phase 0: custom_lint <0.7.1 caps analyzer_plugin at ^0.11.0 while
-  # riverpod_lint 3.0.0 requires ^0.13.0, and the two cannot co-resolve. Both are
-  # IDE-only lint plugins — nothing in the app or in ci-mobile.yml depends on
-  # them, and there is no Riverpod provider code yet for riverpod_lint to
-  # inspect. Re-add when the auth providers land and the versions have settled.
+  custom_lint: 0.8.1
+  riverpod_lint: 3.0.0
+  # Re-added in Phase 1 once custom_lint 0.8.x shipped analyzer_plugin ^0.13,
+  # resolving the Phase 0 conflict with riverpod_lint. Runs in CI via
+  # `dart run custom_lint`, not as an analyzer plugin (legacy key deprecated).
 
 flutter:
   uses-material-design: true
