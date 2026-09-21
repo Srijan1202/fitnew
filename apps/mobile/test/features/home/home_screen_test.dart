@@ -420,4 +420,32 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('PROFILE'), findsOneWidget);
   });
+
+  testWidgets(
+      'a permission revoked outside FITOS: Refresh re-reads the grants and the old value is gone, not kept as current',
+      (tester) async {
+    health.connection_ = const HealthConnectionState(
+      sdk: HealthSdkStatus.available,
+      granted: {HealthMetricKind.steps},
+    );
+    health.snapshot_ = snapshot({HealthMetricKind.steps}, steps: 6842);
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    expect(textOf(tester, 'home.steps').data, '6,842');
+
+    // Revoked in Health Connect while FITOS was in the background.
+    health.connection_ = available;
+    health.snapshot_ = null;
+    await tester.tap(find.byKey(const ValueKey('home.steps')));
+    await tester.pumpAndSettle();
+    await reveal(tester, find.byKey(const ValueKey('health.refresh')));
+    await tester.tap(find.byKey(const ValueKey('health.refresh')));
+    await tester.pumpAndSettle();
+    expect(textOf(tester, 'health.status').data, 'Not connected');
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(textOf(tester, 'home.steps').data, 'Connect Health data');
+    expect(find.text('6,842'), findsNothing);
+    expect(health.calls.where((c) => c == 'connection').length, greaterThan(1));
+  });
 }

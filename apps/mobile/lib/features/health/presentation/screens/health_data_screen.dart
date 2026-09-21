@@ -191,7 +191,8 @@ class _Body extends ConsumerWidget {
             ),
             OutlinedButton(
               key: const ValueKey('health.refresh'),
-              onPressed: controller.refresh,
+              onPressed: () =>
+                  ref.read(healthSnapshotProvider.notifier).refreshAll(),
               child: const Text('Refresh'),
             ),
           ],

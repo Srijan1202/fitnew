@@ -27,7 +27,7 @@ class HomeScreen extends ConsumerWidget {
       ..invalidate(todayProvider)
       ..invalidate(volumeProvider)
       ..invalidate(historyProvider);
-    await ref.read(healthConnectionProvider.notifier).refresh();
+    await ref.read(healthSnapshotProvider.notifier).refreshAll();
   }
 
   Future<void> _act(BuildContext context, WidgetRef ref, Suggestion s) async {

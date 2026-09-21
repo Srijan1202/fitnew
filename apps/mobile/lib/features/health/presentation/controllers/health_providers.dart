@@ -79,10 +79,12 @@ class HealthConnectionController extends AsyncNotifier<HealthConnectionState> {
   }
 
   /// Re-read the SDK status and grants (a permission may have been
-  /// revoked in Health Connect since).
+  /// revoked in Health Connect since). A changed grant set rebuilds the
+  /// snapshot, which watches this provider; an unchanged one does not —
+  /// callers that want a fresh read too use
+  /// `healthSnapshotProvider.notifier.refreshAll()`.
   Future<void> refresh() async {
     state = AsyncData(await _provider.connection());
-    ref.invalidate(healthSnapshotProvider);
   }
 
   /// Ask for a category's permissions (the provider's own sheet), then
@@ -93,7 +95,6 @@ class HealthConnectionController extends AsyncNotifier<HealthConnectionState> {
     };
     final next = await _provider.requestPermissions(kinds);
     state = AsyncData(next);
-    ref.invalidate(healthSnapshotProvider);
     return next;
   }
 
@@ -155,8 +156,16 @@ class HealthSnapshotController extends AsyncNotifier<HealthSnapshot> {
     return live;
   }
 
-  /// Foreground refresh: Home shown, app resumed, pull to refresh.
+  /// Re-read the snapshot with the grants as they are.
   Future<void> refresh() async {
+    state = AsyncData(await _load());
+  }
+
+  /// Foreground refresh (Home shown, app resumed, pull to refresh, the
+  /// Refresh button): grants first — a revocation must show as such — then
+  /// the snapshot, even when the grants did not change.
+  Future<void> refreshAll() async {
+    await ref.read(healthConnectionProvider.notifier).refresh();
     state = AsyncData(await _load());
   }
 }
@@ -186,9 +195,8 @@ final healthRefreshCoordinatorProvider =
     Provider<HealthRefreshCoordinator?>((ref) {
   if (ref.watch(sessionUserIdProvider) == null) return null;
   final c = HealthRefreshCoordinator(() {
-    // Grants may have changed while away; the connection refresh
-    // invalidates the snapshot, which refetches.
-    ref.read(healthConnectionProvider.notifier).refresh();
+    // Grants may have changed while away; then a fresh read.
+    ref.read(healthSnapshotProvider.notifier).refreshAll();
   });
   ref.onDispose(c.dispose);
   return c;
