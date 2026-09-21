@@ -165,15 +165,11 @@ class TodaySessionPanel extends ConsumerWidget {
               style: textTheme.bodyMedium?.copyWith(color: FitColors.amber),
             ),
           ),
-        TextButton(
+        const SizedBox(height: FitSpacing.sm),
+        OutlinedButton(
           key: const ValueKey('today.volume'),
           onPressed: () => context.push(Routes.volume),
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.zero,
-            minimumSize: const Size(0, 36),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          child: const Text('Weekly volume'),
+          child: const Text('See weekly volume →'),
         ),
       ],
     ];

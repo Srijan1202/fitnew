@@ -48,7 +48,14 @@ class SyncEngine {
 
   bool _draining = false;
   bool _again = false;
+  bool _sentAny = false;
   Completer<void>? _done;
+  final _drained = StreamController<void>.broadcast();
+
+  /// Fires after a drain in which at least one mutation reached the
+  /// server — the moment the server's view of the user (today, volume,
+  /// recommendations) may have moved.
+  Stream<void> get drained => _drained.stream;
 
   /* ----------------------------------------------------------- queue -- */
 
@@ -260,6 +267,7 @@ class SyncEngine {
   }
 
   Future<void> _run() async {
+    _sentAny = false;
     try {
       do {
         _again = false;
@@ -268,6 +276,7 @@ class SyncEngine {
     } finally {
       _draining = false;
       _done!.complete();
+      if (_sentAny && !_drained.isClosed) _drained.add(null);
     }
   }
 
@@ -297,6 +306,7 @@ class SyncEngine {
       final outcome = await _send(entry);
       switch (outcome) {
         case _Sent():
+          _sentAny = true;
           continue;
         case _Stop():
           return;

@@ -101,6 +101,13 @@ abstract class WorkoutRepository {
 
   /* ---------------------------------------------------------- syncing -- */
 
+  /// Fires whenever the server's derived view of the user (today, a day,
+  /// volume — recommendations, neglect, deload, done-today) may have
+  /// moved: a session started, completed or abandoned on this phone, and
+  /// every drain that reached the server. The screens that cache that
+  /// view refetch on it (Phase 6 refresh fix).
+  Stream<void> watchServerChanges();
+
   Stream<SyncStatus> watchSync();
   Future<SyncStatus> syncStatus();
 

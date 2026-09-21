@@ -92,10 +92,26 @@ final sessionProvider =
   return ref.watch(workoutRepositoryProvider).watchSession(clientSessionId);
 });
 
+/// Counts the repository's "the server's view may have moved" events:
+/// a session started / completed / abandoned here, or a drain that
+/// reached the server. `todayProvider`, `dayProvider` and
+/// `volumeProvider` watch it and refetch on every tick — Home is kept
+/// alive by the shell, so an explicit signal is the only way its cached
+/// answer follows what the user just did.
+final serverRefreshProvider = StreamProvider<int>((ref) {
+  requireSession(ref);
+  var n = 0;
+  return ref.watch(workoutRepositoryProvider).watchServerChanges().map(
+        (_) => ++n,
+      );
+});
+
 /// Today's day with targets and last performance; cached for offline.
+/// Refetched on every [serverRefreshProvider] tick.
 final todayProvider = FutureProvider<TodayResponse>(
   (ref) async {
     requireSession(ref);
+    ref.watch(serverRefreshProvider);
     final result = await ref.watch(workoutRepositoryProvider).today();
     return result.when(ok: (t) => t, err: (f) => throw f);
   },
@@ -106,6 +122,7 @@ final todayProvider = FutureProvider<TodayResponse>(
 final dayProvider = FutureProvider.family<TodayResponse, int>(
   (ref, dayOfWeek) async {
     requireSession(ref);
+    ref.watch(serverRefreshProvider);
     final result =
         await ref.watch(workoutRepositoryProvider).today(dayOfWeek: dayOfWeek);
     return result.when(ok: (t) => t, err: (f) => throw f);
@@ -127,6 +144,7 @@ final historyProvider = FutureProvider<SessionListResponse>(
 final volumeProvider = FutureProvider<VolumeResponse>(
   (ref) async {
     requireSession(ref);
+    ref.watch(serverRefreshProvider);
     final result = await ref.watch(workoutRepositoryProvider).volume();
     return result.when(ok: (v) => v, err: (f) => throw f);
   },

@@ -39,6 +39,12 @@ class LocalWorkoutRepository implements WorkoutRepository {
 
   String _stamp() => _now().toUtc().toIso8601String();
 
+  /// Local intents that change what the server will answer next.
+  final _serverChanges = StreamController<void>.broadcast();
+  void _serverMayHaveChanged() {
+    if (!_serverChanges.isClosed) _serverChanges.add(null);
+  }
+
   late final TableUpdateQuery _anySessionTable = TableUpdateQuery.onAllTables([
     _db.localSessions,
     _db.localSessionExercises,
@@ -316,6 +322,7 @@ class LocalWorkoutRepository implements WorkoutRepository {
       );
     });
     _sync.kick();
+    _serverMayHaveChanged();
     return (await _load(clientSessionId))!;
   }
 
@@ -646,6 +653,7 @@ class LocalWorkoutRepository implements WorkoutRepository {
       );
     });
     _sync.kick();
+    _serverMayHaveChanged();
   }
 
   @override
@@ -663,6 +671,25 @@ class LocalWorkoutRepository implements WorkoutRepository {
       _finish(clientSessionId, SessionStatus.abandoned);
 
   /* ------------------------------------------------------------ sync -- */
+
+  @override
+  Stream<void> watchServerChanges() {
+    // Local intents and drains that reached the server, as one stream.
+    late StreamController<void> out;
+    StreamSubscription<void>? a;
+    StreamSubscription<void>? b;
+    out = StreamController<void>(
+      onListen: () {
+        a = _serverChanges.stream.listen(out.add);
+        b = _sync.drained.listen(out.add);
+      },
+      onCancel: () async {
+        await a?.cancel();
+        await b?.cancel();
+      },
+    );
+    return out.stream;
+  }
 
   @override
   Stream<SyncStatus> watchSync() => _sync.watchStatus();
