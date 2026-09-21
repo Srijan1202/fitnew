@@ -2,6 +2,7 @@ import 'dart:ui' show Tristate;
 
 import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/errors/result.dart';
+import 'package:fitos/core/routing/app_shell.dart';
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/features/home/presentation/screens/home_screen.dart';
@@ -246,6 +247,64 @@ void main() {
       await androidBack(tester);
       expect(find.byType(WorkoutWeekScreen), findsOneWidget);
       expect(find.byKey(const ValueKey('nav.Home')), findsOneWidget);
+    });
+  });
+
+  group('floating bottom navigation (Phase 6.5)', () {
+    testWidgets(
+        'the bar floats over the body: translucent, hairline border, 60 px, inset from the edges, body extended under it',
+        (tester) async {
+      await tester.pumpWidget(app(initial: '/'));
+      await tester.pumpAndSettle();
+      final scaffold = tester.widget<Scaffold>(
+        find
+            .ancestor(
+              of: find.byKey(const ValueKey('nav.bar')),
+              matching: find.byType(Scaffold),
+            )
+            .first,
+      );
+      expect(scaffold.extendBody, isTrue);
+      final bar =
+          tester.widget<Container>(find.byKey(const ValueKey('nav.bar')));
+      final deco = bar.decoration! as BoxDecoration;
+      expect(deco.color!.a, lessThan(1.0), reason: 'translucent');
+      expect(deco.color!.a, greaterThan(0.8), reason: 'still paper');
+      expect(deco.border, isNotNull);
+      expect(deco.boxShadow, hasLength(1));
+      final size = tester.getSize(find.byKey(const ValueKey('nav.bar')));
+      expect(size.height, FitBottomBar.contentHeight);
+      final rect = tester.getRect(find.byKey(const ValueKey('nav.bar')));
+      final screen = tester.getSize(find.byType(MaterialApp));
+      expect(rect.left, FitBottomBar.sideMargin);
+      expect(screen.width - rect.right, FitBottomBar.sideMargin);
+      expect(screen.height - rect.bottom, FitBottomBar.bottomMargin);
+      // Every item is a full-height touch target.
+      for (final label in ['Home', 'Training', 'AI', 'Nutrition', 'Market']) {
+        expect(
+          tester.getSize(find.byKey(ValueKey('nav.$label'))).height,
+          FitBottomBar.contentHeight,
+        );
+      }
+    });
+
+    testWidgets('the floating bar still switches every tab and keeps state',
+        (tester) async {
+      await tester.pumpWidget(app(initial: '/'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('nav.Training')));
+      await tester.pumpAndSettle();
+      expect(find.byType(WorkoutWeekScreen), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('day.tab.3')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('nav.Home')));
+      await tester.pumpAndSettle();
+      expect(find.byType(HomeScreen), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('nav.Training')));
+      await tester.pumpAndSettle();
+      // The day chosen before leaving is still selected (indexed stack).
+      expect(find.byType(WorkoutWeekScreen), findsOneWidget);
+      expect(find.byKey(const ValueKey('day.tab.3')), findsOneWidget);
     });
   });
 }

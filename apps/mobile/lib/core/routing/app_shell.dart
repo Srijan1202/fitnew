@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -85,6 +87,9 @@ class AppShell extends StatelessWidget {
         if (!didPop) navigationShell.goBranch(0);
       },
       child: Scaffold(
+        // Phase 6.5: the bar floats over the content, so the body extends
+        // under it; screens keep their bottom SafeArea / padding.
+        extendBody: true,
         body: navigationShell,
         bottomNavigationBar: FitBottomBar(selected: index, onSelect: _select),
       ),
@@ -92,8 +97,12 @@ class AppShell extends StatelessWidget {
   }
 }
 
-/// The bar itself, in the §6 language: paper, a hairline on top, ink for
-/// the selected destination, ink35 for the rest; no filled indicator pill.
+/// The bar itself, in the §6 language and, since Phase 6.5, floating: a
+/// translucent paper surface with a light blur, a hairline border, a
+/// restrained shadow, corners at the medium radius (not a pill), 60 px of
+/// content above the bottom safe area; ink for the selected destination,
+/// ink35 for the rest; no filled indicator pill. Touch targets stay the
+/// full item height.
 class FitBottomBar extends StatelessWidget {
   const FitBottomBar({
     required this.selected,
@@ -104,31 +113,58 @@ class FitBottomBar extends StatelessWidget {
   final int selected;
   final ValueChanged<int> onSelect;
 
+  static const double contentHeight = 60;
+  static const double sideMargin = 12;
+  static const double bottomMargin = 10;
+
+  /// Paper at 88%: the content shows through, the labels stay legible.
+  static const Color surface = Color(0xE0EDEBE4);
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return Material(
-      color: FitColors.paper,
-      child: SafeArea(
-        top: false,
-        child: Container(
-          height: 64,
-          decoration: const BoxDecoration(
-            border: Border(top: BorderSide(color: FitColors.rule)),
-          ),
-          child: Row(
-            children: <Widget>[
-              for (var i = 0; i < kShellDestinations.length; i++)
-                Expanded(
-                  child: _BarItem(
-                    key: ValueKey('nav.${kShellDestinations[i].label}'),
-                    destination: kShellDestinations[i],
-                    on: i == selected,
-                    onTap: () => onSelect(i),
-                    textTheme: textTheme,
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.only(bottom: bottomMargin),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: sideMargin),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.all(FitRadius.medium),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              key: const ValueKey('nav.bar'),
+              height: contentHeight,
+              decoration: BoxDecoration(
+                color: surface,
+                border: Border.all(color: FitColors.rule),
+                borderRadius: const BorderRadius.all(FitRadius.medium),
+                boxShadow: const <BoxShadow>[
+                  BoxShadow(
+                    color: Color(0x1A17171A),
+                    blurRadius: 12,
+                    offset: Offset(0, 4),
                   ),
+                ],
+              ),
+              child: Material(
+                type: MaterialType.transparency,
+                child: Row(
+                  children: <Widget>[
+                    for (var i = 0; i < kShellDestinations.length; i++)
+                      Expanded(
+                        child: _BarItem(
+                          key: ValueKey('nav.${kShellDestinations[i].label}'),
+                          destination: kShellDestinations[i],
+                          on: i == selected,
+                          onTap: () => onSelect(i),
+                          textTheme: textTheme,
+                        ),
+                      ),
+                  ],
                 ),
-            ],
+              ),
+            ),
           ),
         ),
       ),
