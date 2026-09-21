@@ -1,5 +1,7 @@
 ## PHASE 5 COMPLETE — Workout logging
 
+**ACCEPTED by the owner 2026-09-21** — all 13 manual Android acceptance checks passed. No further Phase 5 changes.
+
 **Date** 2026-09-21 · **Branch** `phase-5` → `main` · **Commit** `b874431` (everything, fast-forwarded from `phase-5`), plus this report
 **CI on `b874431`:** ci-core ✓ (core 428 + contracts 32) · ci-api ✓ (153 on PG 18, image booted) · ci-mobile ✓ (174 tests, analyze, custom_lint, format, APK)
 **Plan** [phase-5-plan.md](../phase-plans/phase-5-plan.md) (approved, owner decisions 8.1–8.7) · **Decision record** [ADR-006](../decisions/ADR-006-local-first-logging.md)
@@ -132,9 +134,7 @@ TESTS
   - coverage: not measured — §18 gate
 
 KNOWN ISSUES
-  - **Manual Android acceptance not yet executed** — checklist in the closing message; the app
-    needs a rebuild (`flutter run --dart-define=…`); grant the notification permission when
-    asked for the rest-timer notification.
+  - Manual Android acceptance: **executed and passed (13/13), owner sign-off 2026-09-21.**
   - Local `flutter test` on the owner's Windows machine is blocked since 16:13 today by Windows
     **Smart App Control** (enforce mode) on the unsigned `flutter_tester.exe` — an OS policy, not
     a repo fault. ci-mobile is authoritative (owner 8.7) and green. `winsqlite3.dll` covers the
