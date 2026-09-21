@@ -4,7 +4,9 @@ import 'package:fitos/core/theme/tokens.dart';
 import 'package:fitos/features/auth/domain/entities/auth_state.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_providers.dart';
 import 'package:fitos/core/errors/result.dart';
+import 'package:fitos/features/home/presentation/screens/home_screen.dart';
 import 'package:fitos/features/onboarding/presentation/controllers/onboarding_controller.dart';
+import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:fitos/features/profile/domain/entities/vocabulary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'support/fake_auth_repository.dart';
 import 'support/fake_onboarding_repository.dart';
+import 'support/fake_profile_repository.dart';
 import 'support/fake_workout_api.dart';
 import 'support/workout_overrides.dart';
 
@@ -40,6 +43,7 @@ void main() {
         overrides: [
           authRepositoryProvider.overrideWithValue(repo),
           onboardingRepositoryProvider.overrideWithValue(onboarding),
+          profileRepositoryProvider.overrideWithValue(FakeProfileRepository()),
           ...workoutOverrides(db, workoutApi),
         ],
         child: const FitOSApp(),
@@ -52,7 +56,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Continue with Google'), findsOneWidget);
-    expect(find.text('Phase 4'), findsNothing);
+    expect(find.byType(HomeScreen), findsNothing);
 
     final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
     final theme = Theme.of(tester.element(find.byType(Scaffold).first));
@@ -68,8 +72,8 @@ void main() {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
-    expect(find.text('Phase 4'), findsOneWidget);
-    expect(find.text('student@vit.ac.in'), findsOneWidget);
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(find.byKey(const ValueKey('home.date')), findsOneWidget);
     expect(find.text('Continue with Google'), findsNothing);
   });
 
@@ -84,7 +88,7 @@ void main() {
 
     expect(repo.calls, contains('signOut'));
     expect(find.text('Continue with Google'), findsOneWidget);
-    expect(find.text('Phase 4'), findsNothing);
+    expect(find.byType(HomeScreen), findsNothing);
   });
 
   testWidgets('uses ink, not colour, for the primary type', (tester) async {
@@ -92,8 +96,9 @@ void main() {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
-    final heading = tester.widget<Text>(find.text('Phase 4'));
-    final context = tester.element(find.text('Phase 4'));
+    final heading =
+        tester.widget<Text>(find.byKey(const ValueKey('home.date')));
+    final context = tester.element(find.byKey(const ValueKey('home.date')));
     final style = heading.style ?? Theme.of(context).textTheme.displayMedium!;
     expect(style.color, FitColors.ink);
   });
@@ -108,7 +113,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('STEP 4 OF 7'), findsOneWidget);
-    expect(find.text('Phase 4'), findsNothing);
+    expect(find.byType(HomeScreen), findsNothing);
     expect(onboarding.calls, contains('getState'));
   });
 
@@ -146,10 +151,10 @@ void main() {
     expect(find.text('106'), findsOneWidget);
     expect(find.text('Mifflin-St Jeor BMR 1348 kcal'), findsOneWidget);
     // Still on the plan — the guard did not yank the screen away.
-    expect(find.text('Phase 4'), findsNothing);
+    expect(find.byType(HomeScreen), findsNothing);
 
     await tester.tap(find.text('Start'));
     await tester.pumpAndSettle();
-    expect(find.text('Phase 4'), findsOneWidget);
+    expect(find.byType(HomeScreen), findsOneWidget);
   });
 }

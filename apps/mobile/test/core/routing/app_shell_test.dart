@@ -4,6 +4,7 @@ import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
+import 'package:fitos/features/home/presentation/screens/home_screen.dart';
 import 'package:fitos/features/auth/domain/entities/auth_state.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_providers.dart';
@@ -99,7 +100,7 @@ void main() {
       final handled = await androidBack(tester);
       expect(handled, isTrue);
       expect(tester.takeException(), isNull);
-      expect(find.text('Phase 4'), findsOneWidget, reason: 'TODAY');
+      expect(find.byType(HomeScreen), findsOneWidget, reason: 'TODAY');
       expect(find.byType(WorkoutWeekScreen), findsNothing);
     });
 
@@ -124,7 +125,7 @@ void main() {
 
       expect(await androidBack(tester), isTrue);
       expect(tester.takeException(), isNull);
-      expect(find.text('Phase 4'), findsOneWidget);
+      expect(find.byType(HomeScreen), findsOneWidget);
     });
 
     testWidgets('a deeper training screen pops back to the plan, with the bar',
@@ -150,7 +151,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(await androidBack(tester), isFalse);
       expect(tester.takeException(), isNull);
-      expect(find.text('Phase 4'), findsOneWidget);
+      expect(find.byType(HomeScreen), findsOneWidget);
     });
   });
 
@@ -208,7 +209,7 @@ void main() {
       expect(selected('Training'), isTrue);
 
       await go('Home');
-      expect(find.text('Phase 4'), findsOneWidget);
+      expect(find.byType(HomeScreen), findsOneWidget);
       expect(selected('Home'), isTrue);
     });
 

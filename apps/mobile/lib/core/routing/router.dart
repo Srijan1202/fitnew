@@ -13,7 +13,7 @@ import '../../features/onboarding/presentation/screens/onboarding_flow_screen.da
 import '../../features/placeholders/presentation/screens/coming_soon_screen.dart';
 import '../../features/profile/presentation/screens/goal_editor_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
-import '../../features/today/presentation/screens/today_placeholder_screen.dart';
+import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/training/presentation/screens/custom_builder_screen.dart';
 import '../../features/training/presentation/screens/day_editor_screen.dart';
 import '../../features/training/presentation/screens/generate_options_screen.dart';
@@ -155,7 +155,7 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
               GoRoute(
                 path: Routes.today,
                 name: 'today',
-                builder: (context, state) => const TodayPlaceholderScreen(),
+                builder: (context, state) => const HomeScreen(),
               ),
             ],
           ),

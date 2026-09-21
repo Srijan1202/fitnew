@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../../../core/db/app_database.dart';
@@ -48,13 +49,23 @@ final localTodayProvider = Provider<String>((ref) {
   return '${now.year}-$mm-$dd';
 });
 
+bool _tzReady = false;
+
+/// The tz database, loaded once on first use (also by the provider).
 tz.Location _location(String zone) {
+  if (!_tzReady) {
+    tzdata.initializeTimeZones();
+    _tzReady = true;
+  }
   try {
     return tz.getLocation(zone);
   } on Object {
     return tz.UTC;
   }
 }
+
+/// For other providers that need a zone.
+tz.Location userLocation(String zone) => _location(zone);
 
 /* --------------------------------------------------------- connection -- */
 
