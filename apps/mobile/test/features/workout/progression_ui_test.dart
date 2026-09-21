@@ -494,14 +494,8 @@ void main() {
     final status = textOf(tester, 'volume.chest.status');
     expect(status.data, 'Very low');
     expect(status.style?.color, FitColors.oxide);
-    final row = tester.widget<Container>(
-      find
-          .ancestor(
-            of: find.byKey(const ValueKey('volume.row.chest')),
-            matching: find.byType(Container),
-          )
-          .first,
-    );
+    final row = tester
+        .widget<Container>(find.byKey(const ValueKey('volume.row.chest')));
     expect(
       ((row.decoration! as BoxDecoration).border! as Border).left.color,
       FitColors.oxide,
@@ -529,7 +523,7 @@ void main() {
 
     // Tap chest: this week vs last, the status in words, the explanation,
     // the four weeks in human labels with dates — still no landmarks.
-    await tester.tap(find.byKey(const ValueKey('volume.row.chest')));
+    await tester.tap(find.byKey(const ValueKey('volume.row.chest.tap')));
     await settle(tester);
     expect(find.byKey(const ValueKey('volume.chest.detail')), findsOneWidget);
     expect(
@@ -570,7 +564,7 @@ void main() {
     await settle(tester);
     expect(find.byKey(const ValueKey('volume.chest.landmarks')), findsNothing);
     // Collapse the row.
-    await tester.tap(find.byKey(const ValueKey('volume.row.chest')));
+    await tester.tap(find.byKey(const ValueKey('volume.row.chest.tap')));
     await settle(tester);
     expect(find.byKey(const ValueKey('volume.chest.detail')), findsNothing);
   });
