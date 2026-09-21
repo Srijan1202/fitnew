@@ -412,7 +412,7 @@ coverage   not measured — §18 gate
 
 # PART C — Final UX and bug-fix pass (owner's second manual review)
 
-**Date** 2026-09-21 · **Commit** COMMIT_PLACEHOLDER · **CI:** CI_PLACEHOLDER
+**Date** 2026-09-21 · **Commit** `f0930d6` (everything), plus this report line · **CI on `f0930d6`:** ci-core ✓ · ci-api ✓ · ci-mobile ✓
 
 Seven issues from the owner's Android review. Each was traced to a cause
 before anything was changed; the causes are recorded here because three of
