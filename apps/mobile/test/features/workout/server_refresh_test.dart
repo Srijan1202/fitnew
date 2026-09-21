@@ -38,12 +38,15 @@ void main() {
         ...workoutOverrides(db, api),
       ],
     );
-    // Keep the view providers alive, as the mounted Home does.
-    container
-      ..listen(todayProvider, (_, __) {})
-      ..listen(volumeProvider, (_, __) {})
-      ..listen(dayProvider(1), (_, __) {});
   });
+
+  /// Keep the view providers alive, as the mounted Home does. Called
+  /// inside each provider test (not in setUp) so the widget tests below
+  /// start their fetches inside their own test zone.
+  void keepAlive() => container
+    ..listen(todayProvider, (_, __) {})
+    ..listen(volumeProvider, (_, __) {})
+    ..listen(dayProvider(1), (_, __) {});
   tearDown(() async {
     container.dispose();
     await db.close();
@@ -66,6 +69,7 @@ void main() {
   test(
       'completing a session causes a second today (and volume) fetch, and the new answer is the one shown',
       () async {
+    keepAlive();
     final repo = container.read(workoutRepositoryProvider);
     await container.read(todayProvider.future);
     await container.read(dayProvider(1).future);
@@ -96,6 +100,7 @@ void main() {
   });
 
   test('abandoning a session refreshes TODAY', () async {
+    keepAlive();
     final repo = container.read(workoutRepositoryProvider);
     await container.read(todayProvider.future);
     final s = await repo.startSession(day: api.todayResponse);
@@ -109,6 +114,7 @@ void main() {
   });
 
   test('starting a session refreshes today, the day and volume', () async {
+    keepAlive();
     final repo = container.read(workoutRepositoryProvider);
     await container.read(todayProvider.future);
     await container.read(dayProvider(1).future);
@@ -127,6 +133,7 @@ void main() {
   test(
       'a drain that reaches the server after an offline session refreshes TODAY and volume; an empty drain does not',
       () async {
+    keepAlive();
     final repo = container.read(workoutRepositoryProvider);
     await container.read(todayProvider.future);
     await container.read(volumeProvider.future);
