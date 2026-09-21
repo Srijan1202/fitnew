@@ -1100,10 +1100,12 @@ void main() {
         () {
       // Offline path: JSON cached before this build lacks the new keys.
       final fake = FakeWorkoutApi().todayResponse;
-      final old = fake.toJson()
-        ..remove('mesocycleWeek')
-        ..remove('deload')
-        ..remove('neglected');
+      // Through the wire first: freezed's toJson leaves nested objects.
+      final old =
+          (jsonDecode(jsonEncode(fake.toJson())) as Map<String, dynamic>)
+            ..remove('mesocycleWeek')
+            ..remove('deload')
+            ..remove('neglected');
       for (final x in old['exercises'] as List<dynamic>) {
         (x as Map<String, dynamic>)
           ..remove('recommendation')
