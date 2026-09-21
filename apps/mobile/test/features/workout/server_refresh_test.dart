@@ -217,10 +217,8 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(
-      tester
-          .widget<Text>(find.byKey(const ValueKey('volume.chest.2026-W39')))
-          .data,
-      '9',
+      tester.widget<Text>(find.byKey(const ValueKey('volume.chest.sets'))).data,
+      '9 sets',
     );
     // A session completes; the server now says 13.
     api.volumeResponse = volumeWith(13);
@@ -231,10 +229,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump();
     expect(
-      tester
-          .widget<Text>(find.byKey(const ValueKey('volume.chest.2026-W39')))
-          .data,
-      '13',
+      tester.widget<Text>(find.byKey(const ValueKey('volume.chest.sets'))).data,
+      '13 sets',
     );
   });
 
@@ -262,7 +258,7 @@ void main() {
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('See weekly volume →'), findsOneWidget);
+    expect(find.text('Training volume →'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('today.volume')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));

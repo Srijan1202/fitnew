@@ -417,7 +417,7 @@ void main() {
   });
 
   testWidgets(
-      'volume screen: four ISO weeks, owned muscles first, status rules and lines, landmarks, neglect',
+      'volume screen: plain rows this week, owned first; tap → this vs last week, explanation, four weeks in human labels; technical details behind a disclosure',
       (tester) async {
     VolumeWeek week(String iso, double chest, double calves) => VolumeWeek(
           isoWeek: iso,
@@ -478,25 +478,37 @@ void main() {
     makeContainer();
     await tester.pumpWidget(harness('/plan/volume'));
     await settle(tester);
-    for (final w in ['2026-W36', '2026-W37', '2026-W38', '2026-W39']) {
-      expect(find.byKey(ValueKey('volume.week.$w')), findsOneWidget);
-    }
-    expect(textOf(tester, 'volume.chest.2026-W38').data, '22');
-    expect(textOf(tester, 'volume.chest.2026-W39').data, '2');
-    // Current week: 2 sets is below MV → oxide rule and line.
+    // Primary screen: plain rows, this week only, no ISO week keys.
+    expect(find.text('Training volume'), findsOneWidget);
+    expect(
+      find.text("How much you've trained each muscle this week."),
+      findsOneWidget,
+    );
+    expect(
+      textOf(tester, 'volume.currentWeek').data,
+      'This week · 21–27 Sep',
+    );
+    expect(find.textContaining('W39'), findsNothing);
+    expect(textOf(tester, 'volume.chest.sets').data, '2 sets');
+    // 2 sets is below MV → "Very low" in oxide, and an oxide rule.
     final status = textOf(tester, 'volume.chest.status');
-    expect(status.data, 'Below maintenance (4 sets).');
+    expect(status.data, 'Very low');
     expect(status.style?.color, FitColors.oxide);
-    final row = tester
-        .widget<Container>(find.byKey(const ValueKey('volume.row.chest')));
+    final row = tester.widget<Container>(
+      find
+          .ancestor(
+            of: find.byKey(const ValueKey('volume.row.chest')),
+            matching: find.byType(Container),
+          )
+          .first,
+    );
     expect(
       ((row.decoration! as BoxDecoration).border! as Border).left.color,
       FitColors.oxide,
     );
-    expect(
-      textOf(tester, 'volume.chest.landmarks').data,
-      'MV 4 · MEV 8 · MAV 12–20 · MRV 22',
-    );
+    // Nothing technical on the primary screen.
+    expect(find.byKey(const ValueKey('volume.chest.detail')), findsNothing);
+    expect(find.textContaining('MEV'), findsNothing);
     expect(
       textOf(tester, 'volume.neglect.calves').data,
       'Calves has not been trained yet.',
@@ -514,6 +526,53 @@ void main() {
     ];
     expect(rows.take(2), ['chest', 'calves']);
     expect(rows.length, MuscleGroup.values.length);
+
+    // Tap chest: this week vs last, the status in words, the explanation,
+    // the four weeks in human labels with dates — still no landmarks.
+    await tester.tap(find.byKey(const ValueKey('volume.row.chest')));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('volume.chest.detail')), findsOneWidget);
+    expect(
+      textOf(tester, 'volume.chest.compare').data,
+      'This week 2 sets · last week 22 sets',
+    );
+    expect(textOf(tester, 'volume.chest.title').data, 'Very low volume');
+    expect(
+      textOf(tester, 'volume.chest.explanation').data,
+      startsWith('Fewer sets than it takes to hold on to what you have.'),
+    );
+    expect(find.text('This week · 21–27 Sep'), findsOneWidget);
+    expect(find.text('Last week · 14–20 Sep'), findsOneWidget);
+    expect(find.text('2 weeks ago · 7–13 Sep'), findsOneWidget);
+    expect(find.text('3 weeks ago · 31 Aug – 6 Sep'), findsOneWidget);
+    expect(
+      textOf(tester, 'volume.chest.history.2026-W38').data,
+      '22 sets',
+    );
+    expect(textOf(tester, 'volume.chest.history.2026-W36').data, '10 sets');
+    expect(find.textContaining('MEV'), findsNothing);
+
+    // "View technical details" keeps MV / MEV / MAV / MRV, the engine's
+    // status and the weighting available.
+    await tester.tap(find.byKey(const ValueKey('volume.chest.technical')));
+    await settle(tester);
+    expect(
+      textOf(tester, 'volume.chest.landmarks').data,
+      'MV 4 · MEV 8 · MAV 12–20 · MRV 22',
+    );
+    expect(find.text('below-mv'), findsOneWidget);
+    expect(
+      find.text('1 per primary muscle, 0.5 per secondary'),
+      findsOneWidget,
+    );
+    expect(find.text('Hide technical details'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('volume.chest.technical')));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('volume.chest.landmarks')), findsNothing);
+    // Collapse the row.
+    await tester.tap(find.byKey(const ValueKey('volume.row.chest')));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('volume.chest.detail')), findsNothing);
   });
 
   testWidgets(

@@ -169,7 +169,7 @@ class TodaySessionPanel extends ConsumerWidget {
         OutlinedButton(
           key: const ValueKey('today.volume'),
           onPressed: () => context.push(Routes.volume),
-          child: const Text('See weekly volume →'),
+          child: const Text('Training volume →'),
         ),
       ],
     ];
