@@ -115,6 +115,32 @@ export function recommendProgression(input: ProgressionInput): ProgressionRecomm
 
   const lastWeight = workingWeight(last);
   if (lastWeight === null) {
+    // 1b (Phase 6, owner decision 12.5): a bodyweight lift — every working
+    // set unloaded, reps recorded — progresses by reps, never by a load it
+    // does not have. Beyond the top of the range the honest next step is a
+    // set or a load, which the user decides.
+    const bodyweight = last.sets.length > 0 && last.sets.every((s) => s.weightKg <= 0 && s.reps > 0);
+    if (bodyweight) {
+      const bestReps = Math.max(...last.sets.map((s) => s.reps));
+      const allAtTop = last.sets.length >= target.sets && last.sets.every((s) => s.reps >= target.repMax);
+      if (allAtTop) {
+        return {
+          action: 'add-reps',
+          weightKg: null,
+          repTarget: `${target.repMax}+`,
+          targetRir: target.targetRir,
+          reason: `Bodyweight, and every set reached ${target.repMax} reps last time. Add a set, slow the reps down, or load it (a backpack, a plate) — this rule cannot add weight for you.`,
+        };
+      }
+      const next = Math.min(bestReps + 1, target.repMax);
+      return {
+        action: 'add-reps',
+        weightKg: null,
+        repTarget: `${next}–${target.repMax}`,
+        targetRir: target.targetRir,
+        reason: `Bodyweight: your best set last time was ${bestReps} reps. Aim for ${next} on the first set and work toward ${target.repMax} on all ${target.sets}.`,
+      };
+    }
     return {
       action: 'establish-baseline',
       weightKg: null,

@@ -43,7 +43,7 @@ export const PATTERN_ORDER: readonly MovementPattern[] = [
   'horizontal-pull', 'vertical-pull', 'chest-isolation', 'shoulder-isolation',
   'leg-isolation', 'elbow-flexion', 'elbow-extension', 'calf-raise', 'core', 'carry',
 ];
-const COMPOUND = new Set<MovementPattern>([
+export const COMPOUND = new Set<MovementPattern>([
   'squat', 'hinge', 'lunge', 'horizontal-push', 'vertical-push', 'horizontal-pull', 'vertical-pull',
 ]);
 

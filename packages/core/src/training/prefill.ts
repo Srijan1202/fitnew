@@ -8,6 +8,7 @@
  * Nothing here compares sessions or decides a next step; that is Phase 6's
  * `recommendProgression`.
  */
+import type { ProgressionRecommendation } from './progression.js';
 import type { LoggedSet } from './records.js';
 
 export interface PlannedSetTarget {
@@ -24,7 +25,7 @@ export interface SetPrefill {
   readonly weightKg: number | null;
   readonly rir: number;
   /** Where the weight came from. */
-  readonly weightSource: 'last-session' | 'plan' | 'none';
+  readonly weightSource: 'recommendation' | 'last-session' | 'plan' | 'none';
   /** Last time's matching set, for the "last time: 60 kg × 10 @ 2" line. */
   readonly lastTime: LoggedSet | null;
 }
@@ -33,10 +34,29 @@ export interface PrefillInput {
   readonly planned: PlannedSetTarget;
   /** Working sets of the most recent completed session for this exercise, in set order; empty when none. */
   readonly lastPerformance: readonly LoggedSet[];
+  /**
+   * Phase 6 (owner decision 12.1): the progression engine's answer wins
+   * over "last time" — its load when it prescribes one; after an
+   * `increase-load` the row opens at the bottom of the range ("work back
+   * up from repMin"), otherwise at the top as before.
+   */
+  readonly recommendation?: ProgressionRecommendation | null;
 }
 
 export function prefillSet(input: PrefillInput): SetPrefill {
   const { planned } = input;
+  const rec = input.recommendation ?? null;
+  if (rec !== null && rec.weightKg !== null && rec.action !== 'establish-baseline') {
+    const sameIndex = input.lastPerformance.filter((s) => s.setType === 'working')[planned.setIndex - 1] ?? null;
+    return {
+      setIndex: planned.setIndex,
+      reps: rec.action === 'increase-load' ? planned.repsMin : planned.repsMax,
+      weightKg: rec.weightKg,
+      rir: rec.targetRir,
+      weightSource: 'recommendation',
+      lastTime: sameIndex,
+    };
+  }
   const working = input.lastPerformance.filter((s) => s.setType === 'working');
   const sameIndex = working[planned.setIndex - 1] ?? null;
   const loaded = working.filter((s) => s.weightKg !== null && s.weightKg > 0);
