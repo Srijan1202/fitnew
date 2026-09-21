@@ -282,6 +282,7 @@ class _VolumeBodyState extends State<_VolumeBody> {
     final open = _open.contains(m);
     final color = VolumeWording.color(status);
     return Container(
+      key: ValueKey('volume.row.${m.wire}'),
       decoration: BoxDecoration(
         border: Border(
           left: BorderSide(
@@ -294,7 +295,7 @@ class _VolumeBodyState extends State<_VolumeBody> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           InkWell(
-            key: ValueKey('volume.row.${m.wire}'),
+            key: ValueKey('volume.row.${m.wire}.tap'),
             onTap: () => setState(() {
               if (!_open.remove(m)) _open.add(m);
             }),
