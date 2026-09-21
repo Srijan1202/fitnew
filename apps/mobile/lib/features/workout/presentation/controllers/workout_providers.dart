@@ -34,9 +34,8 @@ final workoutRepositoryProvider = Provider<WorkoutRepository>((ref) {
 /// Drains the queue when connectivity returns, when the app resumes and
 /// when a session changes user. Watched once, from the app root.
 class SyncCoordinator {
-  SyncCoordinator(this._repo, {Connectivity? connectivity})
-      : _connectivity = connectivity ?? Connectivity() {
-    _sub = _connectivity.onConnectivityChanged.listen((results) {
+  SyncCoordinator(this._repo, Stream<List<ConnectivityResult>> connectivity) {
+    _sub = connectivity.listen((results) {
       if (results.any((r) => r != ConnectivityResult.none)) _repo.sync();
     });
     _lifecycle = AppLifecycleListener(onResume: () => _repo.sync());
@@ -44,7 +43,6 @@ class SyncCoordinator {
   }
 
   final WorkoutRepository _repo;
-  final Connectivity _connectivity;
   late final StreamSubscription<List<ConnectivityResult>> _sub;
   late final AppLifecycleListener _lifecycle;
 
@@ -53,6 +51,12 @@ class SyncCoordinator {
     _lifecycle.dispose();
   }
 }
+
+/// The platform's connectivity events; tests hand in a stream of their own.
+final connectivityStreamProvider =
+    Provider<Stream<List<ConnectivityResult>>>((ref) {
+  return Connectivity().onConnectivityChanged;
+});
 
 final syncCoordinatorProvider = Provider<SyncCoordinator?>((ref) {
   // Sign-out wipes the phone's rows: the next user starts from nothing.
@@ -63,7 +67,10 @@ final syncCoordinatorProvider = Provider<SyncCoordinator?>((ref) {
   });
   // No session, no sync: the queue belongs to a signed-in user.
   if (ref.watch(sessionUserIdProvider) == null) return null;
-  final coordinator = SyncCoordinator(ref.watch(workoutRepositoryProvider));
+  final coordinator = SyncCoordinator(
+    ref.watch(workoutRepositoryProvider),
+    ref.watch(connectivityStreamProvider),
+  );
   ref.onDispose(coordinator.dispose);
   return coordinator;
 });

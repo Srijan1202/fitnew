@@ -1,4 +1,5 @@
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/core/theme/app_theme.dart';
@@ -16,6 +17,8 @@ import 'package:fitos/features/training/presentation/screens/plan_start_screen.d
 import 'package:fitos/features/training/presentation/screens/template_library_screen.dart';
 import 'package:fitos/features/training/presentation/screens/template_preview_screen.dart';
 import 'package:fitos/features/training/presentation/screens/workout_week_screen.dart';
+import 'package:fitos/features/workout/presentation/controllers/workout_providers.dart';
+import 'package:fitos/features/workout/presentation/screens/active_session_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -24,6 +27,8 @@ import 'package:go_router/go_router.dart';
 import '../../support/fake_exercise_repository.dart';
 import '../../support/fake_profile_repository.dart';
 import '../../support/fake_training_repository.dart';
+import '../../support/fake_workout_api.dart';
+import '../../support/workout_overrides.dart';
 
 /// The Phase 4 rework's UI against scripted servers: one day at a time,
 /// expandable cards, per-set edits that auto-save, three entry modes,
@@ -32,12 +37,17 @@ void main() {
   late FakeTrainingRepository training;
   late FakeExerciseRepository exercises;
   late FakeProfileRepository profile;
+  late AppDatabase db;
+  late FakeWorkoutApi workoutApi;
 
   setUp(() {
     training = FakeTrainingRepository();
     exercises = FakeExerciseRepository();
     profile = FakeProfileRepository();
+    db = AppDatabase.inMemory();
+    workoutApi = FakeWorkoutApi();
   });
+  tearDown(() => db.close());
 
   Widget harness({String initial = '/plan'}) {
     final router = GoRouter(
@@ -77,6 +87,16 @@ void main() {
               builder: (_, s) =>
                   DayEditorScreen(dayId: s.pathParameters['dayId']!),
             ),
+            GoRoute(
+              path: 'session/:id',
+              builder: (_, s) => ActiveSessionScreen(
+                clientSessionId: s.pathParameters['id']!,
+              ),
+            ),
+            GoRoute(
+              path: 'history',
+              builder: (_, __) => const Scaffold(body: Text('HISTORY')),
+            ),
           ],
         ),
         GoRoute(
@@ -106,6 +126,7 @@ void main() {
         trainingRepositoryProvider.overrideWithValue(training),
         exerciseRepositoryProvider.overrideWithValue(exercises),
         profileRepositoryProvider.overrideWithValue(profile),
+        ...workoutOverrides(db, workoutApi),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
     );
@@ -486,6 +507,107 @@ void main() {
         [plannedSquat.exerciseId, pushUp.id],
       );
       expect(body.exercises![1].sets!.every((s) => s.weightKg == null), isTrue);
+    });
+  });
+
+  group('set-count editing on the plan (Phase 5 carry-over)', () {
+    testWidgets(
+        '+ Add set copies the last set; a set can be removed; the PATCH carries the new count',
+        (tester) async {
+      training.stored = generatedProgram;
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      final cardKey = 'exercise.${plannedSquat.id}';
+      await tester.tap(find.byKey(ValueKey('$cardKey.header')));
+      await settle(tester);
+      expect(find.byKey(ValueKey('$cardKey.set.5')), findsNothing);
+
+      await reveal(tester, find.byKey(ValueKey('$cardKey.addSet')));
+      await tester.tap(find.byKey(ValueKey('$cardKey.addSet')));
+      await settle(tester);
+      expect(find.byKey(ValueKey('$cardKey.set.5')), findsOneWidget);
+      expect(find.text('5 × 6–12'), findsOneWidget);
+
+      await reveal(tester, find.byKey(ValueKey('$cardKey.set.2.remove')));
+      await tester.tap(find.byKey(ValueKey('$cardKey.set.2.remove')));
+      await settle(tester);
+      expect(find.byKey(ValueKey('$cardKey.set.5')), findsNothing);
+      expect(find.text('4 × 6–12'), findsOneWidget);
+
+      await autosave(tester);
+      final (_, body) = training.patchRequests.last;
+      final squat = body.exercises!.firstWhere((x) => x.id == plannedSquat.id);
+      expect(squat.setCount, 4);
+      expect(squat.sets!.length, 4);
+      // Ids preserved: the same card is still open after the save.
+      expect(find.byKey(ValueKey('$cardKey.set.1')), findsOneWidget);
+    });
+
+    testWidgets('the last set cannot be removed', (tester) async {
+      training.stored = generatedProgram;
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      final cardKey = 'exercise.${plannedBench.id}';
+      await tester.tap(find.byKey(ValueKey('$cardKey.header')));
+      await settle(tester);
+      for (final i in [3, 2]) {
+        await reveal(tester, find.byKey(ValueKey('$cardKey.set.$i.remove')));
+        await tester.tap(find.byKey(ValueKey('$cardKey.set.$i.remove')));
+        await settle(tester);
+      }
+      expect(find.byKey(ValueKey('$cardKey.set.1')), findsOneWidget);
+      expect(find.byKey(ValueKey('$cardKey.set.1.remove')), findsNothing);
+    });
+  });
+
+  group('starting a session from the plan', () {
+    testWidgets(
+        'Start session opens the active session, seeded from the day; Resume afterwards',
+        (tester) async {
+      training.stored = generatedProgram;
+      // No signal in the gym: the seed comes from the plan itself.
+      workoutApi.offline = true;
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      expect(find.byKey(const ValueKey('day.start')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('day.start')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byKey(const ValueKey('session.title')), findsOneWidget);
+      // Seeded from the plan: its exercises, its per-set targets.
+      final active = await ProviderScope.containerOf(
+        tester.element(find.byKey(const ValueKey('session.title'))),
+      ).read(workoutRepositoryProvider).activeSession();
+      expect(active, isNotNull);
+      expect(active!.programDayId, generatedProgram.days.first.id);
+      expect(
+        active.exercises.map((x) => x.name),
+        ['Barbell Back Squat', 'Barbell Bench Press'],
+      );
+      expect(active.exercises.first.targets.length, 4);
+
+      // Back to the plan: the button now resumes.
+      await tester.binding.handlePopRoute();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(find.byKey(const ValueKey('session.leave.confirm')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byKey(const ValueKey('day.resume')), findsOneWidget);
+    });
+
+    testWidgets('a rest day offers an empty session; the menu lists History',
+        (tester) async {
+      training.stored = generatedProgram;
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('day.tab.2')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('day.startEmpty')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('plan.menu')));
+      await settle(tester);
+      expect(find.text('History'), findsOneWidget);
+      expect(find.text('Start empty session'), findsWidgets);
     });
   });
 

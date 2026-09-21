@@ -77,3 +77,29 @@ rm -rf web build                                        # then remove it again
   feature, so it cannot be disabled as a workaround.
 - `custom_lint` and `riverpod_lint` are deliberately absent. See the TODO in
   `pubspec.yaml`; they return in Phase 1.
+
+## Running the drift tests on Windows (Phase 5)
+
+The workout logger's tests open a real SQLite database in memory
+(`AppDatabase.inMemory()` → `NativeDatabase.memory()`), so `flutter test`
+needs a native SQLite on the machine running it. **CI (Ubuntu) has one and
+is authoritative** (owner decision 8.7).
+
+- Windows 10/11 ships `winsqlite3.dll` in `C:\Windows\System32`; the
+  `sqlite3` Dart package falls back to it, so on a stock Windows install
+  the tests run without any setup.
+- If they fail with `Could not load sqlite3` / `Failed to load dynamic
+  library`, download the **sqlite-dll-win-x64** zip from
+  https://www.sqlite.org/download.html, put `sqlite3.dll` in a folder on
+  your `PATH` (or next to `flutter_tester.exe` in
+  `<flutter>\bin\cache\artifacts\engine\windows-x64\`), open a new shell
+  and rerun. Verify with `where sqlite3.dll`.
+- Nothing is skipped silently: a missing library fails the drift tests
+  loudly with that message.
+
+Separately, **Windows Smart App Control** (when it is in *Enforce* mode)
+can block `flutter_tester.exe` — an unsigned binary — with
+`An Application Control policy has blocked this file`. That is a Windows
+policy, not a test failure; there is no per-file allow-list. Run the
+Flutter suite on CI (push to `main` or a `phase-*` branch) or on a machine
+where Smart App Control is off.

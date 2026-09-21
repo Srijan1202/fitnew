@@ -59,7 +59,9 @@ class DioWorkoutApi implements WorkoutApi {
     }
   }
 
-  static Map<String, dynamic> _setJson(LogSetInput s) => withoutNulls({
+  /// Wire encoders are public so the contract-conformance test can check
+  /// exactly what goes over the wire.
+  static Map<String, dynamic> setJson(LogSetInput s) => withoutNulls({
         'clientSetId': s.clientSetId,
         'clientExerciseId': s.clientExerciseId,
         'setIndex': s.setIndex,
@@ -72,14 +74,14 @@ class DioWorkoutApi implements WorkoutApi {
       });
 
   /// A patch sends explicit nulls only where the user cleared a value.
-  static Map<String, dynamic> _patchSetJson(PatchSetRequest p) => {
+  static Map<String, dynamic> patchSetJson(PatchSetRequest p) => {
         if (p.setType != null) 'setType': p.setType!.wire,
         if (p.weightKg != null || p.weightCleared) 'weightKg': p.weightKg,
         if (p.reps != null) 'reps': p.reps,
         if (p.rir != null || p.rirCleared) 'rir': p.rir,
       };
 
-  static Map<String, dynamic> _patchExerciseJson(
+  static Map<String, dynamic> patchExerciseJson(
     PatchSessionExerciseRequest p,
   ) =>
       {
@@ -99,19 +101,22 @@ class DioWorkoutApi implements WorkoutApi {
         TodayResponse.fromJson,
       );
 
+  static Map<String, dynamic> startJson(StartSessionRequest request) =>
+      withoutNulls({
+        'clientSessionId': request.clientSessionId,
+        'programDayId': request.programDayId,
+        'startedAt': request.startedAt,
+        if (request.exercises != null)
+          'exercises': [
+            for (final x in request.exercises!) withoutNulls(x.toJson()),
+          ],
+      });
+
   @override
   Future<Result<WorkoutSession>> start(StartSessionRequest request) => _guard(
         () => _dio.post<Map<String, dynamic>>(
           '/v1/training/sessions',
-          data: withoutNulls({
-            'clientSessionId': request.clientSessionId,
-            'programDayId': request.programDayId,
-            'startedAt': request.startedAt,
-            if (request.exercises != null)
-              'exercises': [
-                for (final x in request.exercises!) withoutNulls(x.toJson()),
-              ],
-          }),
+          data: startJson(request),
         ),
         WorkoutSession.fromJson,
       );
@@ -128,7 +133,7 @@ class DioWorkoutApi implements WorkoutApi {
         () => _dio.post<Map<String, dynamic>>(
           '/v1/training/sessions/$id/sets',
           data: {
-            'sets': request.sets.map(_setJson).toList(),
+            'sets': request.sets.map(setJson).toList(),
             'merge': request.merge,
           },
         ),
@@ -144,7 +149,7 @@ class DioWorkoutApi implements WorkoutApi {
       _guard(
         () => _dio.patch<Map<String, dynamic>>(
           '/v1/training/sessions/$id/sets/$setId',
-          data: _patchSetJson(request),
+          data: patchSetJson(request),
         ),
         WorkoutSession.fromJson,
       );
@@ -179,7 +184,7 @@ class DioWorkoutApi implements WorkoutApi {
       _guard(
         () => _dio.patch<Map<String, dynamic>>(
           '/v1/training/sessions/$id/exercises/$exerciseId',
-          data: _patchExerciseJson(request),
+          data: patchExerciseJson(request),
         ),
         WorkoutSession.fromJson,
       );

@@ -73,7 +73,7 @@ void main() {
       expect(s.status, SessionStatus.active);
       expect(
         s.exercises.map((x) => x.name),
-        ['Barbell Back Squat', 'Leg Curl'],
+        ['Barbell Back Squat', 'Standing Calf Raise'],
       );
       expect(s.exercises.first.targets.length, 3);
       expect(s.exercises.first.lastPerformance?.sets.first.weightKg, 70);

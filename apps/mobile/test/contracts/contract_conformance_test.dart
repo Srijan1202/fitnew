@@ -7,12 +7,15 @@ import 'package:fitos/features/onboarding/domain/entities/onboarding.dart';
 import 'package:fitos/features/profile/domain/entities/profile.dart';
 import 'package:fitos/features/profile/domain/entities/vocabulary.dart';
 import 'package:fitos/features/training/domain/entities/program.dart';
+import 'package:fitos/features/workout/data/workout_api.dart';
+import 'package:fitos/features/workout/domain/entities/workout.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../support/fake_auth_repository.dart';
 import '../support/fake_exercise_repository.dart';
 import '../support/fake_training_repository.dart';
 import '../support/fake_onboarding_repository.dart';
+import '../support/fake_workout_api.dart';
 
 /// ADR-004: the Dart DTOs are hand-written, so this test is what stops them
 /// drifting from `@fitos/contracts`. It reads the OpenAPI document the API
@@ -603,6 +606,307 @@ void main() {
       // rename
       final rename = schemaOf('/training/program', 'patch', request: true);
       expect(keysOf(rename), {'name'});
+    });
+  });
+
+  group('workout logging (Phase 5)', () {
+    late Map<String, dynamic> session;
+    late Map<String, dynamic> sessionExercise;
+
+    Map<String, dynamic> items(Map<String, dynamic> schema, String key) =>
+        (properties(schema)[key] as Map<String, dynamic>)['items']
+            as Map<String, dynamic>;
+
+    setUpAll(() {
+      session = schemaOf('/training/sessions', 'post');
+      sessionExercise = items(session, 'exercises');
+    });
+
+    const sampleSet = SetLog(
+      id: '00000000-0000-4000-8000-000000000001',
+      clientSetId: '00000000-0000-4000-8000-000000000002',
+      setIndex: 1,
+      setType: SetType.working,
+      weightKg: 60,
+      reps: 10,
+      rir: 2,
+      isPr: false,
+      loggedAt: '2026-09-21T10:00:00.000Z',
+      plannedSetId: null,
+    );
+    const sampleExercise = SessionExercise(
+      id: '00000000-0000-4000-8000-000000000003',
+      clientExerciseId: '00000000-0000-4000-8000-000000000004',
+      exerciseId: '11111111-1111-4111-8111-111111111111',
+      slug: 'barbell-back-squat',
+      name: 'Barbell Back Squat',
+      movementPattern: MovementPattern.squat,
+      equipment: [Equipment.barbell],
+      difficulty: Difficulty.intermediate,
+      primaryMuscles: [MuscleGroup.quads],
+      secondaryMuscles: [MuscleGroup.hamstrings],
+      incrementKg: 5,
+      orderIndex: 0,
+      supersetGroup: null,
+      plannedExerciseId: null,
+      targets: [
+        PlannedSet(
+          setIndex: 1,
+          repsMin: 6,
+          repsMax: 12,
+          weightKg: null,
+          rir: 1,
+        ),
+      ],
+      prefill: [
+        SetPrefill(
+          setIndex: 1,
+          reps: 12,
+          weightKg: null,
+          rir: 1,
+          weightSource: 'none',
+        ),
+      ],
+      lastPerformance: LastPerformance(
+        sessionId: '00000000-0000-4000-8000-000000000005',
+        completedAt: '2026-09-14T10:00:00.000Z',
+        sets: [LastSet(setIndex: 1, weightKg: 60, reps: 10, rir: 2)],
+      ),
+      sets: [sampleSet],
+    );
+    const sampleSummary = SessionSummary(
+      durationSeconds: 3300,
+      totalSets: 1,
+      workingSets: 1,
+      tonnageKg: 600,
+      hardSetsByMuscle: {'quads': 1},
+      exercisesCompleted: 1,
+      exercisesSkipped: 0,
+      prs: [
+        PersonalRecord(
+          prType: PrType.weight,
+          exerciseId: '11111111-1111-4111-8111-111111111111',
+          exerciseName: 'Barbell Back Squat',
+          value: 60,
+          previous: 55,
+          setLogId: '00000000-0000-4000-8000-000000000001',
+          reason: 'r',
+        ),
+      ],
+    );
+    const sampleSession = WorkoutSession(
+      id: '00000000-0000-4000-8000-000000000006',
+      clientSessionId: '00000000-0000-4000-8000-000000000007',
+      status: SessionStatus.completed,
+      programId: null,
+      programDayId: null,
+      name: 'Legs',
+      startedAt: '2026-09-21T10:00:00.000Z',
+      completedAt: '2026-09-21T10:55:00.000Z',
+      durationSeconds: 3300,
+      notes: null,
+      exercises: [sampleExercise],
+      summary: sampleSummary,
+    );
+
+    test('SetType, SessionStatus, PrType', () {
+      expect(
+        SessionStatus.values.map((s) => s.wire).toList(),
+        enumOf(properties(session)['status'] as Map<String, dynamic>),
+      );
+      final set = items(sessionExercise, 'sets');
+      expect(
+        SetType.values.map((s) => s.wire).toList(),
+        enumOf(properties(set)['setType'] as Map<String, dynamic>),
+      );
+      final summary = properties(session)['summary'] as Map<String, dynamic>;
+      final pr = items(summary, 'prs');
+      expect(
+        PrType.values.map((p) => p.wire).toList(),
+        enumOf(properties(pr)['prType'] as Map<String, dynamic>),
+      );
+    });
+
+    test(
+        'session, exercise, set, last performance, prefill, summary and record shapes',
+        () {
+      expect(sampleSession.toJson().keys.toSet(), keysOf(session));
+      expect(sampleExercise.toJson().keys.toSet(), keysOf(sessionExercise));
+      expect(
+        sampleSet.toJson().keys.toSet(),
+        keysOf(items(sessionExercise, 'sets')),
+      );
+      final last = properties(sessionExercise)['lastPerformance']
+          as Map<String, dynamic>;
+      expect(
+        sampleExercise.lastPerformance!.toJson().keys.toSet(),
+        keysOf(last),
+      );
+      expect(
+        sampleExercise.lastPerformance!.sets.first.toJson().keys.toSet(),
+        keysOf(items(last, 'sets')),
+      );
+      expect(
+        sampleExercise.prefill.first.toJson().keys.toSet(),
+        keysOf(items(sessionExercise, 'prefill')),
+      );
+      final summary = properties(session)['summary'] as Map<String, dynamic>;
+      expect(sampleSummary.toJson().keys.toSet(), keysOf(summary));
+      expect(
+        sampleSummary.prs.first.toJson().keys.toSet(),
+        keysOf(items(summary, 'prs')),
+      );
+    });
+
+    test('today and today-exercise shapes', () {
+      final today = schemaOf('/training/today', 'get');
+      final fake = FakeWorkoutApi().todayResponse;
+      expect(fake.toJson().keys.toSet(), keysOf(today));
+      expect(
+        fake.exercises.first.toJson().keys.toSet(),
+        keysOf(items(today, 'exercises')),
+      );
+    });
+
+    test('history list and item shapes', () {
+      final list = schemaOf('/training/sessions', 'get');
+      const item = SessionListItem(
+        id: 'x',
+        status: SessionStatus.completed,
+        name: 'Legs',
+        startedAt: 's',
+        completedAt: null,
+        durationSeconds: null,
+        exerciseCount: 1,
+        workingSets: 1,
+        tonnageKg: 1,
+        prCount: 0,
+      );
+      expect(
+        const SessionListResponse(items: [item], nextBefore: null)
+            .toJson()
+            .keys
+            .toSet(),
+        keysOf(list),
+      );
+      expect(item.toJson().keys.toSet(), keysOf(items(list, 'items')));
+    });
+
+    test('request bodies send exactly the accepted properties', () {
+      final start = schemaOf('/training/sessions', 'post', request: true);
+      final startBody = DioWorkoutApi.startJson(
+        const StartSessionRequest(
+          clientSessionId: 'c',
+          programDayId: 'd',
+          startedAt: 's',
+          exercises: [
+            SeededExercise(
+              clientExerciseId: 'e',
+              exerciseId: 'x',
+              plannedExerciseId: 'p',
+              orderIndex: 0,
+            ),
+          ],
+        ),
+      );
+      expect(startBody.keys.toSet(), keysOf(start));
+      expect(
+        (startBody['exercises'] as List<Map<String, dynamic>>)
+            .first
+            .keys
+            .toSet(),
+        keysOf(items(start, 'exercises')),
+      );
+
+      final log =
+          schemaOf('/training/sessions/{id}/sets', 'post', request: true);
+      expect(keysOf(log), {'sets', 'merge'});
+      final setBody = DioWorkoutApi.setJson(
+        const LogSetInput(
+          clientSetId: 'c',
+          clientExerciseId: 'e',
+          setIndex: 1,
+          setType: SetType.working,
+          weightKg: 60,
+          reps: 10,
+          rir: 2,
+          loggedAt: 't',
+          plannedSetId: 'p',
+        ),
+      );
+      // The server takes sessionExerciseId OR clientExerciseId; the client always sends the client id.
+      expect(keysOf(items(log, 'sets')).containsAll(setBody.keys), isTrue);
+      expect(setBody.keys, isNot(contains('sessionExerciseId')));
+
+      final patchSet = schemaOf(
+        '/training/sessions/{id}/sets/{setId}',
+        'patch',
+        request: true,
+      );
+      final patchBody = DioWorkoutApi.patchSetJson(
+        const PatchSetRequest(
+          setType: SetType.drop,
+          weightKg: 1,
+          reps: 1,
+          rir: 1,
+        ),
+      );
+      expect(patchBody.keys.toSet(), keysOf(patchSet));
+      expect(
+        DioWorkoutApi.patchSetJson(
+          const PatchSetRequest(weightCleared: true),
+        ),
+        {'weightKg': null},
+      );
+
+      final add =
+          schemaOf('/training/sessions/{id}/exercises', 'post', request: true);
+      expect(
+        withoutNulls(
+          const AddSessionExerciseRequest(
+            clientExerciseId: 'c',
+            exerciseId: 'x',
+            plannedExerciseId: 'p',
+            orderIndex: 0,
+            supersetGroup: 1,
+          ).toJson(),
+        ).keys.toSet(),
+        keysOf(add),
+      );
+      final patchEx = schemaOf(
+        '/training/sessions/{id}/exercises/{exerciseId}',
+        'patch',
+        request: true,
+      );
+      expect(
+        DioWorkoutApi.patchExerciseJson(
+          const PatchSessionExerciseRequest(
+            orderIndex: 0,
+            supersetGroup: 1,
+            exerciseId: 'x',
+            removed: true,
+          ),
+        ).keys.toSet(),
+        keysOf(patchEx),
+      );
+      final complete =
+          schemaOf('/training/sessions/{id}/complete', 'post', request: true);
+      expect(
+        withoutNulls(
+          const CompleteSessionRequest(completedAt: 't', notes: 'n').toJson(),
+        ).keys.toSet(),
+        keysOf(complete),
+      );
+    });
+
+    test('a session round-trips through JSON', () {
+      expect(
+        WorkoutSession.fromJson(
+          jsonDecode(jsonEncode(sampleSession.toJson()))
+              as Map<String, dynamic>,
+        ),
+        sampleSession,
+      );
     });
   });
 

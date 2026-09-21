@@ -1,5 +1,6 @@
 import 'dart:ui' show Tristate;
 
+import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
@@ -20,6 +21,8 @@ import '../../support/fake_auth_repository.dart';
 import '../../support/fake_exercise_repository.dart';
 import '../../support/fake_profile_repository.dart';
 import '../../support/fake_training_repository.dart';
+import '../../support/fake_workout_api.dart';
+import '../../support/workout_overrides.dart';
 
 /// The app shell and Android back, on the real route table (owner review
 /// 2026-09-21: `GoError: There is nothing to pop` after switching days).
@@ -31,16 +34,23 @@ void main() {
   late FakeTrainingRepository training;
   late FakeExerciseRepository exercises;
   late FakeProfileRepository profile;
+  late AppDatabase db;
+  late FakeWorkoutApi workoutApi;
   late FakeAuthRepository auth;
 
   setUp(() {
     training = FakeTrainingRepository()..stored = generatedProgram;
     exercises = FakeExerciseRepository();
     profile = FakeProfileRepository();
+    db = AppDatabase.inMemory();
+    workoutApi = FakeWorkoutApi();
     auth = FakeAuthRepository()
       ..restoreResult = AuthState.signedIn(testProfile);
   });
-  tearDown(() => auth.dispose());
+  tearDown(() async {
+    auth.dispose();
+    await db.close();
+  });
 
   Widget app({String initial = '/plan'}) {
     final key = GlobalKey<NavigatorState>();
@@ -56,6 +66,7 @@ void main() {
         trainingRepositoryProvider.overrideWithValue(training),
         exerciseRepositoryProvider.overrideWithValue(exercises),
         profileRepositoryProvider.overrideWithValue(profile),
+        ...workoutOverrides(db, workoutApi),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
     );

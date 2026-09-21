@@ -1,4 +1,5 @@
 import 'package:fitos/app.dart';
+import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/theme/tokens.dart';
 import 'package:fitos/features/auth/domain/entities/auth_state.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_providers.dart';
@@ -11,6 +12,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'support/fake_auth_repository.dart';
 import 'support/fake_onboarding_repository.dart';
+import 'support/fake_workout_api.dart';
+import 'support/workout_overrides.dart';
 
 /// The whole app through the router and the auth gate, with the repository
 /// faked. These are the spec's acceptance paths in miniature: a signed-out
@@ -19,17 +22,25 @@ import 'support/fake_onboarding_repository.dart';
 void main() {
   late FakeAuthRepository repo;
   late FakeOnboardingRepository onboarding;
+  late AppDatabase db;
+  late FakeWorkoutApi workoutApi;
 
   setUp(() {
     repo = FakeAuthRepository();
     onboarding = FakeOnboardingRepository();
+    db = AppDatabase.inMemory();
+    workoutApi = FakeWorkoutApi();
   });
-  tearDown(() => repo.dispose());
+  tearDown(() async {
+    repo.dispose();
+    await db.close();
+  });
 
   Widget app() => ProviderScope(
         overrides: [
           authRepositoryProvider.overrideWithValue(repo),
           onboardingRepositoryProvider.overrideWithValue(onboarding),
+          ...workoutOverrides(db, workoutApi),
         ],
         child: const FitOSApp(),
       );
