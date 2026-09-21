@@ -95,7 +95,7 @@ export interface NewPlannedExercise {
 }
 
 /** In seed order (0005): the first primary is what the generator treats the movement as being for. */
-const musclesOf = (role: 'primary' | 'secondary') => sql<MuscleGroup[]>`coalesce((
+export const musclesOf = (role: 'primary' | 'secondary') => sql<MuscleGroup[]>`coalesce((
   select array_agg(${exerciseMuscles.muscleGroup} order by ${exerciseMuscles.position}, ${exerciseMuscles.muscleGroup})
   from ${exerciseMuscles}
   where ${exerciseMuscles.exerciseId} = ${exercises.id} and ${exerciseMuscles.role} = ${role}

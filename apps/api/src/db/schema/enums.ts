@@ -22,7 +22,10 @@ import {
   MUSCLE_ROLES,
   ONBOARDING_STEPS,
   ONBOARDING_COMPLETE,
+  PR_TYPES,
   PROGRAM_SOURCES,
+  SESSION_STATUSES,
+  SET_TYPES,
   SPLIT_TYPES,
 } from '@fitos/contracts';
 
@@ -54,3 +57,8 @@ export const alternativeReasonEnum = pgEnum('alternative_reason', ALTERNATIVE_RE
 // Phase 4 — programmes
 export const splitTypeEnum = pgEnum('split_type', SPLIT_TYPES);
 export const programSourceEnum = pgEnum('program_source', PROGRAM_SOURCES);
+
+// Phase 5 — workout logging
+export const setTypeEnum = pgEnum('set_type', SET_TYPES);
+export const sessionStatusEnum = pgEnum('session_status', SESSION_STATUSES);
+export const prTypeEnum = pgEnum('pr_type', PR_TYPES);

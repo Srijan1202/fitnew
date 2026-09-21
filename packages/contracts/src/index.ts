@@ -4,3 +4,4 @@ export * from './onboarding.js';
 export * from './profile.js';
 export * from './exercise.js';
 export * from './training.js';
+export * from './workout.js';

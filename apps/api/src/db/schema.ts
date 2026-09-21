@@ -13,7 +13,8 @@
  *            nutrition_targets, body_metrics (pulled forward from Phase 12)
  *   Phase 3  exercises, exercise_muscles, exercise_alternatives,
  *            exercise_contraindications
- *   Phase 4  programs, program_days, planned_exercises
+ *   Phase 4  programs, program_days, planned_exercises, planned_sets
+ *   Phase 5  workout_sessions, session_exercises, set_logs, exercise_prs
  */
 export * from './schema/enums.js';
 export * from './schema/users.js';
@@ -22,3 +23,4 @@ export * from './schema/diet.js';
 export * from './schema/records.js';
 export * from './schema/exercise.js';
 export * from './schema/training.js';
+export * from './schema/workout.js';

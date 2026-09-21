@@ -14,7 +14,8 @@ export function testEnv(overrides: Partial<Env> = {}): Env {
   return {
     NODE_ENV: 'test',
     PORT: 0,
-    LOG_LEVEL: 'fatal',
+    // TEST_LOG_LEVEL=error surfaces handler errors behind a 500 while debugging.
+    LOG_LEVEL: (process.env['TEST_LOG_LEVEL'] as 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace' | undefined) ?? 'fatal',
     DATABASE_URL: 'postgres://unused:unused@localhost:5432/unused',
     FIREBASE_PROJECT_ID: 'fitos-test',
     CONSENT_IP_SALT: 'test-salt-not-secret',

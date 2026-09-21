@@ -68,7 +68,8 @@ describeIfDb('migrations (real Postgres)', () => {
     'exercises', 'exercise_muscles', 'exercise_alternatives', 'exercise_contraindications',
   ];
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
-  const TOTAL_MIGRATIONS = 6;
+  const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
+  const TOTAL_MIGRATIONS = 7;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -217,6 +218,66 @@ describeIfDb('migrations (real Postgres)', () => {
     }
   });
 
+  it('0006: logging tables, one active session per user, client ids unique, set CHECKs, cascades', async () => {
+    for (const t of PHASE5_TABLES) expect(await tableExists(client, t), t).toBe(true);
+    expect(await enumLabels(client, 'set_type')).toEqual(['warmup', 'working', 'drop', 'backoff']);
+    expect(await enumLabels(client, 'session_status')).toEqual(['active', 'completed', 'abandoned']);
+    expect(await enumLabels(client, 'pr_type')).toEqual(['1rm_est', 'weight', 'reps', 'volume']);
+
+    await client`insert into users (firebase_uid) values ('mig-log')`;
+    const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-log'`;
+    const cs1 = '10000000-0000-4000-8000-000000000001';
+    const cs2 = '10000000-0000-4000-8000-000000000002';
+    const [s1] = await client<{ id: string }[]>`
+      insert into workout_sessions (user_id, name, started_at, client_session_id)
+      values (${u!.id}, 'Push', now(), ${cs1}) returning id`;
+    // A second ACTIVE session for the same user is refused by the database.
+    await expect(
+      client`insert into workout_sessions (user_id, name, started_at, client_session_id) values (${u!.id}, 'Pull', now(), ${cs2})`,
+    ).rejects.toThrow(/one_active_session/);
+    // The same client id twice is refused (offline replay is a no-op).
+    await expect(
+      client`insert into workout_sessions (user_id, name, status, started_at, client_session_id) values (${u!.id}, 'Pull', 'completed', now(), ${cs1})`,
+    ).rejects.toThrow(/workout_sessions_client_id/);
+    // Once completed, a new active one is fine.
+    await client`update workout_sessions set status = 'completed', completed_at = now() where id = ${s1!.id}`;
+    await client`insert into workout_sessions (user_id, name, started_at, client_session_id) values (${u!.id}, 'Pull', now(), ${cs2})`;
+
+    const [x] = await client<{ id: string }[]>`select id from exercises limit 1`;
+    if (x !== undefined) {
+      const ce = '20000000-0000-4000-8000-000000000001';
+      const [se] = await client<{ id: string }[]>`
+        insert into session_exercises (session_id, exercise_id, order_index, client_exercise_id)
+        values (${s1!.id}, ${x.id}, 0, ${ce}) returning id`;
+      const set1 = '30000000-0000-4000-8000-000000000001';
+      await client`insert into set_logs (session_exercise_id, set_index, weight_kg, reps, rir, logged_at, client_set_id) values (${se!.id}, 1, 60, 10, 2, now(), ${set1})`;
+      // Replay: same client id → refused; same position while live → refused.
+      await expect(
+        client`insert into set_logs (session_exercise_id, set_index, weight_kg, reps, rir, logged_at, client_set_id) values (${se!.id}, 2, 60, 10, 2, now(), ${set1})`,
+      ).rejects.toThrow(/set_logs_client_id/);
+      await expect(
+        client`insert into set_logs (session_exercise_id, set_index, weight_kg, reps, rir, logged_at, client_set_id) values (${se!.id}, 1, 60, 10, 2, now(), '30000000-0000-4000-8000-000000000002')`,
+      ).rejects.toThrow(/set_logs_live_position/);
+      // A soft-deleted row frees its position.
+      await client`update set_logs set deleted_at = now() where client_set_id = ${set1}`;
+      await client`insert into set_logs (session_exercise_id, set_index, weight_kg, reps, rir, logged_at, client_set_id) values (${se!.id}, 1, 60, 10, 2, now(), '30000000-0000-4000-8000-000000000002')`;
+      // CHECKs.
+      await expect(
+        client`insert into set_logs (session_exercise_id, set_index, weight_kg, reps, rir, logged_at, client_set_id) values (${se!.id}, 3, 60, 10, 6, now(), '30000000-0000-4000-8000-000000000003')`,
+      ).rejects.toThrow(/set_logs_rir_range/);
+      await expect(
+        client`insert into set_logs (session_exercise_id, set_index, weight_kg, reps, rir, logged_at, client_set_id) values (${se!.id}, 3, -1, 10, 2, now(), '30000000-0000-4000-8000-000000000003')`,
+      ).rejects.toThrow(/set_logs_weight_nonnegative/);
+      // A record row, then the session goes: sets and records cascade with it.
+      const [live] = await client<{ id: string }[]>`select id from set_logs where session_exercise_id = ${se!.id} and deleted_at is null`;
+      await client`insert into exercise_prs (user_id, exercise_id, pr_type, value, previous, reason, achieved_at, set_log_id) values (${u!.id}, ${x.id}, 'weight', 60, 55, 'r', now(), ${live!.id})`;
+      await client`delete from workout_sessions where id = ${s1!.id}`;
+      expect((await client`select 1 from set_logs where session_exercise_id = ${se!.id}`).length).toBe(0);
+      expect((await client`select 1 from exercise_prs where user_id = ${u!.id}`).length).toBe(0);
+    }
+    await client`delete from users where firebase_uid = 'mig-log'`;
+  });
+
   it('one active goal per user is a database fact', async () => {
     await client`insert into users (firebase_uid) values ('mig-goal')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-goal'`;
@@ -271,7 +332,13 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'uid-dup'`;
   });
 
-  it('down removes 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+  it('down removes 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0006_workout_logging');
+    for (const t of PHASE5_TABLES) expect(await tableExists(client, t), t).toBe(false);
+    const types6 = await client<{ typname: string }[]>`select typname from pg_type where typtype = 'e'`;
+    expect(types6.map((t) => t.typname)).not.toContain('set_type');
+    expect(await appliedCount(client)).toBe(6);
+
     expect(await rollbackLastMigration(connectionString)).toBe('0005_exercise_muscle_position');
     const emCols = await client<{ column_name: string }[]>`
       select column_name from information_schema.columns where table_name = 'exercise_muscles'`;
@@ -320,6 +387,7 @@ describeIfDb('migrations (real Postgres)', () => {
     for (const t of PHASE3_TABLES) expect(await tableExists(client, t), t).toBe(true);
     for (const t of PHASE4_TABLES) expect(await tableExists(client, t), t).toBe(true);
     expect(await tableExists(client, 'planned_sets')).toBe(true);
+    for (const t of PHASE5_TABLES) expect(await tableExists(client, t), t).toBe(true);
     expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
   });
 });
