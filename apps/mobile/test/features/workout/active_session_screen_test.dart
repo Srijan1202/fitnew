@@ -97,9 +97,33 @@ void main() {
     api.offline = offline;
     final repo = container.read(workoutRepositoryProvider);
     final session = await repo.startSession(day: api.todayResponse);
+    // A fixed clock: the rest countdown reads exactly what was started.
+    container.read(restTimerProvider.notifier).clock =
+        () => DateTime.utc(2026, 9, 21, 10);
+    // The rest timer's tick must not outlive the test.
+    addTearDown(() => container.read(restTimerProvider.notifier).skip());
     await tester.pumpWidget(harness(session.clientSessionId));
     await settle(tester);
     return session;
+  }
+
+  /// The weight cell is a tappable InkWell around the number.
+  String weightOf(WidgetTester tester, String key) => tester
+      .widget<Text>(
+        find.descendant(
+          of: find.byKey(ValueKey(key)),
+          matching: find.byType(Text),
+        ),
+      )
+      .data!;
+
+  Future<void> reveal(WidgetTester tester, Finder finder) async {
+    await tester.scrollUntilVisible(
+      finder,
+      150,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await settle(tester);
   }
 
   String squatKey(WorkoutSession s) =>
@@ -118,7 +142,7 @@ void main() {
     // Three pending rows: reps = the plan's target (12), weight = last time (70), RIR = the plan (1).
     for (final i in [1, 2, 3]) {
       expect(textOf(tester, '$k.set.$i.reps').data, '12');
-      expect(textOf(tester, '$k.set.$i.weight').data, '70');
+      expect(weightOf(tester, '$k.set.$i.weight'), '70');
       expect(textOf(tester, '$k.set.$i.rir').data, '1');
     }
     expect(textOf(tester, '$k.count').data, '0 / 3');
@@ -202,6 +226,7 @@ void main() {
     final s = await pumpSession(tester, offline: true);
     final k = squatKey(s);
     expect(find.byKey(ValueKey('$k.set.4')), findsNothing);
+    await reveal(tester, find.byKey(ValueKey('$k.addSet')));
     await tester.tap(find.byKey(ValueKey('$k.addSet')));
     await settle(tester);
     expect(find.byKey(ValueKey('$k.set.4')), findsOneWidget);
@@ -214,8 +239,10 @@ void main() {
     );
     await tester.tap(find.byKey(ValueKey('$k.set.1.done')));
     await settle(tester);
+    await reveal(tester, find.byKey(ValueKey('$k.dropSet')));
     await tester.tap(find.byKey(ValueKey('$k.dropSet')));
     await settle(tester);
+    await reveal(tester, find.byKey(ValueKey('$k.set.1.drop')));
     expect(find.byKey(ValueKey('$k.set.1.drop')), findsOneWidget);
     expect(find.text('DROP'), findsOneWidget);
     await tester.tap(find.byKey(ValueKey('$k.set.1.drop.weight.minus')));
@@ -237,6 +264,7 @@ void main() {
       (tester) async {
     final s = await pumpSession(tester, offline: true);
     final k = squatKey(s);
+    await reveal(tester, find.byKey(ValueKey('$k.supersetToggle')));
     await tester.tap(find.byKey(ValueKey('$k.supersetToggle')));
     await settle(tester);
     expect(find.byKey(ValueKey('$k.superset')), findsOneWidget);
@@ -278,6 +306,7 @@ void main() {
     }
     await tester.tap(find.byKey(const ValueKey('session.finish')));
     await settle(tester);
+    await settle(tester);
     expect(find.byKey(const ValueKey('summary.title')), findsOneWidget);
     expect(textOf(tester, 'summary.sets').data, '3');
     expect(textOf(tester, 'summary.tonnage').data, '2520'); // 70×12 ×3
@@ -291,6 +320,7 @@ void main() {
     expect(find.byKey(const ValueKey('summary.pending')), findsNothing);
     expect(find.textContaining('Heaviest'), findsOneWidget);
     expect(api.sessions[s.clientSessionId]!.status, SessionStatus.completed);
+    await reveal(tester, find.byKey(const ValueKey('summary.done')));
     await tester.tap(find.byKey(const ValueKey('summary.done')));
     await settle(tester);
     expect(find.text('PLAN'), findsOneWidget);
@@ -322,6 +352,7 @@ void main() {
       'Add exercise via the picker appends an exercise the user can log against',
       (tester) async {
     final s = await pumpSession(tester, offline: true);
+    await reveal(tester, find.byKey(const ValueKey('session.addExercise')));
     await tester.tap(find.byKey(const ValueKey('session.addExercise')));
     await settle(tester);
     await tester.tap(find.byKey(const ValueKey('exercise.push-up')));
@@ -333,6 +364,7 @@ void main() {
     expect(local.exercises.last.name, 'Push-Up');
     final k = 'session.${local.exercises.last.clientExerciseId}';
     // No plan for it: one pending row, logged like any other.
+    await reveal(tester, find.byKey(ValueKey('$k.set.1')));
     expect(find.byKey(ValueKey('$k.set.1')), findsOneWidget);
     await tester.tap(find.byKey(ValueKey('$k.set.1.done')));
     await settle(tester);
@@ -356,7 +388,7 @@ void main() {
     await tester.tap(find.byKey(ValueKey('$curl.header')));
     await settle(tester);
     expect(textOf(tester, '$curl.set.1.reps').data, '15');
-    expect(textOf(tester, '$curl.set.1.weight').data, '—');
+    expect(weightOf(tester, '$curl.set.1.weight'), '—');
     await tester.tap(find.byKey(ValueKey('$curl.set.1.done')));
     await settle(tester);
     expect(textOf(tester, 'rest.remaining').data, '1:00');

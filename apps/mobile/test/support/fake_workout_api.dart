@@ -44,47 +44,58 @@ class FakeWorkoutApi implements WorkoutApi {
     primaryMuscles: [MuscleGroup.quads, MuscleGroup.glutes],
   );
 
-  SessionExercise _exercise(SeededExercise x) => SessionExercise(
-        id: _id(),
-        clientExerciseId: x.clientExerciseId,
-        exerciseId: x.exerciseId,
-        slug: _kSquat.slug,
-        name: _kSquat.name,
-        movementPattern: _kSquat.movementPattern,
-        equipment: _kSquat.equipment,
-        difficulty: _kSquat.difficulty,
-        primaryMuscles: _kSquat.primaryMuscles,
-        secondaryMuscles: const [MuscleGroup.hamstrings],
-        incrementKg: 5,
-        orderIndex: x.orderIndex,
-        supersetGroup: null,
-        plannedExerciseId: x.plannedExerciseId,
-        targets: const [
-          PlannedSet(
-            setIndex: 1,
-            repsMin: 6,
-            repsMax: 12,
-            weightKg: null,
-            rir: 1,
-          ),
-          PlannedSet(
-            setIndex: 2,
-            repsMin: 6,
-            repsMax: 12,
-            weightKg: null,
-            rir: 1,
-          ),
-          PlannedSet(
-            setIndex: 3,
-            repsMin: 6,
-            repsMax: 12,
-            weightKg: null,
-            rir: 1,
-          ),
-        ],
-        lastPerformance: null,
-        sets: const [],
-      );
+  /// Catalogue metadata the fake knows: the day's exercises, else squat.
+  TodayExercise? _known(String exerciseId) {
+    for (final x in todayResponse.exercises) {
+      if (x.exerciseId == exerciseId) return x;
+    }
+    return null;
+  }
+
+  SessionExercise _exercise(SeededExercise x) {
+    final k = _known(x.exerciseId);
+    return SessionExercise(
+      id: _id(),
+      clientExerciseId: x.clientExerciseId,
+      exerciseId: x.exerciseId,
+      slug: k?.slug ?? _kSquat.slug,
+      name: k?.name ?? _kSquat.name,
+      movementPattern: k?.movementPattern ?? _kSquat.movementPattern,
+      equipment: k?.equipment ?? _kSquat.equipment,
+      difficulty: k?.difficulty ?? _kSquat.difficulty,
+      primaryMuscles: k?.primaryMuscles ?? _kSquat.primaryMuscles,
+      secondaryMuscles: k?.secondaryMuscles ?? const [MuscleGroup.hamstrings],
+      incrementKg: k?.incrementKg ?? 5,
+      orderIndex: x.orderIndex,
+      supersetGroup: null,
+      plannedExerciseId: x.plannedExerciseId,
+      targets: const [
+        PlannedSet(
+          setIndex: 1,
+          repsMin: 6,
+          repsMax: 12,
+          weightKg: null,
+          rir: 1,
+        ),
+        PlannedSet(
+          setIndex: 2,
+          repsMin: 6,
+          repsMax: 12,
+          weightKg: null,
+          rir: 1,
+        ),
+        PlannedSet(
+          setIndex: 3,
+          repsMin: 6,
+          repsMax: 12,
+          weightKg: null,
+          rir: 1,
+        ),
+      ],
+      lastPerformance: k?.lastPerformance,
+      sets: const [],
+    );
+  }
 
   @override
   Future<Result<WorkoutSession>> start(StartSessionRequest request) async {

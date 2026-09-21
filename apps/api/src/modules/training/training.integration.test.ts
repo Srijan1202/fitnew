@@ -294,9 +294,12 @@ describeIfDb('/v1/training/program (real Postgres, real seed)', () => {
     const after: Program = r.json();
     const d2 = after.days.find((d) => d.id === day.id)!;
     expect(d2.exercises.length).toBe(day.exercises.length);
-    expect(d2.exercises[0]!.sets[2]).toEqual({ setIndex: 3, repsMin: 8, repsMax: 8, weightKg: 42.5, rir: 1 });
+    expect(d2.exercises[0]!.sets[2]).toMatchObject({ setIndex: 3, repsMin: 8, repsMax: 8, weightKg: 42.5, rir: 1 });
     expect(d2.exercises[0]!.sets[0]!.weightKg).toBeNull();
-    expect(d2.exercises[1]!.sets).toEqual(day.exercises[1]!.sets);
+    // Sent without ids (a pre-Phase-5 client): rows are re-created, so
+    // the set ids are new but every target is what it was.
+    const noId = (sets: Program['days'][number]['exercises'][number]['sets']) => sets.map(({ id: _id, ...rest }) => rest);
+    expect(noId(d2.exercises[1]!.sets)).toEqual(noId(day.exercises[1]!.sets));
     expect(d2.exercises[0]!.reason).toBeNull(); // the user re-prescribed it
     // Leaving and reopening: the same.
     expect((await get(token)).json()).toEqual(after);
@@ -325,7 +328,7 @@ describeIfDb('/v1/training/program (real Postgres, real seed)', () => {
     expect(r1.statusCode, r1.body).toBe(200);
     const d1 = (r1.json() as Program).days.find((d) => d.id === day.id)!;
     expect(d1.exercises.map((x) => x.id)).toEqual(before.map((x) => x.id));
-    expect(d1.exercises[0]!.sets[0]).toEqual({ setIndex: 1, repsMin: 12, repsMax: 12, weightKg: 40, rir: before[0]!.sets[0]!.rir });
+    expect(d1.exercises[0]!.sets[0]).toMatchObject({ setIndex: 1, repsMin: 12, repsMax: 12, weightKg: 40, rir: before[0]!.sets[0]!.rir });
     const setIdsAfter = (await sql<{ id: string; planned_exercise_id: string; set_index: number }[]>`
       select id, planned_exercise_id, set_index from planned_sets where planned_exercise_id in ${sql(before.map((x) => x.id))}`);
     expect(new Set(setIdsAfter.map((s) => s.id))).toEqual(new Set(setIdsBefore.map((s) => s.id)));

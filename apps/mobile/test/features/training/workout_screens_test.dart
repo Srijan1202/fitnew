@@ -350,6 +350,9 @@ void main() {
       expect(reps(3), '12');
       expect(find.text('6–12 reps'), findsNWidgets(3));
       // Set 3: weight + twice steps by the exercise's increment (5 kg).
+      await tester
+          .ensureVisible(find.byKey(ValueKey('$cardKey.set.3.weight.plus')));
+      await settle(tester);
       await tester.tap(find.byKey(ValueKey('$cardKey.set.3.weight.plus')));
       await tester.pump();
       await tester.tap(find.byKey(ValueKey('$cardKey.set.3.weight.plus')));
@@ -387,6 +390,8 @@ void main() {
       await tester.tap(find.byKey(ValueKey('$cardKey.header')));
       await settle(tester);
 
+      await tester.ensureVisible(find.byKey(ValueKey('$cardKey.set.2.weight')));
+      await settle(tester);
       await tester.tap(find.byKey(ValueKey('$cardKey.set.2.weight')));
       await settle(tester);
       await tester.enterText(
