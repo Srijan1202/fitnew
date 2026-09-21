@@ -6,7 +6,8 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import postgres from 'postgres';
-import { CURRENT_POLICY_VERSION, type Program } from '@fitos/contracts';
+import { CURRENT_POLICY_VERSION, type Program, type TemplatePreview } from '@fitos/contracts';
+import { PROGRAM_TEMPLATES } from '@fitos/core/training/templates';
 import { MUSCLE_GROUPS as CORE_MUSCLES, MOVEMENT_PATTERNS as CORE_PATTERNS, EQUIPMENT as CORE_EQUIPMENT, BODY_PARTS as CORE_BODY_PARTS } from '@fitos/core/training/generator';
 import { MUSCLE_GROUPS, MOVEMENT_PATTERNS, EQUIPMENT, bodyPartSchema } from '@fitos/contracts';
 
@@ -137,6 +138,13 @@ describeIfDb('/v1/training/program (real Postgres, real seed)', () => {
         expect(x.repMin).toBe(6);
         expect(x.repMax).toBe(12);
         expect(x.targetRir).toBe(1);
+        // Per-set targets: one per set, the prescription, NO invented weight.
+        expect(x.sets.length).toBe(x.setCount);
+        x.sets.forEach((set, i) => {
+          expect(set.setIndex).toBe(i + 1);
+          expect([set.repsMin, set.repsMax, set.rir]).toEqual([6, 12, 1]);
+          expect(set.weightKg).toBeNull();
+        });
         // Only the equipment this user said they have.
         for (const q of x.equipment) expect(['barbell', 'dumbbell', 'machine', 'cable', 'bodyweight']).toContain(q);
       }
@@ -206,9 +214,13 @@ describeIfDb('/v1/training/program (real Postgres, real seed)', () => {
     const body = {
       name: 'My 2-day',
       days: [
-        { dayOfWeek: 1, sessionName: 'A', exercises: [
-          { exerciseId: byId.get('barbell-back-squat')!.id, setCount: 5, repMin: 5, repMax: 5, targetRir: 2 },
-          { exerciseId: byId.get('barbell-bench-press')!.id, setCount: 3, repMin: 8, repMax: 10, targetRir: 2, incrementKg: 1.25 },
+        { dayOfWeek: 1, sessionName: 'A', focus: ['quads', 'chest'], exercises: [
+          { exerciseId: byId.get('barbell-back-squat')!.id, setCount: 5, repMin: 5, repMax: 5, targetRir: 2, startingWeightKg: 60 },
+          { exerciseId: byId.get('barbell-bench-press')!.id, setCount: 3, repMin: 8, repMax: 10, targetRir: 2, incrementKg: 1.25, sets: [
+            { repsMin: 10, repsMax: 10, weightKg: 40, rir: 2 },
+            { repsMin: 10, repsMax: 10, weightKg: 40, rir: 2 },
+            { repsMin: 8, repsMax: 8, weightKg: 42.5, rir: 1 },
+          ] },
         ] },
         { dayOfWeek: 4, sessionName: 'B', exercises: [
           { exerciseId: byId.get('barbell-row')!.id, setCount: 4, repMin: 6, repMax: 10, targetRir: 2 },
@@ -232,6 +244,14 @@ describeIfDb('/v1/training/program (real Postgres, real seed)', () => {
     expect(a.exercises[0]!.incrementKg).toBe(Number(byId.get('barbell-back-squat')!.default_increment_kg));
     expect(a.exercises[1]!.incrementKg).toBe(1.25);
     expect(a.exercises[0]!.reason).toBeNull();
+    // startingWeightKg spreads to every set; explicit sets are stored per set.
+    expect(a.exercises[0]!.sets.map((x) => [x.repsMin, x.repsMax, x.weightKg, x.rir])).toEqual([
+      [5, 5, 60, 2], [5, 5, 60, 2], [5, 5, 60, 2], [5, 5, 60, 2], [5, 5, 60, 2],
+    ]);
+    expect(a.exercises[1]!.sets.map((x) => [x.repsMin, x.repsMax, x.weightKg, x.rir])).toEqual([
+      [10, 10, 40, 2], [10, 10, 40, 2], [8, 8, 42.5, 1],
+    ]);
+    expect(a.focus).toEqual(['quads', 'chest']); // the user's order, kept
     expect(p.rationale).toEqual([]);
     // "Remains adaptive": the rows are the same planned_exercises the
     // progression engine reads, with mesocycle_week advancing like any other.
@@ -241,9 +261,119 @@ describeIfDb('/v1/training/program (real Postgres, real seed)', () => {
       from planned_exercises pe join program_days d on d.id = pe.program_day_id
       where d.program_id = ${p.id} and d.day_of_week = 1 and pe.order_index = 0`;
     expect(row).toEqual({ set_count: 5, rep_min: 5, rep_max: 5, target_rir: 2, increment_kg: '5.00' });
+    const setRows = await sql<{ set_index: number; weight_kg: string | null }[]>`
+      select ps.set_index, ps.weight_kg from planned_sets ps
+      join planned_exercises pe on pe.id = ps.planned_exercise_id
+      join program_days d on d.id = pe.program_day_id
+      where d.program_id = ${p.id} and d.day_of_week = 1 and pe.order_index = 1 order by ps.set_index`;
+    expect(setRows).toEqual([{ set_index: 1, weight_kg: '40.00' }, { set_index: 2, weight_kg: '40.00' }, { set_index: 3, weight_kg: '42.50' }]);
     // Survives a re-read.
     expect((await get(token)).json()).toEqual(p);
   });
+
+  it('editing one set of one exercise on the day screen persists exactly that (the auto-save path)', async () => {
+    const token = await onboarded();
+    const p: Program = (await generate(token)).json();
+    const day = p.days.find((d) => !d.isRest)!;
+    // The client sends the whole day back with the edited set; everything else unchanged.
+    const edited = day.exercises.map((x) => ({
+      exerciseId: x.exerciseId,
+      setCount: x.setCount,
+      repMin: x.repMin,
+      repMax: x.repMax,
+      targetRir: x.targetRir,
+      incrementKg: x.incrementKg,
+      sets: x.sets.map((s, i) =>
+        x.orderIndex === 0 && i === 2
+          ? { repsMin: 8, repsMax: 8, weightKg: 42.5, rir: 1 }
+          : { repsMin: s.repsMin, repsMax: s.repsMax, weightKg: s.weightKg, rir: s.rir },
+      ),
+    }));
+    const r = await app.inject({ method: 'PATCH', url: `/v1/training/program/days/${day.id}`, headers: auth(token), payload: { exercises: edited } });
+    expect(r.statusCode, r.body).toBe(200);
+    const after: Program = r.json();
+    const d2 = after.days.find((d) => d.id === day.id)!;
+    expect(d2.exercises.length).toBe(day.exercises.length);
+    expect(d2.exercises[0]!.sets[2]).toEqual({ setIndex: 3, repsMin: 8, repsMax: 8, weightKg: 42.5, rir: 1 });
+    expect(d2.exercises[0]!.sets[0]!.weightKg).toBeNull();
+    expect(d2.exercises[1]!.sets).toEqual(day.exercises[1]!.sets);
+    expect(d2.exercises[0]!.reason).toBeNull(); // the user re-prescribed it
+    // Leaving and reopening: the same.
+    expect((await get(token)).json()).toEqual(after);
+  });
+
+  it('rename persists', async () => {
+    const token = await onboarded();
+    await generate(token);
+    const r = await app.inject({ method: 'PATCH', url: '/v1/training/program', headers: auth(token), payload: { name: 'Winter block' } });
+    expect(r.statusCode).toBe(200);
+    expect((await get(token)).json().name).toBe('Winter block');
+    expect((await app.inject({ method: 'PATCH', url: '/v1/training/program', headers: auth(token), payload: { name: '' } })).statusCode).toBe(422);
+  });
+
+  it('templates: the library lists every structure; preview materialises for the profile; apply persists it', async () => {
+    const token = await onboarded({ equipment: ['dumbbell', 'pull-up-bar'] });
+    const list = await app.inject({ method: 'GET', url: '/v1/training/templates', headers: auth(token) });
+    expect(list.statusCode).toBe(200);
+    const items = list.json().items as { slug: string; daysPerWeek: number; days: { sessionName: string }[] }[];
+    expect(items.map((i) => i.slug).sort()).toEqual(PROGRAM_TEMPLATES.map((t) => t.slug).sort());
+    for (const item of items) expect(item.days.length).toBe(item.daysPerWeek);
+
+    const preview = await app.inject({ method: 'GET', url: '/v1/training/templates/bro-split?preferredSessionMinutes=45', headers: auth(token) });
+    expect(preview.statusCode, preview.body).toBe(200);
+    const pv: TemplatePreview = preview.json();
+    expect(pv.template.slug).toBe('bro-split');
+    expect(pv.days.length).toBe(7);
+    const sessions = pv.days.filter((d) => !d.isRest);
+    expect(sessions.map((d) => d.sessionName)).toEqual(['Chest', 'Back', 'Shoulders', 'Legs', 'Arms']);
+    for (const d of sessions) {
+      expect(d.exercises.length).toBeGreaterThanOrEqual(3);
+      expect(d.estimatedMinutes).toBeLessThanOrEqual(45 * 1.15);
+      for (const x of d.exercises) {
+        for (const q of x.equipment) expect(['dumbbell', 'pull-up-bar', 'bodyweight'], x.slug).toContain(q);
+        expect(x.sets.length).toBe(x.setCount);
+        for (const set of x.sets) expect(set.weightKg).toBeNull();
+      }
+    }
+    // Nothing stored by a preview.
+    expect((await get(token)).statusCode).toBe(404);
+
+    const applied = await app.inject({ method: 'POST', url: '/v1/training/program/from-template/bro-split', headers: auth(token), payload: { preferredSessionMinutes: 45 } });
+    expect(applied.statusCode, applied.body).toBe(200);
+    const p: Program = applied.json();
+    expect(p.source).toBe('template');
+    expect(p.templateSlug).toBe('bro-split');
+    expect(p.splitType).toBe('bro-split');
+    expect(p.name).toBe('Bro Split');
+    expect(p.days.filter((d) => !d.isRest).map((d) => d.sessionName)).toEqual(sessions.map((d) => d.sessionName));
+    // Same materialisation as the preview.
+    expect(p.days.map((d) => d.exercises.map((x) => [x.slug, x.setCount]))).toEqual(pv.days.map((d) => d.exercises.map((x) => [x.slug, x.setCount])));
+    expect((await get(token)).json()).toEqual(p);
+    // And it is editable like any other programme.
+    const day = p.days.find((d) => !d.isRest)!;
+    const renamed = await app.inject({ method: 'PATCH', url: `/v1/training/program/days/${day.id}`, headers: auth(token), payload: { sessionName: 'Chest (heavy)' } });
+    expect(renamed.statusCode).toBe(200);
+    expect(renamed.json().source).toBe('template');
+
+    expect((await app.inject({ method: 'GET', url: '/v1/training/templates/nope', headers: auth(token) })).statusCode).toBe(404);
+    expect((await app.inject({ method: 'POST', url: '/v1/training/program/from-template/nope', headers: auth(token), payload: {} })).statusCode).toBe(404);
+  });
+
+  it('every template applies for a real profile with a knee limitation and never plans a knee-contraindicated lift', async () => {
+    const token = await onboarded();
+    const [user] = await sql<{ id: string }[]>`select id from users where firebase_uid = ${`tr-uid-${n}`}`;
+    await sql`insert into user_limitations (user_id, body_part, note) values (${user!.id}, 'knee', 'meniscus')`;
+    const contraindicated = new Set(
+      (await sql<{ slug: string }[]>`select e.slug from exercises e join exercise_contraindications c on c.exercise_id = e.id where c.body_part = 'knee'`).map((r) => r.slug),
+    );
+    for (const t of PROGRAM_TEMPLATES) {
+      const r = await app.inject({ method: 'POST', url: `/v1/training/program/from-template/${t.slug}`, headers: auth(token), payload: {} });
+      expect(r.statusCode, `${t.slug}: ${r.body}`).toBe(200);
+      const p: Program = r.json();
+      expect(p.days.filter((d) => !d.isRest).length).toBe(t.daysPerWeek);
+      for (const d of p.days) for (const x of d.exercises) expect(contraindicated.has(x.slug), `${t.slug} ${x.slug}`).toBe(false);
+    }
+  }, 60_000);
 
   it('a custom programme with an unknown exercise is 422 with the id named', async () => {
     const token = await onboarded();

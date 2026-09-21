@@ -5,13 +5,16 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
+import '../../../exercise/domain/entities/exercise.dart';
 import '../../domain/entities/program.dart';
 import '../controllers/program_controller.dart';
-import '../widgets/day_exercise_list.dart';
+import '../widgets/draft.dart';
+import '../widgets/draft_exercise_list.dart';
+import '../widgets/toggle_wrap.dart';
 
-/// Edit one day of the active programme (§31 Phase 4 "program editor").
-/// Rename, re-prescribe, remove, add. Save sends a PATCH; the server's
-/// answer replaces the plan. Nothing here recomputes anything.
+/// The STRUCTURE of one day: its name, the muscle groups it is for, which
+/// exercises and in what order. Reps, weight and RIR live on the workout
+/// screen's cards, not here. Save sends one PATCH.
 class DayEditorScreen extends ConsumerStatefulWidget {
   const DayEditorScreen({required this.dayId, super.key});
 
@@ -24,6 +27,7 @@ class DayEditorScreen extends ConsumerStatefulWidget {
 class _DayEditorScreenState extends ConsumerState<DayEditorScreen> {
   final _name = TextEditingController();
   List<DraftExercise>? _draft;
+  Set<MuscleGroup> _focus = <MuscleGroup>{};
   bool _busy = false;
   Failure? _failure;
 
@@ -35,12 +39,10 @@ class _DayEditorScreenState extends ConsumerState<DayEditorScreen> {
     return null;
   }
 
-  /// The draft is seeded from the plan the first time it is available —
-  /// which may be after an async load when the route is opened directly.
-  /// Once the user is editing, the plan is not re-read.
   void _seed(ProgramDay day) {
     if (_draft != null) return;
     _name.text = day.isRest ? '' : day.sessionName;
+    _focus = day.focus.toSet();
     _draft = day.exercises.map(DraftExercise.fromPlanned).toList();
   }
 
@@ -61,6 +63,7 @@ class _DayEditorScreenState extends ConsumerState<DayEditorScreen> {
           widget.dayId,
           PatchProgramDayRequest(
             sessionName: _name.text.trim().isEmpty ? null : _name.text.trim(),
+            focus: _focus.toList(),
             exercises: draft.map((d) => d.toCustom()).toList(),
           ),
         );
@@ -94,7 +97,7 @@ class _DayEditorScreenState extends ConsumerState<DayEditorScreen> {
       );
     }
 
-    final label = kWeekdayLabels[day.dayOfWeek - 1].toUpperCase();
+    final weekday = kWeekdayLabels[day.dayOfWeek - 1].toUpperCase();
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: _busy ? null : () => context.pop()),
@@ -103,50 +106,71 @@ class _DayEditorScreenState extends ConsumerState<DayEditorScreen> {
         child: Column(
           children: <Widget>[
             Expanded(
-              child: SingleChildScrollView(
+              child: ListView(
                 padding: const EdgeInsets.fromLTRB(
                   FitSpacing.screen,
                   FitSpacing.sm,
                   FitSpacing.screen,
                   FitSpacing.md,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(label, style: textTheme.labelSmall),
-                    const SizedBox(height: FitSpacing.xs),
-                    Text('Edit this day', style: textTheme.displaySmall),
-                    const SizedBox(height: FitSpacing.md),
-                    AuthFormField(
-                      fieldKey: const ValueKey('day.name'),
-                      label: 'Session name',
-                      controller: _name,
-                      enabled: !_busy,
-                      textInputAction: TextInputAction.done,
+                children: <Widget>[
+                  Text(weekday, style: textTheme.labelSmall),
+                  const SizedBox(height: FitSpacing.xs),
+                  Text(
+                    day.isRest ? 'Train this day' : 'Edit this day',
+                    style: textTheme.displaySmall,
+                  ),
+                  const SizedBox(height: FitSpacing.md),
+                  AuthFormField(
+                    fieldKey: const ValueKey('day.name'),
+                    label: 'Session name',
+                    controller: _name,
+                    enabled: !_busy,
+                    textInputAction: TextInputAction.done,
+                  ),
+                  const SizedBox(height: FitSpacing.lg),
+                  Text('MUSCLE GROUPS', style: textTheme.labelSmall),
+                  const SizedBox(height: FitSpacing.sm),
+                  ToggleWrap<MuscleGroup>(
+                    keyPrefix: 'day.focus',
+                    options: MuscleGroup.values,
+                    isSelected: _focus.contains,
+                    enabled: !_busy,
+                    label: (m) => m.label,
+                    onTap: (m) => setState(() {
+                      if (!_focus.remove(m)) _focus.add(m);
+                    }),
+                  ),
+                  const SizedBox(height: FitSpacing.lg),
+                  Text(
+                    'EXERCISES · DRAG TO REORDER',
+                    style: textTheme.labelSmall,
+                  ),
+                  const SizedBox(height: FitSpacing.sm),
+                  DraftExerciseList(
+                    exercises: draft,
+                    enabled: !_busy,
+                    onChanged: (next) => setState(() => _draft = next),
+                  ),
+                  if (draft.isEmpty) ...<Widget>[
+                    const SizedBox(height: FitSpacing.sm),
+                    Text(
+                      'A training day needs at least one exercise.',
+                      style: textTheme.bodyMedium
+                          ?.copyWith(color: FitColors.amber),
                     ),
-                    const SizedBox(height: FitSpacing.lg),
-                    DayExerciseList(
-                      exercises: draft,
-                      enabled: !_busy,
-                      onChanged: (next) => setState(() => _draft = next),
-                    ),
-                    if (draft.isEmpty) ...<Widget>[
-                      const SizedBox(height: FitSpacing.sm),
-                      Text(
-                        'A training day needs at least one exercise.',
-                        style: textTheme.bodyMedium
-                            ?.copyWith(color: FitColors.amber),
-                      ),
-                    ],
-                    if (_failure != null) ...<Widget>[
-                      const SizedBox(height: FitSpacing.md),
-                      AuthFeedback.error(_failure!.message),
-                    ],
                   ],
-                ),
+                  if (_failure != null) ...<Widget>[
+                    const SizedBox(height: FitSpacing.md),
+                    AuthFeedback.error(_failure!.message),
+                  ],
+                ],
               ),
             ),
-            Padding(
+            Container(
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: FitColors.rule)),
+              ),
               padding: const EdgeInsets.fromLTRB(
                 FitSpacing.screen,
                 FitSpacing.sm,

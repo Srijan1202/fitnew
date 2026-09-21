@@ -136,7 +136,8 @@ export interface VolumeShortfall {
 }
 
 export interface GeneratedProgram {
-  readonly splitType: SplitType;
+  /** A §12.2 split type, or a template's slug. */
+  readonly splitType: string;
   readonly daysPerWeek: number;
   readonly days: readonly ProgramDay[];
   /** Weekly hard sets per muscle, secondaries at 0.5. */
@@ -175,6 +176,8 @@ export const VOLUME_LANDMARKS: Readonly<Record<MuscleGroup, VolumeLandmark>> = {
 export const SECONDARY_CONTRIBUTION = 0.5;
 export const MINUTES_PER_WORKING_SET = 3.5;
 export const MIN_EXERCISES_PER_SESSION = 3;
+/** A normal session aims for min(this, ⌊minutes/12⌋) movements when volume allows. */
+export const EXERCISE_COUNT_TARGET_MAX = 5;
 
 /* ------------------------------------------------------ §12.1 parameters -- */
 
@@ -221,13 +224,21 @@ export function weeklyTarget(muscle: MuscleGroup, goal: Goal, mesocycleWeek: num
 
 /* --------------------------------------------------------- §12.2 splits -- */
 
-interface SessionTemplate {
+export interface SessionTemplate {
   readonly name: string;
   readonly muscles: readonly MuscleGroup[];
   /** Compound patterns the session always contains, need or no need (§12.2 "select by movement pattern"). */
   readonly required: readonly MovementPattern[];
   /** Patterns that belong to another day of the split (no presses on pull day). */
   readonly excluded: readonly MovementPattern[];
+  /**
+   * Muscles the session must train DIRECTLY — at least one exercise with
+   * the muscle as a primary mover — whenever a performable one exists.
+   * Secondary involvement counts toward volume, never toward this.
+   */
+  readonly directCoverage: readonly MuscleGroup[];
+  /** Per-muscle preference within the coverage slot (rear delts on pull day). */
+  readonly coverageHint?: Partial<Record<MuscleGroup, (ex: CatalogueExercise) => boolean>>;
 }
 
 const ALL: readonly MuscleGroup[] = MUSCLE_GROUPS;
@@ -241,12 +252,40 @@ const LEGS: readonly MuscleGroup[] = LOWER;
 const PUSHES: readonly MovementPattern[] = ['horizontal-push', 'vertical-push'];
 const PULLS: readonly MovementPattern[] = ['horizontal-pull', 'vertical-pull'];
 
-const FULL: SessionTemplate = { name: 'Full Body', muscles: ALL, required: ['squat', 'hinge', 'horizontal-push', 'horizontal-pull'], excluded: [] };
-const UP: SessionTemplate = { name: 'Upper', muscles: UPPER, required: [...PUSHES, ...PULLS], excluded: [] };
-const LO: SessionTemplate = { name: 'Lower', muscles: LOWER, required: ['squat', 'hinge'], excluded: [] };
-const PU: SessionTemplate = { name: 'Push', muscles: PUSH, required: PUSHES, excluded: [...PULLS, 'elbow-flexion'] };
-const PL: SessionTemplate = { name: 'Pull', muscles: PULL, required: PULLS, excluded: [...PUSHES, 'chest-isolation', 'elbow-extension'] };
-const LG: SessionTemplate = { name: 'Legs', muscles: LEGS, required: ['squat', 'hinge'], excluded: [] };
+/** "Rear delt" work in a ten-muscle vocabulary: shoulders primary with the back also involved. */
+const rearDelt = (ex: CatalogueExercise): boolean => ex.secondaryMuscles.includes('back');
+
+export const FULL: SessionTemplate = {
+  name: 'Full Body', muscles: ALL,
+  required: ['squat', 'hinge', 'horizontal-push', 'horizontal-pull'], excluded: [],
+  directCoverage: ['chest', 'back', 'quads', 'hamstrings', 'glutes', 'shoulders'],
+};
+export const UP: SessionTemplate = {
+  name: 'Upper', muscles: UPPER,
+  required: [...PUSHES, ...PULLS], excluded: [],
+  directCoverage: ['chest', 'back', 'shoulders', 'biceps', 'triceps'],
+};
+export const LO: SessionTemplate = {
+  name: 'Lower', muscles: LOWER,
+  required: ['squat', 'hinge'], excluded: [],
+  directCoverage: ['quads', 'hamstrings', 'glutes', 'calves'],
+};
+export const PU: SessionTemplate = {
+  name: 'Push', muscles: PUSH,
+  required: PUSHES, excluded: [...PULLS, 'elbow-flexion'],
+  directCoverage: ['chest', 'shoulders', 'triceps'],
+};
+export const PL: SessionTemplate = {
+  name: 'Pull', muscles: PULL,
+  required: PULLS, excluded: [...PUSHES, 'chest-isolation', 'elbow-extension'],
+  directCoverage: ['back', 'biceps', 'shoulders'],
+  coverageHint: { shoulders: rearDelt },
+};
+export const LG: SessionTemplate = {
+  name: 'Legs', muscles: LEGS,
+  required: ['squat', 'hinge'], excluded: [],
+  directCoverage: ['quads', 'hamstrings', 'glutes', 'calves'],
+};
 
 /** The §12.2 table, row by row. Throws outside 2–6 days. */
 export function selectSplit(daysPerWeek: number, experience: Experience): { type: SplitType; sessions: readonly SessionTemplate[] } {
@@ -359,6 +398,8 @@ function fmtSets(n: number): string {
 interface Selection {
   readonly exercise: CatalogueExercise;
   sets: number;
+  /** Set when this is the only direct work for a required muscle; never dropped by time fitting. */
+  coverageFor?: MuscleGroup;
 }
 
 /**
@@ -461,9 +502,12 @@ function selectForSession(
         const canonical = CANONICAL[pattern] !== undefined && ex.primaryMuscles[0] === CANONICAL[pattern] ? 0.3 : 0;
         const loadable = hasLoad ? loadQuality(ex) : 0;
         const bilateral = COMPOUND.has(pattern) && !ex.isUnilateral ? 0.05 : 0;
-        const levelFit = LEVEL[ex.difficulty] === LEVEL[experience] ? 0.02 : LEVEL[ex.difficulty] < LEVEL[experience] ? 0.01 : 0;
+        // At or below the lifter's level is equally fine: staples (a bench
+        // press, a lat pulldown) are not "beginner" lifts to be outgrown.
+        const levelFit = LEVEL[ex.difficulty] <= LEVEL[experience] ? 0.02 : 0;
         const fresh = usedThisWeek.has(ex.slug) ? 0 : 0.005;
-        const score = u + canonical + loadable + bilateral + levelFit + fresh;
+        const hinted = ex.primaryMuscles.some((m) => focus.has(m) && need[m] > 0 && template.coverageHint?.[m]?.(ex) === true) ? 0.1 : 0;
+        const score = u + canonical + loadable + bilateral + levelFit + fresh + hinted;
         if (score > bestScore || (score === bestScore && best !== null && ex.slug < best.slug)) {
           best = ex;
           bestScore = score;
@@ -498,37 +542,53 @@ function fitToTime(selection: Selection[], preferredMinutes: number): { trimmedS
   const ceiling = preferredMinutes * 1.15;
   let trimmedSets = 0;
   const dropped: string[] = [];
-  const isolationLast = (): number => {
+  const isolation = (x: Selection): boolean => !COMPOUND.has(x.exercise.movementPattern);
+  const shave = (pred: (x: Selection) => boolean): boolean => {
     for (let i = selection.length - 1; i >= 0; i--) {
-      if (!COMPOUND.has(selection[i]!.exercise.movementPattern)) return i;
-    }
-    return -1;
-  };
-  while (minutesOf(selection) > ceiling && selection.length > 0) {
-    // 1. shave one set from the last isolation exercise that has > 2
-    let shaved = false;
-    for (let i = selection.length - 1; i >= 0; i--) {
-      const s = selection[i]!;
-      if (!COMPOUND.has(s.exercise.movementPattern) && s.sets > 2) {
-        s.sets -= 1;
+      const x = selection[i]!;
+      if (pred(x)) {
+        x.sets -= 1;
         trimmedSets += 1;
-        shaved = true;
-        break;
+        return true;
       }
     }
-    if (shaved) continue;
-    // 2. drop the last isolation exercise, else the last compound
-    const idx = isolationLast() >= 0 ? isolationLast() : selection.length - 1;
-    if (selection.length === 1) {
-      // Nothing left to drop but the last exercise; trim its sets instead.
-      const only = selection[0]!;
-      if (only.sets > 2) { only.sets -= 1; trimmedSets += 1; continue; }
-      break;
+    return false;
+  };
+  const drop = (pred: (x: Selection) => boolean): boolean => {
+    for (let i = selection.length - 1; i >= 0; i--) {
+      if (pred(selection[i]!)) {
+        dropped.push(selection[i]!.exercise.name);
+        selection.splice(i, 1);
+        return true;
+      }
     }
-    dropped.push(selection[idx]!.exercise.name);
-    selection.splice(idx, 1);
+    return false;
+  };
+  // Cheapest cut first, the muscle's only direct work last:
+  //  1. a set off an isolation lift above 2 (unprotected, then protected)
+  //  2. a set off a compound above 3
+  //  3. drop an unprotected isolation lift, then an unprotected compound
+  //  4. a set off anything above 2
+  //  5. drop a protected lift — only when nothing else is left to cut
+  while (minutesOf(selection) > ceiling && selection.length > 0) {
+    if (shave((x) => isolation(x) && x.coverageFor === undefined && x.sets > 2)) continue;
+    if (shave((x) => isolation(x) && x.sets > 2)) continue;
+    if (shave((x) => !isolation(x) && x.sets > 3)) continue;
+    if (selection.length > 1 && drop((x) => isolation(x) && x.coverageFor === undefined)) continue;
+    if (selection.length > 1 && drop((x) => !isolation(x) && x.coverageFor === undefined)) continue;
+    if (shave((x) => x.sets > 2)) continue;
+    if (selection.length > 1 && drop(() => true)) continue;
+    break;
   }
   return { trimmedSets, dropped };
+}
+
+/** Mark each exercise that is the ONLY direct work for a required muscle. */
+function protectCoverage(selection: Selection[], template: SessionTemplate): void {
+  for (const m of template.directCoverage) {
+    const direct = selection.filter((x) => x.exercise.primaryMuscles.includes(m));
+    if (direct.length === 1 && direct[0]!.coverageFor === undefined) direct[0]!.coverageFor = m;
+  }
 }
 
 /**
@@ -562,7 +622,7 @@ function fillToTime(
     });
     let progress = false;
     for (const s of ordered) {
-      if (s.sets >= maxSetsFor(s.exercise, goal) + 2) continue;
+      if (s.sets >= maxSetsFor(s.exercise, goal) + 1) continue;
       const headroom = s.exercise.primaryMuscles.every(
         (m) => !focus.has(m) || plannedHere[m] + 1 <= mavLowShare[m],
       ) && MUSCLE_GROUPS.every((m) => contributionTo(s.exercise, m) === 0 || plannedHere[m] + contributionTo(s.exercise, m) <= weekCap[m]);
@@ -575,11 +635,9 @@ function fillToTime(
     }
     return progress;
   };
-  while (minutesOf(selection) < floor && bump()) {
-    /* keep bumping */
-  }
-  // Still short: bring in more exercises for the muscles furthest under
-  // their MAV-low share (isolation work, typically), then bump again.
+  // More movements before more sets on the same movement: a session that
+  // has time left gets another exercise for a muscle under its MAV-low
+  // share, and only then do existing lifts gain a set.
   if (minutesOf(selection) < floor) {
     const residual = emptyNeed();
     for (const m of MUSCLE_GROUPS) if (focus.has(m)) residual[m] = Math.max(0, Math.min(mavLowShare[m] - plannedHere[m], weekCap[m] - plannedHere[m]));
@@ -614,16 +672,40 @@ const FILL_ORDER: readonly MovementPattern[] = [
 /* ------------------------------------------------------------ generator -- */
 
 export function generateProgram(input: GeneratorInput): GeneratedProgram {
-  const { goal, experience, daysPerWeek, mesocycleWeek } = input;
+  const split = selectSplit(input.daysPerWeek, input.experience);
+  return buildProgram(
+    {
+      splitType: split.type,
+      sessions: split.sessions,
+      opening: `${input.daysPerWeek} days/week as ${input.experience}: ${describeSplit(split.type)} (§12.2).`,
+    },
+    input,
+  );
+}
+
+/** A week of sessions to build, whatever chose them (the §12.2 table or a template). */
+export interface WeekPlan {
+  readonly splitType: string;
+  readonly sessions: readonly SessionTemplate[];
+  /** First line of the rationale: where this structure came from. */
+  readonly opening: string;
+}
+
+/**
+ * The engine proper: filter, target, select, cover, fit, fill, report — for
+ * any list of session templates. `generateProgram` feeds it the §12.2 split;
+ * `materializeTemplate` (templates.ts) feeds it a professional structure.
+ */
+export function buildProgram(week: WeekPlan, input: Omit<GeneratorInput, 'daysPerWeek'>): GeneratedProgram {
+  const { goal, experience, mesocycleWeek } = input;
+  const daysPerWeek = week.sessions.length;
   const preferred = Math.max(15, input.preferredSessionMinutes);
   const params = GOAL_PARAMS[goal];
-  const split = selectSplit(daysPerWeek, experience);
+  const split = { type: week.splitType, sessions: week.sessions };
   const weekdays = trainingDays(daysPerWeek);
   const rationale: string[] = [];
 
-  rationale.push(
-    `${daysPerWeek} days/week as ${experience}: ${describeSplit(split.type)} (§12.2).`,
-  );
+  rationale.push(week.opening);
   rationale.push(
     `${goal}: ${params.repMin}–${params.repMax} reps at ${params.targetRir[experience]} RIR, volume ${describeBias(params.volumeBias)}.`,
   );
@@ -664,9 +746,14 @@ export function generateProgram(input: GeneratorInput): GeneratedProgram {
     // overshoots (sets are whole numbers) must not starve the second.
     const share = emptyNeed();
     for (const m of template.muscles) share[m] = targets[m] / Math.max(1, sessionsCovering[m]);
-    // Room left this week under MAV-high (§12.3) — a hard ceiling.
+    // Room left this week under MAV-high (§12.3) — a hard ceiling — minus
+    // two sets reserved for each LATER session that must train the muscle
+    // directly, so a leg day's squats cannot eat the glute day's hip thrust.
     const weekCap = emptyNeed();
-    for (const m of MUSCLE_GROUPS) weekCap[m] = Math.max(0, VOLUME_LANDMARKS[m].mavHigh - planned[m]);
+    for (const m of MUSCLE_GROUPS) {
+      const laterDirect = split.sessions.slice(i + 1).filter((s) => s.directCoverage.includes(m)).length;
+      weekCap[m] = Math.max(0, VOLUME_LANDMARKS[m].mavHigh - planned[m] - 2 * laterDirect);
+    }
     const selection = selectForSession(template, pool, share, weekCap, goal, experience, hasLoad, usedThisWeek, maxExercises);
     // Session floor: three exercises. Low-volume goals on many days can be
     // numerically complete with two big lifts; a session still needs a
@@ -687,6 +774,31 @@ export function generateProgram(input: GeneratorInput): GeneratedProgram {
       );
       for (const x of extra) { x.sets = 2; selection.push(x); }
     }
+    // Direct coverage: every muscle the session owns gets a primary
+    // exercise when one is performable. The numbers may say a muscle is
+    // "covered" by secondaries (bench + press → triceps); the session still
+    // trains it directly. Nothing is added past the weekly MAV-high cap,
+    // and nothing is invented: no performable primary → the muscle shows up
+    // in shortfalls exactly as before.
+    for (const m of template.directCoverage) {
+      if (selection.some((x) => x.exercise.primaryMuscles.includes(m))) continue;
+      const here = emptyNeed();
+      for (const x of selection) for (const mm of MUSCLE_GROUPS) here[mm] += x.sets * contributionTo(x.exercise, mm);
+      const remaining = emptyNeed();
+      for (const mm of MUSCLE_GROUPS) remaining[mm] = Math.max(0, weekCap[mm] - here[mm]);
+      const only = emptyNeed();
+      only[m] = Math.max(2, share[m] - here[m]);
+      const exclude = new Set(selection.map((x) => x.exercise.slug));
+      const [pick] = selectForSession(
+        { ...template, required: [] }, pool.filter((ex) => !exclude.has(ex.slug) && ex.primaryMuscles.includes(m)),
+        only, remaining, goal, experience, hasLoad, usedThisWeek, 1, FILL_ORDER,
+      );
+      if (pick === undefined) continue;
+      pick.sets = Math.min(pick.sets, 3);
+      pick.coverageFor = m;
+      selection.push(pick);
+    }
+    protectCoverage(selection, template);
     // Compound-first in the session (§12.2), whatever pass found them.
     selection.sort((a, b) => PATTERN_ORDER.indexOf(a.exercise.movementPattern) - PATTERN_ORDER.indexOf(b.exercise.movementPattern));
     const { trimmedSets, dropped } = fitToTime(selection, preferred);
@@ -706,6 +818,32 @@ export function generateProgram(input: GeneratorInput): GeneratedProgram {
         ),
       maxExercises,
     );
+    // Exercise count: a normal session should not stop at three movements
+    // when time and volume allow more. Target min(5, ⌊minutes/12⌋); extra
+    // movements only take volume the muscle still has room for under its
+    // weekly target share — never junk sets, never past the time ceiling.
+    const countTarget = Math.min(EXERCISE_COUNT_TARGET_MAX, Math.floor(preferred / 12));
+    if (selection.length < countTarget && minutesOf(selection) + 2 * MINUTES_PER_WORKING_SET <= preferred * 1.15) {
+      const here = emptyNeed();
+      for (const x of selection) for (const m of MUSCLE_GROUPS) here[m] += x.sets * contributionTo(x.exercise, m);
+      const residual = emptyNeed();
+      const remaining = emptyNeed();
+      for (const m of MUSCLE_GROUPS) {
+        remaining[m] = Math.max(0, weekCap[m] - here[m]);
+        if (template.muscles.includes(m)) residual[m] = Math.max(0, Math.min(mavLowShare[m] - here[m], remaining[m]));
+      }
+      const exclude = new Set(selection.map((x) => x.exercise.slug));
+      const extra = selectForSession(
+        { ...template, required: [] }, pool.filter((ex) => !exclude.has(ex.slug)), residual, remaining,
+        goal, experience, hasLoad, usedThisWeek, Math.min(countTarget - selection.length, Math.max(0, maxExercises - selection.length)), FILL_ORDER,
+      );
+      for (const x of extra) {
+        if (minutesOf(selection) + 2 * MINUTES_PER_WORKING_SET > preferred * 1.15) break;
+        x.sets = 2;
+        selection.push(x);
+        totalAdded += 2;
+      }
+    }
     selection.sort((a, b) => PATTERN_ORDER.indexOf(a.exercise.movementPattern) - PATTERN_ORDER.indexOf(b.exercise.movementPattern));
 
     const exercises: PlannedExercise[] = selection.map((s, orderIndex) => {

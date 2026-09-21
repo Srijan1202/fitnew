@@ -11,7 +11,11 @@ import '../../features/exercise/presentation/screens/exercise_detail_screen.dart
 import '../../features/onboarding/presentation/screens/onboarding_flow_screen.dart';
 import '../../features/training/presentation/screens/custom_builder_screen.dart';
 import '../../features/training/presentation/screens/day_editor_screen.dart';
-import '../../features/training/presentation/screens/weekly_plan_screen.dart';
+import '../../features/training/presentation/screens/generate_options_screen.dart';
+import '../../features/training/presentation/screens/plan_start_screen.dart';
+import '../../features/training/presentation/screens/template_library_screen.dart';
+import '../../features/training/presentation/screens/template_preview_screen.dart';
+import '../../features/training/presentation/screens/workout_week_screen.dart';
 import '../../features/profile/presentation/screens/goal_editor_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/today/presentation/screens/today_placeholder_screen.dart';
@@ -33,8 +37,12 @@ abstract final class Routes {
   /// Same browser, returning the tapped exercise to the caller.
   static const String exercisePicker = '/exercises/pick';
   static const String plan = '/plan';
-  static const String planBuilder = '/plan/build';
-  static String planDay(String dayId) => '/plan/days/$dayId';
+  static const String planNew = '/plan/new';
+  static const String planGenerate = '/plan/new/generate';
+  static const String planTemplates = '/plan/templates';
+  static String planTemplate(String slug) => '/plan/templates/$slug';
+  static const String planCustom = '/plan/custom';
+  static String planDayEdit(String dayId) => '/plan/days/$dayId/edit';
   static const String today = '/';
 
   /// Screens a signed-out user may see. Everything else needs a session.
@@ -110,16 +118,42 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.plan,
         name: 'plan',
-        builder: (context, state) => const WeeklyPlanScreen(),
+        builder: (context, state) => const WorkoutWeekScreen(),
         routes: <RouteBase>[
           GoRoute(
-            path: 'build',
-            name: 'plan-builder',
+            path: 'new',
+            name: 'plan-new',
+            builder: (context, state) => const PlanStartScreen(canGoBack: true),
+            routes: <RouteBase>[
+              GoRoute(
+                path: 'generate',
+                name: 'plan-generate',
+                builder: (context, state) => const GenerateOptionsScreen(),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: 'templates',
+            name: 'plan-templates',
+            builder: (context, state) => const TemplateLibraryScreen(),
+            routes: <RouteBase>[
+              GoRoute(
+                path: ':slug',
+                name: 'plan-template',
+                builder: (context, state) => TemplatePreviewScreen(
+                  slug: state.pathParameters['slug']!,
+                ),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: 'custom',
+            name: 'plan-custom',
             builder: (context, state) => const CustomBuilderScreen(),
           ),
           GoRoute(
-            path: 'days/:dayId',
-            name: 'plan-day',
+            path: 'days/:dayId/edit',
+            name: 'plan-day-edit',
             builder: (context, state) =>
                 DayEditorScreen(dayId: state.pathParameters['dayId']!),
           ),

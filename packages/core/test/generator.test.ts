@@ -10,7 +10,14 @@ import type { Goal } from '../src/nutrition/targets.js';
 import {
   BODY_PARTS,
   EQUIPMENT,
+  EXERCISE_COUNT_TARGET_MAX,
+  FULL,
   GOAL_PARAMS,
+  LG,
+  LO,
+  PL,
+  PU,
+  UP,
   MUSCLE_GROUPS,
   PATTERN_ORDER,
   VOLUME_LANDMARKS,
@@ -24,6 +31,7 @@ import {
   type GeneratedProgram,
   type GeneratorInput,
   type MuscleGroup,
+  type SessionTemplate,
 } from '../src/training/generator.js';
 
 interface SeedEntry {
@@ -262,8 +270,12 @@ describe('session duration fits the preference', () => {
   it.each([75, 120])('more time (%i min) than week-1 volume can use is not filled past MAV-low, and the rationale says so', (minutes) => {
     const p = generateProgram(input({ daysPerWeek: 4, goal: 'muscle-gain', preferredSessionMinutes: minutes }));
     const v = recount(p);
-    // Primaries stop at MAV-low; secondaries from the big lifts spill a little past it.
-    for (const m of MUSCLE_GROUPS) expect(v[m], m).toBeLessThanOrEqual(VOLUME_LANDMARKS[m].mavLow + 3);
+    // Primaries stop at MAV-low; secondaries from the big lifts (abs and
+    // back from squats/deadlifts) spill a little past it, never past MAV-high.
+    for (const m of MUSCLE_GROUPS) {
+      expect(v[m], m).toBeLessThanOrEqual(VOLUME_LANDMARKS[m].mavLow + 4);
+      expect(v[m], m).toBeLessThanOrEqual(VOLUME_LANDMARKS[m].mavHigh);
+    }
     for (const d of p.days.filter((x) => !x.isRest)) expect(d.estimatedMinutes).toBeLessThanOrEqual(minutes * 1.15);
     expect(p.rationale.join(' ')).toMatch(/capped at the low end of MAV/);
   });
@@ -374,5 +386,160 @@ describe('programme shape', () => {
   it('pattern order constant covers every pattern exactly once', () => {
     expect([...PATTERN_ORDER].sort()).toEqual([...new Set(PATTERN_ORDER)].sort());
     expect(PATTERN_ORDER.length).toBe(15);
+  });
+});
+
+/* --------------------------------------------- direct coverage and count -- */
+
+const TEMPLATES: Readonly<Record<string, SessionTemplate>> = {
+  'Full Body': FULL, Upper: UP, Lower: LO, Push: PU, Pull: PL, Legs: LG,
+};
+
+/** Is there ANY performable, allowed exercise with `m` as a primary mover? */
+function poolHasPrimary(m: MuscleGroup, kit: readonly Equipment[], limitations: readonly string[], template: SessionTemplate): boolean {
+  return catalogue.some(
+    (e) =>
+      e.primaryMuscles.includes(m) &&
+      isPerformable(e, kit) &&
+      !e.contraindications.some((c) => limitations.includes(c)) &&
+      !template.excluded.includes(e.movementPattern),
+  );
+}
+
+describe('direct muscle coverage (owner decision 2026-09-21)', () => {
+  const combos = DAYS.flatMap((d) => LEVELS.flatMap((l) => GOALS.map((g) => [d, l, g] as const)));
+
+  it.each(combos)('%i days, %s, %s: every muscle a session owns gets a PRIMARY exercise when one is performable', (days, level, goal) => {
+    const p = generateProgram(input({ daysPerWeek: days, experience: level, goal }));
+    for (const d of p.days.filter((x) => !x.isRest)) {
+      const template = TEMPLATES[d.sessionName]!;
+      const direct = new Set(d.exercises.flatMap((x) => bySlug.get(x.slug)!.primaryMuscles));
+      for (const m of template.directCoverage) {
+        if (!poolHasPrimary(m, FULL_GYM, [], template)) continue;
+        expect(direct.has(m), `${d.sessionName}: ${m} has no direct exercise`).toBe(true);
+      }
+    }
+  });
+
+  it('pull days have a horizontal pull, a vertical pull, rear-delt work and a curl', () => {
+    for (const [days, level] of [[6, 'intermediate'], [6, 'advanced'], [5, 'advanced'], [3, 'advanced']] as const) {
+      const p = generateProgram(input({ daysPerWeek: days, experience: level }));
+      for (const d of p.days.filter((x) => x.sessionName === 'Pull')) {
+        const patterns = new Set(d.exercises.map((x) => bySlug.get(x.slug)!.movementPattern));
+        expect(patterns.has('horizontal-pull'), `${days}d ${level} pull: horizontal`).toBe(true);
+        expect(patterns.has('vertical-pull'), `${days}d ${level} pull: vertical`).toBe(true);
+        const rearDelt = d.exercises.some((x) => {
+          const e = bySlug.get(x.slug)!;
+          return e.primaryMuscles.includes('shoulders') && e.secondaryMuscles.includes('back');
+        });
+        expect(rearDelt, `${days}d ${level} pull: rear delts`).toBe(true);
+        expect(d.exercises.some((x) => bySlug.get(x.slug)!.primaryMuscles.includes('biceps')), 'curl').toBe(true);
+      }
+    }
+  });
+
+  it('push days train chest, shoulders and triceps directly; leg days quads, hamstrings, glutes and calves', () => {
+    const p = generateProgram(input({ daysPerWeek: 6, experience: 'intermediate' }));
+    for (const d of p.days.filter((x) => x.sessionName === 'Push')) {
+      const direct = new Set(d.exercises.flatMap((x) => bySlug.get(x.slug)!.primaryMuscles));
+      for (const m of ['chest', 'shoulders', 'triceps'] as const) expect(direct.has(m), m).toBe(true);
+    }
+    for (const d of p.days.filter((x) => x.sessionName === 'Legs')) {
+      const direct = new Set(d.exercises.flatMap((x) => bySlug.get(x.slug)!.primaryMuscles));
+      for (const m of ['quads', 'hamstrings', 'glutes', 'calves'] as const) expect(direct.has(m), m).toBe(true);
+    }
+  });
+
+  it('coverage never invents an exercise: bodyweight-only biceps is still a shortfall, not a fake curl', () => {
+    const p = generateProgram(input({ daysPerWeek: 4, availableEquipment: [] }));
+    for (const d of p.days) for (const x of d.exercises) expect(bySlug.get(x.slug)!.equipment).toEqual(['bodyweight']);
+    expect(p.shortfalls.find((s) => s.muscle === 'biceps')?.reason).toBe('no-performable-exercise');
+  });
+
+  it('coverage respects limitations: an ankle limitation leaves calves uncovered and says so', () => {
+    const p = generateProgram(input({ daysPerWeek: 4, limitations: ['ankle'] }));
+    for (const d of p.days) for (const x of d.exercises) expect(bySlug.get(x.slug)!.contraindications).not.toContain('ankle');
+    expect(p.shortfalls.find((s) => s.muscle === 'calves')?.reason).toBe('limitation');
+  });
+
+  it('coverage survives time fitting: at 45 minutes the direct work is kept and sets are trimmed instead', () => {
+    const p = generateProgram(input({ daysPerWeek: 4, experience: 'advanced', preferredSessionMinutes: 45 }));
+    for (const d of p.days.filter((x) => !x.isRest)) {
+      expect(d.estimatedMinutes).toBeLessThanOrEqual(45 * 1.15);
+      const direct = new Set(d.exercises.flatMap((x) => bySlug.get(x.slug)!.primaryMuscles));
+      for (const m of TEMPLATES[d.sessionName]!.directCoverage) expect(direct.has(m), `${d.sessionName} ${m}`).toBe(true);
+    }
+  });
+});
+
+describe('exercise count (owner decision 2026-09-21: >= min(5, floor(minutes/12)) when volume and time allow)', () => {
+  it('no session in the 60-minute matrix stops at three exercises', () => {
+    for (const days of DAYS) for (const level of LEVELS) for (const goal of GOALS) {
+      const p = generateProgram(input({ daysPerWeek: days, experience: level, goal }));
+      for (const d of p.days.filter((x) => !x.isRest)) {
+        expect(d.exercises.length, `${days}d ${level} ${goal} ${d.sessionName}`).toBeGreaterThanOrEqual(4);
+      }
+    }
+  });
+
+  it('at 60 minutes every session reaches the count target, or every muscle it owns is already at its MAV-low share', () => {
+    // "When volume allows": a session may stop short of five movements only
+    // if adding one would push a muscle past its share of MAV-low — i.e.
+    // the only thing left to add would be junk volume.
+    const target = Math.min(EXERCISE_COUNT_TARGET_MAX, Math.floor(60 / 12));
+    let short = 0;
+    for (const days of DAYS) for (const level of LEVELS) for (const goal of GOALS) {
+      const p = generateProgram(input({ daysPerWeek: days, experience: level, goal }));
+      const sessions = p.days.filter((x) => !x.isRest);
+      for (const d of sessions) {
+        if (d.exercises.length >= target) continue;
+        short += 1;
+        const covering = (m: MuscleGroup): number => sessions.filter((s) => s.focus.includes(m)).length;
+        const here = Object.fromEntries(MUSCLE_GROUPS.map((m) => [m, 0])) as Record<MuscleGroup, number>;
+        for (const x of d.exercises) {
+          const e = bySlug.get(x.slug)!;
+          for (const m of e.primaryMuscles) here[m] += x.setCount;
+          for (const m of e.secondaryMuscles) here[m] += x.setCount * 0.5;
+        }
+        // Either this session's share of MAV-low is met, or the WEEK already
+        // reached MAV-low for the muscle (the weekly cap bound first).
+        const weekly = recount(p);
+        const capped = d.focus.every(
+          (m) => here[m] + 1e-9 >= VOLUME_LANDMARKS[m].mavLow / covering(m) - 0.5 || weekly[m] >= VOLUME_LANDMARKS[m].mavLow,
+        );
+        const heldGoal = GOAL_PARAMS[goal].volumeBias !== 'mev-to-mav';
+        expect(
+          capped || heldGoal,
+          `${days}d ${level} ${goal} ${d.sessionName}: ${d.exercises.length} exercises with room left`,
+        ).toBe(true);
+      }
+    }
+    // And it is not the common case.
+    expect(short).toBeLessThan(DAYS.length * LEVELS.length * GOALS.length * 2);
+  });
+
+  it('six-day PPL is capped by week-1 volume, not by the count target, and the rationale says so', () => {
+    // 10 chest sets a week over two push days cannot honestly become five
+    // movements each without junk volume; the day is shorter and explained.
+    const p = generateProgram(input({ daysPerWeek: 6, experience: 'intermediate', goal: 'muscle-gain' }));
+    for (const d of p.days.filter((x) => !x.isRest)) expect(d.exercises.length).toBeGreaterThanOrEqual(4);
+    const v = recount(p);
+    for (const m of MUSCLE_GROUPS) expect(v[m], m).toBeLessThanOrEqual(VOLUME_LANDMARKS[m].mavHigh);
+    expect(p.rationale.join(' ')).toMatch(/capped at the low end of MAV/);
+  });
+
+  it('a short session preference lowers the count target rather than the time ceiling', () => {
+    const p = generateProgram(input({ daysPerWeek: 4, preferredSessionMinutes: 30 }));
+    for (const d of p.days.filter((x) => !x.isRest)) {
+      expect(d.estimatedMinutes).toBeLessThanOrEqual(30 * 1.15);
+      expect(d.exercises.length).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('count never exceeds the level cap: beginners <= 7, others <= 8', () => {
+    for (const level of LEVELS) for (const days of DAYS) {
+      const p = generateProgram(input({ daysPerWeek: days, experience: level, preferredSessionMinutes: 90 }));
+      for (const d of p.days) expect(d.exercises.length).toBeLessThanOrEqual(level === 'beginner' ? 7 : 8);
+    }
   });
 });

@@ -11,6 +11,7 @@ import {
   exerciseMuscles,
   exercises,
   plannedExercises,
+  plannedSets,
   programDays,
   programs,
   userLimitations,
@@ -18,6 +19,7 @@ import {
   userGoals,
   type ExerciseRow,
   type PlannedExerciseRow,
+  type PlannedSetRow,
   type ProgramDayRow,
   type ProgramRow,
   type UserGoalRow,
@@ -48,6 +50,7 @@ export interface ProgramBundle {
   readonly program: ProgramRow;
   readonly days: readonly ProgramDayRow[];
   readonly exercises: readonly PlannedExerciseJoined[];
+  readonly sets: readonly PlannedSetRow[];
 }
 
 export interface NewProgram {
@@ -55,6 +58,7 @@ export interface NewProgram {
   readonly splitType: ProgramRow['splitType'];
   readonly daysPerWeek: number;
   readonly source: ProgramRow['source'];
+  readonly templateSlug: string | null;
   readonly rationale: string[];
   readonly shortfalls: ProgramRow['shortfalls'];
   readonly days: readonly {
@@ -66,6 +70,15 @@ export interface NewProgram {
   }[];
 }
 
+export interface NewPlannedSet {
+  readonly setIndex: number;
+  readonly repsMin: number;
+  readonly repsMax: number;
+  /** numeric as text, or null: the generator never invents a load. */
+  readonly weightKg: string | null;
+  readonly rir: number;
+}
+
 export interface NewPlannedExercise {
   readonly exerciseId: string;
   readonly orderIndex: number;
@@ -75,6 +88,8 @@ export interface NewPlannedExercise {
   readonly targetRir: number;
   readonly incrementKg: string;
   readonly reason: string | null;
+  /** Exactly setCount entries. */
+  readonly sets: readonly NewPlannedSet[];
 }
 
 const musclesOf = (role: 'primary' | 'secondary') => sql<MuscleGroup[]>`coalesce((
@@ -205,7 +220,33 @@ export class TrainingRepository {
             .innerJoin(exercises, eq(exercises.id, plannedExercises.exerciseId))
             .where(inArray(plannedExercises.programDayId, dayIds))
             .orderBy(asc(plannedExercises.programDayId), asc(plannedExercises.orderIndex));
-    return { program, days, exercises: rows };
+    const exerciseIds = rows.map((r) => r.id);
+    const sets =
+      exerciseIds.length === 0
+        ? []
+        : await this.db
+            .select()
+            .from(plannedSets)
+            .where(inArray(plannedSets.plannedExerciseId, exerciseIds))
+            .orderBy(asc(plannedSets.plannedExerciseId), asc(plannedSets.setIndex));
+    return { program, days, exercises: rows, sets };
+  }
+
+  /** Insert planned exercises with their sets; returns nothing, rows are re-read by `bundle`. */
+  private async insertPlanned(
+    tx: Parameters<Parameters<Db['transaction']>[0]>[0],
+    rows: readonly (NewPlannedExercise & { programDayId: string })[],
+  ): Promise<void> {
+    if (rows.length === 0) return;
+    const inserted = await tx
+      .insert(plannedExercises)
+      .values(rows.map(({ sets: _sets, ...x }) => x))
+      .returning({ id: plannedExercises.id, programDayId: plannedExercises.programDayId, orderIndex: plannedExercises.orderIndex });
+    const idOf = new Map(inserted.map((r) => [`${r.programDayId}:${r.orderIndex}`, r.id]));
+    const setRows = rows.flatMap((x) =>
+      x.sets.map((set) => ({ ...set, plannedExerciseId: idOf.get(`${x.programDayId}:${x.orderIndex}`)! })),
+    );
+    if (setRows.length > 0) await tx.insert(plannedSets).values(setRows);
   }
 
   /**
@@ -227,6 +268,7 @@ export class TrainingRepository {
           splitType: next.splitType,
           daysPerWeek: next.daysPerWeek,
           source: next.source,
+          templateSlug: next.templateSlug,
           rationale: next.rationale,
           shortfalls: next.shortfalls,
         })
@@ -249,16 +291,26 @@ export class TrainingRepository {
       const exerciseRows = next.days.flatMap((d) =>
         d.exercises.map((x) => ({ ...x, programDayId: dayIdByDow.get(d.dayOfWeek)! })),
       );
-      if (exerciseRows.length > 0) await tx.insert(plannedExercises).values(exerciseRows);
+      await this.insertPlanned(tx, exerciseRows);
       return program;
     }).then((program) => this.bundle(program));
+  }
+
+  /** Rename the active programme; null when there is none. */
+  async rename(userId: string, name: string): Promise<ProgramBundle | null> {
+    const [program] = await this.db
+      .update(programs)
+      .set({ name, updatedAt: sql`now()` })
+      .where(and(eq(programs.userId, userId), eq(programs.active, true), isNull(programs.deletedAt)))
+      .returning();
+    return program === undefined ? null : this.bundle(program);
   }
 
   /** Edit one day of the ACTIVE programme; returns null if the day is not the user's. */
   async patchDay(
     userId: string,
     dayId: string,
-    patch: { sessionName?: string; exercises?: readonly NewPlannedExercise[] },
+    patch: { sessionName?: string; focus?: readonly MuscleGroup[]; exercises?: readonly NewPlannedExercise[] },
   ): Promise<ProgramBundle | null> {
     return this.db.transaction(async (tx) => {
       const [owned] = await tx
@@ -272,11 +324,12 @@ export class TrainingRepository {
       if (patch.sessionName !== undefined) {
         await tx.update(programDays).set({ sessionName: patch.sessionName }).where(eq(programDays.id, dayId));
       }
+      if (patch.focus !== undefined) {
+        await tx.update(programDays).set({ focus: [...patch.focus] }).where(eq(programDays.id, dayId));
+      }
       if (patch.exercises !== undefined) {
         await tx.delete(plannedExercises).where(eq(plannedExercises.programDayId, dayId));
-        if (patch.exercises.length > 0) {
-          await tx.insert(plannedExercises).values(patch.exercises.map((x) => ({ ...x, programDayId: dayId })));
-        }
+        await this.insertPlanned(tx, patch.exercises.map((x) => ({ ...x, programDayId: dayId })));
         await tx.update(programDays).set({ isRest: patch.exercises.length === 0 }).where(eq(programDays.id, dayId));
       }
       await tx.update(programs).set({ updatedAt: sql`now()` }).where(eq(programs.id, owned.programId));

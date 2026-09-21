@@ -36,6 +36,8 @@ export const programs = pgTable(
     splitType: splitTypeEnum('split_type').notNull(),
     daysPerWeek: smallint('days_per_week').notNull(),
     source: programSourceEnum('source').notNull(),
+    /** The professional template this came from (Phase 4 rework), else null. */
+    templateSlug: text('template_slug'),
     mesocycleWeek: smallint('mesocycle_week').notNull().default(1),
     active: boolean('active').notNull().default(true),
     /** The generator's explanation and shortfalls, stored with the plan they explain. */
@@ -107,6 +109,37 @@ export const plannedExercises = pgTable(
   ],
 );
 
+/**
+ * Per-set TARGETS (Phase 4 rework, owner decision 2026-09-21). One row per
+ * set, always: `planned_exercises.set_count` rows, ordered by set_index.
+ * A rep range as §12.4 models it (collapsed when the user pins a number),
+ * a starting weight the user typed or NULL (the generator never invents a
+ * load — §12.4 rule 1), and the RIR target. What the lifter actually did
+ * is Phase 5's `set_logs`, which will reference these rows.
+ */
+export const plannedSets = pgTable(
+  'planned_sets',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    plannedExerciseId: uuid('planned_exercise_id')
+      .notNull()
+      .references(() => plannedExercises.id, { onDelete: 'cascade' }),
+    setIndex: smallint('set_index').notNull(),
+    repsMin: smallint('reps_min').notNull(),
+    repsMax: smallint('reps_max').notNull(),
+    weightKg: numeric('weight_kg', { precision: 6, scale: 2 }),
+    rir: smallint('rir').notNull(),
+  },
+  (t) => [
+    uniqueIndex('planned_sets_exercise_index').on(t.plannedExerciseId, t.setIndex),
+    check('planned_sets_index_positive', sql`${t.setIndex} >= 1`),
+    check('planned_sets_reps_ordered', sql`${t.repsMin} >= 1 AND ${t.repsMin} <= ${t.repsMax} AND ${t.repsMax} <= 50`),
+    check('planned_sets_rir_range', sql`${t.rir} BETWEEN 0 AND 5`),
+    check('planned_sets_weight_nonnegative', sql`${t.weightKg} IS NULL OR ${t.weightKg} >= 0`),
+  ],
+);
+
 export type ProgramRow = typeof programs.$inferSelect;
+export type PlannedSetRow = typeof plannedSets.$inferSelect;
 export type ProgramDayRow = typeof programDays.$inferSelect;
 export type PlannedExerciseRow = typeof plannedExercises.$inferSelect;

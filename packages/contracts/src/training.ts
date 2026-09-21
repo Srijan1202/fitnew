@@ -14,18 +14,28 @@ import { equipmentSchema } from './profile.js';
 
 /* ------------------------------------------------------------- vocabulary -- */
 
+/** The generator's §12.2 splits, then each professional template's slug, then custom. */
 export const SPLIT_TYPES = [
   'full-body',
   'upper-lower',
   'push-pull-legs',
   'upper-lower-full',
   'ppl-upper-lower',
+  'bro-split',
+  'upper-lower-6',
+  'full-body-2',
+  'push-pull',
+  'two-muscle',
+  'bodybuilding-5',
+  'full-body-3',
+  'upper-lower-4',
+  'push-pull-legs-6',
   'custom',
 ] as const;
 export const splitTypeSchema = z.enum(SPLIT_TYPES);
 export type SplitType = z.infer<typeof splitTypeSchema>;
 
-export const PROGRAM_SOURCES = ['generated', 'custom'] as const;
+export const PROGRAM_SOURCES = ['generated', 'template', 'custom'] as const;
 export const programSourceSchema = z.enum(PROGRAM_SOURCES);
 export type ProgramSource = z.infer<typeof programSourceSchema>;
 
@@ -40,6 +50,22 @@ export const daysPerWeekSchema = z.number().int().min(MIN_DAYS_PER_WEEK).max(MAX
 export const dayOfWeekSchema = z.number().int().min(1).max(7);
 
 /* ----------------------------------------------------------------- read -- */
+
+/**
+ * One planned set: the TARGET for that set (Phase 4 rework, owner decision
+ * 2026-09-21). A rep range as the spec models it (§12.4), collapsed to a
+ * single number when the user pins one; a starting weight the user typed,
+ * or null — the generator never invents a load (§12.4 rule 1). What the
+ * lifter actually did is Phase 5's `set_logs`, which overlay these.
+ */
+export const plannedSetSchema = z.object({
+  setIndex: z.number().int().min(1),
+  repsMin: z.number().int().min(1).max(50),
+  repsMax: z.number().int().min(1).max(50),
+  weightKg: z.number().min(0).max(500).nullable(),
+  rir: z.number().int().min(0).max(5),
+});
+export type PlannedSet = z.infer<typeof plannedSetSchema>;
 
 export const plannedExerciseSchema = z.object({
   id: z.string().uuid(),
@@ -59,6 +85,8 @@ export const plannedExerciseSchema = z.object({
   incrementKg: z.number().positive(),
   /** The generator's justification; null on a custom entry. Rendered verbatim. */
   reason: z.string().nullable(),
+  /** Exactly `setCount` entries, ordered by setIndex. */
+  sets: z.array(plannedSetSchema).min(1),
 });
 export type PlannedExercise = z.infer<typeof plannedExerciseSchema>;
 
@@ -88,6 +116,8 @@ export const programSchema = z.object({
   splitType: splitTypeSchema,
   daysPerWeek: daysPerWeekSchema,
   source: programSourceSchema,
+  /** Set when the programme came from the professional library. */
+  templateSlug: z.string().nullable(),
   mesocycleWeek: z.number().int().min(1),
   active: z.boolean(),
   createdAt: z.string().datetime(),
@@ -116,7 +146,24 @@ export const generateProgramRequestSchema = z
   .strict();
 export type GenerateProgramRequest = z.infer<typeof generateProgramRequestSchema>;
 
-/** One exercise in a custom day: exercise + prescription. */
+/** A per-set target sent by the client. */
+export const customSetSchema = z
+  .object({
+    repsMin: z.number().int().min(1).max(50),
+    repsMax: z.number().int().min(1).max(50),
+    weightKg: z.number().min(0).max(500).nullable(),
+    rir: z.number().int().min(0).max(5),
+  })
+  .strict()
+  .refine((s) => s.repsMin <= s.repsMax, { message: 'repsMin must be <= repsMax', path: ['repsMin'] });
+export type CustomSet = z.infer<typeof customSetSchema>;
+
+/**
+ * One exercise in a custom day: exercise + prescription. `sets`, when sent,
+ * must have exactly `setCount` entries and carries the per-set targets;
+ * when omitted every set is the prescription with `startingWeightKg` (or
+ * no weight).
+ */
 export const customExerciseSchema = z
   .object({
     exerciseId: z.string().uuid(),
@@ -126,15 +173,26 @@ export const customExerciseSchema = z
     targetRir: z.number().int().min(0).max(5),
     /** Defaults to the exercise's own increment when omitted. */
     incrementKg: z.number().positive().optional(),
+    startingWeightKg: z.number().min(0).max(500).optional(),
+    sets: z.array(customSetSchema).min(1).max(10).optional(),
   })
   .strict()
-  .refine((e) => e.repMin <= e.repMax, { message: 'repMin must be ≤ repMax', path: ['repMin'] });
+  .superRefine((e, ctx) => {
+    if (e.repMin > e.repMax) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'repMin must be <= repMax', path: ['repMin'] });
+    }
+    if (e.sets !== undefined && e.sets.length !== e.setCount) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'sets must have exactly setCount entries', path: ['sets'] });
+    }
+  });
 export type CustomExercise = z.infer<typeof customExerciseSchema>;
 
 export const customDaySchema = z
   .object({
     dayOfWeek: dayOfWeekSchema,
     sessionName: z.string().trim().min(1).max(40),
+    /** Muscle groups the user chose for the day; derived from the exercises when omitted. */
+    focus: z.array(muscleGroupSchema).max(10).optional(),
     exercises: z.array(customExerciseSchema).max(15),
   })
   .strict();
@@ -173,10 +231,67 @@ export type PutProgramRequest = z.infer<typeof putProgramRequestSchema>;
 export const patchProgramDayRequestSchema = z
   .object({
     sessionName: z.string().trim().min(1).max(40).optional(),
+    focus: z.array(muscleGroupSchema).max(10).optional(),
     exercises: z.array(customExerciseSchema).min(1).max(15).optional(),
   })
   .strict()
-  .refine((b) => b.sessionName !== undefined || b.exercises !== undefined, { message: 'nothing to change' });
+  .refine((b) => b.sessionName !== undefined || b.exercises !== undefined || b.focus !== undefined, {
+    message: 'nothing to change',
+  });
 export type PatchProgramDayRequest = z.infer<typeof patchProgramDayRequestSchema>;
 
+export const patchProgramRequestSchema = z.object({ name: z.string().trim().min(1).max(60) }).strict();
+export type PatchProgramRequest = z.infer<typeof patchProgramRequestSchema>;
+
 export const programDayIdParamsSchema = z.object({ id: z.string().uuid() });
+
+/* ------------------------------------------------------------ templates -- */
+
+export const TEMPLATE_LEVELS = ['beginner', 'intermediate', 'advanced', 'any'] as const;
+export const templateLevelSchema = z.enum(TEMPLATE_LEVELS);
+
+/** A professional template as listed: structure only, no exercises yet. */
+export const programTemplateSchema = z.object({
+  slug: z.string().min(1),
+  name: z.string().min(1),
+  daysPerWeek: daysPerWeekSchema,
+  level: templateLevelSchema,
+  approxMinutes: z.number().int().positive(),
+  summary: z.string().min(1),
+  days: z.array(
+    z.object({
+      dayOfWeek: dayOfWeekSchema,
+      sessionName: z.string().min(1),
+      muscles: z.array(muscleGroupSchema),
+    }),
+  ),
+});
+export type ProgramTemplate = z.infer<typeof programTemplateSchema>;
+
+export const templateListResponseSchema = z.object({ items: z.array(programTemplateSchema) });
+
+/** A day of a preview: like a programme day but not yet persisted (no ids). */
+export const previewExerciseSchema = plannedExerciseSchema.omit({ id: true });
+export const previewDaySchema = programDaySchema.omit({ id: true, exercises: true }).extend({
+  exercises: z.array(previewExerciseSchema),
+});
+
+/** `GET /training/templates/{slug}` — materialised for THIS user; nothing stored. */
+export const templatePreviewSchema = z.object({
+  template: programTemplateSchema,
+  days: z.array(previewDaySchema).length(7),
+  weeklyVolume: z.record(muscleGroupSchema, z.number()),
+  rationale: z.array(z.string()),
+  shortfalls: z.array(volumeShortfallSchema),
+});
+export type TemplatePreview = z.infer<typeof templatePreviewSchema>;
+
+export const templateSlugParamsSchema = z.object({ slug: z.string().min(1).max(64) });
+
+/** Same overrides as generate, as a query string (preview is a GET). */
+export const templatePreviewQuerySchema = z
+  .object({
+    daysPerWeek: z.coerce.number().int().min(MIN_DAYS_PER_WEEK).max(MAX_DAYS_PER_WEEK).optional(),
+    preferredSessionMinutes: z.coerce.number().int().min(15).max(180).optional(),
+  })
+  .strict();

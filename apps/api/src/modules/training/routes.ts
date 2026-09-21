@@ -8,9 +8,14 @@ import {
   errorEnvelopeSchema,
   generateProgramRequestSchema,
   patchProgramDayRequestSchema,
+  patchProgramRequestSchema,
   programDayIdParamsSchema,
   programSchema,
   putProgramRequestSchema,
+  templateListResponseSchema,
+  templatePreviewQuerySchema,
+  templatePreviewSchema,
+  templateSlugParamsSchema,
 } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
@@ -71,6 +76,63 @@ export async function trainingRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request) => service.putCustom(requireUserId(request.userId), request.body),
+  );
+
+  typed.patch(
+    '/training/program',
+    {
+      schema: {
+        summary: 'Rename the active programme',
+        tags: ['training'],
+        security: [{ bearerAuth: [] }],
+        body: patchProgramRequestSchema,
+        response: { 200: programSchema, ...errors },
+      },
+    },
+    async (request) => service.rename(requireUserId(request.userId), request.body.name),
+  );
+
+  typed.get(
+    '/training/templates',
+    {
+      schema: {
+        summary: 'The professional structure library (no exercises until previewed)',
+        tags: ['training'],
+        security: [{ bearerAuth: [] }],
+        response: { 200: templateListResponseSchema, ...errors },
+      },
+    },
+    async () => ({ items: service.listTemplates() }),
+  );
+
+  typed.get(
+    '/training/templates/:slug',
+    {
+      schema: {
+        summary: 'Preview a template with exercises for THIS profile; nothing is stored',
+        tags: ['training'],
+        security: [{ bearerAuth: [] }],
+        params: templateSlugParamsSchema,
+        querystring: templatePreviewQuerySchema,
+        response: { 200: templatePreviewSchema, ...errors },
+      },
+    },
+    async (request) => service.previewTemplate(requireUserId(request.userId), request.params.slug, request.query),
+  );
+
+  typed.post(
+    '/training/program/from-template/:slug',
+    {
+      schema: {
+        summary: 'Apply a template as the active programme (same materialisation as the preview)',
+        tags: ['training'],
+        security: [{ bearerAuth: [] }],
+        params: templateSlugParamsSchema,
+        body: generateProgramRequestSchema.optional(),
+        response: { 200: programSchema, ...errors },
+      },
+    },
+    async (request) => service.applyTemplate(requireUserId(request.userId), request.params.slug, request.body ?? {}),
   );
 
   typed.patch(

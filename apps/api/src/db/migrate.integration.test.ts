@@ -25,6 +25,14 @@ async function tableExists(client: postgres.Sql, name: string): Promise<boolean>
   return rows[0]?.exists ?? false;
 }
 
+/** Enum labels by type NAME (not a cached OID — the type may have been rebuilt). */
+async function enumLabels(client: postgres.Sql, typname: string): Promise<string[]> {
+  const rows = await client<{ v: string }[]>`
+    select e.enumlabel as v from pg_enum e join pg_type t on t.oid = e.enumtypid
+    where t.typname = ${typname} order by e.enumsortorder`;
+  return rows.map((r) => r.v);
+}
+
 async function appliedCount(client: postgres.Sql): Promise<number> {
   const rows = await client<{ count: string }[]>`
     select count(*)::text as count from drizzle.__drizzle_migrations
@@ -59,7 +67,7 @@ describeIfDb('migrations (real Postgres)', () => {
     'exercises', 'exercise_muscles', 'exercise_alternatives', 'exercise_contraindications',
   ];
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
-  const TOTAL_MIGRATIONS = 4;
+  const TOTAL_MIGRATIONS = 5;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -152,6 +160,43 @@ describeIfDb('migrations (real Postgres)', () => {
     expect((await client`select 1 from programs where user_id = ${u!.id}`).length).toBe(0);
   });
 
+  it('0004: planned_sets with its CHECKs, template source and split values, template_slug', async () => {
+    expect(await tableExists(client, 'planned_sets')).toBe(true);
+    expect(await enumLabels(client, 'program_source')).toEqual(['generated', 'template', 'custom']);
+    const splits = await enumLabels(client, 'split_type');
+    expect(splits).toContain('bro-split');
+    expect(splits).toContain('push-pull-legs-6');
+
+    await client`insert into users (firebase_uid) values ('mig-sets')`;
+    const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-sets'`;
+    const [p] = await client<{ id: string }[]>`
+      insert into programs (user_id, name, split_type, days_per_week, source, template_slug)
+      values (${u!.id}, 'T', 'bro-split', 5, 'template', 'bro-split') returning id`;
+    const [d] = await client<{ id: string }[]>`insert into program_days (program_id, day_of_week, session_name) values (${p!.id}, 1, 'Chest') returning id`;
+    const [x] = await client<{ id: string }[]>`select id from exercises limit 1`;
+    if (x !== undefined) {
+      const [pe] = await client<{ id: string }[]>`
+        insert into planned_exercises (program_day_id, exercise_id, order_index, set_count, rep_min, rep_max, target_rir, increment_kg)
+        values (${d!.id}, ${x.id}, 0, 3, 6, 12, 2, 2.5) returning id`;
+      await client`insert into planned_sets (planned_exercise_id, set_index, reps_min, reps_max, weight_kg, rir) values (${pe!.id}, 1, 10, 10, 40, 2)`;
+      await client`insert into planned_sets (planned_exercise_id, set_index, reps_min, reps_max, weight_kg, rir) values (${pe!.id}, 2, 6, 12, null, 2)`;
+      // Same set index twice, inverted reps, negative weight: all rejected by the table.
+      await expect(
+        client`insert into planned_sets (planned_exercise_id, set_index, reps_min, reps_max, weight_kg, rir) values (${pe!.id}, 1, 8, 8, 40, 2)`,
+      ).rejects.toThrow(/planned_sets_exercise_index/);
+      await expect(
+        client`insert into planned_sets (planned_exercise_id, set_index, reps_min, reps_max, weight_kg, rir) values (${pe!.id}, 3, 12, 6, 40, 2)`,
+      ).rejects.toThrow(/planned_sets_reps_ordered/);
+      await expect(
+        client`insert into planned_sets (planned_exercise_id, set_index, reps_min, reps_max, weight_kg, rir) values (${pe!.id}, 3, 8, 8, -1, 2)`,
+      ).rejects.toThrow(/planned_sets_weight_nonnegative/);
+      // Deleting the exercise cascades to its sets.
+      await client`delete from planned_exercises where id = ${pe!.id}`;
+      expect((await client`select 1 from planned_sets where planned_exercise_id = ${pe!.id}`).length).toBe(0);
+    }
+    await client`delete from users where firebase_uid = 'mig-sets'`;
+  });
+
   it('one active goal per user is a database fact', async () => {
     await client`insert into users (firebase_uid) values ('mig-goal')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-goal'`;
@@ -206,7 +251,15 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'uid-dup'`;
   });
 
-  it('down removes the Phase 4, 3, then 2 tables and types, one migration at a time', async () => {
+  it('down removes 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0004_planned_sets_templates');
+    expect(await tableExists(client, 'planned_sets')).toBe(false);
+    expect(await enumLabels(client, 'program_source')).toEqual(['generated', 'custom']);
+    const cols = await client<{ column_name: string }[]>`
+      select column_name from information_schema.columns where table_name = 'programs'`;
+    expect(cols.map((c) => c.column_name)).not.toContain('template_slug');
+    expect(await appliedCount(client)).toBe(4);
+
     expect(await rollbackLastMigration(connectionString)).toBe('0003_programs');
     for (const t of PHASE4_TABLES) expect(await tableExists(client, t), t).toBe(false);
     expect(await appliedCount(client)).toBe(3);
@@ -240,6 +293,7 @@ describeIfDb('migrations (real Postgres)', () => {
     for (const t of PHASE2_TABLES) expect(await tableExists(client, t), t).toBe(true);
     for (const t of PHASE3_TABLES) expect(await tableExists(client, t), t).toBe(true);
     for (const t of PHASE4_TABLES) expect(await tableExists(client, t), t).toBe(true);
+    expect(await tableExists(client, 'planned_sets')).toBe(true);
     expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
   });
 });

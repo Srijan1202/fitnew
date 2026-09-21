@@ -470,6 +470,49 @@ void main() {
       );
     });
 
+    test('PlannedSet shape and the day/program day-of-week bounds', () {
+      final day = (properties(program)['days'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      final px = (properties(day)['exercises'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      final set = (properties(px)['sets'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      expect(plannedSquat.sets.first.toJson().keys.toSet(), keysOf(set));
+    });
+
+    test('templates: list item, preview day and preview exercise shapes', () {
+      final list = schemaOf('/training/templates', 'get');
+      final item = (properties(list)['items'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      expect(pplTemplate.toJson().keys.toSet(), keysOf(item));
+      final tday = (properties(item)['days'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      expect(pplTemplate.days.first.toJson().keys.toSet(), keysOf(tday));
+      expect(
+        TemplateLevel.values.map((l) => l.wire).toList(),
+        enumOf(properties(item)['level'] as Map<String, dynamic>),
+      );
+
+      final preview = schemaOf('/training/templates/{slug}', 'get');
+      expect(pplPreview.toJson().keys.toSet(), keysOf(preview));
+      final pday = (properties(preview)['days']
+          as Map<String, dynamic>)['items'] as Map<String, dynamic>;
+      expect(pplPreview.days.first.toJson().keys.toSet(), keysOf(pday));
+      final pex = (properties(pday)['exercises']
+          as Map<String, dynamic>)['items'] as Map<String, dynamic>;
+      expect(
+        pplPreview.days.first.exercises.first.toJson().keys.toSet(),
+        keysOf(pex),
+      );
+      expect(
+        Program.fromJson(
+          jsonDecode(jsonEncode(generatedProgram.toJson()))
+              as Map<String, dynamic>,
+        ).source,
+        ProgramSource.generated,
+      );
+    });
+
     test('Program, ProgramDay, PlannedExercise, VolumeShortfall shapes', () {
       expect(generatedProgram.toJson().keys.toSet(), keysOf(program));
       final day = (properties(program)['days'] as Map<String, dynamic>)['items']
@@ -516,6 +559,12 @@ void main() {
         repMax: 12,
         targetRir: 2,
         incrementKg: 2.5,
+        startingWeightKg: 40,
+        sets: [
+          CustomSet(repsMin: 10, repsMax: 10, weightKg: 40, rir: 2),
+          CustomSet(repsMin: 10, repsMax: 10, weightKg: 40, rir: 2),
+          CustomSet(repsMin: 8, repsMax: 8, weightKg: 42.5, rir: 1),
+        ],
       );
       const body = PutProgramRequest(
         name: 'n',
@@ -532,9 +581,12 @@ void main() {
       expect(exercise.toJson().keys.toSet(), keysOf(px));
       expect(
         (px['required'] as List<dynamic>).cast<String>().toSet(),
-        withoutNulls(exercise.toJson()..remove('incrementKg')).keys.toSet(),
-        reason: 'incrementKg is the only optional field',
+        {'exerciseId', 'setCount', 'repMin', 'repMax', 'targetRir'},
+        reason: 'increment, starting weight and per-set targets are optional',
       );
+      final customSet = (properties(px)['sets']
+          as Map<String, dynamic>)['items'] as Map<String, dynamic>;
+      expect(exercise.sets!.first.toJson().keys.toSet(), keysOf(customSet));
 
       // patch: both optional; at least one sent.
       final patch = schemaOf(
@@ -544,9 +596,13 @@ void main() {
       );
       const patchBody = PatchProgramDayRequest(
         sessionName: 's',
+        focus: [MuscleGroup.chest],
         exercises: [exercise],
       );
       expect(withoutNulls(patchBody.toJson()).keys.toSet(), keysOf(patch));
+      // rename
+      final rename = schemaOf('/training/program', 'patch', request: true);
+      expect(keysOf(rename), {'name'});
     });
   });
 

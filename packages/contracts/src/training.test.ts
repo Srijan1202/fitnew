@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  PROGRAM_SOURCES,
+  SPLIT_TYPES,
   customExerciseSchema,
   generateProgramRequestSchema,
   patchProgramDayRequestSchema,
@@ -45,10 +47,28 @@ describe('custom programme', () => {
     expect(customExerciseSchema.safeParse({ ...ex, incrementKg: 2.5 }).success).toBe(true);
   });
 
+  it('per-set targets: exactly setCount entries, ordered reps, nullable weight', () => {
+    const set = { repsMin: 10, repsMax: 10, weightKg: 40, rir: 2 };
+    expect(customExerciseSchema.safeParse({ ...ex, sets: [set, set, set] }).success).toBe(true);
+    expect(customExerciseSchema.safeParse({ ...ex, sets: [set, set] }).success).toBe(false);
+    expect(customExerciseSchema.safeParse({ ...ex, sets: [{ ...set, repsMin: 12, repsMax: 8 }, set, set] }).success).toBe(false);
+    expect(customExerciseSchema.safeParse({ ...ex, sets: [{ ...set, weightKg: null }, set, set] }).success).toBe(true);
+    expect(customExerciseSchema.safeParse({ ...ex, startingWeightKg: 42.5 }).success).toBe(true);
+    expect(customExerciseSchema.safeParse({ ...ex, startingWeightKg: -1 }).success).toBe(false);
+  });
+
   it('a day patch must change something', () => {
     expect(patchProgramDayRequestSchema.safeParse({}).success).toBe(false);
     expect(patchProgramDayRequestSchema.safeParse({ sessionName: 'Arms' }).success).toBe(true);
     expect(patchProgramDayRequestSchema.safeParse({ exercises: [] }).success).toBe(false);
+    expect(patchProgramDayRequestSchema.safeParse({ focus: ['chest'] }).success).toBe(true);
+  });
+
+  it('split types cover the generator splits, every template slug and custom; sources include template', () => {
+    for (const t of ['full-body', 'upper-lower', 'push-pull-legs', 'bro-split', 'two-muscle', 'push-pull-legs-6', 'custom']) {
+      expect(SPLIT_TYPES).toContain(t);
+    }
+    expect(PROGRAM_SOURCES).toEqual(['generated', 'template', 'custom']);
   });
 
   it('generate accepts only the two profile overrides', () => {

@@ -61,8 +61,10 @@ class DioTrainingRepository implements TrainingRepository {
                 {
                   'dayOfWeek': d.dayOfWeek,
                   'sessionName': d.sessionName,
+                  if (d.focus != null)
+                    'focus': [for (final m in d.focus!) m.wire],
                   'exercises': [
-                    for (final x in d.exercises) withoutNulls(x.toJson()),
+                    for (final x in d.exercises) _exerciseJson(x),
                   ],
                 },
             ],
@@ -70,6 +72,27 @@ class DioTrainingRepository implements TrainingRepository {
         ),
         Program.fromJson,
       );
+
+  /// A custom exercise as the server reads it: no nulls, nested sets encoded.
+  static Map<String, dynamic> _exerciseJson(CustomExercise x) => withoutNulls({
+        'exerciseId': x.exerciseId,
+        'setCount': x.setCount,
+        'repMin': x.repMin,
+        'repMax': x.repMax,
+        'targetRir': x.targetRir,
+        'incrementKg': x.incrementKg,
+        'startingWeightKg': x.startingWeightKg,
+        if (x.sets != null)
+          'sets': [
+            for (final s in x.sets!)
+              {
+                'repsMin': s.repsMin,
+                'repsMax': s.repsMax,
+                'weightKg': s.weightKg,
+                'rir': s.rir,
+              },
+          ],
+      });
 
   @override
   Future<Result<Program>> patchDay(
@@ -81,11 +104,58 @@ class DioTrainingRepository implements TrainingRepository {
           '/v1/training/program/days/$dayId',
           data: withoutNulls({
             'sessionName': request.sessionName,
+            if (request.focus != null)
+              'focus': [for (final m in request.focus!) m.wire],
             if (request.exercises != null)
               'exercises': [
-                for (final x in request.exercises!) withoutNulls(x.toJson()),
+                for (final x in request.exercises!) _exerciseJson(x),
               ],
           }),
+        ),
+        Program.fromJson,
+      );
+
+  @override
+  Future<Result<Program>> rename(String name) => _guard(
+        () => _dio.patch<Map<String, dynamic>>(
+          '/v1/training/program',
+          data: {'name': name},
+        ),
+        Program.fromJson,
+      );
+
+  @override
+  Future<Result<List<ProgramTemplate>>> listTemplates() => _guard(
+        () => _dio.get<Map<String, dynamic>>('/v1/training/templates'),
+        (json) => [
+          for (final item in json['items'] as List<dynamic>)
+            ProgramTemplate.fromJson(item as Map<String, dynamic>),
+        ],
+      );
+
+  @override
+  Future<Result<TemplatePreview>> previewTemplate(
+    String slug,
+    GenerateProgramRequest request,
+  ) =>
+      _guard(
+        () => _dio.get<Map<String, dynamic>>(
+          '/v1/training/templates/$slug',
+          queryParameters:
+              withoutNulls(request.toJson()).map((k, v) => MapEntry(k, '$v')),
+        ),
+        TemplatePreview.fromJson,
+      );
+
+  @override
+  Future<Result<Program>> applyTemplate(
+    String slug,
+    GenerateProgramRequest request,
+  ) =>
+      _guard(
+        () => _dio.post<Map<String, dynamic>>(
+          '/v1/training/program/from-template/$slug',
+          data: withoutNulls(request.toJson()),
         ),
         Program.fromJson,
       );

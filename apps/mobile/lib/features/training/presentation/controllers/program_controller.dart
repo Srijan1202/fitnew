@@ -49,7 +49,42 @@ class ProgramController extends AsyncNotifier<Program?> {
 
   Future<Failure?> patchDay(String dayId, PatchProgramDayRequest request) =>
       _apply(_repo.patchDay(dayId, request));
+
+  Future<Failure?> rename(String name) => _apply(_repo.rename(name));
+
+  Future<Failure?> applyTemplate(
+    String slug, {
+    int? preferredSessionMinutes,
+  }) =>
+      _apply(
+        _repo.applyTemplate(
+          slug,
+          GenerateProgramRequest(
+            preferredSessionMinutes: preferredSessionMinutes,
+          ),
+        ),
+      );
 }
+
+/// The professional library. Structures only; exercises come with a preview.
+final templatesProvider = FutureProvider<List<ProgramTemplate>>(
+  (ref) async {
+    final result = await ref.read(trainingRepositoryProvider).listTemplates();
+    return result.when(ok: (t) => t, err: (f) => throw f);
+  },
+  retry: (_, __) => null,
+);
+
+/// A template materialised for this user. Nothing is stored by previewing.
+final templatePreviewProvider = FutureProvider.family<TemplatePreview, String>(
+  (ref, slug) async {
+    final result = await ref
+        .read(trainingRepositoryProvider)
+        .previewTemplate(slug, const GenerateProgramRequest());
+    return result.when(ok: (p) => p, err: (f) => throw f);
+  },
+  retry: (_, __) => null,
+);
 
 final programControllerProvider =
     AsyncNotifierProvider<ProgramController, Program?>(
