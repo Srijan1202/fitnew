@@ -535,7 +535,8 @@ void main() {
       textOf(tester, 'volume.chest.explanation').data,
       startsWith('Fewer sets than it takes to hold on to what you have.'),
     );
-    expect(find.text('This week · 21–27 Sep'), findsOneWidget);
+    // The header line and the history's first row both say this week.
+    expect(find.text('This week · 21–27 Sep'), findsNWidgets(2));
     expect(find.text('Last week · 14–20 Sep'), findsOneWidget);
     expect(find.text('2 weeks ago · 7–13 Sep'), findsOneWidget);
     expect(find.text('3 weeks ago · 31 Aug – 6 Sep'), findsOneWidget);
