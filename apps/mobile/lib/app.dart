@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/routing/router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/workout/presentation/controllers/workout_providers.dart';
+import 'features/health/presentation/controllers/health_providers.dart';
 
 /// Root widget. Owns the theme; the router comes from Riverpod so the auth
 /// guard can read the same provider the screens do.
@@ -15,6 +16,7 @@ class FitOSApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     // Keeps the offline queue draining for the signed-in user (§33).
     ref.watch(syncCoordinatorProvider);
+    ref.watch(healthRefreshCoordinatorProvider);
 
     return MaterialApp.router(
       title: 'FitOS',

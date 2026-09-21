@@ -22,6 +22,7 @@ import '../../features/training/presentation/screens/template_library_screen.dar
 import '../../features/training/presentation/screens/template_preview_screen.dart';
 import '../../features/training/presentation/screens/workout_week_screen.dart';
 import '../../features/workout/presentation/screens/active_session_screen.dart';
+import '../../features/health/presentation/screens/health_data_screen.dart';
 import '../../features/workout/presentation/screens/history_screen.dart';
 import '../../features/workout/presentation/screens/volume_screen.dart';
 import '../../features/workout/presentation/screens/session_summary_screen.dart';
@@ -43,6 +44,7 @@ abstract final class Routes {
   static const String onboarding = '/onboarding';
   static const String profile = '/profile';
   static const String goalEditor = '/profile/goal';
+  static const String healthData = '/profile/health';
   static const String exercises = '/exercises';
   static String exerciseDetail(String id) => '/exercises/$id';
 
@@ -117,6 +119,11 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
             path: 'goal',
             name: 'goal-editor',
             builder: (context, state) => const GoalEditorScreen(),
+          ),
+          GoRoute(
+            path: 'health',
+            name: 'health-data',
+            builder: (context, state) => const HealthDataScreen(),
           ),
         ],
       ),

@@ -87,6 +87,13 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: FitSpacing.xl),
                 OutlinedButton(
+                  key: const ValueKey('profile.health'),
+                  onPressed: () => context.push(Routes.healthData),
+                  style: _outlined,
+                  child: const Text('Health data'),
+                ),
+                const SizedBox(height: FitSpacing.md),
+                OutlinedButton(
                   onPressed: () =>
                       ref.read(authControllerProvider.notifier).signOut(),
                   style: _outlined,
