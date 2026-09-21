@@ -1,9 +1,11 @@
 # Phase 6 — Progression & volume: implementation plan
 
-**Status** DRAFT for owner approval · **Date** 2026-09-21 · **Prereq** Phase 5 accepted at `6daa648` (all 13 manual checks passed)
+**Status** APPROVED — owner decisions 12.1–12.8 recorded 2026-09-21, no changes · **Date** 2026-09-21 · **Prereq** Phase 5 accepted at `6daa648` (all 13 manual checks passed)
 **Spec** MASTER-SPEC §31 Phase 6, §12.3 (landmarks), §12.4 (progression — implemented in core), §12.5 (deload), §12.6 (substitution), §16 (the `deload` / `progress-load` / `muscle-neglected` actions the TODAY engine already emits), §18 (recovery never silently changes the plan), §19 (AI boundary), §9.2 (`muscle_volume_weekly`), §10.1 (`GET /training/volume`)
 **Builds on** ADR-005 (plan targets ≠ actuals), ADR-006 (local-first logging; `priorWork` shape)
-**Nothing in this document is built.** Coding starts only after approval; every "DECISION NEEDED" in §12 is yours.
+**Nothing in this document was built before approval.** It is the approved spec Phase 6 is implemented against; the eight decisions in §12 are the owner's and are final for this phase.
+
+**Boundaries (owner, final):** deterministic / rules-first, no LLM; never modify `planned_sets` or `planned_exercises` automatically; no recovery / sleep / soreness system; no TODAY ranked-action engine; no PROGRESS screen; no AI explanation or rephrasing.
 
 ---
 
@@ -16,14 +18,14 @@ Phase 5 recorded what the user did. Phase 6 turns that record into *what to do n
 ## 1. Scope
 
 ### In (§31 Phase 6 + spec sections it points at)
-1. **Progression recommendations** — `recommendProgression` wired per exercise over Phase 5 history: action (`increase-load` / `add-reps` / `hold` / `reduce-load` / `deload` / `establish-baseline`), target load, rep target, RIR, **reason**. Bodyweight lifts get a reps-only rule (§4.1, DECISION §12.5).
+1. **Progression recommendations** — `recommendProgression` wired per exercise over Phase 5 history: action (`increase-load` / `add-reps` / `hold` / `reduce-load` / `deload` / `establish-baseline`), target load, rep target, RIR, **reason**. Bodyweight lifts get a reps-only rule (§3.1, approved 12.5).
 2. **Target-load recommendations with reasons on `GET /training/today`** and on the session (§31 acceptance): the set row opens with the recommended load; the reason is one tap away; "last time" stays visible; one tap reverts to last time's weight.
 3. **Volume management** — `packages/core/src/training/volume.ts`: weekly hard sets per muscle (working sets, 0.5 secondary, completed sessions, ISO week in the user's calendar), tonnage, comparison to MV / MEV / MAV / MRV with a status per muscle, four-week history; `muscle_volume_weekly` cache written on completion and rebuildable; `GET /training/volume`; a volume screen.
 4. **Deload / recovery logic** — two triggers per §12.5: per-lift fatigue (rule 2) → that lift's recommendation is `deload`; programme-level deload week when fatigue shows on ≥ 2 lead lifts within 7 days **or** `mesocycle_week ≥ 6` with any muscle at/above MRV. A deload week is **offered**; accepted → the next 7 days' session seeds carry load ×0.9, sets ×0.6 (rounded, ≥ 1), RIR +2; afterwards `mesocycle_week` resets to 1 (§12.5). Declined → not re-offered for 7 days.
 5. **Neglect detection** — a muscle the programme owns with no logged sets (primary or secondary) in the last 6 days (§16 band, `NEGLECT_DAYS = 6` already in the engine); exposed on `/training/volume` and `/training/today`; shown on the volume screen.
 6. **PR detection** is done (Phase 5, owner 8.1); Phase 6 adds the in-session **PR moment** (the row turns pine-with-a-star the instant a logged set beats the prior best the server supplied) and the `newPrToday` input the TODAY engine expects.
 7. **Consuming Phase 5 history** — one read path (§5) from `set_logs` through the `priorWork` shape into `SessionLog[]`; abandoned sessions, deleted sets and non-working sets never count.
-8. **Exercise substitution (§12.6)** — the deterministic trigger set only: on `GET /training/today`, an exercise the user's current equipment/limitations no longer allow, or one they rejected twice, carries `substitution: { alternativeId, reason }` from `exercise_alternatives` (same pattern + primary muscle); the substitute starts at `establish-baseline` (no load carried). Rejection counting needs a small table (§7). DECISION §12.6 on whether to include this now.
+8. **Exercise substitution (§12.6)** — approved 12.6: the deterministic trigger set only: on `GET /training/today`, an exercise the user's current equipment/limitations no longer allow, or one they rejected twice, carries `substitution: { alternativeId, reason }` from `exercise_alternatives` (same pattern + primary muscle); the substitute starts at `establish-baseline` (no load carried); an honest `no-alternative` state when the library has none. Rejection counting uses the small `exercise_rejections` table (§5.1).
 
 ### Out
 - The TODAY ranked-actions engine assembly, `recommendations` persistence, events → **Phase 11** (Phase 6 only makes its inputs — `leadLiftProgression`, `neglectedMuscles`, `newPrToday`, the deload state — available on the API).
@@ -53,7 +55,7 @@ Every recommendation carries `reason` (a string) and `basis: 'calculated' | 'log
 ## 3. Core modules (pure functions, no I/O, no dates from the clock)
 
 ### 3.1 `progression.ts` — one addition, no change to the six branches
-`recommendProgression` today returns `establish-baseline` whenever the last session has no loaded working set, which makes a bodyweight lift (push-ups, chin-ups) permanently baseline. Add branch 1b (**DECISION §12.5**): when every working set in the last session is unloaded (`weightKg` null/0) and `target.repMax` is a number, recommend `add-reps` with `weightKg: null`, `repTarget` = min(best reps + 1, repMax… or "beyond repMax: add a set / load it" as reason) — evaluated after rule 1, before rule 2. The existing tests stay untouched; new ones cover the branch.
+`recommendProgression` today returns `establish-baseline` whenever the last session has no loaded working set, which makes a bodyweight lift (push-ups, chin-ups) permanently baseline. Add branch 1b (approved 12.5): when every working set in the last session is unloaded (`weightKg` null/0) and `target.repMax` is a number, recommend `add-reps` with `weightKg: null`, `repTarget` = min(best reps + 1, repMax… or "beyond repMax: add a set / load it" as reason) — evaluated after rule 1, before rule 2. The existing tests stay untouched; new ones cover the branch.
 
 ### 3.2 `volume.ts` (new)
 ```ts
@@ -74,11 +76,11 @@ mesocycleAfterDeload(): 1
 ```
 Lead lifts = the session's compound-pattern exercises (the `COMPOUND` set already in the generator).
 
-### 3.4 `substitution.ts` (new, if §12.6 is in scope)
+### 3.4 `substitution.ts` (new — approved 12.6)
 `needsSubstitution(exercise, kit, limitations, rejections)` → reason or null; `pickAlternative(exercise, alternatives, kit, limitations)` → the first alternative with the same movement pattern and first primary muscle the user can perform; null → "no alternative in the library" (honest, like Phase 4 shortfalls).
 
 ### 3.5 Boundaries that stay fixed
-- `generator.ts`, `templates.ts`, `records.ts`, `session-summary.ts`, `prefill.ts`, `mesocycle.ts` are not modified, except `prefill.ts` gaining an optional `recommendation` input that wins over "last time" for the weight (the reps target follows the recommendation's rep range floor after an `increase-load`: "move to 65 kg and work back up from 6" → row opens at `repMin`; otherwise `repMax` as today). **DECISION §12.1.**
+- `generator.ts`, `templates.ts`, `records.ts`, `session-summary.ts`, `prefill.ts`, `mesocycle.ts` are not modified, except `prefill.ts` gaining an optional `recommendation` input that wins over "last time" for the weight (the reps target follows the recommendation's rep range floor after an `increase-load`: "move to 65 kg and work back up from 6" → row opens at `repMin`; otherwise `repMax` as today). Approved 12.1.
 - Dates: every core function takes local calendar dates (`yyyy-mm-dd`) computed by the API in the user's timezone (as Phase 5's `localDate`).
 
 ---
@@ -111,14 +113,14 @@ Volume reads the same rows over a four-week window (`completed_at ≥ start of I
 |---|---|
 | `muscle_volume_weekly (user_id, iso_week text 'YYYY-Www', muscle_group, hard_sets numeric(5,1), tonnage_kg numeric(9,1), updated_at)` PK (user_id, iso_week, muscle_group) | §9.2 derived cache; written on `/complete`, rebuilt by `pnpm --filter @fitos/api db:rebuild-volume` (§9.4) |
 | `programs.deload_started_at timestamptz NULL`, `programs.deload_snoozed_until date NULL`, `programs.mesocycle_reset_at timestamptz NULL` | the accepted deload week; the declined offer; where week counting restarts (§12.5 "then resets to 1") |
-| `exercise_rejections (user_id, exercise_id, rejected_at)` (if §12.6 is in scope) | "user rejects an exercise twice" trigger |
+| `exercise_rejections (user_id, exercise_id, rejected_at)` | "user rejects an exercise twice" trigger (approved 12.6) |
 
 Down: drop the table(s) and columns. `mesocycleWeekFrom` gains a `since` (dates before `mesocycle_reset_at` are ignored) — a parameter, not a rule change.
 
 ### 5.2 Endpoints
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/training/today` | **extended**: each exercise gains `recommendation` (`action`, `weightKg`, `repTarget`, `targetRir`, `reason`, `basis`) and `priorBest` (`weightKg`, `repsAtBest`, `estimated1rm`) for the PR moment; response gains `deload: { state: 'none' \| 'offered' \| 'active', reason, until }` and `neglected: MuscleGroup[]`; `prefill` now follows the recommendation (DECISION §12.1) |
+| GET | `/training/today` | **extended**: each exercise gains `recommendation` (`action`, `weightKg`, `repTarget`, `targetRir`, `reason`, `basis`) and `priorBest` (`weightKg`, `repsAtBest`, `estimated1rm`) for the PR moment; response gains `deload: { state: 'none' \| 'offered' \| 'active', reason, until }` and `neglected: MuscleGroup[]`; `prefill` now follows the recommendation (approved 12.1) |
 | POST | `/training/sessions` | **extended**: the seeded session carries the same `recommendation` / `priorBest` per exercise; during an active deload week, targets are deload targets |
 | GET | `/training/volume` | `{ weeks: [{ isoWeek, muscles: [{ muscle, hardSets, tonnageKg, status, landmarks }] }], neglected, owned }` — current + 3 previous weeks |
 | GET | `/training/progression/{exerciseId}` | the last three sessions and the recommendation for one lift, for the "why" sheet |
@@ -159,7 +161,7 @@ Gate: all green (CI authoritative), lint/analyze/format/typecheck, migration bot
 - Manual: as above on a real phone; accept the deload → the next session opens lighter with the originals visible; decline → nothing changes and it does not nag for a week.
 
 ## 9. Implementation order (each green before the next)
-1. Core: `volume.ts`, `deload.ts`, bodyweight branch, prefill-with-recommendation, (`substitution.ts`) + tests.
+1. Core: `volume.ts`, `deload.ts`, bodyweight branch, prefill-with-recommendation, `substitution.ts` + tests.
 2. Migration 0007 (+down, tests), `db:rebuild-volume` script.
 3. Contracts + `openapi.json`.
 4. API: progression assembly in `/today` and session start; `/volume`; deload accept/decline; completion hooks; integration tests.
@@ -187,13 +189,17 @@ Gate: all green (CI authoritative), lint/analyze/format/typecheck, migration bot
 
 ---
 
-## 12. DECISIONS NEEDED (your call before coding)
+## 12. DECISIONS — approved by the owner 2026-09-21 (as proposed, no changes)
 
-12.1 **Recommendation pre-fills the row** — recommended: the set row opens with the recommended load (and `repMin` after an `increase-load`, `repMax` otherwise), reason shown, one tap reverts to last time. Alternative: keep last time's weight in the row and show the recommendation as a note only.
-12.2 **What starts a programme-level deload week** — recommended: fatigue (rule 2) on ≥ 2 lead (compound) lifts within 7 days, **or** `mesocycle_week ≥ 6` with any muscle at/above MRV (§12.5 verbatim). Alternative: any single lift's fatigue.
-12.3 **Deload is an offer, never automatic** — recommended (§18's decision applied to training): Accept starts the week, Not now snoozes 7 days; per-lift `deload` recommendations still show on that lift regardless. Alternative: apply automatically at week ≥ 6 + MRV only.
-12.4 **Deload week mechanics** — recommended: 7 days from acceptance; targets ×0.6 sets (round, ≥ 1), ×0.9 load (to 0.5 kg), +2 RIR (cap 5) as session seeds; `mesocycle_week` → 1 when the week ends; deload sessions excluded from the fatigue comparison.
-12.5 **Bodyweight lifts** — recommended: a reps-only `add-reps` branch (never baseline forever); when reps exceed `repMax` the reason says "add a set or load it". Alternative: leave bodyweight lifts at baseline (known issue).
-12.6 **Exercise substitution (§12.6) in Phase 6** — recommended: yes for the deterministic triggers (equipment lost, limitation added, rejected twice via a small `exercise_rejections` table) with an honest "no alternative" when the library has none; the UI is a one-line "Swap to X — why" with Accept. Alternative: defer to Phase 12/13.
-12.7 **Neglect scope** — recommended: muscles the active programme owns (union of planned exercises' primary muscles), 6 days; a user with no programme gets none. Alternative: all ten muscles for everyone.
-12.8 **Volume window on screen** — recommended: current ISO week + 3 previous, statuses by §12.3, no colour fills (three semantic colours only). Alternative: 8 weeks.
+| # | Decision | Approved |
+|---|---|---|
+| 12.1 | Recommendation pre-fills the row | **Yes.** The set row opens with the recommended load (`repMin` after an `increase-load`, `repMax` otherwise); the engine reason is shown; one tap **Use last time's weight** reverts. |
+| 12.2 | Programme-level deload trigger | **Fatigue (rule 2) on ≥ 2 lead/compound lifts within 7 days, OR `mesocycle_week ≥ 6` with any muscle at/above MRV.** |
+| 12.3 | Deload is an offer | **Always an offer: Accept / Not now. Never silently modify the programme.** |
+| 12.4 | Deload mechanics | **7 days; sets ×0.6 (minimum 1); load ×0.9 rounded to 0.5 kg; RIR +2 capped at 5; `mesocycle_week` → 1 afterwards; deload sessions excluded from the fatigue comparison.** |
+| 12.5 | Bodyweight lifts | **Add the reps-only `add-reps` progression branch.** |
+| 12.6 | Exercise substitution | **In Phase 6**, deterministic triggers (equipment lost, limitation added, rejected twice) with an honest no-alternative state. |
+| 12.7 | Neglect scope | **Muscles owned by the active programme only, 6-day threshold.** |
+| 12.8 | Volume window | **Current ISO week + 3 previous weeks.** |
+
+**Boundaries restated (owner):** deterministic / rules-first, no LLM; `planned_sets` and `planned_exercises` are never modified automatically; no recovery / sleep / soreness system; no TODAY ranked-action engine; no PROGRESS screen; no AI explanation or rephrasing.
