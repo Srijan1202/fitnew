@@ -1027,7 +1027,7 @@ void main() {
       );
       const response = VolumeResponse(
         weeks: [
-          VolumeWeek(isoWeek: '2026-W39', muscles: [muscleWeek])
+          VolumeWeek(isoWeek: '2026-W39', muscles: [muscleWeek]),
         ],
         owned: [MuscleGroup.chest],
         neglected: [],
