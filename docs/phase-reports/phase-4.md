@@ -1,7 +1,7 @@
 # PHASE 4 COMPLETE — Program generation
 
-**Date** 2026-09-21 · **Commits** `be20203` (everything), plus this report's commit
-**Head** pushed to `origin/main` · **CI** see TESTS
+**Date** 2026-09-21 · **Commits** `be20203` (everything), `c72cdbf` (test typecheck fix), plus this report's commit
+**Head** pushed to `origin/main` · **CI on `c72cdbf`:** `ci-core` success (253) · `ci-api` success (124/124, 0 skipped on the PG 18 service; image booted) · `ci-mobile` success (117 tests, conformance, APK)
 
 ---
 
@@ -180,7 +180,7 @@ scoring rules and three seed relabels were found. The three profiles:
   deadlift / calves / abs; second push and pull days vary; every muscle at
   target; sessions 28–53 min with the MAV-low cap stated.
 
-**CI:** appended below once the runs on `be20203` finish.
+**CI:** `be20203` — `ci-core` ✓, `ci-mobile` ✓, `ci-api` ✗ at Typecheck (four `noUncheckedIndexedAccess` errors in the new integration test; my local typecheck had run against a stale incremental build). Fixed in `c72cdbf`, reproduced first from a clean `dist`. On `c72cdbf` all three workflows succeed.
 
 ## KNOWN ISSUES
 
