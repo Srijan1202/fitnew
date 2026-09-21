@@ -271,7 +271,7 @@ void main() {
       steps: 6842,
       active: 482,
       total: 2010,
-      sleep: 372,
+      sleep: 345,
       rhr: 62,
       weight: 60.5,
       bodyFat: 17.5,
@@ -281,7 +281,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(textOf(tester, 'home.activeCalories').data, '482 kcal');
     expect(find.text('2,010 kcal in total'), findsOneWidget);
-    expect(textOf(tester, 'home.sleep').data, '6h 12m');
+    expect(textOf(tester, 'home.sleep').data, '5h 45m');
     expect(textOf(tester, 'home.rhr').data, '62 bpm');
     await reveal(tester, find.byKey(const ValueKey('home.weight')));
     expect(textOf(tester, 'home.weight').data, '60.5 kg');
@@ -342,7 +342,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('SESSION '), findsOneWidget);
     // Back on Home: the phone's active session drives the card.
-    await tester.pageBack();
+    await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(
       textOf(tester, 'home.suggestion.resume.title').data,

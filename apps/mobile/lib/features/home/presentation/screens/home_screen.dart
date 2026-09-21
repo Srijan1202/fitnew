@@ -78,67 +78,71 @@ class HomeScreen extends ConsumerWidget {
         child: RefreshIndicator(
           color: FitColors.ink,
           onRefresh: () => _refresh(ref),
-          child: ListView(
+          child: SingleChildScrollView(
             key: const ValueKey('home.list'),
             physics: const AlwaysScrollableScrollPhysics(),
             // Room for the floating bar over the last section.
             padding: const EdgeInsets.only(bottom: 112),
-            children: <Widget>[
-              HomeHeader(hour: c.hourOfDay, date: c.date),
-              if (loading && suggestions.isEmpty)
-                const HomeSkeleton()
-              else if (carousel.isNotEmpty) ...<Widget>[
-                const SectionLabel('Your next move'),
-                SuggestionCarousel(
-                  key: const ValueKey('home.carousel'),
-                  suggestions: carousel,
-                  onAction: (s) => _act(context, ref, s),
-                ),
-              ],
-              const SizedBox(height: FitSpacing.lg),
-              const SectionLabel('Today'),
-              TodayMetrics(context: c),
-              const SizedBox(height: FitSpacing.lg),
-              const SectionLabel('Recovery'),
-              RecoverySection(context: c),
-              if (_showBody(c)) ...<Widget>[
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                HomeHeader(hour: c.hourOfDay, date: c.date),
+                if (loading && suggestions.isEmpty)
+                  const HomeSkeleton()
+                else if (carousel.isNotEmpty) ...<Widget>[
+                  const SectionLabel('Your next move'),
+                  SuggestionCarousel(
+                    key: const ValueKey('home.carousel'),
+                    suggestions: carousel,
+                    onAction: (s) => _act(context, ref, s),
+                  ),
+                ],
                 const SizedBox(height: FitSpacing.lg),
-                const SectionLabel('Body'),
-                BodySection(context: c),
-              ],
-              const SizedBox(height: FitSpacing.lg),
-              const SectionLabel('This week'),
-              WeekSection(week: c.week),
-              const SizedBox(height: FitSpacing.md),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
-                child: OutlinedButton(
-                  key: const ValueKey('today.volume'),
-                  onPressed: () => context.push(Routes.volume),
-                  child: const Text('Training volume →'),
-                ),
-              ),
-              if (more.isNotEmpty) ...<Widget>[
+                const SectionLabel('Today'),
+                TodayMetrics(context: c),
                 const SizedBox(height: FitSpacing.lg),
-                const SectionLabel('More for you'),
-                MoreForYou(
-                  key: const ValueKey('home.more'),
-                  suggestions: more,
-                  onAction: (s) => _act(context, ref, s),
+                const SectionLabel('Recovery'),
+                RecoverySection(context: c),
+                if (_showBody(c)) ...<Widget>[
+                  const SizedBox(height: FitSpacing.lg),
+                  const SectionLabel('Body'),
+                  BodySection(context: c),
+                ],
+                const SizedBox(height: FitSpacing.lg),
+                const SectionLabel('This week'),
+                WeekSection(week: c.week),
+                const SizedBox(height: FitSpacing.md),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
+                  child: OutlinedButton(
+                    key: const ValueKey('today.volume'),
+                    onPressed: () => context.push(Routes.volume),
+                    child: const Text('Training volume →'),
+                  ),
+                ),
+                if (more.isNotEmpty) ...<Widget>[
+                  const SizedBox(height: FitSpacing.lg),
+                  const SectionLabel('More for you'),
+                  MoreForYou(
+                    key: const ValueKey('home.more'),
+                    suggestions: more,
+                    onAction: (s) => _act(context, ref, s),
+                  ),
+                ],
+                const SizedBox(height: FitSpacing.lg),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
+                  child: Text(
+                    _footer(c),
+                    key: const ValueKey('home.footer'),
+                    style:
+                        textTheme.bodyMedium?.copyWith(color: FitColors.ink35),
+                  ),
                 ),
               ],
-              const SizedBox(height: FitSpacing.lg),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
-                child: Text(
-                  _footer(c),
-                  key: const ValueKey('home.footer'),
-                  style: textTheme.bodyMedium?.copyWith(color: FitColors.ink35),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

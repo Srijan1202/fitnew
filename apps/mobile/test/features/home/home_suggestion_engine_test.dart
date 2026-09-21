@@ -226,13 +226,18 @@ void main() {
 
   test('recovery: sleep under six hours, only when sleep is available', () {
     final short =
-        engine.evaluate(ctx(today: trainingDay, snapshot: health(sleep: 372)));
+        engine.evaluate(ctx(today: trainingDay, snapshot: health(sleep: 345)));
     final r = short.firstWhere((s) => s.id == 'recover');
-    expect(r.title, 'Sleep was 6h 12m');
+    expect(r.title, 'Sleep was 5h 45m');
     expect(r.subtitle, "Keep today's session controlled");
     expect(
-      ids(ctx(today: trainingDay, snapshot: health(sleep: 372))),
+      ids(ctx(today: trainingDay, snapshot: health(sleep: 345))),
       contains('recover'),
+    );
+    // 6h 12m is not "meaningfully low" under owner D5.
+    expect(
+      ids(ctx(today: trainingDay, snapshot: health(sleep: 372))),
+      isNot(contains('recover')),
     );
     expect(
       ids(ctx(today: trainingDay, snapshot: health(sleep: 7 * 60))),

@@ -77,11 +77,15 @@ void main() {
     expect(find.text('Continue with Google'), findsNothing);
   });
 
-  testWidgets('sign out from TODAY returns to sign-in', (tester) async {
+  testWidgets(
+      'sign out from the profile (via the Home header) returns to sign-in',
+      (tester) async {
     repo.restoreResult = AuthState.signedIn(testProfile);
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
+    await tester.tap(find.byKey(const ValueKey('home.profile')));
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Sign out'));
     await tester.tap(find.text('Sign out'));
     await tester.pumpAndSettle();

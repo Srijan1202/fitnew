@@ -135,11 +135,14 @@ class FitBottomBar extends StatelessWidget {
             child: Container(
               key: const ValueKey('nav.bar'),
               height: contentHeight,
-              decoration: BoxDecoration(
-                color: surface,
+              foregroundDecoration: BoxDecoration(
                 border: Border.all(color: FitColors.rule),
                 borderRadius: const BorderRadius.all(FitRadius.medium),
-                boxShadow: const <BoxShadow>[
+              ),
+              decoration: const BoxDecoration(
+                color: surface,
+                borderRadius: BorderRadius.all(FitRadius.medium),
+                boxShadow: <BoxShadow>[
                   BoxShadow(
                     color: Color(0x1A17171A),
                     blurRadius: 12,

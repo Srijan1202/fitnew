@@ -270,7 +270,7 @@ void main() {
       final deco = bar.decoration! as BoxDecoration;
       expect(deco.color!.a, lessThan(1.0), reason: 'translucent');
       expect(deco.color!.a, greaterThan(0.8), reason: 'still paper');
-      expect(deco.border, isNotNull);
+      expect((bar.foregroundDecoration! as BoxDecoration).border, isNotNull);
       expect(deco.boxShadow, hasLength(1));
       final size = tester.getSize(find.byKey(const ValueKey('nav.bar')));
       expect(size.height, FitBottomBar.contentHeight);
