@@ -226,6 +226,7 @@ void main() {
     expect(textOf(tester, 'health.activity.grant').data, 'Not allowed');
     // Connect grants what the (fake) sheet allows: steps and sleep.
     health.grantOnRequest = {HealthMetricKind.steps, HealthMetricKind.sleep};
+    await reveal(tester, find.byKey(const ValueKey('health.connect')));
     await tester.tap(find.byKey(const ValueKey('health.connect')));
     await tester.pumpAndSettle();
     expect(textOf(tester, 'health.status').data, 'Connected');
