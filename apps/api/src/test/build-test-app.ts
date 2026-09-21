@@ -58,7 +58,8 @@ export async function buildDbApp(connectionString: string): Promise<TestApp> {
   return { app, verifier };
 }
 
+/** The isolated test database (src/test/test-database.ts); undefined ⇒ integration suites skip. */
 export const databaseUrl: string | undefined =
-  process.env['DATABASE_URL'] !== undefined && process.env['DATABASE_URL'] !== ''
-    ? process.env['DATABASE_URL']
+  process.env['TEST_DATABASE_URL'] !== undefined && process.env['TEST_DATABASE_URL'] !== ''
+    ? process.env['TEST_DATABASE_URL']
     : undefined;

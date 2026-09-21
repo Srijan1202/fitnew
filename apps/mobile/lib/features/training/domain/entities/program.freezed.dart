@@ -3377,6 +3377,10 @@ class __$CustomSetCopyWithImpl<$Res> implements _$CustomSetCopyWith<$Res> {
 
 /// @nodoc
 mixin _$CustomExercise {
+  /// The planned exercise this row continues when a day is edited. The
+  /// server keeps that row, so its id (which keys the expanded card) and
+  /// its set ids survive every auto-save. Null: a new row.
+  String? get id;
   String get exerciseId;
   int get setCount;
   int get repMin;
@@ -3402,6 +3406,7 @@ mixin _$CustomExercise {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is CustomExercise &&
+            (identical(other.id, id) || other.id == id) &&
             (identical(other.exerciseId, exerciseId) ||
                 other.exerciseId == exerciseId) &&
             (identical(other.setCount, setCount) ||
@@ -3421,6 +3426,7 @@ mixin _$CustomExercise {
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      id,
       exerciseId,
       setCount,
       repMin,
@@ -3432,7 +3438,7 @@ mixin _$CustomExercise {
 
   @override
   String toString() {
-    return 'CustomExercise(exerciseId: $exerciseId, setCount: $setCount, repMin: $repMin, repMax: $repMax, targetRir: $targetRir, incrementKg: $incrementKg, startingWeightKg: $startingWeightKg, sets: $sets)';
+    return 'CustomExercise(id: $id, exerciseId: $exerciseId, setCount: $setCount, repMin: $repMin, repMax: $repMax, targetRir: $targetRir, incrementKg: $incrementKg, startingWeightKg: $startingWeightKg, sets: $sets)';
   }
 }
 
@@ -3443,7 +3449,8 @@ abstract mixin class $CustomExerciseCopyWith<$Res> {
       _$CustomExerciseCopyWithImpl;
   @useResult
   $Res call(
-      {String exerciseId,
+      {String? id,
+      String exerciseId,
       int setCount,
       int repMin,
       int repMax,
@@ -3466,6 +3473,7 @@ class _$CustomExerciseCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? id = freezed,
     Object? exerciseId = null,
     Object? setCount = null,
     Object? repMin = null,
@@ -3476,6 +3484,10 @@ class _$CustomExerciseCopyWithImpl<$Res>
     Object? sets = freezed,
   }) {
     return _then(_self.copyWith(
+      id: freezed == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String?,
       exerciseId: null == exerciseId
           ? _self.exerciseId
           : exerciseId // ignore: cast_nullable_to_non_nullable
@@ -3606,6 +3618,7 @@ extension CustomExercisePatterns on CustomExercise {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
+            String? id,
             String exerciseId,
             int setCount,
             int repMin,
@@ -3621,6 +3634,7 @@ extension CustomExercisePatterns on CustomExercise {
     switch (_that) {
       case _CustomExercise() when $default != null:
         return $default(
+            _that.id,
             _that.exerciseId,
             _that.setCount,
             _that.repMin,
@@ -3650,6 +3664,7 @@ extension CustomExercisePatterns on CustomExercise {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(
+            String? id,
             String exerciseId,
             int setCount,
             int repMin,
@@ -3664,6 +3679,7 @@ extension CustomExercisePatterns on CustomExercise {
     switch (_that) {
       case _CustomExercise():
         return $default(
+            _that.id,
             _that.exerciseId,
             _that.setCount,
             _that.repMin,
@@ -3692,6 +3708,7 @@ extension CustomExercisePatterns on CustomExercise {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
+            String? id,
             String exerciseId,
             int setCount,
             int repMin,
@@ -3706,6 +3723,7 @@ extension CustomExercisePatterns on CustomExercise {
     switch (_that) {
       case _CustomExercise() when $default != null:
         return $default(
+            _that.id,
             _that.exerciseId,
             _that.setCount,
             _that.repMin,
@@ -3724,7 +3742,8 @@ extension CustomExercisePatterns on CustomExercise {
 @JsonSerializable()
 class _CustomExercise implements CustomExercise {
   const _CustomExercise(
-      {required this.exerciseId,
+      {this.id,
+      required this.exerciseId,
       required this.setCount,
       required this.repMin,
       required this.repMax,
@@ -3736,6 +3755,11 @@ class _CustomExercise implements CustomExercise {
   factory _CustomExercise.fromJson(Map<String, dynamic> json) =>
       _$CustomExerciseFromJson(json);
 
+  /// The planned exercise this row continues when a day is edited. The
+  /// server keeps that row, so its id (which keys the expanded card) and
+  /// its set ids survive every auto-save. Null: a new row.
+  @override
+  final String? id;
   @override
   final String exerciseId;
   @override
@@ -3780,6 +3804,7 @@ class _CustomExercise implements CustomExercise {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _CustomExercise &&
+            (identical(other.id, id) || other.id == id) &&
             (identical(other.exerciseId, exerciseId) ||
                 other.exerciseId == exerciseId) &&
             (identical(other.setCount, setCount) ||
@@ -3799,6 +3824,7 @@ class _CustomExercise implements CustomExercise {
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      id,
       exerciseId,
       setCount,
       repMin,
@@ -3810,7 +3836,7 @@ class _CustomExercise implements CustomExercise {
 
   @override
   String toString() {
-    return 'CustomExercise(exerciseId: $exerciseId, setCount: $setCount, repMin: $repMin, repMax: $repMax, targetRir: $targetRir, incrementKg: $incrementKg, startingWeightKg: $startingWeightKg, sets: $sets)';
+    return 'CustomExercise(id: $id, exerciseId: $exerciseId, setCount: $setCount, repMin: $repMin, repMax: $repMax, targetRir: $targetRir, incrementKg: $incrementKg, startingWeightKg: $startingWeightKg, sets: $sets)';
   }
 }
 
@@ -3823,7 +3849,8 @@ abstract mixin class _$CustomExerciseCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String exerciseId,
+      {String? id,
+      String exerciseId,
       int setCount,
       int repMin,
       int repMax,
@@ -3846,6 +3873,7 @@ class __$CustomExerciseCopyWithImpl<$Res>
   @override
   @pragma('vm:prefer-inline')
   $Res call({
+    Object? id = freezed,
     Object? exerciseId = null,
     Object? setCount = null,
     Object? repMin = null,
@@ -3856,6 +3884,10 @@ class __$CustomExerciseCopyWithImpl<$Res>
     Object? sets = freezed,
   }) {
     return _then(_CustomExercise(
+      id: freezed == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String?,
       exerciseId: null == exerciseId
           ? _self.exerciseId
           : exerciseId // ignore: cast_nullable_to_non_nullable

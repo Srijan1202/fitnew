@@ -177,7 +177,7 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
     return async.when(
       loading: () => const Scaffold(body: SafeArea(child: _WeekSkeleton())),
       error: (e, _) => Scaffold(
-        appBar: AppBar(leading: BackButton(onPressed: () => context.pop())),
+        appBar: AppBar(automaticallyImplyLeading: false),
         body: SafeArea(
           child: _Failed(
             failure: e is Failure ? e : const Unknown(),
@@ -190,8 +190,11 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
         final selected = _selectedDow ??= _defaultDay(program);
         final day = program.days.firstWhere((d) => d.dayOfWeek == selected);
         return Scaffold(
+          // The Training tab's root: no back button (the bar and Android
+          // back handle leaving); the title carries the programme.
           appBar: AppBar(
-            leading: BackButton(onPressed: () => context.pop()),
+            automaticallyImplyLeading: false,
+            titleSpacing: FitSpacing.screen,
             title: _Title(program: program),
             actions: <Widget>[
               PopupMenuButton<String>(
@@ -265,9 +268,12 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
         content:
             TextField(controller: controller, autofocus: true, maxLength: 60),
         actions: <Widget>[
-          TextButton(onPressed: () => ctx.pop(), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
-            onPressed: () => ctx.pop(controller.text.trim()),
+            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
             child: const Text('Save'),
           ),
         ],

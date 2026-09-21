@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/failure.dart';
 import '../../../../core/errors/result.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../auth/presentation/controllers/auth_providers.dart';
 import '../../data/training_repository_impl.dart';
 import '../../domain/entities/program.dart';
@@ -19,6 +20,7 @@ class ProgramController extends AsyncNotifier<Program?> {
 
   @override
   Future<Program?> build() async {
+    requireSession(ref); // rebuilt on sign-out / sign-in as someone else
     final result = await _repo.getProgram();
     return result.when(ok: (p) => p, err: (f) => throw f);
   }
@@ -27,7 +29,9 @@ class ProgramController extends AsyncNotifier<Program?> {
     final result = await call;
     return result.when<Failure?>(
       ok: (p) {
-        state = AsyncData(p);
+        // A flush-on-leave can land after the session (and this notifier)
+        // is gone; the server has the edit, there is nothing left to show.
+        if (ref.mounted) state = AsyncData(p);
         return null;
       },
       err: (f) => f,
@@ -69,6 +73,7 @@ class ProgramController extends AsyncNotifier<Program?> {
 /// The professional library. Structures only; exercises come with a preview.
 final templatesProvider = FutureProvider<List<ProgramTemplate>>(
   (ref) async {
+    requireSession(ref);
     final result = await ref.read(trainingRepositoryProvider).listTemplates();
     return result.when(ok: (t) => t, err: (f) => throw f);
   },
@@ -78,6 +83,7 @@ final templatesProvider = FutureProvider<List<ProgramTemplate>>(
 /// A template materialised for this user. Nothing is stored by previewing.
 final templatePreviewProvider = FutureProvider.family<TemplatePreview, String>(
   (ref, slug) async {
+    requireSession(ref);
     final result = await ref
         .read(trainingRepositoryProvider)
         .previewTemplate(slug, const GenerateProgramRequest());

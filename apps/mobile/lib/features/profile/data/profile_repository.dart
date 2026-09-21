@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/errors/error_mapper.dart';
 import '../../../core/errors/failure.dart';
 import '../../../core/errors/result.dart';
+import '../../auth/presentation/controllers/auth_controller.dart';
 import '../../auth/presentation/controllers/auth_providers.dart';
 import '../domain/entities/profile.dart';
 
@@ -70,6 +71,9 @@ class ProfileController extends AsyncNotifier<ProfileView> {
 
   @override
   Future<ProfileView> build() async {
+    // Rebuilds whenever the session changes; never shows another session's
+    // data or error (see sessionUserIdProvider).
+    requireSession(ref);
     final profile = await _repo.getProfile();
     final goal = await _repo.getGoal();
     return ProfileView(

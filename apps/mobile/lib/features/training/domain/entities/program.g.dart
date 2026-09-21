@@ -266,6 +266,7 @@ Map<String, dynamic> _$CustomSetToJson(_CustomSet instance) =>
 
 _CustomExercise _$CustomExerciseFromJson(Map<String, dynamic> json) =>
     _CustomExercise(
+      id: json['id'] as String?,
       exerciseId: json['exerciseId'] as String,
       setCount: (json['setCount'] as num).toInt(),
       repMin: (json['repMin'] as num).toInt(),
@@ -280,6 +281,7 @@ _CustomExercise _$CustomExerciseFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$CustomExerciseToJson(_CustomExercise instance) =>
     <String, dynamic>{
+      'id': instance.id,
       'exerciseId': instance.exerciseId,
       'setCount': instance.setCount,
       'repMin': instance.repMin,

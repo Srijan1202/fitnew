@@ -1,3 +1,4 @@
+import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/core/theme/app_theme.dart';
@@ -101,6 +102,7 @@ void main() {
     );
     return ProviderScope(
       overrides: [
+        sessionUserIdProvider.overrideWithValue('user-1'),
         trainingRepositoryProvider.overrideWithValue(training),
         exerciseRepositoryProvider.overrideWithValue(exercises),
         profileRepositoryProvider.overrideWithValue(profile),
@@ -197,6 +199,105 @@ void main() {
     });
 
     testWidgets(
+        'an expanded card stays expanded through every edit, the save, and a refresh (owner review)',
+        (tester) async {
+      training.stored = generatedProgram;
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      final cardKey = 'exercise.${plannedSquat.id}';
+      final set1 = find.byKey(ValueKey('$cardKey.set.1'));
+      await tester.tap(find.byKey(ValueKey('$cardKey.header')));
+      await settle(tester);
+      expect(set1, findsOneWidget);
+
+      for (final control in [
+        'set.1.reps.plus',
+        'set.1.reps.plus',
+        'set.1.reps.minus',
+        'set.2.weight.plus',
+        'set.2.weight.minus',
+        'set.3.rir.plus',
+        'set.3.rir.minus',
+      ]) {
+        await tester.tap(find.byKey(ValueKey('$cardKey.$control')));
+        await tester.pump();
+        expect(set1, findsOneWidget, reason: '$control collapsed the card');
+      }
+      // Typing a weight.
+      await tester.ensureVisible(find.byKey(ValueKey('$cardKey.set.4.weight')));
+      await settle(tester);
+      await tester.tap(find.byKey(ValueKey('$cardKey.set.4.weight')));
+      await settle(tester);
+      await tester.enterText(
+        find.byKey(ValueKey('$cardKey.set.4.weight.field')),
+        '60',
+      );
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await settle(tester);
+      expect(set1, findsOneWidget, reason: 'typing collapsed the card');
+
+      // The auto-save lands: the server's answer replaces the programme.
+      // Every row the client sent named the planned exercise it continues,
+      // so the server kept the ids and the card is still the same card.
+      await autosave(tester);
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, 800));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('save.saved')), findsOneWidget);
+      expect(training.patchRequests, isNotEmpty);
+      for (final (_, body) in training.patchRequests) {
+        expect(
+          body.exercises!.map((x) => x.id).toList(),
+          [plannedSquat.id, plannedBench.id],
+        );
+      }
+      expect(set1, findsOneWidget, reason: 'the save collapsed the card');
+      expect(
+        tester.widget<Text>(find.byKey(ValueKey('$cardKey.set.1.reps'))).data,
+        '13',
+      );
+
+      // A provider refresh (pull-to-refresh, a retry elsewhere) re-reads the
+      // programme; the expansion is the screen's, keyed by id, and survives.
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(WorkoutWeekScreen)),
+      );
+      container.invalidate(programControllerProvider);
+      await settle(tester);
+      expect(set1, findsOneWidget, reason: 'a refresh collapsed the card');
+      // Until the user collapses it.
+      await tester.tap(find.byKey(ValueKey('$cardKey.header')));
+      await settle(tester);
+      expect(set1, findsNothing);
+    });
+
+    testWidgets(
+        'a save the server answers with NEW ids (a row without its id) does collapse — the contract the fake enforces',
+        (tester) async {
+      // Documents the failure mode: the fake mirrors the server, so a row
+      // sent without `id` comes back as a different planned exercise.
+      training.stored = generatedProgram;
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      final day = generatedProgram.days.first;
+      final repo = training;
+      final without =
+          day.exercises.map((x) => x.toCustom().copyWith(id: null)).toList();
+      final after = await repo.patchDay(
+        day.id,
+        PatchProgramDayRequest(exercises: without),
+      );
+      final ids = (after as Ok<Program>)
+          .value
+          .days
+          .first
+          .exercises
+          .map((x) => x.id)
+          .toList();
+      expect(ids, isNot(contains(plannedSquat.id)));
+      expect(ids, isNot(contains(plannedBench.id)));
+    });
+
+    testWidgets(
         'reps and weight are edited per set and auto-saved as one PATCH after a pause',
         (tester) async {
       training.stored = generatedProgram;
@@ -206,22 +307,27 @@ void main() {
       await tester.tap(find.byKey(ValueKey('$cardKey.header')));
       await settle(tester);
 
-      // Set 1: + on a 6–12 range pins to 12, then steps.
+      // A 6–12 prescription opens at 12 on every set (owner decision); the
+      // range stays underneath until the set is pinned.
+      String reps(int set) => tester
+          .widget<Text>(find.byKey(ValueKey('$cardKey.set.$set.reps')))
+          .data!;
+      for (final i in [1, 2, 3, 4]) {
+        expect(reps(i), '12');
+      }
+      expect(find.text('6–12 reps'), findsNWidgets(4));
+      // Set 1: + steps to 13, − twice to 11, then to 10; nothing else moves.
       await tester.tap(find.byKey(ValueKey('$cardKey.set.1.reps.plus')));
       await tester.pump();
-      expect(find.byKey(ValueKey('$cardKey.set.1.reps')), findsOneWidget);
-      expect(
-        tester.widget<Text>(find.byKey(ValueKey('$cardKey.set.1.reps'))).data,
-        '12',
-      );
-      await tester.tap(find.byKey(ValueKey('$cardKey.set.1.reps.minus')));
-      await tester.pump();
-      await tester.tap(find.byKey(ValueKey('$cardKey.set.1.reps.minus')));
-      await tester.pump();
-      expect(
-        tester.widget<Text>(find.byKey(ValueKey('$cardKey.set.1.reps'))).data,
-        '10',
-      );
+      expect(reps(1), '13');
+      for (final i in [1, 2, 3]) {
+        await tester.tap(find.byKey(ValueKey('$cardKey.set.1.reps.minus')));
+        await tester.pump();
+        expect(reps(1), '${13 - i}');
+      }
+      expect(reps(2), '12');
+      expect(reps(3), '12');
+      expect(find.text('6–12 reps'), findsNWidgets(3));
       // Set 3: weight + twice steps by the exercise's increment (5 kg).
       await tester.tap(find.byKey(ValueKey('$cardKey.set.3.weight.plus')));
       await tester.pump();
@@ -370,7 +476,7 @@ void main() {
       await settle(tester);
       await tester.tap(find.byKey(ValueKey('$cardKey.replace')));
       await settle(tester);
-      expect(find.text('Pick an exercise'), findsOneWidget);
+      expect(find.text('ADD EXERCISE'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('exercise.push-up')));
       await settle(tester);
 

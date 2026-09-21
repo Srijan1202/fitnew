@@ -1,0 +1,1 @@
+ALTER TABLE "exercise_muscles" ADD COLUMN "position" smallint DEFAULT 0 NOT NULL;

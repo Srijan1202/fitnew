@@ -75,6 +75,7 @@ class DioTrainingRepository implements TrainingRepository {
 
   /// A custom exercise as the server reads it: no nulls, nested sets encoded.
   static Map<String, dynamic> _exerciseJson(CustomExercise x) => withoutNulls({
+        'id': x.id,
         'exerciseId': x.exerciseId,
         'setCount': x.setCount,
         'repMin': x.repMin,

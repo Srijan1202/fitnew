@@ -54,16 +54,11 @@ class _SetRowState extends State<SetRow> {
   Key? _k(String suffix) =>
       widget.rowKey == null ? null : ValueKey('${widget.rowKey}.$suffix');
 
-  /// A rep range pins to a number on the first tap: + goes to the top of
-  /// the range, − to the bottom. After that it steps by one.
+  /// The set shows its target (the top of a range: 6–12 opens at 12). A tap
+  /// steps that number by one and pins it; only this set changes.
   void _reps(int delta) {
     final s = widget.set;
-    int next;
-    if (s.repsMin != s.repsMax) {
-      next = delta > 0 ? s.repsMax : s.repsMin;
-    } else {
-      next = (s.repsMin + delta).clamp(1, 50);
-    }
+    final next = (s.targetReps + delta).clamp(1, 50);
     widget.onChanged(s.copyWith(repsMin: next, repsMax: next));
   }
 
@@ -112,7 +107,7 @@ class _SetRowState extends State<SetRow> {
     final weightLabel = s.weightKg == null ? '—' : _fmt(s.weightKg!);
     return Semantics(
       label:
-          'Set ${s.setIndex}: ${s.repsLabel} reps, ${s.weightKg == null ? 'no weight set' : '${s.weightKg} kilograms'}, ${s.rir} reps in reserve',
+          'Set ${s.setIndex}: ${s.targetReps} reps, ${s.weightKg == null ? 'no weight set' : '${s.weightKg} kilograms'}, ${s.rir} reps in reserve',
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: FitSpacing.xs),
         child: Row(
@@ -132,9 +127,10 @@ class _SetRowState extends State<SetRow> {
               enabled: widget.enabled,
               onMinus: () => _reps(-1),
               onPlus: () => _reps(1),
-              unit: 'reps',
+              // The prescription's range sits under the number until pinned.
+              unit: s.repsMin == s.repsMax ? 'reps' : '${s.repsLabel} reps',
               child: Text(
-                s.repsLabel,
+                '${s.targetReps}',
                 key: _k('reps'),
                 style: textTheme.titleLarge,
               ),

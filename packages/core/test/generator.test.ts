@@ -543,3 +543,100 @@ describe('exercise count (owner decision 2026-09-21: >= min(5, floor(minutes/12)
     }
   });
 });
+
+/* ------------------------------------------------- owner review 2026-09-21 (final pass) -- */
+
+describe('pull sessions at 75 minutes (owner review: "Pull still only 3")', () => {
+  // The user's actual kit: a campus gym without kettlebells or bands.
+  const CAMPUS_GYM: readonly Equipment[] = ['barbell', 'dumbbell', 'machine', 'cable', 'pull-up-bar'];
+  const pullDays = (p: GeneratedProgram) => p.days.filter((d) => !d.isRest && d.sessionName === 'Pull');
+  const primaries = (slug: string) => bySlug.get(slug)!.primaryMuscles;
+  const pattern = (slug: string) => bySlug.get(slug)!.movementPattern;
+
+  // Splits with a pull day per the §12.2 table (beginners never get one).
+  it.each([
+    ['intermediate', 5], ['intermediate', 6], ['advanced', 3], ['advanced', 5], ['advanced', 6],
+  ] as const)('%s, %i days, full campus gym, 75 min: every pull day covers lats, mid-back, rear delts and biceps with >= 4 movements', (level, days) => {
+    for (const goal of ['muscle-gain', 'recomposition', 'fat-loss', 'general'] as const) {
+      const p = generateProgram(input({ experience: level, daysPerWeek: days, goal, preferredSessionMinutes: 75, availableEquipment: CAMPUS_GYM }));
+      const pulls = pullDays(p);
+      expect(pulls.length).toBeGreaterThan(0);
+      for (const d of pulls) {
+        const slugs = d.exercises.map((x) => x.slug);
+        const label = `${level} ${days}d ${goal} ${d.dayOfWeek}: ${slugs.join(', ')}`;
+        expect(d.exercises.length, label).toBeGreaterThanOrEqual(4);
+        expect(slugs.some((s) => pattern(s) === 'vertical-pull'), `vertical pull — ${label}`).toBe(true);
+        expect(slugs.some((s) => pattern(s) === 'horizontal-pull'), `horizontal pull — ${label}`).toBe(true);
+        expect(slugs.some((s) => primaries(s).includes('shoulders')), `rear delts — ${label}`).toBe(true);
+        expect(slugs.some((s) => primaries(s).includes('biceps')), `biceps — ${label}`).toBe(true);
+        // No trunk work smuggled in as "back" volume (bird-dog, carries).
+        expect(slugs.some((s) => ['core', 'carry'].includes(pattern(s))), `trunk on pull day — ${label}`).toBe(false);
+        expect(d.estimatedMinutes, label).toBeLessThanOrEqual(75 * 1.15);
+      }
+    }
+  });
+
+  it('a once-a-week pull (advanced 3-day PPL) uses the 75 minutes: 5–7 movements, volume inside MAV', () => {
+    const p = generateProgram(input({ experience: 'advanced', daysPerWeek: 3, goal: 'muscle-gain', preferredSessionMinutes: 75, availableEquipment: CAMPUS_GYM }));
+    for (const d of pullDays(p)) {
+      expect(d.exercises.length).toBeGreaterThanOrEqual(5);
+      expect(d.exercises.length).toBeLessThanOrEqual(8);
+    }
+    const v = recount(p);
+    for (const m of ['back', 'biceps', 'shoulders'] as const) {
+      expect(v[m]).toBeGreaterThanOrEqual(VOLUME_LANDMARKS[m].mev);
+      expect(v[m]).toBeLessThanOrEqual(VOLUME_LANDMARKS[m].mavHigh);
+    }
+  });
+
+  it('a twice-a-week pull stops at the week-1 MAV-low share, never below four movements, and the rationale says why', () => {
+    const p = generateProgram(input({ experience: 'intermediate', daysPerWeek: 6, goal: 'recomposition', preferredSessionMinutes: 75, availableEquipment: CAMPUS_GYM }));
+    const v = recount(p);
+    expect(v.back).toBeGreaterThanOrEqual(VOLUME_LANDMARKS.back.mev);
+    expect(v.back).toBeLessThanOrEqual(VOLUME_LANDMARKS.back.mavHigh);
+    for (const d of pullDays(p)) expect(d.exercises.length).toBeGreaterThanOrEqual(4);
+    expect(p.rationale.join(' ')).toMatch(/capped at the low end of MAV/);
+  });
+
+  it('at 60+ minutes with a loaded gym no session of any split stops at three movements', () => {
+    for (const minutes of [60, 75, 90]) for (const level of LEVELS) for (const goal of GOALS) for (const days of DAYS) {
+      const p = generateProgram(input({ experience: level, daysPerWeek: days, goal, preferredSessionMinutes: minutes, availableEquipment: CAMPUS_GYM }));
+      for (const d of p.days.filter((x) => !x.isRest)) {
+        expect(d.exercises.length, `${minutes}m ${level} ${goal} ${days}d ${d.sessionName}`).toBeGreaterThanOrEqual(4);
+      }
+    }
+  });
+});
+
+describe('the first primary muscle is load-bearing (the API must persist the seed order)', () => {
+  // The engine reads `primaryMuscles[0]` as the muscle a movement is FOR
+  // (close-grip bench: triceps; bird-dog: abs). Re-ordering the primaries —
+  // as a database read without a position column did — made close-grip
+  // bench the chest press on push day, satisfied triceps coverage with it,
+  // and left three-movement sessions. Found in the owner's manual review.
+  const enumOrder = (a: readonly MuscleGroup[]) => [...a].sort((x, y) => MUSCLE_GROUPS.indexOf(x) - MUSCLE_GROUPS.indexOf(y));
+  const reordered = catalogue.map((e) => ({ ...e, primaryMuscles: enumOrder(e.primaryMuscles), secondaryMuscles: enumOrder(e.secondaryMuscles) }));
+
+  it('the seed lists a compound\'s target muscle first for every exercise that has two primaries', () => {
+    const cgb = bySlug.get('close-grip-bench-press')!;
+    expect(cgb.primaryMuscles[0]).toBe('triceps');
+    expect(bySlug.get('bird-dog')!.primaryMuscles[0]).toBe('abs');
+    expect(bySlug.get('conventional-deadlift')!.primaryMuscles[0]).toBe('hamstrings');
+  });
+
+  it('with the seed order, push day presses with a chest-first lift and still trains triceps directly', () => {
+    const p = generateProgram(input({ daysPerWeek: 6, experience: 'intermediate', goal: 'recomposition', preferredSessionMinutes: 60 }));
+    for (const d of p.days.filter((x) => x.sessionName === 'Push')) {
+      const first = d.exercises.find((x) => bySlug.get(x.slug)!.movementPattern === 'horizontal-push')!;
+      expect(bySlug.get(first.slug)!.primaryMuscles[0]).toBe('chest');
+      expect(d.exercises.some((x) => bySlug.get(x.slug)!.primaryMuscles.includes('triceps'))).toBe(true);
+      expect(d.exercises.length).toBeGreaterThanOrEqual(4);
+    }
+  });
+
+  it('with the order destroyed the same input degrades to three-movement push days — the regression the API fix prevents', () => {
+    const p = generateProgram(input({ daysPerWeek: 6, experience: 'intermediate', goal: 'recomposition', preferredSessionMinutes: 60, catalogue: reordered }));
+    const pushes = p.days.filter((x) => x.sessionName === 'Push');
+    expect(pushes.some((d) => d.exercises.length <= 3 || d.exercises[0]!.slug === 'close-grip-bench-press')).toBe(true);
+  });
+});

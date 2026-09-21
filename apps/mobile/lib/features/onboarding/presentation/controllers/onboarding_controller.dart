@@ -26,6 +26,8 @@ class OnboardingController extends AsyncNotifier<OnboardingState> {
 
   @override
   Future<OnboardingState> build() async {
+    // A new sign-in never resumes the previous user's steps.
+    requireSession(ref);
     final result = await _repo.getState();
     return result.when(ok: (s) => s, err: (f) => throw f);
   }

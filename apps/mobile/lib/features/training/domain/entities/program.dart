@@ -117,6 +117,10 @@ abstract class PlannedSet with _$PlannedSet {
 
   String get repsLabel => repsMin == repsMax ? '$repsMin' : '$repsMin–$repsMax';
 
+  /// The number the set starts at: a 6–12 prescription opens at 12 (owner
+  /// decision). The range is kept underneath until the user pins a value.
+  int get targetReps => repsMax;
+
   CustomSet toCustom() => CustomSet(
         repsMin: repsMin,
         repsMax: repsMax,
@@ -166,6 +170,7 @@ abstract class PlannedExercise with _$PlannedExercise {
 
   /// The same row as a request to send back, with every set, for edits.
   CustomExercise toCustom() => CustomExercise(
+        id: id,
         exerciseId: exerciseId,
         setCount: sets.length,
         repMin: repMin,
@@ -262,6 +267,10 @@ abstract class CustomSet with _$CustomSet {
 @freezed
 abstract class CustomExercise with _$CustomExercise {
   const factory CustomExercise({
+    /// The planned exercise this row continues when a day is edited. The
+    /// server keeps that row, so its id (which keys the expanded card) and
+    /// its set ids survive every auto-save. Null: a new row.
+    String? id,
     required String exerciseId,
     required int setCount,
     required int repMin,

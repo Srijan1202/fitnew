@@ -166,6 +166,13 @@ export type CustomSet = z.infer<typeof customSetSchema>;
  */
 export const customExerciseSchema = z
   .object({
+    /**
+     * The planned exercise this row continues, when editing a day. The
+     * server keeps that row (and so its id) instead of deleting and
+     * re-inserting; clients key UI state — an expanded card — by it.
+     * Unknown or missing ⇒ a new row.
+     */
+    id: z.string().uuid().optional(),
     exerciseId: z.string().uuid(),
     setCount: z.number().int().min(1).max(10),
     repMin: z.number().int().min(1).max(50),

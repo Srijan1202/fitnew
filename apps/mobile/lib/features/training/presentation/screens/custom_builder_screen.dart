@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/failure.dart';
 import '../../../../core/routing/router.dart';
+import '../../../../core/routing/navigation.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../../exercise/domain/entities/exercise.dart';
@@ -12,7 +13,7 @@ import '../controllers/program_controller.dart';
 import '../widgets/draft.dart';
 import '../widgets/draft_exercise_list.dart';
 import '../widgets/set_row.dart';
-import '../widgets/toggle_wrap.dart';
+import '../../../../shared/widgets/toggle_wrap.dart';
 
 /// Custom: a programme built step by step, one concern per screen —
 /// Days → Day details → Muscle groups → Exercises → Sets → Save. One PUT at
@@ -120,7 +121,7 @@ class _CustomBuilderScreenState extends ConsumerState<CustomBuilderScreen> {
 
   void _back() {
     if (_step == _Step.days) {
-      context.pop();
+      context.popOrHome();
       return;
     }
     setState(() => _step = _Step.values[_step.index - 1]);

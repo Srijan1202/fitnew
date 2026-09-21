@@ -88,7 +88,8 @@ class TodayPlaceholderScreen extends ConsumerWidget {
 
               FilledButton(
                 key: const ValueKey('today.plan'),
-                onPressed: () => context.push(Routes.plan),
+                // A tab, not a pushed page: switch to it.
+                onPressed: () => context.go(Routes.plan),
                 child: const Text('Your training plan'),
               ),
               const SizedBox(height: FitSpacing.md),

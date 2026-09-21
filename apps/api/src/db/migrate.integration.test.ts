@@ -12,7 +12,8 @@ import postgres from 'postgres';
 
 import { migrateUp, rollbackLastMigration } from './migrate.js';
 
-const url = process.env['DATABASE_URL'];
+// Never the developer's database: the suite below drops every table (src/test/test-database.ts).
+const url = process.env['TEST_DATABASE_URL'];
 const describeIfDb = url !== undefined && url !== '' ? describe : describe.skip;
 
 async function tableExists(client: postgres.Sql, name: string): Promise<boolean> {
@@ -67,7 +68,7 @@ describeIfDb('migrations (real Postgres)', () => {
     'exercises', 'exercise_muscles', 'exercise_alternatives', 'exercise_contraindications',
   ];
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
-  const TOTAL_MIGRATIONS = 5;
+  const TOTAL_MIGRATIONS = 6;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -197,6 +198,25 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'mig-sets'`;
   });
 
+  it('0005: exercise_muscles.position exists, defaults to 0, and orders a read back the way it was written', async () => {
+    const cols = await client<{ column_name: string; column_default: string | null }[]>`
+      select column_name, column_default from information_schema.columns
+      where table_name = 'exercise_muscles' and column_name = 'position'`;
+    expect(cols).toHaveLength(1);
+    expect(cols[0]!.column_default).toBe('0');
+    const [x] = await client<{ id: string }[]>`select id from exercises limit 1`;
+    if (x !== undefined) {
+      await client`delete from exercise_muscles where exercise_id = ${x.id}`;
+      // Written triceps-first (as the seed lists close-grip bench), read back the same.
+      await client`insert into exercise_muscles (exercise_id, muscle_group, role, contribution, position) values (${x.id}, 'triceps', 'primary', 1, 0)`;
+      await client`insert into exercise_muscles (exercise_id, muscle_group, role, contribution, position) values (${x.id}, 'chest', 'primary', 1, 1)`;
+      const rows = await client<{ muscle_group: string }[]>`
+        select muscle_group from exercise_muscles where exercise_id = ${x.id} and role = 'primary' order by position, muscle_group`;
+      expect(rows.map((r) => r.muscle_group)).toEqual(['triceps', 'chest']);
+      await client`delete from exercise_muscles where exercise_id = ${x.id}`;
+    }
+  });
+
   it('one active goal per user is a database fact', async () => {
     await client`insert into users (firebase_uid) values ('mig-goal')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-goal'`;
@@ -251,7 +271,13 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'uid-dup'`;
   });
 
-  it('down removes 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+  it('down removes 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0005_exercise_muscle_position');
+    const emCols = await client<{ column_name: string }[]>`
+      select column_name from information_schema.columns where table_name = 'exercise_muscles'`;
+    expect(emCols.map((c) => c.column_name)).not.toContain('position');
+    expect(await appliedCount(client)).toBe(5);
+
     expect(await rollbackLastMigration(connectionString)).toBe('0004_planned_sets_templates');
     expect(await tableExists(client, 'planned_sets')).toBe(false);
     expect(await enumLabels(client, 'program_source')).toEqual(['generated', 'custom']);

@@ -57,6 +57,11 @@ describe('custom programme', () => {
     expect(customExerciseSchema.safeParse({ ...ex, startingWeightKg: -1 }).success).toBe(false);
   });
 
+  it('an edited row may name the planned exercise it continues (stable ids across auto-save)', () => {
+    expect(customExerciseSchema.safeParse({ ...ex, id: '9e3d3f6a-0b7a-4a52-9a52-1f5f0f6f6f6f' }).success).toBe(true);
+    expect(customExerciseSchema.safeParse({ ...ex, id: 'not-a-uuid' }).success).toBe(false);
+  });
+
   it('a day patch must change something', () => {
     expect(patchProgramDayRequestSchema.safeParse({}).success).toBe(false);
     expect(patchProgramDayRequestSchema.safeParse({ sessionName: 'Arms' }).success).toBe(true);

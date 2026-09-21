@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/failure.dart';
 import '../../../../core/routing/router.dart';
+import '../../../../core/routing/navigation.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../../profile/data/profile_repository.dart';
@@ -53,7 +54,8 @@ class _GenerateOptionsScreenState extends ConsumerState<GenerateOptionsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(onPressed: _busy ? null : () => context.pop()),
+        leading:
+            BackButton(onPressed: _busy ? null : () => context.popOrHome()),
       ),
       body: SafeArea(
         child: ListView(

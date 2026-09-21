@@ -1,3 +1,4 @@
+import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/features/training/domain/entities/program.dart';
@@ -17,7 +18,10 @@ void main() {
 
   void start() {
     container = ProviderContainer(
-      overrides: [trainingRepositoryProvider.overrideWithValue(repo)],
+      overrides: [
+        sessionUserIdProvider.overrideWithValue('user-1'),
+        trainingRepositoryProvider.overrideWithValue(repo),
+      ],
     );
     addTearDown(container.dispose);
     container.listen(programControllerProvider, (_, __) {});

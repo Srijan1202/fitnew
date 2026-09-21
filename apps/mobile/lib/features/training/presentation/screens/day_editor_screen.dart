@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
+import '../../../../core/routing/navigation.dart';
 
 import '../../../../core/errors/failure.dart';
 import '../../../../core/theme/tokens.dart';
@@ -10,7 +11,7 @@ import '../../domain/entities/program.dart';
 import '../controllers/program_controller.dart';
 import '../widgets/draft.dart';
 import '../widgets/draft_exercise_list.dart';
-import '../widgets/toggle_wrap.dart';
+import '../../../../shared/widgets/toggle_wrap.dart';
 
 /// The STRUCTURE of one day: its name, the muscle groups it is for, which
 /// exercises and in what order. Reps, weight and RIR live on the workout
@@ -72,7 +73,7 @@ class _DayEditorScreenState extends ConsumerState<DayEditorScreen> {
       _busy = false;
       _failure = failure;
     });
-    if (failure == null) context.pop();
+    if (failure == null) context.popOrHome();
   }
 
   @override
@@ -85,7 +86,8 @@ class _DayEditorScreenState extends ConsumerState<DayEditorScreen> {
 
     if (day == null || draft == null) {
       return Scaffold(
-        appBar: AppBar(leading: BackButton(onPressed: () => context.pop())),
+        appBar:
+            AppBar(leading: BackButton(onPressed: () => context.popOrHome())),
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(FitSpacing.screen),
@@ -100,7 +102,8 @@ class _DayEditorScreenState extends ConsumerState<DayEditorScreen> {
     final weekday = kWeekdayLabels[day.dayOfWeek - 1].toUpperCase();
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(onPressed: _busy ? null : () => context.pop()),
+        leading:
+            BackButton(onPressed: _busy ? null : () => context.popOrHome()),
       ),
       body: SafeArea(
         child: Column(

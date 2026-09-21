@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
+import '../../../../core/routing/navigation.dart';
 
 import '../../../../core/errors/failure.dart';
 import '../../../../core/theme/tokens.dart';
@@ -48,7 +49,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(onPressed: busy ? null : () => context.pop()),
+        leading: BackButton(onPressed: busy ? null : () => context.popOrHome()),
       ),
       body: SafeArea(
         child: SingleChildScrollView(

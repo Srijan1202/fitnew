@@ -47,7 +47,7 @@ export interface ExerciseDetailRows {
 
 /** Every exercise's primary muscles as one array column, for list rows. */
 const primaryMusclesSql = sql<MuscleGroup[]>`coalesce((
-  select array_agg(${exerciseMuscles.muscleGroup} order by ${exerciseMuscles.muscleGroup})
+  select array_agg(${exerciseMuscles.muscleGroup} order by ${exerciseMuscles.position}, ${exerciseMuscles.muscleGroup})
   from ${exerciseMuscles}
   where ${exerciseMuscles.exerciseId} = ${exercises.id} and ${exerciseMuscles.role} = 'primary'
 ), '{}')`;
@@ -105,7 +105,7 @@ export class ExerciseRepository {
         .select()
         .from(exerciseMuscles)
         .where(eq(exerciseMuscles.exerciseId, id))
-        .orderBy(asc(exerciseMuscles.role), asc(exerciseMuscles.muscleGroup)),
+        .orderBy(asc(exerciseMuscles.role), asc(exerciseMuscles.position), asc(exerciseMuscles.muscleGroup)),
       this.db
         .select({
           exerciseId: exerciseAlternatives.exerciseId,

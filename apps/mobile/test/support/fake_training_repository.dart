@@ -311,41 +311,62 @@ class FakeTrainingRepository implements TrainingRepository {
     return Ok(edited);
   }
 
+  /// Fresh ids for rows the server would insert.
+  static int _inserted = 0;
+
+  /// The server's semantics exactly: a row that names an existing planned
+  /// exercise by `id` is updated in place (same id); any other row is a new
+  /// insert with a NEW id. A fake that matched by exercise id hid the bug
+  /// where every save re-created the rows and collapsed the expanded card.
   static ProgramDay _applyPatch(ProgramDay d, PatchProgramDayRequest r) {
     final sets = r.exercises;
+    if (sets == null) {
+      return d.copyWith(
+        sessionName: r.sessionName ?? d.sessionName,
+        focus: r.focus ?? d.focus,
+      );
+    }
+    final byId = {for (final x in d.exercises) x.id: x};
+    final claimed = <String>{};
+    final next = <PlannedExercise>[];
+    for (var i = 0; i < sets.length; i++) {
+      final c = sets[i];
+      final kept = c.id != null && byId.containsKey(c.id) && claimed.add(c.id!)
+          ? byId[c.id]!
+          : null;
+      final base = kept ??
+          plannedSquat.copyWith(
+            id: 'inserted-${++_inserted}',
+            reason: null,
+          );
+      final movementChanged = base.exerciseId != c.exerciseId;
+      next.add(
+        base.copyWith(
+          exerciseId: c.exerciseId,
+          name: movementChanged ? 'Picked ${c.exerciseId}' : base.name,
+          orderIndex: i,
+          setCount: c.setCount,
+          repMin: c.repMin,
+          repMax: c.repMax,
+          targetRir: c.targetRir,
+          sets: [
+            for (var j = 0; j < (c.sets?.length ?? c.setCount); j++)
+              PlannedSet(
+                setIndex: j + 1,
+                repsMin: c.sets?[j].repsMin ?? c.repMin,
+                repsMax: c.sets?[j].repsMax ?? c.repMax,
+                weightKg: c.sets?[j].weightKg ?? c.startingWeightKg,
+                rir: c.sets?[j].rir ?? c.targetRir,
+              ),
+          ],
+        ),
+      );
+    }
     return d.copyWith(
       sessionName: r.sessionName ?? d.sessionName,
       focus: r.focus ?? d.focus,
-      isRest: sets == null ? d.isRest : sets.isEmpty,
-      exercises: sets == null
-          ? d.exercises
-          : [
-              for (var i = 0; i < sets.length; i++)
-                d.exercises
-                    .firstWhere(
-                  (x) => x.exerciseId == sets[i].exerciseId,
-                  orElse: () => plannedSquat.copyWith(
-                    exerciseId: sets[i].exerciseId,
-                    name: 'Picked ${sets[i].exerciseId}',
-                  ),
-                )
-                    .copyWith(
-                  orderIndex: i,
-                  setCount: sets[i].setCount,
-                  sets: [
-                    for (var j = 0;
-                        j < (sets[i].sets?.length ?? sets[i].setCount);
-                        j++)
-                      PlannedSet(
-                        setIndex: j + 1,
-                        repsMin: sets[i].sets?[j].repsMin ?? sets[i].repMin,
-                        repsMax: sets[i].sets?[j].repsMax ?? sets[i].repMax,
-                        weightKg: sets[i].sets?[j].weightKg,
-                        rir: sets[i].sets?[j].rir ?? sets[i].targetRir,
-                      ),
-                  ],
-                ),
-            ],
+      isRest: sets.isEmpty,
+      exercises: next,
     );
   }
 

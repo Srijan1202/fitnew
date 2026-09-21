@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/router.dart';
+import '../../../../core/routing/navigation.dart';
 import '../../../../core/theme/tokens.dart';
 
 /// Three ways to get a programme (Phase 4 rework): three deliberate modes,
@@ -17,7 +18,13 @@ class PlanStartScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(leading: BackButton(onPressed: () => context.pop())),
+      // A tab root when there is no programme yet (no back); a pushed
+      // screen from "Change programme" otherwise.
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading:
+            canGoBack ? BackButton(onPressed: () => context.popOrHome()) : null,
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(

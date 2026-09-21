@@ -6672,6 +6672,10 @@
                           "items": {
                             "type": "object",
                             "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
                               "exerciseId": {
                                 "type": "string",
                                 "format": "uuid"
@@ -10858,6 +10862,10 @@
                     "items": {
                       "type": "object",
                       "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
                         "exerciseId": {
                           "type": "string",
                           "format": "uuid"

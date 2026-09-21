@@ -406,3 +406,197 @@ coverage   not measured — §18 gate
 ## NEXT PHASE
 
 - **Phase 5: Workout logging** — not started, per the owner's instruction.
+
+
+---
+
+# PART C — Final UX and bug-fix pass (owner's second manual review)
+
+**Date** 2026-09-21 · **Commit** COMMIT_PLACEHOLDER · **CI:** CI_PLACEHOLDER
+
+Seven issues from the owner's Android review. Each was traced to a cause
+before anything was changed; the causes are recorded here because three of
+them were not where the symptom was.
+
+## ROOT CAUSES
+
+1. **Expanded card collapsed after every edit.** Not the UI: `PATCH
+   /training/program/days/:id` deleted and re-inserted every
+   `planned_exercises` row, so each auto-save gave every exercise a new id.
+   The screen keys expansion by planned-exercise id, so the card it had
+   open no longer existed. The widget test never saw it because the fake
+   repository matched rows by *exercise* id and kept the old ids.
+2. **Reps opened at "6–12", not 12.** The set row rendered the range and
+   pinned it on the first tap.
+3. **"Sign in again → onboarding again."** The local API test suite ran
+   against `.env`'s `DATABASE_URL` — the developer database — and the
+   migration suite rolls every migration back in `beforeAll`, dropping
+   `users`. On the next request the API answered 401 twice ("create a
+   session first"), the interceptor signed the user out of Firebase, and
+   `POST /auth/session` re-created the user at stage `goal`. The backend
+   was the source of truth; the tests had destroyed its rows.
+4. **Profile error on first load.** Session-scoped providers (profile,
+   programme, onboarding, templates) lived for the app's lifetime. An
+   error caught while the previous session was being invalidated (see 3)
+   was still their state when the next session opened Profile. Same
+   mechanism would have shown user A's plan to user B.
+5. **`GoError: There is nothing to pop`.** `context.go('/plan')` after
+   generate / apply / save replaced the whole stack with `/plan`; its
+   BackButton then called `context.pop()` on a one-route navigator. Days
+   were never routes — the day selector was already `setState` — but the
+   plan screen had no valid "back" once it was the root.
+6. **Three-movement push/pull with 75 minutes.** Two causes. (a) The API
+   read `exercise_muscles` back ordered by the enum, not as the seed lists
+   it; the engine treats the *first* primary as the muscle a movement is
+   for, so close-grip bench (`triceps, chest` → read as `chest, triceps`)
+   became the push day's chest press, satisfied triceps coverage by
+   itself, and the day stopped at three. The core suite passed because it
+   reads the JSON. (b) Bird-dog / carries could enter a pull day as "back"
+   volume.
+7. **Picker clutter / text off screen.** Three full horizontal rails (32
+   toggles) above rows that listed muscles, pattern and equipment; the
+   rails scrolled off the right edge.
+
+## IMPLEMENTED
+
+**Generator (`packages/core`)** — `core` and `carry` are excluded from
+push and pull sessions (they belong to legs/abs). +11 tests: every pull day
+at 75 min for every split that has one (intermediate 5/6, advanced 3/5/6 ×
+4 goals) has ≥ 4 movements, a vertical and a horizontal pull, a rear-delt
+primary and a biceps primary, no trunk work, inside the time ceiling; a
+once-a-week pull uses the time (5–8 movements, back/biceps/shoulders
+between MEV and MAV-high); a twice-a-week pull stops at the week-1 MAV-low
+share, ≥ 4 movements, and says so; at 60/75/90 min with a loaded gym no
+session of any split stops at three; and the ordering contract — with the
+seed order push day presses chest-first and trains triceps directly, with
+the order destroyed the same input degrades to close-grip bench and three
+movements (the regression 0005 prevents).
+
+**Database — migration `0005_exercise_muscle_position`** —
+`exercise_muscles.position smallint not null default 0`; seed writes the
+index within each role; both repositories read `order by position,
+muscle_group`. Down drops the column. Migration test: column and default,
+write triceps-first / read triceps-first, down removes it (TOTAL 6).
+
+**API** — `customExerciseSchema.id?` (uuid): the planned exercise a row
+continues. `patchDay` now diffs: rows naming an existing id of that day
+are updated in place (order parked negative first — `(day, order_index)`
+is unique — then set), their sets upserted by `(exercise, set_index)` and
+trimmed past the new count; rows without a known id are inserted; rows
+not named are deleted; an id from another user's programme is ignored.
+Tests: ids and set ids survive an edit; reorder + remove keep ids; a
+replaced movement keeps its id; a foreign id is never adopted; catalogue
+primaries come back in seed order; the owner's own profile (intermediate,
+6 days, campus gym, recomposition, 75 min) never gets a three-movement
+push or pull.
+
+**API tests never touch the developer database** —
+`src/test/test-database.ts`: `TEST_DATABASE_URL` (name must end `_test`)
+or `<DATABASE_URL db>_test`, created with the extensions by a vitest
+global setup; `.env` is read the way `pnpm dev` reads it. Verified: after
+the full suite the dev database still had its user and 5 → 6 migrations;
+`fitos_test` was created and migrated.
+
+**Flutter**
+- `sessionUserIdProvider` (the signed-in user's id) is watched by every
+  session-scoped `build()`: profile, programme, onboarding, templates,
+  template preview. Sign-out, sign-in as someone else, or a re-created
+  session rebuilds them; signed out they throw `Unauthenticated` without a
+  request. `restore()` no longer signs out of Firebase when the server is
+  merely unreachable at cold start.
+- Reps: a set shows `repsMax` (12 for 6–12) with the range beneath; −/+
+  step from it and pin only that set. Every planned exercise sent back
+  carries its `id`.
+- **App shell** (`core/routing/app_shell.dart`): `StatefulShellRoute.
+  indexedStack` with five branches — Home `/`, Training `/plan`, AI
+  `/chat`, Nutrition `/nutrition`, Market `/market` — under a paper bar
+  with a hairline, ink for the selected destination. Deeper training
+  screens (`/plan/new`, `/plan/new/generate`, `/plan/templates[/:slug]`,
+  `/plan/custom`, `/plan/days/:id/edit`) carry `parentNavigatorKey:
+  root` and hide the bar; profile, library, picker and detail stay root
+  routes. Android back: a deeper screen pops; a non-home tab at its root
+  goes to Home (`PopScope` in the shell); Home at its root leaves the app.
+  Every BackButton uses `context.popOrHome()` (pop if possible, else
+  `go('/')`); no raw `context.pop()` on a screen remains (dialogs use
+  their own navigator). The plan screen is a tab root: no back button.
+  TODAY's "Your training plan" switches tab instead of pushing.
+- Three placeholders (`ComingSoonScreen`): title, "Coming soon", one line.
+- **Picker / library redesign**: `ADD EXERCISE` / `LIBRARY` in the app bar
+  with Clear as an action; search; three equal-width filter buttons
+  (Muscle · Equipment · Pattern) that open a bottom sheet of toggles
+  (scrolls, capped at 70 % of the screen); rows of name (wraps to two
+  lines), "primary muscle · equipment" (one line, ellipsis), an arrow, and
+  in pick mode an "i" to the detail. 56 px rows, 44 px buttons, 18 px
+  gutters. `FilterRail` deleted; `ToggleWrap` moved to `shared/widgets`.
+
+## FILES (part C)
+
+**created** — `apps/api/src/test/{test-database.ts,test-database.test.ts,global-setup.ts,setup-env.ts}`;
+`database/migrations/{0005_exercise_muscle_position.sql,down/0005_exercise_muscle_position.down.sql,meta/0005_snapshot.json}`;
+`apps/mobile/lib/core/routing/{app_shell.dart,navigation.dart}`,
+`apps/mobile/lib/features/placeholders/presentation/screens/coming_soon_screen.dart`,
+`apps/mobile/lib/features/exercise/presentation/widgets/filter_button.dart`,
+`apps/mobile/lib/shared/widgets/toggle_wrap.dart` (moved);
+`apps/mobile/test/core/routing/app_shell_test.dart`, `apps/mobile/test/features/profile/profile_session_test.dart`
+
+**modified** — `packages/core/src/training/generator.ts` (+ tests);
+`packages/contracts/src/training.ts` (+ tests, openapi.json);
+`apps/api/{vitest.config.ts,src/db/{schema/exercise.ts,seed.ts,migrate.integration.test.ts},src/modules/{exercise/repository.ts,training/{repository,service,training.integration.test}.ts},src/test/build-test-app.ts}`;
+`apps/mobile/lib/{core/routing/router.dart,features/auth/{data/auth_repository_impl.dart,presentation/controllers/auth_controller.dart},features/profile/data/profile_repository.dart,features/onboarding/presentation/controllers/onboarding_controller.dart,features/training/{domain/entities/program.dart,data/training_repository_impl.dart,presentation/{controllers/program_controller.dart,screens/{workout_week,plan_start,custom_builder,day_editor,generate_options,template_library,template_preview}_screen.dart,widgets/set_row.dart}},features/exercise/presentation/screens/{exercise_browser,exercise_detail}_screen.dart,features/today/presentation/screens/today_placeholder_screen.dart,features/auth/presentation/screens/{sign_up,forgot_password}_screen.dart,features/profile/presentation/screens/{profile,goal_editor}_screen.dart}`;
+`apps/mobile/test/{support/{fake_training_repository,fake_profile_repository}.dart,features/{training/{workout_screens,program_controller}_test.dart,exercise/exercise_screens_test.dart,auth/auth_repository_impl_test.dart,onboarding/{onboarding_controller,onboarding_flow_screen}_test.dart}}`;
+`database/README.md`, `docs/phase-reports/phase-4.md`
+
+**removed** — `apps/mobile/lib/features/exercise/presentation/widgets/filter_rail.dart`
+
+## TESTS (part C)
+
+```
+executed   packages/core        406 passed   (+11: pull at 75 min ×5 splits ×4 goals, once-a-week pull,
+                                              twice-a-week pull cap, no ≤3 at 60/75/90, primary-order contract ×3)
+executed   packages/contracts    26 passed   (+1: custom exercise id)
+executed   apps/api             138 passed, 0 skipped — on fitos_test, dev database untouched
+                                             (+9: stable ids across PATCH, seed order of primaries,
+                                              owner profile push/pull, 0005 up/down, test-db derivation ×5)
+executed   flutter test         146 passed   (+20: expansion through 7 edits + typing + save + refresh;
+                                              12-default reps per set; server-faithful fake; auth persistence ×5;
+                                              profile init sequence ×4; Android back ×4; bottom nav ×3; picker ×2)
+executed   custom_lint clean · analyze --fatal-infos clean · format 0 changed · build_runner fresh
+executed   typecheck / lint clean (core, contracts, api)
+executed   flutter build apk --debug → app-debug.apk built
+executed   docker compose up --build api → /health 200, /v1/training/program 401 (image rebuilt from this tree)
+executed   local DB migrated to 0005 and reseeded (close-grip bench reads {triceps,chest})
+coverage   not measured — §18 gate
+```
+
+## KNOWN ISSUES (part C)
+
+1. **Manual Android acceptance not yet executed** — checklist in the
+   closing message; the app needs a rebuild.
+2. A twice-a-week pull (6-day PPL, 5-day PPL/UL) at week 1 is four
+   movements and ~35 min at any session length: back is at its MAV-low
+   share (6 sets/session) after a row and a pulldown; more would be the
+   ramp's job (§12.3). The rationale says so. If the owner wants week-1
+   sessions to fill toward MAV-high when time allows, that is a volume
+   decision, not a bug — flagged for a decision.
+3. The picker shows no "3 × 6–12" under a row: the prescription belongs to
+   the day that adds it, not to the catalogue entry; the builder and day
+   editor apply their defaults after the pick.
+4. Cold start with a Firebase session, no cached profile and no network
+   shows sign-in (the credential is kept, so the next start needs no
+   password). A "retry" splash state would be better; not in scope.
+5. Part B's items 2–5 stand (reps pin irreversibly; preview lacks
+   days/minutes overrides; instructions need network; mesocycle_week).
+
+## DEVIATIONS FROM SPEC (part C)
+
+- **A bottom navigation shell** (five destinations) is ahead of §31's
+  schedule for AI/Nutrition/Marketplace; those are honest placeholders.
+  Owner decision 2026-09-21.
+- **`exercise_muscles.position`** is a column beyond §9.2: the seed's
+  order is data the engine depends on.
+- **`customExerciseSchema.id`** is an addition to §10.1's day PATCH so a
+  save is an update, not a replacement.
+
+## NEXT PHASE
+
+- **Phase 5: Workout logging** — not started, per the owner's instruction.

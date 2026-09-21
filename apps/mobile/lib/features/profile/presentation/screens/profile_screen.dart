@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/failure.dart';
 import '../../../../core/routing/router.dart';
+import '../../../../core/routing/navigation.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/hairline_section.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
@@ -25,7 +26,7 @@ class ProfileScreen extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(leading: BackButton(onPressed: () => context.pop())),
+      appBar: AppBar(leading: BackButton(onPressed: () => context.popOrHome())),
       body: SafeArea(
         child: async.when(
           loading: () => const Padding(

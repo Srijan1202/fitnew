@@ -4,6 +4,10 @@ export default defineConfig({
   test: {
     globals: false,
     include: ['src/**/*.test.ts'],
+    // Integration suites run against `<DATABASE_URL db>_test`, never the
+    // developer's database: see src/test/test-database.ts.
+    globalSetup: ['src/test/global-setup.ts'],
+    setupFiles: ['src/test/setup-env.ts'],
     // Every *.integration.test.ts shares ONE Postgres, and the migration suite
     // rolls the whole schema back in its beforeAll. Files therefore run one at
     // a time; with three suites the parallel default happened to work, with

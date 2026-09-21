@@ -270,14 +270,17 @@ export const LO: SessionTemplate = {
   required: ['squat', 'hinge'], excluded: [],
   directCoverage: ['quads', 'hamstrings', 'glutes', 'calves'],
 };
+/** Trunk work (bird-dog, carries) lists the back as a primary; it is a legs/abs-day movement, never a pull-day "row". */
+const TRUNK: readonly MovementPattern[] = ['core', 'carry'];
+
 export const PU: SessionTemplate = {
   name: 'Push', muscles: PUSH,
-  required: PUSHES, excluded: [...PULLS, 'elbow-flexion'],
+  required: PUSHES, excluded: [...PULLS, 'elbow-flexion', ...TRUNK],
   directCoverage: ['chest', 'shoulders', 'triceps'],
 };
 export const PL: SessionTemplate = {
   name: 'Pull', muscles: PULL,
-  required: PULLS, excluded: [...PUSHES, 'chest-isolation', 'elbow-extension'],
+  required: PULLS, excluded: [...PUSHES, 'chest-isolation', 'elbow-extension', ...TRUNK],
   directCoverage: ['back', 'biceps', 'shoulders'],
   coverageHint: { shoulders: rearDelt },
 };

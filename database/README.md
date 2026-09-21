@@ -16,9 +16,19 @@
   Rows the file does not mention are left alone (admin-added, Phase 16).
   `apps/api/src/db/seed.test.ts` checks the file's integrity without a database.
 
+The order of a seeded exercise's muscles is data (`exercise_muscles.position`,
+0005): the first primary is the muscle the movement is *for*, and the
+generator reads it that way. Always reseed after migrating.
+
 Apply: `pnpm --filter @fitos/api db:migrate`
 Roll back the last one: `pnpm --filter @fitos/api db:rollback`
 Seed: `pnpm --filter @fitos/api db:seed`
+
+Tests never touch `DATABASE_URL`. `pnpm --filter @fitos/api test` derives
+`<database>_test` on the same server (or uses `TEST_DATABASE_URL`, whose name
+must end in `_test`), creates it if missing, and runs every integration suite
+there — the migration suite drops every table, and running it against the
+development database wiped the developer's account on each test run.
 
 Every migration must be backward-compatible with the previous app version
 (expand → migrate → contract). Never drop a column in the same release that

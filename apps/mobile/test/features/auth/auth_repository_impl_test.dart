@@ -179,6 +179,61 @@ void main() {
     });
   });
 
+  group(
+      'an existing account is never onboarded twice (owner review 2026-09-21)',
+      () {
+    test(
+        'sign-in to an account the backend already knows → its real stage, not "goal"',
+        () async {
+      // The server computes onboardingStage from its own rows.
+      session.next = Ok(
+        CreateSessionResponse(user: testProfile, isNewUser: false),
+      );
+      final result = await repo.signInWithEmail(email: 'a', password: 'b');
+      final state = (result as Ok<AuthState>).value as AuthSignedIn;
+      expect(state.profile.onboardingStage, 'complete');
+      expect(state.isNewUser, isFalse);
+    });
+
+    test('a genuinely new account starts at "goal"', () async {
+      session.next = Ok(
+        CreateSessionResponse(user: newUserProfile, isNewUser: true),
+      );
+      final result = await repo.signInWithEmail(email: 'a', password: 'b');
+      final state = (result as Ok<AuthState>).value as AuthSignedIn;
+      expect(state.profile.onboardingStage, 'goal');
+      expect(state.isNewUser, isTrue);
+    });
+
+    test(
+        'cold start with a Firebase session, no cache, an account half-way → resumes there',
+        () async {
+      creds.uid = 'uid-1';
+      session.next = Ok(
+        CreateSessionResponse(user: midOnboardingProfile, isNewUser: false),
+      );
+      final state = await repo.restore() as AuthSignedIn;
+      expect(state.profile.onboardingStage, 'training');
+    });
+
+    test('cold start that cannot reach the server keeps the Firebase session',
+        () async {
+      creds.uid = 'uid-1';
+      session.next = const Err(Offline());
+      expect(await repo.restore(), isA<AuthSignedOut>());
+      // Not thrown away: the next start (or sign-in) needs no password.
+      expect(creds.calls, isNot(contains('signOut')));
+      expect(creds.uid, 'uid-1');
+    });
+
+    test('an explicit sign-in the server refuses still drops the credential',
+        () async {
+      session.next = const Err(Offline());
+      await repo.signInWithEmail(email: 'a', password: 'b');
+      expect(creds.calls, contains('signOut'));
+    });
+  });
+
   group('sign out', () {
     test('revokes on the server, signs out of Firebase, clears the store',
         () async {

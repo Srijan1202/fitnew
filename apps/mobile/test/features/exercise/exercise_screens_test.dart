@@ -31,6 +31,10 @@ void main() {
           builder: (_, __) => const ExerciseBrowserScreen(),
           routes: [
             GoRoute(
+              path: 'pick',
+              builder: (_, __) => const ExerciseBrowserScreen(pickMode: true),
+            ),
+            GoRoute(
               path: ':id',
               builder: (_, s) =>
                   ExerciseDetailScreen(id: s.pathParameters['id']!),
@@ -52,7 +56,9 @@ void main() {
     expect(find.text('Barbell Back Squat'), findsOneWidget);
     expect(find.text('Push-Up'), findsOneWidget);
     expect(find.text('2 exercises'), findsOneWidget);
-    expect(find.text('Quads, Glutes · Squat · Barbell'), findsOneWidget);
+    // Compact rows: primary muscle · equipment. Everything else is detail.
+    expect(find.text('Quads · Barbell'), findsOneWidget);
+    expect(find.text('Quads, Glutes · Squat · Barbell'), findsNothing);
   });
 
   testWidgets('tapping an equipment toggle asks the server, not the list',
@@ -61,11 +67,18 @@ void main() {
     await tester.pumpAndSettle();
     expect(repo.queries.length, 1);
 
+    // Filters live behind a button each; the sheet toggles, Done closes.
+    await tester.tap(find.byKey(const ValueKey('filter.equipment')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('equipment.Dumbbells')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('filters.done')));
     await tester.pumpAndSettle();
 
     expect(repo.queries.length, 2);
     expect(repo.queries.last.equipment, {Equipment.dumbbell});
+    // The button now says what is chosen.
+    expect(find.text('Dumbbells'), findsOneWidget);
     // Still showing the server's answer — the fake returned both rows.
     expect(find.text('Barbell Back Squat'), findsOneWidget);
   });
@@ -75,6 +88,8 @@ void main() {
     await tester.pumpWidget(harness());
     await tester.pumpAndSettle();
 
+    await tester.tap(find.byKey(const ValueKey('filter.muscle')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('muscle.Chest')));
     await tester.pumpAndSettle();
     expect(repo.queries.last.muscle, MuscleGroup.chest);
@@ -86,6 +101,9 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('muscle.Back')));
     await tester.pumpAndSettle();
     expect(repo.queries.last.muscle, isNull);
+    await tester.tap(find.byKey(const ValueKey('filters.done')));
+    await tester.pumpAndSettle();
+    expect(find.text('Muscle'), findsOneWidget);
   });
 
   testWidgets('typing in search is debounced into one request', (tester) async {
@@ -120,7 +138,11 @@ void main() {
     await tester.pumpWidget(harness());
     await tester.pumpAndSettle();
 
+    await tester.tap(find.byKey(const ValueKey('filter.pattern')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('pattern.Squat')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('filters.done')));
     await tester.pumpAndSettle();
     expect(find.text('Nothing matches'), findsOneWidget);
 
@@ -193,5 +215,146 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repo.detailIds, [squat.id, '33333333-3333-4333-8333-333333333333']);
+  });
+
+  group('the picker (owner review 2026-09-21)', () {
+    const longName = ExerciseSummary(
+      id: '44444444-4444-4444-8444-444444444444',
+      slug: 'single-arm-chest-supported-incline-dumbbell-row-with-pause',
+      name:
+          'Single-Arm Chest-Supported Incline Dumbbell Row With A Two-Second Pause At The Top',
+      movementPattern: MovementPattern.horizontalPull,
+      equipment: [Equipment.dumbbell, Equipment.machine, Equipment.cable],
+      difficulty: Difficulty.advanced,
+      isUnilateral: true,
+      primaryMuscles: [MuscleGroup.back, MuscleGroup.shoulders],
+    );
+
+    /// A small phone: 360 × 640 logical px.
+    Future<void> phone(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+    }
+
+    testWidgets(
+        'compact rows: name, primary muscle · equipment, an arrow — nothing else; no overflow on a small phone with long names',
+        (tester) async {
+      await phone(tester);
+      repo.nextList = (_) => const Ok(
+            ExerciseListResponse(
+              items: [longName, squat, pushUp],
+              total: 3,
+              limit: 200,
+              offset: 0,
+            ),
+          );
+      await tester.pumpWidget(harness(initial: '/exercises/pick'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('ADD EXERCISE'), findsOneWidget);
+      expect(find.text(longName.name), findsOneWidget);
+      expect(find.text('Back · Dumbbells + Machines + Cables'), findsOneWidget);
+      // Nothing the detail screen owns leaks into the list.
+      expect(find.textContaining('Horizontal pull'), findsNothing);
+      expect(find.textContaining('ADVANCED'), findsNothing);
+      // No RenderFlex overflow anywhere, and every row is inside the screen.
+      expect(tester.takeException(), isNull);
+      final width = tester.view.physicalSize.width;
+      for (final row in [longName, squat, pushUp]) {
+        final rect =
+            tester.getRect(find.byKey(ValueKey('exercise.${row.slug}')));
+        expect(rect.left, greaterThanOrEqualTo(0));
+        expect(rect.right, lessThanOrEqualTo(width));
+        expect(rect.height, greaterThanOrEqualTo(44));
+      }
+      // The filter buttons fit too.
+      for (final k in ['filter.muscle', 'filter.equipment', 'filter.pattern']) {
+        expect(
+          tester.getRect(find.byKey(ValueKey(k))).height,
+          greaterThanOrEqualTo(44),
+        );
+      }
+    });
+
+    testWidgets(
+        'search and filters work in the picker, and picking returns the exercise',
+        (tester) async {
+      await phone(tester);
+      ExerciseSummary? picked;
+      final router = GoRouter(
+        initialLocation: '/host',
+        routes: [
+          GoRoute(
+            path: '/host',
+            builder: (context, _) => Scaffold(
+              body: Center(
+                child: FilledButton(
+                  key: const ValueKey('host.pick'),
+                  onPressed: () async {
+                    picked =
+                        await context.push<ExerciseSummary>('/exercises/pick');
+                  },
+                  child: const Text('pick'),
+                ),
+              ),
+            ),
+          ),
+          GoRoute(
+            path: '/exercises/pick',
+            builder: (_, __) => const ExerciseBrowserScreen(pickMode: true),
+          ),
+          GoRoute(
+            path: '/exercises/:id',
+            builder: (_, s) =>
+                Scaffold(body: Text('detail ${s.pathParameters['id']}')),
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [exerciseRepositoryProvider.overrideWithValue(repo)],
+          child:
+              MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('host.pick')));
+      await tester.pumpAndSettle();
+
+      // Search narrows via the server.
+      await tester.enterText(
+        find.byKey(const ValueKey('exercises.search')),
+        'squat',
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+      expect(repo.queries.last.q, 'squat');
+      // A filter sheet, then Done.
+      await tester.tap(find.byKey(const ValueKey('filter.muscle')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('muscle.Quads')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('filters.done')));
+      await tester.pumpAndSettle();
+      expect(repo.queries.last.muscle, MuscleGroup.quads);
+      expect(find.text('Quads'), findsWidgets);
+
+      // The "i" opens the detail without picking.
+      await tester
+          .tap(find.byKey(const ValueKey('exercise.barbell-back-squat.info')));
+      await tester.pumpAndSettle();
+      expect(find.text('detail ${squat.id}'), findsOneWidget);
+      expect(picked, isNull);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      // Tapping the row returns it to the caller.
+      await tester
+          .tap(find.byKey(const ValueKey('exercise.barbell-back-squat')));
+      await tester.pumpAndSettle();
+      expect(picked, squat);
+      expect(find.byKey(const ValueKey('host.pick')), findsOneWidget);
+    });
   });
 }

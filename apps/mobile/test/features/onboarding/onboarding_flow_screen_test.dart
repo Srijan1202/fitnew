@@ -2,6 +2,7 @@ import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/core/theme/tokens.dart';
 import 'package:fitos/features/auth/domain/entities/auth_state.dart';
+import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_providers.dart';
 import 'package:fitos/features/onboarding/domain/entities/onboarding.dart';
 import 'package:fitos/features/onboarding/presentation/controllers/onboarding_controller.dart';
@@ -33,6 +34,7 @@ void main() {
         overrides: [
           authRepositoryProvider.overrideWithValue(auth),
           onboardingRepositoryProvider.overrideWithValue(repo),
+          sessionUserIdProvider.overrideWithValue(newUserProfile.id),
         ],
         child: MaterialApp(
           theme: FitTheme.build(),

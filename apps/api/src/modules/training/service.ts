@@ -383,6 +383,7 @@ function toCatalogueExercise(e: CatalogueRow): CatalogueExercise {
 
 function toPlanned(list: readonly CustomExercise[], known: KnownExercises): NewPlannedExercise[] {
   return list.map((x, orderIndex) => ({
+    ...(x.id !== undefined ? { keepId: x.id } : {}),
     exerciseId: x.exerciseId,
     orderIndex,
     setCount: x.setCount,

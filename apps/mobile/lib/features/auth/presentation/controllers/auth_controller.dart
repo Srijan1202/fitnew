@@ -102,3 +102,27 @@ class AuthController extends AsyncNotifier<AuthState> {
 
 final authControllerProvider =
     AsyncNotifierProvider<AuthController, AuthState>(AuthController.new);
+
+/// The signed-in user's id, or null when there is no session.
+///
+/// Every provider that loads THIS user's data (profile, programme,
+/// onboarding state, templates) watches it, so a sign-out, a sign-in as
+/// someone else, or a session re-created after the backend rejected the old
+/// one rebuilds them from scratch. Before this, those providers lived for
+/// the app's lifetime: an error caught during one session (a 401 while the
+/// session was being invalidated) was still the provider's state when the
+/// next session opened the Profile screen — the "intermittent error on first
+/// load" the owner saw.
+final sessionUserIdProvider = Provider<String?>((ref) {
+  final state = ref.watch(authControllerProvider).value;
+  return state is AuthSignedIn ? state.profile.id : null;
+});
+
+/// For session-scoped `build()`s: the current user id, or an
+/// [Unauthenticated] failure to throw when there is none (the guard keeps
+/// those screens off-screen while signed out, so it is never shown).
+String requireSession(Ref ref) {
+  final id = ref.watch(sessionUserIdProvider);
+  if (id == null) throw const Unauthenticated();
+  return id;
+}

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../../core/errors/failure.dart';
 import '../../../core/errors/result.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../domain/entities/auth_state.dart';
@@ -52,10 +53,15 @@ class AuthRepositoryImpl implements AuthRepository {
       }
     }
     // Firebase has a user but we have no profile (fresh install with a
-    // restored Firebase session, or a cleared cache): ask the server.
-    final exchanged = await _exchange();
+    // restored Firebase session, or a cleared cache): ask the server. The
+    // backend is the source of truth for who this is and how far they got —
+    // an existing account comes back at its real onboarding stage, never at
+    // "goal" — so nothing is asked of the user that the server already has.
+    final exchanged = await _exchange(keepCredentialOnFailure: true);
     return exchanged.when(
       ok: (state) => state,
+      // Could not reach the server: the Firebase session is kept so the next
+      // cold start (or the next sign-in) does not need a password again.
       err: (_) => const AuthState.signedOut(),
     );
   }
@@ -73,7 +79,13 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   /// The token exchange. Runs after every successful Firebase sign-in.
-  Future<Result<AuthState>> _exchange() async {
+  ///
+  /// [keepCredentialOnFailure]: at cold start a transient failure (offline,
+  /// server down) must not throw away a valid Firebase session; after an
+  /// explicit sign-in it must, so no half-signed-in state is left behind.
+  Future<Result<AuthState>> _exchange({
+    bool keepCredentialOnFailure = false,
+  }) async {
     final token = await _credentials.idToken();
     if (token != null) await _store.writeIdToken(token);
 
@@ -89,8 +101,13 @@ class AuthRepositoryImpl implements AuthRepository {
       },
       err: (failure) async {
         // Firebase accepted the credential but the backend did not create a
-        // session. Do not leave a half-signed-in state behind.
-        await _credentials.signOut();
+        // session. Do not leave a half-signed-in state behind — unless this
+        // is a cold-start restore that merely could not reach the server.
+        final transient =
+            failure is Offline || failure is Unknown || failure is RateLimited;
+        if (!(keepCredentialOnFailure && transient)) {
+          await _credentials.signOut();
+        }
         await _store.clear();
         return Err<AuthState>(failure);
       },

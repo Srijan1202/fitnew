@@ -11,6 +11,7 @@ import {
   numeric,
   pgTable,
   primaryKey,
+  smallint,
   text,
   timestamp,
   uuid,
@@ -74,6 +75,13 @@ export const exerciseMuscles = pgTable(
     muscleGroup: muscleGroupEnum('muscle_group').notNull(),
     role: muscleRoleEnum('role').notNull(),
     contribution: numeric('contribution', { precision: 3, scale: 2 }).notNull(),
+    /**
+     * Order within the role as the seed lists it. The generator reads the
+     * FIRST primary as the muscle a movement is for (close-grip bench:
+     * triceps, then chest); reading the join back in enum order lost that
+     * and made close-grip bench the push day's chest press (0005).
+     */
+    position: smallint('position').notNull().default(0),
   },
   (t) => [
     primaryKey({ columns: [t.exerciseId, t.muscleGroup] }),

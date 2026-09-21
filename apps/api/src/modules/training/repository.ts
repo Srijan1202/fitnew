@@ -80,6 +80,8 @@ export interface NewPlannedSet {
 }
 
 export interface NewPlannedExercise {
+  /** An existing planned_exercises row to update in place (day PATCH). Absent or unknown ⇒ insert. */
+  readonly keepId?: string;
   readonly exerciseId: string;
   readonly orderIndex: number;
   readonly setCount: number;
@@ -92,8 +94,9 @@ export interface NewPlannedExercise {
   readonly sets: readonly NewPlannedSet[];
 }
 
+/** In seed order (0005): the first primary is what the generator treats the movement as being for. */
 const musclesOf = (role: 'primary' | 'secondary') => sql<MuscleGroup[]>`coalesce((
-  select array_agg(${exerciseMuscles.muscleGroup} order by ${exerciseMuscles.muscleGroup})
+  select array_agg(${exerciseMuscles.muscleGroup} order by ${exerciseMuscles.position}, ${exerciseMuscles.muscleGroup})
   from ${exerciseMuscles}
   where ${exerciseMuscles.exerciseId} = ${exercises.id} and ${exerciseMuscles.role} = ${role}
 ), '{}')`;
@@ -240,13 +243,85 @@ export class TrainingRepository {
     if (rows.length === 0) return;
     const inserted = await tx
       .insert(plannedExercises)
-      .values(rows.map(({ sets: _sets, ...x }) => x))
+      .values(rows.map(({ sets: _sets, keepId: _keep, ...x }) => x))
       .returning({ id: plannedExercises.id, programDayId: plannedExercises.programDayId, orderIndex: plannedExercises.orderIndex });
     const idOf = new Map(inserted.map((r) => [`${r.programDayId}:${r.orderIndex}`, r.id]));
     const setRows = rows.flatMap((x) =>
       x.sets.map((set) => ({ ...set, plannedExerciseId: idOf.get(`${x.programDayId}:${x.orderIndex}`)! })),
     );
     if (setRows.length > 0) await tx.insert(plannedSets).values(setRows);
+  }
+
+  /**
+   * Replace a day's exercises while KEEPING the rows the client says it is
+   * continuing (`keepId`), so a planned exercise's id — and the ids of its
+   * sets, by set index — survive every auto-save. Deleting and re-inserting
+   * gave every card a new id after each PATCH, which collapsed whatever the
+   * user had expanded (owner review). Rows not named are deleted; rows with
+   * an unknown or absent id are inserted.
+   */
+  private async replaceDayExercises(
+    tx: Parameters<Parameters<Db['transaction']>[0]>[0],
+    dayId: string,
+    next: readonly NewPlannedExercise[],
+  ): Promise<void> {
+    const existing = await tx
+      .select({ id: plannedExercises.id })
+      .from(plannedExercises)
+      .where(eq(plannedExercises.programDayId, dayId));
+    const existingIds = new Set(existing.map((r) => r.id));
+    const claimed = new Set<string>();
+    const kept: (NewPlannedExercise & { keepId: string })[] = [];
+    const fresh: NewPlannedExercise[] = [];
+    for (const x of next) {
+      // A row may be continued once; a duplicate claim becomes an insert.
+      if (x.keepId !== undefined && existingIds.has(x.keepId) && !claimed.has(x.keepId)) {
+        claimed.add(x.keepId);
+        kept.push({ ...x, keepId: x.keepId });
+      } else {
+        fresh.push(x);
+      }
+    }
+    const gone = [...existingIds].filter((id) => !claimed.has(id));
+    if (gone.length > 0) await tx.delete(plannedExercises).where(inArray(plannedExercises.id, gone));
+
+    // (day, order_index) is unique: park the kept rows out of the way first
+    // so a reorder cannot collide with a row that has not moved yet.
+    for (const [i, x] of kept.entries()) {
+      await tx.update(plannedExercises).set({ orderIndex: -(i + 1) }).where(eq(plannedExercises.id, x.keepId));
+    }
+    for (const x of kept) {
+      await tx
+        .update(plannedExercises)
+        .set({
+          exerciseId: x.exerciseId,
+          orderIndex: x.orderIndex,
+          setCount: x.setCount,
+          repMin: x.repMin,
+          repMax: x.repMax,
+          targetRir: x.targetRir,
+          incrementKg: x.incrementKg,
+          reason: x.reason,
+        })
+        .where(eq(plannedExercises.id, x.keepId));
+      // Sets: upsert by index so set ids are stable too; drop any past the new count.
+      await tx.delete(plannedSets).where(and(eq(plannedSets.plannedExerciseId, x.keepId), sql`${plannedSets.setIndex} > ${x.sets.length}`));
+      if (x.sets.length > 0) {
+        await tx
+          .insert(plannedSets)
+          .values(x.sets.map((set) => ({ ...set, plannedExerciseId: x.keepId })))
+          .onConflictDoUpdate({
+            target: [plannedSets.plannedExerciseId, plannedSets.setIndex],
+            set: {
+              repsMin: sql`excluded.reps_min`,
+              repsMax: sql`excluded.reps_max`,
+              weightKg: sql`excluded.weight_kg`,
+              rir: sql`excluded.rir`,
+            },
+          });
+      }
+    }
+    await this.insertPlanned(tx, fresh.map((x) => ({ ...x, programDayId: dayId })));
   }
 
   /**
@@ -328,8 +403,7 @@ export class TrainingRepository {
         await tx.update(programDays).set({ focus: [...patch.focus] }).where(eq(programDays.id, dayId));
       }
       if (patch.exercises !== undefined) {
-        await tx.delete(plannedExercises).where(eq(plannedExercises.programDayId, dayId));
-        await this.insertPlanned(tx, patch.exercises.map((x) => ({ ...x, programDayId: dayId })));
+        await this.replaceDayExercises(tx, dayId, patch.exercises);
         await tx.update(programDays).set({ isRest: patch.exercises.length === 0 }).where(eq(programDays.id, dayId));
       }
       await tx.update(programs).set({ updatedAt: sql`now()` }).where(eq(programs.id, owned.programId));

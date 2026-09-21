@@ -27,6 +27,7 @@ void main() {
       overrides: [
         authRepositoryProvider.overrideWithValue(auth),
         onboardingRepositoryProvider.overrideWithValue(repo),
+        sessionUserIdProvider.overrideWithValue(newUserProfile.id),
       ],
     );
     // Riverpod 3 auto-disposes an unlistened provider mid-build; the app has

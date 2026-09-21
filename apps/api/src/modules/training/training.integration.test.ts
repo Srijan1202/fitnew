@@ -302,6 +302,98 @@ describeIfDb('/v1/training/program (real Postgres, real seed)', () => {
     expect((await get(token)).json()).toEqual(after);
   });
 
+  it('auto-save keeps every planned exercise id and set id it continues (the expanded card survives a save)', async () => {
+    const token = await onboarded();
+    const p: Program = (await generate(token)).json();
+    const day = p.days.find((d) => !d.isRest)!;
+    const before = day.exercises;
+    const setIdsBefore = (await sql<{ id: string; planned_exercise_id: string; set_index: number }[]>`
+      select id, planned_exercise_id, set_index from planned_sets where planned_exercise_id in ${sql(before.map((x) => x.id))}`);
+    const asCustom = (x: Program['days'][number]['exercises'][number]) => ({
+      id: x.id,
+      exerciseId: x.exerciseId,
+      setCount: x.setCount,
+      repMin: x.repMin,
+      repMax: x.repMax,
+      targetRir: x.targetRir,
+      incrementKg: x.incrementKg,
+      sets: x.sets.map((s) => ({ repsMin: s.repsMin, repsMax: s.repsMax, weightKg: s.weightKg, rir: s.rir })),
+    });
+    // 1. Edit one set on the first exercise: ids unchanged everywhere.
+    const edited = before.map((x, i) => (i === 0 ? { ...asCustom(x), sets: asCustom(x).sets.map((s, j) => (j === 0 ? { ...s, repsMin: 12, repsMax: 12, weightKg: 40 } : s)) } : asCustom(x)));
+    const r1 = await app.inject({ method: 'PATCH', url: `/v1/training/program/days/${day.id}`, headers: auth(token), payload: { exercises: edited } });
+    expect(r1.statusCode, r1.body).toBe(200);
+    const d1 = (r1.json() as Program).days.find((d) => d.id === day.id)!;
+    expect(d1.exercises.map((x) => x.id)).toEqual(before.map((x) => x.id));
+    expect(d1.exercises[0]!.sets[0]).toEqual({ setIndex: 1, repsMin: 12, repsMax: 12, weightKg: 40, rir: before[0]!.sets[0]!.rir });
+    const setIdsAfter = (await sql<{ id: string; planned_exercise_id: string; set_index: number }[]>`
+      select id, planned_exercise_id, set_index from planned_sets where planned_exercise_id in ${sql(before.map((x) => x.id))}`);
+    expect(new Set(setIdsAfter.map((s) => s.id))).toEqual(new Set(setIdsBefore.map((s) => s.id)));
+
+    // 2. Reorder (last first) and remove the second: kept rows keep ids, the removed one is gone.
+    const reordered = [asCustom(d1.exercises[d1.exercises.length - 1]!), ...d1.exercises.slice(0, -1).filter((_, i) => i !== 1).map(asCustom)];
+    const r2 = await app.inject({ method: 'PATCH', url: `/v1/training/program/days/${day.id}`, headers: auth(token), payload: { exercises: reordered } });
+    expect(r2.statusCode, r2.body).toBe(200);
+    const d2 = (r2.json() as Program).days.find((d) => d.id === day.id)!;
+    expect(d2.exercises.map((x) => x.id)).toEqual(reordered.map((x) => x.id));
+    expect(d2.exercises.map((x) => x.orderIndex)).toEqual(d2.exercises.map((_, i) => i));
+    expect((await sql`select 1 from planned_exercises where id = ${before[1]!.id}`).length).toBe(0);
+
+    // 3. Replace the movement on a kept row and add a row without an id: the
+    //    kept id stays (weights cleared by the client), the new row gets a fresh id.
+    const [other] = await sql<{ id: string }[]>`select id from exercises where slug = 'face-pull'`;
+    const replaced = d2.exercises.map((x, i) => (i === 0 ? { ...asCustom(x), exerciseId: other!.id, sets: asCustom(x).sets.map((s) => ({ ...s, weightKg: null })) } : asCustom(x)));
+    const added = { ...asCustom(d2.exercises[0]!), id: undefined, exerciseId: other!.id };
+    const r3 = await app.inject({ method: 'PATCH', url: `/v1/training/program/days/${day.id}`, headers: auth(token), payload: { exercises: [...replaced, { ...added, id: undefined }] } });
+    expect(r3.statusCode, r3.body).toBe(200);
+    const d3 = (r3.json() as Program).days.find((d) => d.id === day.id)!;
+    expect(d3.exercises[0]!.id).toBe(d2.exercises[0]!.id);
+    expect(d3.exercises[0]!.slug).toBe('face-pull');
+    expect(d3.exercises.at(-1)!.id).not.toBe(d2.exercises[0]!.id);
+    expect(d3.exercises.length).toBe(d2.exercises.length + 1);
+
+    // 4. An id from someone else's programme is ignored, never adopted.
+    const stranger = await onboarded();
+    const sp: Program = (await generate(stranger)).json();
+    const foreign = sp.days.find((d) => !d.isRest)!.exercises[0]!.id;
+    const r4 = await app.inject({ method: 'PATCH', url: `/v1/training/program/days/${day.id}`, headers: auth(token), payload: { exercises: [{ ...asCustom(d3.exercises[0]!), id: foreign }] } });
+    expect(r4.statusCode, r4.body).toBe(200);
+    const d4 = (r4.json() as Program).days.find((d) => d.id === day.id)!;
+    expect(d4.exercises.length).toBe(1);
+    expect(d4.exercises[0]!.id).not.toBe(foreign);
+    expect((await sql`select 1 from planned_exercises where id = ${foreign}`).length).toBe(1);
+  });
+
+  it('the catalogue the generator sees keeps the seed order of primary muscles (0005)', async () => {
+    const rows = await sql<{ slug: string; primaries: string[] }[]>`
+      select e.slug, coalesce((select array_agg(m.muscle_group order by m.position, m.muscle_group) from exercise_muscles m where m.exercise_id = e.id and m.role = 'primary'), '{}') as primaries
+      from exercises e where e.slug in ('close-grip-bench-press', 'bird-dog', 'conventional-deadlift', 'sumo-deadlift')`;
+    const bySlug = new Map(rows.map((r) => [r.slug, r.primaries]));
+    expect(bySlug.get('close-grip-bench-press')).toEqual(['triceps', 'chest']);
+    expect(bySlug.get('bird-dog')).toEqual(['abs', 'back']);
+    expect(bySlug.get('conventional-deadlift')).toEqual(['hamstrings', 'glutes']);
+    expect(bySlug.get('sumo-deadlift')).toEqual(['glutes', 'hamstrings']);
+  });
+
+  it("the owner's profile — intermediate, 6 days, campus gym, recomposition, 75 min — never gets a three-movement push or pull", async () => {
+    const token = await onboarded({ experience: 'intermediate', days: 6, goal: 'recomposition', equipment: ['barbell', 'dumbbell', 'machine', 'cable', 'pull-up-bar'], minutes: 75 });
+    const p: Program = (await generate(token)).json();
+    expect(p.splitType).toBe('push-pull-legs');
+    for (const d of p.days.filter((x) => !x.isRest)) {
+      expect(d.exercises.length, `${d.sessionName}: ${d.exercises.map((x) => x.slug).join(', ')}`).toBeGreaterThanOrEqual(4);
+      if (d.sessionName === 'Push') {
+        expect(d.exercises[0]!.primaryMuscles[0]).toBe('chest');
+        expect(d.exercises.some((x) => x.primaryMuscles.includes('triceps'))).toBe(true);
+      }
+      if (d.sessionName === 'Pull') {
+        expect(d.exercises.some((x) => x.movementPattern === 'vertical-pull')).toBe(true);
+        expect(d.exercises.some((x) => x.movementPattern === 'horizontal-pull')).toBe(true);
+        expect(d.exercises.some((x) => x.primaryMuscles.includes('biceps'))).toBe(true);
+        expect(d.exercises.some((x) => x.primaryMuscles.includes('shoulders'))).toBe(true);
+      }
+    }
+  });
+
   it('rename persists', async () => {
     const token = await onboarded();
     await generate(token);

@@ -98,18 +98,22 @@ export async function seedExercises(
         return id;
       };
 
+      // `position` keeps the seed's order: the first primary is the muscle
+      // the movement is FOR, and the generator reads it that way.
       const muscleRows = entries.flatMap((e) => [
-        ...e.primaryMuscles.map((m) => ({
+        ...e.primaryMuscles.map((m, position) => ({
           exerciseId: idOf(e.slug),
           muscleGroup: m,
           role: 'primary' as const,
           contribution: PRIMARY_CONTRIBUTION.toFixed(2),
+          position,
         })),
-        ...e.secondaryMuscles.map((m) => ({
+        ...e.secondaryMuscles.map((m, position) => ({
           exerciseId: idOf(e.slug),
           muscleGroup: m,
           role: 'secondary' as const,
           contribution: SECONDARY_CONTRIBUTION.toFixed(2),
+          position,
         })),
       ]);
       const alternativeRows = entries.flatMap((e) =>

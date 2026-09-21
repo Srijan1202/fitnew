@@ -14,11 +14,19 @@ class FakeProfileRepository implements ProfileRepository {
     GoalResponse(goal: personaCGoal, targets: personaCTargets),
   );
 
-  @override
-  Future<Result<UserProfileDetail>> getProfile() async => nextProfile;
+  final calls = <String>[];
 
   @override
-  Future<Result<GoalResponse>> getGoal() async => nextGoal;
+  Future<Result<UserProfileDetail>> getProfile() async {
+    calls.add('getProfile');
+    return nextProfile;
+  }
+
+  @override
+  Future<Result<GoalResponse>> getGoal() async {
+    calls.add('getGoal');
+    return nextGoal;
+  }
 
   @override
   Future<Result<GoalResponse>> putGoal(PutGoalRequest request) async =>
