@@ -549,6 +549,9 @@ void main() {
 
     // "View technical details" keeps MV / MEV / MAV / MRV, the engine's
     // status and the weighting available.
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('volume.chest.technical')),
+    );
     await tester.tap(find.byKey(const ValueKey('volume.chest.technical')));
     await settle(tester);
     expect(
@@ -561,10 +564,16 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Hide technical details'), findsOneWidget);
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('volume.chest.technical')),
+    );
     await tester.tap(find.byKey(const ValueKey('volume.chest.technical')));
     await settle(tester);
     expect(find.byKey(const ValueKey('volume.chest.landmarks')), findsNothing);
     // Collapse the row.
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('volume.row.chest.tap')),
+    );
     await tester.tap(find.byKey(const ValueKey('volume.row.chest.tap')));
     await settle(tester);
     expect(find.byKey(const ValueKey('volume.chest.detail')), findsNothing);
