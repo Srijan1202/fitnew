@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fitos/features/health/data/health_connect_provider.dart';
 import 'package:fitos/features/health/domain/entities/health.dart';
 import 'package:fitos/features/health/domain/health_data_provider.dart';
@@ -281,8 +283,10 @@ void main() {
       final s = await snap();
       expect(s.weekSteps, List.filled(7, 10.0));
       expect(s.weekSleep, List.filled(7, 400.0));
-      final days =
+      // The first steps call is today's total; the seven after it are the week.
+      final steps =
           channel.ranges.where((r) => r.$1 == 'aggregate:steps').toList();
+      final days = steps.sublist(steps.length - 7);
       // The week of Tue 22 Sep 2026 starts Mon 21 Sep 00:00 IST = 20 Sep 18:30Z.
       expect(days.first.$2.toUtc(), DateTime.utc(2026, 9, 20, 18, 30));
       expect(days.last.$2.toUtc(), DateTime.utc(2026, 9, 26, 18, 30));
@@ -320,7 +324,9 @@ void main() {
     channel.stepsAggregate = 5;
     channel.totals = {'sleep': 300};
     final s = await snap();
-    final back = HealthSnapshot.fromJson(s.toJson());
+    final back = HealthSnapshot.fromJson(
+      jsonDecode(jsonEncode(s.toJson())) as Map<String, dynamic>,
+    );
     expect(back, s);
     expect(back.copyWith(fromCache: true).fromCache, isTrue);
   });
