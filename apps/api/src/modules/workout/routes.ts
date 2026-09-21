@@ -9,7 +9,11 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import {
   addSessionExerciseRequestSchema,
   completeSessionRequestSchema,
+  deloadStateSchema,
   errorEnvelopeSchema,
+  progressionDetailSchema,
+  progressionParamsSchema,
+  volumeResponseSchema,
   logSetsRequestSchema,
   patchSessionExerciseRequestSchema,
   patchSetRequestSchema,
@@ -193,6 +197,61 @@ export async function workoutRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request) => service.complete(requireUserId(request.userId), request.params.id, request.body),
+  );
+
+  /* ------------------------------------------------------- Phase 6 -- */
+
+  typed.get(
+    '/training/volume',
+    {
+      schema: {
+        summary: 'Weekly hard sets per muscle vs the §12.3 landmarks (current + 3 ISO weeks), neglect, deload state',
+        tags,
+        security,
+        response: { 200: volumeResponseSchema, ...errors },
+      },
+    },
+    async (request) => service.volume(requireUserId(request.userId)),
+  );
+
+  typed.get(
+    '/training/progression/:exerciseId',
+    {
+      schema: {
+        summary: 'One lift: its last three sessions and the progression recommendation with its reason',
+        tags,
+        security,
+        params: progressionParamsSchema,
+        response: { 200: progressionDetailSchema, ...errors },
+      },
+    },
+    async (request) => service.progressionDetail(requireUserId(request.userId), request.params.exerciseId),
+  );
+
+  typed.post(
+    '/training/deload/accept',
+    {
+      schema: {
+        summary: 'Accept the offered deload week (never applied without this)',
+        tags,
+        security,
+        response: { 200: deloadStateSchema, ...errors },
+      },
+    },
+    async (request) => service.acceptDeload(requireUserId(request.userId)),
+  );
+
+  typed.post(
+    '/training/deload/decline',
+    {
+      schema: {
+        summary: 'Decline the offered deload week; not offered again for seven days',
+        tags,
+        security,
+        response: { 200: deloadStateSchema, ...errors },
+      },
+    },
+    async (request) => service.declineDeload(requireUserId(request.userId)),
   );
 
   typed.post(

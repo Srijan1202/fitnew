@@ -366,7 +366,7 @@ export class TrainingService {
 
 type KnownExercises = Map<string, { defaultIncrementKg: string }>;
 
-function toCatalogueExercise(e: CatalogueRow): CatalogueExercise {
+export function toCatalogueExercise(e: CatalogueRow): CatalogueExercise {
   return {
     id: e.id,
     slug: e.slug,

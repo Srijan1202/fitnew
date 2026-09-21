@@ -39,6 +39,12 @@ export const programs = pgTable(
     /** The professional template this came from (Phase 4 rework), else null. */
     templateSlug: text('template_slug'),
     mesocycleWeek: smallint('mesocycle_week').notNull().default(1),
+    /** Phase 6 (§12.5, owner 12.3–12.4): an accepted deload week runs seven days from here. */
+    deloadStartedAt: timestamp('deload_started_at', { withTimezone: true }),
+    /** A declined offer is not repeated before this local date (yyyy-mm-dd). */
+    deloadSnoozedUntil: text('deload_snoozed_until'),
+    /** Sessions completed before this do not count toward the mesocycle week (reset after a deload). */
+    mesocycleResetAt: timestamp('mesocycle_reset_at', { withTimezone: true }),
     active: boolean('active').notNull().default(true),
     /** The generator's explanation and shortfalls, stored with the plan they explain. */
     rationale: jsonb('rationale').$type<string[]>().notNull().default([]),

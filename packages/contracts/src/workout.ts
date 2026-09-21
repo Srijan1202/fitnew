@@ -84,9 +84,70 @@ export const setPrefillSchema = z.object({
   reps: repsSchema,
   weightKg: setWeightKgSchema.nullable(),
   rir: rirSchema,
-  weightSource: z.enum(['last-session', 'plan', 'none']),
+  weightSource: z.enum(['recommendation', 'last-session', 'plan', 'none']),
 });
 export type SetPrefill = z.infer<typeof setPrefillSchema>;
+
+/* ------------------------------------------------- Phase 6: progression -- */
+
+/** §12.4 branches, exactly as `recommendProgression` names them. */
+export const PROGRESSION_ACTIONS = ['increase-load', 'add-reps', 'hold', 'reduce-load', 'deload', 'establish-baseline'] as const;
+export const progressionActionSchema = z.enum(PROGRESSION_ACTIONS);
+export type ProgressionAction = z.infer<typeof progressionActionSchema>;
+
+/**
+ * What to do next on a lift (Phase 6, §12.4): the engine's branch, its
+ * load (null when it prescribes none), rep target, RIR and — always — the
+ * reason. `basis` is 'calculated' from logged history; a recommendation
+ * without a reason is a bug.
+ */
+export const progressionRecommendationSchema = z.object({
+  action: progressionActionSchema,
+  weightKg: setWeightKgSchema.nullable(),
+  repTarget: z.string().min(1),
+  targetRir: rirSchema,
+  reason: z.string().min(1),
+  basis: z.enum(['calculated', 'logged']),
+  /** How many completed sessions the decision looked at (≤ 3). */
+  sessionsConsidered: z.number().int().min(0).max(3),
+});
+export type ProgressionRecommendation = z.infer<typeof progressionRecommendationSchema>;
+
+/** The user's best so far on a lift, so a set can be recognised as a record the moment it is logged. */
+export const priorBestSchema = z.object({
+  weightKg: setWeightKgSchema.nullable(),
+  repsAtBestWeight: repsSchema.nullable(),
+  estimated1rm: z.number().min(0).nullable(),
+});
+export type PriorBest = z.infer<typeof priorBestSchema>;
+
+export const SUBSTITUTION_TRIGGERS = ['equipment', 'limitation', 'rejected'] as const;
+export const substitutionTriggerSchema = z.enum(SUBSTITUTION_TRIGGERS);
+
+/** §12.6: why a planned lift should be swapped and for what — or, honestly, that the library has nothing. */
+export const substitutionSchema = z.object({
+  trigger: substitutionTriggerSchema,
+  alternative: z
+    .object({
+      exerciseId: z.string().uuid(),
+      slug: slugSchema,
+      name: z.string().min(1),
+      equipment: z.array(equipmentSchema).min(1),
+    })
+    .nullable(),
+  reason: z.string().min(1),
+});
+export type Substitution = z.infer<typeof substitutionSchema>;
+
+export const DELOAD_STATES = ['none', 'offered', 'active'] as const;
+export const deloadStateSchema = z.object({
+  state: z.enum(DELOAD_STATES),
+  trigger: z.enum(['fatigue', 'mrv']).nullable(),
+  reason: z.string().min(1),
+  /** Active: the local date the lighter week ends (exclusive). */
+  endsOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
+});
+export type DeloadState = z.infer<typeof deloadStateSchema>;
 
 export const sessionExerciseSchema = z.object({
   id: z.string().uuid(),
@@ -110,6 +171,11 @@ export const sessionExerciseSchema = z.object({
   /** One per target, in order; [] when there are no targets. */
   prefill: z.array(setPrefillSchema),
   lastPerformance: lastPerformanceSchema.nullable(),
+  /** Phase 6: null for an ad-hoc exercise with no plan row. */
+  recommendation: progressionRecommendationSchema.nullable(),
+  priorBest: priorBestSchema,
+  /** Targets during an accepted deload week are the lighter ones; the plan's originals sit here. */
+  originalTargets: z.array(plannedSetSchema).nullable(),
   sets: z.array(setLogSchema),
 });
 export type SessionExercise = z.infer<typeof sessionExerciseSchema>;
@@ -197,6 +263,10 @@ export const todayExerciseSchema = z.object({
   targets: z.array(plannedSetSchema),
   prefill: z.array(setPrefillSchema),
   lastPerformance: lastPerformanceSchema.nullable(),
+  recommendation: progressionRecommendationSchema.nullable(),
+  priorBest: priorBestSchema,
+  originalTargets: z.array(plannedSetSchema).nullable(),
+  substitution: substitutionSchema.nullable(),
 });
 
 export const todayResponseSchema = z.object({
@@ -213,8 +283,55 @@ export const todayResponseSchema = z.object({
   activeSession: workoutSessionSchema.nullable(),
   /** A session completed today for this day, if any (so TODAY can say "Done"). */
   completedSessionId: z.string().uuid().nullable(),
+  /** Phase 6. */
+  mesocycleWeek: z.number().int().min(1).nullable(),
+  deload: deloadStateSchema,
+  /** Owned muscles with no working set in the last 6 days (owner 12.7). */
+  neglected: z.array(z.object({ muscle: muscleGroupSchema, daysSince: z.number().int().min(0).nullable() })),
 });
 export type TodayResponse = z.infer<typeof todayResponseSchema>;
+
+/* ---------------------------------------------------- Phase 6: volume -- */
+
+export const LANDMARK_STATUSES = ['none', 'below-mv', 'below-mev', 'mev-to-mav', 'above-mav', 'at-mrv'] as const;
+export const landmarkStatusSchema = z.enum(LANDMARK_STATUSES);
+
+export const muscleWeekSchema = z.object({
+  muscle: muscleGroupSchema,
+  hardSets: z.number().min(0),
+  tonnageKg: z.number().min(0),
+  status: landmarkStatusSchema,
+  landmarks: z.object({ mv: z.number(), mev: z.number(), mavLow: z.number(), mavHigh: z.number(), mrv: z.number() }),
+  owned: z.boolean(),
+});
+
+export const volumeResponseSchema = z.object({
+  /** Oldest first; the last entry is the current ISO week. */
+  weeks: z.array(z.object({ isoWeek: z.string().regex(/^\d{4}-W\d{2}$/), muscles: z.array(muscleWeekSchema) })),
+  owned: z.array(muscleGroupSchema),
+  neglected: z.array(z.object({ muscle: muscleGroupSchema, daysSince: z.number().int().min(0).nullable() })),
+  mesocycleWeek: z.number().int().min(1).nullable(),
+  deload: deloadStateSchema,
+});
+export type VolumeResponse = z.infer<typeof volumeResponseSchema>;
+
+/** One lift's last three sessions and what the engine makes of them. */
+export const progressionDetailSchema = z.object({
+  exerciseId: z.string().uuid(),
+  name: z.string().min(1),
+  target: z.object({ repMin: z.number().int(), repMax: z.number().int(), targetRir: rirSchema, sets: z.number().int(), incrementKg: z.number().positive() }).nullable(),
+  recommendation: progressionRecommendationSchema,
+  history: z.array(
+    z.object({
+      sessionId: z.string().uuid(),
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      sets: z.array(z.object({ setIndex: z.number().int().min(1), weightKg: setWeightKgSchema.nullable(), reps: repsSchema, rir: rirSchema.nullable() })),
+    }),
+  ),
+});
+export type ProgressionDetail = z.infer<typeof progressionDetailSchema>;
+
+export const progressionParamsSchema = z.object({ exerciseId: z.string().uuid() });
 
 /* ---------------------------------------------------------------- write -- */
 

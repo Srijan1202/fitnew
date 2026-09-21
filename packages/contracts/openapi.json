@@ -11957,6 +11957,7 @@
                                 "weightSource": {
                                   "type": "string",
                                   "enum": [
+                                    "recommendation",
                                     "last-session",
                                     "plan",
                                     "none"
@@ -12028,6 +12029,206 @@
                             ],
                             "additionalProperties": false,
                             "nullable": true
+                          },
+                          "recommendation": {
+                            "type": "object",
+                            "properties": {
+                              "action": {
+                                "type": "string",
+                                "enum": [
+                                  "increase-load",
+                                  "add-reps",
+                                  "hold",
+                                  "reduce-load",
+                                  "deload",
+                                  "establish-baseline"
+                                ]
+                              },
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repTarget": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "targetRir": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "reason": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "calculated",
+                                  "logged"
+                                ]
+                              },
+                              "sessionsConsidered": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 3
+                              }
+                            },
+                            "required": [
+                              "action",
+                              "weightKg",
+                              "repTarget",
+                              "targetRir",
+                              "reason",
+                              "basis",
+                              "sessionsConsidered"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "priorBest": {
+                            "type": "object",
+                            "properties": {
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repsAtBestWeight": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "nullable": true
+                              },
+                              "estimated1rm": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              }
+                            },
+                            "required": [
+                              "weightKg",
+                              "repsAtBestWeight",
+                              "estimated1rm"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "originalTargets": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "repsMin": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "repsMax": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "repsMin",
+                                "repsMax",
+                                "weightKg",
+                                "rir"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "nullable": true
+                          },
+                          "substitution": {
+                            "type": "object",
+                            "properties": {
+                              "trigger": {
+                                "type": "string",
+                                "enum": [
+                                  "equipment",
+                                  "limitation",
+                                  "rejected"
+                                ]
+                              },
+                              "alternative": {
+                                "type": "object",
+                                "properties": {
+                                  "exerciseId": {
+                                    "type": "string",
+                                    "format": "uuid"
+                                  },
+                                  "slug": {
+                                    "type": "string",
+                                    "minLength": 2,
+                                    "maxLength": 64,
+                                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "equipment": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "enum": [
+                                        "barbell",
+                                        "dumbbell",
+                                        "machine",
+                                        "cable",
+                                        "kettlebell",
+                                        "resistance-band",
+                                        "pull-up-bar",
+                                        "bodyweight"
+                                      ]
+                                    },
+                                    "minItems": 1
+                                  }
+                                },
+                                "required": [
+                                  "exerciseId",
+                                  "slug",
+                                  "name",
+                                  "equipment"
+                                ],
+                                "additionalProperties": false,
+                                "nullable": true
+                              },
+                              "reason": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "required": [
+                              "trigger",
+                              "alternative",
+                              "reason"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": true
                           }
                         },
                         "required": [
@@ -12044,7 +12245,11 @@
                           "incrementKg",
                           "targets",
                           "prefill",
-                          "lastPerformance"
+                          "lastPerformance",
+                          "recommendation",
+                          "priorBest",
+                          "originalTargets",
+                          "substitution"
                         ],
                         "additionalProperties": false
                       }
@@ -12301,6 +12506,7 @@
                                     "weightSource": {
                                       "type": "string",
                                       "enum": [
+                                        "recommendation",
                                         "last-session",
                                         "plan",
                                         "none"
@@ -12371,6 +12577,138 @@
                                   "sets"
                                 ],
                                 "additionalProperties": false,
+                                "nullable": true
+                              },
+                              "recommendation": {
+                                "type": "object",
+                                "properties": {
+                                  "action": {
+                                    "type": "string",
+                                    "enum": [
+                                      "increase-load",
+                                      "add-reps",
+                                      "hold",
+                                      "reduce-load",
+                                      "deload",
+                                      "establish-baseline"
+                                    ]
+                                  },
+                                  "weightKg": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 500,
+                                    "nullable": true
+                                  },
+                                  "repTarget": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "targetRir": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 5
+                                  },
+                                  "reason": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "basis": {
+                                    "type": "string",
+                                    "enum": [
+                                      "calculated",
+                                      "logged"
+                                    ]
+                                  },
+                                  "sessionsConsidered": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 3
+                                  }
+                                },
+                                "required": [
+                                  "action",
+                                  "weightKg",
+                                  "repTarget",
+                                  "targetRir",
+                                  "reason",
+                                  "basis",
+                                  "sessionsConsidered"
+                                ],
+                                "additionalProperties": false,
+                                "nullable": true
+                              },
+                              "priorBest": {
+                                "type": "object",
+                                "properties": {
+                                  "weightKg": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 500,
+                                    "nullable": true
+                                  },
+                                  "repsAtBestWeight": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 100,
+                                    "nullable": true
+                                  },
+                                  "estimated1rm": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "nullable": true
+                                  }
+                                },
+                                "required": [
+                                  "weightKg",
+                                  "repsAtBestWeight",
+                                  "estimated1rm"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "originalTargets": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "setIndex": {
+                                      "type": "integer",
+                                      "minimum": 1
+                                    },
+                                    "repsMin": {
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 50
+                                    },
+                                    "repsMax": {
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 50
+                                    },
+                                    "weightKg": {
+                                      "type": "number",
+                                      "minimum": 0,
+                                      "maximum": 500,
+                                      "nullable": true
+                                    },
+                                    "rir": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 5
+                                    }
+                                  },
+                                  "required": [
+                                    "setIndex",
+                                    "repsMin",
+                                    "repsMax",
+                                    "weightKg",
+                                    "rir"
+                                  ],
+                                  "additionalProperties": false
+                                },
                                 "nullable": true
                               },
                               "sets": {
@@ -12463,6 +12801,9 @@
                               "targets",
                               "prefill",
                               "lastPerformance",
+                              "recommendation",
+                              "priorBest",
+                              "originalTargets",
                               "sets"
                             ],
                             "additionalProperties": false
@@ -12638,6 +12979,81 @@
                       "type": "string",
                       "format": "uuid",
                       "nullable": true
+                    },
+                    "mesocycleWeek": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "nullable": true
+                    },
+                    "deload": {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "offered",
+                            "active"
+                          ]
+                        },
+                        "trigger": {
+                          "type": "string",
+                          "enum": [
+                            "fatigue",
+                            "mrv"
+                          ],
+                          "nullable": true
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "endsOn": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "state",
+                        "trigger",
+                        "reason",
+                        "endsOn"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "neglected": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "muscle": {
+                            "type": "string",
+                            "enum": [
+                              "chest",
+                              "back",
+                              "quads",
+                              "hamstrings",
+                              "glutes",
+                              "shoulders",
+                              "biceps",
+                              "triceps",
+                              "calves",
+                              "abs"
+                            ]
+                          },
+                          "daysSince": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "muscle",
+                          "daysSince"
+                        ],
+                        "additionalProperties": false
+                      }
                     }
                   },
                   "required": [
@@ -12650,7 +13066,10 @@
                     "focus",
                     "exercises",
                     "activeSession",
-                    "completedSessionId"
+                    "completedSessionId",
+                    "mesocycleWeek",
+                    "deload",
+                    "neglected"
                   ],
                   "additionalProperties": false
                 }
@@ -13248,6 +13667,7 @@
                                 "weightSource": {
                                   "type": "string",
                                   "enum": [
+                                    "recommendation",
                                     "last-session",
                                     "plan",
                                     "none"
@@ -13318,6 +13738,138 @@
                               "sets"
                             ],
                             "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "recommendation": {
+                            "type": "object",
+                            "properties": {
+                              "action": {
+                                "type": "string",
+                                "enum": [
+                                  "increase-load",
+                                  "add-reps",
+                                  "hold",
+                                  "reduce-load",
+                                  "deload",
+                                  "establish-baseline"
+                                ]
+                              },
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repTarget": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "targetRir": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "reason": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "calculated",
+                                  "logged"
+                                ]
+                              },
+                              "sessionsConsidered": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 3
+                              }
+                            },
+                            "required": [
+                              "action",
+                              "weightKg",
+                              "repTarget",
+                              "targetRir",
+                              "reason",
+                              "basis",
+                              "sessionsConsidered"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "priorBest": {
+                            "type": "object",
+                            "properties": {
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repsAtBestWeight": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "nullable": true
+                              },
+                              "estimated1rm": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              }
+                            },
+                            "required": [
+                              "weightKg",
+                              "repsAtBestWeight",
+                              "estimated1rm"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "originalTargets": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "repsMin": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "repsMax": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "repsMin",
+                                "repsMax",
+                                "weightKg",
+                                "rir"
+                              ],
+                              "additionalProperties": false
+                            },
                             "nullable": true
                           },
                           "sets": {
@@ -13410,6 +13962,9 @@
                           "targets",
                           "prefill",
                           "lastPerformance",
+                          "recommendation",
+                          "priorBest",
+                          "originalTargets",
                           "sets"
                         ],
                         "additionalProperties": false
@@ -13839,6 +14394,7 @@
                                 "weightSource": {
                                   "type": "string",
                                   "enum": [
+                                    "recommendation",
                                     "last-session",
                                     "plan",
                                     "none"
@@ -13909,6 +14465,138 @@
                               "sets"
                             ],
                             "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "recommendation": {
+                            "type": "object",
+                            "properties": {
+                              "action": {
+                                "type": "string",
+                                "enum": [
+                                  "increase-load",
+                                  "add-reps",
+                                  "hold",
+                                  "reduce-load",
+                                  "deload",
+                                  "establish-baseline"
+                                ]
+                              },
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repTarget": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "targetRir": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "reason": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "calculated",
+                                  "logged"
+                                ]
+                              },
+                              "sessionsConsidered": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 3
+                              }
+                            },
+                            "required": [
+                              "action",
+                              "weightKg",
+                              "repTarget",
+                              "targetRir",
+                              "reason",
+                              "basis",
+                              "sessionsConsidered"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "priorBest": {
+                            "type": "object",
+                            "properties": {
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repsAtBestWeight": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "nullable": true
+                              },
+                              "estimated1rm": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              }
+                            },
+                            "required": [
+                              "weightKg",
+                              "repsAtBestWeight",
+                              "estimated1rm"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "originalTargets": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "repsMin": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "repsMax": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "repsMin",
+                                "repsMax",
+                                "weightKg",
+                                "rir"
+                              ],
+                              "additionalProperties": false
+                            },
                             "nullable": true
                           },
                           "sets": {
@@ -14001,6 +14689,9 @@
                           "targets",
                           "prefill",
                           "lastPerformance",
+                          "recommendation",
+                          "priorBest",
+                          "originalTargets",
                           "sets"
                         ],
                         "additionalProperties": false
@@ -15113,6 +15804,7 @@
                                 "weightSource": {
                                   "type": "string",
                                   "enum": [
+                                    "recommendation",
                                     "last-session",
                                     "plan",
                                     "none"
@@ -15183,6 +15875,138 @@
                               "sets"
                             ],
                             "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "recommendation": {
+                            "type": "object",
+                            "properties": {
+                              "action": {
+                                "type": "string",
+                                "enum": [
+                                  "increase-load",
+                                  "add-reps",
+                                  "hold",
+                                  "reduce-load",
+                                  "deload",
+                                  "establish-baseline"
+                                ]
+                              },
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repTarget": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "targetRir": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "reason": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "calculated",
+                                  "logged"
+                                ]
+                              },
+                              "sessionsConsidered": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 3
+                              }
+                            },
+                            "required": [
+                              "action",
+                              "weightKg",
+                              "repTarget",
+                              "targetRir",
+                              "reason",
+                              "basis",
+                              "sessionsConsidered"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "priorBest": {
+                            "type": "object",
+                            "properties": {
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repsAtBestWeight": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "nullable": true
+                              },
+                              "estimated1rm": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              }
+                            },
+                            "required": [
+                              "weightKg",
+                              "repsAtBestWeight",
+                              "estimated1rm"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "originalTargets": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "repsMin": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "repsMax": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "repsMin",
+                                "repsMax",
+                                "weightKg",
+                                "rir"
+                              ],
+                              "additionalProperties": false
+                            },
                             "nullable": true
                           },
                           "sets": {
@@ -15275,6 +16099,9 @@
                           "targets",
                           "prefill",
                           "lastPerformance",
+                          "recommendation",
+                          "priorBest",
+                          "originalTargets",
                           "sets"
                         ],
                         "additionalProperties": false
@@ -16081,6 +16908,7 @@
                                 "weightSource": {
                                   "type": "string",
                                   "enum": [
+                                    "recommendation",
                                     "last-session",
                                     "plan",
                                     "none"
@@ -16151,6 +16979,138 @@
                               "sets"
                             ],
                             "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "recommendation": {
+                            "type": "object",
+                            "properties": {
+                              "action": {
+                                "type": "string",
+                                "enum": [
+                                  "increase-load",
+                                  "add-reps",
+                                  "hold",
+                                  "reduce-load",
+                                  "deload",
+                                  "establish-baseline"
+                                ]
+                              },
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repTarget": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "targetRir": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "reason": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "calculated",
+                                  "logged"
+                                ]
+                              },
+                              "sessionsConsidered": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 3
+                              }
+                            },
+                            "required": [
+                              "action",
+                              "weightKg",
+                              "repTarget",
+                              "targetRir",
+                              "reason",
+                              "basis",
+                              "sessionsConsidered"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "priorBest": {
+                            "type": "object",
+                            "properties": {
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repsAtBestWeight": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "nullable": true
+                              },
+                              "estimated1rm": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              }
+                            },
+                            "required": [
+                              "weightKg",
+                              "repsAtBestWeight",
+                              "estimated1rm"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "originalTargets": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "repsMin": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "repsMax": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "repsMin",
+                                "repsMax",
+                                "weightKg",
+                                "rir"
+                              ],
+                              "additionalProperties": false
+                            },
                             "nullable": true
                           },
                           "sets": {
@@ -16243,6 +17203,9 @@
                           "targets",
                           "prefill",
                           "lastPerformance",
+                          "recommendation",
+                          "priorBest",
+                          "originalTargets",
                           "sets"
                         ],
                         "additionalProperties": false
@@ -17005,6 +17968,7 @@
                                 "weightSource": {
                                   "type": "string",
                                   "enum": [
+                                    "recommendation",
                                     "last-session",
                                     "plan",
                                     "none"
@@ -17075,6 +18039,138 @@
                               "sets"
                             ],
                             "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "recommendation": {
+                            "type": "object",
+                            "properties": {
+                              "action": {
+                                "type": "string",
+                                "enum": [
+                                  "increase-load",
+                                  "add-reps",
+                                  "hold",
+                                  "reduce-load",
+                                  "deload",
+                                  "establish-baseline"
+                                ]
+                              },
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repTarget": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "targetRir": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "reason": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "calculated",
+                                  "logged"
+                                ]
+                              },
+                              "sessionsConsidered": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 3
+                              }
+                            },
+                            "required": [
+                              "action",
+                              "weightKg",
+                              "repTarget",
+                              "targetRir",
+                              "reason",
+                              "basis",
+                              "sessionsConsidered"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "priorBest": {
+                            "type": "object",
+                            "properties": {
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repsAtBestWeight": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "nullable": true
+                              },
+                              "estimated1rm": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              }
+                            },
+                            "required": [
+                              "weightKg",
+                              "repsAtBestWeight",
+                              "estimated1rm"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "originalTargets": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "repsMin": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "repsMax": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "repsMin",
+                                "repsMax",
+                                "weightKg",
+                                "rir"
+                              ],
+                              "additionalProperties": false
+                            },
                             "nullable": true
                           },
                           "sets": {
@@ -17167,6 +18263,9 @@
                           "targets",
                           "prefill",
                           "lastPerformance",
+                          "recommendation",
+                          "priorBest",
+                          "originalTargets",
                           "sets"
                         ],
                         "additionalProperties": false
@@ -17889,6 +18988,7 @@
                                 "weightSource": {
                                   "type": "string",
                                   "enum": [
+                                    "recommendation",
                                     "last-session",
                                     "plan",
                                     "none"
@@ -17959,6 +19059,138 @@
                               "sets"
                             ],
                             "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "recommendation": {
+                            "type": "object",
+                            "properties": {
+                              "action": {
+                                "type": "string",
+                                "enum": [
+                                  "increase-load",
+                                  "add-reps",
+                                  "hold",
+                                  "reduce-load",
+                                  "deload",
+                                  "establish-baseline"
+                                ]
+                              },
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repTarget": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "targetRir": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "reason": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "calculated",
+                                  "logged"
+                                ]
+                              },
+                              "sessionsConsidered": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 3
+                              }
+                            },
+                            "required": [
+                              "action",
+                              "weightKg",
+                              "repTarget",
+                              "targetRir",
+                              "reason",
+                              "basis",
+                              "sessionsConsidered"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "priorBest": {
+                            "type": "object",
+                            "properties": {
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repsAtBestWeight": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "nullable": true
+                              },
+                              "estimated1rm": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              }
+                            },
+                            "required": [
+                              "weightKg",
+                              "repsAtBestWeight",
+                              "estimated1rm"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "originalTargets": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "repsMin": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "repsMax": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "repsMin",
+                                "repsMax",
+                                "weightKg",
+                                "rir"
+                              ],
+                              "additionalProperties": false
+                            },
                             "nullable": true
                           },
                           "sets": {
@@ -18051,6 +19283,9 @@
                           "targets",
                           "prefill",
                           "lastPerformance",
+                          "recommendation",
+                          "priorBest",
+                          "originalTargets",
                           "sets"
                         ],
                         "additionalProperties": false
@@ -18803,6 +20038,7 @@
                                 "weightSource": {
                                   "type": "string",
                                   "enum": [
+                                    "recommendation",
                                     "last-session",
                                     "plan",
                                     "none"
@@ -18873,6 +20109,138 @@
                               "sets"
                             ],
                             "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "recommendation": {
+                            "type": "object",
+                            "properties": {
+                              "action": {
+                                "type": "string",
+                                "enum": [
+                                  "increase-load",
+                                  "add-reps",
+                                  "hold",
+                                  "reduce-load",
+                                  "deload",
+                                  "establish-baseline"
+                                ]
+                              },
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repTarget": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "targetRir": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "reason": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "calculated",
+                                  "logged"
+                                ]
+                              },
+                              "sessionsConsidered": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 3
+                              }
+                            },
+                            "required": [
+                              "action",
+                              "weightKg",
+                              "repTarget",
+                              "targetRir",
+                              "reason",
+                              "basis",
+                              "sessionsConsidered"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "priorBest": {
+                            "type": "object",
+                            "properties": {
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repsAtBestWeight": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "nullable": true
+                              },
+                              "estimated1rm": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              }
+                            },
+                            "required": [
+                              "weightKg",
+                              "repsAtBestWeight",
+                              "estimated1rm"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "originalTargets": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "repsMin": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "repsMax": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "repsMin",
+                                "repsMax",
+                                "weightKg",
+                                "rir"
+                              ],
+                              "additionalProperties": false
+                            },
                             "nullable": true
                           },
                           "sets": {
@@ -18965,6 +20333,9 @@
                           "targets",
                           "prefill",
                           "lastPerformance",
+                          "recommendation",
+                          "priorBest",
+                          "originalTargets",
                           "sets"
                         ],
                         "additionalProperties": false
@@ -19720,6 +21091,7 @@
                                 "weightSource": {
                                   "type": "string",
                                   "enum": [
+                                    "recommendation",
                                     "last-session",
                                     "plan",
                                     "none"
@@ -19790,6 +21162,138 @@
                               "sets"
                             ],
                             "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "recommendation": {
+                            "type": "object",
+                            "properties": {
+                              "action": {
+                                "type": "string",
+                                "enum": [
+                                  "increase-load",
+                                  "add-reps",
+                                  "hold",
+                                  "reduce-load",
+                                  "deload",
+                                  "establish-baseline"
+                                ]
+                              },
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repTarget": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "targetRir": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "reason": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "calculated",
+                                  "logged"
+                                ]
+                              },
+                              "sessionsConsidered": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 3
+                              }
+                            },
+                            "required": [
+                              "action",
+                              "weightKg",
+                              "repTarget",
+                              "targetRir",
+                              "reason",
+                              "basis",
+                              "sessionsConsidered"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "priorBest": {
+                            "type": "object",
+                            "properties": {
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repsAtBestWeight": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "nullable": true
+                              },
+                              "estimated1rm": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              }
+                            },
+                            "required": [
+                              "weightKg",
+                              "repsAtBestWeight",
+                              "estimated1rm"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "originalTargets": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "repsMin": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "repsMax": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "repsMin",
+                                "repsMax",
+                                "weightKg",
+                                "rir"
+                              ],
+                              "additionalProperties": false
+                            },
                             "nullable": true
                           },
                           "sets": {
@@ -19882,6 +21386,9 @@
                           "targets",
                           "prefill",
                           "lastPerformance",
+                          "recommendation",
+                          "priorBest",
+                          "originalTargets",
                           "sets"
                         ],
                         "additionalProperties": false
@@ -20621,6 +22128,7 @@
                                 "weightSource": {
                                   "type": "string",
                                   "enum": [
+                                    "recommendation",
                                     "last-session",
                                     "plan",
                                     "none"
@@ -20691,6 +22199,138 @@
                               "sets"
                             ],
                             "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "recommendation": {
+                            "type": "object",
+                            "properties": {
+                              "action": {
+                                "type": "string",
+                                "enum": [
+                                  "increase-load",
+                                  "add-reps",
+                                  "hold",
+                                  "reduce-load",
+                                  "deload",
+                                  "establish-baseline"
+                                ]
+                              },
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repTarget": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "targetRir": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "reason": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "calculated",
+                                  "logged"
+                                ]
+                              },
+                              "sessionsConsidered": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 3
+                              }
+                            },
+                            "required": [
+                              "action",
+                              "weightKg",
+                              "repTarget",
+                              "targetRir",
+                              "reason",
+                              "basis",
+                              "sessionsConsidered"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "priorBest": {
+                            "type": "object",
+                            "properties": {
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repsAtBestWeight": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "nullable": true
+                              },
+                              "estimated1rm": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              }
+                            },
+                            "required": [
+                              "weightKg",
+                              "repsAtBestWeight",
+                              "estimated1rm"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "originalTargets": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "repsMin": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "repsMax": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "repsMin",
+                                "repsMax",
+                                "weightKg",
+                                "rir"
+                              ],
+                              "additionalProperties": false
+                            },
                             "nullable": true
                           },
                           "sets": {
@@ -20783,6 +22423,9 @@
                           "targets",
                           "prefill",
                           "lastPerformance",
+                          "recommendation",
+                          "priorBest",
+                          "originalTargets",
                           "sets"
                         ],
                         "additionalProperties": false
@@ -20950,6 +22593,1593 @@
                     "notes",
                     "exercises",
                     "summary"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/training/volume": {
+      "get": {
+        "summary": "Weekly hard sets per muscle vs the §12.3 landmarks (current + 3 ISO weeks), neglect, deload state",
+        "tags": [
+          "workout"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "weeks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "isoWeek": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-W\\d{2}$"
+                          },
+                          "muscles": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "muscle": {
+                                  "type": "string",
+                                  "enum": [
+                                    "chest",
+                                    "back",
+                                    "quads",
+                                    "hamstrings",
+                                    "glutes",
+                                    "shoulders",
+                                    "biceps",
+                                    "triceps",
+                                    "calves",
+                                    "abs"
+                                  ]
+                                },
+                                "hardSets": {
+                                  "type": "number",
+                                  "minimum": 0
+                                },
+                                "tonnageKg": {
+                                  "type": "number",
+                                  "minimum": 0
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "none",
+                                    "below-mv",
+                                    "below-mev",
+                                    "mev-to-mav",
+                                    "above-mav",
+                                    "at-mrv"
+                                  ]
+                                },
+                                "landmarks": {
+                                  "type": "object",
+                                  "properties": {
+                                    "mv": {
+                                      "type": "number"
+                                    },
+                                    "mev": {
+                                      "type": "number"
+                                    },
+                                    "mavLow": {
+                                      "type": "number"
+                                    },
+                                    "mavHigh": {
+                                      "type": "number"
+                                    },
+                                    "mrv": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": [
+                                    "mv",
+                                    "mev",
+                                    "mavLow",
+                                    "mavHigh",
+                                    "mrv"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "owned": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "muscle",
+                                "hardSets",
+                                "tonnageKg",
+                                "status",
+                                "landmarks",
+                                "owned"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "isoWeek",
+                          "muscles"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "owned": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "chest",
+                          "back",
+                          "quads",
+                          "hamstrings",
+                          "glutes",
+                          "shoulders",
+                          "biceps",
+                          "triceps",
+                          "calves",
+                          "abs"
+                        ]
+                      }
+                    },
+                    "neglected": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "muscle": {
+                            "type": "string",
+                            "enum": [
+                              "chest",
+                              "back",
+                              "quads",
+                              "hamstrings",
+                              "glutes",
+                              "shoulders",
+                              "biceps",
+                              "triceps",
+                              "calves",
+                              "abs"
+                            ]
+                          },
+                          "daysSince": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "muscle",
+                          "daysSince"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "mesocycleWeek": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "nullable": true
+                    },
+                    "deload": {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "offered",
+                            "active"
+                          ]
+                        },
+                        "trigger": {
+                          "type": "string",
+                          "enum": [
+                            "fatigue",
+                            "mrv"
+                          ],
+                          "nullable": true
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "endsOn": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "state",
+                        "trigger",
+                        "reason",
+                        "endsOn"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "weeks",
+                    "owned",
+                    "neglected",
+                    "mesocycleWeek",
+                    "deload"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/training/progression/{exerciseId}": {
+      "get": {
+        "summary": "One lift: its last three sessions and the progression recommendation with its reason",
+        "tags": [
+          "workout"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "exerciseId",
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "exerciseId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "target": {
+                      "type": "object",
+                      "properties": {
+                        "repMin": {
+                          "type": "integer"
+                        },
+                        "repMax": {
+                          "type": "integer"
+                        },
+                        "targetRir": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 5
+                        },
+                        "sets": {
+                          "type": "integer"
+                        },
+                        "incrementKg": {
+                          "type": "number",
+                          "exclusiveMinimum": true,
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "repMin",
+                        "repMax",
+                        "targetRir",
+                        "sets",
+                        "incrementKg"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
+                    "recommendation": {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "enum": [
+                            "increase-load",
+                            "add-reps",
+                            "hold",
+                            "reduce-load",
+                            "deload",
+                            "establish-baseline"
+                          ]
+                        },
+                        "weightKg": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 500,
+                          "nullable": true
+                        },
+                        "repTarget": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "targetRir": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 5
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "basis": {
+                          "type": "string",
+                          "enum": [
+                            "calculated",
+                            "logged"
+                          ]
+                        },
+                        "sessionsConsidered": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 3
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "weightKg",
+                        "repTarget",
+                        "targetRir",
+                        "reason",
+                        "basis",
+                        "sessionsConsidered"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "history": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "sessionId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "date": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                          },
+                          "sets": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "reps": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5,
+                                  "nullable": true
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "weightKg",
+                                "reps",
+                                "rir"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "sessionId",
+                          "date",
+                          "sets"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "exerciseId",
+                    "name",
+                    "target",
+                    "recommendation",
+                    "history"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/training/deload/accept": {
+      "post": {
+        "summary": "Accept the offered deload week (never applied without this)",
+        "tags": [
+          "workout"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "offered",
+                        "active"
+                      ]
+                    },
+                    "trigger": {
+                      "type": "string",
+                      "enum": [
+                        "fatigue",
+                        "mrv"
+                      ],
+                      "nullable": true
+                    },
+                    "reason": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "endsOn": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "trigger",
+                    "reason",
+                    "endsOn"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/training/deload/decline": {
+      "post": {
+        "summary": "Decline the offered deload week; not offered again for seven days",
+        "tags": [
+          "workout"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "offered",
+                        "active"
+                      ]
+                    },
+                    "trigger": {
+                      "type": "string",
+                      "enum": [
+                        "fatigue",
+                        "mrv"
+                      ],
+                      "nullable": true
+                    },
+                    "reason": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "endsOn": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "trigger",
+                    "reason",
+                    "endsOn"
                   ],
                   "additionalProperties": false
                 }
@@ -21498,6 +24728,7 @@
                                 "weightSource": {
                                   "type": "string",
                                   "enum": [
+                                    "recommendation",
                                     "last-session",
                                     "plan",
                                     "none"
@@ -21568,6 +24799,138 @@
                               "sets"
                             ],
                             "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "recommendation": {
+                            "type": "object",
+                            "properties": {
+                              "action": {
+                                "type": "string",
+                                "enum": [
+                                  "increase-load",
+                                  "add-reps",
+                                  "hold",
+                                  "reduce-load",
+                                  "deload",
+                                  "establish-baseline"
+                                ]
+                              },
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repTarget": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "targetRir": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                              },
+                              "reason": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "calculated",
+                                  "logged"
+                                ]
+                              },
+                              "sessionsConsidered": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 3
+                              }
+                            },
+                            "required": [
+                              "action",
+                              "weightKg",
+                              "repTarget",
+                              "targetRir",
+                              "reason",
+                              "basis",
+                              "sessionsConsidered"
+                            ],
+                            "additionalProperties": false,
+                            "nullable": true
+                          },
+                          "priorBest": {
+                            "type": "object",
+                            "properties": {
+                              "weightKg": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 500,
+                                "nullable": true
+                              },
+                              "repsAtBestWeight": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 100,
+                                "nullable": true
+                              },
+                              "estimated1rm": {
+                                "type": "number",
+                                "minimum": 0,
+                                "nullable": true
+                              }
+                            },
+                            "required": [
+                              "weightKg",
+                              "repsAtBestWeight",
+                              "estimated1rm"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "originalTargets": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "repsMin": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "repsMax": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "repsMin",
+                                "repsMax",
+                                "weightKg",
+                                "rir"
+                              ],
+                              "additionalProperties": false
+                            },
                             "nullable": true
                           },
                           "sets": {
@@ -21660,6 +25023,9 @@
                           "targets",
                           "prefill",
                           "lastPerformance",
+                          "recommendation",
+                          "priorBest",
+                          "originalTargets",
                           "sets"
                         ],
                         "additionalProperties": false

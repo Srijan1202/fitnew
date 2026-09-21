@@ -15,6 +15,7 @@
     "db:migrate": "tsx --env-file-if-exists=.env src/db/migrate.ts up",
     "db:rollback": "tsx --env-file-if-exists=.env src/db/migrate.ts down",
     "db:seed": "tsx --env-file-if-exists=.env src/db/seed.ts",
+    "db:rebuild-volume": "tsx --env-file-if-exists=.env src/db/rebuild-volume.ts",
     "openapi:export": "pnpm run deps:build && tsx src/scripts/export-openapi.ts"
   },
   "dependencies": {

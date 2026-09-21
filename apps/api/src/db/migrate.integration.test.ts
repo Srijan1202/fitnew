@@ -69,7 +69,8 @@ describeIfDb('migrations (real Postgres)', () => {
   ];
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
   const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
-  const TOTAL_MIGRATIONS = 7;
+  const PHASE6_TABLES = ['muscle_volume_weekly', 'exercise_rejections'];
+  const TOTAL_MIGRATIONS = 8;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -278,6 +279,24 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'mig-log'`;
   });
 
+  it('0007: volume cache keyed per user/week/muscle, rejections, programme deload columns', async () => {
+    for (const t of PHASE6_TABLES) expect(await tableExists(client, t), t).toBe(true);
+    const cols = await client<{ column_name: string }[]>`
+      select column_name from information_schema.columns where table_name = 'programs'`;
+    for (const c of ['deload_started_at', 'deload_snoozed_until', 'mesocycle_reset_at']) {
+      expect(cols.map((x) => x.column_name)).toContain(c);
+    }
+    await client`insert into users (firebase_uid) values ('mig-vol')`;
+    const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-vol'`;
+    await client`insert into muscle_volume_weekly (user_id, iso_week, muscle_group, hard_sets, tonnage_kg) values (${u!.id}, '2026-W39', 'chest', 12.5, 3400)`;
+    // Same key twice is refused: one row per user, week and muscle.
+    await expect(
+      client`insert into muscle_volume_weekly (user_id, iso_week, muscle_group, hard_sets, tonnage_kg) values (${u!.id}, '2026-W39', 'chest', 1, 1)`,
+    ).rejects.toThrow(/muscle_volume_weekly/);
+    await client`delete from users where firebase_uid = 'mig-vol'`;
+    expect((await client`select 1 from muscle_volume_weekly where user_id = ${u!.id}`).length).toBe(0);
+  });
+
   it('one active goal per user is a database fact', async () => {
     await client`insert into users (firebase_uid) values ('mig-goal')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-goal'`;
@@ -332,7 +351,14 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'uid-dup'`;
   });
 
-  it('down removes 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+  it('down removes 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0007_progression_volume');
+    for (const t of PHASE6_TABLES) expect(await tableExists(client, t), t).toBe(false);
+    const pcols = await client<{ column_name: string }[]>`
+      select column_name from information_schema.columns where table_name = 'programs'`;
+    expect(pcols.map((c) => c.column_name)).not.toContain('deload_started_at');
+    expect(await appliedCount(client)).toBe(7);
+
     expect(await rollbackLastMigration(connectionString)).toBe('0006_workout_logging');
     for (const t of PHASE5_TABLES) expect(await tableExists(client, t), t).toBe(false);
     const types6 = await client<{ typname: string }[]>`select typname from pg_type where typtype = 'e'`;
@@ -388,6 +414,7 @@ describeIfDb('migrations (real Postgres)', () => {
     for (const t of PHASE4_TABLES) expect(await tableExists(client, t), t).toBe(true);
     expect(await tableExists(client, 'planned_sets')).toBe(true);
     for (const t of PHASE5_TABLES) expect(await tableExists(client, t), t).toBe(true);
+    for (const t of PHASE6_TABLES) expect(await tableExists(client, t), t).toBe(true);
     expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
   });
 });

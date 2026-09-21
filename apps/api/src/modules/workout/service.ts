@@ -6,8 +6,10 @@
  */
 import { randomUUID } from 'node:crypto';
 
-import { mesocycleWeekFrom } from '@fitos/core/training/mesocycle';
+import { isoWeekKey } from '@fitos/core/training/mesocycle';
 import { prefillSet } from '@fitos/core/training/prefill';
+import { recommendProgression, type SessionLog } from '@fitos/core/training/progression';
+import type { BodyPart } from '@fitos/core/training/generator';
 import { detectPRs, type LoggedSet, type PriorSession } from '@fitos/core/training/records';
 import { summarizeSession } from '@fitos/core/training/session-summary';
 import type {
@@ -20,6 +22,10 @@ import type {
   PatchSetRequest,
   PersonalRecord,
   PlannedSet,
+  ProgressionDetail,
+  ProgressionRecommendation,
+  DeloadState,
+  VolumeResponse,
   SessionExercise,
   SetPrefill,
   SessionListQuery,
@@ -31,7 +37,8 @@ import type {
 } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
-import type { ProgramBundle, TrainingRepository } from '../training/repository.js';
+import type { PlannedExerciseJoined, ProgramBundle, TrainingRepository } from '../training/repository.js';
+import { ProgressionAssembler } from './progression.js';
 import {
   UniqueViolation,
   type NewSetLog,
@@ -72,10 +79,10 @@ function lastPerformanceOf(prior: readonly PriorWork[], exerciseId: string): Las
 }
 
 /** The numbers a set row opens with: core's rule, one entry per target. */
-function prefillFor(targets: readonly PlannedSet[], last: LastPerformance | null): SetPrefill[] {
+function prefillFor(targets: readonly PlannedSet[], last: LastPerformance | null, recommendation: ProgressionRecommendation | null = null): SetPrefill[] {
   const lastSets = (last?.sets ?? []).map((s) => ({ id: String(s.setIndex), setType: 'working' as const, weightKg: s.weightKg, reps: s.reps, rir: s.rir }));
   return targets.map((t) => {
-    const p = prefillSet({ planned: t, lastPerformance: lastSets });
+    const p = prefillSet({ planned: t, lastPerformance: lastSets, recommendation });
     return { setIndex: p.setIndex, reps: p.reps, weightKg: p.weightKg, rir: p.rir, weightSource: p.weightSource };
   });
 }
@@ -90,17 +97,62 @@ function targetsFor(program: ProgramBundle | null, plannedExerciseId: string | n
 /* ------------------------------------------------------------ service -- */
 
 export class WorkoutService {
+  private readonly progression: ProgressionAssembler;
+
   constructor(
     private readonly repo: WorkoutRepository,
     private readonly training: TrainingRepository,
-  ) {}
+  ) {
+    this.progression = new ProgressionAssembler(repo, training);
+  }
+
+  /**
+   * Phase 6, per planned exercise: the engine's recommendation from the
+   * lift's history, the prior best (for the PR moment), and — during an
+   * accepted deload week — lighter targets with the plan's originals kept.
+   */
+  private static plannedView(
+    program: ProgramBundle | null,
+    plannedExerciseId: string | null,
+    exerciseId: string,
+    prior: readonly PriorWork[],
+    tz: string,
+    deloadActive: boolean,
+  ): { targets: PlannedSet[]; originalTargets: PlannedSet[] | null; recommendation: ProgressionRecommendation | null; prefill: SetPrefill[] } {
+    const original = targetsFor(program, plannedExerciseId);
+    const last = lastPerformanceOf(prior, exerciseId);
+    const planned: PlannedExerciseJoined | undefined = program?.exercises.find((x) => x.id === plannedExerciseId);
+    if (planned === undefined) return { targets: original, originalTargets: null, recommendation: null, prefill: prefillFor(original, last) };
+    const window = ProgressionAssembler.deloadWindow(program);
+    const recommendation = ProgressionAssembler.recommendation(ProgressionAssembler.toSessionLogs(prior, exerciseId, tz, window), planned);
+    if (deloadActive) {
+      // Owner 12.4: × 0.9 of what was last lifted — not of a recommendation that may already be a reduction.
+      const lastLoad = last?.sets.map((s) => s.weightKg ?? 0).reduce((a, b) => Math.max(a, b), 0) ?? null;
+      const targets = ProgressionAssembler.deloaded(original, lastLoad === 0 || lastLoad === null ? null : lastLoad);
+      const deloadRec: ProgressionRecommendation = {
+        ...recommendation,
+        action: 'deload',
+        weightKg: targets[0]?.weightKg ?? null,
+        targetRir: targets[0]?.rir ?? recommendation.targetRir,
+        reason: 'Deload week: sets × 0.6, load × 0.9, two more reps in reserve than usual. The block restarts at week 1 when it ends.',
+      };
+      return { targets, originalTargets: original, recommendation: deloadRec, prefill: prefillFor(targets, last, deloadRec) };
+    }
+    return { targets: original, originalTargets: null, recommendation, prefill: prefillFor(original, last, recommendation) };
+  }
 
   /* ------------------------------------------------------ rows → wire -- */
 
   private async toWire(userId: string, b: SessionBundle): Promise<WorkoutSession> {
     const program = b.session.programId !== null ? await this.training.programById(userId, b.session.programId) : null;
     const prior = await this.repo.priorWork(userId, [...new Set(b.exercises.map((x) => x.exerciseId))], b.session.id);
-    const exercises: SessionExercise[] = b.exercises.map((x) => ({
+    const tz = await this.repo.userTimezone(userId);
+    const window = ProgressionAssembler.deloadWindow(program);
+    // The session's own start decides whether it is a deload session.
+    const deloadActive = window !== null && b.session.startedAt >= window.startedAt && b.session.startedAt < window.endsAt;
+    const exercises: SessionExercise[] = b.exercises.map((x) => {
+      const view = WorkoutService.plannedView(program, x.plannedExerciseId, x.exerciseId, prior, tz, deloadActive);
+      return {
       id: x.id,
       clientExerciseId: x.clientExerciseId,
       exerciseId: x.exerciseId,
@@ -115,9 +167,12 @@ export class WorkoutService {
       orderIndex: x.orderIndex,
       supersetGroup: x.supersetGroup,
       plannedExerciseId: x.plannedExerciseId,
-      targets: targetsFor(program, x.plannedExerciseId),
-      prefill: prefillFor(targetsFor(program, x.plannedExerciseId), lastPerformanceOf(prior, x.exerciseId)),
+      targets: view.targets,
+      prefill: view.prefill,
       lastPerformance: lastPerformanceOf(prior, x.exerciseId),
+      recommendation: view.recommendation,
+      priorBest: ProgressionAssembler.priorBest(prior, x.exerciseId),
+      originalTargets: view.originalTargets,
       sets: b.sets
         .filter((s) => s.sessionExerciseId === x.id)
         .map((s) => ({
@@ -132,7 +187,8 @@ export class WorkoutService {
           loggedAt: s.loggedAt.toISOString(),
           plannedSetId: s.plannedSetId,
         })),
-    }));
+      };
+    });
     return {
       id: b.session.id,
       clientSessionId: b.session.clientSessionId,
@@ -345,6 +401,10 @@ export class WorkoutService {
       ...(patch.exerciseId !== undefined ? { exerciseId: patch.exerciseId } : {}),
       ...(patch.removed === true ? { removed: true } : {}),
     });
+    // §12.6: dropping (or swapping away) a PLANNED lift is a rejection; twice and a substitute is offered.
+    if ((patch.removed === true || (patch.exerciseId !== undefined && patch.exerciseId !== x.exerciseId)) && x.plannedExerciseId !== null) {
+      await this.repo.recordRejection(userId, x.exerciseId);
+    }
     if (patch.orderIndex !== undefined) {
       const others = b.exercises.filter((e) => e.id !== exerciseId).map((e) => e.id);
       const at = Math.min(patch.orderIndex, others.length);
@@ -386,11 +446,21 @@ export class WorkoutService {
     }
     await this.repo.recordPrs(userId, completedAt, prRows);
 
-    // Mesocycle week (owner 8.2): distinct ISO weeks trained, in the user's calendar, capped at 8.
+    const tz = await this.repo.userTimezone(userId);
+    // Volume cache (§9.4) for the week this session lands in.
+    const completedOn = localDate(completedAt, tz);
+    await this.progression.cacheWeek(userId, isoWeekKey(completedOn), await this.progression.volumeSets(userId, completedOn, tz));
+    // Mesocycle week (owner 8.2 + 12.4): distinct ISO weeks trained since the last reset, capped at 8;
+    // a deload week that has run its course closes here and the block restarts at week 1.
     if (b.session.programId !== null) {
-      const tz = await this.repo.userTimezone(userId);
-      const dates = (await this.repo.completedAtOfProgram(b.session.programId)).map((d) => localDate(d, tz));
-      await this.repo.setMesocycleWeek(b.session.programId, mesocycleWeekFrom(dates));
+      const program = await this.training.programById(userId, b.session.programId);
+      if (program !== null) {
+        const closed = await this.progression.closeElapsedDeload(program, completedAt);
+        if (!closed) {
+          const fresh = (await this.training.programById(userId, b.session.programId))!;
+          await this.repo.setMesocycleWeek(b.session.programId, await this.progression.mesocycleWeek(fresh, tz));
+        }
+      }
     }
     return this.get(userId, id);
   }
@@ -451,6 +521,18 @@ export class WorkoutService {
     const completedToday = (await this.repo.list(userId, { limit: 20, status: 'completed' })).find(
       (s) => s.completedAt !== null && localDate(s.completedAt, tz) === date,
     );
+    // Phase 6: deload state, neglect, substitutions.
+    const volumeSets = await this.progression.volumeSets(userId, date, tz);
+    const leadPrior = program === null ? prior : await this.repo.priorWork(userId, [...new Set(program.exercises.map((x) => x.exerciseId))]);
+    const deload = await this.progression.deloadState(program, leadPrior, volumeSets, date, tz);
+    const owned = ProgressionAssembler.owned(program);
+    const { profile, limitations } = await this.training.profileInputs(userId);
+    const substitutions = await this.progression.substitutions(
+      userId,
+      planned,
+      profile?.equipment ?? [],
+      limitations as BodyPart[],
+    );
     return {
       date,
       dayOfWeek: dow,
@@ -471,12 +553,89 @@ export class WorkoutService {
         secondaryMuscles: x.secondaryMuscles,
         orderIndex: x.orderIndex,
         incrementKg: Number(x.incrementKg),
-        targets: targetsFor(program, x.id),
-        prefill: prefillFor(targetsFor(program, x.id), lastPerformanceOf(prior, x.exerciseId)),
+        ...(() => {
+          const view = WorkoutService.plannedView(program, x.id, x.exerciseId, prior, tz, deload.state === 'active');
+          return {
+            targets: view.targets,
+            prefill: view.prefill,
+            recommendation: view.recommendation,
+            originalTargets: view.originalTargets,
+          };
+        })(),
         lastPerformance: lastPerformanceOf(prior, x.exerciseId),
+        priorBest: ProgressionAssembler.priorBest(prior, x.exerciseId),
+        substitution: substitutions.get(x.id) ?? null,
       })),
       activeSession: active === null ? null : await this.toWire(userId, active),
       completedSessionId: completedToday?.id ?? null,
+      mesocycleWeek: program?.program.mesocycleWeek ?? null,
+      deload,
+      neglected: this.progression.neglected(volumeSets, owned, date),
     };
   }
+
+  /* ---------------------------------------------- Phase 6 endpoints -- */
+
+  async volume(userId: string): Promise<VolumeResponse> {
+    const tz = await this.repo.userTimezone(userId);
+    const today = localDate(new Date(), tz);
+    const program = await this.training.activeProgram(userId);
+    const prior = program === null ? [] : await this.repo.priorWork(userId, [...new Set(program.exercises.map((x) => x.exerciseId))]);
+    return this.progression.volume(userId, program, prior, today, tz);
+  }
+
+  async progressionDetail(userId: string, exerciseId: string): Promise<ProgressionDetail> {
+    const tz = await this.repo.userTimezone(userId);
+    const program = await this.training.activeProgram(userId);
+    const planned = program?.exercises.find((x) => x.exerciseId === exerciseId) ?? null;
+    const prior = await this.repo.priorWork(userId, [exerciseId]);
+    const window = ProgressionAssembler.deloadWindow(program);
+    const history = ProgressionAssembler.toSessionLogs(prior, exerciseId, tz, window);
+    const name = planned?.name ?? (await this.training.exercisesById([exerciseId])).get(exerciseId)?.name;
+    if (name === undefined) throw new AppError('NOT_FOUND', 'Unknown exercise.');
+    const target = planned === null
+      ? null
+      : { repMin: planned.repMin, repMax: planned.repMax, targetRir: planned.targetRir, sets: planned.setCount, incrementKg: Number(planned.incrementKg) };
+    const recommendation = planned === null
+      ? { ...recommendProgressionFallback(history), basis: 'calculated' as const, sessionsConsidered: history.length }
+      : ProgressionAssembler.recommendation(history, planned);
+    return {
+      exerciseId,
+      name,
+      target,
+      recommendation,
+      history: prior
+        .filter((p) => p.exerciseId === exerciseId)
+        .slice(0, 3)
+        .map((p) => ({ sessionId: p.sessionId, date: localDate(p.completedAt, tz), sets: p.sets.map((s) => ({ setIndex: s.setIndex, weightKg: num(s.weightKg), reps: s.reps, rir: s.rir })) })),
+    };
+  }
+
+  async acceptDeload(userId: string): Promise<DeloadState> {
+    const program = await this.training.activeProgram(userId);
+    if (program === null) throw new AppError('NOT_FOUND', 'No active programme.');
+    const tz = await this.repo.userTimezone(userId);
+    const today = localDate(new Date(), tz);
+    const prior = await this.repo.priorWork(userId, [...new Set(program.exercises.map((x) => x.exerciseId))]);
+    const state = await this.progression.deloadState(program, prior, await this.progression.volumeSets(userId, today, tz), today, tz);
+    if (state.state === 'active') return state;
+    if (state.state !== 'offered') {
+      throw new AppError('CONFLICT', 'No deload is on offer.', [{ path: 'deload', issue: state.state }]);
+    }
+    await this.progression.acceptDeload(program, new Date());
+    return (await this.today(userId)).deload;
+  }
+
+  async declineDeload(userId: string): Promise<DeloadState> {
+    const program = await this.training.activeProgram(userId);
+    if (program === null) throw new AppError('NOT_FOUND', 'No active programme.');
+    const tz = await this.repo.userTimezone(userId);
+    await this.progression.declineDeload(program, localDate(new Date(), tz));
+    return (await this.today(userId)).deload;
+  }
+}
+
+/** An ad-hoc lift with no plan row: the engine still answers, against a neutral 8–12 target. */
+function recommendProgressionFallback(history: SessionLog[]) {
+  return recommendProgression({ history, target: { repMin: 8, repMax: 12, targetRir: 2, sets: 3, incrementKg: 2.5 } });
 }

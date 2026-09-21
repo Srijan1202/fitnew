@@ -7,13 +7,16 @@
  * so a replayed request (offline queue, §33) is a no-op rather than a
  * read-then-write race.
  */
-import { and, asc, desc, eq, inArray, isNull, lt, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNull, lt, sql } from 'drizzle-orm';
 import type { Equipment, MuscleGroup, SessionStatus, SetType } from '@fitos/contracts';
 
 import type { DatabaseHandle } from '../../db/client.js';
 import {
+  exerciseAlternatives,
   exercisePrs,
+  exerciseRejections,
   exercises,
+  muscleVolumeWeekly,
   programs,
   sessionExercises,
   setLogs,
@@ -200,7 +203,7 @@ export class WorkoutRepository {
         status: workoutSessions.status,
         name: workoutSessions.name,
         startedAt: workoutSessions.startedAt,
-        completedAt: workoutSessions.completedAt,
+        completedAt: sql<Date>`${workoutSessions.completedAt}`.mapWith((v: string | Date) => (v instanceof Date ? v : new Date(v))),
         durationSeconds: workoutSessions.durationSeconds,
         // Raw table names: drizzle leaves a single-table select's columns
         // unqualified, and "id" is ambiguous inside these joined subqueries.
@@ -228,7 +231,7 @@ export class WorkoutRepository {
     const rows = await this.db
       .select({
         sessionId: workoutSessions.id,
-        completedAt: workoutSessions.completedAt,
+        completedAt: sql<Date>`${workoutSessions.completedAt}`.mapWith((v: string | Date) => (v instanceof Date ? v : new Date(v))),
         exerciseId: sessionExercises.exerciseId,
         set: setLogs,
       })
@@ -378,6 +381,99 @@ export class WorkoutRepository {
         .onConflictDoNothing({ target: [exercisePrs.setLogId, exercisePrs.prType] });
       await tx.update(setLogs).set({ isPr: true }).where(inArray(setLogs.id, [...new Set(rows.map((r) => r.setLogId))]));
     });
+  }
+
+  /* ------------------------------------------------------- Phase 6 -- */
+
+  /**
+   * Every working set of every completed session on or after `from`, with
+   * the exercise's muscles — the volume engine's input.
+   */
+  async volumeSets(userId: string, from: Date): Promise<
+    { completedAt: Date; exerciseId: string; primaryMuscles: MuscleGroup[]; secondaryMuscles: MuscleGroup[]; weightKg: string | null; reps: number; setType: SetType }[]
+  > {
+    return this.db
+      .select({
+        completedAt: sql<Date>`${workoutSessions.completedAt}`.mapWith((v: string | Date) => (v instanceof Date ? v : new Date(v))),
+        exerciseId: sessionExercises.exerciseId,
+        primaryMuscles: musclesOf('primary'),
+        secondaryMuscles: musclesOf('secondary'),
+        weightKg: setLogs.weightKg,
+        reps: setLogs.reps,
+        setType: setLogs.setType,
+      })
+      .from(setLogs)
+      .innerJoin(sessionExercises, eq(sessionExercises.id, setLogs.sessionExerciseId))
+      .innerJoin(workoutSessions, eq(workoutSessions.id, sessionExercises.sessionId))
+      .innerJoin(exercises, eq(exercises.id, sessionExercises.exerciseId))
+      .where(
+        and(
+          eq(workoutSessions.userId, userId),
+          eq(workoutSessions.status, 'completed'),
+          isNull(workoutSessions.deletedAt),
+          isNull(sessionExercises.removedAt),
+          isNull(setLogs.deletedAt),
+          eq(setLogs.setType, 'working'),
+          gte(workoutSessions.completedAt, from),
+        ),
+      );
+  }
+
+  /** Replace the cached week for a user (§9.4: rebuildable, so a full rewrite is fine). */
+  async upsertWeeklyVolume(
+    userId: string,
+    isoWeek: string,
+    rows: readonly { muscleGroup: MuscleGroup; hardSets: number; tonnageKg: number }[],
+  ): Promise<void> {
+    await this.db.transaction(async (tx) => {
+      await tx.delete(muscleVolumeWeekly).where(and(eq(muscleVolumeWeekly.userId, userId), eq(muscleVolumeWeekly.isoWeek, isoWeek)));
+      if (rows.length > 0) {
+        await tx.insert(muscleVolumeWeekly).values(
+          rows.map((r) => ({ userId, isoWeek, muscleGroup: r.muscleGroup, hardSets: r.hardSets.toFixed(1), tonnageKg: r.tonnageKg.toFixed(1) })),
+        );
+      }
+    });
+  }
+
+  async cachedWeek(userId: string, isoWeek: string): Promise<{ muscleGroup: MuscleGroup; hardSets: string; tonnageKg: string }[]> {
+    return this.db
+      .select({ muscleGroup: muscleVolumeWeekly.muscleGroup, hardSets: muscleVolumeWeekly.hardSets, tonnageKg: muscleVolumeWeekly.tonnageKg })
+      .from(muscleVolumeWeekly)
+      .where(and(eq(muscleVolumeWeekly.userId, userId), eq(muscleVolumeWeekly.isoWeek, isoWeek)));
+  }
+
+  /** Rejections per exercise id (§12.6 "rejected twice"). */
+  async rejectionCounts(userId: string, exerciseIds: readonly string[]): Promise<Map<string, number>> {
+    if (exerciseIds.length === 0) return new Map();
+    const rows = await this.db
+      .select({ exerciseId: exerciseRejections.exerciseId, n: sql<number>`count(*)::int` })
+      .from(exerciseRejections)
+      .where(and(eq(exerciseRejections.userId, userId), inArray(exerciseRejections.exerciseId, [...exerciseIds])))
+      .groupBy(exerciseRejections.exerciseId);
+    return new Map(rows.map((r) => [r.exerciseId, r.n]));
+  }
+
+  async recordRejection(userId: string, exerciseId: string): Promise<void> {
+    await this.db.insert(exerciseRejections).values({ userId, exerciseId });
+  }
+
+  /** The library's alternatives for a set of exercises, with their catalogue rows. */
+  async alternativesFor(exerciseIds: readonly string[]): Promise<Map<string, string[]>> {
+    if (exerciseIds.length === 0) return new Map();
+    const rows = await this.db
+      .select({ exerciseId: exerciseAlternatives.exerciseId, alternativeId: exerciseAlternatives.alternativeId })
+      .from(exerciseAlternatives)
+      .where(inArray(exerciseAlternatives.exerciseId, [...exerciseIds]));
+    const out = new Map<string, string[]>();
+    for (const r of rows) (out.get(r.exerciseId) ?? out.set(r.exerciseId, []).get(r.exerciseId)!).push(r.alternativeId);
+    return out;
+  }
+
+  async setDeload(
+    programId: string,
+    patch: { deloadStartedAt?: Date | null; deloadSnoozedUntil?: string | null; mesocycleResetAt?: Date | null; mesocycleWeek?: number },
+  ): Promise<void> {
+    await this.db.update(programs).set({ ...patch, updatedAt: sql`now()` }).where(eq(programs.id, programId));
   }
 
   async setMesocycleWeek(programId: string, week: number): Promise<void> {

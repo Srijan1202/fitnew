@@ -269,8 +269,10 @@ describeIfDb('/v1/training/sessions (real Postgres, real seed)', () => {
     expect(s2.exercises[0]!.lastPerformance!.sessionId).toBe(s1.id);
     expect(s2.exercises[0]!.lastPerformance!.sets[0]).toMatchObject({ weightKg: 60, reps: 10 });
     expect(s2.exercises[0]!.lastPerformance!.sets.some((t) => t.setIndex === 9)).toBe(false);
-    // The rows open with last time's weight and the plan's target reps.
-    expect(s2.exercises[0]!.prefill[0]).toEqual({ setIndex: 1, reps: 12, weightKg: 60, rir: 1, weightSource: 'last-session' });
+    // The rows open with last time's weight and the plan's target reps — since
+    // Phase 6 the source is the engine's recommendation (add-reps at 60 kg).
+    expect(s2.exercises[0]!.prefill[0]).toEqual({ setIndex: 1, reps: 12, weightKg: 60, rir: 1, weightSource: 'recommendation' });
+    expect(s2.exercises[0]!.recommendation).toMatchObject({ action: 'add-reps', weightKg: 60 });
     expect(s1.exercises[0]!.prefill[0]).toEqual({ setIndex: 1, reps: 12, weightKg: null, rir: 1, weightSource: 'none' });
     await logFirst(token, s2, 65, 10);
     const done2: WorkoutSession = (await complete(token, s2.id)).json();

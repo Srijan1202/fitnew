@@ -75,10 +75,24 @@ describe('workout contracts (Phase 5)', () => {
         id: uuid(12), clientExerciseId: uuid(13), exerciseId: uuid(14), slug: 'barbell-bench-press', name: 'Bench',
         movementPattern: 'horizontal-push', equipment: ['barbell'], difficulty: 'intermediate',
         primaryMuscles: ['chest'], secondaryMuscles: ['triceps'], incrementKg: 2.5, orderIndex: 0, supersetGroup: null,
-        plannedExerciseId: null, targets: [], prefill: [], lastPerformance: null,
+        plannedExerciseId: null, targets: [], prefill: [], lastPerformance: null, recommendation: null, priorBest: { weightKg: null, repsAtBestWeight: null, estimated1rm: null }, originalTargets: null,
         sets: [{ id: uuid(15), clientSetId: uuid(16), setIndex: 1, setType: 'working', weightKg: 60, reps: 10, rir: 2, isPr: false, loggedAt: at, plannedSetId: null }],
       }],
     };
     expect(workoutSessionSchema.safeParse(session).success).toBe(true);
+  });
+});
+
+describe('Phase 6 contracts', () => {
+  it('every recommendation, substitution and deload state carries a non-empty reason', async () => {
+    const m = await import('./workout.js');
+    const rec = { action: 'increase-load', weightKg: 62.5, repTarget: '6–12', targetRir: 1, reason: '', basis: 'calculated', sessionsConsidered: 3 };
+    expect(m.progressionRecommendationSchema.safeParse(rec).success).toBe(false);
+    expect(m.progressionRecommendationSchema.safeParse({ ...rec, reason: 'r' }).success).toBe(true);
+    expect(m.substitutionSchema.safeParse({ trigger: 'equipment', alternative: null, reason: '' }).success).toBe(false);
+    expect(m.deloadStateSchema.safeParse({ state: 'none', trigger: null, reason: '', endsOn: null }).success).toBe(false);
+    expect(m.deloadStateSchema.safeParse({ state: 'active', trigger: 'fatigue', reason: 'r', endsOn: '2026-09-28' }).success).toBe(true);
+    expect(m.PROGRESSION_ACTIONS).toEqual(['increase-load', 'add-reps', 'hold', 'reduce-load', 'deload', 'establish-baseline']);
+    expect(m.LANDMARK_STATUSES).toEqual(['none', 'below-mv', 'below-mev', 'mev-to-mav', 'above-mav', 'at-mrv']);
   });
 });
