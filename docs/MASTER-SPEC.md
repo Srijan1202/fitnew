@@ -182,7 +182,7 @@ WCAG AA contrast (verified for all token pairs on `--paper`). Minimum 44×44 tap
 | Charts | **fl_chart** | Customisable enough for the design language | syncfusion (licence) |
 | Camera | **camera** + **image_picker** | Photo logging (V2) | — |
 | Notifications | **firebase_messaging** + **flutter_local_notifications** | Push + local rest timers | — |
-| Health | **health** package | Health Connect (Android) / HealthKit (iOS) | Platform channels |
+| Health | **Platform channel** over `androidx.health.connect:connect-client` (Phase 6.5, ADR-008) behind a `HealthDataProvider` abstraction | Read-only, aggregate queries, on-device; HealthKit later as a second provider | `health` package (raw-record reads, bulk permissions, lags the platform API) |
 | Analytics | **firebase_analytics** | Free, adequate | PostHog |
 | Crash | **firebase_crashlytics** | Free | Sentry |
 
@@ -831,7 +831,7 @@ readiness = 100
 
 `DECISION` — recovery **never silently changes the plan**. It surfaces a recommendation the user accepts or declines. Silent modification destroys trust in the programme.
 
-**V2:** Health Connect / HealthKit via the `health` package — steps, sleep, resting HR, HRV. `UNVERIFIED` — HRV field availability differs across Android OEMs; treat as directional, never clinical.
+**Phase 6.5 (shipped as context, not recovery science):** Health Connect on Android, read-only, on-device — steps, distance, active/total calories, exercise sessions, sleep, resting HR, weight, body fat, BMR — shown on Home with explicit availability and freshness; sleep < 6 h yields an advisory line, never a score (ADR-008, ADR-009). HRV is not read. **V2:** HealthKit as a second provider. `UNVERIFIED` — HRV field availability differs across Android OEMs; treat as directional, never clinical.
 
 ---
 
@@ -1118,6 +1118,7 @@ fitos/
 | Weight trend (EWMA) | NO | **YES** | NO |
 | Adaptive calorie adjustment | NO | **YES** | NO |
 | Progressive overload | NO | **YES** | NO |
+| Home suggestion ordering over server numbers + device-only health data (Phase 6.5, ADR-009) | **YES** (`lib/features/home/domain`, pure, tested) | Phase 11 engine for the full `UserModel` | NO |
 | Deload detection | NO | **YES** | NO |
 | Volume computation | NO | **YES** | Cache table |
 | Program generation | NO | **YES** | NO |
@@ -1229,6 +1230,18 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 **Tests:** the six progression branches (already covered) · volume with secondary contribution · MEV/MAV/MRV boundaries · neglect at exactly 6 days · PR detection for each `pr_type`.
 **Acceptance:** target loads appear on `GET /training/today` with reasons · volume matches a hand calculation · deload fires only on the three-condition rule.
 **Manual:** log three declining sessions; confirm a deload is offered, not a load increase.
+
+---
+
+### PHASE 6.5 — Health Connect + Home redesign
+
+**Prereq:** 6. Inserted by the owner 2026-09-22; decisions D1–D6 in ADR-008 / ADR-009.
+**Tasks:** Health Connect read-only through an in-app channel behind `HealthDataProvider`; normalized `HealthSnapshot` with an availability per metric; permission flow by category (Activity / Recovery / Body) with a rationale; foreground refresh + honest on-device cache; deterministic `HomeSuggestionEngine` (12 rules, §16.1 bands) over server numbers + the snapshot; Home redesign (next-move carousel, today metrics, recovery, body, this week, training-volume entry, More for you); floating translucent bottom bar; Health Data screen.
+**DB:** none (health data never leaves the device). **APIs:** none.
+**UI:** Home, Health Data (`/profile/health`), the floating bar.
+**Tests:** provider normalization for every metric and availability, local day / night / week boundaries in two zones, no double counting across sources, cache round trip · engine: every rule, exclusions, thresholds, deterministic order, surfaces · Home widget states: no Health Connect, not connected, partial, all, no food, no sleep, active, completed, revoked-then-refresh · floating bar geometry and shell navigation · all Phase 0–6 tests unchanged.
+**Acceptance:** Home loads without Health Connect · a metric is never a fake 0 · aggregate never summed from raw records · a revoked permission shows as denied on the next foreground read · the carousel follows the session state · nothing health-related reaches the API, Gemini, analytics or crash logs.
+**Manual:** the 27-point checklist in `docs/phase-reports/phase-6.5.md` on a device with Health Connect and at least one data source.
 
 ---
 
@@ -1472,7 +1485,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 | Export / delete | 17 | ✓ | ✓ | ✓ | ✓ | — | — | ✓ |
 | Barcode | V1.5 | ✓ | ✓ | ✓ | ✓ | OFF | — | ✓ |
 | Photo food logging | V2 | ✓ | ✓ | ✓ | ✓ | Gemini | ✓ draft | ✓ |
-| Health Connect | V2 | ✓ | ✓ | ✓ | ✓ | Platform | — | ✓ |
+| Health Connect (read, on-device) | **6.5** | ✓ | ✓ | — | — | Platform | — | — |
 
 ---
 
@@ -1566,6 +1579,8 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 **Phase 5** — [ ] session tables · [ ] idempotent set logging · [ ] drift schema · [ ] sync queue · [ ] optimistic UI · [ ] rest timer · [ ] supersets/drop sets · [ ] **offline test passes** · [ ] <3s logging verified
 
 **Phase 6** — [ ] progression wired · [ ] **volume engine built** · [ ] landmarks · [ ] neglect detection · [ ] deload trigger · [ ] PR detection · [ ] heatmap UI
+
+**Phase 6.5** — [x] Health Connect channel + provider abstraction · [x] availability model · [x] permission flow by category · [x] foreground refresh + honest cache · [x] suggestion engine · [x] Home redesign · [x] floating bar · [x] Health Data screen · [ ] **manual acceptance (27 points) on a device**
 
 **Phase 7** — [ ] licensing confirmed · [ ] food tables with ranges · [ ] 500 foods seeded · [ ] trigram search · [ ] aliases · [ ] custom foods
 
