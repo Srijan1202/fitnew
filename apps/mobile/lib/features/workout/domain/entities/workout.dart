@@ -99,6 +99,23 @@ abstract class LastPerformance with _$LastPerformance {
       _$LastPerformanceFromJson(json);
 }
 
+/// What a set row opens with (core's rule, computed by the server): the
+/// plan's target reps, last time's weight when there is one, the plan's
+/// RIR. A description of the past and the plan, never a recommendation.
+@freezed
+abstract class SetPrefill with _$SetPrefill {
+  const factory SetPrefill({
+    required int setIndex,
+    required int reps,
+    required double? weightKg,
+    required int rir,
+    required String weightSource,
+  }) = _SetPrefill;
+
+  factory SetPrefill.fromJson(Map<String, dynamic> json) =>
+      _$SetPrefillFromJson(json);
+}
+
 @freezed
 abstract class SessionExercise with _$SessionExercise {
   const SessionExercise._();
@@ -119,6 +136,7 @@ abstract class SessionExercise with _$SessionExercise {
     required int? supersetGroup,
     required String? plannedExerciseId,
     required List<PlannedSet> targets,
+    @Default(<SetPrefill>[]) List<SetPrefill> prefill,
     required LastPerformance? lastPerformance,
     required List<SetLog> sets,
   }) = _SessionExercise;
@@ -244,6 +262,7 @@ abstract class TodayExercise with _$TodayExercise {
     required int orderIndex,
     required double incrementKg,
     required List<PlannedSet> targets,
+    @Default(<SetPrefill>[]) List<SetPrefill> prefill,
     required LastPerformance? lastPerformance,
   }) = _TodayExercise;
 

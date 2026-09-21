@@ -21,6 +21,9 @@ import '../../features/training/presentation/screens/plan_start_screen.dart';
 import '../../features/training/presentation/screens/template_library_screen.dart';
 import '../../features/training/presentation/screens/template_preview_screen.dart';
 import '../../features/training/presentation/screens/workout_week_screen.dart';
+import '../../features/workout/presentation/screens/active_session_screen.dart';
+import '../../features/workout/presentation/screens/history_screen.dart';
+import '../../features/workout/presentation/screens/session_summary_screen.dart';
 import 'app_shell.dart';
 import 'guards.dart';
 
@@ -59,6 +62,14 @@ abstract final class Routes {
   static String planTemplate(String slug) => '/plan/templates/$slug';
   static const String planCustom = '/plan/custom';
   static String planDayEdit(String dayId) => '/plan/days/$dayId/edit';
+
+  // Workout logging (Phase 5). Sessions are addressed by CLIENT id.
+  static String session(String clientSessionId) =>
+      '/plan/session/$clientSessionId';
+  static String sessionSummary(String clientSessionId) =>
+      '/plan/session/$clientSessionId/summary';
+  static const String history = '/plan/history';
+  static String historyDetail(String serverId) => '/plan/history/$serverId';
 
   /// Screens a signed-out user may see. Everything else needs a session.
   static const Set<String> authRoutes = {signIn, signUp, forgotPassword};
@@ -190,6 +201,41 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
                     parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) =>
                         DayEditorScreen(dayId: state.pathParameters['dayId']!),
+                  ),
+                  GoRoute(
+                    path: 'session/:clientSessionId',
+                    name: 'session',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => ActiveSessionScreen(
+                      clientSessionId: state.pathParameters['clientSessionId']!,
+                    ),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: 'summary',
+                        name: 'session-summary',
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (context, state) => SessionSummaryScreen(
+                          clientSessionId:
+                              state.pathParameters['clientSessionId']!,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'history',
+                    name: 'history',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const HistoryScreen(),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: ':serverId',
+                        name: 'history-detail',
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (context, state) => HistoryDetailScreen(
+                          serverId: state.pathParameters['serverId']!,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

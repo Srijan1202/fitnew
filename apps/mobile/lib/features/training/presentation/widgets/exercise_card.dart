@@ -22,6 +22,8 @@ class ExerciseCard extends ConsumerWidget {
     required this.onSetChanged,
     required this.onReplace,
     required this.onRemove,
+    this.onAddSet,
+    this.onRemoveSet,
     super.key,
   });
 
@@ -34,6 +36,11 @@ class ExerciseCard extends ConsumerWidget {
   final void Function(int setIndex, PlannedSet set) onSetChanged;
   final VoidCallback onReplace;
   final VoidCallback onRemove;
+
+  /// Set-count editing (Phase 5 carry-over): another set below the last,
+  /// or one fewer. Null where the count is fixed.
+  final VoidCallback? onAddSet;
+  final ValueChanged<int>? onRemoveSet;
 
   static String _kg(double v) =>
       v == v.roundToDouble() ? v.toInt().toString() : v.toString();
@@ -131,6 +138,35 @@ class ExerciseCard extends ConsumerWidget {
                     incrementKg: x.incrementKg,
                     enabled: enabled,
                     onChanged: (next) => onSetChanged(set.setIndex, next),
+                    trailing: onRemoveSet == null || x.sets.length <= 1
+                        ? null
+                        : InkWell(
+                            key:
+                                ValueKey('$cardKey.set.${set.setIndex}.remove'),
+                            onTap: enabled
+                                ? () => onRemoveSet!(set.setIndex)
+                                : null,
+                            borderRadius:
+                                const BorderRadius.all(FitRadius.medium),
+                            child: const SizedBox(
+                              width: 32,
+                              height: 44,
+                              child: Icon(
+                                Icons.close,
+                                size: 16,
+                                color: FitColors.ink35,
+                              ),
+                            ),
+                          ),
+                  ),
+                if (onAddSet != null)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                      key: ValueKey('$cardKey.addSet'),
+                      onPressed: enabled ? onAddSet : null,
+                      child: const Text('+ Add set'),
+                    ),
                   ),
                 const SizedBox(height: FitSpacing.md),
                 _Instructions(exerciseId: x.exerciseId),

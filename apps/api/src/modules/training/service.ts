@@ -66,6 +66,7 @@ function dayFrom(bundle: ProgramBundle, dayId: string): ProgramDay {
         .filter((s) => s.plannedExerciseId === x.id)
         .map(
           (s): PlannedSet => ({
+            id: s.id,
             setIndex: s.setIndex,
             repsMin: s.repsMin,
             repsMax: s.repsMax,

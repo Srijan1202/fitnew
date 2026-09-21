@@ -3,7 +3,7 @@ name: ci-mobile
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'phase-*']
   pull_request:
   workflow_dispatch:
 

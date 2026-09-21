@@ -1248,6 +1248,388 @@ class __$LastPerformanceCopyWithImpl<$Res>
 }
 
 /// @nodoc
+mixin _$SetPrefill {
+  int get setIndex;
+  int get reps;
+  double? get weightKg;
+  int get rir;
+  String get weightSource;
+
+  /// Create a copy of SetPrefill
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $SetPrefillCopyWith<SetPrefill> get copyWith =>
+      _$SetPrefillCopyWithImpl<SetPrefill>(this as SetPrefill, _$identity);
+
+  /// Serializes this SetPrefill to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is SetPrefill &&
+            (identical(other.setIndex, setIndex) ||
+                other.setIndex == setIndex) &&
+            (identical(other.reps, reps) || other.reps == reps) &&
+            (identical(other.weightKg, weightKg) ||
+                other.weightKg == weightKg) &&
+            (identical(other.rir, rir) || other.rir == rir) &&
+            (identical(other.weightSource, weightSource) ||
+                other.weightSource == weightSource));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, setIndex, reps, weightKg, rir, weightSource);
+
+  @override
+  String toString() {
+    return 'SetPrefill(setIndex: $setIndex, reps: $reps, weightKg: $weightKg, rir: $rir, weightSource: $weightSource)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $SetPrefillCopyWith<$Res> {
+  factory $SetPrefillCopyWith(
+          SetPrefill value, $Res Function(SetPrefill) _then) =
+      _$SetPrefillCopyWithImpl;
+  @useResult
+  $Res call(
+      {int setIndex, int reps, double? weightKg, int rir, String weightSource});
+}
+
+/// @nodoc
+class _$SetPrefillCopyWithImpl<$Res> implements $SetPrefillCopyWith<$Res> {
+  _$SetPrefillCopyWithImpl(this._self, this._then);
+
+  final SetPrefill _self;
+  final $Res Function(SetPrefill) _then;
+
+  /// Create a copy of SetPrefill
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? setIndex = null,
+    Object? reps = null,
+    Object? weightKg = freezed,
+    Object? rir = null,
+    Object? weightSource = null,
+  }) {
+    return _then(_self.copyWith(
+      setIndex: null == setIndex
+          ? _self.setIndex
+          : setIndex // ignore: cast_nullable_to_non_nullable
+              as int,
+      reps: null == reps
+          ? _self.reps
+          : reps // ignore: cast_nullable_to_non_nullable
+              as int,
+      weightKg: freezed == weightKg
+          ? _self.weightKg
+          : weightKg // ignore: cast_nullable_to_non_nullable
+              as double?,
+      rir: null == rir
+          ? _self.rir
+          : rir // ignore: cast_nullable_to_non_nullable
+              as int,
+      weightSource: null == weightSource
+          ? _self.weightSource
+          : weightSource // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [SetPrefill].
+extension SetPrefillPatterns on SetPrefill {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_SetPrefill value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _SetPrefill() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_SetPrefill value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SetPrefill():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_SetPrefill value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SetPrefill() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(int setIndex, int reps, double? weightKg, int rir,
+            String weightSource)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _SetPrefill() when $default != null:
+        return $default(_that.setIndex, _that.reps, _that.weightKg, _that.rir,
+            _that.weightSource);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(int setIndex, int reps, double? weightKg, int rir,
+            String weightSource)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SetPrefill():
+        return $default(_that.setIndex, _that.reps, _that.weightKg, _that.rir,
+            _that.weightSource);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(int setIndex, int reps, double? weightKg, int rir,
+            String weightSource)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SetPrefill() when $default != null:
+        return $default(_that.setIndex, _that.reps, _that.weightKg, _that.rir,
+            _that.weightSource);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _SetPrefill implements SetPrefill {
+  const _SetPrefill(
+      {required this.setIndex,
+      required this.reps,
+      required this.weightKg,
+      required this.rir,
+      required this.weightSource});
+  factory _SetPrefill.fromJson(Map<String, dynamic> json) =>
+      _$SetPrefillFromJson(json);
+
+  @override
+  final int setIndex;
+  @override
+  final int reps;
+  @override
+  final double? weightKg;
+  @override
+  final int rir;
+  @override
+  final String weightSource;
+
+  /// Create a copy of SetPrefill
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$SetPrefillCopyWith<_SetPrefill> get copyWith =>
+      __$SetPrefillCopyWithImpl<_SetPrefill>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$SetPrefillToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _SetPrefill &&
+            (identical(other.setIndex, setIndex) ||
+                other.setIndex == setIndex) &&
+            (identical(other.reps, reps) || other.reps == reps) &&
+            (identical(other.weightKg, weightKg) ||
+                other.weightKg == weightKg) &&
+            (identical(other.rir, rir) || other.rir == rir) &&
+            (identical(other.weightSource, weightSource) ||
+                other.weightSource == weightSource));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, setIndex, reps, weightKg, rir, weightSource);
+
+  @override
+  String toString() {
+    return 'SetPrefill(setIndex: $setIndex, reps: $reps, weightKg: $weightKg, rir: $rir, weightSource: $weightSource)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$SetPrefillCopyWith<$Res>
+    implements $SetPrefillCopyWith<$Res> {
+  factory _$SetPrefillCopyWith(
+          _SetPrefill value, $Res Function(_SetPrefill) _then) =
+      __$SetPrefillCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {int setIndex, int reps, double? weightKg, int rir, String weightSource});
+}
+
+/// @nodoc
+class __$SetPrefillCopyWithImpl<$Res> implements _$SetPrefillCopyWith<$Res> {
+  __$SetPrefillCopyWithImpl(this._self, this._then);
+
+  final _SetPrefill _self;
+  final $Res Function(_SetPrefill) _then;
+
+  /// Create a copy of SetPrefill
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? setIndex = null,
+    Object? reps = null,
+    Object? weightKg = freezed,
+    Object? rir = null,
+    Object? weightSource = null,
+  }) {
+    return _then(_SetPrefill(
+      setIndex: null == setIndex
+          ? _self.setIndex
+          : setIndex // ignore: cast_nullable_to_non_nullable
+              as int,
+      reps: null == reps
+          ? _self.reps
+          : reps // ignore: cast_nullable_to_non_nullable
+              as int,
+      weightKg: freezed == weightKg
+          ? _self.weightKg
+          : weightKg // ignore: cast_nullable_to_non_nullable
+              as double?,
+      rir: null == rir
+          ? _self.rir
+          : rir // ignore: cast_nullable_to_non_nullable
+              as int,
+      weightSource: null == weightSource
+          ? _self.weightSource
+          : weightSource // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
 mixin _$SessionExercise {
   String get id;
   String get clientExerciseId;
@@ -1264,6 +1646,7 @@ mixin _$SessionExercise {
   int? get supersetGroup;
   String? get plannedExerciseId;
   List<PlannedSet> get targets;
+  List<SetPrefill> get prefill;
   LastPerformance? get lastPerformance;
   List<SetLog> get sets;
 
@@ -1308,6 +1691,7 @@ mixin _$SessionExercise {
             (identical(other.plannedExerciseId, plannedExerciseId) ||
                 other.plannedExerciseId == plannedExerciseId) &&
             const DeepCollectionEquality().equals(other.targets, targets) &&
+            const DeepCollectionEquality().equals(other.prefill, prefill) &&
             (identical(other.lastPerformance, lastPerformance) ||
                 other.lastPerformance == lastPerformance) &&
             const DeepCollectionEquality().equals(other.sets, sets));
@@ -1332,12 +1716,13 @@ mixin _$SessionExercise {
       supersetGroup,
       plannedExerciseId,
       const DeepCollectionEquality().hash(targets),
+      const DeepCollectionEquality().hash(prefill),
       lastPerformance,
       const DeepCollectionEquality().hash(sets));
 
   @override
   String toString() {
-    return 'SessionExercise(id: $id, clientExerciseId: $clientExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, incrementKg: $incrementKg, orderIndex: $orderIndex, supersetGroup: $supersetGroup, plannedExerciseId: $plannedExerciseId, targets: $targets, lastPerformance: $lastPerformance, sets: $sets)';
+    return 'SessionExercise(id: $id, clientExerciseId: $clientExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, incrementKg: $incrementKg, orderIndex: $orderIndex, supersetGroup: $supersetGroup, plannedExerciseId: $plannedExerciseId, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance, sets: $sets)';
   }
 }
 
@@ -1363,6 +1748,7 @@ abstract mixin class $SessionExerciseCopyWith<$Res> {
       int? supersetGroup,
       String? plannedExerciseId,
       List<PlannedSet> targets,
+      List<SetPrefill> prefill,
       LastPerformance? lastPerformance,
       List<SetLog> sets});
 
@@ -1397,6 +1783,7 @@ class _$SessionExerciseCopyWithImpl<$Res>
     Object? supersetGroup = freezed,
     Object? plannedExerciseId = freezed,
     Object? targets = null,
+    Object? prefill = null,
     Object? lastPerformance = freezed,
     Object? sets = null,
   }) {
@@ -1461,6 +1848,10 @@ class _$SessionExerciseCopyWithImpl<$Res>
           ? _self.targets
           : targets // ignore: cast_nullable_to_non_nullable
               as List<PlannedSet>,
+      prefill: null == prefill
+          ? _self.prefill
+          : prefill // ignore: cast_nullable_to_non_nullable
+              as List<SetPrefill>,
       lastPerformance: freezed == lastPerformance
           ? _self.lastPerformance
           : lastPerformance // ignore: cast_nullable_to_non_nullable
@@ -1596,6 +1987,7 @@ extension SessionExercisePatterns on SessionExercise {
             int? supersetGroup,
             String? plannedExerciseId,
             List<PlannedSet> targets,
+            List<SetPrefill> prefill,
             LastPerformance? lastPerformance,
             List<SetLog> sets)?
         $default, {
@@ -1620,6 +2012,7 @@ extension SessionExercisePatterns on SessionExercise {
             _that.supersetGroup,
             _that.plannedExerciseId,
             _that.targets,
+            _that.prefill,
             _that.lastPerformance,
             _that.sets);
       case _:
@@ -1658,6 +2051,7 @@ extension SessionExercisePatterns on SessionExercise {
             int? supersetGroup,
             String? plannedExerciseId,
             List<PlannedSet> targets,
+            List<SetPrefill> prefill,
             LastPerformance? lastPerformance,
             List<SetLog> sets)
         $default,
@@ -1681,6 +2075,7 @@ extension SessionExercisePatterns on SessionExercise {
             _that.supersetGroup,
             _that.plannedExerciseId,
             _that.targets,
+            _that.prefill,
             _that.lastPerformance,
             _that.sets);
       case _:
@@ -1718,6 +2113,7 @@ extension SessionExercisePatterns on SessionExercise {
             int? supersetGroup,
             String? plannedExerciseId,
             List<PlannedSet> targets,
+            List<SetPrefill> prefill,
             LastPerformance? lastPerformance,
             List<SetLog> sets)?
         $default,
@@ -1741,6 +2137,7 @@ extension SessionExercisePatterns on SessionExercise {
             _that.supersetGroup,
             _that.plannedExerciseId,
             _that.targets,
+            _that.prefill,
             _that.lastPerformance,
             _that.sets);
       case _:
@@ -1768,12 +2165,14 @@ class _SessionExercise extends SessionExercise {
       required this.supersetGroup,
       required this.plannedExerciseId,
       required final List<PlannedSet> targets,
+      final List<SetPrefill> prefill = const <SetPrefill>[],
       required this.lastPerformance,
       required final List<SetLog> sets})
       : _equipment = equipment,
         _primaryMuscles = primaryMuscles,
         _secondaryMuscles = secondaryMuscles,
         _targets = targets,
+        _prefill = prefill,
         _sets = sets,
         super._();
   factory _SessionExercise.fromJson(Map<String, dynamic> json) =>
@@ -1834,6 +2233,15 @@ class _SessionExercise extends SessionExercise {
     return EqualUnmodifiableListView(_targets);
   }
 
+  final List<SetPrefill> _prefill;
+  @override
+  @JsonKey()
+  List<SetPrefill> get prefill {
+    if (_prefill is EqualUnmodifiableListView) return _prefill;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_prefill);
+  }
+
   @override
   final LastPerformance? lastPerformance;
   final List<SetLog> _sets;
@@ -1890,6 +2298,7 @@ class _SessionExercise extends SessionExercise {
             (identical(other.plannedExerciseId, plannedExerciseId) ||
                 other.plannedExerciseId == plannedExerciseId) &&
             const DeepCollectionEquality().equals(other._targets, _targets) &&
+            const DeepCollectionEquality().equals(other._prefill, _prefill) &&
             (identical(other.lastPerformance, lastPerformance) ||
                 other.lastPerformance == lastPerformance) &&
             const DeepCollectionEquality().equals(other._sets, _sets));
@@ -1914,12 +2323,13 @@ class _SessionExercise extends SessionExercise {
       supersetGroup,
       plannedExerciseId,
       const DeepCollectionEquality().hash(_targets),
+      const DeepCollectionEquality().hash(_prefill),
       lastPerformance,
       const DeepCollectionEquality().hash(_sets));
 
   @override
   String toString() {
-    return 'SessionExercise(id: $id, clientExerciseId: $clientExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, incrementKg: $incrementKg, orderIndex: $orderIndex, supersetGroup: $supersetGroup, plannedExerciseId: $plannedExerciseId, targets: $targets, lastPerformance: $lastPerformance, sets: $sets)';
+    return 'SessionExercise(id: $id, clientExerciseId: $clientExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, incrementKg: $incrementKg, orderIndex: $orderIndex, supersetGroup: $supersetGroup, plannedExerciseId: $plannedExerciseId, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance, sets: $sets)';
   }
 }
 
@@ -1947,6 +2357,7 @@ abstract mixin class _$SessionExerciseCopyWith<$Res>
       int? supersetGroup,
       String? plannedExerciseId,
       List<PlannedSet> targets,
+      List<SetPrefill> prefill,
       LastPerformance? lastPerformance,
       List<SetLog> sets});
 
@@ -1982,6 +2393,7 @@ class __$SessionExerciseCopyWithImpl<$Res>
     Object? supersetGroup = freezed,
     Object? plannedExerciseId = freezed,
     Object? targets = null,
+    Object? prefill = null,
     Object? lastPerformance = freezed,
     Object? sets = null,
   }) {
@@ -2046,6 +2458,10 @@ class __$SessionExerciseCopyWithImpl<$Res>
           ? _self._targets
           : targets // ignore: cast_nullable_to_non_nullable
               as List<PlannedSet>,
+      prefill: null == prefill
+          ? _self._prefill
+          : prefill // ignore: cast_nullable_to_non_nullable
+              as List<SetPrefill>,
       lastPerformance: freezed == lastPerformance
           ? _self.lastPerformance
           : lastPerformance // ignore: cast_nullable_to_non_nullable
@@ -4594,6 +5010,7 @@ mixin _$TodayExercise {
   int get orderIndex;
   double get incrementKg;
   List<PlannedSet> get targets;
+  List<SetPrefill> get prefill;
   LastPerformance? get lastPerformance;
 
   /// Create a copy of TodayExercise
@@ -4632,6 +5049,7 @@ mixin _$TodayExercise {
             (identical(other.incrementKg, incrementKg) ||
                 other.incrementKg == incrementKg) &&
             const DeepCollectionEquality().equals(other.targets, targets) &&
+            const DeepCollectionEquality().equals(other.prefill, prefill) &&
             (identical(other.lastPerformance, lastPerformance) ||
                 other.lastPerformance == lastPerformance));
   }
@@ -4652,11 +5070,12 @@ mixin _$TodayExercise {
       orderIndex,
       incrementKg,
       const DeepCollectionEquality().hash(targets),
+      const DeepCollectionEquality().hash(prefill),
       lastPerformance);
 
   @override
   String toString() {
-    return 'TodayExercise(plannedExerciseId: $plannedExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, orderIndex: $orderIndex, incrementKg: $incrementKg, targets: $targets, lastPerformance: $lastPerformance)';
+    return 'TodayExercise(plannedExerciseId: $plannedExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, orderIndex: $orderIndex, incrementKg: $incrementKg, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance)';
   }
 }
 
@@ -4679,6 +5098,7 @@ abstract mixin class $TodayExerciseCopyWith<$Res> {
       int orderIndex,
       double incrementKg,
       List<PlannedSet> targets,
+      List<SetPrefill> prefill,
       LastPerformance? lastPerformance});
 
   $LastPerformanceCopyWith<$Res>? get lastPerformance;
@@ -4709,6 +5129,7 @@ class _$TodayExerciseCopyWithImpl<$Res>
     Object? orderIndex = null,
     Object? incrementKg = null,
     Object? targets = null,
+    Object? prefill = null,
     Object? lastPerformance = freezed,
   }) {
     return _then(_self.copyWith(
@@ -4760,6 +5181,10 @@ class _$TodayExerciseCopyWithImpl<$Res>
           ? _self.targets
           : targets // ignore: cast_nullable_to_non_nullable
               as List<PlannedSet>,
+      prefill: null == prefill
+          ? _self.prefill
+          : prefill // ignore: cast_nullable_to_non_nullable
+              as List<SetPrefill>,
       lastPerformance: freezed == lastPerformance
           ? _self.lastPerformance
           : lastPerformance // ignore: cast_nullable_to_non_nullable
@@ -4888,6 +5313,7 @@ extension TodayExercisePatterns on TodayExercise {
             int orderIndex,
             double incrementKg,
             List<PlannedSet> targets,
+            List<SetPrefill> prefill,
             LastPerformance? lastPerformance)?
         $default, {
     required TResult orElse(),
@@ -4908,6 +5334,7 @@ extension TodayExercisePatterns on TodayExercise {
             _that.orderIndex,
             _that.incrementKg,
             _that.targets,
+            _that.prefill,
             _that.lastPerformance);
       case _:
         return orElse();
@@ -4942,6 +5369,7 @@ extension TodayExercisePatterns on TodayExercise {
             int orderIndex,
             double incrementKg,
             List<PlannedSet> targets,
+            List<SetPrefill> prefill,
             LastPerformance? lastPerformance)
         $default,
   ) {
@@ -4961,6 +5389,7 @@ extension TodayExercisePatterns on TodayExercise {
             _that.orderIndex,
             _that.incrementKg,
             _that.targets,
+            _that.prefill,
             _that.lastPerformance);
       case _:
         throw StateError('Unexpected subclass');
@@ -4994,6 +5423,7 @@ extension TodayExercisePatterns on TodayExercise {
             int orderIndex,
             double incrementKg,
             List<PlannedSet> targets,
+            List<SetPrefill> prefill,
             LastPerformance? lastPerformance)?
         $default,
   ) {
@@ -5013,6 +5443,7 @@ extension TodayExercisePatterns on TodayExercise {
             _that.orderIndex,
             _that.incrementKg,
             _that.targets,
+            _that.prefill,
             _that.lastPerformance);
       case _:
         return null;
@@ -5036,11 +5467,13 @@ class _TodayExercise implements TodayExercise {
       required this.orderIndex,
       required this.incrementKg,
       required final List<PlannedSet> targets,
+      final List<SetPrefill> prefill = const <SetPrefill>[],
       required this.lastPerformance})
       : _equipment = equipment,
         _primaryMuscles = primaryMuscles,
         _secondaryMuscles = secondaryMuscles,
-        _targets = targets;
+        _targets = targets,
+        _prefill = prefill;
   factory _TodayExercise.fromJson(Map<String, dynamic> json) =>
       _$TodayExerciseFromJson(json);
 
@@ -5093,6 +5526,15 @@ class _TodayExercise implements TodayExercise {
     return EqualUnmodifiableListView(_targets);
   }
 
+  final List<SetPrefill> _prefill;
+  @override
+  @JsonKey()
+  List<SetPrefill> get prefill {
+    if (_prefill is EqualUnmodifiableListView) return _prefill;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_prefill);
+  }
+
   @override
   final LastPerformance? lastPerformance;
 
@@ -5137,6 +5579,7 @@ class _TodayExercise implements TodayExercise {
             (identical(other.incrementKg, incrementKg) ||
                 other.incrementKg == incrementKg) &&
             const DeepCollectionEquality().equals(other._targets, _targets) &&
+            const DeepCollectionEquality().equals(other._prefill, _prefill) &&
             (identical(other.lastPerformance, lastPerformance) ||
                 other.lastPerformance == lastPerformance));
   }
@@ -5157,11 +5600,12 @@ class _TodayExercise implements TodayExercise {
       orderIndex,
       incrementKg,
       const DeepCollectionEquality().hash(_targets),
+      const DeepCollectionEquality().hash(_prefill),
       lastPerformance);
 
   @override
   String toString() {
-    return 'TodayExercise(plannedExerciseId: $plannedExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, orderIndex: $orderIndex, incrementKg: $incrementKg, targets: $targets, lastPerformance: $lastPerformance)';
+    return 'TodayExercise(plannedExerciseId: $plannedExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, orderIndex: $orderIndex, incrementKg: $incrementKg, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance)';
   }
 }
 
@@ -5186,6 +5630,7 @@ abstract mixin class _$TodayExerciseCopyWith<$Res>
       int orderIndex,
       double incrementKg,
       List<PlannedSet> targets,
+      List<SetPrefill> prefill,
       LastPerformance? lastPerformance});
 
   @override
@@ -5217,6 +5662,7 @@ class __$TodayExerciseCopyWithImpl<$Res>
     Object? orderIndex = null,
     Object? incrementKg = null,
     Object? targets = null,
+    Object? prefill = null,
     Object? lastPerformance = freezed,
   }) {
     return _then(_TodayExercise(
@@ -5268,6 +5714,10 @@ class __$TodayExerciseCopyWithImpl<$Res>
           ? _self._targets
           : targets // ignore: cast_nullable_to_non_nullable
               as List<PlannedSet>,
+      prefill: null == prefill
+          ? _self._prefill
+          : prefill // ignore: cast_nullable_to_non_nullable
+              as List<SetPrefill>,
       lastPerformance: freezed == lastPerformance
           ? _self.lastPerformance
           : lastPerformance // ignore: cast_nullable_to_non_nullable

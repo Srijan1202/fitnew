@@ -6157,6 +6157,10 @@
                                   "items": {
                                     "type": "object",
                                     "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
                                       "setIndex": {
                                         "type": "integer",
                                         "minimum": 1
@@ -7021,6 +7025,10 @@
                                   "items": {
                                     "type": "object",
                                     "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
                                       "setIndex": {
                                         "type": "integer",
                                         "minimum": 1
@@ -7746,6 +7754,10 @@
                                   "items": {
                                     "type": "object",
                                     "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
                                       "setIndex": {
                                         "type": "integer",
                                         "minimum": 1
@@ -8481,6 +8493,10 @@
                                   "items": {
                                     "type": "object",
                                     "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
                                       "setIndex": {
                                         "type": "integer",
                                         "minimum": 1
@@ -9623,6 +9639,10 @@
                                   "items": {
                                     "type": "object",
                                     "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
                                       "setIndex": {
                                         "type": "integer",
                                         "minimum": 1
@@ -10360,6 +10380,10 @@
                                   "items": {
                                     "type": "object",
                                     "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
                                       "setIndex": {
                                         "type": "integer",
                                         "minimum": 1
@@ -11207,6 +11231,10 @@
                                   "items": {
                                     "type": "object",
                                     "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
                                       "setIndex": {
                                         "type": "integer",
                                         "minimum": 1
@@ -11803,7 +11831,33 @@
                             },
                             "minItems": 1
                           },
+                          "difficulty": {
+                            "type": "string",
+                            "enum": [
+                              "beginner",
+                              "intermediate",
+                              "advanced"
+                            ]
+                          },
                           "primaryMuscles": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "chest",
+                                "back",
+                                "quads",
+                                "hamstrings",
+                                "glutes",
+                                "shoulders",
+                                "biceps",
+                                "triceps",
+                                "calves",
+                                "abs"
+                              ]
+                            }
+                          },
+                          "secondaryMuscles": {
                             "type": "array",
                             "items": {
                               "type": "string",
@@ -11835,6 +11889,10 @@
                             "items": {
                               "type": "object",
                               "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
                                 "setIndex": {
                                   "type": "integer",
                                   "minimum": 1
@@ -11867,6 +11925,50 @@
                                 "repsMax",
                                 "weightKg",
                                 "rir"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "prefill": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "reps": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                },
+                                "weightSource": {
+                                  "type": "string",
+                                  "enum": [
+                                    "last-session",
+                                    "plan",
+                                    "none"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "reps",
+                                "weightKg",
+                                "rir",
+                                "weightSource"
                               ],
                               "additionalProperties": false
                             }
@@ -11935,10 +12037,13 @@
                           "name",
                           "movementPattern",
                           "equipment",
+                          "difficulty",
                           "primaryMuscles",
+                          "secondaryMuscles",
                           "orderIndex",
                           "incrementKg",
                           "targets",
+                          "prefill",
                           "lastPerformance"
                         ],
                         "additionalProperties": false
@@ -12128,6 +12233,10 @@
                                 "items": {
                                   "type": "object",
                                   "properties": {
+                                    "id": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
                                     "setIndex": {
                                       "type": "integer",
                                       "minimum": 1
@@ -12160,6 +12269,50 @@
                                     "repsMax",
                                     "weightKg",
                                     "rir"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "prefill": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "setIndex": {
+                                      "type": "integer",
+                                      "minimum": 1
+                                    },
+                                    "reps": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 100
+                                    },
+                                    "weightKg": {
+                                      "type": "number",
+                                      "minimum": 0,
+                                      "maximum": 500,
+                                      "nullable": true
+                                    },
+                                    "rir": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 5
+                                    },
+                                    "weightSource": {
+                                      "type": "string",
+                                      "enum": [
+                                        "last-session",
+                                        "plan",
+                                        "none"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "setIndex",
+                                    "reps",
+                                    "weightKg",
+                                    "rir",
+                                    "weightSource"
                                   ],
                                   "additionalProperties": false
                                 }
@@ -12308,6 +12461,7 @@
                               "supersetGroup",
                               "plannedExerciseId",
                               "targets",
+                              "prefill",
                               "lastPerformance",
                               "sets"
                             ],
@@ -13026,6 +13180,10 @@
                             "items": {
                               "type": "object",
                               "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
                                 "setIndex": {
                                   "type": "integer",
                                   "minimum": 1
@@ -13058,6 +13216,50 @@
                                 "repsMax",
                                 "weightKg",
                                 "rir"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "prefill": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "reps": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                },
+                                "weightSource": {
+                                  "type": "string",
+                                  "enum": [
+                                    "last-session",
+                                    "plan",
+                                    "none"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "reps",
+                                "weightKg",
+                                "rir",
+                                "weightSource"
                               ],
                               "additionalProperties": false
                             }
@@ -13206,6 +13408,7 @@
                           "supersetGroup",
                           "plannedExerciseId",
                           "targets",
+                          "prefill",
                           "lastPerformance",
                           "sets"
                         ],
@@ -13568,6 +13771,10 @@
                             "items": {
                               "type": "object",
                               "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
                                 "setIndex": {
                                   "type": "integer",
                                   "minimum": 1
@@ -13600,6 +13807,50 @@
                                 "repsMax",
                                 "weightKg",
                                 "rir"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "prefill": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "reps": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                },
+                                "weightSource": {
+                                  "type": "string",
+                                  "enum": [
+                                    "last-session",
+                                    "plan",
+                                    "none"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "reps",
+                                "weightKg",
+                                "rir",
+                                "weightSource"
                               ],
                               "additionalProperties": false
                             }
@@ -13748,6 +13999,7 @@
                           "supersetGroup",
                           "plannedExerciseId",
                           "targets",
+                          "prefill",
                           "lastPerformance",
                           "sets"
                         ],
@@ -14793,6 +15045,10 @@
                             "items": {
                               "type": "object",
                               "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
                                 "setIndex": {
                                   "type": "integer",
                                   "minimum": 1
@@ -14825,6 +15081,50 @@
                                 "repsMax",
                                 "weightKg",
                                 "rir"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "prefill": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "reps": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                },
+                                "weightSource": {
+                                  "type": "string",
+                                  "enum": [
+                                    "last-session",
+                                    "plan",
+                                    "none"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "reps",
+                                "weightKg",
+                                "rir",
+                                "weightSource"
                               ],
                               "additionalProperties": false
                             }
@@ -14973,6 +15273,7 @@
                           "supersetGroup",
                           "plannedExerciseId",
                           "targets",
+                          "prefill",
                           "lastPerformance",
                           "sets"
                         ],
@@ -15712,6 +16013,10 @@
                             "items": {
                               "type": "object",
                               "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
                                 "setIndex": {
                                   "type": "integer",
                                   "minimum": 1
@@ -15744,6 +16049,50 @@
                                 "repsMax",
                                 "weightKg",
                                 "rir"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "prefill": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "reps": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                },
+                                "weightSource": {
+                                  "type": "string",
+                                  "enum": [
+                                    "last-session",
+                                    "plan",
+                                    "none"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "reps",
+                                "weightKg",
+                                "rir",
+                                "weightSource"
                               ],
                               "additionalProperties": false
                             }
@@ -15892,6 +16241,7 @@
                           "supersetGroup",
                           "plannedExerciseId",
                           "targets",
+                          "prefill",
                           "lastPerformance",
                           "sets"
                         ],
@@ -16587,6 +16937,10 @@
                             "items": {
                               "type": "object",
                               "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
                                 "setIndex": {
                                   "type": "integer",
                                   "minimum": 1
@@ -16619,6 +16973,50 @@
                                 "repsMax",
                                 "weightKg",
                                 "rir"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "prefill": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "reps": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                },
+                                "weightSource": {
+                                  "type": "string",
+                                  "enum": [
+                                    "last-session",
+                                    "plan",
+                                    "none"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "reps",
+                                "weightKg",
+                                "rir",
+                                "weightSource"
                               ],
                               "additionalProperties": false
                             }
@@ -16767,6 +17165,7 @@
                           "supersetGroup",
                           "plannedExerciseId",
                           "targets",
+                          "prefill",
                           "lastPerformance",
                           "sets"
                         ],
@@ -17422,6 +17821,10 @@
                             "items": {
                               "type": "object",
                               "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
                                 "setIndex": {
                                   "type": "integer",
                                   "minimum": 1
@@ -17454,6 +17857,50 @@
                                 "repsMax",
                                 "weightKg",
                                 "rir"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "prefill": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "reps": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                },
+                                "weightSource": {
+                                  "type": "string",
+                                  "enum": [
+                                    "last-session",
+                                    "plan",
+                                    "none"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "reps",
+                                "weightKg",
+                                "rir",
+                                "weightSource"
                               ],
                               "additionalProperties": false
                             }
@@ -17602,6 +18049,7 @@
                           "supersetGroup",
                           "plannedExerciseId",
                           "targets",
+                          "prefill",
                           "lastPerformance",
                           "sets"
                         ],
@@ -18287,6 +18735,10 @@
                             "items": {
                               "type": "object",
                               "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
                                 "setIndex": {
                                   "type": "integer",
                                   "minimum": 1
@@ -18319,6 +18771,50 @@
                                 "repsMax",
                                 "weightKg",
                                 "rir"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "prefill": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "reps": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                },
+                                "weightSource": {
+                                  "type": "string",
+                                  "enum": [
+                                    "last-session",
+                                    "plan",
+                                    "none"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "reps",
+                                "weightKg",
+                                "rir",
+                                "weightSource"
                               ],
                               "additionalProperties": false
                             }
@@ -18467,6 +18963,7 @@
                           "supersetGroup",
                           "plannedExerciseId",
                           "targets",
+                          "prefill",
                           "lastPerformance",
                           "sets"
                         ],
@@ -19155,6 +19652,10 @@
                             "items": {
                               "type": "object",
                               "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
                                 "setIndex": {
                                   "type": "integer",
                                   "minimum": 1
@@ -19187,6 +19688,50 @@
                                 "repsMax",
                                 "weightKg",
                                 "rir"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "prefill": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "reps": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                },
+                                "weightSource": {
+                                  "type": "string",
+                                  "enum": [
+                                    "last-session",
+                                    "plan",
+                                    "none"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "reps",
+                                "weightKg",
+                                "rir",
+                                "weightSource"
                               ],
                               "additionalProperties": false
                             }
@@ -19335,6 +19880,7 @@
                           "supersetGroup",
                           "plannedExerciseId",
                           "targets",
+                          "prefill",
                           "lastPerformance",
                           "sets"
                         ],
@@ -20007,6 +20553,10 @@
                             "items": {
                               "type": "object",
                               "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
                                 "setIndex": {
                                   "type": "integer",
                                   "minimum": 1
@@ -20039,6 +20589,50 @@
                                 "repsMax",
                                 "weightKg",
                                 "rir"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "prefill": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "reps": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                },
+                                "weightSource": {
+                                  "type": "string",
+                                  "enum": [
+                                    "last-session",
+                                    "plan",
+                                    "none"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "reps",
+                                "weightKg",
+                                "rir",
+                                "weightSource"
                               ],
                               "additionalProperties": false
                             }
@@ -20187,6 +20781,7 @@
                           "supersetGroup",
                           "plannedExerciseId",
                           "targets",
+                          "prefill",
                           "lastPerformance",
                           "sets"
                         ],
@@ -20835,6 +21430,10 @@
                             "items": {
                               "type": "object",
                               "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
                                 "setIndex": {
                                   "type": "integer",
                                   "minimum": 1
@@ -20867,6 +21466,50 @@
                                 "repsMax",
                                 "weightKg",
                                 "rir"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "prefill": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "setIndex": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "reps": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100
+                                },
+                                "weightKg": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "maximum": 500,
+                                  "nullable": true
+                                },
+                                "rir": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 5
+                                },
+                                "weightSource": {
+                                  "type": "string",
+                                  "enum": [
+                                    "last-session",
+                                    "plan",
+                                    "none"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "setIndex",
+                                "reps",
+                                "weightKg",
+                                "rir",
+                                "weightSource"
                               ],
                               "additionalProperties": false
                             }
@@ -21015,6 +21658,7 @@
                           "supersetGroup",
                           "plannedExerciseId",
                           "targets",
+                          "prefill",
                           "lastPerformance",
                           "sets"
                         ],

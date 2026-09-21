@@ -14,6 +14,9 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$PlannedSet {
+  /// The planned_sets row (Phase 5 links logged sets to it); null on a
+  /// set the client is about to create.
+  String? get id;
   int get setIndex;
   int get repsMin;
   int get repsMax;
@@ -35,6 +38,7 @@ mixin _$PlannedSet {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is PlannedSet &&
+            (identical(other.id, id) || other.id == id) &&
             (identical(other.setIndex, setIndex) ||
                 other.setIndex == setIndex) &&
             (identical(other.repsMin, repsMin) || other.repsMin == repsMin) &&
@@ -47,11 +51,11 @@ mixin _$PlannedSet {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, setIndex, repsMin, repsMax, weightKg, rir);
+      Object.hash(runtimeType, id, setIndex, repsMin, repsMax, weightKg, rir);
 
   @override
   String toString() {
-    return 'PlannedSet(setIndex: $setIndex, repsMin: $repsMin, repsMax: $repsMax, weightKg: $weightKg, rir: $rir)';
+    return 'PlannedSet(id: $id, setIndex: $setIndex, repsMin: $repsMin, repsMax: $repsMax, weightKg: $weightKg, rir: $rir)';
   }
 }
 
@@ -62,7 +66,12 @@ abstract mixin class $PlannedSetCopyWith<$Res> {
       _$PlannedSetCopyWithImpl;
   @useResult
   $Res call(
-      {int setIndex, int repsMin, int repsMax, double? weightKg, int rir});
+      {String? id,
+      int setIndex,
+      int repsMin,
+      int repsMax,
+      double? weightKg,
+      int rir});
 }
 
 /// @nodoc
@@ -77,6 +86,7 @@ class _$PlannedSetCopyWithImpl<$Res> implements $PlannedSetCopyWith<$Res> {
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? id = freezed,
     Object? setIndex = null,
     Object? repsMin = null,
     Object? repsMax = null,
@@ -84,6 +94,10 @@ class _$PlannedSetCopyWithImpl<$Res> implements $PlannedSetCopyWith<$Res> {
     Object? rir = null,
   }) {
     return _then(_self.copyWith(
+      id: freezed == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String?,
       setIndex: null == setIndex
           ? _self.setIndex
           : setIndex // ignore: cast_nullable_to_non_nullable
@@ -201,15 +215,15 @@ extension PlannedSetPatterns on PlannedSet {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(
-            int setIndex, int repsMin, int repsMax, double? weightKg, int rir)?
+    TResult Function(String? id, int setIndex, int repsMin, int repsMax,
+            double? weightKg, int rir)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _PlannedSet() when $default != null:
-        return $default(_that.setIndex, _that.repsMin, _that.repsMax,
+        return $default(_that.id, _that.setIndex, _that.repsMin, _that.repsMax,
             _that.weightKg, _that.rir);
       case _:
         return orElse();
@@ -231,14 +245,14 @@ extension PlannedSetPatterns on PlannedSet {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(
-            int setIndex, int repsMin, int repsMax, double? weightKg, int rir)
+    TResult Function(String? id, int setIndex, int repsMin, int repsMax,
+            double? weightKg, int rir)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _PlannedSet():
-        return $default(_that.setIndex, _that.repsMin, _that.repsMax,
+        return $default(_that.id, _that.setIndex, _that.repsMin, _that.repsMax,
             _that.weightKg, _that.rir);
       case _:
         throw StateError('Unexpected subclass');
@@ -259,14 +273,14 @@ extension PlannedSetPatterns on PlannedSet {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(
-            int setIndex, int repsMin, int repsMax, double? weightKg, int rir)?
+    TResult? Function(String? id, int setIndex, int repsMin, int repsMax,
+            double? weightKg, int rir)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _PlannedSet() when $default != null:
-        return $default(_that.setIndex, _that.repsMin, _that.repsMax,
+        return $default(_that.id, _that.setIndex, _that.repsMin, _that.repsMax,
             _that.weightKg, _that.rir);
       case _:
         return null;
@@ -278,7 +292,8 @@ extension PlannedSetPatterns on PlannedSet {
 @JsonSerializable()
 class _PlannedSet extends PlannedSet {
   const _PlannedSet(
-      {required this.setIndex,
+      {this.id,
+      required this.setIndex,
       required this.repsMin,
       required this.repsMax,
       required this.weightKg,
@@ -287,6 +302,10 @@ class _PlannedSet extends PlannedSet {
   factory _PlannedSet.fromJson(Map<String, dynamic> json) =>
       _$PlannedSetFromJson(json);
 
+  /// The planned_sets row (Phase 5 links logged sets to it); null on a
+  /// set the client is about to create.
+  @override
+  final String? id;
   @override
   final int setIndex;
   @override
@@ -318,6 +337,7 @@ class _PlannedSet extends PlannedSet {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _PlannedSet &&
+            (identical(other.id, id) || other.id == id) &&
             (identical(other.setIndex, setIndex) ||
                 other.setIndex == setIndex) &&
             (identical(other.repsMin, repsMin) || other.repsMin == repsMin) &&
@@ -330,11 +350,11 @@ class _PlannedSet extends PlannedSet {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, setIndex, repsMin, repsMax, weightKg, rir);
+      Object.hash(runtimeType, id, setIndex, repsMin, repsMax, weightKg, rir);
 
   @override
   String toString() {
-    return 'PlannedSet(setIndex: $setIndex, repsMin: $repsMin, repsMax: $repsMax, weightKg: $weightKg, rir: $rir)';
+    return 'PlannedSet(id: $id, setIndex: $setIndex, repsMin: $repsMin, repsMax: $repsMax, weightKg: $weightKg, rir: $rir)';
   }
 }
 
@@ -347,7 +367,12 @@ abstract mixin class _$PlannedSetCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int setIndex, int repsMin, int repsMax, double? weightKg, int rir});
+      {String? id,
+      int setIndex,
+      int repsMin,
+      int repsMax,
+      double? weightKg,
+      int rir});
 }
 
 /// @nodoc
@@ -362,6 +387,7 @@ class __$PlannedSetCopyWithImpl<$Res> implements _$PlannedSetCopyWith<$Res> {
   @override
   @pragma('vm:prefer-inline')
   $Res call({
+    Object? id = freezed,
     Object? setIndex = null,
     Object? repsMin = null,
     Object? repsMax = null,
@@ -369,6 +395,10 @@ class __$PlannedSetCopyWithImpl<$Res> implements _$PlannedSetCopyWith<$Res> {
     Object? rir = null,
   }) {
     return _then(_PlannedSet(
+      id: freezed == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String?,
       setIndex: null == setIndex
           ? _self.setIndex
           : setIndex // ignore: cast_nullable_to_non_nullable

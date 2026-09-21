@@ -9,6 +9,9 @@ import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../../exercise/domain/entities/exercise.dart';
+import '../../../workout/domain/entities/workout.dart';
+import '../../../workout/presentation/controllers/workout_providers.dart';
+import '../../../workout/presentation/widgets/start_session_button.dart';
 import '../../domain/entities/program.dart';
 import '../controllers/program_controller.dart';
 import '../widgets/day_selector.dart';
@@ -125,6 +128,43 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
     _edit(day, next);
   }
 
+  /// Set-count editing (Phase 5 carry-over): one more set copying the
+  /// last one's targets, or one fewer; renumbered, saved like any edit.
+  void _addSet(ProgramDay day, String exerciseId) {
+    final next = [
+      for (final x in _exercisesOf(day))
+        if (x.id == exerciseId && x.sets.length < 10)
+          x.copyWith(
+            setCount: x.sets.length + 1,
+            sets: [
+              ...x.sets,
+              x.sets.last.copyWith(id: null, setIndex: x.sets.length + 1),
+            ],
+          )
+        else
+          x,
+    ];
+    _edit(day, next);
+  }
+
+  void _removeSet(ProgramDay day, String exerciseId, int setIndex) {
+    final next = [
+      for (final x in _exercisesOf(day))
+        if (x.id == exerciseId && x.sets.length > 1)
+          x.copyWith(
+            setCount: x.sets.length - 1,
+            sets: [
+              for (final (i, s)
+                  in x.sets.where((s) => s.setIndex != setIndex).indexed)
+                s.copyWith(setIndex: i + 1),
+            ],
+          )
+        else
+          x,
+    ];
+    _edit(day, next);
+  }
+
   void _remove(ProgramDay day, String exerciseId) {
     final next = _exercisesOf(day).where((x) => x.id != exerciseId).toList();
     if (next.isEmpty) return; // a session keeps at least one exercise
@@ -208,10 +248,19 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
                       context.push(Routes.planNew);
                     case 'rename':
                       _rename(context, program);
+                    case 'history':
+                      context.push(Routes.history);
+                    case 'adhoc':
+                      _start(program, null);
                   }
                 },
                 itemBuilder: (_) => const [
                   PopupMenuItem(value: 'edit', child: Text('Edit this day')),
+                  PopupMenuItem(value: 'history', child: Text('History')),
+                  PopupMenuItem(
+                    value: 'adhoc',
+                    child: Text('Start empty session'),
+                  ),
                   PopupMenuItem(
                     value: 'rename',
                     child: Text('Rename programme'),
@@ -237,6 +286,13 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
                     key: ValueKey('day.${day.id}'),
                     day: day,
                     exercises: _exercisesOf(day),
+                    startButton: StartSessionButton(
+                      dayOfWeek: day.dayOfWeek,
+                      isRest: day.isRest,
+                      onStart: () => _start(program, day),
+                    ),
+                    onAddSet: (id) => _addSet(day, id),
+                    onRemoveSet: (id, i) => _removeSet(day, id, i),
                     expanded: _expanded,
                     saveState: _saveState[day.id] ?? _SaveState.idle,
                     saveFailure: _saveFailure[day.id],
@@ -256,6 +312,31 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
         );
       },
     );
+  }
+
+  /// Start (or resume) a session. Seeds from the server's day when it can
+  /// be reached (targets + last performance), else from the plan itself —
+  /// so a session starts in a gym with no signal.
+  Future<void> _start(Program program, ProgramDay? day) async {
+    final repo = ref.read(workoutRepositoryProvider);
+    final active = await repo.activeSession();
+    if (!mounted) return;
+    if (active != null) {
+      await context.push(Routes.session(active.clientSessionId));
+      return;
+    }
+    TodayResponse? seed;
+    if (day != null && !day.isRest) {
+      final fetched = await repo.today(dayOfWeek: day.dayOfWeek);
+      seed = fetched.when(
+        ok: (t) => t.programDayId == day.id ? t : null,
+        err: (_) => null,
+      );
+      seed ??= todayFromPlan(program, day);
+    }
+    final session = await repo.startSession(day: seed);
+    if (!mounted) return;
+    await context.push(Routes.session(session.clientSessionId));
   }
 
   Future<void> _rename(BuildContext context, Program program) async {
@@ -318,6 +399,9 @@ class _DayView extends StatelessWidget {
   const _DayView({
     required this.day,
     required this.exercises,
+    required this.startButton,
+    required this.onAddSet,
+    required this.onRemoveSet,
     required this.expanded,
     required this.saveState,
     required this.saveFailure,
@@ -332,6 +416,9 @@ class _DayView extends StatelessWidget {
 
   final ProgramDay day;
   final List<PlannedExercise> exercises;
+  final Widget startButton;
+  final ValueChanged<String> onAddSet;
+  final void Function(String exerciseId, int setIndex) onRemoveSet;
   final Set<String> expanded;
   final _SaveState saveState;
   final Failure? saveFailure;
@@ -369,6 +456,8 @@ class _DayView extends StatelessWidget {
               onPressed: onEditDay,
               child: const Text('Train this day instead'),
             ),
+            const SizedBox(height: FitSpacing.sm),
+            startButton,
           ],
         ),
       );
@@ -414,6 +503,8 @@ class _DayView extends StatelessWidget {
                 '${exercises.length} exercises · $sets sets · ~$minutes min',
                 style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
               ),
+              const SizedBox(height: FitSpacing.md),
+              startButton,
             ],
           ),
         ),
@@ -428,6 +519,8 @@ class _DayView extends StatelessWidget {
             onSetChanged: (_, set) => onSetChanged(exercises[i].id, set),
             onReplace: () => onReplace(exercises[i]),
             onRemove: () => onRemove(exercises[i].id),
+            onAddSet: () => onAddSet(exercises[i].id),
+            onRemoveSet: (index) => onRemoveSet(exercises[i].id, index),
           ),
         const Divider(color: FitColors.rule, height: 1),
         Padding(

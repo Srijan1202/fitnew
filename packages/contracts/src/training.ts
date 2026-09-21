@@ -59,6 +59,8 @@ export const dayOfWeekSchema = z.number().int().min(1).max(7);
  * lifter actually did is Phase 5's `set_logs`, which overlay these.
  */
 export const plannedSetSchema = z.object({
+  /** The planned_sets row, so a logged set can name the target it fulfilled (Phase 5). */
+  id: z.string().uuid().optional(),
   setIndex: z.number().int().min(1),
   repsMin: z.number().int().min(1).max(50),
   repsMax: z.number().int().min(1).max(50),

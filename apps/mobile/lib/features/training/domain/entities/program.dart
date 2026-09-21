@@ -105,6 +105,9 @@ abstract class PlannedSet with _$PlannedSet {
   const PlannedSet._();
 
   const factory PlannedSet({
+    /// The planned_sets row (Phase 5 links logged sets to it); null on a
+    /// set the client is about to create.
+    String? id,
     required int setIndex,
     required int repsMin,
     required int repsMax,

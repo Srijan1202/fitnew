@@ -14,6 +14,7 @@ class SetRow extends StatefulWidget {
     required this.enabled,
     required this.onChanged,
     this.rowKey,
+    this.trailing,
     super.key,
   });
 
@@ -26,6 +27,9 @@ class SetRow extends StatefulWidget {
 
   /// Prefix for control keys (`<rowKey>.reps.plus` …), for tests.
   final String? rowKey;
+
+  /// After the steppers: a remove control on the plan, nothing in a session.
+  final Widget? trailing;
 
   @override
   State<SetRow> createState() => _SetRowState();
@@ -204,6 +208,7 @@ class _SetRowState extends State<SetRow> {
                 style: textTheme.titleLarge,
               ),
             ),
+            if (widget.trailing != null) widget.trailing!,
           ],
         ),
       ),

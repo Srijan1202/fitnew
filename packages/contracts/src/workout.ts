@@ -74,6 +74,20 @@ export const lastPerformanceSchema = z.object({
 });
 export type LastPerformance = z.infer<typeof lastPerformanceSchema>;
 
+/**
+ * What a set row opens with (core `prefillSet`): the plan's target reps,
+ * the weight from last time when there is one else the plan's, the plan's
+ * RIR. A description of the past and the plan — never a recommendation.
+ */
+export const setPrefillSchema = z.object({
+  setIndex: z.number().int().min(1),
+  reps: repsSchema,
+  weightKg: setWeightKgSchema.nullable(),
+  rir: rirSchema,
+  weightSource: z.enum(['last-session', 'plan', 'none']),
+});
+export type SetPrefill = z.infer<typeof setPrefillSchema>;
+
 export const sessionExerciseSchema = z.object({
   id: z.string().uuid(),
   clientExerciseId: clientIdSchema,
@@ -93,6 +107,8 @@ export const sessionExerciseSchema = z.object({
   plannedExerciseId: z.string().uuid().nullable(),
   /** The plan's per-set targets at the time the session started; [] for ad-hoc. */
   targets: z.array(plannedSetSchema),
+  /** One per target, in order; [] when there are no targets. */
+  prefill: z.array(setPrefillSchema),
   lastPerformance: lastPerformanceSchema.nullable(),
   sets: z.array(setLogSchema),
 });
@@ -179,6 +195,7 @@ export const todayExerciseSchema = z.object({
   orderIndex: z.number().int().min(0),
   incrementKg: z.number().positive(),
   targets: z.array(plannedSetSchema),
+  prefill: z.array(setPrefillSchema),
   lastPerformance: lastPerformanceSchema.nullable(),
 });
 

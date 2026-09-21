@@ -3,7 +3,7 @@ name: ci-api
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'phase-*']
   pull_request:
   workflow_dispatch:
 

@@ -7,6 +7,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { mesocycleWeekFrom } from '@fitos/core/training/mesocycle';
+import { prefillSet } from '@fitos/core/training/prefill';
 import { detectPRs, type LoggedSet, type PriorSession } from '@fitos/core/training/records';
 import { summarizeSession } from '@fitos/core/training/session-summary';
 import type {
@@ -20,6 +21,7 @@ import type {
   PersonalRecord,
   PlannedSet,
   SessionExercise,
+  SetPrefill,
   SessionListQuery,
   SessionListResponse,
   SessionSummary,
@@ -69,11 +71,20 @@ function lastPerformanceOf(prior: readonly PriorWork[], exerciseId: string): Las
   };
 }
 
+/** The numbers a set row opens with: core's rule, one entry per target. */
+function prefillFor(targets: readonly PlannedSet[], last: LastPerformance | null): SetPrefill[] {
+  const lastSets = (last?.sets ?? []).map((s) => ({ id: String(s.setIndex), setType: 'working' as const, weightKg: s.weightKg, reps: s.reps, rir: s.rir }));
+  return targets.map((t) => {
+    const p = prefillSet({ planned: t, lastPerformance: lastSets });
+    return { setIndex: p.setIndex, reps: p.reps, weightKg: p.weightKg, rir: p.rir, weightSource: p.weightSource };
+  });
+}
+
 function targetsFor(program: ProgramBundle | null, plannedExerciseId: string | null): PlannedSet[] {
   if (program === null || plannedExerciseId === null) return [];
   return program.sets
     .filter((s) => s.plannedExerciseId === plannedExerciseId)
-    .map((s) => ({ setIndex: s.setIndex, repsMin: s.repsMin, repsMax: s.repsMax, weightKg: num(s.weightKg), rir: s.rir }));
+    .map((s) => ({ id: s.id, setIndex: s.setIndex, repsMin: s.repsMin, repsMax: s.repsMax, weightKg: num(s.weightKg), rir: s.rir }));
 }
 
 /* ------------------------------------------------------------ service -- */
@@ -105,6 +116,7 @@ export class WorkoutService {
       supersetGroup: x.supersetGroup,
       plannedExerciseId: x.plannedExerciseId,
       targets: targetsFor(program, x.plannedExerciseId),
+      prefill: prefillFor(targetsFor(program, x.plannedExerciseId), lastPerformanceOf(prior, x.exerciseId)),
       lastPerformance: lastPerformanceOf(prior, x.exerciseId),
       sets: b.sets
         .filter((s) => s.sessionExerciseId === x.id)
@@ -460,6 +472,7 @@ export class WorkoutService {
         orderIndex: x.orderIndex,
         incrementKg: Number(x.incrementKg),
         targets: targetsFor(program, x.id),
+        prefill: prefillFor(targetsFor(program, x.id), lastPerformanceOf(prior, x.exerciseId)),
         lastPerformance: lastPerformanceOf(prior, x.exerciseId),
       })),
       activeSession: active === null ? null : await this.toWire(userId, active),

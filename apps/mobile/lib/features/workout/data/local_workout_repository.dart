@@ -223,6 +223,7 @@ class LocalWorkoutRepository implements WorkoutRepository {
             supersetGroup: null,
             plannedExerciseId: x.plannedExerciseId,
             targets: x.targets,
+            prefill: x.prefill,
             lastPerformance: x.lastPerformance,
             sets: const [],
           ),

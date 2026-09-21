@@ -69,6 +69,23 @@ Map<String, dynamic> _$LastPerformanceToJson(_LastPerformance instance) =>
       'sets': instance.sets,
     };
 
+_SetPrefill _$SetPrefillFromJson(Map<String, dynamic> json) => _SetPrefill(
+      setIndex: (json['setIndex'] as num).toInt(),
+      reps: (json['reps'] as num).toInt(),
+      weightKg: (json['weightKg'] as num?)?.toDouble(),
+      rir: (json['rir'] as num).toInt(),
+      weightSource: json['weightSource'] as String,
+    );
+
+Map<String, dynamic> _$SetPrefillToJson(_SetPrefill instance) =>
+    <String, dynamic>{
+      'setIndex': instance.setIndex,
+      'reps': instance.reps,
+      'weightKg': instance.weightKg,
+      'rir': instance.rir,
+      'weightSource': instance.weightSource,
+    };
+
 _SessionExercise _$SessionExerciseFromJson(Map<String, dynamic> json) =>
     _SessionExercise(
       id: json['id'] as String,
@@ -95,6 +112,10 @@ _SessionExercise _$SessionExerciseFromJson(Map<String, dynamic> json) =>
       targets: (json['targets'] as List<dynamic>)
           .map((e) => PlannedSet.fromJson(e as Map<String, dynamic>))
           .toList(),
+      prefill: (json['prefill'] as List<dynamic>?)
+              ?.map((e) => SetPrefill.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const <SetPrefill>[],
       lastPerformance: json['lastPerformance'] == null
           ? null
           : LastPerformance.fromJson(
@@ -125,6 +146,7 @@ Map<String, dynamic> _$SessionExerciseToJson(_SessionExercise instance) =>
       'supersetGroup': instance.supersetGroup,
       'plannedExerciseId': instance.plannedExerciseId,
       'targets': instance.targets,
+      'prefill': instance.prefill,
       'lastPerformance': instance.lastPerformance,
       'sets': instance.sets,
     };
@@ -342,6 +364,10 @@ _TodayExercise _$TodayExerciseFromJson(Map<String, dynamic> json) =>
       targets: (json['targets'] as List<dynamic>)
           .map((e) => PlannedSet.fromJson(e as Map<String, dynamic>))
           .toList(),
+      prefill: (json['prefill'] as List<dynamic>?)
+              ?.map((e) => SetPrefill.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const <SetPrefill>[],
       lastPerformance: json['lastPerformance'] == null
           ? null
           : LastPerformance.fromJson(
@@ -366,6 +392,7 @@ Map<String, dynamic> _$TodayExerciseToJson(_TodayExercise instance) =>
       'orderIndex': instance.orderIndex,
       'incrementKg': instance.incrementKg,
       'targets': instance.targets,
+      'prefill': instance.prefill,
       'lastPerformance': instance.lastPerformance,
     };
 

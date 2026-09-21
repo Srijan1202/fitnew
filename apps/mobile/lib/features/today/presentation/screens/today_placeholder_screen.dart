@@ -8,6 +8,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/hairline_section.dart';
 import '../../../auth/domain/entities/auth_state.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../workout/presentation/widgets/today_session_panel.dart';
 
 /// Placeholder for the TODAY screen, now behind the auth gate.
 ///
@@ -86,7 +87,10 @@ class TodayPlaceholderScreen extends ConsumerWidget {
               ),
               const SizedBox(height: FitSpacing.xl),
 
-              FilledButton(
+              // Phase 5: today's session, start / resume / done.
+              const TodaySessionPanel(),
+              const SizedBox(height: FitSpacing.lg),
+              OutlinedButton(
                 key: const ValueKey('today.plan'),
                 // A tab, not a pushed page: switch to it.
                 onPressed: () => context.go(Routes.plan),

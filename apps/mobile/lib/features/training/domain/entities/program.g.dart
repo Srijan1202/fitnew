@@ -7,6 +7,7 @@ part of 'program.dart';
 // **************************************************************************
 
 _PlannedSet _$PlannedSetFromJson(Map<String, dynamic> json) => _PlannedSet(
+      id: json['id'] as String?,
       setIndex: (json['setIndex'] as num).toInt(),
       repsMin: (json['repsMin'] as num).toInt(),
       repsMax: (json['repsMax'] as num).toInt(),
@@ -16,6 +17,7 @@ _PlannedSet _$PlannedSetFromJson(Map<String, dynamic> json) => _PlannedSet(
 
 Map<String, dynamic> _$PlannedSetToJson(_PlannedSet instance) =>
     <String, dynamic>{
+      'id': instance.id,
       'setIndex': instance.setIndex,
       'repsMin': instance.repsMin,
       'repsMax': instance.repsMax,

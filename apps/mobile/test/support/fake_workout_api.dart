@@ -436,6 +436,29 @@ class FakeWorkoutApi implements WorkoutApi {
             rir: 1,
           ),
         ],
+        prefill: [
+          SetPrefill(
+            setIndex: 1,
+            reps: 12,
+            weightKg: 70,
+            rir: 1,
+            weightSource: 'last-session',
+          ),
+          SetPrefill(
+            setIndex: 2,
+            reps: 12,
+            weightKg: 70,
+            rir: 1,
+            weightSource: 'last-session',
+          ),
+          SetPrefill(
+            setIndex: 3,
+            reps: 12,
+            weightKg: 70,
+            rir: 1,
+            weightSource: 'last-session',
+          ),
+        ],
         lastPerformance: LastPerformance(
           sessionId: '99999999-9999-4999-8999-999999999999',
           completedAt: '2026-09-14T10:50:00.000Z',
@@ -472,6 +495,22 @@ class FakeWorkoutApi implements WorkoutApi {
             repsMax: 15,
             weightKg: null,
             rir: 1,
+          ),
+        ],
+        prefill: [
+          SetPrefill(
+            setIndex: 1,
+            reps: 15,
+            weightKg: null,
+            rir: 1,
+            weightSource: 'none',
+          ),
+          SetPrefill(
+            setIndex: 2,
+            reps: 15,
+            weightKg: null,
+            rir: 1,
+            weightSource: 'none',
           ),
         ],
         lastPerformance: null,
