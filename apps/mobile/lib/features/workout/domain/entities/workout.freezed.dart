@@ -1630,6 +1630,2253 @@ class __$SetPrefillCopyWithImpl<$Res> implements _$SetPrefillCopyWith<$Res> {
 }
 
 /// @nodoc
+mixin _$ProgressionRecommendation {
+  ProgressionAction get action;
+  double? get weightKg;
+  String get repTarget;
+  int get targetRir;
+  String get reason;
+  String get basis;
+  int get sessionsConsidered;
+
+  /// Create a copy of ProgressionRecommendation
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $ProgressionRecommendationCopyWith<ProgressionRecommendation> get copyWith =>
+      _$ProgressionRecommendationCopyWithImpl<ProgressionRecommendation>(
+          this as ProgressionRecommendation, _$identity);
+
+  /// Serializes this ProgressionRecommendation to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is ProgressionRecommendation &&
+            (identical(other.action, action) || other.action == action) &&
+            (identical(other.weightKg, weightKg) ||
+                other.weightKg == weightKg) &&
+            (identical(other.repTarget, repTarget) ||
+                other.repTarget == repTarget) &&
+            (identical(other.targetRir, targetRir) ||
+                other.targetRir == targetRir) &&
+            (identical(other.reason, reason) || other.reason == reason) &&
+            (identical(other.basis, basis) || other.basis == basis) &&
+            (identical(other.sessionsConsidered, sessionsConsidered) ||
+                other.sessionsConsidered == sessionsConsidered));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, action, weightKg, repTarget,
+      targetRir, reason, basis, sessionsConsidered);
+
+  @override
+  String toString() {
+    return 'ProgressionRecommendation(action: $action, weightKg: $weightKg, repTarget: $repTarget, targetRir: $targetRir, reason: $reason, basis: $basis, sessionsConsidered: $sessionsConsidered)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $ProgressionRecommendationCopyWith<$Res> {
+  factory $ProgressionRecommendationCopyWith(ProgressionRecommendation value,
+          $Res Function(ProgressionRecommendation) _then) =
+      _$ProgressionRecommendationCopyWithImpl;
+  @useResult
+  $Res call(
+      {ProgressionAction action,
+      double? weightKg,
+      String repTarget,
+      int targetRir,
+      String reason,
+      String basis,
+      int sessionsConsidered});
+}
+
+/// @nodoc
+class _$ProgressionRecommendationCopyWithImpl<$Res>
+    implements $ProgressionRecommendationCopyWith<$Res> {
+  _$ProgressionRecommendationCopyWithImpl(this._self, this._then);
+
+  final ProgressionRecommendation _self;
+  final $Res Function(ProgressionRecommendation) _then;
+
+  /// Create a copy of ProgressionRecommendation
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? action = null,
+    Object? weightKg = freezed,
+    Object? repTarget = null,
+    Object? targetRir = null,
+    Object? reason = null,
+    Object? basis = null,
+    Object? sessionsConsidered = null,
+  }) {
+    return _then(_self.copyWith(
+      action: null == action
+          ? _self.action
+          : action // ignore: cast_nullable_to_non_nullable
+              as ProgressionAction,
+      weightKg: freezed == weightKg
+          ? _self.weightKg
+          : weightKg // ignore: cast_nullable_to_non_nullable
+              as double?,
+      repTarget: null == repTarget
+          ? _self.repTarget
+          : repTarget // ignore: cast_nullable_to_non_nullable
+              as String,
+      targetRir: null == targetRir
+          ? _self.targetRir
+          : targetRir // ignore: cast_nullable_to_non_nullable
+              as int,
+      reason: null == reason
+          ? _self.reason
+          : reason // ignore: cast_nullable_to_non_nullable
+              as String,
+      basis: null == basis
+          ? _self.basis
+          : basis // ignore: cast_nullable_to_non_nullable
+              as String,
+      sessionsConsidered: null == sessionsConsidered
+          ? _self.sessionsConsidered
+          : sessionsConsidered // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [ProgressionRecommendation].
+extension ProgressionRecommendationPatterns on ProgressionRecommendation {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_ProgressionRecommendation value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionRecommendation() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_ProgressionRecommendation value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionRecommendation():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_ProgressionRecommendation value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionRecommendation() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(
+            ProgressionAction action,
+            double? weightKg,
+            String repTarget,
+            int targetRir,
+            String reason,
+            String basis,
+            int sessionsConsidered)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionRecommendation() when $default != null:
+        return $default(
+            _that.action,
+            _that.weightKg,
+            _that.repTarget,
+            _that.targetRir,
+            _that.reason,
+            _that.basis,
+            _that.sessionsConsidered);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(
+            ProgressionAction action,
+            double? weightKg,
+            String repTarget,
+            int targetRir,
+            String reason,
+            String basis,
+            int sessionsConsidered)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionRecommendation():
+        return $default(
+            _that.action,
+            _that.weightKg,
+            _that.repTarget,
+            _that.targetRir,
+            _that.reason,
+            _that.basis,
+            _that.sessionsConsidered);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(
+            ProgressionAction action,
+            double? weightKg,
+            String repTarget,
+            int targetRir,
+            String reason,
+            String basis,
+            int sessionsConsidered)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionRecommendation() when $default != null:
+        return $default(
+            _that.action,
+            _that.weightKg,
+            _that.repTarget,
+            _that.targetRir,
+            _that.reason,
+            _that.basis,
+            _that.sessionsConsidered);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _ProgressionRecommendation implements ProgressionRecommendation {
+  const _ProgressionRecommendation(
+      {required this.action,
+      required this.weightKg,
+      required this.repTarget,
+      required this.targetRir,
+      required this.reason,
+      required this.basis,
+      required this.sessionsConsidered});
+  factory _ProgressionRecommendation.fromJson(Map<String, dynamic> json) =>
+      _$ProgressionRecommendationFromJson(json);
+
+  @override
+  final ProgressionAction action;
+  @override
+  final double? weightKg;
+  @override
+  final String repTarget;
+  @override
+  final int targetRir;
+  @override
+  final String reason;
+  @override
+  final String basis;
+  @override
+  final int sessionsConsidered;
+
+  /// Create a copy of ProgressionRecommendation
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$ProgressionRecommendationCopyWith<_ProgressionRecommendation>
+      get copyWith =>
+          __$ProgressionRecommendationCopyWithImpl<_ProgressionRecommendation>(
+              this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$ProgressionRecommendationToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _ProgressionRecommendation &&
+            (identical(other.action, action) || other.action == action) &&
+            (identical(other.weightKg, weightKg) ||
+                other.weightKg == weightKg) &&
+            (identical(other.repTarget, repTarget) ||
+                other.repTarget == repTarget) &&
+            (identical(other.targetRir, targetRir) ||
+                other.targetRir == targetRir) &&
+            (identical(other.reason, reason) || other.reason == reason) &&
+            (identical(other.basis, basis) || other.basis == basis) &&
+            (identical(other.sessionsConsidered, sessionsConsidered) ||
+                other.sessionsConsidered == sessionsConsidered));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, action, weightKg, repTarget,
+      targetRir, reason, basis, sessionsConsidered);
+
+  @override
+  String toString() {
+    return 'ProgressionRecommendation(action: $action, weightKg: $weightKg, repTarget: $repTarget, targetRir: $targetRir, reason: $reason, basis: $basis, sessionsConsidered: $sessionsConsidered)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$ProgressionRecommendationCopyWith<$Res>
+    implements $ProgressionRecommendationCopyWith<$Res> {
+  factory _$ProgressionRecommendationCopyWith(_ProgressionRecommendation value,
+          $Res Function(_ProgressionRecommendation) _then) =
+      __$ProgressionRecommendationCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {ProgressionAction action,
+      double? weightKg,
+      String repTarget,
+      int targetRir,
+      String reason,
+      String basis,
+      int sessionsConsidered});
+}
+
+/// @nodoc
+class __$ProgressionRecommendationCopyWithImpl<$Res>
+    implements _$ProgressionRecommendationCopyWith<$Res> {
+  __$ProgressionRecommendationCopyWithImpl(this._self, this._then);
+
+  final _ProgressionRecommendation _self;
+  final $Res Function(_ProgressionRecommendation) _then;
+
+  /// Create a copy of ProgressionRecommendation
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? action = null,
+    Object? weightKg = freezed,
+    Object? repTarget = null,
+    Object? targetRir = null,
+    Object? reason = null,
+    Object? basis = null,
+    Object? sessionsConsidered = null,
+  }) {
+    return _then(_ProgressionRecommendation(
+      action: null == action
+          ? _self.action
+          : action // ignore: cast_nullable_to_non_nullable
+              as ProgressionAction,
+      weightKg: freezed == weightKg
+          ? _self.weightKg
+          : weightKg // ignore: cast_nullable_to_non_nullable
+              as double?,
+      repTarget: null == repTarget
+          ? _self.repTarget
+          : repTarget // ignore: cast_nullable_to_non_nullable
+              as String,
+      targetRir: null == targetRir
+          ? _self.targetRir
+          : targetRir // ignore: cast_nullable_to_non_nullable
+              as int,
+      reason: null == reason
+          ? _self.reason
+          : reason // ignore: cast_nullable_to_non_nullable
+              as String,
+      basis: null == basis
+          ? _self.basis
+          : basis // ignore: cast_nullable_to_non_nullable
+              as String,
+      sessionsConsidered: null == sessionsConsidered
+          ? _self.sessionsConsidered
+          : sessionsConsidered // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$PriorBest {
+  double? get weightKg;
+  int? get repsAtBestWeight;
+  double? get estimated1rm;
+
+  /// Create a copy of PriorBest
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $PriorBestCopyWith<PriorBest> get copyWith =>
+      _$PriorBestCopyWithImpl<PriorBest>(this as PriorBest, _$identity);
+
+  /// Serializes this PriorBest to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is PriorBest &&
+            (identical(other.weightKg, weightKg) ||
+                other.weightKg == weightKg) &&
+            (identical(other.repsAtBestWeight, repsAtBestWeight) ||
+                other.repsAtBestWeight == repsAtBestWeight) &&
+            (identical(other.estimated1rm, estimated1rm) ||
+                other.estimated1rm == estimated1rm));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, weightKg, repsAtBestWeight, estimated1rm);
+
+  @override
+  String toString() {
+    return 'PriorBest(weightKg: $weightKg, repsAtBestWeight: $repsAtBestWeight, estimated1rm: $estimated1rm)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $PriorBestCopyWith<$Res> {
+  factory $PriorBestCopyWith(PriorBest value, $Res Function(PriorBest) _then) =
+      _$PriorBestCopyWithImpl;
+  @useResult
+  $Res call({double? weightKg, int? repsAtBestWeight, double? estimated1rm});
+}
+
+/// @nodoc
+class _$PriorBestCopyWithImpl<$Res> implements $PriorBestCopyWith<$Res> {
+  _$PriorBestCopyWithImpl(this._self, this._then);
+
+  final PriorBest _self;
+  final $Res Function(PriorBest) _then;
+
+  /// Create a copy of PriorBest
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? weightKg = freezed,
+    Object? repsAtBestWeight = freezed,
+    Object? estimated1rm = freezed,
+  }) {
+    return _then(_self.copyWith(
+      weightKg: freezed == weightKg
+          ? _self.weightKg
+          : weightKg // ignore: cast_nullable_to_non_nullable
+              as double?,
+      repsAtBestWeight: freezed == repsAtBestWeight
+          ? _self.repsAtBestWeight
+          : repsAtBestWeight // ignore: cast_nullable_to_non_nullable
+              as int?,
+      estimated1rm: freezed == estimated1rm
+          ? _self.estimated1rm
+          : estimated1rm // ignore: cast_nullable_to_non_nullable
+              as double?,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [PriorBest].
+extension PriorBestPatterns on PriorBest {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_PriorBest value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _PriorBest() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_PriorBest value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _PriorBest():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_PriorBest value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _PriorBest() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(
+            double? weightKg, int? repsAtBestWeight, double? estimated1rm)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _PriorBest() when $default != null:
+        return $default(
+            _that.weightKg, _that.repsAtBestWeight, _that.estimated1rm);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(
+            double? weightKg, int? repsAtBestWeight, double? estimated1rm)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _PriorBest():
+        return $default(
+            _that.weightKg, _that.repsAtBestWeight, _that.estimated1rm);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(
+            double? weightKg, int? repsAtBestWeight, double? estimated1rm)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _PriorBest() when $default != null:
+        return $default(
+            _that.weightKg, _that.repsAtBestWeight, _that.estimated1rm);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _PriorBest extends PriorBest {
+  const _PriorBest(
+      {required this.weightKg,
+      required this.repsAtBestWeight,
+      required this.estimated1rm})
+      : super._();
+  factory _PriorBest.fromJson(Map<String, dynamic> json) =>
+      _$PriorBestFromJson(json);
+
+  @override
+  final double? weightKg;
+  @override
+  final int? repsAtBestWeight;
+  @override
+  final double? estimated1rm;
+
+  /// Create a copy of PriorBest
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$PriorBestCopyWith<_PriorBest> get copyWith =>
+      __$PriorBestCopyWithImpl<_PriorBest>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$PriorBestToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _PriorBest &&
+            (identical(other.weightKg, weightKg) ||
+                other.weightKg == weightKg) &&
+            (identical(other.repsAtBestWeight, repsAtBestWeight) ||
+                other.repsAtBestWeight == repsAtBestWeight) &&
+            (identical(other.estimated1rm, estimated1rm) ||
+                other.estimated1rm == estimated1rm));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, weightKg, repsAtBestWeight, estimated1rm);
+
+  @override
+  String toString() {
+    return 'PriorBest(weightKg: $weightKg, repsAtBestWeight: $repsAtBestWeight, estimated1rm: $estimated1rm)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$PriorBestCopyWith<$Res>
+    implements $PriorBestCopyWith<$Res> {
+  factory _$PriorBestCopyWith(
+          _PriorBest value, $Res Function(_PriorBest) _then) =
+      __$PriorBestCopyWithImpl;
+  @override
+  @useResult
+  $Res call({double? weightKg, int? repsAtBestWeight, double? estimated1rm});
+}
+
+/// @nodoc
+class __$PriorBestCopyWithImpl<$Res> implements _$PriorBestCopyWith<$Res> {
+  __$PriorBestCopyWithImpl(this._self, this._then);
+
+  final _PriorBest _self;
+  final $Res Function(_PriorBest) _then;
+
+  /// Create a copy of PriorBest
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? weightKg = freezed,
+    Object? repsAtBestWeight = freezed,
+    Object? estimated1rm = freezed,
+  }) {
+    return _then(_PriorBest(
+      weightKg: freezed == weightKg
+          ? _self.weightKg
+          : weightKg // ignore: cast_nullable_to_non_nullable
+              as double?,
+      repsAtBestWeight: freezed == repsAtBestWeight
+          ? _self.repsAtBestWeight
+          : repsAtBestWeight // ignore: cast_nullable_to_non_nullable
+              as int?,
+      estimated1rm: freezed == estimated1rm
+          ? _self.estimated1rm
+          : estimated1rm // ignore: cast_nullable_to_non_nullable
+              as double?,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$SubstitutionAlternative {
+  String get exerciseId;
+  String get slug;
+  String get name;
+  List<Equipment> get equipment;
+
+  /// Create a copy of SubstitutionAlternative
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $SubstitutionAlternativeCopyWith<SubstitutionAlternative> get copyWith =>
+      _$SubstitutionAlternativeCopyWithImpl<SubstitutionAlternative>(
+          this as SubstitutionAlternative, _$identity);
+
+  /// Serializes this SubstitutionAlternative to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is SubstitutionAlternative &&
+            (identical(other.exerciseId, exerciseId) ||
+                other.exerciseId == exerciseId) &&
+            (identical(other.slug, slug) || other.slug == slug) &&
+            (identical(other.name, name) || other.name == name) &&
+            const DeepCollectionEquality().equals(other.equipment, equipment));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, exerciseId, slug, name,
+      const DeepCollectionEquality().hash(equipment));
+
+  @override
+  String toString() {
+    return 'SubstitutionAlternative(exerciseId: $exerciseId, slug: $slug, name: $name, equipment: $equipment)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $SubstitutionAlternativeCopyWith<$Res> {
+  factory $SubstitutionAlternativeCopyWith(SubstitutionAlternative value,
+          $Res Function(SubstitutionAlternative) _then) =
+      _$SubstitutionAlternativeCopyWithImpl;
+  @useResult
+  $Res call(
+      {String exerciseId, String slug, String name, List<Equipment> equipment});
+}
+
+/// @nodoc
+class _$SubstitutionAlternativeCopyWithImpl<$Res>
+    implements $SubstitutionAlternativeCopyWith<$Res> {
+  _$SubstitutionAlternativeCopyWithImpl(this._self, this._then);
+
+  final SubstitutionAlternative _self;
+  final $Res Function(SubstitutionAlternative) _then;
+
+  /// Create a copy of SubstitutionAlternative
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? exerciseId = null,
+    Object? slug = null,
+    Object? name = null,
+    Object? equipment = null,
+  }) {
+    return _then(_self.copyWith(
+      exerciseId: null == exerciseId
+          ? _self.exerciseId
+          : exerciseId // ignore: cast_nullable_to_non_nullable
+              as String,
+      slug: null == slug
+          ? _self.slug
+          : slug // ignore: cast_nullable_to_non_nullable
+              as String,
+      name: null == name
+          ? _self.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      equipment: null == equipment
+          ? _self.equipment
+          : equipment // ignore: cast_nullable_to_non_nullable
+              as List<Equipment>,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [SubstitutionAlternative].
+extension SubstitutionAlternativePatterns on SubstitutionAlternative {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_SubstitutionAlternative value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _SubstitutionAlternative() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_SubstitutionAlternative value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SubstitutionAlternative():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_SubstitutionAlternative value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SubstitutionAlternative() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(String exerciseId, String slug, String name,
+            List<Equipment> equipment)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _SubstitutionAlternative() when $default != null:
+        return $default(
+            _that.exerciseId, _that.slug, _that.name, _that.equipment);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(String exerciseId, String slug, String name,
+            List<Equipment> equipment)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SubstitutionAlternative():
+        return $default(
+            _that.exerciseId, _that.slug, _that.name, _that.equipment);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(String exerciseId, String slug, String name,
+            List<Equipment> equipment)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _SubstitutionAlternative() when $default != null:
+        return $default(
+            _that.exerciseId, _that.slug, _that.name, _that.equipment);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _SubstitutionAlternative implements SubstitutionAlternative {
+  const _SubstitutionAlternative(
+      {required this.exerciseId,
+      required this.slug,
+      required this.name,
+      required final List<Equipment> equipment})
+      : _equipment = equipment;
+  factory _SubstitutionAlternative.fromJson(Map<String, dynamic> json) =>
+      _$SubstitutionAlternativeFromJson(json);
+
+  @override
+  final String exerciseId;
+  @override
+  final String slug;
+  @override
+  final String name;
+  final List<Equipment> _equipment;
+  @override
+  List<Equipment> get equipment {
+    if (_equipment is EqualUnmodifiableListView) return _equipment;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_equipment);
+  }
+
+  /// Create a copy of SubstitutionAlternative
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$SubstitutionAlternativeCopyWith<_SubstitutionAlternative> get copyWith =>
+      __$SubstitutionAlternativeCopyWithImpl<_SubstitutionAlternative>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$SubstitutionAlternativeToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _SubstitutionAlternative &&
+            (identical(other.exerciseId, exerciseId) ||
+                other.exerciseId == exerciseId) &&
+            (identical(other.slug, slug) || other.slug == slug) &&
+            (identical(other.name, name) || other.name == name) &&
+            const DeepCollectionEquality()
+                .equals(other._equipment, _equipment));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, exerciseId, slug, name,
+      const DeepCollectionEquality().hash(_equipment));
+
+  @override
+  String toString() {
+    return 'SubstitutionAlternative(exerciseId: $exerciseId, slug: $slug, name: $name, equipment: $equipment)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$SubstitutionAlternativeCopyWith<$Res>
+    implements $SubstitutionAlternativeCopyWith<$Res> {
+  factory _$SubstitutionAlternativeCopyWith(_SubstitutionAlternative value,
+          $Res Function(_SubstitutionAlternative) _then) =
+      __$SubstitutionAlternativeCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String exerciseId, String slug, String name, List<Equipment> equipment});
+}
+
+/// @nodoc
+class __$SubstitutionAlternativeCopyWithImpl<$Res>
+    implements _$SubstitutionAlternativeCopyWith<$Res> {
+  __$SubstitutionAlternativeCopyWithImpl(this._self, this._then);
+
+  final _SubstitutionAlternative _self;
+  final $Res Function(_SubstitutionAlternative) _then;
+
+  /// Create a copy of SubstitutionAlternative
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? exerciseId = null,
+    Object? slug = null,
+    Object? name = null,
+    Object? equipment = null,
+  }) {
+    return _then(_SubstitutionAlternative(
+      exerciseId: null == exerciseId
+          ? _self.exerciseId
+          : exerciseId // ignore: cast_nullable_to_non_nullable
+              as String,
+      slug: null == slug
+          ? _self.slug
+          : slug // ignore: cast_nullable_to_non_nullable
+              as String,
+      name: null == name
+          ? _self.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      equipment: null == equipment
+          ? _self._equipment
+          : equipment // ignore: cast_nullable_to_non_nullable
+              as List<Equipment>,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$Substitution {
+  SubstitutionTrigger get trigger;
+  SubstitutionAlternative? get alternative;
+  String get reason;
+
+  /// Create a copy of Substitution
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $SubstitutionCopyWith<Substitution> get copyWith =>
+      _$SubstitutionCopyWithImpl<Substitution>(
+          this as Substitution, _$identity);
+
+  /// Serializes this Substitution to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is Substitution &&
+            (identical(other.trigger, trigger) || other.trigger == trigger) &&
+            (identical(other.alternative, alternative) ||
+                other.alternative == alternative) &&
+            (identical(other.reason, reason) || other.reason == reason));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, trigger, alternative, reason);
+
+  @override
+  String toString() {
+    return 'Substitution(trigger: $trigger, alternative: $alternative, reason: $reason)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $SubstitutionCopyWith<$Res> {
+  factory $SubstitutionCopyWith(
+          Substitution value, $Res Function(Substitution) _then) =
+      _$SubstitutionCopyWithImpl;
+  @useResult
+  $Res call(
+      {SubstitutionTrigger trigger,
+      SubstitutionAlternative? alternative,
+      String reason});
+
+  $SubstitutionAlternativeCopyWith<$Res>? get alternative;
+}
+
+/// @nodoc
+class _$SubstitutionCopyWithImpl<$Res> implements $SubstitutionCopyWith<$Res> {
+  _$SubstitutionCopyWithImpl(this._self, this._then);
+
+  final Substitution _self;
+  final $Res Function(Substitution) _then;
+
+  /// Create a copy of Substitution
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? trigger = null,
+    Object? alternative = freezed,
+    Object? reason = null,
+  }) {
+    return _then(_self.copyWith(
+      trigger: null == trigger
+          ? _self.trigger
+          : trigger // ignore: cast_nullable_to_non_nullable
+              as SubstitutionTrigger,
+      alternative: freezed == alternative
+          ? _self.alternative
+          : alternative // ignore: cast_nullable_to_non_nullable
+              as SubstitutionAlternative?,
+      reason: null == reason
+          ? _self.reason
+          : reason // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+
+  /// Create a copy of Substitution
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $SubstitutionAlternativeCopyWith<$Res>? get alternative {
+    if (_self.alternative == null) {
+      return null;
+    }
+
+    return $SubstitutionAlternativeCopyWith<$Res>(_self.alternative!, (value) {
+      return _then(_self.copyWith(alternative: value));
+    });
+  }
+}
+
+/// Adds pattern-matching-related methods to [Substitution].
+extension SubstitutionPatterns on Substitution {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_Substitution value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Substitution() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_Substitution value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _Substitution():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_Substitution value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _Substitution() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(SubstitutionTrigger trigger,
+            SubstitutionAlternative? alternative, String reason)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Substitution() when $default != null:
+        return $default(_that.trigger, _that.alternative, _that.reason);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(SubstitutionTrigger trigger,
+            SubstitutionAlternative? alternative, String reason)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _Substitution():
+        return $default(_that.trigger, _that.alternative, _that.reason);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(SubstitutionTrigger trigger,
+            SubstitutionAlternative? alternative, String reason)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _Substitution() when $default != null:
+        return $default(_that.trigger, _that.alternative, _that.reason);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _Substitution implements Substitution {
+  const _Substitution(
+      {required this.trigger, required this.alternative, required this.reason});
+  factory _Substitution.fromJson(Map<String, dynamic> json) =>
+      _$SubstitutionFromJson(json);
+
+  @override
+  final SubstitutionTrigger trigger;
+  @override
+  final SubstitutionAlternative? alternative;
+  @override
+  final String reason;
+
+  /// Create a copy of Substitution
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$SubstitutionCopyWith<_Substitution> get copyWith =>
+      __$SubstitutionCopyWithImpl<_Substitution>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$SubstitutionToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _Substitution &&
+            (identical(other.trigger, trigger) || other.trigger == trigger) &&
+            (identical(other.alternative, alternative) ||
+                other.alternative == alternative) &&
+            (identical(other.reason, reason) || other.reason == reason));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, trigger, alternative, reason);
+
+  @override
+  String toString() {
+    return 'Substitution(trigger: $trigger, alternative: $alternative, reason: $reason)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$SubstitutionCopyWith<$Res>
+    implements $SubstitutionCopyWith<$Res> {
+  factory _$SubstitutionCopyWith(
+          _Substitution value, $Res Function(_Substitution) _then) =
+      __$SubstitutionCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {SubstitutionTrigger trigger,
+      SubstitutionAlternative? alternative,
+      String reason});
+
+  @override
+  $SubstitutionAlternativeCopyWith<$Res>? get alternative;
+}
+
+/// @nodoc
+class __$SubstitutionCopyWithImpl<$Res>
+    implements _$SubstitutionCopyWith<$Res> {
+  __$SubstitutionCopyWithImpl(this._self, this._then);
+
+  final _Substitution _self;
+  final $Res Function(_Substitution) _then;
+
+  /// Create a copy of Substitution
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? trigger = null,
+    Object? alternative = freezed,
+    Object? reason = null,
+  }) {
+    return _then(_Substitution(
+      trigger: null == trigger
+          ? _self.trigger
+          : trigger // ignore: cast_nullable_to_non_nullable
+              as SubstitutionTrigger,
+      alternative: freezed == alternative
+          ? _self.alternative
+          : alternative // ignore: cast_nullable_to_non_nullable
+              as SubstitutionAlternative?,
+      reason: null == reason
+          ? _self.reason
+          : reason // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+
+  /// Create a copy of Substitution
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $SubstitutionAlternativeCopyWith<$Res>? get alternative {
+    if (_self.alternative == null) {
+      return null;
+    }
+
+    return $SubstitutionAlternativeCopyWith<$Res>(_self.alternative!, (value) {
+      return _then(_self.copyWith(alternative: value));
+    });
+  }
+}
+
+/// @nodoc
+mixin _$DeloadState {
+  DeloadStatus get state;
+  DeloadTrigger? get trigger;
+  String get reason;
+  String? get endsOn;
+
+  /// Create a copy of DeloadState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $DeloadStateCopyWith<DeloadState> get copyWith =>
+      _$DeloadStateCopyWithImpl<DeloadState>(this as DeloadState, _$identity);
+
+  /// Serializes this DeloadState to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is DeloadState &&
+            (identical(other.state, state) || other.state == state) &&
+            (identical(other.trigger, trigger) || other.trigger == trigger) &&
+            (identical(other.reason, reason) || other.reason == reason) &&
+            (identical(other.endsOn, endsOn) || other.endsOn == endsOn));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, state, trigger, reason, endsOn);
+
+  @override
+  String toString() {
+    return 'DeloadState(state: $state, trigger: $trigger, reason: $reason, endsOn: $endsOn)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $DeloadStateCopyWith<$Res> {
+  factory $DeloadStateCopyWith(
+          DeloadState value, $Res Function(DeloadState) _then) =
+      _$DeloadStateCopyWithImpl;
+  @useResult
+  $Res call(
+      {DeloadStatus state,
+      DeloadTrigger? trigger,
+      String reason,
+      String? endsOn});
+}
+
+/// @nodoc
+class _$DeloadStateCopyWithImpl<$Res> implements $DeloadStateCopyWith<$Res> {
+  _$DeloadStateCopyWithImpl(this._self, this._then);
+
+  final DeloadState _self;
+  final $Res Function(DeloadState) _then;
+
+  /// Create a copy of DeloadState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? state = null,
+    Object? trigger = freezed,
+    Object? reason = null,
+    Object? endsOn = freezed,
+  }) {
+    return _then(_self.copyWith(
+      state: null == state
+          ? _self.state
+          : state // ignore: cast_nullable_to_non_nullable
+              as DeloadStatus,
+      trigger: freezed == trigger
+          ? _self.trigger
+          : trigger // ignore: cast_nullable_to_non_nullable
+              as DeloadTrigger?,
+      reason: null == reason
+          ? _self.reason
+          : reason // ignore: cast_nullable_to_non_nullable
+              as String,
+      endsOn: freezed == endsOn
+          ? _self.endsOn
+          : endsOn // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [DeloadState].
+extension DeloadStatePatterns on DeloadState {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_DeloadState value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _DeloadState() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_DeloadState value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _DeloadState():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_DeloadState value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _DeloadState() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(DeloadStatus state, DeloadTrigger? trigger, String reason,
+            String? endsOn)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _DeloadState() when $default != null:
+        return $default(_that.state, _that.trigger, _that.reason, _that.endsOn);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(DeloadStatus state, DeloadTrigger? trigger, String reason,
+            String? endsOn)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _DeloadState():
+        return $default(_that.state, _that.trigger, _that.reason, _that.endsOn);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(DeloadStatus state, DeloadTrigger? trigger, String reason,
+            String? endsOn)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _DeloadState() when $default != null:
+        return $default(_that.state, _that.trigger, _that.reason, _that.endsOn);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _DeloadState implements DeloadState {
+  const _DeloadState(
+      {required this.state,
+      required this.trigger,
+      required this.reason,
+      required this.endsOn});
+  factory _DeloadState.fromJson(Map<String, dynamic> json) =>
+      _$DeloadStateFromJson(json);
+
+  @override
+  final DeloadStatus state;
+  @override
+  final DeloadTrigger? trigger;
+  @override
+  final String reason;
+  @override
+  final String? endsOn;
+
+  /// Create a copy of DeloadState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$DeloadStateCopyWith<_DeloadState> get copyWith =>
+      __$DeloadStateCopyWithImpl<_DeloadState>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$DeloadStateToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _DeloadState &&
+            (identical(other.state, state) || other.state == state) &&
+            (identical(other.trigger, trigger) || other.trigger == trigger) &&
+            (identical(other.reason, reason) || other.reason == reason) &&
+            (identical(other.endsOn, endsOn) || other.endsOn == endsOn));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, state, trigger, reason, endsOn);
+
+  @override
+  String toString() {
+    return 'DeloadState(state: $state, trigger: $trigger, reason: $reason, endsOn: $endsOn)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$DeloadStateCopyWith<$Res>
+    implements $DeloadStateCopyWith<$Res> {
+  factory _$DeloadStateCopyWith(
+          _DeloadState value, $Res Function(_DeloadState) _then) =
+      __$DeloadStateCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {DeloadStatus state,
+      DeloadTrigger? trigger,
+      String reason,
+      String? endsOn});
+}
+
+/// @nodoc
+class __$DeloadStateCopyWithImpl<$Res> implements _$DeloadStateCopyWith<$Res> {
+  __$DeloadStateCopyWithImpl(this._self, this._then);
+
+  final _DeloadState _self;
+  final $Res Function(_DeloadState) _then;
+
+  /// Create a copy of DeloadState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? state = null,
+    Object? trigger = freezed,
+    Object? reason = null,
+    Object? endsOn = freezed,
+  }) {
+    return _then(_DeloadState(
+      state: null == state
+          ? _self.state
+          : state // ignore: cast_nullable_to_non_nullable
+              as DeloadStatus,
+      trigger: freezed == trigger
+          ? _self.trigger
+          : trigger // ignore: cast_nullable_to_non_nullable
+              as DeloadTrigger?,
+      reason: null == reason
+          ? _self.reason
+          : reason // ignore: cast_nullable_to_non_nullable
+              as String,
+      endsOn: freezed == endsOn
+          ? _self.endsOn
+          : endsOn // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$NeglectedMuscle {
+  MuscleGroup get muscle;
+  int? get daysSince;
+
+  /// Create a copy of NeglectedMuscle
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $NeglectedMuscleCopyWith<NeglectedMuscle> get copyWith =>
+      _$NeglectedMuscleCopyWithImpl<NeglectedMuscle>(
+          this as NeglectedMuscle, _$identity);
+
+  /// Serializes this NeglectedMuscle to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is NeglectedMuscle &&
+            (identical(other.muscle, muscle) || other.muscle == muscle) &&
+            (identical(other.daysSince, daysSince) ||
+                other.daysSince == daysSince));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, muscle, daysSince);
+
+  @override
+  String toString() {
+    return 'NeglectedMuscle(muscle: $muscle, daysSince: $daysSince)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $NeglectedMuscleCopyWith<$Res> {
+  factory $NeglectedMuscleCopyWith(
+          NeglectedMuscle value, $Res Function(NeglectedMuscle) _then) =
+      _$NeglectedMuscleCopyWithImpl;
+  @useResult
+  $Res call({MuscleGroup muscle, int? daysSince});
+}
+
+/// @nodoc
+class _$NeglectedMuscleCopyWithImpl<$Res>
+    implements $NeglectedMuscleCopyWith<$Res> {
+  _$NeglectedMuscleCopyWithImpl(this._self, this._then);
+
+  final NeglectedMuscle _self;
+  final $Res Function(NeglectedMuscle) _then;
+
+  /// Create a copy of NeglectedMuscle
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? muscle = null,
+    Object? daysSince = freezed,
+  }) {
+    return _then(_self.copyWith(
+      muscle: null == muscle
+          ? _self.muscle
+          : muscle // ignore: cast_nullable_to_non_nullable
+              as MuscleGroup,
+      daysSince: freezed == daysSince
+          ? _self.daysSince
+          : daysSince // ignore: cast_nullable_to_non_nullable
+              as int?,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [NeglectedMuscle].
+extension NeglectedMusclePatterns on NeglectedMuscle {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_NeglectedMuscle value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _NeglectedMuscle() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_NeglectedMuscle value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _NeglectedMuscle():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_NeglectedMuscle value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _NeglectedMuscle() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(MuscleGroup muscle, int? daysSince)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _NeglectedMuscle() when $default != null:
+        return $default(_that.muscle, _that.daysSince);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(MuscleGroup muscle, int? daysSince) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _NeglectedMuscle():
+        return $default(_that.muscle, _that.daysSince);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(MuscleGroup muscle, int? daysSince)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _NeglectedMuscle() when $default != null:
+        return $default(_that.muscle, _that.daysSince);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _NeglectedMuscle implements NeglectedMuscle {
+  const _NeglectedMuscle({required this.muscle, required this.daysSince});
+  factory _NeglectedMuscle.fromJson(Map<String, dynamic> json) =>
+      _$NeglectedMuscleFromJson(json);
+
+  @override
+  final MuscleGroup muscle;
+  @override
+  final int? daysSince;
+
+  /// Create a copy of NeglectedMuscle
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$NeglectedMuscleCopyWith<_NeglectedMuscle> get copyWith =>
+      __$NeglectedMuscleCopyWithImpl<_NeglectedMuscle>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$NeglectedMuscleToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _NeglectedMuscle &&
+            (identical(other.muscle, muscle) || other.muscle == muscle) &&
+            (identical(other.daysSince, daysSince) ||
+                other.daysSince == daysSince));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, muscle, daysSince);
+
+  @override
+  String toString() {
+    return 'NeglectedMuscle(muscle: $muscle, daysSince: $daysSince)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$NeglectedMuscleCopyWith<$Res>
+    implements $NeglectedMuscleCopyWith<$Res> {
+  factory _$NeglectedMuscleCopyWith(
+          _NeglectedMuscle value, $Res Function(_NeglectedMuscle) _then) =
+      __$NeglectedMuscleCopyWithImpl;
+  @override
+  @useResult
+  $Res call({MuscleGroup muscle, int? daysSince});
+}
+
+/// @nodoc
+class __$NeglectedMuscleCopyWithImpl<$Res>
+    implements _$NeglectedMuscleCopyWith<$Res> {
+  __$NeglectedMuscleCopyWithImpl(this._self, this._then);
+
+  final _NeglectedMuscle _self;
+  final $Res Function(_NeglectedMuscle) _then;
+
+  /// Create a copy of NeglectedMuscle
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? muscle = null,
+    Object? daysSince = freezed,
+  }) {
+    return _then(_NeglectedMuscle(
+      muscle: null == muscle
+          ? _self.muscle
+          : muscle // ignore: cast_nullable_to_non_nullable
+              as MuscleGroup,
+      daysSince: freezed == daysSince
+          ? _self.daysSince
+          : daysSince // ignore: cast_nullable_to_non_nullable
+              as int?,
+    ));
+  }
+}
+
+/// @nodoc
 mixin _$SessionExercise {
   String get id;
   String get clientExerciseId;
@@ -1648,6 +3895,9 @@ mixin _$SessionExercise {
   List<PlannedSet> get targets;
   List<SetPrefill> get prefill;
   LastPerformance? get lastPerformance;
+  ProgressionRecommendation? get recommendation;
+  PriorBest get priorBest;
+  List<PlannedSet>? get originalTargets;
   List<SetLog> get sets;
 
   /// Create a copy of SessionExercise
@@ -1694,35 +3944,45 @@ mixin _$SessionExercise {
             const DeepCollectionEquality().equals(other.prefill, prefill) &&
             (identical(other.lastPerformance, lastPerformance) ||
                 other.lastPerformance == lastPerformance) &&
+            (identical(other.recommendation, recommendation) ||
+                other.recommendation == recommendation) &&
+            (identical(other.priorBest, priorBest) ||
+                other.priorBest == priorBest) &&
+            const DeepCollectionEquality()
+                .equals(other.originalTargets, originalTargets) &&
             const DeepCollectionEquality().equals(other.sets, sets));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      clientExerciseId,
-      exerciseId,
-      slug,
-      name,
-      movementPattern,
-      const DeepCollectionEquality().hash(equipment),
-      difficulty,
-      const DeepCollectionEquality().hash(primaryMuscles),
-      const DeepCollectionEquality().hash(secondaryMuscles),
-      incrementKg,
-      orderIndex,
-      supersetGroup,
-      plannedExerciseId,
-      const DeepCollectionEquality().hash(targets),
-      const DeepCollectionEquality().hash(prefill),
-      lastPerformance,
-      const DeepCollectionEquality().hash(sets));
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        id,
+        clientExerciseId,
+        exerciseId,
+        slug,
+        name,
+        movementPattern,
+        const DeepCollectionEquality().hash(equipment),
+        difficulty,
+        const DeepCollectionEquality().hash(primaryMuscles),
+        const DeepCollectionEquality().hash(secondaryMuscles),
+        incrementKg,
+        orderIndex,
+        supersetGroup,
+        plannedExerciseId,
+        const DeepCollectionEquality().hash(targets),
+        const DeepCollectionEquality().hash(prefill),
+        lastPerformance,
+        recommendation,
+        priorBest,
+        const DeepCollectionEquality().hash(originalTargets),
+        const DeepCollectionEquality().hash(sets)
+      ]);
 
   @override
   String toString() {
-    return 'SessionExercise(id: $id, clientExerciseId: $clientExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, incrementKg: $incrementKg, orderIndex: $orderIndex, supersetGroup: $supersetGroup, plannedExerciseId: $plannedExerciseId, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance, sets: $sets)';
+    return 'SessionExercise(id: $id, clientExerciseId: $clientExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, incrementKg: $incrementKg, orderIndex: $orderIndex, supersetGroup: $supersetGroup, plannedExerciseId: $plannedExerciseId, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance, recommendation: $recommendation, priorBest: $priorBest, originalTargets: $originalTargets, sets: $sets)';
   }
 }
 
@@ -1750,9 +4010,14 @@ abstract mixin class $SessionExerciseCopyWith<$Res> {
       List<PlannedSet> targets,
       List<SetPrefill> prefill,
       LastPerformance? lastPerformance,
+      ProgressionRecommendation? recommendation,
+      PriorBest priorBest,
+      List<PlannedSet>? originalTargets,
       List<SetLog> sets});
 
   $LastPerformanceCopyWith<$Res>? get lastPerformance;
+  $ProgressionRecommendationCopyWith<$Res>? get recommendation;
+  $PriorBestCopyWith<$Res> get priorBest;
 }
 
 /// @nodoc
@@ -1785,6 +4050,9 @@ class _$SessionExerciseCopyWithImpl<$Res>
     Object? targets = null,
     Object? prefill = null,
     Object? lastPerformance = freezed,
+    Object? recommendation = freezed,
+    Object? priorBest = null,
+    Object? originalTargets = freezed,
     Object? sets = null,
   }) {
     return _then(_self.copyWith(
@@ -1856,6 +4124,18 @@ class _$SessionExerciseCopyWithImpl<$Res>
           ? _self.lastPerformance
           : lastPerformance // ignore: cast_nullable_to_non_nullable
               as LastPerformance?,
+      recommendation: freezed == recommendation
+          ? _self.recommendation
+          : recommendation // ignore: cast_nullable_to_non_nullable
+              as ProgressionRecommendation?,
+      priorBest: null == priorBest
+          ? _self.priorBest
+          : priorBest // ignore: cast_nullable_to_non_nullable
+              as PriorBest,
+      originalTargets: freezed == originalTargets
+          ? _self.originalTargets
+          : originalTargets // ignore: cast_nullable_to_non_nullable
+              as List<PlannedSet>?,
       sets: null == sets
           ? _self.sets
           : sets // ignore: cast_nullable_to_non_nullable
@@ -1874,6 +4154,31 @@ class _$SessionExerciseCopyWithImpl<$Res>
 
     return $LastPerformanceCopyWith<$Res>(_self.lastPerformance!, (value) {
       return _then(_self.copyWith(lastPerformance: value));
+    });
+  }
+
+  /// Create a copy of SessionExercise
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProgressionRecommendationCopyWith<$Res>? get recommendation {
+    if (_self.recommendation == null) {
+      return null;
+    }
+
+    return $ProgressionRecommendationCopyWith<$Res>(_self.recommendation!,
+        (value) {
+      return _then(_self.copyWith(recommendation: value));
+    });
+  }
+
+  /// Create a copy of SessionExercise
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $PriorBestCopyWith<$Res> get priorBest {
+    return $PriorBestCopyWith<$Res>(_self.priorBest, (value) {
+      return _then(_self.copyWith(priorBest: value));
     });
   }
 }
@@ -1989,6 +4294,9 @@ extension SessionExercisePatterns on SessionExercise {
             List<PlannedSet> targets,
             List<SetPrefill> prefill,
             LastPerformance? lastPerformance,
+            ProgressionRecommendation? recommendation,
+            PriorBest priorBest,
+            List<PlannedSet>? originalTargets,
             List<SetLog> sets)?
         $default, {
     required TResult orElse(),
@@ -2014,6 +4322,9 @@ extension SessionExercisePatterns on SessionExercise {
             _that.targets,
             _that.prefill,
             _that.lastPerformance,
+            _that.recommendation,
+            _that.priorBest,
+            _that.originalTargets,
             _that.sets);
       case _:
         return orElse();
@@ -2053,6 +4364,9 @@ extension SessionExercisePatterns on SessionExercise {
             List<PlannedSet> targets,
             List<SetPrefill> prefill,
             LastPerformance? lastPerformance,
+            ProgressionRecommendation? recommendation,
+            PriorBest priorBest,
+            List<PlannedSet>? originalTargets,
             List<SetLog> sets)
         $default,
   ) {
@@ -2077,6 +4391,9 @@ extension SessionExercisePatterns on SessionExercise {
             _that.targets,
             _that.prefill,
             _that.lastPerformance,
+            _that.recommendation,
+            _that.priorBest,
+            _that.originalTargets,
             _that.sets);
       case _:
         throw StateError('Unexpected subclass');
@@ -2115,6 +4432,9 @@ extension SessionExercisePatterns on SessionExercise {
             List<PlannedSet> targets,
             List<SetPrefill> prefill,
             LastPerformance? lastPerformance,
+            ProgressionRecommendation? recommendation,
+            PriorBest priorBest,
+            List<PlannedSet>? originalTargets,
             List<SetLog> sets)?
         $default,
   ) {
@@ -2139,6 +4459,9 @@ extension SessionExercisePatterns on SessionExercise {
             _that.targets,
             _that.prefill,
             _that.lastPerformance,
+            _that.recommendation,
+            _that.priorBest,
+            _that.originalTargets,
             _that.sets);
       case _:
         return null;
@@ -2167,12 +4490,16 @@ class _SessionExercise extends SessionExercise {
       required final List<PlannedSet> targets,
       final List<SetPrefill> prefill = const <SetPrefill>[],
       required this.lastPerformance,
+      this.recommendation = null,
+      this.priorBest = PriorBest.none,
+      final List<PlannedSet>? originalTargets = null,
       required final List<SetLog> sets})
       : _equipment = equipment,
         _primaryMuscles = primaryMuscles,
         _secondaryMuscles = secondaryMuscles,
         _targets = targets,
         _prefill = prefill,
+        _originalTargets = originalTargets,
         _sets = sets,
         super._();
   factory _SessionExercise.fromJson(Map<String, dynamic> json) =>
@@ -2244,6 +4571,23 @@ class _SessionExercise extends SessionExercise {
 
   @override
   final LastPerformance? lastPerformance;
+  @override
+  @JsonKey()
+  final ProgressionRecommendation? recommendation;
+  @override
+  @JsonKey()
+  final PriorBest priorBest;
+  final List<PlannedSet>? _originalTargets;
+  @override
+  @JsonKey()
+  List<PlannedSet>? get originalTargets {
+    final value = _originalTargets;
+    if (value == null) return null;
+    if (_originalTargets is EqualUnmodifiableListView) return _originalTargets;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
   final List<SetLog> _sets;
   @override
   List<SetLog> get sets {
@@ -2301,35 +4645,45 @@ class _SessionExercise extends SessionExercise {
             const DeepCollectionEquality().equals(other._prefill, _prefill) &&
             (identical(other.lastPerformance, lastPerformance) ||
                 other.lastPerformance == lastPerformance) &&
+            (identical(other.recommendation, recommendation) ||
+                other.recommendation == recommendation) &&
+            (identical(other.priorBest, priorBest) ||
+                other.priorBest == priorBest) &&
+            const DeepCollectionEquality()
+                .equals(other._originalTargets, _originalTargets) &&
             const DeepCollectionEquality().equals(other._sets, _sets));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      clientExerciseId,
-      exerciseId,
-      slug,
-      name,
-      movementPattern,
-      const DeepCollectionEquality().hash(_equipment),
-      difficulty,
-      const DeepCollectionEquality().hash(_primaryMuscles),
-      const DeepCollectionEquality().hash(_secondaryMuscles),
-      incrementKg,
-      orderIndex,
-      supersetGroup,
-      plannedExerciseId,
-      const DeepCollectionEquality().hash(_targets),
-      const DeepCollectionEquality().hash(_prefill),
-      lastPerformance,
-      const DeepCollectionEquality().hash(_sets));
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        id,
+        clientExerciseId,
+        exerciseId,
+        slug,
+        name,
+        movementPattern,
+        const DeepCollectionEquality().hash(_equipment),
+        difficulty,
+        const DeepCollectionEquality().hash(_primaryMuscles),
+        const DeepCollectionEquality().hash(_secondaryMuscles),
+        incrementKg,
+        orderIndex,
+        supersetGroup,
+        plannedExerciseId,
+        const DeepCollectionEquality().hash(_targets),
+        const DeepCollectionEquality().hash(_prefill),
+        lastPerformance,
+        recommendation,
+        priorBest,
+        const DeepCollectionEquality().hash(_originalTargets),
+        const DeepCollectionEquality().hash(_sets)
+      ]);
 
   @override
   String toString() {
-    return 'SessionExercise(id: $id, clientExerciseId: $clientExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, incrementKg: $incrementKg, orderIndex: $orderIndex, supersetGroup: $supersetGroup, plannedExerciseId: $plannedExerciseId, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance, sets: $sets)';
+    return 'SessionExercise(id: $id, clientExerciseId: $clientExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, incrementKg: $incrementKg, orderIndex: $orderIndex, supersetGroup: $supersetGroup, plannedExerciseId: $plannedExerciseId, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance, recommendation: $recommendation, priorBest: $priorBest, originalTargets: $originalTargets, sets: $sets)';
   }
 }
 
@@ -2359,10 +4713,17 @@ abstract mixin class _$SessionExerciseCopyWith<$Res>
       List<PlannedSet> targets,
       List<SetPrefill> prefill,
       LastPerformance? lastPerformance,
+      ProgressionRecommendation? recommendation,
+      PriorBest priorBest,
+      List<PlannedSet>? originalTargets,
       List<SetLog> sets});
 
   @override
   $LastPerformanceCopyWith<$Res>? get lastPerformance;
+  @override
+  $ProgressionRecommendationCopyWith<$Res>? get recommendation;
+  @override
+  $PriorBestCopyWith<$Res> get priorBest;
 }
 
 /// @nodoc
@@ -2395,6 +4756,9 @@ class __$SessionExerciseCopyWithImpl<$Res>
     Object? targets = null,
     Object? prefill = null,
     Object? lastPerformance = freezed,
+    Object? recommendation = freezed,
+    Object? priorBest = null,
+    Object? originalTargets = freezed,
     Object? sets = null,
   }) {
     return _then(_SessionExercise(
@@ -2466,6 +4830,18 @@ class __$SessionExerciseCopyWithImpl<$Res>
           ? _self.lastPerformance
           : lastPerformance // ignore: cast_nullable_to_non_nullable
               as LastPerformance?,
+      recommendation: freezed == recommendation
+          ? _self.recommendation
+          : recommendation // ignore: cast_nullable_to_non_nullable
+              as ProgressionRecommendation?,
+      priorBest: null == priorBest
+          ? _self.priorBest
+          : priorBest // ignore: cast_nullable_to_non_nullable
+              as PriorBest,
+      originalTargets: freezed == originalTargets
+          ? _self._originalTargets
+          : originalTargets // ignore: cast_nullable_to_non_nullable
+              as List<PlannedSet>?,
       sets: null == sets
           ? _self._sets
           : sets // ignore: cast_nullable_to_non_nullable
@@ -2484,6 +4860,31 @@ class __$SessionExerciseCopyWithImpl<$Res>
 
     return $LastPerformanceCopyWith<$Res>(_self.lastPerformance!, (value) {
       return _then(_self.copyWith(lastPerformance: value));
+    });
+  }
+
+  /// Create a copy of SessionExercise
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProgressionRecommendationCopyWith<$Res>? get recommendation {
+    if (_self.recommendation == null) {
+      return null;
+    }
+
+    return $ProgressionRecommendationCopyWith<$Res>(_self.recommendation!,
+        (value) {
+      return _then(_self.copyWith(recommendation: value));
+    });
+  }
+
+  /// Create a copy of SessionExercise
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $PriorBestCopyWith<$Res> get priorBest {
+    return $PriorBestCopyWith<$Res>(_self.priorBest, (value) {
+      return _then(_self.copyWith(priorBest: value));
     });
   }
 }
@@ -5012,6 +7413,10 @@ mixin _$TodayExercise {
   List<PlannedSet> get targets;
   List<SetPrefill> get prefill;
   LastPerformance? get lastPerformance;
+  ProgressionRecommendation? get recommendation;
+  PriorBest get priorBest;
+  List<PlannedSet>? get originalTargets;
+  Substitution? get substitution;
 
   /// Create a copy of TodayExercise
   /// with the given fields replaced by the non-null parameter values.
@@ -5051,7 +7456,15 @@ mixin _$TodayExercise {
             const DeepCollectionEquality().equals(other.targets, targets) &&
             const DeepCollectionEquality().equals(other.prefill, prefill) &&
             (identical(other.lastPerformance, lastPerformance) ||
-                other.lastPerformance == lastPerformance));
+                other.lastPerformance == lastPerformance) &&
+            (identical(other.recommendation, recommendation) ||
+                other.recommendation == recommendation) &&
+            (identical(other.priorBest, priorBest) ||
+                other.priorBest == priorBest) &&
+            const DeepCollectionEquality()
+                .equals(other.originalTargets, originalTargets) &&
+            (identical(other.substitution, substitution) ||
+                other.substitution == substitution));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -5071,11 +7484,15 @@ mixin _$TodayExercise {
       incrementKg,
       const DeepCollectionEquality().hash(targets),
       const DeepCollectionEquality().hash(prefill),
-      lastPerformance);
+      lastPerformance,
+      recommendation,
+      priorBest,
+      const DeepCollectionEquality().hash(originalTargets),
+      substitution);
 
   @override
   String toString() {
-    return 'TodayExercise(plannedExerciseId: $plannedExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, orderIndex: $orderIndex, incrementKg: $incrementKg, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance)';
+    return 'TodayExercise(plannedExerciseId: $plannedExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, orderIndex: $orderIndex, incrementKg: $incrementKg, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance, recommendation: $recommendation, priorBest: $priorBest, originalTargets: $originalTargets, substitution: $substitution)';
   }
 }
 
@@ -5099,9 +7516,16 @@ abstract mixin class $TodayExerciseCopyWith<$Res> {
       double incrementKg,
       List<PlannedSet> targets,
       List<SetPrefill> prefill,
-      LastPerformance? lastPerformance});
+      LastPerformance? lastPerformance,
+      ProgressionRecommendation? recommendation,
+      PriorBest priorBest,
+      List<PlannedSet>? originalTargets,
+      Substitution? substitution});
 
   $LastPerformanceCopyWith<$Res>? get lastPerformance;
+  $ProgressionRecommendationCopyWith<$Res>? get recommendation;
+  $PriorBestCopyWith<$Res> get priorBest;
+  $SubstitutionCopyWith<$Res>? get substitution;
 }
 
 /// @nodoc
@@ -5131,6 +7555,10 @@ class _$TodayExerciseCopyWithImpl<$Res>
     Object? targets = null,
     Object? prefill = null,
     Object? lastPerformance = freezed,
+    Object? recommendation = freezed,
+    Object? priorBest = null,
+    Object? originalTargets = freezed,
+    Object? substitution = freezed,
   }) {
     return _then(_self.copyWith(
       plannedExerciseId: null == plannedExerciseId
@@ -5189,6 +7617,22 @@ class _$TodayExerciseCopyWithImpl<$Res>
           ? _self.lastPerformance
           : lastPerformance // ignore: cast_nullable_to_non_nullable
               as LastPerformance?,
+      recommendation: freezed == recommendation
+          ? _self.recommendation
+          : recommendation // ignore: cast_nullable_to_non_nullable
+              as ProgressionRecommendation?,
+      priorBest: null == priorBest
+          ? _self.priorBest
+          : priorBest // ignore: cast_nullable_to_non_nullable
+              as PriorBest,
+      originalTargets: freezed == originalTargets
+          ? _self.originalTargets
+          : originalTargets // ignore: cast_nullable_to_non_nullable
+              as List<PlannedSet>?,
+      substitution: freezed == substitution
+          ? _self.substitution
+          : substitution // ignore: cast_nullable_to_non_nullable
+              as Substitution?,
     ));
   }
 
@@ -5203,6 +7647,45 @@ class _$TodayExerciseCopyWithImpl<$Res>
 
     return $LastPerformanceCopyWith<$Res>(_self.lastPerformance!, (value) {
       return _then(_self.copyWith(lastPerformance: value));
+    });
+  }
+
+  /// Create a copy of TodayExercise
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProgressionRecommendationCopyWith<$Res>? get recommendation {
+    if (_self.recommendation == null) {
+      return null;
+    }
+
+    return $ProgressionRecommendationCopyWith<$Res>(_self.recommendation!,
+        (value) {
+      return _then(_self.copyWith(recommendation: value));
+    });
+  }
+
+  /// Create a copy of TodayExercise
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $PriorBestCopyWith<$Res> get priorBest {
+    return $PriorBestCopyWith<$Res>(_self.priorBest, (value) {
+      return _then(_self.copyWith(priorBest: value));
+    });
+  }
+
+  /// Create a copy of TodayExercise
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $SubstitutionCopyWith<$Res>? get substitution {
+    if (_self.substitution == null) {
+      return null;
+    }
+
+    return $SubstitutionCopyWith<$Res>(_self.substitution!, (value) {
+      return _then(_self.copyWith(substitution: value));
     });
   }
 }
@@ -5314,7 +7797,11 @@ extension TodayExercisePatterns on TodayExercise {
             double incrementKg,
             List<PlannedSet> targets,
             List<SetPrefill> prefill,
-            LastPerformance? lastPerformance)?
+            LastPerformance? lastPerformance,
+            ProgressionRecommendation? recommendation,
+            PriorBest priorBest,
+            List<PlannedSet>? originalTargets,
+            Substitution? substitution)?
         $default, {
     required TResult orElse(),
   }) {
@@ -5335,7 +7822,11 @@ extension TodayExercisePatterns on TodayExercise {
             _that.incrementKg,
             _that.targets,
             _that.prefill,
-            _that.lastPerformance);
+            _that.lastPerformance,
+            _that.recommendation,
+            _that.priorBest,
+            _that.originalTargets,
+            _that.substitution);
       case _:
         return orElse();
     }
@@ -5370,7 +7861,11 @@ extension TodayExercisePatterns on TodayExercise {
             double incrementKg,
             List<PlannedSet> targets,
             List<SetPrefill> prefill,
-            LastPerformance? lastPerformance)
+            LastPerformance? lastPerformance,
+            ProgressionRecommendation? recommendation,
+            PriorBest priorBest,
+            List<PlannedSet>? originalTargets,
+            Substitution? substitution)
         $default,
   ) {
     final _that = this;
@@ -5390,7 +7885,11 @@ extension TodayExercisePatterns on TodayExercise {
             _that.incrementKg,
             _that.targets,
             _that.prefill,
-            _that.lastPerformance);
+            _that.lastPerformance,
+            _that.recommendation,
+            _that.priorBest,
+            _that.originalTargets,
+            _that.substitution);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -5424,7 +7923,11 @@ extension TodayExercisePatterns on TodayExercise {
             double incrementKg,
             List<PlannedSet> targets,
             List<SetPrefill> prefill,
-            LastPerformance? lastPerformance)?
+            LastPerformance? lastPerformance,
+            ProgressionRecommendation? recommendation,
+            PriorBest priorBest,
+            List<PlannedSet>? originalTargets,
+            Substitution? substitution)?
         $default,
   ) {
     final _that = this;
@@ -5444,7 +7947,11 @@ extension TodayExercisePatterns on TodayExercise {
             _that.incrementKg,
             _that.targets,
             _that.prefill,
-            _that.lastPerformance);
+            _that.lastPerformance,
+            _that.recommendation,
+            _that.priorBest,
+            _that.originalTargets,
+            _that.substitution);
       case _:
         return null;
     }
@@ -5468,12 +7975,17 @@ class _TodayExercise implements TodayExercise {
       required this.incrementKg,
       required final List<PlannedSet> targets,
       final List<SetPrefill> prefill = const <SetPrefill>[],
-      required this.lastPerformance})
+      required this.lastPerformance,
+      this.recommendation = null,
+      this.priorBest = PriorBest.none,
+      final List<PlannedSet>? originalTargets = null,
+      this.substitution = null})
       : _equipment = equipment,
         _primaryMuscles = primaryMuscles,
         _secondaryMuscles = secondaryMuscles,
         _targets = targets,
-        _prefill = prefill;
+        _prefill = prefill,
+        _originalTargets = originalTargets;
   factory _TodayExercise.fromJson(Map<String, dynamic> json) =>
       _$TodayExerciseFromJson(json);
 
@@ -5537,6 +8049,26 @@ class _TodayExercise implements TodayExercise {
 
   @override
   final LastPerformance? lastPerformance;
+  @override
+  @JsonKey()
+  final ProgressionRecommendation? recommendation;
+  @override
+  @JsonKey()
+  final PriorBest priorBest;
+  final List<PlannedSet>? _originalTargets;
+  @override
+  @JsonKey()
+  List<PlannedSet>? get originalTargets {
+    final value = _originalTargets;
+    if (value == null) return null;
+    if (_originalTargets is EqualUnmodifiableListView) return _originalTargets;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
+  @JsonKey()
+  final Substitution? substitution;
 
   /// Create a copy of TodayExercise
   /// with the given fields replaced by the non-null parameter values.
@@ -5581,7 +8113,15 @@ class _TodayExercise implements TodayExercise {
             const DeepCollectionEquality().equals(other._targets, _targets) &&
             const DeepCollectionEquality().equals(other._prefill, _prefill) &&
             (identical(other.lastPerformance, lastPerformance) ||
-                other.lastPerformance == lastPerformance));
+                other.lastPerformance == lastPerformance) &&
+            (identical(other.recommendation, recommendation) ||
+                other.recommendation == recommendation) &&
+            (identical(other.priorBest, priorBest) ||
+                other.priorBest == priorBest) &&
+            const DeepCollectionEquality()
+                .equals(other._originalTargets, _originalTargets) &&
+            (identical(other.substitution, substitution) ||
+                other.substitution == substitution));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -5601,11 +8141,15 @@ class _TodayExercise implements TodayExercise {
       incrementKg,
       const DeepCollectionEquality().hash(_targets),
       const DeepCollectionEquality().hash(_prefill),
-      lastPerformance);
+      lastPerformance,
+      recommendation,
+      priorBest,
+      const DeepCollectionEquality().hash(_originalTargets),
+      substitution);
 
   @override
   String toString() {
-    return 'TodayExercise(plannedExerciseId: $plannedExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, orderIndex: $orderIndex, incrementKg: $incrementKg, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance)';
+    return 'TodayExercise(plannedExerciseId: $plannedExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, orderIndex: $orderIndex, incrementKg: $incrementKg, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance, recommendation: $recommendation, priorBest: $priorBest, originalTargets: $originalTargets, substitution: $substitution)';
   }
 }
 
@@ -5631,10 +8175,20 @@ abstract mixin class _$TodayExerciseCopyWith<$Res>
       double incrementKg,
       List<PlannedSet> targets,
       List<SetPrefill> prefill,
-      LastPerformance? lastPerformance});
+      LastPerformance? lastPerformance,
+      ProgressionRecommendation? recommendation,
+      PriorBest priorBest,
+      List<PlannedSet>? originalTargets,
+      Substitution? substitution});
 
   @override
   $LastPerformanceCopyWith<$Res>? get lastPerformance;
+  @override
+  $ProgressionRecommendationCopyWith<$Res>? get recommendation;
+  @override
+  $PriorBestCopyWith<$Res> get priorBest;
+  @override
+  $SubstitutionCopyWith<$Res>? get substitution;
 }
 
 /// @nodoc
@@ -5664,6 +8218,10 @@ class __$TodayExerciseCopyWithImpl<$Res>
     Object? targets = null,
     Object? prefill = null,
     Object? lastPerformance = freezed,
+    Object? recommendation = freezed,
+    Object? priorBest = null,
+    Object? originalTargets = freezed,
+    Object? substitution = freezed,
   }) {
     return _then(_TodayExercise(
       plannedExerciseId: null == plannedExerciseId
@@ -5722,6 +8280,22 @@ class __$TodayExerciseCopyWithImpl<$Res>
           ? _self.lastPerformance
           : lastPerformance // ignore: cast_nullable_to_non_nullable
               as LastPerformance?,
+      recommendation: freezed == recommendation
+          ? _self.recommendation
+          : recommendation // ignore: cast_nullable_to_non_nullable
+              as ProgressionRecommendation?,
+      priorBest: null == priorBest
+          ? _self.priorBest
+          : priorBest // ignore: cast_nullable_to_non_nullable
+              as PriorBest,
+      originalTargets: freezed == originalTargets
+          ? _self._originalTargets
+          : originalTargets // ignore: cast_nullable_to_non_nullable
+              as List<PlannedSet>?,
+      substitution: freezed == substitution
+          ? _self.substitution
+          : substitution // ignore: cast_nullable_to_non_nullable
+              as Substitution?,
     ));
   }
 
@@ -5738,6 +8312,45 @@ class __$TodayExerciseCopyWithImpl<$Res>
       return _then(_self.copyWith(lastPerformance: value));
     });
   }
+
+  /// Create a copy of TodayExercise
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProgressionRecommendationCopyWith<$Res>? get recommendation {
+    if (_self.recommendation == null) {
+      return null;
+    }
+
+    return $ProgressionRecommendationCopyWith<$Res>(_self.recommendation!,
+        (value) {
+      return _then(_self.copyWith(recommendation: value));
+    });
+  }
+
+  /// Create a copy of TodayExercise
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $PriorBestCopyWith<$Res> get priorBest {
+    return $PriorBestCopyWith<$Res>(_self.priorBest, (value) {
+      return _then(_self.copyWith(priorBest: value));
+    });
+  }
+
+  /// Create a copy of TodayExercise
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $SubstitutionCopyWith<$Res>? get substitution {
+    if (_self.substitution == null) {
+      return null;
+    }
+
+    return $SubstitutionCopyWith<$Res>(_self.substitution!, (value) {
+      return _then(_self.copyWith(substitution: value));
+    });
+  }
 }
 
 /// @nodoc
@@ -5752,6 +8365,9 @@ mixin _$TodayResponse {
   List<TodayExercise> get exercises;
   WorkoutSession? get activeSession;
   String? get completedSessionId;
+  int? get mesocycleWeek;
+  DeloadState get deload;
+  List<NeglectedMuscle> get neglected;
 
   /// Create a copy of TodayResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -5784,7 +8400,11 @@ mixin _$TodayResponse {
             (identical(other.activeSession, activeSession) ||
                 other.activeSession == activeSession) &&
             (identical(other.completedSessionId, completedSessionId) ||
-                other.completedSessionId == completedSessionId));
+                other.completedSessionId == completedSessionId) &&
+            (identical(other.mesocycleWeek, mesocycleWeek) ||
+                other.mesocycleWeek == mesocycleWeek) &&
+            (identical(other.deload, deload) || other.deload == deload) &&
+            const DeepCollectionEquality().equals(other.neglected, neglected));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -5800,11 +8420,14 @@ mixin _$TodayResponse {
       const DeepCollectionEquality().hash(focus),
       const DeepCollectionEquality().hash(exercises),
       activeSession,
-      completedSessionId);
+      completedSessionId,
+      mesocycleWeek,
+      deload,
+      const DeepCollectionEquality().hash(neglected));
 
   @override
   String toString() {
-    return 'TodayResponse(date: $date, dayOfWeek: $dayOfWeek, programId: $programId, programDayId: $programDayId, sessionName: $sessionName, isRest: $isRest, focus: $focus, exercises: $exercises, activeSession: $activeSession, completedSessionId: $completedSessionId)';
+    return 'TodayResponse(date: $date, dayOfWeek: $dayOfWeek, programId: $programId, programDayId: $programDayId, sessionName: $sessionName, isRest: $isRest, focus: $focus, exercises: $exercises, activeSession: $activeSession, completedSessionId: $completedSessionId, mesocycleWeek: $mesocycleWeek, deload: $deload, neglected: $neglected)';
   }
 }
 
@@ -5824,9 +8447,13 @@ abstract mixin class $TodayResponseCopyWith<$Res> {
       List<MuscleGroup> focus,
       List<TodayExercise> exercises,
       WorkoutSession? activeSession,
-      String? completedSessionId});
+      String? completedSessionId,
+      int? mesocycleWeek,
+      DeloadState deload,
+      List<NeglectedMuscle> neglected});
 
   $WorkoutSessionCopyWith<$Res>? get activeSession;
+  $DeloadStateCopyWith<$Res> get deload;
 }
 
 /// @nodoc
@@ -5852,6 +8479,9 @@ class _$TodayResponseCopyWithImpl<$Res>
     Object? exercises = null,
     Object? activeSession = freezed,
     Object? completedSessionId = freezed,
+    Object? mesocycleWeek = freezed,
+    Object? deload = null,
+    Object? neglected = null,
   }) {
     return _then(_self.copyWith(
       date: null == date
@@ -5894,6 +8524,18 @@ class _$TodayResponseCopyWithImpl<$Res>
           ? _self.completedSessionId
           : completedSessionId // ignore: cast_nullable_to_non_nullable
               as String?,
+      mesocycleWeek: freezed == mesocycleWeek
+          ? _self.mesocycleWeek
+          : mesocycleWeek // ignore: cast_nullable_to_non_nullable
+              as int?,
+      deload: null == deload
+          ? _self.deload
+          : deload // ignore: cast_nullable_to_non_nullable
+              as DeloadState,
+      neglected: null == neglected
+          ? _self.neglected
+          : neglected // ignore: cast_nullable_to_non_nullable
+              as List<NeglectedMuscle>,
     ));
   }
 
@@ -5908,6 +8550,16 @@ class _$TodayResponseCopyWithImpl<$Res>
 
     return $WorkoutSessionCopyWith<$Res>(_self.activeSession!, (value) {
       return _then(_self.copyWith(activeSession: value));
+    });
+  }
+
+  /// Create a copy of TodayResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $DeloadStateCopyWith<$Res> get deload {
+    return $DeloadStateCopyWith<$Res>(_self.deload, (value) {
+      return _then(_self.copyWith(deload: value));
     });
   }
 }
@@ -6015,7 +8667,10 @@ extension TodayResponsePatterns on TodayResponse {
             List<MuscleGroup> focus,
             List<TodayExercise> exercises,
             WorkoutSession? activeSession,
-            String? completedSessionId)?
+            String? completedSessionId,
+            int? mesocycleWeek,
+            DeloadState deload,
+            List<NeglectedMuscle> neglected)?
         $default, {
     required TResult orElse(),
   }) {
@@ -6032,7 +8687,10 @@ extension TodayResponsePatterns on TodayResponse {
             _that.focus,
             _that.exercises,
             _that.activeSession,
-            _that.completedSessionId);
+            _that.completedSessionId,
+            _that.mesocycleWeek,
+            _that.deload,
+            _that.neglected);
       case _:
         return orElse();
     }
@@ -6063,7 +8721,10 @@ extension TodayResponsePatterns on TodayResponse {
             List<MuscleGroup> focus,
             List<TodayExercise> exercises,
             WorkoutSession? activeSession,
-            String? completedSessionId)
+            String? completedSessionId,
+            int? mesocycleWeek,
+            DeloadState deload,
+            List<NeglectedMuscle> neglected)
         $default,
   ) {
     final _that = this;
@@ -6079,7 +8740,10 @@ extension TodayResponsePatterns on TodayResponse {
             _that.focus,
             _that.exercises,
             _that.activeSession,
-            _that.completedSessionId);
+            _that.completedSessionId,
+            _that.mesocycleWeek,
+            _that.deload,
+            _that.neglected);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -6109,7 +8773,10 @@ extension TodayResponsePatterns on TodayResponse {
             List<MuscleGroup> focus,
             List<TodayExercise> exercises,
             WorkoutSession? activeSession,
-            String? completedSessionId)?
+            String? completedSessionId,
+            int? mesocycleWeek,
+            DeloadState deload,
+            List<NeglectedMuscle> neglected)?
         $default,
   ) {
     final _that = this;
@@ -6125,7 +8792,10 @@ extension TodayResponsePatterns on TodayResponse {
             _that.focus,
             _that.exercises,
             _that.activeSession,
-            _that.completedSessionId);
+            _that.completedSessionId,
+            _that.mesocycleWeek,
+            _that.deload,
+            _that.neglected);
       case _:
         return null;
     }
@@ -6145,9 +8815,13 @@ class _TodayResponse implements TodayResponse {
       required final List<MuscleGroup> focus,
       required final List<TodayExercise> exercises,
       required this.activeSession,
-      required this.completedSessionId})
+      required this.completedSessionId,
+      this.mesocycleWeek = null,
+      this.deload = DeloadState.none,
+      final List<NeglectedMuscle> neglected = const <NeglectedMuscle>[]})
       : _focus = focus,
-        _exercises = exercises;
+        _exercises = exercises,
+        _neglected = neglected;
   factory _TodayResponse.fromJson(Map<String, dynamic> json) =>
       _$TodayResponseFromJson(json);
 
@@ -6183,6 +8857,20 @@ class _TodayResponse implements TodayResponse {
   final WorkoutSession? activeSession;
   @override
   final String? completedSessionId;
+  @override
+  @JsonKey()
+  final int? mesocycleWeek;
+  @override
+  @JsonKey()
+  final DeloadState deload;
+  final List<NeglectedMuscle> _neglected;
+  @override
+  @JsonKey()
+  List<NeglectedMuscle> get neglected {
+    if (_neglected is EqualUnmodifiableListView) return _neglected;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_neglected);
+  }
 
   /// Create a copy of TodayResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -6220,7 +8908,12 @@ class _TodayResponse implements TodayResponse {
             (identical(other.activeSession, activeSession) ||
                 other.activeSession == activeSession) &&
             (identical(other.completedSessionId, completedSessionId) ||
-                other.completedSessionId == completedSessionId));
+                other.completedSessionId == completedSessionId) &&
+            (identical(other.mesocycleWeek, mesocycleWeek) ||
+                other.mesocycleWeek == mesocycleWeek) &&
+            (identical(other.deload, deload) || other.deload == deload) &&
+            const DeepCollectionEquality()
+                .equals(other._neglected, _neglected));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -6236,11 +8929,14 @@ class _TodayResponse implements TodayResponse {
       const DeepCollectionEquality().hash(_focus),
       const DeepCollectionEquality().hash(_exercises),
       activeSession,
-      completedSessionId);
+      completedSessionId,
+      mesocycleWeek,
+      deload,
+      const DeepCollectionEquality().hash(_neglected));
 
   @override
   String toString() {
-    return 'TodayResponse(date: $date, dayOfWeek: $dayOfWeek, programId: $programId, programDayId: $programDayId, sessionName: $sessionName, isRest: $isRest, focus: $focus, exercises: $exercises, activeSession: $activeSession, completedSessionId: $completedSessionId)';
+    return 'TodayResponse(date: $date, dayOfWeek: $dayOfWeek, programId: $programId, programDayId: $programDayId, sessionName: $sessionName, isRest: $isRest, focus: $focus, exercises: $exercises, activeSession: $activeSession, completedSessionId: $completedSessionId, mesocycleWeek: $mesocycleWeek, deload: $deload, neglected: $neglected)';
   }
 }
 
@@ -6262,10 +8958,15 @@ abstract mixin class _$TodayResponseCopyWith<$Res>
       List<MuscleGroup> focus,
       List<TodayExercise> exercises,
       WorkoutSession? activeSession,
-      String? completedSessionId});
+      String? completedSessionId,
+      int? mesocycleWeek,
+      DeloadState deload,
+      List<NeglectedMuscle> neglected});
 
   @override
   $WorkoutSessionCopyWith<$Res>? get activeSession;
+  @override
+  $DeloadStateCopyWith<$Res> get deload;
 }
 
 /// @nodoc
@@ -6291,6 +8992,9 @@ class __$TodayResponseCopyWithImpl<$Res>
     Object? exercises = null,
     Object? activeSession = freezed,
     Object? completedSessionId = freezed,
+    Object? mesocycleWeek = freezed,
+    Object? deload = null,
+    Object? neglected = null,
   }) {
     return _then(_TodayResponse(
       date: null == date
@@ -6333,6 +9037,18 @@ class __$TodayResponseCopyWithImpl<$Res>
           ? _self.completedSessionId
           : completedSessionId // ignore: cast_nullable_to_non_nullable
               as String?,
+      mesocycleWeek: freezed == mesocycleWeek
+          ? _self.mesocycleWeek
+          : mesocycleWeek // ignore: cast_nullable_to_non_nullable
+              as int?,
+      deload: null == deload
+          ? _self.deload
+          : deload // ignore: cast_nullable_to_non_nullable
+              as DeloadState,
+      neglected: null == neglected
+          ? _self._neglected
+          : neglected // ignore: cast_nullable_to_non_nullable
+              as List<NeglectedMuscle>,
     ));
   }
 
@@ -6347,6 +9063,3163 @@ class __$TodayResponseCopyWithImpl<$Res>
 
     return $WorkoutSessionCopyWith<$Res>(_self.activeSession!, (value) {
       return _then(_self.copyWith(activeSession: value));
+    });
+  }
+
+  /// Create a copy of TodayResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $DeloadStateCopyWith<$Res> get deload {
+    return $DeloadStateCopyWith<$Res>(_self.deload, (value) {
+      return _then(_self.copyWith(deload: value));
+    });
+  }
+}
+
+/// @nodoc
+mixin _$VolumeLandmarks {
+  double get mv;
+  double get mev;
+  double get mavLow;
+  double get mavHigh;
+  double get mrv;
+
+  /// Create a copy of VolumeLandmarks
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $VolumeLandmarksCopyWith<VolumeLandmarks> get copyWith =>
+      _$VolumeLandmarksCopyWithImpl<VolumeLandmarks>(
+          this as VolumeLandmarks, _$identity);
+
+  /// Serializes this VolumeLandmarks to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is VolumeLandmarks &&
+            (identical(other.mv, mv) || other.mv == mv) &&
+            (identical(other.mev, mev) || other.mev == mev) &&
+            (identical(other.mavLow, mavLow) || other.mavLow == mavLow) &&
+            (identical(other.mavHigh, mavHigh) || other.mavHigh == mavHigh) &&
+            (identical(other.mrv, mrv) || other.mrv == mrv));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, mv, mev, mavLow, mavHigh, mrv);
+
+  @override
+  String toString() {
+    return 'VolumeLandmarks(mv: $mv, mev: $mev, mavLow: $mavLow, mavHigh: $mavHigh, mrv: $mrv)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $VolumeLandmarksCopyWith<$Res> {
+  factory $VolumeLandmarksCopyWith(
+          VolumeLandmarks value, $Res Function(VolumeLandmarks) _then) =
+      _$VolumeLandmarksCopyWithImpl;
+  @useResult
+  $Res call({double mv, double mev, double mavLow, double mavHigh, double mrv});
+}
+
+/// @nodoc
+class _$VolumeLandmarksCopyWithImpl<$Res>
+    implements $VolumeLandmarksCopyWith<$Res> {
+  _$VolumeLandmarksCopyWithImpl(this._self, this._then);
+
+  final VolumeLandmarks _self;
+  final $Res Function(VolumeLandmarks) _then;
+
+  /// Create a copy of VolumeLandmarks
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? mv = null,
+    Object? mev = null,
+    Object? mavLow = null,
+    Object? mavHigh = null,
+    Object? mrv = null,
+  }) {
+    return _then(_self.copyWith(
+      mv: null == mv
+          ? _self.mv
+          : mv // ignore: cast_nullable_to_non_nullable
+              as double,
+      mev: null == mev
+          ? _self.mev
+          : mev // ignore: cast_nullable_to_non_nullable
+              as double,
+      mavLow: null == mavLow
+          ? _self.mavLow
+          : mavLow // ignore: cast_nullable_to_non_nullable
+              as double,
+      mavHigh: null == mavHigh
+          ? _self.mavHigh
+          : mavHigh // ignore: cast_nullable_to_non_nullable
+              as double,
+      mrv: null == mrv
+          ? _self.mrv
+          : mrv // ignore: cast_nullable_to_non_nullable
+              as double,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [VolumeLandmarks].
+extension VolumeLandmarksPatterns on VolumeLandmarks {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_VolumeLandmarks value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeLandmarks() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_VolumeLandmarks value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeLandmarks():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_VolumeLandmarks value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeLandmarks() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(
+            double mv, double mev, double mavLow, double mavHigh, double mrv)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeLandmarks() when $default != null:
+        return $default(
+            _that.mv, _that.mev, _that.mavLow, _that.mavHigh, _that.mrv);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(
+            double mv, double mev, double mavLow, double mavHigh, double mrv)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeLandmarks():
+        return $default(
+            _that.mv, _that.mev, _that.mavLow, _that.mavHigh, _that.mrv);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(
+            double mv, double mev, double mavLow, double mavHigh, double mrv)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeLandmarks() when $default != null:
+        return $default(
+            _that.mv, _that.mev, _that.mavLow, _that.mavHigh, _that.mrv);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _VolumeLandmarks implements VolumeLandmarks {
+  const _VolumeLandmarks(
+      {required this.mv,
+      required this.mev,
+      required this.mavLow,
+      required this.mavHigh,
+      required this.mrv});
+  factory _VolumeLandmarks.fromJson(Map<String, dynamic> json) =>
+      _$VolumeLandmarksFromJson(json);
+
+  @override
+  final double mv;
+  @override
+  final double mev;
+  @override
+  final double mavLow;
+  @override
+  final double mavHigh;
+  @override
+  final double mrv;
+
+  /// Create a copy of VolumeLandmarks
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$VolumeLandmarksCopyWith<_VolumeLandmarks> get copyWith =>
+      __$VolumeLandmarksCopyWithImpl<_VolumeLandmarks>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$VolumeLandmarksToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _VolumeLandmarks &&
+            (identical(other.mv, mv) || other.mv == mv) &&
+            (identical(other.mev, mev) || other.mev == mev) &&
+            (identical(other.mavLow, mavLow) || other.mavLow == mavLow) &&
+            (identical(other.mavHigh, mavHigh) || other.mavHigh == mavHigh) &&
+            (identical(other.mrv, mrv) || other.mrv == mrv));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, mv, mev, mavLow, mavHigh, mrv);
+
+  @override
+  String toString() {
+    return 'VolumeLandmarks(mv: $mv, mev: $mev, mavLow: $mavLow, mavHigh: $mavHigh, mrv: $mrv)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$VolumeLandmarksCopyWith<$Res>
+    implements $VolumeLandmarksCopyWith<$Res> {
+  factory _$VolumeLandmarksCopyWith(
+          _VolumeLandmarks value, $Res Function(_VolumeLandmarks) _then) =
+      __$VolumeLandmarksCopyWithImpl;
+  @override
+  @useResult
+  $Res call({double mv, double mev, double mavLow, double mavHigh, double mrv});
+}
+
+/// @nodoc
+class __$VolumeLandmarksCopyWithImpl<$Res>
+    implements _$VolumeLandmarksCopyWith<$Res> {
+  __$VolumeLandmarksCopyWithImpl(this._self, this._then);
+
+  final _VolumeLandmarks _self;
+  final $Res Function(_VolumeLandmarks) _then;
+
+  /// Create a copy of VolumeLandmarks
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? mv = null,
+    Object? mev = null,
+    Object? mavLow = null,
+    Object? mavHigh = null,
+    Object? mrv = null,
+  }) {
+    return _then(_VolumeLandmarks(
+      mv: null == mv
+          ? _self.mv
+          : mv // ignore: cast_nullable_to_non_nullable
+              as double,
+      mev: null == mev
+          ? _self.mev
+          : mev // ignore: cast_nullable_to_non_nullable
+              as double,
+      mavLow: null == mavLow
+          ? _self.mavLow
+          : mavLow // ignore: cast_nullable_to_non_nullable
+              as double,
+      mavHigh: null == mavHigh
+          ? _self.mavHigh
+          : mavHigh // ignore: cast_nullable_to_non_nullable
+              as double,
+      mrv: null == mrv
+          ? _self.mrv
+          : mrv // ignore: cast_nullable_to_non_nullable
+              as double,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$MuscleWeek {
+  MuscleGroup get muscle;
+  double get hardSets;
+  double get tonnageKg;
+  LandmarkStatus get status;
+  VolumeLandmarks get landmarks;
+  bool get owned;
+
+  /// Create a copy of MuscleWeek
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $MuscleWeekCopyWith<MuscleWeek> get copyWith =>
+      _$MuscleWeekCopyWithImpl<MuscleWeek>(this as MuscleWeek, _$identity);
+
+  /// Serializes this MuscleWeek to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is MuscleWeek &&
+            (identical(other.muscle, muscle) || other.muscle == muscle) &&
+            (identical(other.hardSets, hardSets) ||
+                other.hardSets == hardSets) &&
+            (identical(other.tonnageKg, tonnageKg) ||
+                other.tonnageKg == tonnageKg) &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.landmarks, landmarks) ||
+                other.landmarks == landmarks) &&
+            (identical(other.owned, owned) || other.owned == owned));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, muscle, hardSets, tonnageKg, status, landmarks, owned);
+
+  @override
+  String toString() {
+    return 'MuscleWeek(muscle: $muscle, hardSets: $hardSets, tonnageKg: $tonnageKg, status: $status, landmarks: $landmarks, owned: $owned)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $MuscleWeekCopyWith<$Res> {
+  factory $MuscleWeekCopyWith(
+          MuscleWeek value, $Res Function(MuscleWeek) _then) =
+      _$MuscleWeekCopyWithImpl;
+  @useResult
+  $Res call(
+      {MuscleGroup muscle,
+      double hardSets,
+      double tonnageKg,
+      LandmarkStatus status,
+      VolumeLandmarks landmarks,
+      bool owned});
+
+  $VolumeLandmarksCopyWith<$Res> get landmarks;
+}
+
+/// @nodoc
+class _$MuscleWeekCopyWithImpl<$Res> implements $MuscleWeekCopyWith<$Res> {
+  _$MuscleWeekCopyWithImpl(this._self, this._then);
+
+  final MuscleWeek _self;
+  final $Res Function(MuscleWeek) _then;
+
+  /// Create a copy of MuscleWeek
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? muscle = null,
+    Object? hardSets = null,
+    Object? tonnageKg = null,
+    Object? status = null,
+    Object? landmarks = null,
+    Object? owned = null,
+  }) {
+    return _then(_self.copyWith(
+      muscle: null == muscle
+          ? _self.muscle
+          : muscle // ignore: cast_nullable_to_non_nullable
+              as MuscleGroup,
+      hardSets: null == hardSets
+          ? _self.hardSets
+          : hardSets // ignore: cast_nullable_to_non_nullable
+              as double,
+      tonnageKg: null == tonnageKg
+          ? _self.tonnageKg
+          : tonnageKg // ignore: cast_nullable_to_non_nullable
+              as double,
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as LandmarkStatus,
+      landmarks: null == landmarks
+          ? _self.landmarks
+          : landmarks // ignore: cast_nullable_to_non_nullable
+              as VolumeLandmarks,
+      owned: null == owned
+          ? _self.owned
+          : owned // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
+  }
+
+  /// Create a copy of MuscleWeek
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $VolumeLandmarksCopyWith<$Res> get landmarks {
+    return $VolumeLandmarksCopyWith<$Res>(_self.landmarks, (value) {
+      return _then(_self.copyWith(landmarks: value));
+    });
+  }
+}
+
+/// Adds pattern-matching-related methods to [MuscleWeek].
+extension MuscleWeekPatterns on MuscleWeek {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_MuscleWeek value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _MuscleWeek() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_MuscleWeek value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _MuscleWeek():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_MuscleWeek value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _MuscleWeek() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(MuscleGroup muscle, double hardSets, double tonnageKg,
+            LandmarkStatus status, VolumeLandmarks landmarks, bool owned)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _MuscleWeek() when $default != null:
+        return $default(_that.muscle, _that.hardSets, _that.tonnageKg,
+            _that.status, _that.landmarks, _that.owned);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(MuscleGroup muscle, double hardSets, double tonnageKg,
+            LandmarkStatus status, VolumeLandmarks landmarks, bool owned)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _MuscleWeek():
+        return $default(_that.muscle, _that.hardSets, _that.tonnageKg,
+            _that.status, _that.landmarks, _that.owned);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(MuscleGroup muscle, double hardSets, double tonnageKg,
+            LandmarkStatus status, VolumeLandmarks landmarks, bool owned)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _MuscleWeek() when $default != null:
+        return $default(_that.muscle, _that.hardSets, _that.tonnageKg,
+            _that.status, _that.landmarks, _that.owned);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _MuscleWeek implements MuscleWeek {
+  const _MuscleWeek(
+      {required this.muscle,
+      required this.hardSets,
+      required this.tonnageKg,
+      required this.status,
+      required this.landmarks,
+      required this.owned});
+  factory _MuscleWeek.fromJson(Map<String, dynamic> json) =>
+      _$MuscleWeekFromJson(json);
+
+  @override
+  final MuscleGroup muscle;
+  @override
+  final double hardSets;
+  @override
+  final double tonnageKg;
+  @override
+  final LandmarkStatus status;
+  @override
+  final VolumeLandmarks landmarks;
+  @override
+  final bool owned;
+
+  /// Create a copy of MuscleWeek
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$MuscleWeekCopyWith<_MuscleWeek> get copyWith =>
+      __$MuscleWeekCopyWithImpl<_MuscleWeek>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$MuscleWeekToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _MuscleWeek &&
+            (identical(other.muscle, muscle) || other.muscle == muscle) &&
+            (identical(other.hardSets, hardSets) ||
+                other.hardSets == hardSets) &&
+            (identical(other.tonnageKg, tonnageKg) ||
+                other.tonnageKg == tonnageKg) &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.landmarks, landmarks) ||
+                other.landmarks == landmarks) &&
+            (identical(other.owned, owned) || other.owned == owned));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, muscle, hardSets, tonnageKg, status, landmarks, owned);
+
+  @override
+  String toString() {
+    return 'MuscleWeek(muscle: $muscle, hardSets: $hardSets, tonnageKg: $tonnageKg, status: $status, landmarks: $landmarks, owned: $owned)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$MuscleWeekCopyWith<$Res>
+    implements $MuscleWeekCopyWith<$Res> {
+  factory _$MuscleWeekCopyWith(
+          _MuscleWeek value, $Res Function(_MuscleWeek) _then) =
+      __$MuscleWeekCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {MuscleGroup muscle,
+      double hardSets,
+      double tonnageKg,
+      LandmarkStatus status,
+      VolumeLandmarks landmarks,
+      bool owned});
+
+  @override
+  $VolumeLandmarksCopyWith<$Res> get landmarks;
+}
+
+/// @nodoc
+class __$MuscleWeekCopyWithImpl<$Res> implements _$MuscleWeekCopyWith<$Res> {
+  __$MuscleWeekCopyWithImpl(this._self, this._then);
+
+  final _MuscleWeek _self;
+  final $Res Function(_MuscleWeek) _then;
+
+  /// Create a copy of MuscleWeek
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? muscle = null,
+    Object? hardSets = null,
+    Object? tonnageKg = null,
+    Object? status = null,
+    Object? landmarks = null,
+    Object? owned = null,
+  }) {
+    return _then(_MuscleWeek(
+      muscle: null == muscle
+          ? _self.muscle
+          : muscle // ignore: cast_nullable_to_non_nullable
+              as MuscleGroup,
+      hardSets: null == hardSets
+          ? _self.hardSets
+          : hardSets // ignore: cast_nullable_to_non_nullable
+              as double,
+      tonnageKg: null == tonnageKg
+          ? _self.tonnageKg
+          : tonnageKg // ignore: cast_nullable_to_non_nullable
+              as double,
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as LandmarkStatus,
+      landmarks: null == landmarks
+          ? _self.landmarks
+          : landmarks // ignore: cast_nullable_to_non_nullable
+              as VolumeLandmarks,
+      owned: null == owned
+          ? _self.owned
+          : owned // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
+  }
+
+  /// Create a copy of MuscleWeek
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $VolumeLandmarksCopyWith<$Res> get landmarks {
+    return $VolumeLandmarksCopyWith<$Res>(_self.landmarks, (value) {
+      return _then(_self.copyWith(landmarks: value));
+    });
+  }
+}
+
+/// @nodoc
+mixin _$VolumeWeek {
+  String get isoWeek;
+  List<MuscleWeek> get muscles;
+
+  /// Create a copy of VolumeWeek
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $VolumeWeekCopyWith<VolumeWeek> get copyWith =>
+      _$VolumeWeekCopyWithImpl<VolumeWeek>(this as VolumeWeek, _$identity);
+
+  /// Serializes this VolumeWeek to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is VolumeWeek &&
+            (identical(other.isoWeek, isoWeek) || other.isoWeek == isoWeek) &&
+            const DeepCollectionEquality().equals(other.muscles, muscles));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, isoWeek, const DeepCollectionEquality().hash(muscles));
+
+  @override
+  String toString() {
+    return 'VolumeWeek(isoWeek: $isoWeek, muscles: $muscles)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $VolumeWeekCopyWith<$Res> {
+  factory $VolumeWeekCopyWith(
+          VolumeWeek value, $Res Function(VolumeWeek) _then) =
+      _$VolumeWeekCopyWithImpl;
+  @useResult
+  $Res call({String isoWeek, List<MuscleWeek> muscles});
+}
+
+/// @nodoc
+class _$VolumeWeekCopyWithImpl<$Res> implements $VolumeWeekCopyWith<$Res> {
+  _$VolumeWeekCopyWithImpl(this._self, this._then);
+
+  final VolumeWeek _self;
+  final $Res Function(VolumeWeek) _then;
+
+  /// Create a copy of VolumeWeek
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? isoWeek = null,
+    Object? muscles = null,
+  }) {
+    return _then(_self.copyWith(
+      isoWeek: null == isoWeek
+          ? _self.isoWeek
+          : isoWeek // ignore: cast_nullable_to_non_nullable
+              as String,
+      muscles: null == muscles
+          ? _self.muscles
+          : muscles // ignore: cast_nullable_to_non_nullable
+              as List<MuscleWeek>,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [VolumeWeek].
+extension VolumeWeekPatterns on VolumeWeek {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_VolumeWeek value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeWeek() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_VolumeWeek value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeWeek():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_VolumeWeek value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeWeek() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(String isoWeek, List<MuscleWeek> muscles)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeWeek() when $default != null:
+        return $default(_that.isoWeek, _that.muscles);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(String isoWeek, List<MuscleWeek> muscles) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeWeek():
+        return $default(_that.isoWeek, _that.muscles);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(String isoWeek, List<MuscleWeek> muscles)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeWeek() when $default != null:
+        return $default(_that.isoWeek, _that.muscles);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _VolumeWeek implements VolumeWeek {
+  const _VolumeWeek(
+      {required this.isoWeek, required final List<MuscleWeek> muscles})
+      : _muscles = muscles;
+  factory _VolumeWeek.fromJson(Map<String, dynamic> json) =>
+      _$VolumeWeekFromJson(json);
+
+  @override
+  final String isoWeek;
+  final List<MuscleWeek> _muscles;
+  @override
+  List<MuscleWeek> get muscles {
+    if (_muscles is EqualUnmodifiableListView) return _muscles;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_muscles);
+  }
+
+  /// Create a copy of VolumeWeek
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$VolumeWeekCopyWith<_VolumeWeek> get copyWith =>
+      __$VolumeWeekCopyWithImpl<_VolumeWeek>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$VolumeWeekToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _VolumeWeek &&
+            (identical(other.isoWeek, isoWeek) || other.isoWeek == isoWeek) &&
+            const DeepCollectionEquality().equals(other._muscles, _muscles));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, isoWeek, const DeepCollectionEquality().hash(_muscles));
+
+  @override
+  String toString() {
+    return 'VolumeWeek(isoWeek: $isoWeek, muscles: $muscles)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$VolumeWeekCopyWith<$Res>
+    implements $VolumeWeekCopyWith<$Res> {
+  factory _$VolumeWeekCopyWith(
+          _VolumeWeek value, $Res Function(_VolumeWeek) _then) =
+      __$VolumeWeekCopyWithImpl;
+  @override
+  @useResult
+  $Res call({String isoWeek, List<MuscleWeek> muscles});
+}
+
+/// @nodoc
+class __$VolumeWeekCopyWithImpl<$Res> implements _$VolumeWeekCopyWith<$Res> {
+  __$VolumeWeekCopyWithImpl(this._self, this._then);
+
+  final _VolumeWeek _self;
+  final $Res Function(_VolumeWeek) _then;
+
+  /// Create a copy of VolumeWeek
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? isoWeek = null,
+    Object? muscles = null,
+  }) {
+    return _then(_VolumeWeek(
+      isoWeek: null == isoWeek
+          ? _self.isoWeek
+          : isoWeek // ignore: cast_nullable_to_non_nullable
+              as String,
+      muscles: null == muscles
+          ? _self._muscles
+          : muscles // ignore: cast_nullable_to_non_nullable
+              as List<MuscleWeek>,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$VolumeResponse {
+  List<VolumeWeek> get weeks;
+  List<MuscleGroup> get owned;
+  List<NeglectedMuscle> get neglected;
+  int? get mesocycleWeek;
+  DeloadState get deload;
+
+  /// Create a copy of VolumeResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $VolumeResponseCopyWith<VolumeResponse> get copyWith =>
+      _$VolumeResponseCopyWithImpl<VolumeResponse>(
+          this as VolumeResponse, _$identity);
+
+  /// Serializes this VolumeResponse to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is VolumeResponse &&
+            const DeepCollectionEquality().equals(other.weeks, weeks) &&
+            const DeepCollectionEquality().equals(other.owned, owned) &&
+            const DeepCollectionEquality().equals(other.neglected, neglected) &&
+            (identical(other.mesocycleWeek, mesocycleWeek) ||
+                other.mesocycleWeek == mesocycleWeek) &&
+            (identical(other.deload, deload) || other.deload == deload));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      const DeepCollectionEquality().hash(weeks),
+      const DeepCollectionEquality().hash(owned),
+      const DeepCollectionEquality().hash(neglected),
+      mesocycleWeek,
+      deload);
+
+  @override
+  String toString() {
+    return 'VolumeResponse(weeks: $weeks, owned: $owned, neglected: $neglected, mesocycleWeek: $mesocycleWeek, deload: $deload)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $VolumeResponseCopyWith<$Res> {
+  factory $VolumeResponseCopyWith(
+          VolumeResponse value, $Res Function(VolumeResponse) _then) =
+      _$VolumeResponseCopyWithImpl;
+  @useResult
+  $Res call(
+      {List<VolumeWeek> weeks,
+      List<MuscleGroup> owned,
+      List<NeglectedMuscle> neglected,
+      int? mesocycleWeek,
+      DeloadState deload});
+
+  $DeloadStateCopyWith<$Res> get deload;
+}
+
+/// @nodoc
+class _$VolumeResponseCopyWithImpl<$Res>
+    implements $VolumeResponseCopyWith<$Res> {
+  _$VolumeResponseCopyWithImpl(this._self, this._then);
+
+  final VolumeResponse _self;
+  final $Res Function(VolumeResponse) _then;
+
+  /// Create a copy of VolumeResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? weeks = null,
+    Object? owned = null,
+    Object? neglected = null,
+    Object? mesocycleWeek = freezed,
+    Object? deload = null,
+  }) {
+    return _then(_self.copyWith(
+      weeks: null == weeks
+          ? _self.weeks
+          : weeks // ignore: cast_nullable_to_non_nullable
+              as List<VolumeWeek>,
+      owned: null == owned
+          ? _self.owned
+          : owned // ignore: cast_nullable_to_non_nullable
+              as List<MuscleGroup>,
+      neglected: null == neglected
+          ? _self.neglected
+          : neglected // ignore: cast_nullable_to_non_nullable
+              as List<NeglectedMuscle>,
+      mesocycleWeek: freezed == mesocycleWeek
+          ? _self.mesocycleWeek
+          : mesocycleWeek // ignore: cast_nullable_to_non_nullable
+              as int?,
+      deload: null == deload
+          ? _self.deload
+          : deload // ignore: cast_nullable_to_non_nullable
+              as DeloadState,
+    ));
+  }
+
+  /// Create a copy of VolumeResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $DeloadStateCopyWith<$Res> get deload {
+    return $DeloadStateCopyWith<$Res>(_self.deload, (value) {
+      return _then(_self.copyWith(deload: value));
+    });
+  }
+}
+
+/// Adds pattern-matching-related methods to [VolumeResponse].
+extension VolumeResponsePatterns on VolumeResponse {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_VolumeResponse value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeResponse() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_VolumeResponse value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeResponse():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_VolumeResponse value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeResponse() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(
+            List<VolumeWeek> weeks,
+            List<MuscleGroup> owned,
+            List<NeglectedMuscle> neglected,
+            int? mesocycleWeek,
+            DeloadState deload)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeResponse() when $default != null:
+        return $default(_that.weeks, _that.owned, _that.neglected,
+            _that.mesocycleWeek, _that.deload);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(
+            List<VolumeWeek> weeks,
+            List<MuscleGroup> owned,
+            List<NeglectedMuscle> neglected,
+            int? mesocycleWeek,
+            DeloadState deload)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeResponse():
+        return $default(_that.weeks, _that.owned, _that.neglected,
+            _that.mesocycleWeek, _that.deload);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(
+            List<VolumeWeek> weeks,
+            List<MuscleGroup> owned,
+            List<NeglectedMuscle> neglected,
+            int? mesocycleWeek,
+            DeloadState deload)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _VolumeResponse() when $default != null:
+        return $default(_that.weeks, _that.owned, _that.neglected,
+            _that.mesocycleWeek, _that.deload);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _VolumeResponse implements VolumeResponse {
+  const _VolumeResponse(
+      {required final List<VolumeWeek> weeks,
+      required final List<MuscleGroup> owned,
+      required final List<NeglectedMuscle> neglected,
+      required this.mesocycleWeek,
+      required this.deload})
+      : _weeks = weeks,
+        _owned = owned,
+        _neglected = neglected;
+  factory _VolumeResponse.fromJson(Map<String, dynamic> json) =>
+      _$VolumeResponseFromJson(json);
+
+  final List<VolumeWeek> _weeks;
+  @override
+  List<VolumeWeek> get weeks {
+    if (_weeks is EqualUnmodifiableListView) return _weeks;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_weeks);
+  }
+
+  final List<MuscleGroup> _owned;
+  @override
+  List<MuscleGroup> get owned {
+    if (_owned is EqualUnmodifiableListView) return _owned;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_owned);
+  }
+
+  final List<NeglectedMuscle> _neglected;
+  @override
+  List<NeglectedMuscle> get neglected {
+    if (_neglected is EqualUnmodifiableListView) return _neglected;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_neglected);
+  }
+
+  @override
+  final int? mesocycleWeek;
+  @override
+  final DeloadState deload;
+
+  /// Create a copy of VolumeResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$VolumeResponseCopyWith<_VolumeResponse> get copyWith =>
+      __$VolumeResponseCopyWithImpl<_VolumeResponse>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$VolumeResponseToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _VolumeResponse &&
+            const DeepCollectionEquality().equals(other._weeks, _weeks) &&
+            const DeepCollectionEquality().equals(other._owned, _owned) &&
+            const DeepCollectionEquality()
+                .equals(other._neglected, _neglected) &&
+            (identical(other.mesocycleWeek, mesocycleWeek) ||
+                other.mesocycleWeek == mesocycleWeek) &&
+            (identical(other.deload, deload) || other.deload == deload));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      const DeepCollectionEquality().hash(_weeks),
+      const DeepCollectionEquality().hash(_owned),
+      const DeepCollectionEquality().hash(_neglected),
+      mesocycleWeek,
+      deload);
+
+  @override
+  String toString() {
+    return 'VolumeResponse(weeks: $weeks, owned: $owned, neglected: $neglected, mesocycleWeek: $mesocycleWeek, deload: $deload)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$VolumeResponseCopyWith<$Res>
+    implements $VolumeResponseCopyWith<$Res> {
+  factory _$VolumeResponseCopyWith(
+          _VolumeResponse value, $Res Function(_VolumeResponse) _then) =
+      __$VolumeResponseCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {List<VolumeWeek> weeks,
+      List<MuscleGroup> owned,
+      List<NeglectedMuscle> neglected,
+      int? mesocycleWeek,
+      DeloadState deload});
+
+  @override
+  $DeloadStateCopyWith<$Res> get deload;
+}
+
+/// @nodoc
+class __$VolumeResponseCopyWithImpl<$Res>
+    implements _$VolumeResponseCopyWith<$Res> {
+  __$VolumeResponseCopyWithImpl(this._self, this._then);
+
+  final _VolumeResponse _self;
+  final $Res Function(_VolumeResponse) _then;
+
+  /// Create a copy of VolumeResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? weeks = null,
+    Object? owned = null,
+    Object? neglected = null,
+    Object? mesocycleWeek = freezed,
+    Object? deload = null,
+  }) {
+    return _then(_VolumeResponse(
+      weeks: null == weeks
+          ? _self._weeks
+          : weeks // ignore: cast_nullable_to_non_nullable
+              as List<VolumeWeek>,
+      owned: null == owned
+          ? _self._owned
+          : owned // ignore: cast_nullable_to_non_nullable
+              as List<MuscleGroup>,
+      neglected: null == neglected
+          ? _self._neglected
+          : neglected // ignore: cast_nullable_to_non_nullable
+              as List<NeglectedMuscle>,
+      mesocycleWeek: freezed == mesocycleWeek
+          ? _self.mesocycleWeek
+          : mesocycleWeek // ignore: cast_nullable_to_non_nullable
+              as int?,
+      deload: null == deload
+          ? _self.deload
+          : deload // ignore: cast_nullable_to_non_nullable
+              as DeloadState,
+    ));
+  }
+
+  /// Create a copy of VolumeResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $DeloadStateCopyWith<$Res> get deload {
+    return $DeloadStateCopyWith<$Res>(_self.deload, (value) {
+      return _then(_self.copyWith(deload: value));
+    });
+  }
+}
+
+/// @nodoc
+mixin _$ProgressionTarget {
+  int get repMin;
+  int get repMax;
+  int get targetRir;
+  int get sets;
+  double get incrementKg;
+
+  /// Create a copy of ProgressionTarget
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $ProgressionTargetCopyWith<ProgressionTarget> get copyWith =>
+      _$ProgressionTargetCopyWithImpl<ProgressionTarget>(
+          this as ProgressionTarget, _$identity);
+
+  /// Serializes this ProgressionTarget to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is ProgressionTarget &&
+            (identical(other.repMin, repMin) || other.repMin == repMin) &&
+            (identical(other.repMax, repMax) || other.repMax == repMax) &&
+            (identical(other.targetRir, targetRir) ||
+                other.targetRir == targetRir) &&
+            (identical(other.sets, sets) || other.sets == sets) &&
+            (identical(other.incrementKg, incrementKg) ||
+                other.incrementKg == incrementKg));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, repMin, repMax, targetRir, sets, incrementKg);
+
+  @override
+  String toString() {
+    return 'ProgressionTarget(repMin: $repMin, repMax: $repMax, targetRir: $targetRir, sets: $sets, incrementKg: $incrementKg)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $ProgressionTargetCopyWith<$Res> {
+  factory $ProgressionTargetCopyWith(
+          ProgressionTarget value, $Res Function(ProgressionTarget) _then) =
+      _$ProgressionTargetCopyWithImpl;
+  @useResult
+  $Res call(
+      {int repMin, int repMax, int targetRir, int sets, double incrementKg});
+}
+
+/// @nodoc
+class _$ProgressionTargetCopyWithImpl<$Res>
+    implements $ProgressionTargetCopyWith<$Res> {
+  _$ProgressionTargetCopyWithImpl(this._self, this._then);
+
+  final ProgressionTarget _self;
+  final $Res Function(ProgressionTarget) _then;
+
+  /// Create a copy of ProgressionTarget
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? repMin = null,
+    Object? repMax = null,
+    Object? targetRir = null,
+    Object? sets = null,
+    Object? incrementKg = null,
+  }) {
+    return _then(_self.copyWith(
+      repMin: null == repMin
+          ? _self.repMin
+          : repMin // ignore: cast_nullable_to_non_nullable
+              as int,
+      repMax: null == repMax
+          ? _self.repMax
+          : repMax // ignore: cast_nullable_to_non_nullable
+              as int,
+      targetRir: null == targetRir
+          ? _self.targetRir
+          : targetRir // ignore: cast_nullable_to_non_nullable
+              as int,
+      sets: null == sets
+          ? _self.sets
+          : sets // ignore: cast_nullable_to_non_nullable
+              as int,
+      incrementKg: null == incrementKg
+          ? _self.incrementKg
+          : incrementKg // ignore: cast_nullable_to_non_nullable
+              as double,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [ProgressionTarget].
+extension ProgressionTargetPatterns on ProgressionTarget {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_ProgressionTarget value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionTarget() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_ProgressionTarget value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionTarget():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_ProgressionTarget value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionTarget() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(int repMin, int repMax, int targetRir, int sets,
+            double incrementKg)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionTarget() when $default != null:
+        return $default(_that.repMin, _that.repMax, _that.targetRir, _that.sets,
+            _that.incrementKg);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(
+            int repMin, int repMax, int targetRir, int sets, double incrementKg)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionTarget():
+        return $default(_that.repMin, _that.repMax, _that.targetRir, _that.sets,
+            _that.incrementKg);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(int repMin, int repMax, int targetRir, int sets,
+            double incrementKg)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionTarget() when $default != null:
+        return $default(_that.repMin, _that.repMax, _that.targetRir, _that.sets,
+            _that.incrementKg);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _ProgressionTarget implements ProgressionTarget {
+  const _ProgressionTarget(
+      {required this.repMin,
+      required this.repMax,
+      required this.targetRir,
+      required this.sets,
+      required this.incrementKg});
+  factory _ProgressionTarget.fromJson(Map<String, dynamic> json) =>
+      _$ProgressionTargetFromJson(json);
+
+  @override
+  final int repMin;
+  @override
+  final int repMax;
+  @override
+  final int targetRir;
+  @override
+  final int sets;
+  @override
+  final double incrementKg;
+
+  /// Create a copy of ProgressionTarget
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$ProgressionTargetCopyWith<_ProgressionTarget> get copyWith =>
+      __$ProgressionTargetCopyWithImpl<_ProgressionTarget>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$ProgressionTargetToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _ProgressionTarget &&
+            (identical(other.repMin, repMin) || other.repMin == repMin) &&
+            (identical(other.repMax, repMax) || other.repMax == repMax) &&
+            (identical(other.targetRir, targetRir) ||
+                other.targetRir == targetRir) &&
+            (identical(other.sets, sets) || other.sets == sets) &&
+            (identical(other.incrementKg, incrementKg) ||
+                other.incrementKg == incrementKg));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, repMin, repMax, targetRir, sets, incrementKg);
+
+  @override
+  String toString() {
+    return 'ProgressionTarget(repMin: $repMin, repMax: $repMax, targetRir: $targetRir, sets: $sets, incrementKg: $incrementKg)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$ProgressionTargetCopyWith<$Res>
+    implements $ProgressionTargetCopyWith<$Res> {
+  factory _$ProgressionTargetCopyWith(
+          _ProgressionTarget value, $Res Function(_ProgressionTarget) _then) =
+      __$ProgressionTargetCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {int repMin, int repMax, int targetRir, int sets, double incrementKg});
+}
+
+/// @nodoc
+class __$ProgressionTargetCopyWithImpl<$Res>
+    implements _$ProgressionTargetCopyWith<$Res> {
+  __$ProgressionTargetCopyWithImpl(this._self, this._then);
+
+  final _ProgressionTarget _self;
+  final $Res Function(_ProgressionTarget) _then;
+
+  /// Create a copy of ProgressionTarget
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? repMin = null,
+    Object? repMax = null,
+    Object? targetRir = null,
+    Object? sets = null,
+    Object? incrementKg = null,
+  }) {
+    return _then(_ProgressionTarget(
+      repMin: null == repMin
+          ? _self.repMin
+          : repMin // ignore: cast_nullable_to_non_nullable
+              as int,
+      repMax: null == repMax
+          ? _self.repMax
+          : repMax // ignore: cast_nullable_to_non_nullable
+              as int,
+      targetRir: null == targetRir
+          ? _self.targetRir
+          : targetRir // ignore: cast_nullable_to_non_nullable
+              as int,
+      sets: null == sets
+          ? _self.sets
+          : sets // ignore: cast_nullable_to_non_nullable
+              as int,
+      incrementKg: null == incrementKg
+          ? _self.incrementKg
+          : incrementKg // ignore: cast_nullable_to_non_nullable
+              as double,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$ProgressionHistorySet {
+  int get setIndex;
+  double? get weightKg;
+  int get reps;
+  int? get rir;
+
+  /// Create a copy of ProgressionHistorySet
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $ProgressionHistorySetCopyWith<ProgressionHistorySet> get copyWith =>
+      _$ProgressionHistorySetCopyWithImpl<ProgressionHistorySet>(
+          this as ProgressionHistorySet, _$identity);
+
+  /// Serializes this ProgressionHistorySet to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is ProgressionHistorySet &&
+            (identical(other.setIndex, setIndex) ||
+                other.setIndex == setIndex) &&
+            (identical(other.weightKg, weightKg) ||
+                other.weightKg == weightKg) &&
+            (identical(other.reps, reps) || other.reps == reps) &&
+            (identical(other.rir, rir) || other.rir == rir));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, setIndex, weightKg, reps, rir);
+
+  @override
+  String toString() {
+    return 'ProgressionHistorySet(setIndex: $setIndex, weightKg: $weightKg, reps: $reps, rir: $rir)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $ProgressionHistorySetCopyWith<$Res> {
+  factory $ProgressionHistorySetCopyWith(ProgressionHistorySet value,
+          $Res Function(ProgressionHistorySet) _then) =
+      _$ProgressionHistorySetCopyWithImpl;
+  @useResult
+  $Res call({int setIndex, double? weightKg, int reps, int? rir});
+}
+
+/// @nodoc
+class _$ProgressionHistorySetCopyWithImpl<$Res>
+    implements $ProgressionHistorySetCopyWith<$Res> {
+  _$ProgressionHistorySetCopyWithImpl(this._self, this._then);
+
+  final ProgressionHistorySet _self;
+  final $Res Function(ProgressionHistorySet) _then;
+
+  /// Create a copy of ProgressionHistorySet
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? setIndex = null,
+    Object? weightKg = freezed,
+    Object? reps = null,
+    Object? rir = freezed,
+  }) {
+    return _then(_self.copyWith(
+      setIndex: null == setIndex
+          ? _self.setIndex
+          : setIndex // ignore: cast_nullable_to_non_nullable
+              as int,
+      weightKg: freezed == weightKg
+          ? _self.weightKg
+          : weightKg // ignore: cast_nullable_to_non_nullable
+              as double?,
+      reps: null == reps
+          ? _self.reps
+          : reps // ignore: cast_nullable_to_non_nullable
+              as int,
+      rir: freezed == rir
+          ? _self.rir
+          : rir // ignore: cast_nullable_to_non_nullable
+              as int?,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [ProgressionHistorySet].
+extension ProgressionHistorySetPatterns on ProgressionHistorySet {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_ProgressionHistorySet value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionHistorySet() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_ProgressionHistorySet value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionHistorySet():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_ProgressionHistorySet value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionHistorySet() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(int setIndex, double? weightKg, int reps, int? rir)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionHistorySet() when $default != null:
+        return $default(_that.setIndex, _that.weightKg, _that.reps, _that.rir);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(int setIndex, double? weightKg, int reps, int? rir)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionHistorySet():
+        return $default(_that.setIndex, _that.weightKg, _that.reps, _that.rir);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(int setIndex, double? weightKg, int reps, int? rir)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionHistorySet() when $default != null:
+        return $default(_that.setIndex, _that.weightKg, _that.reps, _that.rir);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _ProgressionHistorySet implements ProgressionHistorySet {
+  const _ProgressionHistorySet(
+      {required this.setIndex,
+      required this.weightKg,
+      required this.reps,
+      required this.rir});
+  factory _ProgressionHistorySet.fromJson(Map<String, dynamic> json) =>
+      _$ProgressionHistorySetFromJson(json);
+
+  @override
+  final int setIndex;
+  @override
+  final double? weightKg;
+  @override
+  final int reps;
+  @override
+  final int? rir;
+
+  /// Create a copy of ProgressionHistorySet
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$ProgressionHistorySetCopyWith<_ProgressionHistorySet> get copyWith =>
+      __$ProgressionHistorySetCopyWithImpl<_ProgressionHistorySet>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$ProgressionHistorySetToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _ProgressionHistorySet &&
+            (identical(other.setIndex, setIndex) ||
+                other.setIndex == setIndex) &&
+            (identical(other.weightKg, weightKg) ||
+                other.weightKg == weightKg) &&
+            (identical(other.reps, reps) || other.reps == reps) &&
+            (identical(other.rir, rir) || other.rir == rir));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, setIndex, weightKg, reps, rir);
+
+  @override
+  String toString() {
+    return 'ProgressionHistorySet(setIndex: $setIndex, weightKg: $weightKg, reps: $reps, rir: $rir)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$ProgressionHistorySetCopyWith<$Res>
+    implements $ProgressionHistorySetCopyWith<$Res> {
+  factory _$ProgressionHistorySetCopyWith(_ProgressionHistorySet value,
+          $Res Function(_ProgressionHistorySet) _then) =
+      __$ProgressionHistorySetCopyWithImpl;
+  @override
+  @useResult
+  $Res call({int setIndex, double? weightKg, int reps, int? rir});
+}
+
+/// @nodoc
+class __$ProgressionHistorySetCopyWithImpl<$Res>
+    implements _$ProgressionHistorySetCopyWith<$Res> {
+  __$ProgressionHistorySetCopyWithImpl(this._self, this._then);
+
+  final _ProgressionHistorySet _self;
+  final $Res Function(_ProgressionHistorySet) _then;
+
+  /// Create a copy of ProgressionHistorySet
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? setIndex = null,
+    Object? weightKg = freezed,
+    Object? reps = null,
+    Object? rir = freezed,
+  }) {
+    return _then(_ProgressionHistorySet(
+      setIndex: null == setIndex
+          ? _self.setIndex
+          : setIndex // ignore: cast_nullable_to_non_nullable
+              as int,
+      weightKg: freezed == weightKg
+          ? _self.weightKg
+          : weightKg // ignore: cast_nullable_to_non_nullable
+              as double?,
+      reps: null == reps
+          ? _self.reps
+          : reps // ignore: cast_nullable_to_non_nullable
+              as int,
+      rir: freezed == rir
+          ? _self.rir
+          : rir // ignore: cast_nullable_to_non_nullable
+              as int?,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$ProgressionHistoryEntry {
+  String get sessionId;
+  String get date;
+  List<ProgressionHistorySet> get sets;
+
+  /// Create a copy of ProgressionHistoryEntry
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $ProgressionHistoryEntryCopyWith<ProgressionHistoryEntry> get copyWith =>
+      _$ProgressionHistoryEntryCopyWithImpl<ProgressionHistoryEntry>(
+          this as ProgressionHistoryEntry, _$identity);
+
+  /// Serializes this ProgressionHistoryEntry to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is ProgressionHistoryEntry &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.date, date) || other.date == date) &&
+            const DeepCollectionEquality().equals(other.sets, sets));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, sessionId, date, const DeepCollectionEquality().hash(sets));
+
+  @override
+  String toString() {
+    return 'ProgressionHistoryEntry(sessionId: $sessionId, date: $date, sets: $sets)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $ProgressionHistoryEntryCopyWith<$Res> {
+  factory $ProgressionHistoryEntryCopyWith(ProgressionHistoryEntry value,
+          $Res Function(ProgressionHistoryEntry) _then) =
+      _$ProgressionHistoryEntryCopyWithImpl;
+  @useResult
+  $Res call({String sessionId, String date, List<ProgressionHistorySet> sets});
+}
+
+/// @nodoc
+class _$ProgressionHistoryEntryCopyWithImpl<$Res>
+    implements $ProgressionHistoryEntryCopyWith<$Res> {
+  _$ProgressionHistoryEntryCopyWithImpl(this._self, this._then);
+
+  final ProgressionHistoryEntry _self;
+  final $Res Function(ProgressionHistoryEntry) _then;
+
+  /// Create a copy of ProgressionHistoryEntry
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sessionId = null,
+    Object? date = null,
+    Object? sets = null,
+  }) {
+    return _then(_self.copyWith(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      date: null == date
+          ? _self.date
+          : date // ignore: cast_nullable_to_non_nullable
+              as String,
+      sets: null == sets
+          ? _self.sets
+          : sets // ignore: cast_nullable_to_non_nullable
+              as List<ProgressionHistorySet>,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [ProgressionHistoryEntry].
+extension ProgressionHistoryEntryPatterns on ProgressionHistoryEntry {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_ProgressionHistoryEntry value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionHistoryEntry() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_ProgressionHistoryEntry value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionHistoryEntry():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_ProgressionHistoryEntry value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionHistoryEntry() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(
+            String sessionId, String date, List<ProgressionHistorySet> sets)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionHistoryEntry() when $default != null:
+        return $default(_that.sessionId, _that.date, _that.sets);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(
+            String sessionId, String date, List<ProgressionHistorySet> sets)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionHistoryEntry():
+        return $default(_that.sessionId, _that.date, _that.sets);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(
+            String sessionId, String date, List<ProgressionHistorySet> sets)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionHistoryEntry() when $default != null:
+        return $default(_that.sessionId, _that.date, _that.sets);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _ProgressionHistoryEntry implements ProgressionHistoryEntry {
+  const _ProgressionHistoryEntry(
+      {required this.sessionId,
+      required this.date,
+      required final List<ProgressionHistorySet> sets})
+      : _sets = sets;
+  factory _ProgressionHistoryEntry.fromJson(Map<String, dynamic> json) =>
+      _$ProgressionHistoryEntryFromJson(json);
+
+  @override
+  final String sessionId;
+  @override
+  final String date;
+  final List<ProgressionHistorySet> _sets;
+  @override
+  List<ProgressionHistorySet> get sets {
+    if (_sets is EqualUnmodifiableListView) return _sets;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_sets);
+  }
+
+  /// Create a copy of ProgressionHistoryEntry
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$ProgressionHistoryEntryCopyWith<_ProgressionHistoryEntry> get copyWith =>
+      __$ProgressionHistoryEntryCopyWithImpl<_ProgressionHistoryEntry>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$ProgressionHistoryEntryToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _ProgressionHistoryEntry &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.date, date) || other.date == date) &&
+            const DeepCollectionEquality().equals(other._sets, _sets));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, sessionId, date, const DeepCollectionEquality().hash(_sets));
+
+  @override
+  String toString() {
+    return 'ProgressionHistoryEntry(sessionId: $sessionId, date: $date, sets: $sets)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$ProgressionHistoryEntryCopyWith<$Res>
+    implements $ProgressionHistoryEntryCopyWith<$Res> {
+  factory _$ProgressionHistoryEntryCopyWith(_ProgressionHistoryEntry value,
+          $Res Function(_ProgressionHistoryEntry) _then) =
+      __$ProgressionHistoryEntryCopyWithImpl;
+  @override
+  @useResult
+  $Res call({String sessionId, String date, List<ProgressionHistorySet> sets});
+}
+
+/// @nodoc
+class __$ProgressionHistoryEntryCopyWithImpl<$Res>
+    implements _$ProgressionHistoryEntryCopyWith<$Res> {
+  __$ProgressionHistoryEntryCopyWithImpl(this._self, this._then);
+
+  final _ProgressionHistoryEntry _self;
+  final $Res Function(_ProgressionHistoryEntry) _then;
+
+  /// Create a copy of ProgressionHistoryEntry
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? sessionId = null,
+    Object? date = null,
+    Object? sets = null,
+  }) {
+    return _then(_ProgressionHistoryEntry(
+      sessionId: null == sessionId
+          ? _self.sessionId
+          : sessionId // ignore: cast_nullable_to_non_nullable
+              as String,
+      date: null == date
+          ? _self.date
+          : date // ignore: cast_nullable_to_non_nullable
+              as String,
+      sets: null == sets
+          ? _self._sets
+          : sets // ignore: cast_nullable_to_non_nullable
+              as List<ProgressionHistorySet>,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$ProgressionDetail {
+  String get exerciseId;
+  String get name;
+  ProgressionTarget? get target;
+  ProgressionRecommendation get recommendation;
+  List<ProgressionHistoryEntry> get history;
+
+  /// Create a copy of ProgressionDetail
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $ProgressionDetailCopyWith<ProgressionDetail> get copyWith =>
+      _$ProgressionDetailCopyWithImpl<ProgressionDetail>(
+          this as ProgressionDetail, _$identity);
+
+  /// Serializes this ProgressionDetail to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is ProgressionDetail &&
+            (identical(other.exerciseId, exerciseId) ||
+                other.exerciseId == exerciseId) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.target, target) || other.target == target) &&
+            (identical(other.recommendation, recommendation) ||
+                other.recommendation == recommendation) &&
+            const DeepCollectionEquality().equals(other.history, history));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, exerciseId, name, target,
+      recommendation, const DeepCollectionEquality().hash(history));
+
+  @override
+  String toString() {
+    return 'ProgressionDetail(exerciseId: $exerciseId, name: $name, target: $target, recommendation: $recommendation, history: $history)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $ProgressionDetailCopyWith<$Res> {
+  factory $ProgressionDetailCopyWith(
+          ProgressionDetail value, $Res Function(ProgressionDetail) _then) =
+      _$ProgressionDetailCopyWithImpl;
+  @useResult
+  $Res call(
+      {String exerciseId,
+      String name,
+      ProgressionTarget? target,
+      ProgressionRecommendation recommendation,
+      List<ProgressionHistoryEntry> history});
+
+  $ProgressionTargetCopyWith<$Res>? get target;
+  $ProgressionRecommendationCopyWith<$Res> get recommendation;
+}
+
+/// @nodoc
+class _$ProgressionDetailCopyWithImpl<$Res>
+    implements $ProgressionDetailCopyWith<$Res> {
+  _$ProgressionDetailCopyWithImpl(this._self, this._then);
+
+  final ProgressionDetail _self;
+  final $Res Function(ProgressionDetail) _then;
+
+  /// Create a copy of ProgressionDetail
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? exerciseId = null,
+    Object? name = null,
+    Object? target = freezed,
+    Object? recommendation = null,
+    Object? history = null,
+  }) {
+    return _then(_self.copyWith(
+      exerciseId: null == exerciseId
+          ? _self.exerciseId
+          : exerciseId // ignore: cast_nullable_to_non_nullable
+              as String,
+      name: null == name
+          ? _self.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      target: freezed == target
+          ? _self.target
+          : target // ignore: cast_nullable_to_non_nullable
+              as ProgressionTarget?,
+      recommendation: null == recommendation
+          ? _self.recommendation
+          : recommendation // ignore: cast_nullable_to_non_nullable
+              as ProgressionRecommendation,
+      history: null == history
+          ? _self.history
+          : history // ignore: cast_nullable_to_non_nullable
+              as List<ProgressionHistoryEntry>,
+    ));
+  }
+
+  /// Create a copy of ProgressionDetail
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProgressionTargetCopyWith<$Res>? get target {
+    if (_self.target == null) {
+      return null;
+    }
+
+    return $ProgressionTargetCopyWith<$Res>(_self.target!, (value) {
+      return _then(_self.copyWith(target: value));
+    });
+  }
+
+  /// Create a copy of ProgressionDetail
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProgressionRecommendationCopyWith<$Res> get recommendation {
+    return $ProgressionRecommendationCopyWith<$Res>(_self.recommendation,
+        (value) {
+      return _then(_self.copyWith(recommendation: value));
+    });
+  }
+}
+
+/// Adds pattern-matching-related methods to [ProgressionDetail].
+extension ProgressionDetailPatterns on ProgressionDetail {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_ProgressionDetail value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionDetail() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_ProgressionDetail value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionDetail():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_ProgressionDetail value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionDetail() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(
+            String exerciseId,
+            String name,
+            ProgressionTarget? target,
+            ProgressionRecommendation recommendation,
+            List<ProgressionHistoryEntry> history)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionDetail() when $default != null:
+        return $default(_that.exerciseId, _that.name, _that.target,
+            _that.recommendation, _that.history);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(
+            String exerciseId,
+            String name,
+            ProgressionTarget? target,
+            ProgressionRecommendation recommendation,
+            List<ProgressionHistoryEntry> history)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionDetail():
+        return $default(_that.exerciseId, _that.name, _that.target,
+            _that.recommendation, _that.history);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(
+            String exerciseId,
+            String name,
+            ProgressionTarget? target,
+            ProgressionRecommendation recommendation,
+            List<ProgressionHistoryEntry> history)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _ProgressionDetail() when $default != null:
+        return $default(_that.exerciseId, _that.name, _that.target,
+            _that.recommendation, _that.history);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _ProgressionDetail implements ProgressionDetail {
+  const _ProgressionDetail(
+      {required this.exerciseId,
+      required this.name,
+      required this.target,
+      required this.recommendation,
+      required final List<ProgressionHistoryEntry> history})
+      : _history = history;
+  factory _ProgressionDetail.fromJson(Map<String, dynamic> json) =>
+      _$ProgressionDetailFromJson(json);
+
+  @override
+  final String exerciseId;
+  @override
+  final String name;
+  @override
+  final ProgressionTarget? target;
+  @override
+  final ProgressionRecommendation recommendation;
+  final List<ProgressionHistoryEntry> _history;
+  @override
+  List<ProgressionHistoryEntry> get history {
+    if (_history is EqualUnmodifiableListView) return _history;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_history);
+  }
+
+  /// Create a copy of ProgressionDetail
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$ProgressionDetailCopyWith<_ProgressionDetail> get copyWith =>
+      __$ProgressionDetailCopyWithImpl<_ProgressionDetail>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$ProgressionDetailToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _ProgressionDetail &&
+            (identical(other.exerciseId, exerciseId) ||
+                other.exerciseId == exerciseId) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.target, target) || other.target == target) &&
+            (identical(other.recommendation, recommendation) ||
+                other.recommendation == recommendation) &&
+            const DeepCollectionEquality().equals(other._history, _history));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, exerciseId, name, target,
+      recommendation, const DeepCollectionEquality().hash(_history));
+
+  @override
+  String toString() {
+    return 'ProgressionDetail(exerciseId: $exerciseId, name: $name, target: $target, recommendation: $recommendation, history: $history)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$ProgressionDetailCopyWith<$Res>
+    implements $ProgressionDetailCopyWith<$Res> {
+  factory _$ProgressionDetailCopyWith(
+          _ProgressionDetail value, $Res Function(_ProgressionDetail) _then) =
+      __$ProgressionDetailCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String exerciseId,
+      String name,
+      ProgressionTarget? target,
+      ProgressionRecommendation recommendation,
+      List<ProgressionHistoryEntry> history});
+
+  @override
+  $ProgressionTargetCopyWith<$Res>? get target;
+  @override
+  $ProgressionRecommendationCopyWith<$Res> get recommendation;
+}
+
+/// @nodoc
+class __$ProgressionDetailCopyWithImpl<$Res>
+    implements _$ProgressionDetailCopyWith<$Res> {
+  __$ProgressionDetailCopyWithImpl(this._self, this._then);
+
+  final _ProgressionDetail _self;
+  final $Res Function(_ProgressionDetail) _then;
+
+  /// Create a copy of ProgressionDetail
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? exerciseId = null,
+    Object? name = null,
+    Object? target = freezed,
+    Object? recommendation = null,
+    Object? history = null,
+  }) {
+    return _then(_ProgressionDetail(
+      exerciseId: null == exerciseId
+          ? _self.exerciseId
+          : exerciseId // ignore: cast_nullable_to_non_nullable
+              as String,
+      name: null == name
+          ? _self.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      target: freezed == target
+          ? _self.target
+          : target // ignore: cast_nullable_to_non_nullable
+              as ProgressionTarget?,
+      recommendation: null == recommendation
+          ? _self.recommendation
+          : recommendation // ignore: cast_nullable_to_non_nullable
+              as ProgressionRecommendation,
+      history: null == history
+          ? _self._history
+          : history // ignore: cast_nullable_to_non_nullable
+              as List<ProgressionHistoryEntry>,
+    ));
+  }
+
+  /// Create a copy of ProgressionDetail
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProgressionTargetCopyWith<$Res>? get target {
+    if (_self.target == null) {
+      return null;
+    }
+
+    return $ProgressionTargetCopyWith<$Res>(_self.target!, (value) {
+      return _then(_self.copyWith(target: value));
+    });
+  }
+
+  /// Create a copy of ProgressionDetail
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProgressionRecommendationCopyWith<$Res> get recommendation {
+    return $ProgressionRecommendationCopyWith<$Res>(_self.recommendation,
+        (value) {
+      return _then(_self.copyWith(recommendation: value));
     });
   }
 }

@@ -123,6 +123,25 @@ final historyProvider = FutureProvider<SessionListResponse>(
   retry: (_, __) => null,
 );
 
+/// Phase 6: weekly volume vs the landmarks; cached for offline.
+final volumeProvider = FutureProvider<VolumeResponse>(
+  (ref) async {
+    requireSession(ref);
+    final result = await ref.watch(workoutRepositoryProvider).volume();
+    return result.when(ok: (v) => v, err: (f) => throw f);
+  },
+  retry: (_, __) => null,
+);
+
+/// Phase 6: one lift's last three sessions and its recommendation.
+final progressionProvider =
+    FutureProvider.family<ProgressionDetail, String>((ref, exerciseId) async {
+  requireSession(ref);
+  final result =
+      await ref.watch(workoutRepositoryProvider).progression(exerciseId);
+  return result.when(ok: (d) => d, err: (Failure f) => throw f);
+});
+
 /// A completed session by SERVER id (history detail).
 final sessionDetailProvider =
     FutureProvider.family<WorkoutSession, String>((ref, serverId) async {

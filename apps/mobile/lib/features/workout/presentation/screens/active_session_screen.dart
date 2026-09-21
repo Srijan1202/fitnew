@@ -14,6 +14,7 @@ import '../../domain/entities/workout.dart';
 import '../controllers/rest_timer.dart';
 import '../controllers/workout_providers.dart';
 import '../widgets/rest_bar.dart';
+import '../widgets/recommendation_sheet.dart';
 import '../widgets/session_exercise_card.dart';
 import '../widgets/sync_pill.dart';
 
@@ -46,6 +47,13 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
 
   /// Pending drop sets per exercise, keyed by the working set they follow.
   final Map<String, Set<int>> _pendingDrops = {};
+
+  /// Rows the user reverted to last time's weight (owner 12.1), so the
+  /// revert survives a rebuild without touching the server's prefill.
+  final Set<String> _usedLast = <String>{};
+
+  /// Client set ids that beat the prior best when logged (PR moment).
+  final Set<String> _prSets = <String>{};
 
   Timer? _clock;
   bool _finishing = false;
@@ -181,10 +189,11 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
   Future<void> _log(SessionExercise x, SessionSetRow row) async {
     final repo = ref.read(workoutRepositoryProvider);
     final v = row.values;
+    final clientSetId = _uuid.v4();
     await repo.logSet(
       widget.clientSessionId,
       LogSetInput(
-        clientSetId: _uuid.v4(),
+        clientSetId: clientSetId,
         clientExerciseId: x.clientExerciseId,
         setIndex: row.setIndex,
         setType: row.setType,
@@ -203,6 +212,46 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
     });
     final rest = ref.read(restDefaultsProvider).forExercise(x);
     ref.read(restTimerProvider.notifier).start(rest, exerciseName: x.name);
+    if (row.setType == SetType.working) _prMoment(x, v, clientSetId);
+  }
+
+  /// Phase 6 PR moment (plan §6): a working set that beats the prior best
+  /// — heavier, or more reps at the best weight — gets a star on its check
+  /// and "PR" on the header the moment it is logged. A comparison against
+  /// two server-supplied numbers; the earlier sets of this session count
+  /// too, so a tie never celebrates. Records proper are the server's, on
+  /// completion.
+  void _prMoment(SessionExercise x, PlannedSet v, String clientSetId) {
+    final w = v.weightKg;
+    if (w == null || w <= 0) return;
+    var bestW = x.priorBest.weightKg;
+    var bestReps = x.priorBest.repsAtBestWeight ?? 0;
+    if (bestW == null) return; // establishing a baseline: nothing to beat
+    for (final s in x.sets) {
+      if (s.setType != SetType.working || s.weightKg == null) continue;
+      if (s.clientSetId == clientSetId) continue;
+      if (s.weightKg! > bestW! || (s.weightKg == bestW && s.reps > bestReps)) {
+        bestW = s.weightKg;
+        bestReps = s.reps;
+      }
+    }
+    final beats = w > bestW! || (w == bestW && v.repsMax > bestReps);
+    if (!beats) return;
+    setState(() => _prSets.add(clientSetId));
+  }
+
+  /// Owner 12.1: put last time's weight on every pending working row.
+  void _useLastWeight(SessionExercise x) {
+    final last = SessionExerciseCard.lastWeightOf(x);
+    if (last == null) return;
+    setState(() {
+      _usedLast.add(x.clientExerciseId);
+      for (final row in _rowsFor(x)) {
+        if (row.logged != null || row.setType != SetType.working) continue;
+        _pending['${x.clientExerciseId}.${row.key}'] =
+            row.values.copyWith(weightKg: last);
+      }
+    });
   }
 
   Future<void> _replace(SessionExercise x) async {
@@ -352,7 +401,19 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Text('SESSION', style: textTheme.labelSmall),
+              Text(
+                // A session started inside an accepted deload week carries
+                // the plan's originals on its exercises (Phase 6).
+                session.exercises.any((x) => x.originalTargets != null)
+                    ? 'DELOAD WEEK'
+                    : 'SESSION',
+                key: const ValueKey('session.kind'),
+                style: textTheme.labelSmall?.copyWith(
+                  color: session.exercises.any((x) => x.originalTargets != null)
+                      ? FitColors.amber
+                      : null,
+                ),
+              ),
               Text(
                 session.name,
                 key: const ValueKey('session.title'),
@@ -440,6 +501,18 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
     );
   }
 
+  /// The revert is offered when the rows opened on a recommendation that
+  /// differs from last time's load, and the user has not reverted yet.
+  bool _canUseLast(SessionExercise x) {
+    if (_usedLast.contains(x.clientExerciseId)) return false;
+    final last = SessionExerciseCard.lastWeightOf(x);
+    if (last == null) return false;
+    final first = x.prefill.isEmpty ? null : x.prefill.first;
+    return first != null &&
+        first.weightSource == 'recommendation' &&
+        first.weightKg != last;
+  }
+
   Widget _card(WorkoutSession session, int i, dynamic repo) {
     final x = session.exercises[i];
     final next =
@@ -520,6 +593,13 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
             x.clientExerciseId,
             removed: true,
           ),
+      onUseLastWeight: _canUseLast(x) ? () => _useLastWeight(x) : null,
+      onRecommendationTap: () => RecommendationSheet.show(
+        context,
+        x,
+        onUseLastWeight: _canUseLast(x) ? () => _useLastWeight(x) : null,
+      ),
+      prSetIds: _prSets,
     );
   }
 }

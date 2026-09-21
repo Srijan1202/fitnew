@@ -7,9 +7,11 @@ import '../../../training/domain/entities/program.dart';
 part 'workout.freezed.dart';
 part 'workout.g.dart';
 
-/// Wire shapes of `@fitos/contracts` workout.ts (Phase 5). A session is
+/// Wire shapes of `@fitos/contracts` workout.ts (Phase 5 + 6). A session is
 /// what the user actually did; targets come from the plan, "last time"
-/// from history. Nothing here recommends a load — that is Phase 6.
+/// from history. Phase 6 adds the engine's recommendation with its reason,
+/// the prior best, the deload state and volume — all computed on the
+/// server; nothing here decides a load.
 
 enum SetType {
   @JsonValue('warmup')
@@ -116,6 +118,157 @@ abstract class SetPrefill with _$SetPrefill {
       _$SetPrefillFromJson(json);
 }
 
+/* ------------------------------------------------- Phase 6: progression -- */
+
+/// §12.4 branches, exactly as the engine names them.
+enum ProgressionAction {
+  @JsonValue('increase-load')
+  increaseLoad('increase-load', 'Increase load'),
+  @JsonValue('add-reps')
+  addReps('add-reps', 'Add reps'),
+  @JsonValue('hold')
+  hold('hold', 'Hold'),
+  @JsonValue('reduce-load')
+  reduceLoad('reduce-load', 'Reduce load'),
+  @JsonValue('deload')
+  deload('deload', 'Deload'),
+  @JsonValue('establish-baseline')
+  establishBaseline('establish-baseline', 'Establish baseline');
+
+  const ProgressionAction(this.wire, this.label);
+  final String wire;
+  final String label;
+}
+
+/// What to do next on a lift, with — always — the reason (§12.4).
+@freezed
+abstract class ProgressionRecommendation with _$ProgressionRecommendation {
+  const factory ProgressionRecommendation({
+    required ProgressionAction action,
+    required double? weightKg,
+    required String repTarget,
+    required int targetRir,
+    required String reason,
+    required String basis,
+    required int sessionsConsidered,
+  }) = _ProgressionRecommendation;
+
+  factory ProgressionRecommendation.fromJson(Map<String, dynamic> json) =>
+      _$ProgressionRecommendationFromJson(json);
+}
+
+/// The user's best so far on a lift, so a set can be recognised as a
+/// record the moment it is logged.
+@freezed
+abstract class PriorBest with _$PriorBest {
+  const PriorBest._();
+
+  const factory PriorBest({
+    required double? weightKg,
+    required int? repsAtBestWeight,
+    required double? estimated1rm,
+  }) = _PriorBest;
+
+  factory PriorBest.fromJson(Map<String, dynamic> json) =>
+      _$PriorBestFromJson(json);
+
+  static const none =
+      PriorBest(weightKg: null, repsAtBestWeight: null, estimated1rm: null);
+}
+
+enum SubstitutionTrigger {
+  @JsonValue('equipment')
+  equipment('equipment'),
+  @JsonValue('limitation')
+  limitation('limitation'),
+  @JsonValue('rejected')
+  rejected('rejected');
+
+  const SubstitutionTrigger(this.wire);
+  final String wire;
+}
+
+@freezed
+abstract class SubstitutionAlternative with _$SubstitutionAlternative {
+  const factory SubstitutionAlternative({
+    required String exerciseId,
+    required String slug,
+    required String name,
+    required List<Equipment> equipment,
+  }) = _SubstitutionAlternative;
+
+  factory SubstitutionAlternative.fromJson(Map<String, dynamic> json) =>
+      _$SubstitutionAlternativeFromJson(json);
+}
+
+/// §12.6: why a planned lift should be swapped and for what — or,
+/// honestly, that the library has nothing (`alternative` null).
+@freezed
+abstract class Substitution with _$Substitution {
+  const factory Substitution({
+    required SubstitutionTrigger trigger,
+    required SubstitutionAlternative? alternative,
+    required String reason,
+  }) = _Substitution;
+
+  factory Substitution.fromJson(Map<String, dynamic> json) =>
+      _$SubstitutionFromJson(json);
+}
+
+enum DeloadStatus {
+  @JsonValue('none')
+  none('none'),
+  @JsonValue('offered')
+  offered('offered'),
+  @JsonValue('active')
+  active('active');
+
+  const DeloadStatus(this.wire);
+  final String wire;
+}
+
+enum DeloadTrigger {
+  @JsonValue('fatigue')
+  fatigue('fatigue'),
+  @JsonValue('mrv')
+  mrv('mrv');
+
+  const DeloadTrigger(this.wire);
+  final String wire;
+}
+
+@freezed
+abstract class DeloadState with _$DeloadState {
+  const factory DeloadState({
+    required DeloadStatus state,
+    required DeloadTrigger? trigger,
+    required String reason,
+    required String? endsOn,
+  }) = _DeloadState;
+
+  factory DeloadState.fromJson(Map<String, dynamic> json) =>
+      _$DeloadStateFromJson(json);
+
+  static const none = DeloadState(
+    state: DeloadStatus.none,
+    trigger: null,
+    reason: 'No deload is due.',
+    endsOn: null,
+  );
+}
+
+/// An owned muscle with no working set in the last six days (owner 12.7).
+@freezed
+abstract class NeglectedMuscle with _$NeglectedMuscle {
+  const factory NeglectedMuscle({
+    required MuscleGroup muscle,
+    required int? daysSince,
+  }) = _NeglectedMuscle;
+
+  factory NeglectedMuscle.fromJson(Map<String, dynamic> json) =>
+      _$NeglectedMuscleFromJson(json);
+}
+
 @freezed
 abstract class SessionExercise with _$SessionExercise {
   const SessionExercise._();
@@ -138,6 +291,9 @@ abstract class SessionExercise with _$SessionExercise {
     required List<PlannedSet> targets,
     @Default(<SetPrefill>[]) List<SetPrefill> prefill,
     required LastPerformance? lastPerformance,
+    @Default(null) ProgressionRecommendation? recommendation,
+    @Default(PriorBest.none) PriorBest priorBest,
+    @Default(null) List<PlannedSet>? originalTargets,
     required List<SetLog> sets,
   }) = _SessionExercise;
 
@@ -264,6 +420,10 @@ abstract class TodayExercise with _$TodayExercise {
     required List<PlannedSet> targets,
     @Default(<SetPrefill>[]) List<SetPrefill> prefill,
     required LastPerformance? lastPerformance,
+    @Default(null) ProgressionRecommendation? recommendation,
+    @Default(PriorBest.none) PriorBest priorBest,
+    @Default(null) List<PlannedSet>? originalTargets,
+    @Default(null) Substitution? substitution,
   }) = _TodayExercise;
 
   factory TodayExercise.fromJson(Map<String, dynamic> json) =>
@@ -283,10 +443,143 @@ abstract class TodayResponse with _$TodayResponse {
     required List<TodayExercise> exercises,
     required WorkoutSession? activeSession,
     required String? completedSessionId,
+    @Default(null) int? mesocycleWeek,
+    @Default(DeloadState.none) DeloadState deload,
+    @Default(<NeglectedMuscle>[]) List<NeglectedMuscle> neglected,
   }) = _TodayResponse;
 
   factory TodayResponse.fromJson(Map<String, dynamic> json) =>
       _$TodayResponseFromJson(json);
+}
+
+/* ------------------------------------------------------ Phase 6: volume -- */
+
+enum LandmarkStatus {
+  @JsonValue('none')
+  none('none', 'None'),
+  @JsonValue('below-mv')
+  belowMv('below-mv', 'Below MV'),
+  @JsonValue('below-mev')
+  belowMev('below-mev', 'Below MEV'),
+  @JsonValue('mev-to-mav')
+  mevToMav('mev-to-mav', 'Productive'),
+  @JsonValue('above-mav')
+  aboveMav('above-mav', 'Above MAV'),
+  @JsonValue('at-mrv')
+  atMrv('at-mrv', 'At MRV');
+
+  const LandmarkStatus(this.wire, this.label);
+  final String wire;
+  final String label;
+}
+
+@freezed
+abstract class VolumeLandmarks with _$VolumeLandmarks {
+  const factory VolumeLandmarks({
+    required double mv,
+    required double mev,
+    required double mavLow,
+    required double mavHigh,
+    required double mrv,
+  }) = _VolumeLandmarks;
+
+  factory VolumeLandmarks.fromJson(Map<String, dynamic> json) =>
+      _$VolumeLandmarksFromJson(json);
+}
+
+@freezed
+abstract class MuscleWeek with _$MuscleWeek {
+  const factory MuscleWeek({
+    required MuscleGroup muscle,
+    required double hardSets,
+    required double tonnageKg,
+    required LandmarkStatus status,
+    required VolumeLandmarks landmarks,
+    required bool owned,
+  }) = _MuscleWeek;
+
+  factory MuscleWeek.fromJson(Map<String, dynamic> json) =>
+      _$MuscleWeekFromJson(json);
+}
+
+@freezed
+abstract class VolumeWeek with _$VolumeWeek {
+  const factory VolumeWeek({
+    required String isoWeek,
+    required List<MuscleWeek> muscles,
+  }) = _VolumeWeek;
+
+  factory VolumeWeek.fromJson(Map<String, dynamic> json) =>
+      _$VolumeWeekFromJson(json);
+}
+
+/// Current ISO week + 3 previous (owner 12.8), oldest first.
+@freezed
+abstract class VolumeResponse with _$VolumeResponse {
+  const factory VolumeResponse({
+    required List<VolumeWeek> weeks,
+    required List<MuscleGroup> owned,
+    required List<NeglectedMuscle> neglected,
+    required int? mesocycleWeek,
+    required DeloadState deload,
+  }) = _VolumeResponse;
+
+  factory VolumeResponse.fromJson(Map<String, dynamic> json) =>
+      _$VolumeResponseFromJson(json);
+}
+
+@freezed
+abstract class ProgressionTarget with _$ProgressionTarget {
+  const factory ProgressionTarget({
+    required int repMin,
+    required int repMax,
+    required int targetRir,
+    required int sets,
+    required double incrementKg,
+  }) = _ProgressionTarget;
+
+  factory ProgressionTarget.fromJson(Map<String, dynamic> json) =>
+      _$ProgressionTargetFromJson(json);
+}
+
+@freezed
+abstract class ProgressionHistorySet with _$ProgressionHistorySet {
+  const factory ProgressionHistorySet({
+    required int setIndex,
+    required double? weightKg,
+    required int reps,
+    required int? rir,
+  }) = _ProgressionHistorySet;
+
+  factory ProgressionHistorySet.fromJson(Map<String, dynamic> json) =>
+      _$ProgressionHistorySetFromJson(json);
+}
+
+@freezed
+abstract class ProgressionHistoryEntry with _$ProgressionHistoryEntry {
+  const factory ProgressionHistoryEntry({
+    required String sessionId,
+    required String date,
+    required List<ProgressionHistorySet> sets,
+  }) = _ProgressionHistoryEntry;
+
+  factory ProgressionHistoryEntry.fromJson(Map<String, dynamic> json) =>
+      _$ProgressionHistoryEntryFromJson(json);
+}
+
+/// One lift's last three sessions and what the engine makes of them.
+@freezed
+abstract class ProgressionDetail with _$ProgressionDetail {
+  const factory ProgressionDetail({
+    required String exerciseId,
+    required String name,
+    required ProgressionTarget? target,
+    required ProgressionRecommendation recommendation,
+    required List<ProgressionHistoryEntry> history,
+  }) = _ProgressionDetail;
+
+  factory ProgressionDetail.fromJson(Map<String, dynamic> json) =>
+      _$ProgressionDetailFromJson(json);
 }
 
 /* ------------------------------------------------------------- requests -- */

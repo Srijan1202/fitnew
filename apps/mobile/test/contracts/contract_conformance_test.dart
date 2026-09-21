@@ -910,6 +910,237 @@ void main() {
     });
   });
 
+  group('progression, volume and deload (Phase 6)', () {
+    Map<String, dynamic> items(Map<String, dynamic> schema, String key) =>
+        (properties(schema)[key] as Map<String, dynamic>)['items']
+            as Map<String, dynamic>;
+    Map<String, dynamic> nested(Map<String, dynamic> schema, String key) =>
+        properties(schema)[key] as Map<String, dynamic>;
+
+    const recommendation = ProgressionRecommendation(
+      action: ProgressionAction.increaseLoad,
+      weightKg: 65,
+      repTarget: '6',
+      targetRir: 1,
+      reason: 'Every working set hit 12 reps at 1 RIR or better at 60 kg.',
+      basis: 'calculated',
+      sessionsConsidered: 1,
+    );
+    const priorBest = PriorBest(
+      weightKg: 60,
+      repsAtBestWeight: 12,
+      estimated1rm: 84,
+    );
+    const substitution = Substitution(
+      trigger: SubstitutionTrigger.equipment,
+      alternative: SubstitutionAlternative(
+        exerciseId: '33333333-3333-4333-8333-333333333333',
+        slug: 'dumbbell-goblet-squat',
+        name: 'Dumbbell Goblet Squat',
+        equipment: [Equipment.dumbbell],
+      ),
+      reason: 'Needs a barbell, which is no longer in your kit.',
+    );
+    const deload = DeloadState(
+      state: DeloadStatus.offered,
+      trigger: DeloadTrigger.fatigue,
+      reason: 'Fatigue on two lead lifts in the last seven days.',
+      endsOn: null,
+    );
+
+    test('enums match the server', () {
+      final session = schemaOf('/training/sessions', 'post');
+      final exercise = items(session, 'exercises');
+      final rec = nested(exercise, 'recommendation');
+      expect(
+        ProgressionAction.values.map((a) => a.wire).toList(),
+        enumOf(nested(rec, 'action')),
+      );
+      expect(
+        enumOf(nested(items(exercise, 'prefill'), 'weightSource')),
+        contains('recommendation'),
+      );
+      final today = schemaOf('/training/today', 'get');
+      final sub = nested(items(today, 'exercises'), 'substitution');
+      expect(
+        SubstitutionTrigger.values.map((t) => t.wire).toList(),
+        enumOf(nested(sub, 'trigger')),
+      );
+      final dl = nested(today, 'deload');
+      expect(
+        DeloadStatus.values.map((t) => t.wire).toList(),
+        enumOf(nested(dl, 'state')),
+      );
+      expect(
+        DeloadTrigger.values.map((t) => t.wire).toList(),
+        enumOf(nested(dl, 'trigger')),
+      );
+      final volume = schemaOf('/training/volume', 'get');
+      final week = items(items(volume, 'weeks'), 'muscles');
+      expect(
+        LandmarkStatus.values.map((t) => t.wire).toList(),
+        enumOf(nested(week, 'status')),
+      );
+    });
+
+    test('recommendation, prior best, substitution and deload shapes', () {
+      final session = schemaOf('/training/sessions', 'post');
+      final exercise = items(session, 'exercises');
+      expect(
+        recommendation.toJson().keys.toSet(),
+        keysOf(nested(exercise, 'recommendation')),
+      );
+      expect(
+        priorBest.toJson().keys.toSet(),
+        keysOf(nested(exercise, 'priorBest')),
+      );
+      final today = schemaOf('/training/today', 'get');
+      final todayExercise = items(today, 'exercises');
+      expect(
+        substitution.toJson().keys.toSet(),
+        keysOf(nested(todayExercise, 'substitution')),
+      );
+      expect(
+        substitution.alternative!.toJson().keys.toSet(),
+        keysOf(nested(nested(todayExercise, 'substitution'), 'alternative')),
+      );
+      expect(deload.toJson().keys.toSet(), keysOf(nested(today, 'deload')));
+      expect(
+        const NeglectedMuscle(muscle: MuscleGroup.calves, daysSince: 9)
+            .toJson()
+            .keys
+            .toSet(),
+        keysOf(items(today, 'neglected')),
+      );
+    });
+
+    test('volume and progression-detail shapes', () {
+      final volume = schemaOf('/training/volume', 'get');
+      const muscleWeek = MuscleWeek(
+        muscle: MuscleGroup.chest,
+        hardSets: 12,
+        tonnageKg: 4800,
+        status: LandmarkStatus.mevToMav,
+        landmarks:
+            VolumeLandmarks(mv: 4, mev: 8, mavLow: 12, mavHigh: 20, mrv: 22),
+        owned: true,
+      );
+      const response = VolumeResponse(
+        weeks: [
+          VolumeWeek(isoWeek: '2026-W39', muscles: [muscleWeek])
+        ],
+        owned: [MuscleGroup.chest],
+        neglected: [],
+        mesocycleWeek: 2,
+        deload: deload,
+      );
+      expect(response.toJson().keys.toSet(), keysOf(volume));
+      final week = items(volume, 'weeks');
+      expect(response.weeks.first.toJson().keys.toSet(), keysOf(week));
+      expect(
+        muscleWeek.toJson().keys.toSet(),
+        keysOf(items(week, 'muscles')),
+      );
+      expect(
+        muscleWeek.landmarks.toJson().keys.toSet(),
+        keysOf(nested(items(week, 'muscles'), 'landmarks')),
+      );
+
+      final detailSchema =
+          schemaOf('/training/progression/{exerciseId}', 'get');
+      const detail = ProgressionDetail(
+        exerciseId: '11111111-1111-4111-8111-111111111111',
+        name: 'Barbell Back Squat',
+        target: ProgressionTarget(
+          repMin: 6,
+          repMax: 12,
+          targetRir: 1,
+          sets: 3,
+          incrementKg: 5,
+        ),
+        recommendation: recommendation,
+        history: [
+          ProgressionHistoryEntry(
+            sessionId: '00000000-0000-4000-8000-000000000006',
+            date: '2026-09-18',
+            sets: [
+              ProgressionHistorySet(
+                setIndex: 1,
+                weightKg: 60,
+                reps: 12,
+                rir: 1,
+              ),
+            ],
+          ),
+        ],
+      );
+      expect(detail.toJson().keys.toSet(), keysOf(detailSchema));
+      expect(
+        detail.target!.toJson().keys.toSet(),
+        keysOf(nested(detailSchema, 'target')),
+      );
+      final history = items(detailSchema, 'history');
+      expect(detail.history.first.toJson().keys.toSet(), keysOf(history));
+      expect(
+        detail.history.first.sets.first.toJson().keys.toSet(),
+        keysOf(items(history, 'sets')),
+      );
+      // Deload accept/decline answer the deload state.
+      expect(
+        deload.toJson().keys.toSet(),
+        keysOf(schemaOf('/training/deload/accept', 'post')),
+      );
+      expect(
+        deload.toJson().keys.toSet(),
+        keysOf(schemaOf('/training/deload/decline', 'post')),
+      );
+    });
+
+    test('a Phase 5 cached "today" without the Phase 6 fields still parses',
+        () {
+      // Offline path: JSON cached before this build lacks the new keys.
+      final fake = FakeWorkoutApi().todayResponse;
+      final old = fake.toJson()
+        ..remove('mesocycleWeek')
+        ..remove('deload')
+        ..remove('neglected');
+      for (final x in old['exercises'] as List<dynamic>) {
+        (x as Map<String, dynamic>)
+          ..remove('recommendation')
+          ..remove('priorBest')
+          ..remove('originalTargets')
+          ..remove('substitution');
+      }
+      final parsed = TodayResponse.fromJson(
+        jsonDecode(jsonEncode(old)) as Map<String, dynamic>,
+      );
+      expect(parsed.deload, DeloadState.none);
+      expect(parsed.neglected, isEmpty);
+      expect(parsed.exercises.first.recommendation, isNull);
+      expect(parsed.exercises.first.priorBest, PriorBest.none);
+    });
+
+    test('Phase 6 DTOs round-trip through JSON', () {
+      Object? wire(Object? v) => jsonDecode(jsonEncode(v));
+      expect(
+        ProgressionRecommendation.fromJson(
+          wire(recommendation.toJson()) as Map<String, dynamic>,
+        ),
+        recommendation,
+      );
+      expect(
+        Substitution.fromJson(
+          wire(substitution.toJson()) as Map<String, dynamic>,
+        ),
+        substitution,
+      );
+      expect(
+        DeloadState.fromJson(wire(deload.toJson()) as Map<String, dynamic>),
+        deload,
+      );
+    });
+  });
+
   test('every DTO round-trips through its own JSON', () {
     // `fromJson(toJson())` — the generated parsers accept what they emit,
     // which is the same shape the server sends (checked above).

@@ -86,6 +86,158 @@ Map<String, dynamic> _$SetPrefillToJson(_SetPrefill instance) =>
       'weightSource': instance.weightSource,
     };
 
+_ProgressionRecommendation _$ProgressionRecommendationFromJson(
+        Map<String, dynamic> json) =>
+    _ProgressionRecommendation(
+      action: $enumDecode(_$ProgressionActionEnumMap, json['action']),
+      weightKg: (json['weightKg'] as num?)?.toDouble(),
+      repTarget: json['repTarget'] as String,
+      targetRir: (json['targetRir'] as num).toInt(),
+      reason: json['reason'] as String,
+      basis: json['basis'] as String,
+      sessionsConsidered: (json['sessionsConsidered'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$ProgressionRecommendationToJson(
+        _ProgressionRecommendation instance) =>
+    <String, dynamic>{
+      'action': _$ProgressionActionEnumMap[instance.action]!,
+      'weightKg': instance.weightKg,
+      'repTarget': instance.repTarget,
+      'targetRir': instance.targetRir,
+      'reason': instance.reason,
+      'basis': instance.basis,
+      'sessionsConsidered': instance.sessionsConsidered,
+    };
+
+const _$ProgressionActionEnumMap = {
+  ProgressionAction.increaseLoad: 'increase-load',
+  ProgressionAction.addReps: 'add-reps',
+  ProgressionAction.hold: 'hold',
+  ProgressionAction.reduceLoad: 'reduce-load',
+  ProgressionAction.deload: 'deload',
+  ProgressionAction.establishBaseline: 'establish-baseline',
+};
+
+_PriorBest _$PriorBestFromJson(Map<String, dynamic> json) => _PriorBest(
+      weightKg: (json['weightKg'] as num?)?.toDouble(),
+      repsAtBestWeight: (json['repsAtBestWeight'] as num?)?.toInt(),
+      estimated1rm: (json['estimated1rm'] as num?)?.toDouble(),
+    );
+
+Map<String, dynamic> _$PriorBestToJson(_PriorBest instance) =>
+    <String, dynamic>{
+      'weightKg': instance.weightKg,
+      'repsAtBestWeight': instance.repsAtBestWeight,
+      'estimated1rm': instance.estimated1rm,
+    };
+
+_SubstitutionAlternative _$SubstitutionAlternativeFromJson(
+        Map<String, dynamic> json) =>
+    _SubstitutionAlternative(
+      exerciseId: json['exerciseId'] as String,
+      slug: json['slug'] as String,
+      name: json['name'] as String,
+      equipment: (json['equipment'] as List<dynamic>)
+          .map((e) => $enumDecode(_$EquipmentEnumMap, e))
+          .toList(),
+    );
+
+Map<String, dynamic> _$SubstitutionAlternativeToJson(
+        _SubstitutionAlternative instance) =>
+    <String, dynamic>{
+      'exerciseId': instance.exerciseId,
+      'slug': instance.slug,
+      'name': instance.name,
+      'equipment':
+          instance.equipment.map((e) => _$EquipmentEnumMap[e]!).toList(),
+    };
+
+const _$EquipmentEnumMap = {
+  Equipment.barbell: 'barbell',
+  Equipment.dumbbell: 'dumbbell',
+  Equipment.machine: 'machine',
+  Equipment.cable: 'cable',
+  Equipment.kettlebell: 'kettlebell',
+  Equipment.resistanceBand: 'resistance-band',
+  Equipment.pullUpBar: 'pull-up-bar',
+  Equipment.bodyweight: 'bodyweight',
+};
+
+_Substitution _$SubstitutionFromJson(Map<String, dynamic> json) =>
+    _Substitution(
+      trigger: $enumDecode(_$SubstitutionTriggerEnumMap, json['trigger']),
+      alternative: json['alternative'] == null
+          ? null
+          : SubstitutionAlternative.fromJson(
+              json['alternative'] as Map<String, dynamic>),
+      reason: json['reason'] as String,
+    );
+
+Map<String, dynamic> _$SubstitutionToJson(_Substitution instance) =>
+    <String, dynamic>{
+      'trigger': _$SubstitutionTriggerEnumMap[instance.trigger]!,
+      'alternative': instance.alternative,
+      'reason': instance.reason,
+    };
+
+const _$SubstitutionTriggerEnumMap = {
+  SubstitutionTrigger.equipment: 'equipment',
+  SubstitutionTrigger.limitation: 'limitation',
+  SubstitutionTrigger.rejected: 'rejected',
+};
+
+_DeloadState _$DeloadStateFromJson(Map<String, dynamic> json) => _DeloadState(
+      state: $enumDecode(_$DeloadStatusEnumMap, json['state']),
+      trigger: $enumDecodeNullable(_$DeloadTriggerEnumMap, json['trigger']),
+      reason: json['reason'] as String,
+      endsOn: json['endsOn'] as String?,
+    );
+
+Map<String, dynamic> _$DeloadStateToJson(_DeloadState instance) =>
+    <String, dynamic>{
+      'state': _$DeloadStatusEnumMap[instance.state]!,
+      'trigger': _$DeloadTriggerEnumMap[instance.trigger],
+      'reason': instance.reason,
+      'endsOn': instance.endsOn,
+    };
+
+const _$DeloadStatusEnumMap = {
+  DeloadStatus.none: 'none',
+  DeloadStatus.offered: 'offered',
+  DeloadStatus.active: 'active',
+};
+
+const _$DeloadTriggerEnumMap = {
+  DeloadTrigger.fatigue: 'fatigue',
+  DeloadTrigger.mrv: 'mrv',
+};
+
+_NeglectedMuscle _$NeglectedMuscleFromJson(Map<String, dynamic> json) =>
+    _NeglectedMuscle(
+      muscle: $enumDecode(_$MuscleGroupEnumMap, json['muscle']),
+      daysSince: (json['daysSince'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$NeglectedMuscleToJson(_NeglectedMuscle instance) =>
+    <String, dynamic>{
+      'muscle': _$MuscleGroupEnumMap[instance.muscle]!,
+      'daysSince': instance.daysSince,
+    };
+
+const _$MuscleGroupEnumMap = {
+  MuscleGroup.chest: 'chest',
+  MuscleGroup.back: 'back',
+  MuscleGroup.quads: 'quads',
+  MuscleGroup.hamstrings: 'hamstrings',
+  MuscleGroup.glutes: 'glutes',
+  MuscleGroup.shoulders: 'shoulders',
+  MuscleGroup.biceps: 'biceps',
+  MuscleGroup.triceps: 'triceps',
+  MuscleGroup.calves: 'calves',
+  MuscleGroup.abs: 'abs',
+};
+
 _SessionExercise _$SessionExerciseFromJson(Map<String, dynamic> json) =>
     _SessionExercise(
       id: json['id'] as String,
@@ -120,6 +272,17 @@ _SessionExercise _$SessionExerciseFromJson(Map<String, dynamic> json) =>
           ? null
           : LastPerformance.fromJson(
               json['lastPerformance'] as Map<String, dynamic>),
+      recommendation: json['recommendation'] == null
+          ? null
+          : ProgressionRecommendation.fromJson(
+              json['recommendation'] as Map<String, dynamic>),
+      priorBest: json['priorBest'] == null
+          ? PriorBest.none
+          : PriorBest.fromJson(json['priorBest'] as Map<String, dynamic>),
+      originalTargets: (json['originalTargets'] as List<dynamic>?)
+              ?.map((e) => PlannedSet.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          null,
       sets: (json['sets'] as List<dynamic>)
           .map((e) => SetLog.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -148,6 +311,9 @@ Map<String, dynamic> _$SessionExerciseToJson(_SessionExercise instance) =>
       'targets': instance.targets,
       'prefill': instance.prefill,
       'lastPerformance': instance.lastPerformance,
+      'recommendation': instance.recommendation,
+      'priorBest': instance.priorBest,
+      'originalTargets': instance.originalTargets,
       'sets': instance.sets,
     };
 
@@ -169,34 +335,10 @@ const _$MovementPatternEnumMap = {
   MovementPattern.carry: 'carry',
 };
 
-const _$EquipmentEnumMap = {
-  Equipment.barbell: 'barbell',
-  Equipment.dumbbell: 'dumbbell',
-  Equipment.machine: 'machine',
-  Equipment.cable: 'cable',
-  Equipment.kettlebell: 'kettlebell',
-  Equipment.resistanceBand: 'resistance-band',
-  Equipment.pullUpBar: 'pull-up-bar',
-  Equipment.bodyweight: 'bodyweight',
-};
-
 const _$DifficultyEnumMap = {
   Difficulty.beginner: 'beginner',
   Difficulty.intermediate: 'intermediate',
   Difficulty.advanced: 'advanced',
-};
-
-const _$MuscleGroupEnumMap = {
-  MuscleGroup.chest: 'chest',
-  MuscleGroup.back: 'back',
-  MuscleGroup.quads: 'quads',
-  MuscleGroup.hamstrings: 'hamstrings',
-  MuscleGroup.glutes: 'glutes',
-  MuscleGroup.shoulders: 'shoulders',
-  MuscleGroup.biceps: 'biceps',
-  MuscleGroup.triceps: 'triceps',
-  MuscleGroup.calves: 'calves',
-  MuscleGroup.abs: 'abs',
 };
 
 _PersonalRecord _$PersonalRecordFromJson(Map<String, dynamic> json) =>
@@ -372,6 +514,20 @@ _TodayExercise _$TodayExerciseFromJson(Map<String, dynamic> json) =>
           ? null
           : LastPerformance.fromJson(
               json['lastPerformance'] as Map<String, dynamic>),
+      recommendation: json['recommendation'] == null
+          ? null
+          : ProgressionRecommendation.fromJson(
+              json['recommendation'] as Map<String, dynamic>),
+      priorBest: json['priorBest'] == null
+          ? PriorBest.none
+          : PriorBest.fromJson(json['priorBest'] as Map<String, dynamic>),
+      originalTargets: (json['originalTargets'] as List<dynamic>?)
+              ?.map((e) => PlannedSet.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          null,
+      substitution: json['substitution'] == null
+          ? null
+          : Substitution.fromJson(json['substitution'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$TodayExerciseToJson(_TodayExercise instance) =>
@@ -394,6 +550,10 @@ Map<String, dynamic> _$TodayExerciseToJson(_TodayExercise instance) =>
       'targets': instance.targets,
       'prefill': instance.prefill,
       'lastPerformance': instance.lastPerformance,
+      'recommendation': instance.recommendation,
+      'priorBest': instance.priorBest,
+      'originalTargets': instance.originalTargets,
+      'substitution': instance.substitution,
     };
 
 _TodayResponse _$TodayResponseFromJson(Map<String, dynamic> json) =>
@@ -415,6 +575,14 @@ _TodayResponse _$TodayResponseFromJson(Map<String, dynamic> json) =>
           : WorkoutSession.fromJson(
               json['activeSession'] as Map<String, dynamic>),
       completedSessionId: json['completedSessionId'] as String?,
+      mesocycleWeek: (json['mesocycleWeek'] as num?)?.toInt() ?? null,
+      deload: json['deload'] == null
+          ? DeloadState.none
+          : DeloadState.fromJson(json['deload'] as Map<String, dynamic>),
+      neglected: (json['neglected'] as List<dynamic>?)
+              ?.map((e) => NeglectedMuscle.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const <NeglectedMuscle>[],
     );
 
 Map<String, dynamic> _$TodayResponseToJson(_TodayResponse instance) =>
@@ -429,6 +597,171 @@ Map<String, dynamic> _$TodayResponseToJson(_TodayResponse instance) =>
       'exercises': instance.exercises,
       'activeSession': instance.activeSession,
       'completedSessionId': instance.completedSessionId,
+      'mesocycleWeek': instance.mesocycleWeek,
+      'deload': instance.deload,
+      'neglected': instance.neglected,
+    };
+
+_VolumeLandmarks _$VolumeLandmarksFromJson(Map<String, dynamic> json) =>
+    _VolumeLandmarks(
+      mv: (json['mv'] as num).toDouble(),
+      mev: (json['mev'] as num).toDouble(),
+      mavLow: (json['mavLow'] as num).toDouble(),
+      mavHigh: (json['mavHigh'] as num).toDouble(),
+      mrv: (json['mrv'] as num).toDouble(),
+    );
+
+Map<String, dynamic> _$VolumeLandmarksToJson(_VolumeLandmarks instance) =>
+    <String, dynamic>{
+      'mv': instance.mv,
+      'mev': instance.mev,
+      'mavLow': instance.mavLow,
+      'mavHigh': instance.mavHigh,
+      'mrv': instance.mrv,
+    };
+
+_MuscleWeek _$MuscleWeekFromJson(Map<String, dynamic> json) => _MuscleWeek(
+      muscle: $enumDecode(_$MuscleGroupEnumMap, json['muscle']),
+      hardSets: (json['hardSets'] as num).toDouble(),
+      tonnageKg: (json['tonnageKg'] as num).toDouble(),
+      status: $enumDecode(_$LandmarkStatusEnumMap, json['status']),
+      landmarks:
+          VolumeLandmarks.fromJson(json['landmarks'] as Map<String, dynamic>),
+      owned: json['owned'] as bool,
+    );
+
+Map<String, dynamic> _$MuscleWeekToJson(_MuscleWeek instance) =>
+    <String, dynamic>{
+      'muscle': _$MuscleGroupEnumMap[instance.muscle]!,
+      'hardSets': instance.hardSets,
+      'tonnageKg': instance.tonnageKg,
+      'status': _$LandmarkStatusEnumMap[instance.status]!,
+      'landmarks': instance.landmarks,
+      'owned': instance.owned,
+    };
+
+const _$LandmarkStatusEnumMap = {
+  LandmarkStatus.none: 'none',
+  LandmarkStatus.belowMv: 'below-mv',
+  LandmarkStatus.belowMev: 'below-mev',
+  LandmarkStatus.mevToMav: 'mev-to-mav',
+  LandmarkStatus.aboveMav: 'above-mav',
+  LandmarkStatus.atMrv: 'at-mrv',
+};
+
+_VolumeWeek _$VolumeWeekFromJson(Map<String, dynamic> json) => _VolumeWeek(
+      isoWeek: json['isoWeek'] as String,
+      muscles: (json['muscles'] as List<dynamic>)
+          .map((e) => MuscleWeek.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$VolumeWeekToJson(_VolumeWeek instance) =>
+    <String, dynamic>{
+      'isoWeek': instance.isoWeek,
+      'muscles': instance.muscles,
+    };
+
+_VolumeResponse _$VolumeResponseFromJson(Map<String, dynamic> json) =>
+    _VolumeResponse(
+      weeks: (json['weeks'] as List<dynamic>)
+          .map((e) => VolumeWeek.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      owned: (json['owned'] as List<dynamic>)
+          .map((e) => $enumDecode(_$MuscleGroupEnumMap, e))
+          .toList(),
+      neglected: (json['neglected'] as List<dynamic>)
+          .map((e) => NeglectedMuscle.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      mesocycleWeek: (json['mesocycleWeek'] as num?)?.toInt(),
+      deload: DeloadState.fromJson(json['deload'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$VolumeResponseToJson(_VolumeResponse instance) =>
+    <String, dynamic>{
+      'weeks': instance.weeks,
+      'owned': instance.owned.map((e) => _$MuscleGroupEnumMap[e]!).toList(),
+      'neglected': instance.neglected,
+      'mesocycleWeek': instance.mesocycleWeek,
+      'deload': instance.deload,
+    };
+
+_ProgressionTarget _$ProgressionTargetFromJson(Map<String, dynamic> json) =>
+    _ProgressionTarget(
+      repMin: (json['repMin'] as num).toInt(),
+      repMax: (json['repMax'] as num).toInt(),
+      targetRir: (json['targetRir'] as num).toInt(),
+      sets: (json['sets'] as num).toInt(),
+      incrementKg: (json['incrementKg'] as num).toDouble(),
+    );
+
+Map<String, dynamic> _$ProgressionTargetToJson(_ProgressionTarget instance) =>
+    <String, dynamic>{
+      'repMin': instance.repMin,
+      'repMax': instance.repMax,
+      'targetRir': instance.targetRir,
+      'sets': instance.sets,
+      'incrementKg': instance.incrementKg,
+    };
+
+_ProgressionHistorySet _$ProgressionHistorySetFromJson(
+        Map<String, dynamic> json) =>
+    _ProgressionHistorySet(
+      setIndex: (json['setIndex'] as num).toInt(),
+      weightKg: (json['weightKg'] as num?)?.toDouble(),
+      reps: (json['reps'] as num).toInt(),
+      rir: (json['rir'] as num?)?.toInt(),
+    );
+
+Map<String, dynamic> _$ProgressionHistorySetToJson(
+        _ProgressionHistorySet instance) =>
+    <String, dynamic>{
+      'setIndex': instance.setIndex,
+      'weightKg': instance.weightKg,
+      'reps': instance.reps,
+      'rir': instance.rir,
+    };
+
+_ProgressionHistoryEntry _$ProgressionHistoryEntryFromJson(
+        Map<String, dynamic> json) =>
+    _ProgressionHistoryEntry(
+      sessionId: json['sessionId'] as String,
+      date: json['date'] as String,
+      sets: (json['sets'] as List<dynamic>)
+          .map((e) => ProgressionHistorySet.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$ProgressionHistoryEntryToJson(
+        _ProgressionHistoryEntry instance) =>
+    <String, dynamic>{
+      'sessionId': instance.sessionId,
+      'date': instance.date,
+      'sets': instance.sets,
+    };
+
+_ProgressionDetail _$ProgressionDetailFromJson(Map<String, dynamic> json) =>
+    _ProgressionDetail(
+      exerciseId: json['exerciseId'] as String,
+      name: json['name'] as String,
+      target: json['target'] == null
+          ? null
+          : ProgressionTarget.fromJson(json['target'] as Map<String, dynamic>),
+      recommendation: ProgressionRecommendation.fromJson(
+          json['recommendation'] as Map<String, dynamic>),
+      history: (json['history'] as List<dynamic>)
+          .map((e) =>
+              ProgressionHistoryEntry.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$ProgressionDetailToJson(_ProgressionDetail instance) =>
+    <String, dynamic>{
+      'exerciseId': instance.exerciseId,
+      'name': instance.name,
+      'target': instance.target,
+      'recommendation': instance.recommendation,
+      'history': instance.history,
     };
 
 _SeededExercise _$SeededExerciseFromJson(Map<String, dynamic> json) =>

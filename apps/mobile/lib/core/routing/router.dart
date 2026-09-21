@@ -23,6 +23,7 @@ import '../../features/training/presentation/screens/template_preview_screen.dar
 import '../../features/training/presentation/screens/workout_week_screen.dart';
 import '../../features/workout/presentation/screens/active_session_screen.dart';
 import '../../features/workout/presentation/screens/history_screen.dart';
+import '../../features/workout/presentation/screens/volume_screen.dart';
 import '../../features/workout/presentation/screens/session_summary_screen.dart';
 import 'app_shell.dart';
 import 'guards.dart';
@@ -69,6 +70,7 @@ abstract final class Routes {
   static String sessionSummary(String clientSessionId) =>
       '/plan/session/$clientSessionId/summary';
   static const String history = '/plan/history';
+  static const String volume = '/plan/volume';
   static String historyDetail(String serverId) => '/plan/history/$serverId';
 
   /// Screens a signed-out user may see. Everything else needs a session.
@@ -220,6 +222,12 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
                         ),
                       ),
                     ],
+                  ),
+                  GoRoute(
+                    path: 'volume',
+                    name: 'volume',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const VolumeScreen(),
                   ),
                   GoRoute(
                     path: 'history',

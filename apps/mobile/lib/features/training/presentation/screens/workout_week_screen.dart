@@ -12,6 +12,7 @@ import '../../../exercise/domain/entities/exercise.dart';
 import '../../../workout/domain/entities/workout.dart';
 import '../../../workout/presentation/controllers/workout_providers.dart';
 import '../../../workout/presentation/widgets/start_session_button.dart';
+import '../../../workout/presentation/widgets/deload_panel.dart';
 import '../../domain/entities/program.dart';
 import '../controllers/program_controller.dart';
 import '../widgets/day_selector.dart';
@@ -171,6 +172,43 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
     _edit(day, next, now: true);
   }
 
+  /// Phase 6 (§12.6): accept the server's substitution. The same Phase 4
+  /// PATCH as Replace — the row keeps its id and prescription, takes the
+  /// alternative's movement, and its weights go back to unknown. The
+  /// server re-joins the catalogue from `exerciseId`, so pattern and
+  /// muscles follow.
+  Future<void> _substitute(
+    ProgramDay day,
+    PlannedExercise old,
+    SubstitutionAlternative alt,
+  ) async {
+    final next = [
+      for (final x in _exercisesOf(day))
+        if (x.id == old.id)
+          old.copyWith(
+            exerciseId: alt.exerciseId,
+            slug: alt.slug,
+            name: alt.name,
+            equipment: alt.equipment,
+            reason: null,
+            sets: [for (final s in old.sets) s.copyWith(weightKg: null)],
+          )
+        else
+          x,
+    ];
+    setState(() {
+      _drafts[day.id] = next;
+      _version[day.id] = (_version[day.id] ?? 0) + 1;
+      _saveState[day.id] = _SaveState.idle;
+    });
+    _timers.remove(day.id)?.cancel();
+    await _flush(day.id);
+    if (!mounted) return;
+    // The server's view of the day (and TODAY) now shows the new lift.
+    ref.invalidate(dayProvider(day.dayOfWeek));
+    ref.invalidate(todayProvider);
+  }
+
   Future<void> _replace(ProgramDay day, PlannedExercise old) async {
     final picked = await context.push<ExerciseSummary>(Routes.exercisePicker);
     if (picked == null || !mounted) return;
@@ -229,6 +267,13 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
         if (program == null) return const PlanStartScreen();
         final selected = _selectedDow ??= _defaultDay(program);
         final day = program.days.firstWhere((d) => d.dayOfWeek == selected);
+        // Phase 6: the server's view of this day (deload state, per-lift
+        // substitutions). Absent offline — the plan still renders.
+        final serverDay =
+            day.isRest ? null : ref.watch(dayProvider(day.dayOfWeek)).value;
+        final phase6 = serverDay != null && serverDay.programDayId == day.id
+            ? serverDay
+            : null;
         return Scaffold(
           // The Training tab's root: no back button (the bar and Android
           // back handle leaving); the title carries the programme.
@@ -250,6 +295,8 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
                       _rename(context, program);
                     case 'history':
                       context.push(Routes.history);
+                    case 'volume':
+                      context.push(Routes.volume);
                     case 'adhoc':
                       _start(program, null);
                   }
@@ -257,6 +304,7 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
                 itemBuilder: (_) => const [
                   PopupMenuItem(value: 'edit', child: Text('Edit this day')),
                   PopupMenuItem(value: 'history', child: Text('History')),
+                  PopupMenuItem(value: 'volume', child: Text('Volume')),
                   PopupMenuItem(
                     value: 'adhoc',
                     child: Text('Start empty session'),
@@ -304,6 +352,15 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
                     onReplace: (x) => _replace(day, x),
                     onRetry: () => _flush(day.id),
                     onEditDay: () => context.push(Routes.planDayEdit(day.id)),
+                    deload: phase6?.deload,
+                    mesocycleWeek: phase6?.mesocycleWeek,
+                    substitutions: {
+                      if (phase6 != null)
+                        for (final x in phase6.exercises)
+                          if (x.substitution != null)
+                            x.plannedExerciseId: x.substitution!,
+                    },
+                    onSubstitute: (x, alt) => _substitute(day, x, alt),
                   ),
                 ),
               ],
@@ -411,6 +468,10 @@ class _DayView extends StatelessWidget {
     required this.onReplace,
     required this.onRetry,
     required this.onEditDay,
+    this.deload,
+    this.mesocycleWeek,
+    this.substitutions = const {},
+    this.onSubstitute,
     super.key,
   });
 
@@ -428,6 +489,14 @@ class _DayView extends StatelessWidget {
   final ValueChanged<PlannedExercise> onReplace;
   final VoidCallback onRetry;
   final VoidCallback onEditDay;
+
+  /// Phase 6, from the server's `/today?dayOfWeek=`; null when offline.
+  final DeloadState? deload;
+  final int? mesocycleWeek;
+
+  /// Substitutions by planned exercise id.
+  final Map<String, Substitution> substitutions;
+  final void Function(PlannedExercise, SubstitutionAlternative)? onSubstitute;
 
   @override
   Widget build(BuildContext context) {
@@ -500,15 +569,24 @@ class _DayView extends StatelessWidget {
               ),
               const SizedBox(height: FitSpacing.xs),
               Text(
-                '${exercises.length} exercises · $sets sets · ~$minutes min',
+                '${exercises.length} exercises · $sets sets · ~$minutes min${mesocycleWeek == null ? '' : ' · week $mesocycleWeek'}',
+                key: const ValueKey('day.meta'),
                 style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
               ),
+              if (deload != null && deload!.state != DeloadStatus.none) ...[
+                const SizedBox(height: FitSpacing.sm),
+                DeloadPanel(
+                  deload: deload!,
+                  mesocycleWeek: mesocycleWeek,
+                  compact: deload!.state == DeloadStatus.active,
+                ),
+              ],
               const SizedBox(height: FitSpacing.md),
               startButton,
             ],
           ),
         ),
-        for (var i = 0; i < exercises.length; i++)
+        for (var i = 0; i < exercises.length; i++) ...<Widget>[
           ExerciseCard(
             key: ValueKey('card.${exercises[i].id}'),
             index: i + 1,
@@ -522,6 +600,15 @@ class _DayView extends StatelessWidget {
             onAddSet: () => onAddSet(exercises[i].id),
             onRemoveSet: (index) => onRemoveSet(exercises[i].id, index),
           ),
+          if (substitutions[exercises[i].id] != null)
+            SubstitutionLine(
+              keyPrefix: 'card.${exercises[i].id}',
+              substitution: substitutions[exercises[i].id]!,
+              onAccept: onSubstitute == null || saveState == _SaveState.saving
+                  ? null
+                  : (alt) => onSubstitute!(exercises[i], alt),
+            ),
+        ],
         const Divider(color: FitColors.rule, height: 1),
         Padding(
           padding: const EdgeInsets.fromLTRB(

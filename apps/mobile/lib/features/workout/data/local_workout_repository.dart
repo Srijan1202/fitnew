@@ -197,6 +197,39 @@ class LocalWorkoutRepository implements WorkoutRepository {
   Future<Result<WorkoutSession>> fetchSession(String serverId) =>
       _api.get(serverId);
 
+  @override
+  Future<Result<VolumeResponse>> volume() async {
+    const key = 'volume';
+    final result = await _api.volume();
+    return result.when(
+      ok: (v) async {
+        await _db.into(_db.cachedJson).insertOnConflictUpdate(
+              CachedJsonCompanion.insert(
+                key: key,
+                json: jsonEncode(v.toJson()),
+                storedAt: _stamp(),
+              ),
+            );
+        return Ok(v);
+      },
+      err: (f) async {
+        final cached = await (_db.select(_db.cachedJson)
+              ..where((t) => t.key.equals(key)))
+            .getSingleOrNull();
+        if (cached == null || f is Unauthenticated) return Err(f);
+        return Ok(
+          VolumeResponse.fromJson(
+            jsonDecode(cached.json) as Map<String, dynamic>,
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Future<Result<ProgressionDetail>> progression(String exerciseId) =>
+      _api.progression(exerciseId);
+
   /* ----------------------------------------------------------- writes -- */
 
   @override
@@ -225,6 +258,9 @@ class LocalWorkoutRepository implements WorkoutRepository {
             targets: x.targets,
             prefill: x.prefill,
             lastPerformance: x.lastPerformance,
+            recommendation: x.recommendation,
+            priorBest: x.priorBest,
+            originalTargets: x.originalTargets,
             sets: const [],
           ),
     ].map((x) => x.copyWith(clientExerciseId: x.id)).toList();
@@ -615,6 +651,12 @@ class LocalWorkoutRepository implements WorkoutRepository {
   @override
   Future<void> complete(String clientSessionId, {String? notes}) =>
       _finish(clientSessionId, SessionStatus.completed, notes: notes);
+
+  @override
+  Future<Result<DeloadState>> acceptDeload() => _api.acceptDeload();
+
+  @override
+  Future<Result<DeloadState>> declineDeload() => _api.declineDeload();
 
   @override
   Future<void> abandon(String clientSessionId) =>

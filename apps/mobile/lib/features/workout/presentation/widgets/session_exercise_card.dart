@@ -11,7 +11,10 @@ import '../../domain/entities/workout.dart';
 /// "+ Add set", "Drop set", "Superset with next", Replace, Remove.
 ///
 /// Nothing here decides a number: pending values come from the server's
-/// prefill (what you did / the plan) or copy the row above.
+/// prefill (the engine's recommendation, what you did, or the plan) or
+/// copy the row above. Phase 6 shows the recommendation with its reason,
+/// a one-tap "Use last time's weight" revert, and — in a deload week —
+/// the plan's original targets beside the lighter ones.
 class SessionExerciseCard extends StatelessWidget {
   const SessionExerciseCard({
     required this.index,
@@ -30,6 +33,9 @@ class SessionExerciseCard extends StatelessWidget {
     required this.onSupersetToggle,
     required this.onReplace,
     required this.onRemove,
+    this.onUseLastWeight,
+    this.onRecommendationTap,
+    this.prSetIds = const <String>{},
     super.key,
   });
 
@@ -52,8 +58,54 @@ class SessionExerciseCard extends StatelessWidget {
   final VoidCallback onReplace;
   final VoidCallback onRemove;
 
+  /// Owner 12.1: revert the pending rows to last time's weight. Null when
+  /// there is nothing to revert to (no last time, or the same load).
+  final VoidCallback? onUseLastWeight;
+
+  /// Tap on the reason line: the sheet with the full reason, the last
+  /// three sessions and the revert.
+  final VoidCallback? onRecommendationTap;
+
+  /// Client set ids that beat the prior best when logged (PR moment).
+  final Set<String> prSetIds;
+
+  /// Plan §6: pine for increase-load, ink for add-reps / hold, amber for
+  /// reduce-load / deload, ink60 for establish-baseline.
+  static Color actionColor(ProgressionAction a) => switch (a) {
+        ProgressionAction.increaseLoad => FitColors.pine,
+        ProgressionAction.addReps || ProgressionAction.hold => FitColors.ink,
+        ProgressionAction.reduceLoad ||
+        ProgressionAction.deload =>
+          FitColors.amber,
+        ProgressionAction.establishBaseline => FitColors.ink60,
+      };
+
+  static String actionGlyph(ProgressionAction a) => switch (a) {
+        ProgressionAction.increaseLoad => '↑',
+        ProgressionAction.addReps => '+',
+        ProgressionAction.hold => '=',
+        ProgressionAction.reduceLoad || ProgressionAction.deload => '↓',
+        ProgressionAction.establishBaseline => '·',
+      };
+
   static String _kg(double v) =>
       v == v.roundToDouble() ? v.toInt().toString() : v.toString();
+
+  /// "65 kg × 6" / "× 12 (bodyweight)" — the recommendation in one line.
+  static String recommendationLabel(ProgressionRecommendation r) {
+    final load = r.weightKg == null ? 'bodyweight' : '${_kg(r.weightKg!)} kg';
+    return '$load × ${r.repTarget} · ${r.targetRir} RIR';
+  }
+
+  /// Plan targets summarised: "4 × 6–12 @ 80 kg".
+  static String targetsLabel(List<PlannedSet> targets) {
+    if (targets.isEmpty) return 'no sets';
+    final t = targets.first;
+    final reps =
+        t.repsMin == t.repsMax ? '${t.repsMax}' : '${t.repsMin}–${t.repsMax}';
+    final load = t.weightKg == null ? '' : ' @ ${_kg(t.weightKg!)} kg';
+    return '${targets.length} × $reps$load';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,10 +168,35 @@ class SessionExerciseCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
+                      if (x.recommendation != null) ...<Widget>[
+                        const SizedBox(height: FitSpacing.xs),
+                        InkWell(
+                          key: ValueKey('$key.recommendation'),
+                          onTap: onRecommendationTap,
+                          child: Text(
+                            '${actionGlyph(x.recommendation!.action)} ${recommendationLabel(x.recommendation!)} — ${x.recommendation!.reason}',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: actionColor(x.recommendation!.action),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
                 const SizedBox(width: FitSpacing.md),
+                if (prSetIds.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(right: FitSpacing.sm),
+                    child: Text(
+                      'PR',
+                      key: ValueKey('$key.pr'),
+                      style:
+                          textTheme.labelSmall?.copyWith(color: FitColors.pine),
+                    ),
+                  ),
                 Text(
                   planned > 0 ? '$logged / $planned' : '$logged sets',
                   key: ValueKey('$key.count'),
@@ -171,6 +248,16 @@ class SessionExerciseCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
+                if (x.originalTargets != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: FitSpacing.sm),
+                    child: Text(
+                      'DELOAD · plan was ${targetsLabel(x.originalTargets!)}',
+                      key: ValueKey('$key.originals'),
+                      style: textTheme.labelSmall
+                          ?.copyWith(color: FitColors.amber),
+                    ),
+                  ),
                 for (final row in rows) _row(context, key, row),
                 const SizedBox(height: FitSpacing.sm),
                 Wrap(
@@ -215,6 +302,18 @@ class SessionExerciseCard extends StatelessWidget {
     );
   }
 
+  /// Last time's heaviest working load, if any.
+  static double? _lastWeight(SessionExercise x) {
+    final weights = x.lastPerformance?.sets
+        .map((s) => s.weightKg)
+        .whereType<double>()
+        .toList();
+    if (weights == null || weights.isEmpty) return null;
+    return weights.reduce((a, b) => a > b ? a : b);
+  }
+
+  static double? lastWeightOf(SessionExercise x) => _lastWeight(x);
+
   Widget _row(BuildContext context, String key, SessionSetRow row) {
     final textTheme = Theme.of(context).textTheme;
     final logged = row.logged;
@@ -244,13 +343,14 @@ class SessionExerciseCard extends StatelessWidget {
                 onChanged: (next) => logged == null
                     ? onPendingChanged(row, next)
                     : onLoggedChanged(logged, next),
+                trailing: _original(context, rowKey, row),
               ),
             ],
           ),
         ),
         const SizedBox(width: FitSpacing.xs),
         // Done: ink circle to tap; pine check once logged (tap again to
-        // un-log a mis-tap).
+        // un-log a mis-tap); a star when the set beat the prior best.
         InkWell(
           key: ValueKey('$rowKey.done'),
           onTap:
@@ -270,7 +370,14 @@ class SessionExerciseCard extends StatelessWidget {
                 color: logged == null ? FitColors.ink : FitColors.pine,
               ),
               child: Icon(
-                logged == null ? Icons.check : Icons.done_all,
+                logged == null
+                    ? Icons.check
+                    : prSetIds.contains(logged.clientSetId)
+                        ? Icons.star
+                        : Icons.done_all,
+                key: ValueKey(
+                  '$rowKey.${logged != null && prSetIds.contains(logged.clientSetId) ? 'star' : 'icon'}',
+                ),
                 size: 20,
                 color: FitColors.paper,
               ),
@@ -278,6 +385,28 @@ class SessionExerciseCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  /// Deload week: the plan's original target for this set, in ink35,
+  /// beside the lighter number (plan §6).
+  Widget? _original(BuildContext context, String rowKey, SessionSetRow row) {
+    final originals = exercise.originalTargets;
+    if (originals == null || row.setType != SetType.working) return null;
+    if (row.setIndex > originals.length) return null;
+    final o = originals[row.setIndex - 1];
+    final reps =
+        o.repsMin == o.repsMax ? '${o.repsMax}' : '${o.repsMin}–${o.repsMax}';
+    return Padding(
+      padding: const EdgeInsets.only(left: FitSpacing.xs),
+      child: Text(
+        o.weightKg == null ? 'plan $reps' : 'plan ${_kg(o.weightKg!)}×$reps',
+        key: ValueKey('$rowKey.original'),
+        style: Theme.of(context)
+            .textTheme
+            .labelSmall
+            ?.copyWith(color: FitColors.ink35),
+      ),
     );
   }
 }

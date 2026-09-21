@@ -69,6 +69,9 @@ class FakeWorkoutApi implements WorkoutApi {
       orderIndex: x.orderIndex,
       supersetGroup: null,
       plannedExerciseId: x.plannedExerciseId,
+      recommendation: k?.recommendation,
+      priorBest: k?.priorBest ?? PriorBest.none,
+      originalTargets: k?.originalTargets,
       targets: k?.targets ??
           const [
             PlannedSet(
@@ -537,5 +540,64 @@ class FakeWorkoutApi implements WorkoutApi {
   Future<Result<TodayResponse>> today({int? dayOfWeek}) async {
     calls.add('today');
     return _guard(() => Ok(todayResponse));
+  }
+
+  /* --------------------------------------------------------- Phase 6 -- */
+
+  /// Scripted deload state; accept/decline move it the way the server does.
+  DeloadState deload = DeloadState.none;
+  VolumeResponse volumeResponse = const VolumeResponse(
+    weeks: [],
+    owned: [],
+    neglected: [],
+    mesocycleWeek: 1,
+    deload: DeloadState.none,
+  );
+  ProgressionDetail? progressionDetail;
+
+  @override
+  Future<Result<VolumeResponse>> volume() async {
+    calls.add('volume');
+    return _guard(() => Ok(volumeResponse));
+  }
+
+  @override
+  Future<Result<ProgressionDetail>> progression(String exerciseId) async {
+    calls.add('progression:$exerciseId');
+    return _guard(() {
+      final d = progressionDetail;
+      if (d == null || d.exerciseId != exerciseId) {
+        return const Err(Unknown('No history for that lift.'));
+      }
+      return Ok(d);
+    });
+  }
+
+  @override
+  Future<Result<DeloadState>> acceptDeload() async {
+    calls.add('deload:accept');
+    return _guard(() {
+      if (deload.state == DeloadStatus.none) {
+        return const Err(Conflict('No deload has been offered.'));
+      }
+      deload = DeloadState(
+        state: DeloadStatus.active,
+        trigger: deload.trigger,
+        reason: deload.reason,
+        endsOn: '2026-09-28',
+      );
+      todayResponse = todayResponse.copyWith(deload: deload);
+      return Ok(deload);
+    });
+  }
+
+  @override
+  Future<Result<DeloadState>> declineDeload() async {
+    calls.add('deload:decline');
+    return _guard(() {
+      deload = DeloadState.none;
+      todayResponse = todayResponse.copyWith(deload: deload);
+      return Ok(deload);
+    });
   }
 }

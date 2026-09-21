@@ -7,9 +7,12 @@ import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/hairline_section.dart';
 import '../../domain/entities/workout.dart';
 import '../controllers/workout_providers.dart';
+import 'deload_panel.dart';
 
 /// TODAY's one training panel (Phase 5; the ranked-actions engine is
-/// Phase 11): today's session by name with Start, Resume, or Done.
+/// Phase 11): today's session by name with Start, Resume, or Done. Phase 6
+/// adds the mesocycle week, the deload offer (never applied silently) and
+/// the muscles the programme owns but has not trained in six days.
 class TodaySessionPanel extends ConsumerWidget {
   const TodaySessionPanel({super.key});
 
@@ -144,6 +147,42 @@ class TodaySessionPanel extends ConsumerWidget {
         },
       );
     }
-    return HairlineSection(label: 'Today', child: body);
+    // Phase 6 lines below the session, whatever its state; they come from
+    // the same `/today` answer (cached when offline).
+    final t = today.value;
+    final extras = <Widget>[
+      if (t != null && t.programId != null) ...<Widget>[
+        const SizedBox(height: FitSpacing.md),
+        DeloadPanel(deload: t.deload, mesocycleWeek: t.mesocycleWeek),
+        for (final n in t.neglected)
+          Padding(
+            padding: const EdgeInsets.only(top: FitSpacing.xs),
+            child: Text(
+              n.daysSince == null
+                  ? '${n.muscle.label} has not been trained yet.'
+                  : '${n.muscle.label}: ${n.daysSince} days since a working set.',
+              key: ValueKey('today.neglect.${n.muscle.wire}'),
+              style: textTheme.bodyMedium?.copyWith(color: FitColors.amber),
+            ),
+          ),
+        TextButton(
+          key: const ValueKey('today.volume'),
+          onPressed: () => context.push(Routes.volume),
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: const Size(0, 36),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: const Text('Weekly volume'),
+        ),
+      ],
+    ];
+    return HairlineSection(
+      label: 'Today',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[body, ...extras],
+      ),
+    );
   }
 }

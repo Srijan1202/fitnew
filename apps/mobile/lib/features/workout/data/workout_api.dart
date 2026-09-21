@@ -39,6 +39,12 @@ abstract class WorkoutApi {
     int limit = 20,
     SessionStatus? status,
   });
+
+  // Phase 6.
+  Future<Result<VolumeResponse>> volume();
+  Future<Result<ProgressionDetail>> progression(String exerciseId);
+  Future<Result<DeloadState>> acceptDeload();
+  Future<Result<DeloadState>> declineDeload();
 }
 
 class DioWorkoutApi implements WorkoutApi {
@@ -227,5 +233,39 @@ class DioWorkoutApi implements WorkoutApi {
           },
         ),
         SessionListResponse.fromJson,
+      );
+
+  /* --------------------------------------------------------- Phase 6 -- */
+
+  @override
+  Future<Result<VolumeResponse>> volume() => _guard(
+        () => _dio.get<Map<String, dynamic>>('/v1/training/volume'),
+        VolumeResponse.fromJson,
+      );
+
+  @override
+  Future<Result<ProgressionDetail>> progression(String exerciseId) => _guard(
+        () => _dio.get<Map<String, dynamic>>(
+          '/v1/training/progression/$exerciseId',
+        ),
+        ProgressionDetail.fromJson,
+      );
+
+  @override
+  Future<Result<DeloadState>> acceptDeload() => _guard(
+        () => _dio.post<Map<String, dynamic>>(
+          '/v1/training/deload/accept',
+          data: const <String, dynamic>{},
+        ),
+        DeloadState.fromJson,
+      );
+
+  @override
+  Future<Result<DeloadState>> declineDeload() => _guard(
+        () => _dio.post<Map<String, dynamic>>(
+          '/v1/training/deload/decline',
+          data: const <String, dynamic>{},
+        ),
+        DeloadState.fromJson,
       );
 }

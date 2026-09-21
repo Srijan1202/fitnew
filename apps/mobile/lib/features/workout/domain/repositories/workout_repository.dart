@@ -45,6 +45,13 @@ abstract class WorkoutRepository {
   /// A completed session by its SERVER id (history detail).
   Future<Result<WorkoutSession>> fetchSession(String serverId);
 
+  /// Phase 6: weekly hard sets per muscle vs the landmarks (current ISO
+  /// week + 3); network first, the last cached answer when offline.
+  Future<Result<VolumeResponse>> volume();
+
+  /// Phase 6: one lift's last three sessions and its recommendation.
+  Future<Result<ProgressionDetail>> progression(String exerciseId);
+
   /* --------------------------------------------------------- writing -- */
 
   /// Start a session on the phone now: from a programme day (seeded from
@@ -86,6 +93,11 @@ abstract class WorkoutRepository {
 
   Future<void> complete(String clientSessionId, {String? notes});
   Future<void> abandon(String clientSessionId);
+
+  /// Phase 6 (owner 12.3): a deload is only ever applied by this call.
+  /// Online only — it changes what the server plans next.
+  Future<Result<DeloadState>> acceptDeload();
+  Future<Result<DeloadState>> declineDeload();
 
   /* ---------------------------------------------------------- syncing -- */
 
