@@ -125,6 +125,18 @@ describeIfDb('/v1/training/sessions (real Postgres, real seed)', () => {
     expect((await sql`select count(*)::int as c from workout_sessions where client_session_id = ${clientSessionId}`)[0]!.c).toBe(1);
   });
 
+  it('a client that seeded the session offline gets its own exercise ids adopted', async () => {
+    const { token, day } = await withProgram();
+    const mine = day.exercises.map((x, i) => ({ clientExerciseId: randomUUID(), exerciseId: x.exerciseId, plannedExerciseId: x.id, orderIndex: i }));
+    const r = await start(token, { clientSessionId: randomUUID(), programDayId: day.id, startedAt: at(0), exercises: mine });
+    expect(r.statusCode, r.body).toBe(201);
+    const s: WorkoutSession = r.json();
+    expect(s.exercises.map((x) => x.clientExerciseId)).toEqual(mine.map((x) => x.clientExerciseId));
+    expect(s.exercises[0]!.targets.length).toBe(day.exercises[0]!.setCount);
+    const bad = await start(token, { clientSessionId: randomUUID(), startedAt: at(0), exercises: [{ clientExerciseId: randomUUID(), exerciseId: randomUUID(), orderIndex: 0 }] });
+    expect(bad.statusCode).toBe(422);
+  });
+
   it('a second active session is 409 naming the active one; abandoning frees the slot', async () => {
     const { token, day } = await withProgram();
     const first: WorkoutSession = (await start(token, { clientSessionId: randomUUID(), programDayId: day.id, startedAt: at(0) })).json();

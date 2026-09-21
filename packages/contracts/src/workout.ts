@@ -173,7 +173,9 @@ export const todayExerciseSchema = z.object({
   name: z.string().min(1),
   movementPattern: movementPatternSchema,
   equipment: z.array(equipmentSchema).min(1),
+  difficulty: difficultySchema,
   primaryMuscles: z.array(muscleGroupSchema),
+  secondaryMuscles: z.array(muscleGroupSchema),
   orderIndex: z.number().int().min(0),
   incrementKg: z.number().positive(),
   targets: z.array(plannedSetSchema),
@@ -199,12 +201,28 @@ export type TodayResponse = z.infer<typeof todayResponseSchema>;
 
 /* ---------------------------------------------------------------- write -- */
 
+/**
+ * An exercise the client seeded locally before the server heard of the
+ * session (offline start). Sending them lets the server adopt the
+ * client's ids, so sets logged against them replay cleanly.
+ */
+export const seededExerciseSchema = z
+  .object({
+    clientExerciseId: clientIdSchema,
+    exerciseId: z.string().uuid(),
+    plannedExerciseId: z.string().uuid().optional(),
+    orderIndex: z.number().int().min(0),
+  })
+  .strict();
+
 export const startSessionRequestSchema = z
   .object({
     clientSessionId: clientIdSchema,
     /** Omit for an ad-hoc session (owner decision 8.6). */
     programDayId: z.string().uuid().optional(),
     startedAt: z.string().datetime(),
+    /** When present, seeds these instead of the day's planned exercises. */
+    exercises: z.array(seededExerciseSchema).max(30).optional(),
   })
   .strict();
 export type StartSessionRequest = z.infer<typeof startSessionRequestSchema>;

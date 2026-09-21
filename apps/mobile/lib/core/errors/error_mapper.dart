@@ -28,6 +28,7 @@ abstract final class ErrorMapper {
     String? code;
     String? message;
     String? field;
+    String? issue;
     if (body is Map<String, dynamic>) {
       final error = body['error'];
       if (error is Map<String, dynamic>) {
@@ -36,9 +37,19 @@ abstract final class ErrorMapper {
         final details = error['details'];
         if (details is List && details.isNotEmpty) {
           final first = details.first;
-          if (first is Map<String, dynamic>) field = first['path'] as String?;
+          if (first is Map<String, dynamic>) {
+            field = first['path'] as String?;
+            issue = first['issue'] as String?;
+          }
         }
       }
+    }
+    if (code == 'CONFLICT' || status == 409) {
+      return Conflict(
+        message ?? 'That changed while you were away.',
+        path: field,
+        issue: issue,
+      );
     }
     if (code == 'UNAUTHENTICATED' || status == 401) {
       return Unauthenticated(message ?? 'Sign in to continue.');

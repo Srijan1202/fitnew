@@ -192,6 +192,22 @@ export class WorkoutService {
         .filter((x) => x.programDayId === day.id)
         .map((x) => ({ clientExerciseId: randomUUID(), exerciseId: x.exerciseId, plannedExerciseId: x.id, orderIndex: x.orderIndex, supersetGroup: null }));
     }
+    // A client that seeded the session offline sends its own exercise ids
+    // so the sets it logged against them replay cleanly.
+    if (req.exercises !== undefined) {
+      for (const [i, x] of req.exercises.entries()) {
+        if (!(await this.repo.exerciseExists(x.exerciseId))) {
+          throw new AppError('VALIDATION_FAILED', 'Unknown exercise.', [{ path: `exercises.${i}.exerciseId`, issue: 'unknown' }]);
+        }
+      }
+      seeded = req.exercises.map((x) => ({
+        clientExerciseId: x.clientExerciseId,
+        exerciseId: x.exerciseId,
+        plannedExerciseId: x.plannedExerciseId ?? null,
+        orderIndex: x.orderIndex,
+        supersetGroup: null,
+      }));
+    }
     try {
       const { bundle, created } = await this.repo.create(
         userId,
@@ -438,7 +454,9 @@ export class WorkoutService {
         name: x.name,
         movementPattern: x.movementPattern,
         equipment: x.equipment,
+        difficulty: x.difficulty,
         primaryMuscles: x.primaryMuscles,
+        secondaryMuscles: x.secondaryMuscles,
         orderIndex: x.orderIndex,
         incrementKg: Number(x.incrementKg),
         targets: targetsFor(program, x.id),

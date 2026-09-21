@@ -23,6 +23,15 @@ final class Validation extends Failure {
   final String? field;
 }
 
+/// Server said 409: the request is valid but the state moved on (a session
+/// already active, a session completed elsewhere). `path` / `issue` are
+/// the envelope's first detail, e.g. `activeSessionId` / `<id>`.
+final class Conflict extends Failure {
+  const Conflict(super.message, {this.path, this.issue});
+  final String? path;
+  final String? issue;
+}
+
 /// Server said 429.
 final class RateLimited extends Failure {
   const RateLimited([

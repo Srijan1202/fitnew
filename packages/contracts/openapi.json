@@ -12789,6 +12789,37 @@
                   "startedAt": {
                     "type": "string",
                     "format": "date-time"
+                  },
+                  "exercises": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "clientExerciseId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "exerciseId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "plannedExerciseId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "orderIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "clientExerciseId",
+                        "exerciseId",
+                        "orderIndex"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 30
                   }
                 },
                 "required": [
