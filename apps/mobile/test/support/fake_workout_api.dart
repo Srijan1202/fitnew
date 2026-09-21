@@ -69,29 +69,30 @@ class FakeWorkoutApi implements WorkoutApi {
       orderIndex: x.orderIndex,
       supersetGroup: null,
       plannedExerciseId: x.plannedExerciseId,
-      targets: const [
-        PlannedSet(
-          setIndex: 1,
-          repsMin: 6,
-          repsMax: 12,
-          weightKg: null,
-          rir: 1,
-        ),
-        PlannedSet(
-          setIndex: 2,
-          repsMin: 6,
-          repsMax: 12,
-          weightKg: null,
-          rir: 1,
-        ),
-        PlannedSet(
-          setIndex: 3,
-          repsMin: 6,
-          repsMax: 12,
-          weightKg: null,
-          rir: 1,
-        ),
-      ],
+      targets: k?.targets ??
+          const [
+            PlannedSet(
+              setIndex: 1,
+              repsMin: 6,
+              repsMax: 12,
+              weightKg: null,
+              rir: 1,
+            ),
+            PlannedSet(
+              setIndex: 2,
+              repsMin: 6,
+              repsMax: 12,
+              weightKg: null,
+              rir: 1,
+            ),
+            PlannedSet(
+              setIndex: 3,
+              repsMin: 6,
+              repsMax: 12,
+              weightKg: null,
+              rir: 1,
+            ),
+          ],
       prefill: k?.prefill ?? const [],
       lastPerformance: k?.lastPerformance,
       sets: const [],
