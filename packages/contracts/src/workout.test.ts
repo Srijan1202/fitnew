@@ -75,7 +75,7 @@ describe('workout contracts (Phase 5)', () => {
         id: uuid(12), clientExerciseId: uuid(13), exerciseId: uuid(14), slug: 'barbell-bench-press', name: 'Bench',
         movementPattern: 'horizontal-push', equipment: ['barbell'], difficulty: 'intermediate',
         primaryMuscles: ['chest'], secondaryMuscles: ['triceps'], incrementKg: 2.5, orderIndex: 0, supersetGroup: null,
-        plannedExerciseId: null, targets: [], lastPerformance: null,
+        plannedExerciseId: null, targets: [], prefill: [], lastPerformance: null,
         sets: [{ id: uuid(15), clientSetId: uuid(16), setIndex: 1, setType: 'working', weightKg: 60, reps: 10, rir: 2, isPr: false, loggedAt: at, plannedSetId: null }],
       }],
     };

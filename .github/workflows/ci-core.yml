@@ -43,6 +43,14 @@ jobs:
       - name: Test
         run: pnpm --filter @fitos/core test
 
+      # The contracts package had no CI of its own until Phase 5; its Zod
+      # schemas are what the API validates with and the mobile client mirrors.
+      - name: Contracts typecheck, lint, test
+        run: |
+          pnpm --filter @fitos/contracts typecheck
+          pnpm --filter @fitos/contracts lint
+          pnpm --filter @fitos/contracts test
+
       # The end-to-end walkthrough runs the real pipeline over the captured mess
       # fixtures. It is not a test, but if it throws, the public API of the
       # package has changed in a way the tests did not catch.
