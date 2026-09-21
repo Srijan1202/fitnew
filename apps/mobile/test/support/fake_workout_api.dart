@@ -92,6 +92,7 @@ class FakeWorkoutApi implements WorkoutApi {
           rir: 1,
         ),
       ],
+      prefill: k?.prefill ?? const [],
       lastPerformance: k?.lastPerformance,
       sets: const [],
     );

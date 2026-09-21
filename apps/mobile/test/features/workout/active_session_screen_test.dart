@@ -107,6 +107,10 @@ void main() {
     return session;
   }
 
+  /// The rest timer ticks every second; stop it before the body returns or
+  /// the test binding reports a pending timer.
+  void stopRest() => container.read(restTimerProvider.notifier).skip();
+
   /// The weight cell is a tappable InkWell around the number.
   String weightOf(WidgetTester tester, String key) => tester
       .widget<Text>(
@@ -258,6 +262,7 @@ void main() {
     expect(drop.weightKg, 65);
     // Drop sets never count as working sets.
     expect(textOf(tester, '$k.count').data, '1 / 3');
+    stopRest();
   });
 
   testWidgets('superset with next marks both exercises; un-superset clears',
@@ -293,6 +298,7 @@ void main() {
         await container.read(workoutRepositoryProvider).activeSession();
     expect(active?.clientSessionId, s.clientSessionId);
     expect(active?.workingSetsLogged, 1);
+    stopRest();
   });
 
   testWidgets(
@@ -378,6 +384,7 @@ void main() {
           .length,
       1,
     );
+    stopRest();
   });
 
   testWidgets(
@@ -387,6 +394,7 @@ void main() {
     final curl = 'session.${s.exercises[1].clientExerciseId}';
     await tester.tap(find.byKey(ValueKey('$curl.header')));
     await settle(tester);
+    await reveal(tester, find.byKey(ValueKey('$curl.set.1.done')));
     expect(textOf(tester, '$curl.set.1.reps').data, '15');
     expect(weightOf(tester, '$curl.set.1.weight'), '—');
     await tester.tap(find.byKey(ValueKey('$curl.set.1.done')));
@@ -397,5 +405,6 @@ void main() {
       'Standing Calf Raise',
     );
     expect(FitColors.pine, isNotNull);
+    stopRest();
   });
 }

@@ -365,6 +365,9 @@ void main() {
       );
 
       await autosave(tester);
+      // Back to the top: the save mark sits in the day header.
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, 800));
+      await settle(tester);
       expect(
         training.patchRequests.length,
         1,
