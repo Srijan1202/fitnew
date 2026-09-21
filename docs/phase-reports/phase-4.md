@@ -1,4 +1,4 @@
-# PHASE 4 COMPLETE — Program generation
+# PHASE 4 COMPLETE — Program generation (part A) · UX rework (part B)
 
 **Date** 2026-09-21 · **Commits** `be20203` (everything), `c72cdbf` (test typecheck fix), plus this report's commit
 **Head** pushed to `origin/main` · **CI on `c72cdbf`:** `ci-core` success (253) · `ci-api` success (124/124, 0 skipped on the PG 18 service; image booted) · `ci-mobile` success (117 tests, conformance, APK)
@@ -249,3 +249,160 @@ All deliberate; each with the reason.
 1. **Manual acceptance on the emulator** — owner: rebuild the app, generate a
    programme, read it as a lifter, try the editor and the builder.
 2. Neon dev still has no migrations or seed applied. Not blocking.
+
+
+---
+
+# PART B — Phase 4 UX/UI rework and generator refinement
+
+**Date** 2026-09-21 · **Commit** `9ab0661` (everything), plus this report's commit
+**Head** pushed to `origin/main` · **CI on `9ab0661`:** `ci-core` success (395) · `ci-api` success (129/129, 0 skipped on the PG 18 service; image booted) · `ci-mobile` success (126 tests, conformance, APK)
+**Decision record** [ADR-005](../decisions/ADR-005-training-plan-rework.md)
+
+The owner's manual review of part A: the generator works; the training-plan
+UX was a data dump (all seven days on one page), sets could not be
+prescribed or recorded, generated push/pull days routinely held three
+exercises, and there were only two ways in. Everything below was verified
+by executing it.
+
+## IMPLEMENTED
+
+**Generator refinement (`packages/core`, no framework change)**
+- Measured first: at 60 min across 3–6 days × 3 levels × 4 goals, pull
+  sessions had a median of **3** exercises (15/28 at ≤3) and **40**
+  sessions had no direct exercise for a muscle the day owned.
+- **Direct coverage**: every muscle a session owns gets ≥1 primary
+  exercise when one is performable; secondaries still count 0.5 for volume,
+  never for coverage; pull days need a horizontal and a vertical pull and
+  prefer rear-delt work; coverage picks are protected from time fitting
+  (sets are shaved before a muscle's only direct work is dropped).
+- **Exercise count**: target `min(5, ⌊minutes/12⌋)`, adding only where a
+  muscle has room under its MAV-low share; fill adds movements before sets;
+  the weekly cap reserves room for later days' required direct work.
+- After: **no session at ≤3 exercises; coverage gaps 40 → 0**; every
+  existing generator test unchanged and green. Where the volume cap binds
+  (six-day PPL, week 1) the session is shorter and the rationale says why.
+
+**Professional templates (`packages/core/src/training/templates.ts`)**
+- Ten structures as data (days, session names, muscle slots, required and
+  excluded patterns, level, ~minutes): Push/Pull/Legs, Bro Split,
+  Upper/Lower (6-day), Full Body (2-day), Push/Pull, Two Muscle Groups Per
+  Day, 5-Day Bodybuilding Split, 3-Day Full Body, 4-Day Upper/Lower, 6-Day
+  Push/Pull/Legs. `materializeTemplate` runs the same `buildProgram` engine
+  as generation, so equipment, limitations, level, caps and shortfalls hold.
+  A test asserts no template text contains best / optimal / superior /
+  scientifically / proven.
+
+**Data model — migration `0004_planned_sets_templates`**
+- `planned_sets` — one row per set under `planned_exercises`: `set_index`,
+  `reps_min`, `reps_max`, `weight_kg` NULL-able, `rir`; unique per
+  (exercise, index); CHECKs; cascade. `planned_exercises` stays the parent
+  prescription the progression engine reads.
+- `programs.template_slug`; `program_source += 'template'`; `split_type`
+  += the nine template slugs. Down rebuilds both enums.
+- Generated and template programmes write uniform sets with
+  **`weight_kg = NULL`** — no invented load (§12.4 rule 1). Users type a
+  starting weight per set.
+
+**API**
+- `PlannedExercise.sets[]`; custom exercises accept `sets[]` (exactly
+  `setCount`) and `startingWeightKg`; custom days and day PATCH accept
+  `focus`; `PATCH /training/program` (rename); `GET /training/templates`;
+  `GET /training/templates/{slug}` (materialised for this profile, nothing
+  stored; `?preferredSessionMinutes=`); `POST /training/program/from-template/{slug}`.
+- Default-deny sweep now covers 22 routes with no test change.
+
+**Flutter — the new training experience**
+- `/plan` — fixed **MON…SUN selector** (● selected, ○ training, — rest);
+  **only the selected day** below it: weekday, session name in display
+  type, muscles, "n exercises · sets · ~min". Opens on today if it is a
+  training day, else the next one.
+- **Exercise card**, two states. Collapsed: number, name, primary muscle ·
+  equipment, sets × reps, starting weight (or an amber "set weight").
+  Expanded: every set as a row — reps (−/+; a range pins to a number on
+  first tap), weight (−/+ by the exercise's increment, tap to type), RIR
+  (−/+) — then equipment, "How to do it" fetched on first open, "Why this
+  exercise", Replace (via the library picker) and Remove.
+- **Auto-save**: per-day draft; one PATCH 900 ms after the last edit; flushed
+  immediately on leaving; "Saving… / Saved / Couldn't save · Retry"; a newer
+  edit during a save keeps the draft; a failed save keeps the edit on screen.
+- `/plan/new` — **Generate / Professional / Custom** as three numbered
+  panels. `/plan/new/generate`: days and minutes prefilled from the profile.
+  `/plan/templates`: rows with days, session names, level, ~minutes.
+  `/plan/templates/:slug`: Monday → Push … with this user's exercises and
+  any shortfall in amber; **Use this program**. `/plan/custom`: Days → Day
+  details → Muscle groups → Exercises (drag to reorder, add via picker) →
+  Sets / reps / starting weight → Review → Save. `/plan/days/:id/edit`:
+  name, muscle groups, drag-reorder, add, remove; a rest day becomes a
+  session here.
+- The part-A weekly page, day editor and builder are deleted.
+
+## FILES (part B)
+
+**created** — `packages/core/src/training/templates.ts`, `packages/core/test/templates.test.ts`;
+`database/migrations/{0004_planned_sets_templates.sql,down/0004_planned_sets_templates.down.sql,meta/0004_snapshot.json}`;
+`apps/mobile/lib/features/training/presentation/{screens/{workout_week,plan_start,generate_options,template_library,template_preview,custom_builder,day_editor}_screen.dart,widgets/{day_selector,set_row,exercise_card,option_row,toggle_wrap,draft,draft_exercise_list}.dart}`;
+`apps/mobile/test/{support/fake_profile_repository.dart,features/training/workout_screens_test.dart}`;
+`docs/decisions/ADR-005-training-plan-rework.md`
+
+**modified** — `packages/core/src/training/generator.ts` (+ tests), `packages/contracts/src/training.ts` (+ tests, openapi.json);
+`apps/api/src/{db/schema/training.ts,db/migrate.integration.test.ts,modules/training/{repository,service,routes,training.integration.test}.ts}`;
+`apps/mobile/lib/features/training/{domain/**,data/**,presentation/controllers/program_controller.dart}`, `core/routing/router.dart`;
+`apps/mobile/test/{support/fake_training_repository.dart,contracts/contract_conformance_test.dart}`
+
+**removed** — `apps/mobile/lib/features/training/presentation/{screens/weekly_plan_screen.dart,widgets/day_exercise_list.dart}` (editor and builder rewritten in place), `apps/mobile/test/features/training/training_screens_test.dart`
+
+## TESTS (part B)
+
+```
+executed   packages/core        395 passed   (+142: coverage matrix 90, pull/push/legs coverage, coverage vs
+                                              equipment/limitation/time, count rules 5, templates 42)
+executed   packages/contracts    25 passed   (+2: per-set targets, split/source vocab)
+executed   DATABASE_URL=… apps/api  129 passed, 0 skipped   (+5: sets on generated, per-set custom rows,
+                                              auto-save PATCH path, rename, library/preview/apply,
+                                              every template under a knee limitation; migration 0004 both ways)
+executed   flutter test          126 passed   (+9 net: 16 rework screen tests replace 9; conformance 23)
+             day selector · only the selected day · rest day · expand/collapse · reps and weight per set
+             → one PATCH · typed weight · edits survive leave/reopen · failed save keeps edit + Retry ·
+             remove sends at once · replace via picker clears weights · three modes · generate options
+             → request · library → preview (nothing applied) → Use → plan · no superiority claims ·
+             builder wizard → PUT (focus, 4 sets, starting weight) · editor → PATCH · rest day → session
+executed   custom_lint clean · analyze --fatal-infos clean · format 0 changed · build_runner fresh
+executed   typecheck / lint clean (core, contracts, api)
+executed   flutter build apk --debug → app-debug.apk built (229 s)
+executed   docker compose up --build api → /health 200, /v1/training/templates 401, /v1/training/program 401
+executed   local DB migrated to 0004
+coverage   not measured — §18 gate
+```
+
+## KNOWN ISSUES (part B)
+
+1. **Manual Android acceptance not yet executed** — checklist in the
+   closing message; the app needs a rebuild.
+2. Reps are pinned by tapping − / + (a 6–12 range becomes 12 or 6, then
+   steps by one); there is no way back to a range on that set short of
+   re-adding the exercise. Fine in a gym; noted.
+3. Instructions on the expanded card come from `GET /exercises/{id}` on
+   first open; offline they do not appear (§33 does not require the plan
+   offline until Phase 5).
+4. The template preview uses the profile's session length; the screen does
+   not yet expose the days/minutes overrides the API accepts.
+5. `mesocycle_week` still never advances (Phase 5), so every template and
+   generated programme is week-1 volume.
+
+## DEVIATIONS FROM SPEC (part B)
+
+- **"Weekly plan" is a day-selector screen**, not a page of the week.
+  Owner decision; ADR-005.
+- **Professional templates are an addition** to §31 Phase 4. Structure only;
+  exercises via the generator's engine. ADR-005.
+- **`planned_sets` is a table beyond §9.2**; plan targets per set, kept
+  separate from Phase 5's `set_logs` (actuals). ADR-005.
+- **`weight_kg` is NULL on anything the engine produces.** Owner decision;
+  §12.4 rule 1.
+- **Exercise count and direct coverage** are generator rules beyond §12.2's
+  text, added under the MEV/MAV framework, not around it.
+
+## NEXT PHASE
+
+- **Phase 5: Workout logging** — not started, per the owner's instruction.
