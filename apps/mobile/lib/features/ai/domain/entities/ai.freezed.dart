@@ -1030,6 +1030,7 @@ mixin _$AiAction {
   String get label;
   String? get exerciseId;
   String? get sessionId;
+  AiProgramRequest? get programRequest;
 
   /// Create a copy of AiAction
   /// with the given fields replaced by the non-null parameter values.
@@ -1051,17 +1052,19 @@ mixin _$AiAction {
             (identical(other.exerciseId, exerciseId) ||
                 other.exerciseId == exerciseId) &&
             (identical(other.sessionId, sessionId) ||
-                other.sessionId == sessionId));
+                other.sessionId == sessionId) &&
+            (identical(other.programRequest, programRequest) ||
+                other.programRequest == programRequest));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, type, label, exerciseId, sessionId);
+  int get hashCode => Object.hash(
+      runtimeType, type, label, exerciseId, sessionId, programRequest);
 
   @override
   String toString() {
-    return 'AiAction(type: $type, label: $label, exerciseId: $exerciseId, sessionId: $sessionId)';
+    return 'AiAction(type: $type, label: $label, exerciseId: $exerciseId, sessionId: $sessionId, programRequest: $programRequest)';
   }
 }
 
@@ -1071,7 +1074,13 @@ abstract mixin class $AiActionCopyWith<$Res> {
       _$AiActionCopyWithImpl;
   @useResult
   $Res call(
-      {AiActionType type, String label, String? exerciseId, String? sessionId});
+      {AiActionType type,
+      String label,
+      String? exerciseId,
+      String? sessionId,
+      AiProgramRequest? programRequest});
+
+  $AiProgramRequestCopyWith<$Res>? get programRequest;
 }
 
 /// @nodoc
@@ -1090,6 +1099,7 @@ class _$AiActionCopyWithImpl<$Res> implements $AiActionCopyWith<$Res> {
     Object? label = null,
     Object? exerciseId = freezed,
     Object? sessionId = freezed,
+    Object? programRequest = freezed,
   }) {
     return _then(_self.copyWith(
       type: null == type
@@ -1108,7 +1118,25 @@ class _$AiActionCopyWithImpl<$Res> implements $AiActionCopyWith<$Res> {
           ? _self.sessionId
           : sessionId // ignore: cast_nullable_to_non_nullable
               as String?,
+      programRequest: freezed == programRequest
+          ? _self.programRequest
+          : programRequest // ignore: cast_nullable_to_non_nullable
+              as AiProgramRequest?,
     ));
+  }
+
+  /// Create a copy of AiAction
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AiProgramRequestCopyWith<$Res>? get programRequest {
+    if (_self.programRequest == null) {
+      return null;
+    }
+
+    return $AiProgramRequestCopyWith<$Res>(_self.programRequest!, (value) {
+      return _then(_self.copyWith(programRequest: value));
+    });
   }
 }
 
@@ -1206,15 +1234,15 @@ extension AiActionPatterns on AiAction {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(AiActionType type, String label, String? exerciseId,
-            String? sessionId)?
+            String? sessionId, AiProgramRequest? programRequest)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _AiAction() when $default != null:
-        return $default(
-            _that.type, _that.label, _that.exerciseId, _that.sessionId);
+        return $default(_that.type, _that.label, _that.exerciseId,
+            _that.sessionId, _that.programRequest);
       case _:
         return orElse();
     }
@@ -1236,14 +1264,14 @@ extension AiActionPatterns on AiAction {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(AiActionType type, String label, String? exerciseId,
-            String? sessionId)
+            String? sessionId, AiProgramRequest? programRequest)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _AiAction():
-        return $default(
-            _that.type, _that.label, _that.exerciseId, _that.sessionId);
+        return $default(_that.type, _that.label, _that.exerciseId,
+            _that.sessionId, _that.programRequest);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -1264,14 +1292,14 @@ extension AiActionPatterns on AiAction {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(AiActionType type, String label, String? exerciseId,
-            String? sessionId)?
+            String? sessionId, AiProgramRequest? programRequest)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _AiAction() when $default != null:
-        return $default(
-            _that.type, _that.label, _that.exerciseId, _that.sessionId);
+        return $default(_that.type, _that.label, _that.exerciseId,
+            _that.sessionId, _that.programRequest);
       case _:
         return null;
     }
@@ -1285,7 +1313,8 @@ class _AiAction implements AiAction {
       {required this.type,
       required this.label,
       this.exerciseId = null,
-      this.sessionId = null});
+      this.sessionId = null,
+      this.programRequest = null});
   factory _AiAction.fromJson(Map<String, dynamic> json) =>
       _$AiActionFromJson(json);
 
@@ -1299,6 +1328,9 @@ class _AiAction implements AiAction {
   @override
   @JsonKey()
   final String? sessionId;
+  @override
+  @JsonKey()
+  final AiProgramRequest? programRequest;
 
   /// Create a copy of AiAction
   /// with the given fields replaced by the non-null parameter values.
@@ -1325,17 +1357,19 @@ class _AiAction implements AiAction {
             (identical(other.exerciseId, exerciseId) ||
                 other.exerciseId == exerciseId) &&
             (identical(other.sessionId, sessionId) ||
-                other.sessionId == sessionId));
+                other.sessionId == sessionId) &&
+            (identical(other.programRequest, programRequest) ||
+                other.programRequest == programRequest));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, type, label, exerciseId, sessionId);
+  int get hashCode => Object.hash(
+      runtimeType, type, label, exerciseId, sessionId, programRequest);
 
   @override
   String toString() {
-    return 'AiAction(type: $type, label: $label, exerciseId: $exerciseId, sessionId: $sessionId)';
+    return 'AiAction(type: $type, label: $label, exerciseId: $exerciseId, sessionId: $sessionId, programRequest: $programRequest)';
   }
 }
 
@@ -1347,7 +1381,14 @@ abstract mixin class _$AiActionCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {AiActionType type, String label, String? exerciseId, String? sessionId});
+      {AiActionType type,
+      String label,
+      String? exerciseId,
+      String? sessionId,
+      AiProgramRequest? programRequest});
+
+  @override
+  $AiProgramRequestCopyWith<$Res>? get programRequest;
 }
 
 /// @nodoc
@@ -1366,6 +1407,7 @@ class __$AiActionCopyWithImpl<$Res> implements _$AiActionCopyWith<$Res> {
     Object? label = null,
     Object? exerciseId = freezed,
     Object? sessionId = freezed,
+    Object? programRequest = freezed,
   }) {
     return _then(_AiAction(
       type: null == type
@@ -1384,6 +1426,421 @@ class __$AiActionCopyWithImpl<$Res> implements _$AiActionCopyWith<$Res> {
           ? _self.sessionId
           : sessionId // ignore: cast_nullable_to_non_nullable
               as String?,
+      programRequest: freezed == programRequest
+          ? _self.programRequest
+          : programRequest // ignore: cast_nullable_to_non_nullable
+              as AiProgramRequest?,
+    ));
+  }
+
+  /// Create a copy of AiAction
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AiProgramRequestCopyWith<$Res>? get programRequest {
+    if (_self.programRequest == null) {
+      return null;
+    }
+
+    return $AiProgramRequestCopyWith<$Res>(_self.programRequest!, (value) {
+      return _then(_self.copyWith(programRequest: value));
+    });
+  }
+}
+
+/// @nodoc
+mixin _$AiProgramRequest {
+  int? get daysPerWeek;
+  int? get preferredSessionMinutes;
+  String? get template;
+  List<MuscleGroup>? get emphasis;
+
+  /// Create a copy of AiProgramRequest
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $AiProgramRequestCopyWith<AiProgramRequest> get copyWith =>
+      _$AiProgramRequestCopyWithImpl<AiProgramRequest>(
+          this as AiProgramRequest, _$identity);
+
+  /// Serializes this AiProgramRequest to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is AiProgramRequest &&
+            (identical(other.daysPerWeek, daysPerWeek) ||
+                other.daysPerWeek == daysPerWeek) &&
+            (identical(
+                    other.preferredSessionMinutes, preferredSessionMinutes) ||
+                other.preferredSessionMinutes == preferredSessionMinutes) &&
+            (identical(other.template, template) ||
+                other.template == template) &&
+            const DeepCollectionEquality().equals(other.emphasis, emphasis));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      daysPerWeek,
+      preferredSessionMinutes,
+      template,
+      const DeepCollectionEquality().hash(emphasis));
+
+  @override
+  String toString() {
+    return 'AiProgramRequest(daysPerWeek: $daysPerWeek, preferredSessionMinutes: $preferredSessionMinutes, template: $template, emphasis: $emphasis)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $AiProgramRequestCopyWith<$Res> {
+  factory $AiProgramRequestCopyWith(
+          AiProgramRequest value, $Res Function(AiProgramRequest) _then) =
+      _$AiProgramRequestCopyWithImpl;
+  @useResult
+  $Res call(
+      {int? daysPerWeek,
+      int? preferredSessionMinutes,
+      String? template,
+      List<MuscleGroup>? emphasis});
+}
+
+/// @nodoc
+class _$AiProgramRequestCopyWithImpl<$Res>
+    implements $AiProgramRequestCopyWith<$Res> {
+  _$AiProgramRequestCopyWithImpl(this._self, this._then);
+
+  final AiProgramRequest _self;
+  final $Res Function(AiProgramRequest) _then;
+
+  /// Create a copy of AiProgramRequest
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? daysPerWeek = freezed,
+    Object? preferredSessionMinutes = freezed,
+    Object? template = freezed,
+    Object? emphasis = freezed,
+  }) {
+    return _then(_self.copyWith(
+      daysPerWeek: freezed == daysPerWeek
+          ? _self.daysPerWeek
+          : daysPerWeek // ignore: cast_nullable_to_non_nullable
+              as int?,
+      preferredSessionMinutes: freezed == preferredSessionMinutes
+          ? _self.preferredSessionMinutes
+          : preferredSessionMinutes // ignore: cast_nullable_to_non_nullable
+              as int?,
+      template: freezed == template
+          ? _self.template
+          : template // ignore: cast_nullable_to_non_nullable
+              as String?,
+      emphasis: freezed == emphasis
+          ? _self.emphasis
+          : emphasis // ignore: cast_nullable_to_non_nullable
+              as List<MuscleGroup>?,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [AiProgramRequest].
+extension AiProgramRequestPatterns on AiProgramRequest {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_AiProgramRequest value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _AiProgramRequest() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_AiProgramRequest value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _AiProgramRequest():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_AiProgramRequest value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _AiProgramRequest() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(int? daysPerWeek, int? preferredSessionMinutes,
+            String? template, List<MuscleGroup>? emphasis)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _AiProgramRequest() when $default != null:
+        return $default(_that.daysPerWeek, _that.preferredSessionMinutes,
+            _that.template, _that.emphasis);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(int? daysPerWeek, int? preferredSessionMinutes,
+            String? template, List<MuscleGroup>? emphasis)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _AiProgramRequest():
+        return $default(_that.daysPerWeek, _that.preferredSessionMinutes,
+            _that.template, _that.emphasis);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(int? daysPerWeek, int? preferredSessionMinutes,
+            String? template, List<MuscleGroup>? emphasis)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _AiProgramRequest() when $default != null:
+        return $default(_that.daysPerWeek, _that.preferredSessionMinutes,
+            _that.template, _that.emphasis);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _AiProgramRequest implements AiProgramRequest {
+  const _AiProgramRequest(
+      {this.daysPerWeek = null,
+      this.preferredSessionMinutes = null,
+      this.template = null,
+      final List<MuscleGroup>? emphasis = null})
+      : _emphasis = emphasis;
+  factory _AiProgramRequest.fromJson(Map<String, dynamic> json) =>
+      _$AiProgramRequestFromJson(json);
+
+  @override
+  @JsonKey()
+  final int? daysPerWeek;
+  @override
+  @JsonKey()
+  final int? preferredSessionMinutes;
+  @override
+  @JsonKey()
+  final String? template;
+  final List<MuscleGroup>? _emphasis;
+  @override
+  @JsonKey()
+  List<MuscleGroup>? get emphasis {
+    final value = _emphasis;
+    if (value == null) return null;
+    if (_emphasis is EqualUnmodifiableListView) return _emphasis;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  /// Create a copy of AiProgramRequest
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$AiProgramRequestCopyWith<_AiProgramRequest> get copyWith =>
+      __$AiProgramRequestCopyWithImpl<_AiProgramRequest>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$AiProgramRequestToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _AiProgramRequest &&
+            (identical(other.daysPerWeek, daysPerWeek) ||
+                other.daysPerWeek == daysPerWeek) &&
+            (identical(
+                    other.preferredSessionMinutes, preferredSessionMinutes) ||
+                other.preferredSessionMinutes == preferredSessionMinutes) &&
+            (identical(other.template, template) ||
+                other.template == template) &&
+            const DeepCollectionEquality().equals(other._emphasis, _emphasis));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      daysPerWeek,
+      preferredSessionMinutes,
+      template,
+      const DeepCollectionEquality().hash(_emphasis));
+
+  @override
+  String toString() {
+    return 'AiProgramRequest(daysPerWeek: $daysPerWeek, preferredSessionMinutes: $preferredSessionMinutes, template: $template, emphasis: $emphasis)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$AiProgramRequestCopyWith<$Res>
+    implements $AiProgramRequestCopyWith<$Res> {
+  factory _$AiProgramRequestCopyWith(
+          _AiProgramRequest value, $Res Function(_AiProgramRequest) _then) =
+      __$AiProgramRequestCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {int? daysPerWeek,
+      int? preferredSessionMinutes,
+      String? template,
+      List<MuscleGroup>? emphasis});
+}
+
+/// @nodoc
+class __$AiProgramRequestCopyWithImpl<$Res>
+    implements _$AiProgramRequestCopyWith<$Res> {
+  __$AiProgramRequestCopyWithImpl(this._self, this._then);
+
+  final _AiProgramRequest _self;
+  final $Res Function(_AiProgramRequest) _then;
+
+  /// Create a copy of AiProgramRequest
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? daysPerWeek = freezed,
+    Object? preferredSessionMinutes = freezed,
+    Object? template = freezed,
+    Object? emphasis = freezed,
+  }) {
+    return _then(_AiProgramRequest(
+      daysPerWeek: freezed == daysPerWeek
+          ? _self.daysPerWeek
+          : daysPerWeek // ignore: cast_nullable_to_non_nullable
+              as int?,
+      preferredSessionMinutes: freezed == preferredSessionMinutes
+          ? _self.preferredSessionMinutes
+          : preferredSessionMinutes // ignore: cast_nullable_to_non_nullable
+              as int?,
+      template: freezed == template
+          ? _self.template
+          : template // ignore: cast_nullable_to_non_nullable
+              as String?,
+      emphasis: freezed == emphasis
+          ? _self._emphasis
+          : emphasis // ignore: cast_nullable_to_non_nullable
+              as List<MuscleGroup>?,
     ));
   }
 }

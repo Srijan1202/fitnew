@@ -112,13 +112,55 @@ thought signatures to be echoed on tool rounds (done). Owner decision
 example and the schema default, still overridable per environment.
 Nothing in application logic assumes a name.
 
+### 9. Programme generation: the model extracts, FITOS builds, the user applies (Gate 5)
+
+Natural-language programme requests go through the same seam and the same
+authority rule. The model's only job is intent extraction into a
+`ProgramRequest` — days per week (2–6), session minutes (15–180), an
+optional template slug, up to three muscles to emphasise — which is the
+argument of one more allowlisted tool, `propose_program` (plus
+`list_program_templates` for the names). Its Zod schema is strict: no
+exercises, sets, reps or volume can be passed, and no user id.
+`TrainingService.preview` runs the deterministic generator for the
+authenticated user (equipment, limitations, level, goal, time fitting,
+coverage, landmarks all apply, as for any programme) and returns a
+preview that is **not stored**; the model reads the structure, the
+exercises with FITOS's reasons, the volume against targets, the rationale
+and the shortfalls, and explains them. A request the generator rejects
+(unknown template, a 5-day template on 3 days, onboarding incomplete)
+comes back as a readable result with the valid alternatives spelled out,
+so the model explains and proposes one; nothing is offered to apply.
+
+"Emphasis" is a deterministic engine feature, not a model one:
+`GeneratorInput.emphasis` raises those muscles' weekly target by 25 %
+within [MAV-low, MAV-high] (`emphasisedTarget`), and the rationale states
+the new targets — or that the split has no session training that muscle.
+
+The proposal becomes the chat's one consequential action,
+`apply-program`, carrying the *same* structured request. The app asks
+("Replace your programme?") and only then sends it through the ordinary
+`POST /training/program/generate` or `/from-template/{slug}` route, where
+it is validated again. Nothing in the chat path writes; the integration
+suite asserts the active programme is unchanged after a proposal and that
+the tool sweep writes no row.
+
+Live (2026-09-22, real account): "5-day bodybuilding split focused on
+chest and shoulders, 60 minutes" → `list_program_templates`,
+`propose_program {template: bodybuilding-5, 60 min, emphasis [chest,
+shoulders]}`, an accurate summary (targets raised to 12, no shortfall),
+the action with that request, programme untouched. "3-day programme with
+more back work, 45 minutes" → generate path, back target 12, the two
+engine shortfalls (biceps, calves: session time) repeated faithfully.
+"5-day bodybuilding split on 3 days" → rejected by the engine; the
+assistant named the two valid 3-day structures and offered nothing.
+
 ## Consequences
 
 - Two routes beyond §10.1: `GET /v1/ai/status`, `POST /v1/ai/chat` (20/min/user).
 - §30: the assistant is explanation over server numbers; no fitness
   arithmetic moves to the model.
-- Gate 5 adds a second flow — natural-language programme requests
-  extracted by the model, executed and validated by the deterministic
-  generator — under the same seam and the same authority rule.
+- Programme generation through the assistant is extraction + explanation
+  only (§9); the generator gained one input (`emphasis`) and one
+  non-storing entry point (`preview`), both deterministic and tested.
 - Free-tier Gemini quotas (per-minute) surface as 429 "busy" to the user;
   a paid tier is required for production (§19.3).

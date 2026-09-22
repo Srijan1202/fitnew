@@ -552,8 +552,16 @@ void main() {
       const full = GenerateProgramRequest(
         daysPerWeek: 3,
         preferredSessionMinutes: 45,
+        emphasis: [MuscleGroup.chest],
       );
       expect(withoutNulls(full.toJson()).keys.toSet(), keysOf(variant));
+      expect(
+        enumOf(
+          (properties(variant)['emphasis'] as Map<String, dynamic>)['items']
+              as Map<String, dynamic>,
+        ),
+        MuscleGroup.values.map((m) => m.wire).toList(),
+      );
       expect(withoutNulls(const GenerateProgramRequest().toJson()), isEmpty);
 
       // put: name + days; each day; each exercise (incrementKg optional).
@@ -1199,6 +1207,33 @@ void main() {
           properties(items(response, 'actions'))['type']
               as Map<String, dynamic>,
         ),
+      );
+      // Gate 5: the apply-program action carries the structured request,
+      // whose shape is exactly the server's (no exercises, no sets).
+      final actionProps = properties(items(response, 'actions'));
+      const proposed = AiProgramRequest(
+        daysPerWeek: 5,
+        preferredSessionMinutes: 60,
+        template: 'bodybuilding-5',
+        emphasis: [MuscleGroup.chest],
+      );
+      expect(
+        withoutNulls(proposed.toJson()).keys.toSet(),
+        keysOf(actionProps['programRequest'] as Map<String, dynamic>),
+      );
+      expect(
+        AiAction.fromJson(
+          jsonDecode(
+            jsonEncode(
+              const AiAction(
+                type: AiActionType.applyProgram,
+                label: 'l',
+                programRequest: proposed,
+              ).toJson(),
+            ),
+          ) as Map<String, dynamic>,
+        ).programRequest,
+        proposed,
       );
       // Excludes name what the server never sees.
       expect(

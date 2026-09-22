@@ -10,7 +10,7 @@
 | 2 | Summary personalization (display name), branding | **verified** (CI 241 mobile / 168 API) | `3998d0e` `4a281e0` `72cfac3` |
 | 3 | Gemini backend foundation | **verified** (CI 199 API) | `ea58b88` |
 | 4 | AI context, allowlisted tools, chat, Flutter AI screen | **verified** (CI 222 API / 251 mobile) | `71c54c1` `56441a4` `77a623c` |
-| 5 | AI programme generation through the deterministic generator | pending | |
+| 5 | AI programme generation through the deterministic generator | **implemented, awaiting owner verification** — see below | see report |
 | 6 | Alpha configuration (LAN backend, flavour, Firebase defines) | pending | |
 | 7 | Release-like APK | pending | |
 | 8 | Samsung S24 manual alpha checklist | pending | |
@@ -84,6 +84,61 @@ LIVE GEMINI SMOKE (owner's key in `docker/.env`, never printed)
     "What is my protein target and how much have I eaten?" → *133 g; intake not logged* ✓.
     Health Connect values sent: none; key in requests/logs: none; first context 8 487 chars.
     Free-tier per-minute quota surfaced as 429 "busy" when calls were sent back to back.
+
+### Gate 5 — AI programme generation through the deterministic generator
+
+IMPLEMENTED
+  - **Core** `GeneratorInput.emphasis?: MuscleGroup[]` → `emphasisedTarget` (goal target × 1.25,
+    floored at MAV-low, capped at MAV-high); rationale line with the raised targets, or "cannot
+    apply: no session in this split trains it directly". Everything else in the engine unchanged.
+  - **Contracts** `generateProgramRequestSchema.emphasis` (≤ 3 muscles); `programRequestSchema`
+    (+ `template` slug); `programPreviewSchema`; `AI_ACTION_TYPES` + `apply-program` with
+    `programRequest`.
+  - **API** `TrainingService.preview(userId, request)` — same engine, nothing stored; `generate` /
+    `applyTemplate` accept `emphasis`. Tools `list_program_templates` and `propose_program`
+    (strict Zod = the contract; a rejection returns `error` + `alternatives` + `note`); rule 12 in
+    the system instruction; `AiService.actionFromProposal` → `apply-program` carrying the same
+    request. Total tools: 15.
+  - **Flutter** `AiActionType.applyProgram`, `AiProgramRequest`, `GenerateProgramRequest.emphasis`;
+    the AI screen confirms ("Replace your programme?" / Keep current / Use this programme) and
+    then calls `ProgramController.applyTemplate` or `.generate` with that request, invalidates
+    today + volume, opens the plan; a failure is a snackbar. Starter prompt "Build me a new
+    program" added.
+
+TESTS
+  - Core **461** (+5: emphasis bands for every muscle/goal/week, a chest+shoulders programme plans
+    more and stays under MAV-high, deterministic + duplicate-safe, no line without emphasis,
+    push/pull declines an abs emphasis honestly). Contracts **35**. API **230** (+8: proposal →
+    action with the same request; exercises/sets/userId cannot be smuggled and the generator is
+    not called; rejection with alternatives and no action; template list; instruction wording;
+    integration: real proposal for a real user with raised targets, active programme unchanged,
+    then applied through the ordinary route; rejection is a tool result not a 422; emphasis on the
+    generate route incl. 422 for 4 muscles / a fake muscle; the write-sweep now includes both
+    tools). Mobile **254** (+3 screen: cancel changes nothing; confirm sends the same request via
+    the template route and opens the plan; generate path + failure snackbar; conformance for the
+    enum, `programRequest` and `emphasis`).
+
+LIVE SMOKE (real account, key never printed; programme count 8 → 8, active unchanged)
+  - `gemini-3.6-flash`: "I want a 5-day bodybuilding split focused on chest and shoulders, 60
+    minutes per session." → `list_program_templates`, `propose_program {bodybuilding-5, 60,
+    emphasis [chest, shoulders]}` → summary with the raised targets (12 / 12 under a strength
+    goal), no shortfall, "not applied yet — tap Use this programme"; action carries that request.
+  - The free tier for `gemini-3.6-flash` is **20 requests per day per project**
+    (`GenerateRequestsPerDayPerProjectPerModel-FreeTier`); the day's quota ran out after this.
+    The remaining two paths were exercised on sibling models (config untouched):
+    `gemini-3.5-flash`: "3-day programme with more back work, 45 minutes" → generate path, back
+    target 12, the engine's two shortfalls (biceps, calves: session time) repeated, action with
+    `{3, 45, [back]}`. `gemini-3.5-flash-lite`: "the 5-day bodybuilding split on 3 days" →
+    rejected by the engine ("5-day structure; cannot run on 3 days"), the two valid 3-day
+    structures named, nothing offered.
+
+KNOWN ISSUES (Gate 5)
+  - The free tier is unusable for an alpha with real users (20 requests/day/model); a paid tier
+    is required before the S24 checklist that covers AI (§19.3 already requires it for production).
+  - A generated 3-day programme is named "Full / Body · 3 days" (`splitName` of `full-body`,
+    Phase 4 behaviour) — cosmetic, unchanged here.
+  - Emphasis is not yet offered in the app's own Generate options screen; only the assistant
+    sends it. (Deliberate: Gate 5 scope.)
 
 KNOWN ISSUES (Gate 4)
   - **Model name**: `gemini-2.5-flash` is unavailable to this key. Owner decision: the alpha model is

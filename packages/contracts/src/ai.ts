@@ -6,6 +6,8 @@
  */
 import { z } from 'zod';
 
+import { programRequestSchema } from './training.js';
+
 export const aiStatusResponseSchema = z.object({
   /** False when the server has no model credentials; chat answers 503. */
   configured: z.boolean(),
@@ -53,12 +55,20 @@ export const AI_ACTION_TYPES = [
   'open-nutrition',
   'open-exercise',
   'open-history',
+  /**
+   * Phase 6.6 Gate 5: the assistant proposed a programme; the client applies
+   * it only when the user explicitly chooses to (a confirmation, then the
+   * ordinary generate / apply-template request). The chat never changes the
+   * programme by itself.
+   */
+  'apply-program',
 ] as const;
 export const aiActionSchema = z.object({
   type: z.enum(AI_ACTION_TYPES),
   label: z.string().min(1),
   exerciseId: z.string().uuid().optional(),
   sessionId: z.string().uuid().optional(),
+  programRequest: programRequestSchema.optional(),
 });
 export type AiAction = z.infer<typeof aiActionSchema>;
 

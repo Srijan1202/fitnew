@@ -248,6 +248,10 @@ abstract class GenerateProgramRequest with _$GenerateProgramRequest {
   const factory GenerateProgramRequest({
     int? daysPerWeek,
     int? preferredSessionMinutes,
+
+    /// Phase 6.6: muscles to prioritise (≤ 3); the generator raises their
+    /// weekly target within its own landmarks.
+    List<MuscleGroup>? emphasis,
   }) = _GenerateProgramRequest;
 
   factory GenerateProgramRequest.fromJson(Map<String, dynamic> json) =>

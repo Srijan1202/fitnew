@@ -96,6 +96,13 @@ export interface GeneratorInput {
   /** 1-based; volume ramps ~10 %/week from MEV toward MAV (§12.3). */
   readonly mesocycleWeek: number;
   readonly catalogue: readonly CatalogueExercise[];
+  /**
+   * Muscles the lifter asked to prioritise (Phase 6.6). Their weekly target
+   * moves up a band (`emphasisedTarget`); nothing else changes — the same
+   * MAV-high ceiling, time fitting and coverage rules apply, so an emphasis
+   * can only add sets the split and the session length have room for.
+   */
+  readonly emphasis?: readonly MuscleGroup[];
 }
 
 /* --------------------------------------------------------------- output -- */
@@ -220,6 +227,21 @@ export function weeklyTarget(muscle: MuscleGroup, goal: Goal, mesocycleWeek: num
       // Strength: fewer sets, heavier. MEV-ish for the big movers, MV for the rest.
       return Math.max(lm.mv, Math.round(lm.mev * 0.8));
   }
+}
+
+/** How far an emphasised muscle's target moves above the goal's baseline. */
+export const EMPHASIS_FACTOR = 1.25;
+
+/**
+ * Weekly target for a muscle the lifter wants to prioritise: the goal's
+ * target raised by `EMPHASIS_FACTOR`, at least MAV-low so the emphasis is
+ * real for low-volume goals, never above MAV-high (the same ceiling every
+ * muscle has). Deterministic; the AI never sets a number.
+ */
+export function emphasisedTarget(muscle: MuscleGroup, goal: Goal, mesocycleWeek: number): number {
+  const lm = VOLUME_LANDMARKS[muscle];
+  const base = weeklyTarget(muscle, goal, mesocycleWeek);
+  return Math.min(lm.mavHigh, Math.max(lm.mavLow, Math.round(base * EMPHASIS_FACTOR)));
 }
 
 /* --------------------------------------------------------- §12.2 splits -- */
@@ -726,10 +748,27 @@ export function buildProgram(week: WeekPlan, input: Omit<GeneratorInput, 'daysPe
   }
 
   // 3. Weekly targets and each session's share of them.
+  const emphasis = [...new Set(input.emphasis ?? [])].filter((m) => MUSCLE_GROUPS.includes(m));
   const targets = emptyNeed();
-  for (const m of MUSCLE_GROUPS) targets[m] = weeklyTarget(m, goal, mesocycleWeek);
+  for (const m of MUSCLE_GROUPS) {
+    targets[m] = emphasis.includes(m) ? emphasisedTarget(m, goal, mesocycleWeek) : weeklyTarget(m, goal, mesocycleWeek);
+  }
   const sessionsCovering = emptyNeed();
   for (const s of split.sessions) for (const m of s.muscles) sessionsCovering[m] += 1;
+  if (emphasis.length > 0) {
+    const applied = emphasis.filter((m) => sessionsCovering[m] > 0);
+    const orphaned = emphasis.filter((m) => sessionsCovering[m] === 0);
+    if (applied.length > 0) {
+      rationale.push(
+        `Emphasis on ${applied.join(', ')}: weekly target raised to ${applied.map((m) => `${targets[m]} sets`).join(', ')} (never above MAV-high).`,
+      );
+    }
+    if (orphaned.length > 0) {
+      rationale.push(
+        `Emphasis on ${orphaned.join(', ')} cannot apply: no session in this split trains ${orphaned.length === 1 ? 'it' : 'them'} directly.`,
+      );
+    }
+  }
 
   // 4. Select per session.
   // Seven for a beginner (a fourth pattern plus three accessories is plenty

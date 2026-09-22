@@ -229,6 +229,62 @@ describeIfDb('/v1/ai (real Postgres, scripted model)', () => {
     expect(r.json()).toEqual({ configured: true, provider: 'fake', model: 'fake-1', excludes: ['health-connect', 'food-log'] });
   });
 
+  it('Gate 5: a proposal is built for the real user by the deterministic generator, stored nowhere, and applied only through the ordinary route with the same request', async () => {
+    const { token, program: before } = await withProgramAndSession('India');
+    let proposal: Record<string, unknown> = {};
+    ai.script = [
+      { text: '', toolCalls: [{ name: 'propose_program', args: { template: 'bodybuilding-5', preferredSessionMinutes: 60, emphasis: ['chest', 'shoulders'] } }], finishReason: 'tool' },
+      (req) => {
+        proposal = (req.toolResults![0]!.result as { proposal: Record<string, unknown> }).proposal;
+        return { text: 'A 5-day bodybuilding split with more chest and shoulder work. Tap Use this programme to apply it.', toolCalls: [], finishReason: 'stop' };
+      },
+    ];
+    const r = await chat(token, 'I want a 5-day bodybuilding split focused on chest and shoulders, 60 minutes per session');
+    expect(r.statusCode, r.body).toBe(200);
+    const body = r.json();
+    expect(body.toolsUsed).toEqual(['propose_program']);
+    expect(body.actions).toEqual([
+      { type: 'apply-program', label: 'Use this programme: 5-Day Bodybuilding Split', programRequest: { template: 'bodybuilding-5', preferredSessionMinutes: 60, emphasis: ['chest', 'shoulders'] } },
+    ]);
+    // The generator, not the model, decided everything; the emphasis moved the real targets.
+    expect(proposal).toMatchObject({ daysPerWeek: 5, splitType: 'bodybuilding-5', applied: false });
+    const targets = proposal['weeklyTargets'] as Record<string, number>;
+    expect(targets['chest']).toBeGreaterThan(10);
+    expect(targets['back']).toBe(10);
+    expect((proposal['rationale'] as string[]).some((l) => l.startsWith('Emphasis on chest, shoulders'))).toBe(true);
+    const days = proposal['days'] as { exercises: { name: string; sets: number; reason: string }[] }[];
+    expect(days).toHaveLength(5);
+    expect(days.every((d) => d.exercises.length >= 3 && d.exercises.every((x) => x.sets > 0 && x.reason.length > 0))).toBe(true);
+    // Nothing stored: the active programme is untouched.
+    const still: Program = (await app.inject({ method: 'GET', url: '/v1/training/program', headers: auth(token) })).json();
+    expect(still.id).toBe(before.id);
+    expect(still.splitType).toBe(before.splitType);
+    // The user applies it: the SAME request through the ordinary route, validated there again.
+    const applied = await app.inject({ method: 'POST', url: '/v1/training/program/from-template/bodybuilding-5', headers: auth(token), payload: { preferredSessionMinutes: 60, emphasis: ['chest', 'shoulders'] } });
+    expect(applied.statusCode, applied.body).toBe(200);
+    const now: Program = applied.json();
+    expect(now.id).not.toBe(before.id);
+    expect(now.splitType).toBe('bodybuilding-5');
+    expect(now.source).toBe('template');
+  });
+
+  it('Gate 5: a request the generator rejects is a readable tool result, never a 422 to the user, and offers no action', async () => {
+    const token = await onboarded('Juliet');
+    ai.script = [
+      { text: '', toolCalls: [{ name: 'propose_program', args: { template: 'bodybuilding-5', daysPerWeek: 3 } }], finishReason: 'tool' },
+      (req) => {
+        expect(req.toolResults![0]!.result).toMatchObject({
+          error: '5-Day Bodybuilding Split is a 5-day structure; it cannot run on 3 days.',
+          alternatives: [{ template: 'push-pull-legs', daysPerWeek: 3 }, { template: 'full-body-3', daysPerWeek: 3 }],
+        });
+        return { text: 'That split needs five days. On three days FITOS would build a full-body or push / pull / legs week.', toolCalls: [], finishReason: 'stop' };
+      },
+    ];
+    const r = await chat(token, 'give me the 5-day bodybuilding split on 3 days');
+    expect(r.statusCode, r.body).toBe(200);
+    expect(r.json().actions).toEqual([]);
+  });
+
   it('nothing the assistant does writes to the database', async () => {
     const { token } = await withProgramAndSession('Hotel');
     const before = await sql<{ n: number }[]>`select (select count(*) from set_logs)::int + (select count(*) from workout_sessions)::int + (select count(*) from programs)::int + (select count(*) from users)::int as n`;
@@ -252,4 +308,6 @@ const TOOL_LIKE_CALLS = [
   { name: 'get_training_volume', args: {} },
   { name: 'get_active_program', args: {} },
   { name: 'get_deload_state', args: {} },
+  { name: 'list_program_templates', args: {} },
+  { name: 'propose_program', args: { daysPerWeek: 3, emphasis: ['back'] } },
 ];

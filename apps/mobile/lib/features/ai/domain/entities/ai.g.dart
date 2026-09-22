@@ -60,6 +60,10 @@ _AiAction _$AiActionFromJson(Map<String, dynamic> json) => _AiAction(
       label: json['label'] as String,
       exerciseId: json['exerciseId'] as String? ?? null,
       sessionId: json['sessionId'] as String? ?? null,
+      programRequest: json['programRequest'] == null
+          ? null
+          : AiProgramRequest.fromJson(
+              json['programRequest'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$AiActionToJson(_AiAction instance) => <String, dynamic>{
@@ -67,6 +71,7 @@ Map<String, dynamic> _$AiActionToJson(_AiAction instance) => <String, dynamic>{
       'label': instance.label,
       'exerciseId': instance.exerciseId,
       'sessionId': instance.sessionId,
+      'programRequest': instance.programRequest,
     };
 
 const _$AiActionTypeEnumMap = {
@@ -78,6 +83,41 @@ const _$AiActionTypeEnumMap = {
   AiActionType.openNutrition: 'open-nutrition',
   AiActionType.openExercise: 'open-exercise',
   AiActionType.openHistory: 'open-history',
+  AiActionType.applyProgram: 'apply-program',
+};
+
+_AiProgramRequest _$AiProgramRequestFromJson(Map<String, dynamic> json) =>
+    _AiProgramRequest(
+      daysPerWeek: (json['daysPerWeek'] as num?)?.toInt() ?? null,
+      preferredSessionMinutes:
+          (json['preferredSessionMinutes'] as num?)?.toInt() ?? null,
+      template: json['template'] as String? ?? null,
+      emphasis: (json['emphasis'] as List<dynamic>?)
+              ?.map((e) => $enumDecode(_$MuscleGroupEnumMap, e))
+              .toList() ??
+          null,
+    );
+
+Map<String, dynamic> _$AiProgramRequestToJson(_AiProgramRequest instance) =>
+    <String, dynamic>{
+      'daysPerWeek': instance.daysPerWeek,
+      'preferredSessionMinutes': instance.preferredSessionMinutes,
+      'template': instance.template,
+      'emphasis':
+          instance.emphasis?.map((e) => _$MuscleGroupEnumMap[e]!).toList(),
+    };
+
+const _$MuscleGroupEnumMap = {
+  MuscleGroup.chest: 'chest',
+  MuscleGroup.back: 'back',
+  MuscleGroup.quads: 'quads',
+  MuscleGroup.hamstrings: 'hamstrings',
+  MuscleGroup.glutes: 'glutes',
+  MuscleGroup.shoulders: 'shoulders',
+  MuscleGroup.biceps: 'biceps',
+  MuscleGroup.triceps: 'triceps',
+  MuscleGroup.calves: 'calves',
+  MuscleGroup.abs: 'abs',
 };
 
 _AiChatResponse _$AiChatResponseFromJson(Map<String, dynamic> json) =>

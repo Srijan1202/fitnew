@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../../exercise/domain/entities/exercise.dart';
+
 part 'ai.freezed.dart';
 part 'ai.g.dart';
 
@@ -52,7 +54,10 @@ abstract class AiChatRequest with _$AiChatRequest {
       _$AiChatRequestFromJson(json);
 }
 
-/// Navigation the assistant may offer under an answer; nothing changes by it.
+/// What the assistant may offer under an answer. Every `open-*` action only
+/// navigates. `apply-program` (Gate 5) carries the structured request the
+/// assistant extracted; the app applies it only after the user confirms,
+/// through the ordinary generate / template route.
 enum AiActionType {
   @JsonValue('open-workout')
   openWorkout('open-workout'),
@@ -69,7 +74,9 @@ enum AiActionType {
   @JsonValue('open-exercise')
   openExercise('open-exercise'),
   @JsonValue('open-history')
-  openHistory('open-history');
+  openHistory('open-history'),
+  @JsonValue('apply-program')
+  applyProgram('apply-program');
 
   const AiActionType(this.wire);
   final String wire;
@@ -82,10 +89,27 @@ abstract class AiAction with _$AiAction {
     required String label,
     @Default(null) String? exerciseId,
     @Default(null) String? sessionId,
+    @Default(null) AiProgramRequest? programRequest,
   }) = _AiAction;
 
   factory AiAction.fromJson(Map<String, dynamic> json) =>
       _$AiActionFromJson(json);
+}
+
+/// The structured programme request (Gate 5): days, minutes, an optional
+/// template slug and up to three muscles to emphasise. No exercises, no
+/// sets — the deterministic generator decides those on the server.
+@freezed
+abstract class AiProgramRequest with _$AiProgramRequest {
+  const factory AiProgramRequest({
+    @Default(null) int? daysPerWeek,
+    @Default(null) int? preferredSessionMinutes,
+    @Default(null) String? template,
+    @Default(null) List<MuscleGroup>? emphasis,
+  }) = _AiProgramRequest;
+
+  factory AiProgramRequest.fromJson(Map<String, dynamic> json) =>
+      _$AiProgramRequestFromJson(json);
 }
 
 @freezed

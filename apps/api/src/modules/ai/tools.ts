@@ -8,7 +8,10 @@
  */
 import { z } from 'zod';
 
-import { exerciseListQuerySchema } from '@fitos/contracts';
+import { MUSCLE_GROUPS } from '@fitos/core/training/generator';
+import { PROGRAM_TEMPLATES } from '@fitos/core/training/templates';
+
+import { exerciseListQuerySchema, programRequestSchema, type ProgramPreview } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
 import type { ExerciseService } from '../exercise/service.js';
@@ -37,6 +40,9 @@ export interface ToolDefinition<A extends z.ZodTypeAny = z.ZodTypeAny> {
 const noArgs = z.object({}).strict();
 const noParams = { type: 'object', properties: {} };
 const uuid = z.string().uuid();
+
+/** The one tool whose result the client turns into an explicit user action. */
+export const PROPOSE_PROGRAM = 'propose_program';
 
 export const TOOLS: readonly ToolDefinition[] = [
   {
@@ -202,7 +208,92 @@ export const TOOLS: readonly ToolDefinition[] = [
       return { deload: t.deload, mesocycleWeek: t.mesocycleWeek };
     },
   },
+  {
+    name: 'list_program_templates',
+    description:
+      'The professional programme structures FITOS can build: slug, name, days per week, level, typical minutes and a one-line summary. Use before propose_program when the user names a style (push/pull/legs, upper/lower, bro split, full body…).',
+    args: noArgs,
+    parameters: noParams,
+    execute: async () => ({
+      templates: PROGRAM_TEMPLATES.map((t) => ({ slug: t.slug, name: t.name, daysPerWeek: t.daysPerWeek, level: t.level, approxMinutes: t.approxMinutes, summary: t.summary })),
+      note: 'Without a template, FITOS picks the split for the number of days (2–6) and the user\'s level.',
+    }),
+  },
+  {
+    name: PROPOSE_PROGRAM,
+    description:
+      'Build a programme PROPOSAL for the user with the deterministic FITOS generator from a structured request: days per week (2–6), session minutes (15–180), an optional template slug, and up to three muscles to emphasise. FITOS decides every exercise, set, rep and volume from the user\'s equipment, limitations, level and goal — you never do. Nothing is stored: the user must tap "Use this programme" to apply it; never say it has been applied. If the result carries an error, explain it and propose a valid alternative.',
+    args: programRequestSchema,
+    parameters: {
+      type: 'object',
+      properties: {
+        daysPerWeek: { type: 'integer', minimum: 2, maximum: 6, description: 'Training days per week. Omit to keep the profile\'s.' },
+        preferredSessionMinutes: { type: 'integer', minimum: 15, maximum: 180, description: 'Target session length. Omit to keep the profile\'s.' },
+        template: { type: 'string', description: 'A template slug from list_program_templates. Omit for the FITOS split for the days.' },
+        emphasis: {
+          type: 'array',
+          maxItems: 3,
+          items: { type: 'string', enum: [...MUSCLE_GROUPS] },
+          description: 'Muscles to prioritise; FITOS raises their weekly target within its landmarks.',
+        },
+      },
+    },
+    execute: async (userId, args, s) => {
+      try {
+        return { proposal: proposalOf(await s.training.preview(userId, args)) };
+      } catch (e) {
+        // A rejected request comes back with the valid alternatives spelled
+        // out, so the model proposes one instead of retrying the same call.
+        if (e instanceof AppError && (e.code === 'NOT_FOUND' || e.code === 'VALIDATION_FAILED')) {
+          const days = args.daysPerWeek;
+          const fits = days === undefined ? PROGRAM_TEMPLATES : PROGRAM_TEMPLATES.filter((t) => t.daysPerWeek === days);
+          return {
+            error: e.message,
+            alternatives: fits.map((t) => ({ template: t.slug, name: t.name, daysPerWeek: t.daysPerWeek })),
+            note: days === undefined ? 'Omit "template" and FITOS picks the split for the profile days.' : `Omit "template" and FITOS picks the split for ${days} days.`,
+          };
+        }
+        throw e;
+      }
+    },
+  },
 ];
+
+/**
+ * What the model reads about a proposal: the structure, the exercises with
+ * their prescriptions and FITOS's reasons, the volume against targets, the
+ * rationale and any shortfall — compact, no loads (the engine never invents
+ * one), no ids the model could misuse.
+ */
+export function proposalOf(p: ProgramPreview): Record<string, unknown> {
+  return {
+    request: p.request,
+    name: p.name,
+    splitType: p.splitType,
+    daysPerWeek: p.daysPerWeek,
+    days: p.days
+      .filter((d) => !d.isRest)
+      .map((d) => ({
+        dayOfWeek: d.dayOfWeek,
+        session: d.sessionName,
+        focus: d.focus,
+        estimatedMinutes: d.estimatedMinutes,
+        exercises: d.exercises.map((x) => ({
+          name: x.name,
+          sets: x.setCount,
+          reps: x.repMin === x.repMax ? `${x.repMin}` : `${x.repMin}–${x.repMax}`,
+          rir: x.targetRir,
+          primaryMuscles: x.primaryMuscles,
+          reason: x.reason,
+        })),
+      })),
+    weeklyVolume: p.weeklyVolume,
+    weeklyTargets: p.weeklyTargets,
+    rationale: p.rationale,
+    shortfalls: p.shortfalls.map((sf) => ({ muscle: sf.muscle, target: sf.targetSets, planned: sf.plannedSets, reason: sf.reason, detail: sf.detail })),
+    applied: false,
+  };
+}
 
 export const TOOL_NAMES: readonly string[] = TOOLS.map((t) => t.name);
 

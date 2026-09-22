@@ -6,12 +6,12 @@
  * exchange. Provider failures become §10 envelopes here, in one place.
  * Health Connect data is never in what leaves this process (owner B4).
  */
-import type { AiAction, AiChatRequest, AiChatResponse, AiStatusResponse } from '@fitos/contracts';
+import { programRequestSchema, type AiAction, type AiChatRequest, type AiChatResponse, type AiStatusResponse } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
 import type { FitosAiContext, UserContextAssembler } from './context-assembler.js';
 import { AiProviderError, type AiMessage, type AiProvider, type AiToolCall, type AiToolResult } from './provider.js';
-import { MAX_TOOL_ROUNDS, type ToolRegistry } from './tools.js';
+import { MAX_TOOL_ROUNDS, PROPOSE_PROGRAM, type ToolRegistry } from './tools.js';
 
 /** What the assistant never sees (owner B4; Phase 8 not built). */
 export const AI_EXCLUDES: AiStatusResponse['excludes'] = ['health-connect', 'food-log'];
@@ -83,6 +83,7 @@ export class AiService {
           if (this.deps.tools.has(call.name)) toolsUsed.push(call.name);
           results.push({ name: call.name, result, ...(call.id !== undefined ? { id: call.id } : {}) });
           AiService.actionFromCall(call, actions);
+          AiService.actionFromProposal(call, result, actions);
         }
         messages.push({ role: 'assistant', content: response.text, toolCalls: response.toolCalls });
         toolResults = results;
@@ -117,6 +118,7 @@ export class AiService {
       '9. Be concise and direct: the answer first, with the relevant numbers, then a short reason, then one clear next action when useful. Use plain text, no markdown tables. Units: kg, reps, RIR.',
       '10. Use tools when the context lacks what the question needs (older sessions, a specific exercise, the library, a lift\'s progression detail).',
       name ? `11. The user's name is ${name}; use it sparingly.` : '11. The user has not given a name; do not invent one.',
+      '12. Programme requests ("build me a 5-day split", "focus on chest and shoulders", "45-minute sessions"): extract days per week, session minutes, a template (use list_program_templates when a style is named) and up to three muscles to emphasise, then call propose_program. FITOS builds it - you never list exercises or sets of your own. Present the proposal briefly (structure, days, session length, what the emphasis changed, any shortfall and its reason) and tell the user to tap "Use this programme" to apply it; it is NOT applied until they do. If the tool returns an error, explain it in plain words and propose a valid alternative request.',
       '',
       `Today is ${context.today?.date ?? context.generatedAt.slice(0, 10)} in the user's zone (${context.profile.timezone}).`,
       '',
@@ -186,6 +188,27 @@ export class AiService {
       default:
         break;
     }
+  }
+
+  /**
+   * A successful `propose_program` becomes the one consequential action in
+   * the chat: the client shows "Use this programme" and applies the SAME
+   * structured request through the ordinary generate / apply-template route
+   * only when the user confirms (Part 8: nothing changes silently). The last
+   * successful proposal wins; an error result offers nothing.
+   */
+  static actionFromProposal(call: AiToolCall, result: Record<string, unknown>, actions: Map<string, AiAction>): void {
+    if (call.name !== PROPOSE_PROGRAM) return;
+    const proposal = result['proposal'];
+    if (typeof proposal !== 'object' || proposal === null) return;
+    const parsed = programRequestSchema.safeParse((proposal as { request?: unknown }).request);
+    if (!parsed.success) return;
+    const name = (proposal as { name?: unknown }).name;
+    actions.set('apply-program', {
+      type: 'apply-program',
+      label: typeof name === 'string' ? `Use this programme: ${name}` : 'Use this programme',
+      programRequest: parsed.data,
+    });
   }
 
   /** With no tools used, one action from the day's state so an answer about today can be acted on. */

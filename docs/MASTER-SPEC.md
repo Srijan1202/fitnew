@@ -891,7 +891,7 @@ Shipped ahead of Phase 14 as an *explanation and Q&A* layer only; §19.1's left 
 - **Authority:** FITOS numbers are the only truth; the assistant explains with the engine's own `reason` strings, never invents history, never changes data (it points to the screen), no diagnosis. Answers are plain text, stripped of markdown server-side.
 - **Privacy boundary (owner B4):** Health Connect data never reaches the backend or the model; the integration suite asserts no health keys in the instruction. Asked about steps / sleep / resting HR, the assistant says FITOS does not send that data to the cloud AI.
 - **Failures:** every provider error maps to the §10 envelope — `UPSTREAM_UNAVAILABLE` 503, `RATE_LIMITED` 429, `VALIDATION_FAILED` 422 — with user-safe messages; the free-tier per-minute quota surfaces as "busy".
-- **Gate 5 (same seam):** natural-language programme requests are *extracted* by the model into a structured request, *executed* by the deterministic generator, validated, and explained — the model never produces a programme itself.
+- **Programme generation (Gate 5, same seam):** natural-language programme requests are *extracted* by the model into a strict `ProgramRequest` (days, minutes, template slug, ≤ 3 muscles to emphasise), *built* by the deterministic generator through `TrainingService.preview` (never stored), explained by the model, and *applied only when the user confirms* through the ordinary generate / template route. "Emphasis" is an engine input (`emphasisedTarget`, within MAV), not a model decision. A rejected request returns the valid alternatives; the model never produces exercises, sets or volume itself.
 
 ---
 
@@ -1609,7 +1609,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 **Phase 6.5** — [x] Health Connect channel + provider abstraction · [x] availability model · [x] permission flow by category · [x] foreground refresh + honest cache · [x] suggestion engine · [x] Home redesign · [x] floating bar · [x] Health Data screen · [ ] **manual acceptance (27 points) on a device**
 
-**Phase 6.6** — [x] display name end to end · [x] branding · [x] Gemini provider seam + config + `/ai/status` · [x] context assembler · [x] 13 allowlisted tools · [x] capped chat loop + `/ai/chat` · [x] Flutter AI screen · [x] live Gemini smoke · [ ] AI programme generation via the deterministic generator · [ ] alpha config (LAN, flavour, defines) · [ ] release-like APK · [ ] **S24 manual checklist (incl. Phase 6.5's 27 points)**
+**Phase 6.6** — [x] display name end to end · [x] branding · [x] Gemini provider seam + config + `/ai/status` · [x] context assembler · [x] 13 allowlisted tools · [x] capped chat loop + `/ai/chat` · [x] Flutter AI screen · [x] live Gemini smoke · [x] AI programme generation via the deterministic generator (extraction → `propose_program` → preview, never stored → user confirms → ordinary route) · [ ] alpha config (LAN, flavour, defines) · [ ] release-like APK · [ ] **S24 manual checklist (incl. Phase 6.5's 27 points)**
 
 **Phase 7** — [ ] licensing confirmed · [ ] food tables with ranges · [ ] 500 foods seeded · [ ] trigram search · [ ] aliases · [ ] custom foods
 

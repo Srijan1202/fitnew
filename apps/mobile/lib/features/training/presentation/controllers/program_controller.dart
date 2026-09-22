@@ -4,6 +4,7 @@ import '../../../../core/errors/failure.dart';
 import '../../../../core/errors/result.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../auth/presentation/controllers/auth_providers.dart';
+import '../../../exercise/domain/entities/exercise.dart';
 import '../../data/training_repository_impl.dart';
 import '../../domain/entities/program.dart';
 import '../../domain/repositories/training_repository.dart';
@@ -38,12 +39,17 @@ class ProgramController extends AsyncNotifier<Program?> {
     );
   }
 
-  Future<Failure?> generate({int? daysPerWeek, int? preferredSessionMinutes}) =>
+  Future<Failure?> generate({
+    int? daysPerWeek,
+    int? preferredSessionMinutes,
+    List<MuscleGroup>? emphasis,
+  }) =>
       _apply(
         _repo.generate(
           GenerateProgramRequest(
             daysPerWeek: daysPerWeek,
             preferredSessionMinutes: preferredSessionMinutes,
+            emphasis: emphasis,
           ),
         ),
       );
@@ -59,12 +65,14 @@ class ProgramController extends AsyncNotifier<Program?> {
   Future<Failure?> applyTemplate(
     String slug, {
     int? preferredSessionMinutes,
+    List<MuscleGroup>? emphasis,
   }) =>
       _apply(
         _repo.applyTemplate(
           slug,
           GenerateProgramRequest(
             preferredSessionMinutes: preferredSessionMinutes,
+            emphasis: emphasis,
           ),
         ),
       );

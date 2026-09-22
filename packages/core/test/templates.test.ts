@@ -155,3 +155,13 @@ describe('materialising a template', () => {
     expect(b).toEqual(a);
   });
 });
+
+describe('muscle emphasis through a template (Phase 6.6)', () => {
+  it('push / pull has no abs session: an abs emphasis is declined in the rationale, not faked', () => {
+    const t = findTemplate('push-pull')!;
+    const p = materializeTemplate(t, input({ emphasis: ['abs', 'chest'] }));
+    expect(p.rationale).toContain('Emphasis on abs cannot apply: no session in this split trains it directly.');
+    expect(p.rationale.some((r) => r.startsWith('Emphasis on chest: weekly target raised to'))).toBe(true);
+    expect(p.days.flatMap((d) => d.exercises).some((x) => bySlug.get(x.slug)!.primaryMuscles.includes('abs'))).toBe(false);
+  });
+});

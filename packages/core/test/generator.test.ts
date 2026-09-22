@@ -21,6 +21,8 @@ import {
   MUSCLE_GROUPS,
   PATTERN_ORDER,
   VOLUME_LANDMARKS,
+  EMPHASIS_FACTOR,
+  emphasisedTarget,
   generateProgram,
   isPerformable,
   selectSplit,
@@ -638,5 +640,51 @@ describe('the first primary muscle is load-bearing (the API must persist the see
     const p = generateProgram(input({ daysPerWeek: 6, experience: 'intermediate', goal: 'recomposition', preferredSessionMinutes: 60, catalogue: reordered }));
     const pushes = p.days.filter((x) => x.sessionName === 'Push');
     expect(pushes.some((d) => d.exercises.length <= 3 || d.exercises[0]!.slug === 'close-grip-bench-press')).toBe(true);
+  });
+});
+
+/* ------------------------------------------------- Phase 6.6 emphasis -- */
+
+describe('muscle emphasis (Phase 6.6, the AI only names the muscles)', () => {
+  it('raises the weekly target by the factor, floors at MAV-low, caps at MAV-high', () => {
+    for (const m of MUSCLE_GROUPS) {
+      for (const g of GOALS) {
+        for (const w of [1, 3, 8]) {
+          const lm = VOLUME_LANDMARKS[m];
+          const t = emphasisedTarget(m, g, w);
+          expect(t, `${g} ${m} w${w}`).toBeGreaterThanOrEqual(lm.mavLow);
+          expect(t).toBeLessThanOrEqual(lm.mavHigh);
+          expect(t).toBeGreaterThanOrEqual(weeklyTarget(m, g, w));
+          expect(t).toBeLessThanOrEqual(Math.max(lm.mavLow, Math.round(weeklyTarget(m, g, w) * EMPHASIS_FACTOR)));
+        }
+      }
+    }
+  });
+
+  it('a chest + shoulders emphasis plans more chest and shoulder sets, says so, and stays under MAV-high everywhere', () => {
+    const plain = generateProgram(input({ daysPerWeek: 5, preferredSessionMinutes: 75 }));
+    const focused = generateProgram(input({ daysPerWeek: 5, preferredSessionMinutes: 75, emphasis: ['chest', 'shoulders'] }));
+    expect(focused.weeklyTargets.chest).toBe(emphasisedTarget('chest', 'muscle-gain', 1));
+    expect(focused.weeklyTargets.shoulders).toBe(emphasisedTarget('shoulders', 'muscle-gain', 1));
+    expect(focused.weeklyTargets.back).toBe(plain.weeklyTargets.back);
+    expect(focused.weeklyVolume.chest).toBeGreaterThan(plain.weeklyVolume.chest);
+    expect(focused.weeklyVolume.shoulders).toBeGreaterThan(plain.weeklyVolume.shoulders);
+    for (const m of MUSCLE_GROUPS) expect(focused.weeklyVolume[m], m).toBeLessThanOrEqual(VOLUME_LANDMARKS[m].mavHigh);
+    expect(focused.rationale.some((r) => r.startsWith('Emphasis on chest, shoulders: weekly target raised to'))).toBe(true);
+    expect(recount(focused)).toEqual(focused.weeklyVolume);
+  });
+
+  it('is deterministic and ignores duplicates', () => {
+    const a = generateProgram(input({ emphasis: ['back', 'back'] }));
+    const b = generateProgram(input({ emphasis: ['back'] }));
+    expect(a).toEqual(b);
+  });
+
+  it('an emphasis the split cannot honour is said plainly, never faked', () => {
+    // Two-day full body trains every muscle, so pick a split by template
+    // instead: the §12.2 splits all cover every muscle; the honest line is
+    // exercised through templates.test.ts. Here: no emphasis → no line.
+    const p = generateProgram(input({ emphasis: [] }));
+    expect(p.rationale.some((r) => r.startsWith('Emphasis'))).toBe(false);
   });
 });

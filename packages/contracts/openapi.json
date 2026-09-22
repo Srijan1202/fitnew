@@ -8286,6 +8286,25 @@
                         "type": "integer",
                         "minimum": 15,
                         "maximum": 180
+                      },
+                      "emphasis": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "chest",
+                            "back",
+                            "quads",
+                            "hamstrings",
+                            "glutes",
+                            "shoulders",
+                            "biceps",
+                            "triceps",
+                            "calves",
+                            "abs"
+                          ]
+                        },
+                        "maxItems": 3
                       }
                     },
                     "additionalProperties": false
@@ -10161,6 +10180,25 @@
                         "type": "integer",
                         "minimum": 15,
                         "maximum": 180
+                      },
+                      "emphasis": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "chest",
+                            "back",
+                            "quads",
+                            "hamstrings",
+                            "glutes",
+                            "shoulders",
+                            "biceps",
+                            "triceps",
+                            "calves",
+                            "abs"
+                          ]
+                        },
+                        "maxItems": 3
                       }
                     },
                     "additionalProperties": false
@@ -25903,7 +25941,8 @@
                               "open-profile",
                               "open-nutrition",
                               "open-exercise",
-                              "open-history"
+                              "open-history",
+                              "apply-program"
                             ]
                           },
                           "label": {
@@ -25917,6 +25956,46 @@
                           "sessionId": {
                             "type": "string",
                             "format": "uuid"
+                          },
+                          "programRequest": {
+                            "type": "object",
+                            "properties": {
+                              "daysPerWeek": {
+                                "type": "integer",
+                                "minimum": 2,
+                                "maximum": 6
+                              },
+                              "preferredSessionMinutes": {
+                                "type": "integer",
+                                "minimum": 15,
+                                "maximum": 180
+                              },
+                              "emphasis": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "chest",
+                                    "back",
+                                    "quads",
+                                    "hamstrings",
+                                    "glutes",
+                                    "shoulders",
+                                    "biceps",
+                                    "triceps",
+                                    "calves",
+                                    "abs"
+                                  ]
+                                },
+                                "maxItems": 3
+                              },
+                              "template": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64
+                              }
+                            },
+                            "additionalProperties": false
                           }
                         },
                         "required": [

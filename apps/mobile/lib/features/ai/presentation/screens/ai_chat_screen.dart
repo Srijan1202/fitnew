@@ -6,6 +6,7 @@ import '../../../../core/errors/failure.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/fitos_wordmark.dart';
+import '../../../training/presentation/controllers/program_controller.dart';
 import '../../../workout/presentation/controllers/workout_providers.dart';
 import '../../domain/entities/ai.dart';
 import '../controllers/ai_providers.dart';
@@ -25,6 +26,7 @@ class AiChatScreen extends ConsumerStatefulWidget {
     'How am I progressing?',
     'Why is my volume high?',
     'What did I do last workout?',
+    'Build me a new program',
     'What are my calorie and protein targets?',
   ];
 
@@ -88,7 +90,68 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
         context.go(Routes.nutrition);
       case AiActionType.openHistory:
         await context.push(Routes.history);
+      case AiActionType.applyProgram:
+        await _applyProgram(a);
     }
+  }
+
+  /// Gate 5: the one consequential action. The assistant only proposed;
+  /// the programme changes here, after the user confirms, through the same
+  /// request the ordinary generate / template screens send.
+  Future<void> _applyProgram(AiAction a) async {
+    final request = a.programRequest;
+    if (request == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        key: const ValueKey('ai.applyProgram.confirm'),
+        title: const Text('Replace your programme?'),
+        content: const Text(
+          'FITOS will build this programme from your profile and make it your active plan. Your current programme is kept, but no longer active.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            key: const ValueKey('ai.applyProgram.cancel'),
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Keep current'),
+          ),
+          FilledButton(
+            key: const ValueKey('ai.applyProgram.ok'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Use this programme'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final controller = ref.read(programControllerProvider.notifier);
+    final template = request.template;
+    final failure = template != null
+        ? await controller.applyTemplate(
+            template,
+            preferredSessionMinutes: request.preferredSessionMinutes,
+            emphasis: request.emphasis,
+          )
+        : await controller.generate(
+            daysPerWeek: request.daysPerWeek,
+            preferredSessionMinutes: request.preferredSessionMinutes,
+            emphasis: request.emphasis,
+          );
+    if (!mounted) return;
+    if (failure != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          key: const ValueKey('ai.applyProgram.failed'),
+          content: Text(failure.message),
+        ),
+      );
+      return;
+    }
+    // The plan and today's prescription changed on the server.
+    ref
+      ..invalidate(todayProvider)
+      ..invalidate(volumeProvider);
+    context.go(Routes.plan);
   }
 
   @override

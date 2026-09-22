@@ -2729,6 +2729,10 @@ mixin _$GenerateProgramRequest {
   int? get daysPerWeek;
   int? get preferredSessionMinutes;
 
+  /// Phase 6.6: muscles to prioritise (≤ 3); the generator raises their
+  /// weekly target within its own landmarks.
+  List<MuscleGroup>? get emphasis;
+
   /// Create a copy of GenerateProgramRequest
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2749,17 +2753,18 @@ mixin _$GenerateProgramRequest {
                 other.daysPerWeek == daysPerWeek) &&
             (identical(
                     other.preferredSessionMinutes, preferredSessionMinutes) ||
-                other.preferredSessionMinutes == preferredSessionMinutes));
+                other.preferredSessionMinutes == preferredSessionMinutes) &&
+            const DeepCollectionEquality().equals(other.emphasis, emphasis));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, daysPerWeek, preferredSessionMinutes);
+  int get hashCode => Object.hash(runtimeType, daysPerWeek,
+      preferredSessionMinutes, const DeepCollectionEquality().hash(emphasis));
 
   @override
   String toString() {
-    return 'GenerateProgramRequest(daysPerWeek: $daysPerWeek, preferredSessionMinutes: $preferredSessionMinutes)';
+    return 'GenerateProgramRequest(daysPerWeek: $daysPerWeek, preferredSessionMinutes: $preferredSessionMinutes, emphasis: $emphasis)';
   }
 }
 
@@ -2769,7 +2774,10 @@ abstract mixin class $GenerateProgramRequestCopyWith<$Res> {
           $Res Function(GenerateProgramRequest) _then) =
       _$GenerateProgramRequestCopyWithImpl;
   @useResult
-  $Res call({int? daysPerWeek, int? preferredSessionMinutes});
+  $Res call(
+      {int? daysPerWeek,
+      int? preferredSessionMinutes,
+      List<MuscleGroup>? emphasis});
 }
 
 /// @nodoc
@@ -2787,6 +2795,7 @@ class _$GenerateProgramRequestCopyWithImpl<$Res>
   $Res call({
     Object? daysPerWeek = freezed,
     Object? preferredSessionMinutes = freezed,
+    Object? emphasis = freezed,
   }) {
     return _then(_self.copyWith(
       daysPerWeek: freezed == daysPerWeek
@@ -2797,6 +2806,10 @@ class _$GenerateProgramRequestCopyWithImpl<$Res>
           ? _self.preferredSessionMinutes
           : preferredSessionMinutes // ignore: cast_nullable_to_non_nullable
               as int?,
+      emphasis: freezed == emphasis
+          ? _self.emphasis
+          : emphasis // ignore: cast_nullable_to_non_nullable
+              as List<MuscleGroup>?,
     ));
   }
 }
@@ -2894,14 +2907,16 @@ extension GenerateProgramRequestPatterns on GenerateProgramRequest {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(int? daysPerWeek, int? preferredSessionMinutes)?
+    TResult Function(int? daysPerWeek, int? preferredSessionMinutes,
+            List<MuscleGroup>? emphasis)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _GenerateProgramRequest() when $default != null:
-        return $default(_that.daysPerWeek, _that.preferredSessionMinutes);
+        return $default(
+            _that.daysPerWeek, _that.preferredSessionMinutes, _that.emphasis);
       case _:
         return orElse();
     }
@@ -2922,12 +2937,15 @@ extension GenerateProgramRequestPatterns on GenerateProgramRequest {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(int? daysPerWeek, int? preferredSessionMinutes) $default,
+    TResult Function(int? daysPerWeek, int? preferredSessionMinutes,
+            List<MuscleGroup>? emphasis)
+        $default,
   ) {
     final _that = this;
     switch (_that) {
       case _GenerateProgramRequest():
-        return $default(_that.daysPerWeek, _that.preferredSessionMinutes);
+        return $default(
+            _that.daysPerWeek, _that.preferredSessionMinutes, _that.emphasis);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -2947,12 +2965,15 @@ extension GenerateProgramRequestPatterns on GenerateProgramRequest {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(int? daysPerWeek, int? preferredSessionMinutes)? $default,
+    TResult? Function(int? daysPerWeek, int? preferredSessionMinutes,
+            List<MuscleGroup>? emphasis)?
+        $default,
   ) {
     final _that = this;
     switch (_that) {
       case _GenerateProgramRequest() when $default != null:
-        return $default(_that.daysPerWeek, _that.preferredSessionMinutes);
+        return $default(
+            _that.daysPerWeek, _that.preferredSessionMinutes, _that.emphasis);
       case _:
         return null;
     }
@@ -2963,7 +2984,10 @@ extension GenerateProgramRequestPatterns on GenerateProgramRequest {
 @JsonSerializable()
 class _GenerateProgramRequest implements GenerateProgramRequest {
   const _GenerateProgramRequest(
-      {this.daysPerWeek, this.preferredSessionMinutes});
+      {this.daysPerWeek,
+      this.preferredSessionMinutes,
+      final List<MuscleGroup>? emphasis})
+      : _emphasis = emphasis;
   factory _GenerateProgramRequest.fromJson(Map<String, dynamic> json) =>
       _$GenerateProgramRequestFromJson(json);
 
@@ -2971,6 +2995,21 @@ class _GenerateProgramRequest implements GenerateProgramRequest {
   final int? daysPerWeek;
   @override
   final int? preferredSessionMinutes;
+
+  /// Phase 6.6: muscles to prioritise (≤ 3); the generator raises their
+  /// weekly target within its own landmarks.
+  final List<MuscleGroup>? _emphasis;
+
+  /// Phase 6.6: muscles to prioritise (≤ 3); the generator raises their
+  /// weekly target within its own landmarks.
+  @override
+  List<MuscleGroup>? get emphasis {
+    final value = _emphasis;
+    if (value == null) return null;
+    if (_emphasis is EqualUnmodifiableListView) return _emphasis;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
 
   /// Create a copy of GenerateProgramRequest
   /// with the given fields replaced by the non-null parameter values.
@@ -2997,17 +3036,18 @@ class _GenerateProgramRequest implements GenerateProgramRequest {
                 other.daysPerWeek == daysPerWeek) &&
             (identical(
                     other.preferredSessionMinutes, preferredSessionMinutes) ||
-                other.preferredSessionMinutes == preferredSessionMinutes));
+                other.preferredSessionMinutes == preferredSessionMinutes) &&
+            const DeepCollectionEquality().equals(other._emphasis, _emphasis));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, daysPerWeek, preferredSessionMinutes);
+  int get hashCode => Object.hash(runtimeType, daysPerWeek,
+      preferredSessionMinutes, const DeepCollectionEquality().hash(_emphasis));
 
   @override
   String toString() {
-    return 'GenerateProgramRequest(daysPerWeek: $daysPerWeek, preferredSessionMinutes: $preferredSessionMinutes)';
+    return 'GenerateProgramRequest(daysPerWeek: $daysPerWeek, preferredSessionMinutes: $preferredSessionMinutes, emphasis: $emphasis)';
   }
 }
 
@@ -3019,7 +3059,10 @@ abstract mixin class _$GenerateProgramRequestCopyWith<$Res>
       __$GenerateProgramRequestCopyWithImpl;
   @override
   @useResult
-  $Res call({int? daysPerWeek, int? preferredSessionMinutes});
+  $Res call(
+      {int? daysPerWeek,
+      int? preferredSessionMinutes,
+      List<MuscleGroup>? emphasis});
 }
 
 /// @nodoc
@@ -3037,6 +3080,7 @@ class __$GenerateProgramRequestCopyWithImpl<$Res>
   $Res call({
     Object? daysPerWeek = freezed,
     Object? preferredSessionMinutes = freezed,
+    Object? emphasis = freezed,
   }) {
     return _then(_GenerateProgramRequest(
       daysPerWeek: freezed == daysPerWeek
@@ -3047,6 +3091,10 @@ class __$GenerateProgramRequestCopyWithImpl<$Res>
           ? _self.preferredSessionMinutes
           : preferredSessionMinutes // ignore: cast_nullable_to_non_nullable
               as int?,
+      emphasis: freezed == emphasis
+          ? _self._emphasis
+          : emphasis // ignore: cast_nullable_to_non_nullable
+              as List<MuscleGroup>?,
     ));
   }
 }

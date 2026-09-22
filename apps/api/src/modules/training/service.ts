@@ -29,6 +29,8 @@ import type {
   PlannedSet,
   Program,
   ProgramDay,
+  ProgramPreview,
+  ProgramRequest,
   ProgramTemplate,
   PutProgramRequest,
   TemplatePreview,
@@ -214,6 +216,7 @@ export class TrainingService {
         preferredSessionMinutes: overrides.preferredSessionMinutes ?? profile!.preferredSessionMinutes ?? DEFAULT_SESSION_MINUTES,
         mesocycleWeek: 1,
         catalogue: catalogue.map(toCatalogueExercise),
+        ...(overrides.emphasis !== undefined && overrides.emphasis.length > 0 ? { emphasis: overrides.emphasis } : {}),
       },
     };
   }
@@ -243,38 +246,57 @@ export class TrainingService {
     if (template === undefined) throw new AppError('NOT_FOUND', 'No such template.');
     const { input } = await this.context(userId, request);
     const generated = materializeTemplate(template, input);
-    const byId = new Map(input.catalogue.map((c) => [c.id, c]));
     return {
       template: templateFrom(template),
-      days: generated.days.map((d) => ({
-        dayOfWeek: d.dayOfWeek,
-        sessionName: d.sessionName,
-        focus: [...d.focus],
-        isRest: d.isRest,
-        estimatedMinutes: d.estimatedMinutes,
-        exercises: d.exercises.map((x) => {
-          const ex = byId.get(x.exerciseId)!;
-          return {
-            exerciseId: x.exerciseId,
-            slug: x.slug,
-            name: x.name,
-            movementPattern: ex.movementPattern,
-            equipment: [...ex.equipment],
-            difficulty: ex.difficulty,
-            isUnilateral: ex.isUnilateral,
-            primaryMuscles: [...ex.primaryMuscles],
-            orderIndex: x.orderIndex,
-            setCount: x.setCount,
-            repMin: x.repMin,
-            repMax: x.repMax,
-            targetRir: x.targetRir,
-            incrementKg: x.incrementKg,
-            reason: x.reason,
-            sets: uniformSets(x.setCount, x.repMin, x.repMax, x.targetRir).map((s) => ({ ...s, weightKg: null })),
-          };
-        }),
-      })),
+      days: previewDays(generated, input.catalogue),
       weeklyVolume: generated.weeklyVolume,
+      rationale: [...generated.rationale],
+      shortfalls: generated.shortfalls.map((s) => ({ ...s })),
+    };
+  }
+
+  /**
+   * Phase 6.6 Gate 5 — a programme for THIS user from a structured request,
+   * built by the same deterministic engine, and NOT stored. This is what the
+   * assistant proposes; applying it is the user's explicit choice through
+   * `generate` / `applyTemplate` with the same request.
+   */
+  async preview(userId: string, request: ProgramRequest): Promise<ProgramPreview> {
+    const { template: slug, ...overrides } = request;
+    if (slug !== undefined) {
+      const template = findTemplate(slug);
+      if (template === undefined) throw new AppError('NOT_FOUND', 'No such template.');
+      if (overrides.daysPerWeek !== undefined && overrides.daysPerWeek !== template.daysPerWeek) {
+        throw new AppError(
+          'VALIDATION_FAILED',
+          `${template.name} is a ${template.daysPerWeek}-day structure; it cannot run on ${overrides.daysPerWeek} days.`,
+          [{ path: 'daysPerWeek', issue: `must be ${template.daysPerWeek} for ${slug}` }],
+        );
+      }
+      const { input } = await this.context(userId, { ...overrides, daysPerWeek: template.daysPerWeek });
+      const generated = materializeTemplate(template, input);
+      return {
+        request,
+        name: template.name,
+        splitType: template.slug,
+        daysPerWeek: template.daysPerWeek,
+        days: previewDays(generated, input.catalogue),
+        weeklyVolume: generated.weeklyVolume,
+        weeklyTargets: generated.weeklyTargets,
+        rationale: [...generated.rationale],
+        shortfalls: generated.shortfalls.map((s) => ({ ...s })),
+      };
+    }
+    const { input, daysPerWeek } = await this.context(userId, overrides);
+    const generated = generateProgram({ ...input, daysPerWeek });
+    return {
+      request,
+      name: `${splitName(generated.splitType)} · ${daysPerWeek} days`,
+      splitType: generated.splitType,
+      daysPerWeek,
+      days: previewDays(generated, input.catalogue),
+      weeklyVolume: generated.weeklyVolume,
+      weeklyTargets: generated.weeklyTargets,
       rationale: [...generated.rationale],
       shortfalls: generated.shortfalls.map((s) => ({ ...s })),
     };
@@ -410,6 +432,39 @@ function toPlanned(list: readonly CustomExercise[], known: KnownExercises): NewP
             x.targetRir,
             x.startingWeightKg === undefined ? null : x.startingWeightKg.toFixed(2),
           ),
+  }));
+}
+
+/** Preview days: like programme days but not persisted (no ids, no loads). */
+function previewDays(generated: GeneratedProgram, catalogue: readonly CatalogueExercise[]): TemplatePreview['days'] {
+  const byId = new Map(catalogue.map((c) => [c.id, c]));
+  return generated.days.map((d) => ({
+    dayOfWeek: d.dayOfWeek,
+    sessionName: d.sessionName,
+    focus: [...d.focus],
+    isRest: d.isRest,
+    estimatedMinutes: d.estimatedMinutes,
+    exercises: d.exercises.map((x) => {
+      const ex = byId.get(x.exerciseId)!;
+      return {
+        exerciseId: x.exerciseId,
+        slug: x.slug,
+        name: x.name,
+        movementPattern: ex.movementPattern,
+        equipment: [...ex.equipment],
+        difficulty: ex.difficulty,
+        isUnilateral: ex.isUnilateral,
+        primaryMuscles: [...ex.primaryMuscles],
+        orderIndex: x.orderIndex,
+        setCount: x.setCount,
+        repMin: x.repMin,
+        repMax: x.repMax,
+        targetRir: x.targetRir,
+        incrementKg: x.incrementKg,
+        reason: x.reason,
+        sets: uniformSets(x.setCount, x.repMin, x.repMax, x.targetRir).map((s) => ({ ...s, weightKg: null })),
+      };
+    }),
   }));
 }
 

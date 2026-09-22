@@ -140,13 +140,31 @@ export type Program = z.infer<typeof programSchema>;
  * (goal, experience, days, equipment, limitations, session length); a body
  * overrides only what a user might reasonably change per programme.
  */
+export const MAX_EMPHASIS = 3;
 export const generateProgramRequestSchema = z
   .object({
     daysPerWeek: daysPerWeekSchema.optional(),
     preferredSessionMinutes: z.number().int().min(15).max(180).optional(),
+    /**
+     * Phase 6.6: muscles to prioritise. The generator raises their weekly
+     * target within its own landmarks; it never adds sets a split or a
+     * session length has no room for.
+     */
+    emphasis: z.array(muscleGroupSchema).max(MAX_EMPHASIS).optional(),
   })
   .strict();
 export type GenerateProgramRequest = z.infer<typeof generateProgramRequestSchema>;
+
+/**
+ * Phase 6.6 — the structured programme request the assistant extracts from
+ * natural language. `template` names a professional structure by slug;
+ * absent, the §12.2 split for the days applies. Everything the generator
+ * decides (exercises, sets, volume, time) is NOT here by design.
+ */
+export const programRequestSchema = generateProgramRequestSchema
+  .extend({ template: z.string().min(1).max(64).optional() })
+  .strict();
+export type ProgramRequest = z.infer<typeof programRequestSchema>;
 
 /** A per-set target sent by the client. */
 export const customSetSchema = z
@@ -296,6 +314,23 @@ export const templatePreviewSchema = z.object({
 export type TemplatePreview = z.infer<typeof templatePreviewSchema>;
 
 export const templateSlugParamsSchema = z.object({ slug: z.string().min(1).max(64) });
+
+/**
+ * A programme built for THIS user from a `ProgramRequest` and not stored:
+ * what the assistant shows before the user chooses to apply it.
+ */
+export const programPreviewSchema = z.object({
+  request: programRequestSchema,
+  name: z.string().min(1),
+  splitType: z.string().min(1),
+  daysPerWeek: daysPerWeekSchema,
+  days: z.array(previewDaySchema).length(7),
+  weeklyVolume: z.record(muscleGroupSchema, z.number()),
+  weeklyTargets: z.record(muscleGroupSchema, z.number()),
+  rationale: z.array(z.string()),
+  shortfalls: z.array(volumeShortfallSchema),
+});
+export type ProgramPreview = z.infer<typeof programPreviewSchema>;
 
 /** Same overrides as generate, as a query string (preview is a GET). */
 export const templatePreviewQuerySchema = z

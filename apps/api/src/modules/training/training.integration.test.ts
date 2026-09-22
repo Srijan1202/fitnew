@@ -181,6 +181,19 @@ describeIfDb('/v1/training/program (real Postgres, real seed)', () => {
     expect(Number(activeRow!.active)).toBe(Number(usersRow!.users));
   }, 60_000);
 
+  it('Phase 6.6: an emphasis raises the weekly volume of those muscles within the landmarks, is capped at three, and must be a real muscle', async () => {
+    const token = await onboarded();
+    const plain: Program = (await generate(token, { preferredSessionMinutes: 75 })).json();
+    const r = await generate(token, { preferredSessionMinutes: 75, emphasis: ['chest', 'shoulders'] });
+    expect(r.statusCode, r.body).toBe(200);
+    const focused: Program = r.json();
+    expect(focused.weeklyVolume['chest']!).toBeGreaterThan(plain.weeklyVolume['chest']!);
+    expect(focused.weeklyVolume['chest']!).toBeLessThanOrEqual(20);
+    expect(focused.rationale.some((l) => l.startsWith('Emphasis on chest, shoulders'))).toBe(true);
+    expect((await generate(token, { emphasis: ['chest', 'back', 'quads', 'abs'] })).statusCode).toBe(422);
+    expect((await generate(token, { emphasis: ['forearms'] })).statusCode).toBe(422);
+  });
+
   it('a limitation on file excludes contraindicated lifts and the rationale says so', async () => {
     const token = await onboarded();
     const [user] = await sql<{ id: string }[]>`select id from users where firebase_uid = ${`tr-uid-${n}`}`;

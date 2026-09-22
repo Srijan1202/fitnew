@@ -242,6 +242,9 @@ _GenerateProgramRequest _$GenerateProgramRequestFromJson(
       daysPerWeek: (json['daysPerWeek'] as num?)?.toInt(),
       preferredSessionMinutes:
           (json['preferredSessionMinutes'] as num?)?.toInt(),
+      emphasis: (json['emphasis'] as List<dynamic>?)
+          ?.map((e) => $enumDecode(_$MuscleGroupEnumMap, e))
+          .toList(),
     );
 
 Map<String, dynamic> _$GenerateProgramRequestToJson(
@@ -249,6 +252,8 @@ Map<String, dynamic> _$GenerateProgramRequestToJson(
     <String, dynamic>{
       'daysPerWeek': instance.daysPerWeek,
       'preferredSessionMinutes': instance.preferredSessionMinutes,
+      'emphasis':
+          instance.emphasis?.map((e) => _$MuscleGroupEnumMap[e]!).toList(),
     };
 
 _CustomSet _$CustomSetFromJson(Map<String, dynamic> json) => _CustomSet(

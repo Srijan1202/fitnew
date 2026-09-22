@@ -1,17 +1,21 @@
 import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/errors/failure.dart';
+import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/features/ai/domain/entities/ai.dart';
 import 'package:fitos/features/ai/presentation/controllers/ai_providers.dart';
 import 'package:fitos/features/ai/presentation/screens/ai_chat_screen.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:fitos/features/exercise/domain/entities/exercise.dart';
+import 'package:fitos/features/training/presentation/controllers/program_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../support/fake_ai_api.dart';
+import '../../support/fake_training_repository.dart';
 import '../../support/fake_workout_api.dart';
 import '../../support/workout_overrides.dart';
 
@@ -23,11 +27,13 @@ void main() {
   late AppDatabase db;
   late FakeAiApi ai;
   late FakeWorkoutApi workout;
+  late FakeTrainingRepository training;
 
   setUp(() {
     db = AppDatabase.inMemory();
     ai = FakeAiApi();
     workout = FakeWorkoutApi();
+    training = FakeTrainingRepository();
   });
   tearDown(() => db.close());
 
@@ -72,6 +78,7 @@ void main() {
       overrides: [
         sessionUserIdProvider.overrideWithValue('user-1'),
         aiApiProvider.overrideWithValue(ai),
+        trainingRepositoryProvider.overrideWithValue(training),
         ...workoutOverrides(db, workout),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
@@ -303,5 +310,110 @@ void main() {
       find.text('EXERCISE 11111111-1111-4111-8111-111111111111'),
       findsOneWidget,
     );
+  });
+
+  group(
+      'apply-program (Gate 5): proposed by the assistant, applied only by the user',
+      () {
+    const proposal = AiChatResponse(
+      text:
+          'A 5-day bodybuilding split with more chest and shoulder work. Tap Use this programme to apply it.',
+      actions: [
+        AiAction(
+          type: AiActionType.applyProgram,
+          label: 'Use this programme: 5-Day Bodybuilding Split',
+          programRequest: AiProgramRequest(
+            template: 'bodybuilding-5',
+            preferredSessionMinutes: 60,
+            emphasis: [MuscleGroup.chest, MuscleGroup.shoulders],
+          ),
+        ),
+      ],
+      model: 'fake-1',
+    );
+
+    testWidgets('the action asks first; Keep current changes nothing',
+        (tester) async {
+      ai.nextAnswer = proposal;
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      await tapPrompt(tester, 5);
+      expect(
+        find.text('Use this programme: 5-Day Bodybuilding Split'),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const ValueKey('ai.action.apply-program')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('ai.applyProgram.confirm')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const ValueKey('ai.applyProgram.cancel')));
+      await tester.pumpAndSettle();
+      expect(
+        training.calls,
+        isEmpty,
+        reason: 'nothing applied without confirmation',
+      );
+      expect(find.byKey(const ValueKey('ai.conversation')), findsOneWidget);
+    });
+
+    testWidgets(
+        'confirming sends the SAME structured request through the template route and opens the plan',
+        (tester) async {
+      ai.nextAnswer = proposal;
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      await tapPrompt(tester, 5);
+      await tester.tap(find.byKey(const ValueKey('ai.action.apply-program')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('ai.applyProgram.ok')));
+      await tester.pumpAndSettle();
+      // `getProgram` is the controller reading the current plan; the only
+      // write is the template application.
+      expect(
+        training.calls.where((c) => c != 'getProgram'),
+        ['applyTemplate:bodybuilding-5'],
+      );
+      final (slug, request) = training.applyRequests.single;
+      expect(slug, 'bodybuilding-5');
+      expect(request.preferredSessionMinutes, 60);
+      expect(request.emphasis, [MuscleGroup.chest, MuscleGroup.shoulders]);
+      expect(request.daysPerWeek, isNull);
+      expect(find.text('PLAN'), findsOneWidget);
+    });
+
+    testWidgets(
+        'without a template the request goes through generate; a server failure is shown and nothing navigates',
+        (tester) async {
+      ai.nextAnswer = const AiChatResponse(
+        text: 'A 3-day plan with more back work.',
+        actions: [
+          AiAction(
+            type: AiActionType.applyProgram,
+            label: 'Use this programme',
+            programRequest:
+                AiProgramRequest(daysPerWeek: 3, emphasis: [MuscleGroup.back]),
+          ),
+        ],
+        model: 'fake-1',
+      );
+      training.nextGenerate = const Err(Offline());
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      await tapPrompt(tester, 5);
+      await tester.tap(find.byKey(const ValueKey('ai.action.apply-program')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('ai.applyProgram.ok')));
+      await tester.pumpAndSettle();
+      expect(training.calls.where((c) => c != 'getProgram'), ['generate']);
+      expect(training.generateRequests.single.daysPerWeek, 3);
+      expect(training.generateRequests.single.emphasis, [MuscleGroup.back]);
+      expect(
+        find.byKey(const ValueKey('ai.applyProgram.failed')),
+        findsOneWidget,
+      );
+      expect(find.text('PLAN'), findsNothing);
+    });
   });
 }
