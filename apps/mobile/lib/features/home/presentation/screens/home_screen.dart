@@ -93,6 +93,11 @@ class HomeScreen extends ConsumerWidget {
                   name: c.displayName,
                 ),
                 if (ref.watch(askForNameProvider)) const NamePrompt(),
+                if (ref.watch(homeServerFailureProvider) case final f?)
+                  ServerNotice(
+                    message: f.message,
+                    onRetry: () => _refresh(ref),
+                  ),
                 if (loading && suggestions.isEmpty)
                   const HomeSkeleton()
                 else if (carousel.isNotEmpty) ...<Widget>[

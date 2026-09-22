@@ -620,3 +620,63 @@ class WeekSection extends StatelessWidget {
     );
   }
 }
+
+/// Phase 6.6 Gate 6: when the FITOS server cannot be reached and there is
+/// nothing cached to show, say so in one line — with the failure's own words
+/// (offline, signed out, server error) and a way to try again. Health data
+/// below it still comes from the phone.
+class ServerNotice extends StatelessWidget {
+  const ServerNotice({required this.message, required this.onRetry, super.key});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Padding(
+      key: const ValueKey('home.serverNotice'),
+      padding: const EdgeInsets.fromLTRB(
+        FitSpacing.screen,
+        0,
+        FitSpacing.screen,
+        FitSpacing.lg,
+      ),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          border: Border(
+            top: BorderSide(color: FitColors.ink),
+            bottom: BorderSide(color: FitColors.rule),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text("Can't reach FITOS", style: textTheme.titleMedium),
+                    const SizedBox(height: FitSpacing.xs),
+                    Text(
+                      '$message Your training plan and today\'s session need the server; Health data still shows from your phone.',
+                      style: textTheme.bodyMedium
+                          ?.copyWith(color: FitColors.ink60),
+                    ),
+                  ],
+                ),
+              ),
+              TextButton(
+                key: const ValueKey('home.serverNotice.retry'),
+                onPressed: onRetry,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

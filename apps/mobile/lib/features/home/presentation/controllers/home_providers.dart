@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timezone/timezone.dart' as tz;
 
+import '../../../../core/errors/failure.dart';
 import '../../../auth/domain/entities/auth_state.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../health/domain/entities/health.dart';
@@ -130,6 +131,17 @@ final homeSuggestionsProvider = Provider<List<Suggestion>>((ref) {
 final homeLoadingProvider = Provider<bool>((ref) {
   final today = ref.watch(todayProvider);
   return today.isLoading && today.value == null;
+});
+
+/// The server-side failure Home should say out loud (Phase 6.6 Gate 6):
+/// `/today` failed and there is no earlier answer to show, so the training
+/// parts of Home are missing — the user deserves to know why, and a way to
+/// retry. Null while loading, or once any answer has arrived.
+final homeServerFailureProvider = Provider<Failure?>((ref) {
+  final today = ref.watch(todayProvider);
+  if (!today.hasError || today.value != null) return null;
+  final e = today.error;
+  return e is Failure ? e : const Unknown();
 });
 
 /// Health availability shortcuts for the metric blocks.

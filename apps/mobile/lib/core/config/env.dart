@@ -15,9 +15,23 @@ abstract final class Env {
     defaultValue: 'http://10.0.2.2:8080', // Android emulator -> host loopback
   );
 
+  /// `local` (emulator, developer PC) or `alpha` (a physical phone on the
+  /// owner's Wi-Fi against the PC's Docker API — Phase 6.6 Gate 6). Built by
+  /// `tool/alpha.ps1` / `tool/alpha.sh` from the gitignored `alpha.env`.
   static const String flavor = String.fromEnvironment(
     'FLAVOR',
     defaultValue: 'local',
+  );
+
+  static bool get isAlpha => flavor == 'alpha';
+
+  /// The API host as the phone sees it, for the build line in Profile.
+  static String get apiHost => Uri.tryParse(apiBaseUrl)?.host ?? apiBaseUrl;
+
+  /// Shown in Profile so a tester can tell which build and backend this is.
+  static const String appVersion = String.fromEnvironment(
+    'APP_VERSION',
+    defaultValue: '1.0.0-alpha.1',
   );
 
   // --- Firebase (public client config) -----------------------------------

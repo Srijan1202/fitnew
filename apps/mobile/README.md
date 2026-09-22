@@ -57,6 +57,16 @@ under **Authentication → Sign-in method**. `GOOGLE_WEB_CLIENT_ID` is the
 `API_BASE_URL` defaults to `http://10.0.2.2:8080`, the Android emulator's
 alias for the host machine. On a physical device use the host's LAN IP.
 
+### Closed alpha on a physical phone (Phase 6.6)
+
+Put the same five Firebase values in the gitignored `alpha.env` (copy
+`alpha.env.example`) and run `.	oollpha.ps1` (or `tool/alpha.sh`). It
+resolves the PC's Wi-Fi IPv4 (or the `API_HOST` you set), passes everything
+as `--dart-define`, and the Android build allows cleartext HTTP for that one
+host only (`android/app/build.gradle.kts` generates
+`network_security_config.xml` from `API_BASE_URL`). Full guide:
+`docs/alpha/ALPHA-SETUP.md`; device checks: `docs/alpha/PHASE-6.6-ALPHA-CHECKLIST.md`.
+
 `flutter run` needs a target. This repo ships `android/` and `ios/` only —
 there is deliberately no `web/` or desktop target, because §35 puts a web app
 out of scope. To get a local run target on a machine with no Android SDK:

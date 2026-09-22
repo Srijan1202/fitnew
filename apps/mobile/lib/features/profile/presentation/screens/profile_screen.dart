@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/config/env.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/routing/navigation.dart';
@@ -113,6 +114,17 @@ class ProfileScreen extends ConsumerWidget {
                       ref.read(authControllerProvider.notifier).signOut(),
                   style: _outlined,
                   child: const Text('Sign out'),
+                ),
+                const SizedBox(height: FitSpacing.lg),
+                // Phase 6.6: which build talks to which backend, so a
+                // tester's report can name it. No secrets here.
+                Text(
+                  'FITOS ${Env.appVersion} · ${Env.flavor} · ${Env.apiHost}',
+                  key: const ValueKey('profile.build'),
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelSmall
+                      ?.copyWith(color: FitColors.ink60),
                 ),
               ],
             ),

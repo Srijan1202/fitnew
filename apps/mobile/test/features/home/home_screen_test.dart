@@ -186,6 +186,26 @@ void main() {
   }
 
   testWidgets(
+      'server unreachable with nothing cached: Home says so in one line with Retry; health still shows; Retry refetches',
+      (tester) async {
+    api.offline = true;
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('home.serverNotice')), findsOneWidget);
+    expect(find.text("Can't reach FITOS"), findsOneWidget);
+    expect(find.textContaining('You appear to be offline.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('home.skeleton')), findsNothing);
+    // Health data is the phone's; it is unaffected.
+    expect(find.byKey(const ValueKey('home.steps')), findsOneWidget);
+
+    api.offline = false;
+    await tester.tap(find.byKey(const ValueKey('home.serverNotice.retry')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('home.serverNotice')), findsNothing);
+    expect(textOf(tester, 'home.workout').data, 'Legs');
+  });
+
+  testWidgets(
       'no Health Connect on the phone: Home loads, every health block says so, no connect suggestion',
       (tester) async {
     health.connection_ = HealthConnectionState.disconnected;

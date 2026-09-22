@@ -87,6 +87,11 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('home.profile')));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Sign out'));
+    // Phase 6.6: the build line names flavour and API host (test = defaults).
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('profile.build'))).data,
+      'FITOS 1.0.0-alpha.1 · local · 10.0.2.2',
+    );
     await tester.tap(find.text('Sign out'));
     await tester.pumpAndSettle();
 
