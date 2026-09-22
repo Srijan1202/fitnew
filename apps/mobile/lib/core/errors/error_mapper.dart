@@ -12,7 +12,12 @@ abstract final class ErrorMapper {
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
       case DioExceptionType.connectionError:
-        return const Offline();
+        // Name the server we could not reach. On the LAN alpha the address is
+        // baked into the build, so "offline" alone sent a Gate 6 tester
+        // hunting the network for two minutes when the PC's IP had simply
+        // changed since the APK was built. The host is not a secret: it is
+        // the phone's own Wi-Fi, and it is already on the Profile screen.
+        return Offline(offlineMessage(_authorityOf(e)));
       case DioExceptionType.badResponse:
         return fromEnvelope(e.response?.statusCode ?? 0, e.response?.data);
       case DioExceptionType.cancel:
@@ -21,6 +26,23 @@ abstract final class ErrorMapper {
         return const Unknown();
     }
   }
+
+  /// `host:port` of the request that failed, or null when it cannot be read.
+  static String? _authorityOf(DioException e) {
+    try {
+      final uri = e.requestOptions.uri;
+      if (uri.host.isEmpty) return null;
+      return uri.hasPort ? '${uri.host}:${uri.port}' : uri.host;
+    } on Object {
+      return null;
+    }
+  }
+
+  /// The words for "the server did not answer": the same sentence everywhere,
+  /// naming the address when we know it.
+  static String offlineMessage(String? authority) => authority == null
+      ? 'You appear to be offline.'
+      : 'Could not reach FITOS at $authority. Check your Wi-Fi and that the server is running.';
 
   /// Reads the §10 envelope. Falls back to the status code if the body is not
   /// ours. Public so it can be unit-tested without constructing a DioException.

@@ -10,6 +10,13 @@
   .\tool\alpha.ps1 -Install        # build, then adb install -r on the connected phone
   .\tool\alpha.ps1 -Run            # flutter run on the connected phone (hot reload)
   .\tool\alpha.ps1 -ApiHostOverride 192.168.1.20   # override API_HOST for this build
+  .\tool\alpha.ps1 -SkipHealthCheck                # build even if /health does not answer
+
+  The resolved address is COMPILED INTO the APK (Dart and the Android network
+  security config). If the PC's LAN address changes -- a new Wi-Fi, a new DHCP
+  lease -- the installed APK keeps calling the old one and the phone gets no
+  answer at all. Rebuild after any address change; the sign-in screen and
+  Profile show the address a build targets.
 
   alpha.env keys: FIREBASE_API_KEY FIREBASE_APP_ID FIREBASE_MESSAGING_SENDER_ID
   FIREBASE_PROJECT_ID GOOGLE_WEB_CLIENT_ID API_HOST (or `auto`) API_PORT.
@@ -20,7 +27,8 @@ param(
   [switch]$Install,
   [switch]$Run,
   [string]$ApiHostOverride,
-  [string]$EnvFile
+  [string]$EnvFile,
+  [switch]$SkipHealthCheck
 )
 
 $ErrorActionPreference = 'Stop'
@@ -84,6 +92,24 @@ Write-Host "  FIREBASE_PROJECT_ID   $($cfg['FIREBASE_PROJECT_ID'])"
 Write-Host "  FIREBASE_APP_ID       $(Mask $cfg['FIREBASE_APP_ID'])"
 Write-Host "  FIREBASE_API_KEY      $(Mask $cfg['FIREBASE_API_KEY'])"
 Write-Host "  GOOGLE_WEB_CLIENT_ID  $(Mask $cfg['GOOGLE_WEB_CLIENT_ID'])"
+
+# --- the address is baked in: prove it answers BEFORE building -------------
+if (-not $SkipHealthCheck) {
+  try {
+    $health = Invoke-WebRequest -UseBasicParsing -Uri "$apiBaseUrl/health" -TimeoutSec 5
+    if ($health.StatusCode -ne 200) { throw "HTTP $($health.StatusCode)" }
+    Write-Host "  /health               200 OK"
+  }
+  catch {
+    Write-Host ""
+    Write-Host "  /health did NOT answer at $apiBaseUrl"
+    Write-Host "  This address is compiled into the APK, so the app would fail the same way."
+    Write-Host "  Check that the API is running (docker compose ps) and that this is still"
+    Write-Host "  this PC's LAN address (ipconfig -> Wi-Fi IPv4). Set API_HOST in alpha.env,"
+    Write-Host "  pass -ApiHostOverride <ip>, or -SkipHealthCheck to build anyway."
+    exit 1
+  }
+}
 
 Push-Location $mobile
 # flutter/gradle print warnings on stderr; under 'Stop' PowerShell 5.1 would

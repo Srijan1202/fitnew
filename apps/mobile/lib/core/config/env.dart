@@ -28,6 +28,15 @@ abstract final class Env {
   /// The API host as the phone sees it, for the build line in Profile.
   static String get apiHost => Uri.tryParse(apiBaseUrl)?.host ?? apiBaseUrl;
 
+  /// `host:port` of the API, as the sign-in screen shows it in alpha builds.
+  /// The address is compiled in by `--dart-define`, so it is the fastest way
+  /// to see that a build predates a change of the server's LAN address.
+  static String get apiAuthority {
+    final uri = Uri.tryParse(apiBaseUrl);
+    if (uri == null || uri.host.isEmpty) return apiBaseUrl;
+    return uri.hasPort ? '${uri.host}:${uri.port}' : uri.host;
+  }
+
   /// Shown in Profile so a tester can tell which build and backend this is.
   static const String appVersion = String.fromEnvironment(
     'APP_VERSION',

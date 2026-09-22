@@ -15,7 +15,7 @@ Write the host it printed here: `http://__________:8080`.
 |---|---|---|---|
 | A1 | Phone browser → `http://<host>:8080/health` | `{"status":"ok","uptimeSeconds":…,"database":{"reachable":true,…}}` | |
 | A2 | Phone browser → `http://<host>:8080/v1/ai/status` | JSON error `UNAUTHENTICATED` (401) — the API is reachable and default-deny | |
-| A3 | Open FITOS (fresh install) | Splash → sign-in screen; no "Firebase not configured" message | |
+| A3 | Open FITOS (fresh install) | Splash → sign-in screen; no "Firebase not configured" message. The line under the buttons reads `Backend <host>:8080` — **it must match the host in A1** (the address is compiled in; rebuild if it does not) | |
 | A4 | Sign in with your **existing** account (Google or email) | Lands on Home (or the name prompt / onboarding step if the account is incomplete); no error | |
 | A5 | Profile tab → bottom line | `FITOS 1.0.0-alpha.1 · alpha · <host>` — the same host as above | |
 | A6 | Profile | Name, goal, targets shown (from `/user/profile` and `/user/goal` over the LAN) | |

@@ -8,17 +8,23 @@
 #   tool/alpha.sh --install      # build, then adb install -r
 #   tool/alpha.sh --run          # flutter run on the connected phone
 #   tool/alpha.sh --host 192.168.1.20
+#   tool/alpha.sh --skip-health-check
+#
+# The resolved address is COMPILED INTO the APK (Dart + the Android network
+# security config). If the PC's LAN address changes, the installed APK keeps
+# calling the old one and gets no answer: rebuild after any address change.
 set -euo pipefail
 
 mobile="$(cd "$(dirname "$0")/.." && pwd)"
 env_file="$mobile/alpha.env"
-mode=--debug; install=0; run=0; host_override=""
+mode=--debug; install=0; run=0; host_override=""; skip_health=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --release) mode=--release ;;
     --install) install=1 ;;
     --run) run=1 ;;
     --host) host_override="$2"; shift ;;
+    --skip-health-check) skip_health=1 ;;
     --env) env_file="$2"; shift ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
   esac
@@ -64,6 +70,17 @@ echo "  FIREBASE_API_KEY      $(mask "${cfg[FIREBASE_API_KEY]}")"
 echo "  GOOGLE_WEB_CLIENT_ID  $(mask "${cfg[GOOGLE_WEB_CLIENT_ID]}")"
 
 version="$(sed -n 's/^version:[[:space:]]*//p' "$mobile/pubspec.yaml" | cut -d+ -f1 | tr -d '[:space:]')"
+if [ "$skip_health" = 0 ]; then
+  if ! curl -fsS --max-time 5 "$api_base_url/health" >/dev/null; then
+    echo "  /health did NOT answer at $api_base_url" >&2
+    echo "  This address is compiled into the APK, so the app would fail the same way." >&2
+    echo "  Check the API is running and that this is still the PC's LAN address;" >&2
+    echo "  set API_HOST in alpha.env, pass --host <ip>, or --skip-health-check." >&2
+    exit 1
+  fi
+  echo "  /health               200 OK"
+fi
+
 defines=(
   "--dart-define=FLAVOR=alpha"
   "--dart-define=APP_VERSION=$version"

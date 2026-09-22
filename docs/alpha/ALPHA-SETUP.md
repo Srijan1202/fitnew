@@ -92,7 +92,13 @@ guest network with client isolation).
   `http://10.0.2.2:8080` (emulator → host) applies, as before.
 - The main manifest now declares `INTERNET` (Flutter's template grants it
   in debug/profile only) so release-like builds can reach the network.
-- Profile shows a build line: `FITOS 1.0.0-alpha.1 · alpha · <host>`.
+- Profile shows a build line: `FITOS 1.0.0-alpha.1 · alpha · <host>`, and the
+  sign-in screen shows `Backend <host:port> · FITOS <version>` in alpha builds.
+- **The address is compiled in.** If the PC's LAN address changes — a different
+  Wi-Fi, a new DHCP lease — the installed APK keeps calling the old one and the
+  phone gets no answer at all. Rebuild after any address change. The build
+  script now checks `/health` at the resolved address first and refuses to
+  build when it does not answer (`-SkipHealthCheck` overrides).
 
 ## 5. Verify from the S24 (Gate 6 integration checks)
 
@@ -105,6 +111,7 @@ a workout → AI.
 
 | symptom | cause / fix |
 |---|---|
+| Sign-in hangs, then "Could not reach FITOS at `<host>`" | that address is what the APK was built with. If it is not the PC's current LAN IPv4 (`ipconfig`), the APK is stale: rebuild (`.	oollpha.ps1 -Install`). This is the Gate 6 failure of 2026-09-22: the PC changed networks after the APK was built. |
 | Phone browser cannot open `/health` | different Wi-Fi, client isolation on the router, or the firewall (see §1). |
 | App shows "Can't reach FITOS" on Home | same as above, or the API container is down (`docker compose ps`). |
 | "Not set up on this server yet" on the AI tab | `GEMINI_API_KEY` missing in `docker/.env`; restart the container after editing. |

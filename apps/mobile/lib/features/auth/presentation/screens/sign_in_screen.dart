@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/config/env.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
@@ -129,6 +130,19 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     ),
                     child: const Text('Continue with Google'),
                   ),
+                  if (Env.isAlpha) ...<Widget>[
+                    const SizedBox(height: FitSpacing.lg),
+                    // Which backend this build talks to. The address is baked
+                    // in at build time, so a tester can tell at a glance that
+                    // the APK predates the PC's current LAN address.
+                    Text(
+                      'Backend ${Env.apiAuthority} · FITOS ${Env.appVersion}',
+                      key: const ValueKey('sign-in.backend'),
+                      style: textTheme.labelSmall?.copyWith(
+                        color: FitColors.ink60,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: FitSpacing.xl),
                   Row(
                     children: <Widget>[
