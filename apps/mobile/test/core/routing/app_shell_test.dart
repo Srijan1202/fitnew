@@ -6,6 +6,7 @@ import 'package:fitos/core/routing/app_shell.dart';
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/features/home/presentation/screens/home_screen.dart';
+import 'package:fitos/features/ai/presentation/controllers/ai_providers.dart';
 import 'package:fitos/features/auth/domain/entities/auth_state.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_providers.dart';
@@ -19,6 +20,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../support/fake_ai_api.dart';
 import '../../support/fake_auth_repository.dart';
 import '../../support/fake_exercise_repository.dart';
 import '../../support/fake_profile_repository.dart';
@@ -68,6 +70,7 @@ void main() {
         trainingRepositoryProvider.overrideWithValue(training),
         exerciseRepositoryProvider.overrideWithValue(exercises),
         profileRepositoryProvider.overrideWithValue(profile),
+        aiApiProvider.overrideWithValue(FakeAiApi()),
         ...workoutOverrides(db, workoutApi),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
@@ -180,12 +183,10 @@ void main() {
 
       expect(selected('Home'), isTrue);
       await go('AI');
-      expect(find.text('AI CHAT'), findsOneWidget);
-      expect(find.text('Coming soon'), findsOneWidget);
-      expect(
-        find.text('The AI fitness assistant will live here.'),
-        findsOneWidget,
-      );
+      // Phase 6.6: the real FITOS AI screen; the scripted server says
+      // it is configured, so the empty state with its prompts shows.
+      expect(find.byKey(const ValueKey('ai.empty')), findsOneWidget);
+      expect(find.text('Ask about your training.'), findsOneWidget);
       expect(selected('AI'), isTrue);
       expect(selected('Home'), isFalse);
 

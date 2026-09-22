@@ -81,6 +81,13 @@ void main() {
   Text textOf(WidgetTester tester, String key) =>
       tester.widget<Text>(find.byKey(ValueKey(key)));
 
+  Future<void> tapPrompt(WidgetTester tester, int i) async {
+    final prompt = find.byKey(ValueKey('ai.prompt.$i'));
+    await tester.ensureVisible(prompt);
+    await tester.tap(prompt);
+    await tester.pumpAndSettle();
+  }
+
   Future<void> type(WidgetTester tester, String text) async {
     await tester.enterText(find.byKey(const ValueKey('ai.input')), text);
     await tester.pump();
@@ -114,8 +121,7 @@ void main() {
       (tester) async {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('ai.prompt.0')));
-    await tester.pumpAndSettle();
+    await tapPrompt(tester, 0);
     expect(ai.requests.single.message, 'What should I do today?');
     expect(ai.requests.single.history, isEmpty);
     expect(find.byKey(const ValueKey('ai.conversation')), findsOneWidget);
@@ -290,8 +296,7 @@ void main() {
     );
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('ai.prompt.3')));
-    await tester.pumpAndSettle();
+    await tapPrompt(tester, 3);
     await tester.tap(find.byKey(const ValueKey('ai.action.open-progression')));
     await tester.pumpAndSettle();
     expect(

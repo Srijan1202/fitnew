@@ -218,7 +218,9 @@ class _Empty extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return ListView(
+    // Small, static content: a plain scroll view keeps every prompt in the
+    // tree (a lazy list would drop the ones below the fold).
+    return SingleChildScrollView(
       key: const ValueKey('ai.empty'),
       padding: const EdgeInsets.fromLTRB(
         FitSpacing.screen,
@@ -226,41 +228,45 @@ class _Empty extends StatelessWidget {
         FitSpacing.screen,
         FitSpacing.lg,
       ),
-      children: <Widget>[
-        Text('FITOS AI', style: textTheme.labelSmall),
-        const SizedBox(height: FitSpacing.xs),
-        Text('Ask about your training.', style: textTheme.displayMedium),
-        const SizedBox(height: FitSpacing.sm),
-        Text(
-          'It answers from your own FITOS data — your plan, your logged sessions, your progression, your targets. It cannot see food you have not logged, or the health data that stays on your phone.',
-          style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
-        ),
-        const SizedBox(height: FitSpacing.lg),
-        Text('TRY', style: textTheme.labelSmall),
-        const SizedBox(height: FitSpacing.xs),
-        for (final p in AiChatScreen.starterPrompts) ...<Widget>[
-          const Divider(color: FitColors.rule, height: 1),
-          InkWell(
-            key:
-                ValueKey('ai.prompt.${AiChatScreen.starterPrompts.indexOf(p)}'),
-            onTap: () => onPrompt(p),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
-              child: Row(
-                children: <Widget>[
-                  Expanded(child: Text(p, style: textTheme.titleMedium)),
-                  const Icon(
-                    Icons.arrow_forward,
-                    size: 18,
-                    color: FitColors.ink60,
-                  ),
-                ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Text('FITOS AI', style: textTheme.labelSmall),
+          const SizedBox(height: FitSpacing.xs),
+          Text('Ask about your training.', style: textTheme.displayMedium),
+          const SizedBox(height: FitSpacing.sm),
+          Text(
+            'It answers from your own FITOS data — your plan, your logged sessions, your progression, your targets. It cannot see food you have not logged, or the health data that stays on your phone.',
+            style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+          ),
+          const SizedBox(height: FitSpacing.lg),
+          Text('TRY', style: textTheme.labelSmall),
+          const SizedBox(height: FitSpacing.xs),
+          for (final p in AiChatScreen.starterPrompts) ...<Widget>[
+            const Divider(color: FitColors.rule, height: 1),
+            InkWell(
+              key: ValueKey(
+                'ai.prompt.${AiChatScreen.starterPrompts.indexOf(p)}',
+              ),
+              onTap: () => onPrompt(p),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(child: Text(p, style: textTheme.titleMedium)),
+                    const Icon(
+                      Icons.arrow_forward,
+                      size: 18,
+                      color: FitColors.ink60,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
+          const Divider(color: FitColors.rule, height: 1),
         ],
-        const Divider(color: FitColors.rule, height: 1),
-      ],
+      ),
     );
   }
 }
