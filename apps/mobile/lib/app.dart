@@ -19,7 +19,7 @@ class FitOSApp extends ConsumerWidget {
     ref.watch(healthRefreshCoordinatorProvider);
 
     return MaterialApp.router(
-      title: 'FitOS',
+      title: 'FITOS',
       debugShowCheckedModeBanner: false,
       theme: FitTheme.build(),
       routerConfig: router,
