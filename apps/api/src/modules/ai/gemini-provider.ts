@@ -29,8 +29,10 @@ export interface GeminiProviderOptions {
 
 interface GeminiPart {
   readonly text?: string;
-  readonly functionCall?: { readonly name: string; readonly args?: Record<string, unknown> };
-  readonly functionResponse?: { readonly name: string; readonly response: Record<string, unknown> };
+  readonly functionCall?: { readonly name: string; readonly args?: Record<string, unknown>; readonly id?: string };
+  readonly functionResponse?: { readonly name: string; readonly response: Record<string, unknown>; readonly id?: string };
+  /** Gemini 3: must be echoed back with the function call on the next turn. */
+  readonly thoughtSignature?: string;
 }
 
 interface GeminiContent {
@@ -111,12 +113,18 @@ export class GeminiProvider implements AiProvider {
   static toBody(request: AiRequest, maxOutputTokens: number): Record<string, unknown> {
     const contents: GeminiContent[] = request.messages.map((m) => ({
       role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }],
+      parts: [
+        ...(m.content.length > 0 ? [{ text: m.content }] : []),
+        ...(m.toolCalls ?? []).map((c) => ({
+          functionCall: { name: c.name, args: c.args, ...(c.id !== undefined ? { id: c.id } : {}) },
+          ...(c.signature !== undefined ? { thoughtSignature: c.signature } : {}),
+        })),
+      ],
     }));
     if (request.toolResults !== undefined && request.toolResults.length > 0) {
       contents.push({
         role: 'user',
-        parts: request.toolResults.map((r) => ({ functionResponse: { name: r.name, response: r.result } })),
+        parts: request.toolResults.map((r) => ({ functionResponse: { name: r.name, response: r.result, ...(r.id !== undefined ? { id: r.id } : {}) } })),
       });
     }
     const generationConfig: Record<string, unknown> = {
@@ -156,7 +164,12 @@ export class GeminiProvider implements AiProvider {
       .join('');
     const toolCalls: AiToolCall[] = parts
       .filter((p) => p.functionCall !== undefined)
-      .map((p) => ({ name: p.functionCall!.name, args: p.functionCall!.args ?? {} }));
+      .map((p) => ({
+        name: p.functionCall!.name,
+        args: p.functionCall!.args ?? {},
+        ...(p.functionCall!.id !== undefined ? { id: p.functionCall!.id } : {}),
+        ...(p.thoughtSignature !== undefined ? { signature: p.thoughtSignature } : {}),
+      }));
     if (text.length === 0 && toolCalls.length === 0) {
       if (candidate.finishReason === 'SAFETY') throw new AiProviderError('blocked', 'The model declined that request.');
       throw new AiProviderError('empty', 'The model returned an empty answer.');

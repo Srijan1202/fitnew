@@ -89,6 +89,17 @@ describe('GeminiProvider', () => {
     expect(body.generationConfig).toEqual({ maxOutputTokens: 64, temperature: 0.3, responseMimeType: 'application/json' });
   });
 
+  it('carries the call id and thought signature back on the next turn (Gemini 3 requirement)', async () => {
+    const calls: { url: string; init: RequestInit }[] = [];
+    const p = gemini(200, { candidates: [{ content: { parts: [{ functionCall: { name: 'get_today', args: {}, id: 'call_1' }, thoughtSignature: 'sig-abc' }] } }] }, calls);
+    const r = await p.generate(request);
+    expect(r.toolCalls).toEqual([{ name: 'get_today', args: {}, id: 'call_1', signature: 'sig-abc' }]);
+    await p.generate({ ...request, messages: [...request.messages, { role: 'assistant', content: '', toolCalls: r.toolCalls }], toolResults: [{ name: 'get_today', id: 'call_1', result: { ok: true } }] });
+    const body = JSON.parse(calls[1]!.init.body as string) as { contents: unknown[] };
+    expect(body.contents.at(-2)).toEqual({ role: 'model', parts: [{ functionCall: { name: 'get_today', args: {}, id: 'call_1' }, thoughtSignature: 'sig-abc' }] });
+    expect(body.contents.at(-1)).toEqual({ role: 'user', parts: [{ functionResponse: { name: 'get_today', response: { ok: true }, id: 'call_1' } }] });
+  });
+
   it.each([
     [429, {}, 'rate_limited'],
     [401, {}, 'not_configured'],
@@ -188,7 +199,7 @@ describe('configuration', () => {
     expect(env.GEMINI_API_KEY).toBeUndefined();
     expect(env.GEMINI_MODEL).toBe('gemini-2.5-flash');
     expect(env.AI_TIMEOUT_MS).toBe(25_000);
-    expect(env.AI_MAX_OUTPUT_TOKENS).toBe(1024);
+    expect(env.AI_MAX_OUTPUT_TOKENS).toBe(2048);
     expect(providerFromEnv(env).name).toBe('none');
   });
 

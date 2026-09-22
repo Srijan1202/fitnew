@@ -54,7 +54,7 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
       AI_TIMEOUT_MS: ${AI_TIMEOUT_MS:-25000}
-      AI_MAX_OUTPUT_TOKENS: ${AI_MAX_OUTPUT_TOKENS:-1024}
+      AI_MAX_OUTPUT_TOKENS: ${AI_MAX_OUTPUT_TOKENS:-2048}
     volumes:
       # The service-account key never enters the image (.dockerignore); it is
       # mounted read-only at runtime from the gitignored .secrets/ directory.

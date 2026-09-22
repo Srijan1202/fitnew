@@ -16,6 +16,8 @@ export type AiRole = 'user' | 'assistant';
 export interface AiMessage {
   readonly role: AiRole;
   readonly content: string;
+  /** An assistant turn that asked for tools; the results follow as `toolResults`. */
+  readonly toolCalls?: readonly AiToolCall[];
 }
 
 /** A tool the model may ask to call. Arguments are a JSON-schema object. */
@@ -29,6 +31,8 @@ export interface AiToolDeclaration {
 export interface AiToolResult {
   readonly name: string;
   readonly result: Record<string, unknown>;
+  /** The call's id, when the provider issued one. */
+  readonly id?: string;
 }
 
 export interface AiRequest {
@@ -48,6 +52,13 @@ export interface AiRequest {
 export interface AiToolCall {
   readonly name: string;
   readonly args: Record<string, unknown>;
+  /** Provider-issued call id, echoed back with the result when present. */
+  readonly id?: string;
+  /**
+   * Opaque provider state that must travel back with the call on the next
+   * turn (Gemini 3 "thought signatures"). Never inspected, never stored.
+   */
+  readonly signature?: string;
 }
 
 export interface AiResponse {
