@@ -136,6 +136,15 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// The plan opens on today's training day (or the next one), which
+  /// depends on the calendar; the fixtures below are written for Monday.
+  Future<void> openMonday(WidgetTester tester) async {
+    final monday = find.byKey(const ValueKey('day.tab.1'));
+    if (monday.evaluate().isEmpty) return;
+    await tester.tap(monday);
+    await tester.pumpAndSettle();
+  }
+
   /// Scroll a lazily-built list until [finder] is on screen.
   Future<void> reveal(WidgetTester tester, Finder finder) async {
     await tester.scrollUntilVisible(
@@ -159,6 +168,7 @@ void main() {
       training.stored = generatedProgram;
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
 
       // Seven tabs, every day.
       for (var dow = 1; dow <= 7; dow++) {
@@ -177,6 +187,7 @@ void main() {
       training.stored = generatedProgram;
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
 
       await tester.tap(find.byKey(const ValueKey('day.tab.2')));
       await settle(tester);
@@ -195,6 +206,7 @@ void main() {
       training.stored = generatedProgram;
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
 
       final cardKey = 'exercise.${plannedSquat.id}';
       // Collapsed: name, primary, sets × reps, "set weight" nudge; no set rows.
@@ -225,6 +237,7 @@ void main() {
       training.stored = generatedProgram;
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
       final cardKey = 'exercise.${plannedSquat.id}';
       final set1 = find.byKey(ValueKey('$cardKey.set.1'));
       await tester.tap(find.byKey(ValueKey('$cardKey.header')));
@@ -299,6 +312,7 @@ void main() {
       training.stored = generatedProgram;
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
       final day = generatedProgram.days.first;
       final repo = training;
       final without =
@@ -324,6 +338,7 @@ void main() {
       training.stored = generatedProgram;
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
       final cardKey = 'exercise.${plannedSquat.id}';
       await tester.tap(find.byKey(ValueKey('$cardKey.header')));
       await settle(tester);
@@ -389,6 +404,7 @@ void main() {
       training.stored = generatedProgram;
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
       final cardKey = 'exercise.${plannedBench.id}';
       await tester.tap(find.byKey(ValueKey('$cardKey.header')));
       await settle(tester);
@@ -415,6 +431,7 @@ void main() {
       training.stored = generatedProgram;
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
       final cardKey = 'exercise.${plannedSquat.id}';
       await tester.tap(find.byKey(ValueKey('$cardKey.header')));
       await settle(tester);
@@ -448,6 +465,7 @@ void main() {
       training.nextPatch = const Err(Offline());
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
       final cardKey = 'exercise.${plannedSquat.id}';
       await tester.tap(find.byKey(ValueKey('$cardKey.header')));
       await settle(tester);
@@ -473,6 +491,7 @@ void main() {
       training.stored = generatedProgram;
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
       final cardKey = 'exercise.${plannedBench.id}';
       await tester.tap(find.byKey(ValueKey('$cardKey.header')));
       await settle(tester);
@@ -498,6 +517,7 @@ void main() {
       training.stored = generatedProgram;
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
       final cardKey = 'exercise.${plannedBench.id}';
       await tester.tap(find.byKey(ValueKey('$cardKey.header')));
       await settle(tester);
@@ -525,6 +545,7 @@ void main() {
       training.stored = generatedProgram;
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
       final cardKey = 'exercise.${plannedSquat.id}';
       await tester.tap(find.byKey(ValueKey('$cardKey.header')));
       await settle(tester);
@@ -555,6 +576,7 @@ void main() {
       training.stored = generatedProgram;
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
       final cardKey = 'exercise.${plannedBench.id}';
       await tester.tap(find.byKey(ValueKey('$cardKey.header')));
       await settle(tester);
@@ -577,6 +599,7 @@ void main() {
       workoutApi.offline = true;
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
       expect(find.byKey(const ValueKey('day.start')), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('day.start')));
       await tester.pump();
@@ -609,6 +632,7 @@ void main() {
       training.stored = generatedProgram;
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
       await tester.tap(find.byKey(const ValueKey('day.tab.2')));
       await settle(tester);
       expect(find.byKey(const ValueKey('day.startEmpty')), findsOneWidget);
@@ -624,6 +648,7 @@ void main() {
         (tester) async {
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
       expect(find.text('How do you want to train?'), findsOneWidget);
       expect(find.byKey(const ValueKey('start.generate')), findsOneWidget);
       expect(find.byKey(const ValueKey('start.professional')), findsOneWidget);
@@ -635,6 +660,7 @@ void main() {
         (tester) async {
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
       await tester.tap(find.byKey(const ValueKey('start.generate')));
       await settle(tester);
 
@@ -657,6 +683,7 @@ void main() {
         (tester) async {
       await tester.pumpWidget(harness());
       await settle(tester);
+      await openMonday(tester);
       await tester.tap(find.byKey(const ValueKey('start.professional')));
       await settle(tester);
 

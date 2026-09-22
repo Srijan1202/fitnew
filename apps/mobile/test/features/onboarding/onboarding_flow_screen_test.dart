@@ -101,7 +101,7 @@ void main() {
     expect(find.text('2005-03-14'), findsOneWidget);
 
     // Phase 6.6: the name comes first and is required.
-    expect(find.text('What should we call you?'), findsOneWidget);
+    expect(find.text('WHAT SHOULD WE CALL YOU?'), findsOneWidget);
     await tester.enterText(
       find.descendant(
         of: find.byKey(const ValueKey('about.displayName')),
