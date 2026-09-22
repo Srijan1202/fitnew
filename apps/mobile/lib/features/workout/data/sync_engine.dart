@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 
 import '../../../core/db/app_database.dart';
 import '../../../core/errors/failure.dart';
@@ -31,6 +32,12 @@ enum SyncKind {
 ///  - a completed-elsewhere conflict: resend once with `merge: true`.
 ///  - anything else: exponential backoff, five attempts, then PARKED with
 ///    the error, surfaced as "n changes not synced · Retry". Never dropped.
+///
+/// The engine wakes itself (Phase 6.6 Gate 7): a backoff or an unreachable
+/// server schedules the next attempt, so a queue left behind by one failed
+/// request drains without the user touching Retry. Before, "the next kick
+/// resumes" meant the next tap — after a session's last request there is
+/// none, and the S24 showed "1 not synced" until Retry.
 class SyncEngine {
   SyncEngine(
     this._db,
@@ -38,13 +45,57 @@ class SyncEngine {
     DateTime Function()? now,
     this.maxAttempts = 5,
     this.baseDelay = const Duration(milliseconds: 300),
+    this.offlineRetry = const Duration(seconds: 15),
+    this.offlineRetryMax = const Duration(minutes: 2),
+    this.wakeItself = true,
   }) : _now = now ?? DateTime.now;
+
+  /// Off only where a test drives every drain by hand (widget tests run the
+  /// screens offline on a fake clock and must end with no timers pending).
+  final bool wakeItself;
 
   final AppDatabase _db;
   final WorkoutApi _api;
   final DateTime Function() _now;
   final int maxAttempts;
   final Duration baseDelay;
+
+  /// First retry after the server did not answer; doubles per miss up to
+  /// [offlineRetryMax]. Connectivity events and app resume still drain at
+  /// once — this covers a server that comes back while the Wi-Fi never
+  /// dropped (the PC's API restarted).
+  final Duration offlineRetry;
+  final Duration offlineRetryMax;
+
+  Timer? _wake;
+  int _offlineMisses = 0;
+  bool _disposed = false;
+
+  /// The logSets batch on the wire, and its set ids. A batch in flight is
+  /// sealed: sets logged, edited or removed meanwhile go to their own queue
+  /// entries (behind it), because the server has already been sent this
+  /// payload. Folding into it lost edits and left removed sets on the
+  /// server, where a re-logged set at the same position then hit the
+  /// server's one-live-set-per-position rule (409) forever.
+  int? _sealedBatchId;
+  Set<String> _sealedSetIds = const {};
+
+  /// When the engine will next drain by itself, if it is going to.
+  @visibleForTesting
+  bool get hasScheduledWake => _wake?.isActive ?? false;
+
+  /// Stop waking. The queue stays on disk; the next engine drains it.
+  void dispose() {
+    _disposed = true;
+    _wake?.cancel();
+    _wake = null;
+  }
+
+  void _scheduleWake(Duration delay) {
+    if (_disposed || !wakeItself) return;
+    _wake?.cancel();
+    _wake = Timer(delay < Duration.zero ? Duration.zero : delay, kick);
+  }
 
   bool _draining = false;
   bool _again = false;
@@ -81,7 +132,8 @@ class SyncEngine {
               (t) =>
                   t.clientSessionId.equals(clientSessionId) &
                   t.kind.equals(SyncKind.logSets.name) &
-                  t.parked.equals(false),
+                  t.parked.equals(false) &
+                  _notSealed(t),
             )
             ..orderBy([(t) => OrderingTerm.desc(t.id)])
             ..limit(1))
@@ -110,6 +162,11 @@ class SyncEngine {
       batch.id,
       request.copyWith(sets: [...request.sets, set]).toJson(),
     );
+  }
+
+  Expression<bool> _notSealed($SyncQueueTable t) {
+    final sealed = _sealedBatchId;
+    return sealed == null ? const Constant(true) : t.id.equals(sealed).not();
   }
 
   /// A set that has not reached the server is edited in its batch. True
@@ -157,6 +214,9 @@ class SyncEngine {
       }
       return true;
     }
+    // On the wire right now: the server will have it, so it must be
+    // deleted there, after the batch lands.
+    if (_sealedSetIds.contains(clientSetId)) return false;
     final row = await (_db.select(_db.localSetLogs)
           ..where((t) => t.clientSetId.equals(clientSetId)))
         .getSingleOrNull();
@@ -169,7 +229,8 @@ class SyncEngine {
             ..where(
               (t) =>
                   t.clientSessionId.equals(clientSessionId) &
-                  t.kind.equals(SyncKind.logSets.name),
+                  t.kind.equals(SyncKind.logSets.name) &
+                  _notSealed(t),
             )
             ..orderBy([(t) => OrderingTerm.asc(t.id)]))
           .get();
@@ -268,10 +329,20 @@ class SyncEngine {
 
   Future<void> _run() async {
     _sentAny = false;
+    _wake?.cancel();
+    _Stop? stop;
     try {
+      // A kick that lands while this drain runs sets [_again]. It is checked
+      // again after the wake is scheduled — that await is a window in which
+      // a kick would otherwise be lost and its entry stranded until the next
+      // tap (found by automatic_sync_test.dart). No await may follow the
+      // final check before [_draining] is cleared.
       do {
-        _again = false;
-        await _loop();
+        do {
+          _again = false;
+          stop = await _loop();
+        } while (_again);
+        await _scheduleNext(stop);
       } while (_again);
     } finally {
       _draining = false;
@@ -280,36 +351,87 @@ class SyncEngine {
     }
   }
 
-  Future<void> _loop() async {
-    while (true) {
-      final now = _now().toUtc().toIso8601String();
-      final entry = await (_db.select(_db.syncQueue)
-            ..where(
-              (t) =>
-                  t.parked.equals(false) &
-                  (t.nextAttemptAt.isNull() |
-                      t.nextAttemptAt.isSmallerOrEqualValue(now)),
-            )
-            ..orderBy([(t) => OrderingTerm.asc(t.id)])
-            ..limit(1))
-          .getSingleOrNull();
-      if (entry == null) return;
-      // An entry ahead of it is waiting on backoff: keep order, stop here.
-      final blocker = await (_db.select(_db.syncQueue)
-            ..where(
-              (t) => t.parked.equals(false) & t.id.isSmallerThanValue(entry.id),
-            )
-            ..limit(1))
-          .getSingleOrNull();
-      if (blocker != null) return;
+  /// After a drain that left work behind: wake when it can make progress.
+  /// Unreachable server → back off (15 s, doubling to 2 min); an entry in
+  /// backoff → when it is due; signed out or nothing left → stay asleep.
+  Future<void> _scheduleNext(_Stop? stop) async {
+    if (stop != null) {
+      if (!stop.retry) return;
+      final factor = 1 << (_offlineMisses < 4 ? _offlineMisses : 4);
+      final delay = offlineRetry * factor;
+      _offlineMisses++;
+      _scheduleWake(delay > offlineRetryMax ? offlineRetryMax : delay);
+      return;
+    }
+    _offlineMisses = 0;
+    final next = await (_db.select(_db.syncQueue)
+          ..where((t) => t.parked.equals(false) & t.nextAttemptAt.isNotNull())
+          ..orderBy([(t) => OrderingTerm.asc(t.nextAttemptAt)])
+          ..limit(1))
+        .getSingleOrNull();
+    if (next == null) return;
+    _scheduleWake(DateTime.parse(next.nextAttemptAt!).difference(_now()));
+  }
 
-      final outcome = await _send(entry);
+  /// Sends until the queue is empty, blocked, or the server is unreachable;
+  /// answers the stop, if that is why it ended.
+  Future<_Stop?> _loop() async {
+    while (true) {
+      // Pick the next entry and, for a set batch, seal it — in ONE
+      // transaction. The repository edits batches inside its own
+      // transactions, and drift runs transactions one at a time, so an edit
+      // either lands before this read (and is sent) or sees the seal (and is
+      // queued behind). Sealing after the read let an edit fold into a
+      // payload already read for sending, then be trimmed away on landing.
+      final entry = await _db.transaction(() async {
+        final now = _now().toUtc().toIso8601String();
+        final next = await (_db.select(_db.syncQueue)
+              ..where(
+                (t) =>
+                    t.parked.equals(false) &
+                    (t.nextAttemptAt.isNull() |
+                        t.nextAttemptAt.isSmallerOrEqualValue(now)),
+              )
+              ..orderBy([(t) => OrderingTerm.asc(t.id)])
+              ..limit(1))
+            .getSingleOrNull();
+        if (next == null) return null;
+        // An entry ahead of it is waiting on backoff: keep order, stop here.
+        final blocker = await (_db.select(_db.syncQueue)
+              ..where(
+                (t) =>
+                    t.parked.equals(false) & t.id.isSmallerThanValue(next.id),
+              )
+              ..limit(1))
+            .getSingleOrNull();
+        if (blocker != null) return null;
+        if (next.kind == SyncKind.logSets.name) {
+          _sealedBatchId = next.id;
+          _sealedSetIds = {
+            for (final x in LogSetsRequest.fromJson(
+              jsonDecode(next.payloadJson) as Map<String, dynamic>,
+            ).sets)
+              x.clientSetId,
+          };
+        }
+        return next;
+      });
+      if (entry == null) return null;
+
+      final _Outcome outcome;
+      try {
+        outcome = await _send(entry);
+      } finally {
+        _sealedBatchId = null;
+        _sealedSetIds = const {};
+      }
       switch (outcome) {
         case _Sent():
           _sentAny = true;
+          _offlineMisses = 0;
           continue;
         case _Stop():
-          return;
+          return outcome;
         case _Failed(:final message):
           final attempts = entry.attempts + 1;
           final park = attempts >= maxAttempts;
@@ -326,7 +448,7 @@ class SyncEngine {
             ),
           );
           if (park) continue; // the next entry may be independent
-          return; // wait out the backoff; the next kick resumes
+          return null; // wait out the backoff; _scheduleNext wakes us
       }
     }
   }
@@ -360,6 +482,7 @@ class SyncEngine {
               .go();
           return const _Sent();
         }
+        // Sealed by _loop for the whole round trip (see there).
         var result = await _api.logSets(serverId, request);
         final failure = result is Err<WorkoutSession> ? result.failure : null;
         if (failure is Conflict &&
@@ -474,7 +597,10 @@ class SyncEngine {
   }
 
   _Outcome _fail(Failure failure) => switch (failure) {
-        Offline() || Unauthenticated() => const _Stop(),
+        // The server did not answer: nothing is charged, try again later.
+        Offline() => const _Stop(retry: true),
+        // Signed out: the next sign-in drains; retrying alone cannot help.
+        Unauthenticated() => const _Stop(retry: false),
         _ => _Failed(failure.message),
       };
 
@@ -581,7 +707,10 @@ class _Sent extends _Outcome {
 }
 
 class _Stop extends _Outcome {
-  const _Stop();
+  const _Stop({required this.retry});
+
+  /// Whether waiting and trying again on our own can help.
+  final bool retry;
 }
 
 class _Failed extends _Outcome {

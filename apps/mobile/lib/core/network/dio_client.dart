@@ -21,7 +21,27 @@ Dio buildDio(IdTokenProvider tokens, {String? baseUrl}) {
     ),
   );
   dio.interceptors
+    ..add(const NoBodyNoContentType())
     ..add(RetryInterceptor(dio))
     ..add(AuthInterceptor(tokens, dio));
   return dio;
+}
+
+/// A request without a body declares no `Content-Type`.
+///
+/// [BaseOptions.contentType] stamps `application/json` on every request, and
+/// Dio leaves it on body-less ones. Fastify rejects a JSON content type with
+/// an empty body ("Body cannot be empty when content-type is set to
+/// 'application/json'", 422 here), so every DELETE — removing a logged set,
+/// signing out — failed on the server. A removed set therefore stayed there,
+/// the set re-logged in its place hit the one-live-set-per-position rule
+/// (409), and the session's sync queue parked: the S24's "1 not synced".
+class NoBodyNoContentType extends Interceptor {
+  const NoBodyNoContentType();
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    if (options.data == null) options.contentType = null;
+    handler.next(options);
+  }
 }

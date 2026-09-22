@@ -347,6 +347,34 @@ class LocalWorkoutRepository implements WorkoutRepository {
   @override
   Future<void> logSet(String clientSessionId, LogSetInput set) async {
     await _db.transaction(() async {
+      // One live set per position, as the server enforces
+      // (`set_logs_live_position`): a second log at an occupied slot — a
+      // double tap before the row turns "logged" — corrects the set already
+      // there. Queued as a second set, the server would reject it (409)
+      // forever and park the session's queue (Phase 6.6 Gate 7, S24).
+      final occupant = await (_db.select(_db.localSetLogs)
+            ..where(
+              (t) =>
+                  t.clientExerciseId.equals(set.clientExerciseId) &
+                  t.setIndex.equals(set.setIndex) &
+                  t.setType.equals(set.setType.wire) &
+                  t.deleted.equals(false) &
+                  t.clientSetId.equals(set.clientSetId).not(),
+            )
+            ..limit(1))
+          .getSingleOrNull();
+      if (occupant != null) {
+        await _amendSet(
+          clientSessionId,
+          occupant.clientSetId,
+          weightKg: set.weightKg,
+          weightCleared: set.weightKg == null,
+          reps: set.reps,
+          rir: set.rir,
+          rirCleared: set.rir == null,
+        );
+        return;
+      }
       await _db.into(_db.localSetLogs).insert(
             LocalSetLogsCompanion.insert(
               clientSetId: set.clientSetId,
@@ -378,49 +406,74 @@ class LocalWorkoutRepository implements WorkoutRepository {
     int? rir,
     bool rirCleared = false,
   }) async {
-    await _db.transaction(() async {
-      await (_db.update(_db.localSetLogs)
-            ..where((t) => t.clientSetId.equals(clientSetId)))
-          .write(
-        LocalSetLogsCompanion(
-          setType: setType == null ? const Value.absent() : Value(setType.wire),
-          weightKg: weightCleared
-              ? const Value(null)
-              : weightKg == null
-                  ? const Value.absent()
-                  : Value(weightKg),
-          reps: reps == null ? const Value.absent() : Value(reps),
-          rir: rirCleared
-              ? const Value(null)
-              : rir == null
-                  ? const Value.absent()
-                  : Value(rir),
-        ),
-      );
-      final row = await (_db.select(_db.localSetLogs)
-            ..where((t) => t.clientSetId.equals(clientSetId)))
-          .getSingle();
-      // Not on the server yet: amend the pending batch instead of patching
-      // a row that does not exist there.
-      final folded = await _sync.amendPendingSet(clientSessionId, row);
-      if (!folded) {
-        await _sync.enqueue(
-          kind: SyncKind.patchSet,
-          clientSessionId: clientSessionId,
-          clientKey: clientSetId,
-          payload: PatchSetRequest(
-            setType: setType,
-            weightKg: weightKg,
-            weightCleared: weightCleared,
-            reps: reps,
-            rir: rir,
-            rirCleared: rirCleared,
-          ).toJson(),
-        );
-      }
-      await _touch(clientSessionId);
-    });
+    await _db.transaction(
+      () => _amendSet(
+        clientSessionId,
+        clientSetId,
+        setType: setType,
+        weightKg: weightKg,
+        weightCleared: weightCleared,
+        reps: reps,
+        rir: rir,
+        rirCleared: rirCleared,
+      ),
+    );
     _sync.kick();
+  }
+
+  /// Change a logged set's values, locally and for the server: folded into
+  /// its pending batch when it has not been sent, a patch when it has. Runs
+  /// inside the caller's transaction.
+  Future<void> _amendSet(
+    String clientSessionId,
+    String clientSetId, {
+    SetType? setType,
+    double? weightKg,
+    bool weightCleared = false,
+    int? reps,
+    int? rir,
+    bool rirCleared = false,
+  }) async {
+    await (_db.update(_db.localSetLogs)
+          ..where((t) => t.clientSetId.equals(clientSetId)))
+        .write(
+      LocalSetLogsCompanion(
+        setType: setType == null ? const Value.absent() : Value(setType.wire),
+        weightKg: weightCleared
+            ? const Value(null)
+            : weightKg == null
+                ? const Value.absent()
+                : Value(weightKg),
+        reps: reps == null ? const Value.absent() : Value(reps),
+        rir: rirCleared
+            ? const Value(null)
+            : rir == null
+                ? const Value.absent()
+                : Value(rir),
+      ),
+    );
+    final row = await (_db.select(_db.localSetLogs)
+          ..where((t) => t.clientSetId.equals(clientSetId)))
+        .getSingle();
+    // Not on the server yet: amend the pending batch instead of patching
+    // a row that does not exist there.
+    final folded = await _sync.amendPendingSet(clientSessionId, row);
+    if (!folded) {
+      await _sync.enqueue(
+        kind: SyncKind.patchSet,
+        clientSessionId: clientSessionId,
+        clientKey: clientSetId,
+        payload: PatchSetRequest(
+          setType: setType,
+          weightKg: weightKg,
+          weightCleared: weightCleared,
+          reps: reps,
+          rir: rir,
+          rirCleared: rirCleared,
+        ).toJson(),
+      );
+    }
+    await _touch(clientSessionId);
   }
 
   @override
@@ -705,4 +758,7 @@ class LocalWorkoutRepository implements WorkoutRepository {
 
   @override
   Future<void> clearLocal() => _db.clearAll();
+
+  /// Stop the sync engine's own wake-ups (the queue stays on disk).
+  void dispose() => _sync.dispose();
 }

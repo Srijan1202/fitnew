@@ -16,5 +16,8 @@ List<Override> workoutOverrides(AppDatabase db, FakeWorkoutApi api) {
     workoutApiProvider.overrideWithValue(api),
     connectivityStreamProvider.overrideWithValue(const Stream.empty()),
     restNotifierProvider.overrideWithValue(const NoopRestNotifier()),
+    // Widget tests drive the queue by hand on a fake clock; the engine's own
+    // retries are covered with real timers in automatic_sync_test.dart.
+    syncWakesItselfProvider.overrideWithValue(false),
   ];
 }

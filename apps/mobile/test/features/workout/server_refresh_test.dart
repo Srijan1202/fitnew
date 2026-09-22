@@ -67,6 +67,33 @@ void main() {
   ];
 
   test(
+      'G. a session that syncs in the background appears in History without a manual refresh (Phase 6.6 Gate 7)',
+      () async {
+    container.listen(historyProvider, (_, __) {});
+    final repo = container.read(workoutRepositoryProvider);
+    final before = await container.read(historyProvider.future);
+    final listCalls = api.calls.where((c) => c == 'list').length;
+
+    final s = await repo.startSession(day: api.todayResponse);
+    await repo.complete(s.clientSessionId);
+    // No repo.sync(), no invalidate: the drain's server-change tick alone.
+    await settle();
+    await settle();
+
+    expect(
+      api.calls.where((c) => c == 'list').length,
+      greaterThan(listCalls),
+      reason: 'History refetched after the drain reached the server',
+    );
+    final after = container.read(historyProvider).value!;
+    expect(after.items.length, before.items.length + 1);
+    expect(
+      after.items.map((i) => i.id),
+      contains(api.sessions[s.clientSessionId]!.id),
+    );
+  });
+
+  test(
       'completing a session causes a second today (and volume) fetch, and the new answer is the one shown',
       () async {
     keepAlive();

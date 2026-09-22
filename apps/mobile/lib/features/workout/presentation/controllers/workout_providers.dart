@@ -9,6 +9,7 @@ import '../../../../core/errors/failure.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../auth/presentation/controllers/auth_providers.dart';
 import '../../data/local_workout_repository.dart';
+import '../../data/sync_engine.dart';
 import '../../data/workout_api.dart';
 import '../../domain/entities/workout.dart';
 import '../../domain/repositories/workout_repository.dart';
@@ -24,11 +25,21 @@ final workoutApiProvider = Provider<WorkoutApi>((ref) {
   return DioWorkoutApi(ref.watch(dioProvider));
 });
 
+/// Whether the sync engine retries on its own after a backoff or an
+/// unreachable server (Phase 6.6 Gate 7). Always true in the app; widget
+/// tests turn it off because they drive the queue by hand on a fake clock.
+final syncWakesItselfProvider = Provider<bool>((ref) => true);
+
 final workoutRepositoryProvider = Provider<WorkoutRepository>((ref) {
-  return LocalWorkoutRepository(
-    ref.watch(appDatabaseProvider),
-    ref.watch(workoutApiProvider),
+  final db = ref.watch(appDatabaseProvider);
+  final api = ref.watch(workoutApiProvider);
+  final repo = LocalWorkoutRepository(
+    db,
+    api,
+    engine: SyncEngine(db, api, wakeItself: ref.watch(syncWakesItselfProvider)),
   );
+  ref.onDispose(repo.dispose);
+  return repo;
 });
 
 /// Drains the queue when connectivity returns, when the app resumes and
@@ -131,9 +142,13 @@ final dayProvider = FutureProvider.family<TodayResponse, int>(
 );
 
 /// History, first page; more pages are loaded by the screen.
+/// Refetched on every [serverRefreshProvider] tick too: a session that
+/// finished syncing in the background must appear in History (and in Home's
+/// week, which reads this) without a manual refresh (Phase 6.6 Gate 7).
 final historyProvider = FutureProvider<SessionListResponse>(
   (ref) async {
     requireSession(ref);
+    ref.watch(serverRefreshProvider);
     final result = await ref.watch(workoutRepositoryProvider).history();
     return result.when(ok: (r) => r, err: (f) => throw f);
   },

@@ -15,6 +15,9 @@ class FakeWorkoutApi implements WorkoutApi {
   /// Every call, in order: 'start', 'logSets:3', 'complete', …
   final calls = <String>[];
 
+  /// How many batches the position rule rejected (the S24's 409s).
+  int positionConflicts = 0;
+
   /// Sessions by client id.
   final sessions = <String, WorkoutSession>{};
   int _ids = 0;
@@ -167,6 +170,30 @@ class FakeWorkoutApi implements WorkoutApi {
             issue: s.status.wire,
           ),
         );
+      }
+      // The server's one-live-set-per-position rule (set_logs_live_position),
+      // all or nothing like its transaction: a set at a taken position under a
+      // different client id rejects the whole batch.
+      for (final input in request.sets) {
+        final x = s.exercises
+            .where((e) => e.clientExerciseId == input.clientExerciseId)
+            .firstOrNull;
+        final taken = x?.sets.any(
+          (t) =>
+              t.setIndex == input.setIndex &&
+              t.setType == input.setType &&
+              t.clientSetId != input.clientSetId,
+        );
+        if (taken ?? false) {
+          positionConflicts++;
+          return const Err(
+            Conflict(
+              'A set already exists at that position; correct it instead of logging it twice.',
+              path: 'sets',
+              issue: 'position taken',
+            ),
+          );
+        }
       }
       var exercises = s.exercises;
       for (final input in request.sets) {
