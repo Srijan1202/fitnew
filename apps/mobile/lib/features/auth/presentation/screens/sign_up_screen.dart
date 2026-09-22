@@ -5,6 +5,7 @@ import '../../../../core/routing/navigation.dart';
 
 import '../../../../core/errors/failure.dart';
 import '../../../../core/theme/tokens.dart';
+import '../../../../shared/widgets/fitos_wordmark.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/auth_form_field.dart';
 
@@ -63,7 +64,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text('FITOS', style: textTheme.labelSmall),
+                  const FitosWordmark(size: 22),
                   const SizedBox(height: FitSpacing.xs),
                   Text('Create account', style: textTheme.displayMedium),
                   const SizedBox(height: FitSpacing.sm),

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timezone/timezone.dart' as tz;
 
+import '../../../auth/domain/entities/auth_state.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../health/domain/entities/health.dart';
 import '../../../health/presentation/controllers/health_providers.dart';
@@ -10,6 +11,7 @@ import '../../../workout/domain/entities/workout.dart';
 import '../../../workout/presentation/controllers/workout_providers.dart';
 import '../../domain/home_context.dart';
 import '../../domain/home_suggestion_engine.dart';
+import '../widgets/name_prompt.dart';
 
 /// Phase 6.5 — the Home screen's context, assembled from what the app
 /// already fetches (today, volume, profile, history, the active session)
@@ -81,9 +83,27 @@ DateTime? _localDate(String iso, String zone) {
   return DateTime(l.year, l.month, l.day);
 }
 
+/// Phase 6.6: the canonical display name — the profile's answer once
+/// loaded, else what the session carried at sign-in. Null when unknown.
+final displayNameProvider = Provider<String?>((ref) {
+  final profile = ref.watch(profileControllerProvider).value;
+  if (profile != null) return profile.profile.displayName;
+  final auth = ref.watch(authControllerProvider).value;
+  return auth is AuthSignedIn ? auth.profile.displayName : null;
+});
+
+/// Whether Home should ask for a name: the profile is loaded, has none,
+/// and the user has not said "Not now" on this phone.
+final askForNameProvider = Provider<bool>((ref) {
+  final profile = ref.watch(profileControllerProvider).value;
+  if (profile == null || profile.profile.displayName != null) return false;
+  return !ref.watch(namePromptDismissedProvider);
+});
+
 final homeContextProvider = Provider<HomeContext>((ref) {
   final profile = ref.watch(profileControllerProvider).value;
   return HomeContext(
+    displayName: ref.watch(displayNameProvider),
     date: ref.watch(localTodayProvider),
     hourOfDay: ref.watch(localHourProvider),
     today: ref.watch(todayProvider).value,

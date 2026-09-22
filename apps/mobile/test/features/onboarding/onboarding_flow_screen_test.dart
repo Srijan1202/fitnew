@@ -100,6 +100,16 @@ void main() {
     expect(find.text('STEP 2 OF 7'), findsOneWidget);
     expect(find.text('2005-03-14'), findsOneWidget);
 
+    // Phase 6.6: the name comes first and is required.
+    expect(find.text('What should we call you?'), findsOneWidget);
+    await tester.enterText(
+      find.descendant(
+        of: find.byKey(const ValueKey('about.displayName')),
+        matching: find.byType(TextField),
+      ),
+      '  Srijan ',
+    );
+    await tester.pump();
     await tester.ensureVisible(find.byKey(const ValueKey('about.consent')));
     await tester.tap(find.byKey(const ValueKey('about.consent')));
     await tester.pump();
@@ -126,8 +136,44 @@ void main() {
     );
     expect(repo.answers.single, isA<AboutAnswer>());
     final sent = repo.answers.single as AboutAnswer;
+    expect(sent.displayName, 'Srijan');
     expect(sent.consent.policyVersion, freshState.policyVersion);
     expect(sent.consent.types, ConsentType.values);
+  });
+
+  testWidgets(
+      'about: without a name Continue stays disabled; the identity provider\'s name pre-fills',
+      (tester) async {
+    auth.suggestedDisplayName = 'Srijan Srivastava';
+    repo.nextState = Ok(
+      midwayState.copyWith(
+        stage: OnboardingStage.about,
+        answered: const [OnboardingStage.goal],
+        missing: OnboardingStage.steps.skip(1).toList(),
+        profile: midwayProfile.copyWith(onboardingStage: 'about'),
+      ),
+    );
+    await tester.pumpWidget(harness());
+    await tester.pumpAndSettle();
+    final field = find.descendant(
+      of: find.byKey(const ValueKey('about.displayName')),
+      matching: find.byType(TextField),
+    );
+    expect(
+      tester.widget<TextField>(field).controller?.text,
+      'Srijan Srivastava',
+    );
+    await tester.enterText(field, '');
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(const ValueKey('about.consent')));
+    await tester.tap(find.byKey(const ValueKey('about.consent')));
+    await tester.pump();
+    expect(
+      tester.widget<FilledButton>(continueButton()).onPressed,
+      isNull,
+      reason: 'no name, no Continue',
+    );
+    expect(repo.answers, isEmpty);
   });
 
   testWidgets('resume opens on the server\'s next step, Back walks down',

@@ -523,8 +523,8 @@ extension OnboardingAnswerPatterns on OnboardingAnswer {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(GoalType goalType)? goal,
-    TResult Function(Sex sex, String birthDate, double heightCm,
-            double weightKg, ConsentGrant consent)?
+    TResult Function(String displayName, Sex sex, String birthDate,
+            double heightCm, double weightKg, ConsentGrant consent)?
         about,
     TResult Function(ExperienceLevel experienceLevel, int trainingDaysPerWeek,
             ActivityLevel activityLevel)?
@@ -541,8 +541,8 @@ extension OnboardingAnswerPatterns on OnboardingAnswer {
       case GoalAnswer() when goal != null:
         return goal(_that.goalType);
       case AboutAnswer() when about != null:
-        return about(_that.sex, _that.birthDate, _that.heightCm, _that.weightKg,
-            _that.consent);
+        return about(_that.displayName, _that.sex, _that.birthDate,
+            _that.heightCm, _that.weightKg, _that.consent);
       case ExperienceAnswer() when experience != null:
         return experience(_that.experienceLevel, _that.trainingDaysPerWeek,
             _that.activityLevel);
@@ -573,8 +573,8 @@ extension OnboardingAnswerPatterns on OnboardingAnswer {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(GoalType goalType) goal,
-    required TResult Function(Sex sex, String birthDate, double heightCm,
-            double weightKg, ConsentGrant consent)
+    required TResult Function(String displayName, Sex sex, String birthDate,
+            double heightCm, double weightKg, ConsentGrant consent)
         about,
     required TResult Function(ExperienceLevel experienceLevel,
             int trainingDaysPerWeek, ActivityLevel activityLevel)
@@ -590,8 +590,8 @@ extension OnboardingAnswerPatterns on OnboardingAnswer {
       case GoalAnswer():
         return goal(_that.goalType);
       case AboutAnswer():
-        return about(_that.sex, _that.birthDate, _that.heightCm, _that.weightKg,
-            _that.consent);
+        return about(_that.displayName, _that.sex, _that.birthDate,
+            _that.heightCm, _that.weightKg, _that.consent);
       case ExperienceAnswer():
         return experience(_that.experienceLevel, _that.trainingDaysPerWeek,
             _that.activityLevel);
@@ -619,8 +619,8 @@ extension OnboardingAnswerPatterns on OnboardingAnswer {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(GoalType goalType)? goal,
-    TResult? Function(Sex sex, String birthDate, double heightCm,
-            double weightKg, ConsentGrant consent)?
+    TResult? Function(String displayName, Sex sex, String birthDate,
+            double heightCm, double weightKg, ConsentGrant consent)?
         about,
     TResult? Function(ExperienceLevel experienceLevel, int trainingDaysPerWeek,
             ActivityLevel activityLevel)?
@@ -636,8 +636,8 @@ extension OnboardingAnswerPatterns on OnboardingAnswer {
       case GoalAnswer() when goal != null:
         return goal(_that.goalType);
       case AboutAnswer() when about != null:
-        return about(_that.sex, _that.birthDate, _that.heightCm, _that.weightKg,
-            _that.consent);
+        return about(_that.displayName, _that.sex, _that.birthDate,
+            _that.heightCm, _that.weightKg, _that.consent);
       case ExperienceAnswer() when experience != null:
         return experience(_that.experienceLevel, _that.trainingDaysPerWeek,
             _that.activityLevel);
@@ -735,7 +735,8 @@ class _$GoalAnswerCopyWithImpl<$Res> implements $GoalAnswerCopyWith<$Res> {
 @JsonSerializable()
 class AboutAnswer implements OnboardingAnswer {
   const AboutAnswer(
-      {required this.sex,
+      {required this.displayName,
+      required this.sex,
       required this.birthDate,
       required this.heightCm,
       required this.weightKg,
@@ -745,6 +746,8 @@ class AboutAnswer implements OnboardingAnswer {
   factory AboutAnswer.fromJson(Map<String, dynamic> json) =>
       _$AboutAnswerFromJson(json);
 
+  /// Phase 6.6: "What should we call you?" — first field of the step.
+  final String displayName;
   final Sex sex;
   final String birthDate;
   final double heightCm;
@@ -773,6 +776,8 @@ class AboutAnswer implements OnboardingAnswer {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is AboutAnswer &&
+            (identical(other.displayName, displayName) ||
+                other.displayName == displayName) &&
             (identical(other.sex, sex) || other.sex == sex) &&
             (identical(other.birthDate, birthDate) ||
                 other.birthDate == birthDate) &&
@@ -785,12 +790,12 @@ class AboutAnswer implements OnboardingAnswer {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, sex, birthDate, heightCm, weightKg, consent);
+  int get hashCode => Object.hash(
+      runtimeType, displayName, sex, birthDate, heightCm, weightKg, consent);
 
   @override
   String toString() {
-    return 'OnboardingAnswer.about(sex: $sex, birthDate: $birthDate, heightCm: $heightCm, weightKg: $weightKg, consent: $consent)';
+    return 'OnboardingAnswer.about(displayName: $displayName, sex: $sex, birthDate: $birthDate, heightCm: $heightCm, weightKg: $weightKg, consent: $consent)';
   }
 }
 
@@ -802,7 +807,8 @@ abstract mixin class $AboutAnswerCopyWith<$Res>
       _$AboutAnswerCopyWithImpl;
   @useResult
   $Res call(
-      {Sex sex,
+      {String displayName,
+      Sex sex,
       String birthDate,
       double heightCm,
       double weightKg,
@@ -822,6 +828,7 @@ class _$AboutAnswerCopyWithImpl<$Res> implements $AboutAnswerCopyWith<$Res> {
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   $Res call({
+    Object? displayName = null,
     Object? sex = null,
     Object? birthDate = null,
     Object? heightCm = null,
@@ -829,6 +836,10 @@ class _$AboutAnswerCopyWithImpl<$Res> implements $AboutAnswerCopyWith<$Res> {
     Object? consent = null,
   }) {
     return _then(AboutAnswer(
+      displayName: null == displayName
+          ? _self.displayName
+          : displayName // ignore: cast_nullable_to_non_nullable
+              as String,
       sex: null == sex
           ? _self.sex
           : sex // ignore: cast_nullable_to_non_nullable

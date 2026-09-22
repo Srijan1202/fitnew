@@ -166,6 +166,10 @@
                           "type": "string",
                           "nullable": true
                         },
+                        "displayName": {
+                          "type": "string",
+                          "nullable": true
+                        },
                         "timezone": {
                           "type": "string",
                           "minLength": 1,
@@ -186,6 +190,7 @@
                       "required": [
                         "id",
                         "email",
+                        "displayName",
                         "timezone",
                         "locale",
                         "createdAt",
@@ -581,6 +586,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "displayName": {
+                      "type": "string",
+                      "nullable": true
+                    },
                     "sex": {
                       "type": "string",
                       "enum": [
@@ -689,6 +698,7 @@
                     }
                   },
                   "required": [
+                    "displayName",
                     "sex",
                     "birthDate",
                     "heightCm",
@@ -917,6 +927,11 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "displayName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
                   "heightCm": {
                     "type": "number",
                     "minimum": 100,
@@ -1001,6 +1016,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "displayName": {
+                      "type": "string",
+                      "nullable": true
+                    },
                     "sex": {
                       "type": "string",
                       "enum": [
@@ -1109,6 +1128,7 @@
                     }
                   },
                   "required": [
+                    "displayName",
                     "sex",
                     "birthDate",
                     "heightCm",
@@ -3214,6 +3234,10 @@
                     "profile": {
                       "type": "object",
                       "properties": {
+                        "displayName": {
+                          "type": "string",
+                          "nullable": true
+                        },
                         "sex": {
                           "type": "string",
                           "enum": [
@@ -3322,6 +3346,7 @@
                         }
                       },
                       "required": [
+                        "displayName",
                         "sex",
                         "birthDate",
                         "heightCm",
@@ -3726,6 +3751,11 @@
                           "about"
                         ]
                       },
+                      "displayName": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
                       "sex": {
                         "type": "string",
                         "enum": [
@@ -3775,6 +3805,7 @@
                     },
                     "required": [
                       "step",
+                      "displayName",
                       "sex",
                       "birthDate",
                       "heightCm",
@@ -4034,6 +4065,10 @@
                     "profile": {
                       "type": "object",
                       "properties": {
+                        "displayName": {
+                          "type": "string",
+                          "nullable": true
+                        },
                         "sex": {
                           "type": "string",
                           "enum": [
@@ -4142,6 +4177,7 @@
                         }
                       },
                       "required": [
+                        "displayName",
                         "sex",
                         "birthDate",
                         "heightCm",
@@ -4521,6 +4557,10 @@
                     "profile": {
                       "type": "object",
                       "properties": {
+                        "displayName": {
+                          "type": "string",
+                          "nullable": true
+                        },
                         "sex": {
                           "type": "string",
                           "enum": [
@@ -4629,6 +4669,7 @@
                         }
                       },
                       "required": [
+                        "displayName",
                         "sex",
                         "birthDate",
                         "heightCm",

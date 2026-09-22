@@ -10,6 +10,7 @@ import '../../workout/domain/entities/workout.dart';
 /// compares and orders.
 class HomeContext {
   const HomeContext({
+    this.displayName,
     required this.date,
     required this.hourOfDay,
     required this.today,
@@ -23,6 +24,10 @@ class HomeContext {
     required this.volume,
     required this.week,
   });
+
+  /// The canonical display name (`users.display_name`), or null — the
+  /// greeting then has no name; never a placeholder.
+  final String? displayName;
 
   /// Local date yyyy-mm-dd and the local hour (0–23) in the user's zone.
   final String date;

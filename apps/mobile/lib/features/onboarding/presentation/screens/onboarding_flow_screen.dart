@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/failure.dart';
 import '../../../../core/theme/tokens.dart';
+import '../../../auth/presentation/controllers/auth_providers.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../../profile/domain/entities/vocabulary.dart';
 import '../../domain/entities/onboarding.dart';
@@ -65,6 +66,8 @@ class _OnboardingFlowScreenState extends ConsumerState<OnboardingFlowScreen> {
               submit: _submit,
               onBack: back,
               onNext: _next,
+              suggestedName:
+                  ref.read(authRepositoryProvider).suggestedDisplayName,
             ),
           2 => ExperienceStep(
               state: state,

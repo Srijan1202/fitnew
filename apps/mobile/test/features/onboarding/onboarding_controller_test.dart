@@ -89,6 +89,7 @@ void main() {
     repo.nextAnswer = const Err(under18);
     final failure = await notifier().answer(
       const OnboardingAnswer.about(
+        displayName: 'Persona',
         sex: Sex.male,
         birthDate: '2015-01-01',
         heightCm: 170,
@@ -152,6 +153,7 @@ void main() {
     );
     final about = wire(
       const OnboardingAnswer.about(
+        displayName: 'Persona',
         sex: Sex.female,
         birthDate: '2005-03-14',
         heightCm: 160,

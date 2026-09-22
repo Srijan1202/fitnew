@@ -89,6 +89,12 @@ export const userProfileSchema = z.object({
    * Firebase is the authority — we store it and echo it.
    */
   email: z.string().nullable(),
+  /**
+   * Phase 6.6: the canonical display name — asked on the onboarding "about"
+   * step (pre-filled from Firebase when Google provides one), stored on
+   * `users.display_name`. Null until answered; the client greets without it.
+   */
+  displayName: z.string().nullable(),
   timezone: timeZoneSchema,
   locale: localeSchema,
   createdAt: z.string().datetime(),

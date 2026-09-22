@@ -17,6 +17,8 @@ import '../../support/fake_auth_repository.dart';
 /// fails as scripted.
 class FakeCredentials implements CredentialSource {
   String? uid;
+  @override
+  String? currentDisplayName;
   String? token = 'id-token';
   Result<void> next = const Ok(null);
   final calls = <String>[];

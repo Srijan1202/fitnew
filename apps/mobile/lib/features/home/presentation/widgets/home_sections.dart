@@ -95,10 +95,18 @@ class HomeSections {
 
 /// Greeting, date, a way to the profile. Compact.
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({required this.hour, required this.date, super.key});
+  const HomeHeader({
+    required this.hour,
+    required this.date,
+    this.name,
+    super.key,
+  });
 
   final int hour;
   final String date;
+
+  /// Null → the greeting stands alone (never "User" or a placeholder).
+  final String? name;
 
   @override
   Widget build(BuildContext context) {
@@ -118,16 +126,20 @@ class HomeHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  HomeSections.greeting(hour).toUpperCase(),
+                  name == null || name!.trim().isEmpty
+                      ? HomeSections.greeting(hour)
+                      : '${HomeSections.greeting(hour)}, ${name!.trim()}',
                   key: const ValueKey('home.greeting'),
-                  style: textTheme.labelSmall,
+                  style:
+                      textTheme.displayMedium?.copyWith(color: FitColors.ink),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: FitSpacing.xs),
                 Text(
                   HomeSections.longDate(date),
                   key: const ValueKey('home.date'),
-                  style:
-                      textTheme.displayMedium?.copyWith(color: FitColors.ink),
+                  style: textTheme.bodyLarge?.copyWith(color: FitColors.ink60),
                 ),
               ],
             ),

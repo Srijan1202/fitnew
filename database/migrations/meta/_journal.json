@@ -57,6 +57,13 @@
       "when": 1789993212130,
       "tag": "0007_progression_volume",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790036528855,
+      "tag": "0008_display_name",
+      "breakpoints": true
     }
   ]
 }

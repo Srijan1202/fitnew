@@ -321,6 +321,7 @@ void main() {
       const answers = <OnboardingAnswer>[
         OnboardingAnswer.goal(goalType: GoalType.fatLoss),
         OnboardingAnswer.about(
+          displayName: 'Persona',
           sex: Sex.female,
           birthDate: '2005-03-14',
           heightCm: 160,

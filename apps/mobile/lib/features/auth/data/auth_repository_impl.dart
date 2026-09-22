@@ -159,6 +159,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  String? get suggestedDisplayName => _credentials.currentDisplayName;
+
+  @override
   Future<void> signOut() async {
     // Server first while we still hold a valid token; best effort.
     await _session.deleteSession();

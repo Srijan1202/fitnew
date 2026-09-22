@@ -22,6 +22,7 @@ function mockRepo(inserted: boolean) {
       row: {
         id: '4f0b9a2e-1c2d-4e3f-8a9b-0c1d2e3f4a5b',
         firebaseUid: input.firebaseUid,
+        displayName: null,
         email: input.email,
         timezone: input.timezone,
         locale: input.locale,
@@ -76,6 +77,7 @@ describe('AuthService.createSession', () => {
     expect(result.user).toEqual({
       id: '4f0b9a2e-1c2d-4e3f-8a9b-0c1d2e3f4a5b',
       email: 'student@vit.ac.in',
+      displayName: null,
       timezone: 'Asia/Kolkata',
       locale: 'en-IN',
       createdAt: '2026-09-20T10:00:00.000Z',

@@ -23,6 +23,7 @@ import { TargetsService, targetInputFrom, toContract } from './targets.service.j
 export function profileDetailFrom(bundle: ProfileBundle): UserProfileDetail {
   const p = bundle.profile;
   return {
+    displayName: bundle.user.displayName,
     sex: p?.sex ?? null,
     birthDate: p?.birthDate ?? null,
     heightCm: p?.heightCm !== null && p?.heightCm !== undefined ? Number(p.heightCm) : null,
@@ -100,7 +101,8 @@ export class UserService {
 
   async patchProfile(userId: string, patch: PatchProfileRequest): Promise<UserProfileDetail> {
     await this.bundleOrThrow(userId);
-    const { timezone, locale, heightCm, ...rest } = patch;
+    const { timezone, locale, heightCm, displayName, ...rest } = patch;
+    if (displayName !== undefined) await this.repo.updateDisplayName(userId, displayName);
     await this.repo.updateUserLocale(userId, { ...(timezone !== undefined ? { timezone } : {}), ...(locale !== undefined ? { locale } : {}) });
     const profilePatch = stripUndefined({
       ...rest,

@@ -11,6 +11,10 @@ abstract class UserProfile with _$UserProfile {
   const factory UserProfile({
     required String id,
     required String? email,
+
+    /// Phase 6.6: the canonical display name (`users.display_name`); null
+    /// until the onboarding "about" step asks. Never a placeholder.
+    @Default(null) String? displayName,
     required String timezone,
     required String locale,
     required DateTime createdAt,

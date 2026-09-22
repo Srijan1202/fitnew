@@ -13,6 +13,9 @@ abstract class ProfileRepository {
   Future<Result<UserProfileDetail>> getProfile();
   Future<Result<GoalResponse>> getGoal();
   Future<Result<GoalResponse>> putGoal(PutGoalRequest request);
+
+  /// Phase 6.6: `PATCH /user/profile { displayName }`.
+  Future<Result<UserProfileDetail>> setDisplayName(String displayName);
 }
 
 class DioProfileRepository implements ProfileRepository {
@@ -43,6 +46,16 @@ class DioProfileRepository implements ProfileRepository {
   Future<Result<GoalResponse>> getGoal() => _guard(
         () => _dio.get<Map<String, dynamic>>('/v1/user/goal'),
         GoalResponse.fromJson,
+      );
+
+  @override
+  Future<Result<UserProfileDetail>> setDisplayName(String displayName) =>
+      _guard(
+        () => _dio.patch<Map<String, dynamic>>(
+          '/v1/user/profile',
+          data: {'displayName': displayName},
+        ),
+        UserProfileDetail.fromJson,
       );
 
   @override
@@ -79,6 +92,21 @@ class ProfileController extends AsyncNotifier<ProfileView> {
     return ProfileView(
       profile: profile.when(ok: (p) => p, err: (f) => throw f),
       goal: goal.when(ok: (g) => g, err: (f) => throw f),
+    );
+  }
+
+  /// Phase 6.6: rename; the profile in state takes the server's answer.
+  Future<Failure?> setDisplayName(String displayName) async {
+    final result = await _repo.setDisplayName(displayName);
+    return result.when<Failure?>(
+      ok: (profile) {
+        final current = state.value;
+        if (current != null) {
+          state = AsyncData(ProfileView(profile: profile, goal: current.goal));
+        }
+        return null;
+      },
+      err: (f) => f,
     );
   }
 

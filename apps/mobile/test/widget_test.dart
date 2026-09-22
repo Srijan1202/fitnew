@@ -101,8 +101,8 @@ void main() {
     await tester.pumpAndSettle();
 
     final heading =
-        tester.widget<Text>(find.byKey(const ValueKey('home.date')));
-    final context = tester.element(find.byKey(const ValueKey('home.date')));
+        tester.widget<Text>(find.byKey(const ValueKey('home.greeting')));
+    final context = tester.element(find.byKey(const ValueKey('home.greeting')));
     final style = heading.style ?? Theme.of(context).textTheme.displayMedium!;
     expect(style.color, FitColors.ink);
   });

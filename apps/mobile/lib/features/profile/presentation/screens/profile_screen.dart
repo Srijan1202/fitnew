@@ -83,7 +83,22 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: FitSpacing.xl),
                 HairlineSection(
                   label: 'About you',
-                  child: _Facts(profile: view.profile),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        view.profile.displayName ?? 'No name yet',
+                        key: const ValueKey('profile.displayName'),
+                        style: textTheme.titleLarge?.copyWith(
+                          color: view.profile.displayName == null
+                              ? FitColors.ink60
+                              : FitColors.ink,
+                        ),
+                      ),
+                      const SizedBox(height: FitSpacing.sm),
+                      _Facts(profile: view.profile),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: FitSpacing.xl),
                 OutlinedButton(

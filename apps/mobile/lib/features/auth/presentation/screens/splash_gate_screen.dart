@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/config/env.dart';
 import '../../../../core/theme/tokens.dart';
+import '../../../../shared/widgets/fitos_wordmark.dart';
 
 /// Shown while the persisted session is being restored, and — if the build
 /// was made without Firebase defines — as an honest error instead of a crash.
@@ -22,7 +23,7 @@ class SplashGateScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('FitOS', style: textTheme.displayMedium),
+              const FitosWordmark(),
               if (!Env.firebaseConfigured) ...<Widget>[
                 const SizedBox(height: FitSpacing.lg),
                 const Divider(color: FitColors.rule, height: 1),

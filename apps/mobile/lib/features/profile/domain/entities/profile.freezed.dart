@@ -347,6 +347,8 @@ class __$MessRefCopyWithImpl<$Res> implements _$MessRefCopyWith<$Res> {
 
 /// @nodoc
 mixin _$UserProfileDetail {
+  /// Phase 6.6: what the app calls the user; null until answered.
+  String? get displayName;
   Sex? get sex;
   String? get birthDate;
   double? get heightCm;
@@ -378,6 +380,8 @@ mixin _$UserProfileDetail {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is UserProfileDetail &&
+            (identical(other.displayName, displayName) ||
+                other.displayName == displayName) &&
             (identical(other.sex, sex) || other.sex == sex) &&
             (identical(other.birthDate, birthDate) ||
                 other.birthDate == birthDate) &&
@@ -409,6 +413,7 @@ mixin _$UserProfileDetail {
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      displayName,
       sex,
       birthDate,
       heightCm,
@@ -426,7 +431,7 @@ mixin _$UserProfileDetail {
 
   @override
   String toString() {
-    return 'UserProfileDetail(sex: $sex, birthDate: $birthDate, heightCm: $heightCm, experienceLevel: $experienceLevel, trainingDaysPerWeek: $trainingDaysPerWeek, activityLevel: $activityLevel, preferredSessionMinutes: $preferredSessionMinutes, trainingLocation: $trainingLocation, equipment: $equipment, latestWeightKg: $latestWeightKg, timezone: $timezone, locale: $locale, onboardingStage: $onboardingStage, mess: $mess)';
+    return 'UserProfileDetail(displayName: $displayName, sex: $sex, birthDate: $birthDate, heightCm: $heightCm, experienceLevel: $experienceLevel, trainingDaysPerWeek: $trainingDaysPerWeek, activityLevel: $activityLevel, preferredSessionMinutes: $preferredSessionMinutes, trainingLocation: $trainingLocation, equipment: $equipment, latestWeightKg: $latestWeightKg, timezone: $timezone, locale: $locale, onboardingStage: $onboardingStage, mess: $mess)';
   }
 }
 
@@ -437,7 +442,8 @@ abstract mixin class $UserProfileDetailCopyWith<$Res> {
       _$UserProfileDetailCopyWithImpl;
   @useResult
   $Res call(
-      {Sex? sex,
+      {String? displayName,
+      Sex? sex,
       String? birthDate,
       double? heightCm,
       ExperienceLevel? experienceLevel,
@@ -468,6 +474,7 @@ class _$UserProfileDetailCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? displayName = freezed,
     Object? sex = freezed,
     Object? birthDate = freezed,
     Object? heightCm = freezed,
@@ -484,6 +491,10 @@ class _$UserProfileDetailCopyWithImpl<$Res>
     Object? mess = freezed,
   }) {
     return _then(_self.copyWith(
+      displayName: freezed == displayName
+          ? _self.displayName
+          : displayName // ignore: cast_nullable_to_non_nullable
+              as String?,
       sex: freezed == sex
           ? _self.sex
           : sex // ignore: cast_nullable_to_non_nullable
@@ -652,6 +663,7 @@ extension UserProfileDetailPatterns on UserProfileDetail {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
+            String? displayName,
             Sex? sex,
             String? birthDate,
             double? heightCm,
@@ -673,6 +685,7 @@ extension UserProfileDetailPatterns on UserProfileDetail {
     switch (_that) {
       case _UserProfileDetail() when $default != null:
         return $default(
+            _that.displayName,
             _that.sex,
             _that.birthDate,
             _that.heightCm,
@@ -708,6 +721,7 @@ extension UserProfileDetailPatterns on UserProfileDetail {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(
+            String? displayName,
             Sex? sex,
             String? birthDate,
             double? heightCm,
@@ -728,6 +742,7 @@ extension UserProfileDetailPatterns on UserProfileDetail {
     switch (_that) {
       case _UserProfileDetail():
         return $default(
+            _that.displayName,
             _that.sex,
             _that.birthDate,
             _that.heightCm,
@@ -762,6 +777,7 @@ extension UserProfileDetailPatterns on UserProfileDetail {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
+            String? displayName,
             Sex? sex,
             String? birthDate,
             double? heightCm,
@@ -782,6 +798,7 @@ extension UserProfileDetailPatterns on UserProfileDetail {
     switch (_that) {
       case _UserProfileDetail() when $default != null:
         return $default(
+            _that.displayName,
             _that.sex,
             _that.birthDate,
             _that.heightCm,
@@ -806,7 +823,8 @@ extension UserProfileDetailPatterns on UserProfileDetail {
 @JsonSerializable()
 class _UserProfileDetail implements UserProfileDetail {
   const _UserProfileDetail(
-      {required this.sex,
+      {this.displayName = null,
+      required this.sex,
       required this.birthDate,
       required this.heightCm,
       required this.experienceLevel,
@@ -824,6 +842,10 @@ class _UserProfileDetail implements UserProfileDetail {
   factory _UserProfileDetail.fromJson(Map<String, dynamic> json) =>
       _$UserProfileDetailFromJson(json);
 
+  /// Phase 6.6: what the app calls the user; null until answered.
+  @override
+  @JsonKey()
+  final String? displayName;
   @override
   final Sex? sex;
   @override
@@ -879,6 +901,8 @@ class _UserProfileDetail implements UserProfileDetail {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _UserProfileDetail &&
+            (identical(other.displayName, displayName) ||
+                other.displayName == displayName) &&
             (identical(other.sex, sex) || other.sex == sex) &&
             (identical(other.birthDate, birthDate) ||
                 other.birthDate == birthDate) &&
@@ -911,6 +935,7 @@ class _UserProfileDetail implements UserProfileDetail {
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      displayName,
       sex,
       birthDate,
       heightCm,
@@ -928,7 +953,7 @@ class _UserProfileDetail implements UserProfileDetail {
 
   @override
   String toString() {
-    return 'UserProfileDetail(sex: $sex, birthDate: $birthDate, heightCm: $heightCm, experienceLevel: $experienceLevel, trainingDaysPerWeek: $trainingDaysPerWeek, activityLevel: $activityLevel, preferredSessionMinutes: $preferredSessionMinutes, trainingLocation: $trainingLocation, equipment: $equipment, latestWeightKg: $latestWeightKg, timezone: $timezone, locale: $locale, onboardingStage: $onboardingStage, mess: $mess)';
+    return 'UserProfileDetail(displayName: $displayName, sex: $sex, birthDate: $birthDate, heightCm: $heightCm, experienceLevel: $experienceLevel, trainingDaysPerWeek: $trainingDaysPerWeek, activityLevel: $activityLevel, preferredSessionMinutes: $preferredSessionMinutes, trainingLocation: $trainingLocation, equipment: $equipment, latestWeightKg: $latestWeightKg, timezone: $timezone, locale: $locale, onboardingStage: $onboardingStage, mess: $mess)';
   }
 }
 
@@ -941,7 +966,8 @@ abstract mixin class _$UserProfileDetailCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {Sex? sex,
+      {String? displayName,
+      Sex? sex,
       String? birthDate,
       double? heightCm,
       ExperienceLevel? experienceLevel,
@@ -973,6 +999,7 @@ class __$UserProfileDetailCopyWithImpl<$Res>
   @override
   @pragma('vm:prefer-inline')
   $Res call({
+    Object? displayName = freezed,
     Object? sex = freezed,
     Object? birthDate = freezed,
     Object? heightCm = freezed,
@@ -989,6 +1016,10 @@ class __$UserProfileDetailCopyWithImpl<$Res>
     Object? mess = freezed,
   }) {
     return _then(_UserProfileDetail(
+      displayName: freezed == displayName
+          ? _self.displayName
+          : displayName // ignore: cast_nullable_to_non_nullable
+              as String?,
       sex: freezed == sex
           ? _self.sex
           : sex // ignore: cast_nullable_to_non_nullable

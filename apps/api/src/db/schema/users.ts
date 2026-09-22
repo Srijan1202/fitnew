@@ -23,6 +23,8 @@ export const users = pgTable(
     id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
     firebaseUid: text('firebase_uid').notNull().unique(),
     email: text('email'),
+    /** Phase 6.6: the canonical display name; null until onboarding asks. */
+    displayName: text('display_name'),
     timezone: text('timezone').notNull().default('Asia/Kolkata'),
     locale: text('locale').notNull().default('en-IN'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

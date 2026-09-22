@@ -20,6 +20,7 @@ Map<String, dynamic> _$MessRefToJson(_MessRef instance) => <String, dynamic>{
 
 _UserProfileDetail _$UserProfileDetailFromJson(Map<String, dynamic> json) =>
     _UserProfileDetail(
+      displayName: json['displayName'] as String? ?? null,
       sex: $enumDecodeNullable(_$SexEnumMap, json['sex']),
       birthDate: json['birthDate'] as String?,
       heightCm: (json['heightCm'] as num?)?.toDouble(),
@@ -46,6 +47,7 @@ _UserProfileDetail _$UserProfileDetailFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$UserProfileDetailToJson(_UserProfileDetail instance) =>
     <String, dynamic>{
+      'displayName': instance.displayName,
       'sex': _$SexEnumMap[instance.sex],
       'birthDate': instance.birthDate,
       'heightCm': instance.heightCm,

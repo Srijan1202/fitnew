@@ -18,7 +18,7 @@ describe('onboarding answers', () => {
   });
 
   it('about requires consent — health data is not collected without it', () => {
-    const base = { step: 'about', sex: 'male', birthDate: '2000-01-01', heightCm: 175, weightKg: 70 };
+    const base = { step: 'about', displayName: 'Persona', sex: 'male', birthDate: '2000-01-01', heightCm: 175, weightKg: 70 };
     expect(onboardingAnswerSchema.safeParse(base).success).toBe(false);
     expect(
       onboardingAnswerSchema.safeParse({
@@ -43,7 +43,7 @@ describe('onboarding answers', () => {
   it('rejects implausible bodies as typos, not people', () => {
     const consent = { policyVersion: 'v', types: ['privacy-policy'] };
     const about = (heightCm: number, weightKg: number) =>
-      onboardingAnswerSchema.safeParse({ step: 'about', sex: 'female', birthDate: '2000-01-01', heightCm, weightKg, consent }).success;
+      onboardingAnswerSchema.safeParse({ step: 'about', displayName: 'Persona', sex: 'female', birthDate: '2000-01-01', heightCm, weightKg, consent }).success;
     expect(about(163, 59)).toBe(true);
     expect(about(16, 59)).toBe(false); // metres typed as cm
     expect(about(163, 5900)).toBe(false); // grams typed as kg

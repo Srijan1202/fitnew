@@ -76,7 +76,7 @@ describeIfDb('/v1/training/program (real Postgres, real seed)', () => {
     expect(session.statusCode).toBe(200);
     const steps = [
       { step: 'goal', goalType: opts.goal ?? 'muscle-gain' },
-      { step: 'about', sex: 'male', birthDate: '2004-06-01', heightCm: 175, weightKg: 70, consent },
+      { step: 'about', displayName: 'Persona', sex: 'male', birthDate: '2004-06-01', heightCm: 175, weightKg: 70, consent },
       { step: 'experience', experienceLevel: opts.experience ?? 'intermediate', trainingDaysPerWeek: opts.days ?? 4, activityLevel: 'light' },
       { step: 'training', trainingLocation: 'commercial-gym', equipment: opts.equipment ?? ['barbell', 'dumbbell', 'machine', 'cable'] },
       { step: 'food', dietType: 'non-vegetarian', allergies: [] },

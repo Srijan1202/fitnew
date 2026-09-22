@@ -38,7 +38,7 @@ describe('ageYears — the 18+ gate must be exact to the day', () => {
 });
 
 describe('targetInputFrom — names exactly what the engine still lacks', () => {
-  const user = { timezone: 'Asia/Kolkata', locale: 'en-IN' };
+  const user = { displayName: null, timezone: 'Asia/Kolkata', locale: 'en-IN' };
   const empty: ProfileBundle = {
     user,
     profile: null,

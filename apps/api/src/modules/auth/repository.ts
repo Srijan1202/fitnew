@@ -56,6 +56,7 @@ export class UsersRepository {
         id: users.id,
         firebaseUid: users.firebaseUid,
         email: users.email,
+        displayName: users.displayName,
         timezone: users.timezone,
         locale: users.locale,
         createdAt: users.createdAt,

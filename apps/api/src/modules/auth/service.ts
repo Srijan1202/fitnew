@@ -33,6 +33,7 @@ export class AuthService {
       user: {
         id: row.id,
         email: row.email,
+        displayName: row.displayName,
         timezone: row.timezone,
         locale: row.locale,
         createdAt: row.createdAt.toISOString(),

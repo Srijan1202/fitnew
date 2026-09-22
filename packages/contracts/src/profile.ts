@@ -105,7 +105,12 @@ export const MIN_AGE_YEARS = 18;
 
 /* ------------------------------------------------------------- read shapes -- */
 
+/** Phase 6.6: what the app calls the user. Trimmed, 1–40 characters. */
+export const displayNameSchema = z.string().trim().min(1).max(40);
+
 export const userProfileDetailSchema = z.object({
+  /** Canonical display name (`users.display_name`); null until answered. */
+  displayName: z.string().nullable(),
   sex: sexSchema.nullable(),
   birthDate: isoDateSchema.nullable(),
   heightCm: z.number().nullable(),
@@ -184,6 +189,7 @@ export type NutritionTargets = z.infer<typeof nutritionTargetsSchema>;
 
 export const patchProfileRequestSchema = z
   .object({
+    displayName: displayNameSchema.optional(),
     heightCm: heightCmSchema.optional(),
     experienceLevel: experienceLevelSchema.optional(),
     trainingDaysPerWeek: trainingDaysSchema.optional(),

@@ -20,6 +20,7 @@ import {
   heightCmSchema,
   isoDateSchema,
   nutritionTargetsSchema,
+  displayNameSchema,
   sexSchema,
   trainingDaysSchema,
   trainingLocationSchema,
@@ -74,6 +75,8 @@ const goalAnswer = z.object({
  */
 const aboutAnswer = z.object({
   step: z.literal('about'),
+  /** Phase 6.6: "What should we call you?" — the first field of the step. */
+  displayName: displayNameSchema,
   sex: sexSchema,
   birthDate: isoDateSchema,
   heightCm: heightCmSchema,

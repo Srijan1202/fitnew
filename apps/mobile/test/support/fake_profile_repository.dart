@@ -8,7 +8,11 @@ import 'fake_onboarding_repository.dart';
 /// length set — the generate screen's prefill source.
 class FakeProfileRepository implements ProfileRepository {
   Result<UserProfileDetail> nextProfile = Ok(
-    midwayProfile.copyWith(onboardingStage: 'complete', trainingDaysPerWeek: 3),
+    midwayProfile.copyWith(
+      displayName: 'Persona',
+      onboardingStage: 'complete',
+      trainingDaysPerWeek: 3,
+    ),
   );
   Result<GoalResponse> nextGoal = Ok(
     GoalResponse(goal: personaCGoal, targets: personaCTargets),
@@ -19,6 +23,16 @@ class FakeProfileRepository implements ProfileRepository {
   @override
   Future<Result<UserProfileDetail>> getProfile() async {
     calls.add('getProfile');
+    return nextProfile;
+  }
+
+  @override
+  Future<Result<UserProfileDetail>> setDisplayName(String displayName) async {
+    calls.add('setDisplayName:$displayName');
+    final p = nextProfile;
+    if (p is Ok<UserProfileDetail>) {
+      nextProfile = Ok(p.value.copyWith(displayName: displayName));
+    }
     return nextProfile;
   }
 

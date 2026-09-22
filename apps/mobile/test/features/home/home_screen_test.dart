@@ -1,4 +1,5 @@
 import 'package:fitos/core/db/app_database.dart';
+import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/features/auth/domain/entities/auth_state.dart';
@@ -8,6 +9,8 @@ import 'package:fitos/features/exercise/presentation/controllers/exercise_provid
 import 'package:fitos/features/health/domain/entities/health.dart';
 import 'package:fitos/features/health/presentation/screens/health_data_screen.dart';
 import 'package:fitos/features/home/presentation/screens/home_screen.dart';
+import 'package:fitos/features/home/presentation/widgets/name_prompt.dart';
+import 'package:fitos/features/profile/domain/entities/profile.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:fitos/features/training/presentation/controllers/program_controller.dart';
 import 'package:fitos/features/workout/domain/entities/workout.dart';
@@ -15,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/fake_auth_repository.dart';
 import '../../support/fake_exercise_repository.dart';
@@ -34,11 +38,13 @@ void main() {
   late FakeWorkoutApi api;
   late FakeHealthProvider health;
   late FakeAuthRepository auth;
+  late FakeProfileRepository profile;
 
   setUp(() {
     db = AppDatabase.inMemory();
     api = FakeWorkoutApi();
     health = FakeHealthProvider();
+    profile = FakeProfileRepository();
     auth = FakeAuthRepository()
       ..restoreResult = AuthState.signedIn(testProfile);
   });
@@ -86,7 +92,7 @@ void main() {
         authRepositoryProvider.overrideWithValue(auth),
         sessionUserIdProvider.overrideWithValue(testProfile.id),
         exerciseRepositoryProvider.overrideWithValue(FakeExerciseRepository()),
-        profileRepositoryProvider.overrideWithValue(FakeProfileRepository()),
+        profileRepositoryProvider.overrideWithValue(profile),
         trainingRepositoryProvider.overrideWithValue(FakeTrainingRepository()),
         ...workoutOverrides(db, api),
         ...healthOverrides(health),
@@ -412,9 +418,15 @@ void main() {
     expect(find.byKey(const ValueKey('home.dot.0')), findsOneWidget);
     expect(find.byKey(const ValueKey('home.dot.1')), findsOneWidget);
     expect(find.byKey(const ValueKey('home.dot.2')), findsNothing);
+    // Persona C's profile carries a name (Phase 6.6): greeted by it.
     expect(
       textOf(tester, 'home.greeting').data,
-      anyOf('GOOD MORNING', 'GOOD AFTERNOON', 'GOOD EVENING', 'GOOD NIGHT'),
+      anyOf(
+        'Good morning, Persona',
+        'Good afternoon, Persona',
+        'Good evening, Persona',
+        'Good night, Persona',
+      ),
     );
     await tester.tap(find.byKey(const ValueKey('home.profile')));
     await tester.pumpAndSettle();
@@ -447,5 +459,63 @@ void main() {
     expect(textOf(tester, 'home.steps').data, 'Connect Health data');
     expect(find.text('6,842'), findsNothing);
     expect(health.calls.where((c) => c == 'connection').length, greaterThan(1));
+  });
+
+  testWidgets(
+      'no name yet: the greeting stands alone, Home asks once; Save writes the profile and the greeting follows',
+      (tester) async {
+    profile.nextProfile = Ok(
+      (profile.nextProfile as Ok<UserProfileDetail>)
+          .value
+          .copyWith(displayName: null),
+    );
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    expect(
+      textOf(tester, 'home.greeting').data,
+      anyOf('Good morning', 'Good afternoon', 'Good evening', 'Good night'),
+    );
+    expect(find.textContaining('null'), findsNothing);
+    expect(find.textContaining('User'), findsNothing);
+    expect(find.byKey(const ValueKey('home.namePrompt')), findsOneWidget);
+    // Empty → Save disabled.
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(const ValueKey('home.namePrompt.save')),
+          )
+          .onPressed,
+      isNull,
+    );
+    await tester.enterText(
+      find.descendant(
+        of: find.byKey(const ValueKey('home.namePrompt.field')),
+        matching: find.byType(TextField),
+      ),
+      'Srijan',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('home.namePrompt.save')));
+    await tester.pumpAndSettle();
+    expect(profile.calls, contains('setDisplayName:Srijan'));
+    expect(find.byKey(const ValueKey('home.namePrompt')), findsNothing);
+    expect(textOf(tester, 'home.greeting').data, endsWith(', Srijan'));
+  });
+
+  testWidgets('"Not now" hides the name prompt and remembers it on this phone',
+      (tester) async {
+    profile.nextProfile = Ok(
+      (profile.nextProfile as Ok<UserProfileDetail>)
+          .value
+          .copyWith(displayName: null),
+    );
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('home.namePrompt.notNow')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('home.namePrompt')), findsNothing);
+    expect(profile.calls, isNot(contains(startsWith('setDisplayName'))));
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getBool(NamePrompt.dismissedKey), isTrue);
   });
 }

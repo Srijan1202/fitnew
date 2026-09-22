@@ -46,6 +46,7 @@ const _$GoalTypeEnumMap = {
 };
 
 AboutAnswer _$AboutAnswerFromJson(Map<String, dynamic> json) => AboutAnswer(
+      displayName: json['displayName'] as String,
       sex: $enumDecode(_$SexEnumMap, json['sex']),
       birthDate: json['birthDate'] as String,
       heightCm: (json['heightCm'] as num).toDouble(),
@@ -56,6 +57,7 @@ AboutAnswer _$AboutAnswerFromJson(Map<String, dynamic> json) => AboutAnswer(
 
 Map<String, dynamic> _$AboutAnswerToJson(AboutAnswer instance) =>
     <String, dynamic>{
+      'displayName': instance.displayName,
       'sex': _$SexEnumMap[instance.sex]!,
       'birthDate': instance.birthDate,
       'heightCm': instance.heightCm,

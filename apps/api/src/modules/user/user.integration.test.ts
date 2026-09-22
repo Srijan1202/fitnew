@@ -50,7 +50,7 @@ describeIfDb('/v1/user (real Postgres)', () => {
     });
     for (const a of [
       { step: 'goal', goalType: 'fat-loss' },
-      { step: 'about', sex: 'male', birthDate: '2000-06-01', heightCm: 178, weightKg: 82, consent },
+      { step: 'about', displayName: 'Persona', sex: 'male', birthDate: '2000-06-01', heightCm: 178, weightKg: 82, consent },
       { step: 'experience', experienceLevel: 'intermediate', trainingDaysPerWeek: 3, activityLevel: 'sedentary' },
       { step: 'training', trainingLocation: 'commercial-gym', equipment: ['barbell', 'dumbbell'] },
       { step: 'food', dietType: 'non-vegetarian', allergies: [] },
@@ -65,11 +65,42 @@ describeIfDb('/v1/user (real Postgres)', () => {
   const targetRows = async () =>
     (await sql<{ n: number }[]>`select count(*)::int as n from nutrition_targets where user_id = (select id from users where firebase_uid = ${'us-uid-' + n})`)[0]?.n;
 
+  describe('display name (Phase 6.6)', () => {
+    it('is stored by the about step, echoed on the session and the profile, and editable by PATCH', async () => {
+      // The about step above answered "Persona".
+      expect((await call('GET', '/user/profile')).json().displayName).toBe('Persona');
+      const session = await app.inject({
+        method: 'POST', url: '/v1/auth/session',
+        headers: { authorization: `Bearer ${token}`, 'x-forwarded-for': `198.51.100.${100 + n}` },
+        payload: {},
+      });
+      expect(session.json().user.displayName).toBe('Persona');
+      // Trimmed on the way in; bounds enforced.
+      expect((await call('PATCH', '/user/profile', { displayName: '  Srijan  ' })).json().displayName).toBe('Srijan');
+      expect((await call('GET', '/user/profile')).json().displayName).toBe('Srijan');
+      expect((await call('PATCH', '/user/profile', { displayName: '   ' })).statusCode).toBe(422);
+      expect((await call('PATCH', '/user/profile', { displayName: 'x'.repeat(41) })).statusCode).toBe(422);
+    });
+
+    it('a user who never answered has null, never a placeholder', async () => {
+      n += 1;
+      const fresh = `us-tok-${n}`;
+      verifier.accept(fresh, { uid: `us-uid-${n}` });
+      const r = await app.inject({
+        method: 'POST', url: '/v1/auth/session',
+        headers: { authorization: `Bearer ${fresh}`, 'x-forwarded-for': `198.51.100.${100 + n}` },
+        payload: {},
+      });
+      expect(r.json().user.displayName).toBeNull();
+    });
+  });
+
   describe('profile', () => {
     it('GET returns what onboarding stored, with numerics as numbers', async () => {
       const r = await call('GET', '/user/profile');
       expect(r.statusCode).toBe(200);
       expect(r.json()).toMatchObject({
+        displayName: 'Persona',
         sex: 'male', heightCm: 178, latestWeightKg: 82, trainingDaysPerWeek: 3,
         activityLevel: 'sedentary', equipment: ['barbell', 'dumbbell'], onboardingStage: 'complete', mess: null,
       });

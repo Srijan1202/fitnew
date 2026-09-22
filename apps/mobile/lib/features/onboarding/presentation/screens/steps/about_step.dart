@@ -16,6 +16,7 @@ class AboutStep extends StatefulWidget {
     required this.submit,
     required this.onBack,
     required this.onNext,
+    this.suggestedName,
     super.key,
   });
 
@@ -24,12 +25,16 @@ class AboutStep extends StatefulWidget {
   final VoidCallback? onBack;
   final VoidCallback onNext;
 
+  /// Firebase's name for the account, if any — a pre-fill only.
+  final String? suggestedName;
+
   @override
   State<AboutStep> createState() => _AboutStepState();
 }
 
 class _AboutStepState extends State<AboutStep> {
   final _form = GlobalKey<FormState>();
+  final _name = TextEditingController();
   final _height = TextEditingController();
   final _weight = TextEditingController();
   Sex? _sex;
@@ -42,6 +47,7 @@ class _AboutStepState extends State<AboutStep> {
   void initState() {
     super.initState();
     final p = widget.state.profile;
+    _name.text = p.displayName ?? widget.suggestedName ?? '';
     _sex = p.sex;
     if (p.birthDate != null) _birthDate = DateTime.tryParse(p.birthDate!);
     if (p.heightCm != null) _height.text = _fmt(p.heightCm!);
@@ -52,6 +58,7 @@ class _AboutStepState extends State<AboutStep> {
 
   @override
   void dispose() {
+    _name.dispose();
     _height.dispose();
     _weight.dispose();
     super.dispose();
@@ -95,6 +102,7 @@ class _AboutStepState extends State<AboutStep> {
     });
     final failure = await widget.submit(
       OnboardingAnswer.about(
+        displayName: _name.text.trim(),
         sex: sex,
         birthDate: _iso(birth),
         heightCm: double.parse(_height.text.trim()),
@@ -116,13 +124,16 @@ class _AboutStepState extends State<AboutStep> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final ready = _sex != null && _birthDate != null && _consented;
+    final ready = _sex != null &&
+        _birthDate != null &&
+        _consented &&
+        _name.text.trim().isNotEmpty;
 
     return OnboardingStep(
       screenNumber: 2,
       title: 'About you',
       lede:
-          'Four numbers the calorie formula needs. Weight is a starting reading, not a judgement.',
+          'Your name, and four numbers the calorie formula needs. Weight is a starting reading, not a judgement.',
       busy: _busy,
       failure: _failure,
       canContinue: ready,
@@ -133,6 +144,22 @@ class _AboutStepState extends State<AboutStep> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
+            AuthFormField(
+              fieldKey: const ValueKey('about.displayName'),
+              label: 'What should we call you?',
+              controller: _name,
+              keyboardType: TextInputType.name,
+              textInputAction: TextInputAction.next,
+              validator: (v) {
+                final t = v?.trim() ?? '';
+                if (t.isEmpty) return 'A name, so FITOS can greet you.';
+                if (t.length > 40) return 'Keep it under 40 characters.';
+                return null;
+              },
+              onChanged: (_) => setState(() {}),
+              enabled: !_busy,
+            ),
+            const SizedBox(height: FitSpacing.lg),
             Text('SEX', style: textTheme.labelSmall),
             const SizedBox(height: FitSpacing.xs),
             ChoiceList<Sex>(

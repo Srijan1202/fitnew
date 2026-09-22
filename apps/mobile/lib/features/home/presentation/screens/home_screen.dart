@@ -11,6 +11,7 @@ import '../../domain/home_context.dart';
 import '../../domain/home_suggestion_engine.dart';
 import '../controllers/home_providers.dart';
 import '../widgets/home_sections.dart';
+import '../widgets/name_prompt.dart';
 import '../widgets/suggestion_carousel.dart';
 
 /// Phase 6.5 — Home. What to know and do right now, in this order: a
@@ -86,7 +87,12 @@ class HomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                HomeHeader(hour: c.hourOfDay, date: c.date),
+                HomeHeader(
+                  hour: c.hourOfDay,
+                  date: c.date,
+                  name: c.displayName,
+                ),
+                if (ref.watch(askForNameProvider)) const NamePrompt(),
                 if (loading && suggestions.isEmpty)
                   const HomeSkeleton()
                 else if (carousel.isNotEmpty) ...<Widget>[

@@ -23,6 +23,8 @@ abstract class MessRef with _$MessRef {
 @freezed
 abstract class UserProfileDetail with _$UserProfileDetail {
   const factory UserProfileDetail({
+    /// Phase 6.6: what the app calls the user; null until answered.
+    @Default(null) String? displayName,
     required Sex? sex,
     required String? birthDate,
     required double? heightCm,

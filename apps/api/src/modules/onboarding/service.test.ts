@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { ProfileBundle } from '../user/repository.js';
 import { answeredSteps, hashIp, missingRequired, nextStage } from './service.js';
 
-const user = { timezone: 'Asia/Kolkata', locale: 'en-IN' };
+const user = { displayName: null, timezone: 'Asia/Kolkata', locale: 'en-IN' };
 const empty: ProfileBundle = {
   user, profile: null, goal: null, diet: null, allergies: [], preferences: null, latestWeight: null, targets: null,
 };

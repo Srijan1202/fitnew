@@ -70,7 +70,7 @@ describeIfDb('migrations (real Postgres)', () => {
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
   const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
   const PHASE6_TABLES = ['muscle_volume_weekly', 'exercise_rejections'];
-  const TOTAL_MIGRATIONS = 8;
+  const TOTAL_MIGRATIONS = 9;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -297,6 +297,17 @@ describeIfDb('migrations (real Postgres)', () => {
     expect((await client`select 1 from muscle_volume_weekly where user_id = ${u!.id}`).length).toBe(0);
   });
 
+  it('0008: users.display_name, nullable, the canonical display name (Phase 6.6)', async () => {
+    const cols = await client<{ column_name: string; is_nullable: string }[]>`
+      select column_name, is_nullable from information_schema.columns where table_name = 'users' and column_name = 'display_name'`;
+    expect(cols).toHaveLength(1);
+    expect(cols[0]!.is_nullable).toBe('YES');
+    await client`insert into users (firebase_uid, display_name) values ('mig-name', 'Srijan')`;
+    const [u] = await client<{ display_name: string }[]>`select display_name from users where firebase_uid = 'mig-name'`;
+    expect(u!.display_name).toBe('Srijan');
+    await client`delete from users where firebase_uid = 'mig-name'`;
+  });
+
   it('one active goal per user is a database fact', async () => {
     await client`insert into users (firebase_uid) values ('mig-goal')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-goal'`;
@@ -351,7 +362,13 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'uid-dup'`;
   });
 
-  it('down removes 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+  it('down removes 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0008_display_name');
+    const ucols = await client<{ column_name: string }[]>`
+      select column_name from information_schema.columns where table_name = 'users'`;
+    expect(ucols.map((c) => c.column_name)).not.toContain('display_name');
+    expect(await appliedCount(client)).toBe(8);
+
     expect(await rollbackLastMigration(connectionString)).toBe('0007_progression_volume');
     for (const t of PHASE6_TABLES) expect(await tableExists(client, t), t).toBe(false);
     const pcols = await client<{ column_name: string }[]>`

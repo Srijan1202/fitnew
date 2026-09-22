@@ -140,6 +140,7 @@ export class OnboardingService {
           ]);
         }
         // Consent first, then the data it covers.
+        await this.repo.updateDisplayName(userId, answer.displayName);
         await this.repo.recordConsent(
           CONSENT_TYPES.map((consentType) => ({
             userId,

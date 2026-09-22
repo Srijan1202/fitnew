@@ -14,6 +14,11 @@ abstract class CredentialSource implements IdTokenProvider {
   /// Firebase uid if a user is currently signed in, else null.
   String? get currentUid;
 
+  /// The name Firebase holds for the signed-in user (Google sign-in sets
+  /// one; email sign-up does not). Only a pre-fill — FITOS's canonical name
+  /// is `users.display_name`.
+  String? get currentDisplayName;
+
   /// Emits the uid (or null) on every auth change.
   Stream<String?> uidChanges();
 
@@ -53,6 +58,12 @@ class FirebaseCredentialSource implements CredentialSource {
 
   @override
   String? get currentUid => _auth.currentUser?.uid;
+
+  @override
+  String? get currentDisplayName {
+    final n = _auth.currentUser?.displayName?.trim();
+    return n == null || n.isEmpty ? null : n;
+  }
 
   @override
   Stream<String?> uidChanges() => _auth.authStateChanges().map((u) => u?.uid);

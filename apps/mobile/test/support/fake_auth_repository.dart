@@ -75,6 +75,9 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  String? suggestedDisplayName;
+
+  @override
   Future<void> signOut() async {
     calls.add('signOut');
   }

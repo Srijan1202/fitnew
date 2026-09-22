@@ -61,7 +61,7 @@ describeIfDb('/v1/training progression, volume and deload (real Postgres, real s
     expect((await app.inject({ method: 'POST', url: '/v1/auth/session', headers: auth(token), payload: {} })).statusCode).toBe(200);
     for (const body of [
       { step: 'goal', goalType: 'muscle-gain' },
-      { step: 'about', sex: 'male', birthDate: '2004-06-01', heightCm: 175, weightKg: 70, consent },
+      { step: 'about', displayName: 'Persona', sex: 'male', birthDate: '2004-06-01', heightCm: 175, weightKg: 70, consent },
       { step: 'experience', experienceLevel: 'intermediate', trainingDaysPerWeek: 4, activityLevel: 'light' },
       { step: 'training', trainingLocation: 'commercial-gym', equipment },
       { step: 'food', dietType: 'non-vegetarian', allergies: [] },

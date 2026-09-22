@@ -16,6 +16,10 @@ T _$identity<T>(T value) => value;
 mixin _$UserProfile {
   String get id;
   String? get email;
+
+  /// Phase 6.6: the canonical display name (`users.display_name`); null
+  /// until the onboarding "about" step asks. Never a placeholder.
+  String? get displayName;
   String get timezone;
   String get locale;
   DateTime get createdAt;
@@ -40,6 +44,8 @@ mixin _$UserProfile {
             other is UserProfile &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.email, email) || other.email == email) &&
+            (identical(other.displayName, displayName) ||
+                other.displayName == displayName) &&
             (identical(other.timezone, timezone) ||
                 other.timezone == timezone) &&
             (identical(other.locale, locale) || other.locale == locale) &&
@@ -51,12 +57,12 @@ mixin _$UserProfile {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, email, timezone, locale, createdAt, onboardingStage);
+  int get hashCode => Object.hash(runtimeType, id, email, displayName, timezone,
+      locale, createdAt, onboardingStage);
 
   @override
   String toString() {
-    return 'UserProfile(id: $id, email: $email, timezone: $timezone, locale: $locale, createdAt: $createdAt, onboardingStage: $onboardingStage)';
+    return 'UserProfile(id: $id, email: $email, displayName: $displayName, timezone: $timezone, locale: $locale, createdAt: $createdAt, onboardingStage: $onboardingStage)';
   }
 }
 
@@ -69,6 +75,7 @@ abstract mixin class $UserProfileCopyWith<$Res> {
   $Res call(
       {String id,
       String? email,
+      String? displayName,
       String timezone,
       String locale,
       DateTime createdAt,
@@ -89,6 +96,7 @@ class _$UserProfileCopyWithImpl<$Res> implements $UserProfileCopyWith<$Res> {
   $Res call({
     Object? id = null,
     Object? email = freezed,
+    Object? displayName = freezed,
     Object? timezone = null,
     Object? locale = null,
     Object? createdAt = null,
@@ -102,6 +110,10 @@ class _$UserProfileCopyWithImpl<$Res> implements $UserProfileCopyWith<$Res> {
       email: freezed == email
           ? _self.email
           : email // ignore: cast_nullable_to_non_nullable
+              as String?,
+      displayName: freezed == displayName
+          ? _self.displayName
+          : displayName // ignore: cast_nullable_to_non_nullable
               as String?,
       timezone: null == timezone
           ? _self.timezone
@@ -216,16 +228,28 @@ extension UserProfilePatterns on UserProfile {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(String id, String? email, String timezone, String locale,
-            DateTime createdAt, String onboardingStage)?
+    TResult Function(
+            String id,
+            String? email,
+            String? displayName,
+            String timezone,
+            String locale,
+            DateTime createdAt,
+            String onboardingStage)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _UserProfile() when $default != null:
-        return $default(_that.id, _that.email, _that.timezone, _that.locale,
-            _that.createdAt, _that.onboardingStage);
+        return $default(
+            _that.id,
+            _that.email,
+            _that.displayName,
+            _that.timezone,
+            _that.locale,
+            _that.createdAt,
+            _that.onboardingStage);
       case _:
         return orElse();
     }
@@ -246,15 +270,27 @@ extension UserProfilePatterns on UserProfile {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(String id, String? email, String timezone, String locale,
-            DateTime createdAt, String onboardingStage)
+    TResult Function(
+            String id,
+            String? email,
+            String? displayName,
+            String timezone,
+            String locale,
+            DateTime createdAt,
+            String onboardingStage)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _UserProfile():
-        return $default(_that.id, _that.email, _that.timezone, _that.locale,
-            _that.createdAt, _that.onboardingStage);
+        return $default(
+            _that.id,
+            _that.email,
+            _that.displayName,
+            _that.timezone,
+            _that.locale,
+            _that.createdAt,
+            _that.onboardingStage);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -274,15 +310,27 @@ extension UserProfilePatterns on UserProfile {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(String id, String? email, String timezone, String locale,
-            DateTime createdAt, String onboardingStage)?
+    TResult? Function(
+            String id,
+            String? email,
+            String? displayName,
+            String timezone,
+            String locale,
+            DateTime createdAt,
+            String onboardingStage)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _UserProfile() when $default != null:
-        return $default(_that.id, _that.email, _that.timezone, _that.locale,
-            _that.createdAt, _that.onboardingStage);
+        return $default(
+            _that.id,
+            _that.email,
+            _that.displayName,
+            _that.timezone,
+            _that.locale,
+            _that.createdAt,
+            _that.onboardingStage);
       case _:
         return null;
     }
@@ -295,6 +343,7 @@ class _UserProfile implements UserProfile {
   const _UserProfile(
       {required this.id,
       required this.email,
+      this.displayName = null,
       required this.timezone,
       required this.locale,
       required this.createdAt,
@@ -306,6 +355,12 @@ class _UserProfile implements UserProfile {
   final String id;
   @override
   final String? email;
+
+  /// Phase 6.6: the canonical display name (`users.display_name`); null
+  /// until the onboarding "about" step asks. Never a placeholder.
+  @override
+  @JsonKey()
+  final String? displayName;
   @override
   final String timezone;
   @override
@@ -340,6 +395,8 @@ class _UserProfile implements UserProfile {
             other is _UserProfile &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.email, email) || other.email == email) &&
+            (identical(other.displayName, displayName) ||
+                other.displayName == displayName) &&
             (identical(other.timezone, timezone) ||
                 other.timezone == timezone) &&
             (identical(other.locale, locale) || other.locale == locale) &&
@@ -351,12 +408,12 @@ class _UserProfile implements UserProfile {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, email, timezone, locale, createdAt, onboardingStage);
+  int get hashCode => Object.hash(runtimeType, id, email, displayName, timezone,
+      locale, createdAt, onboardingStage);
 
   @override
   String toString() {
-    return 'UserProfile(id: $id, email: $email, timezone: $timezone, locale: $locale, createdAt: $createdAt, onboardingStage: $onboardingStage)';
+    return 'UserProfile(id: $id, email: $email, displayName: $displayName, timezone: $timezone, locale: $locale, createdAt: $createdAt, onboardingStage: $onboardingStage)';
   }
 }
 
@@ -371,6 +428,7 @@ abstract mixin class _$UserProfileCopyWith<$Res>
   $Res call(
       {String id,
       String? email,
+      String? displayName,
       String timezone,
       String locale,
       DateTime createdAt,
@@ -391,6 +449,7 @@ class __$UserProfileCopyWithImpl<$Res> implements _$UserProfileCopyWith<$Res> {
   $Res call({
     Object? id = null,
     Object? email = freezed,
+    Object? displayName = freezed,
     Object? timezone = null,
     Object? locale = null,
     Object? createdAt = null,
@@ -404,6 +463,10 @@ class __$UserProfileCopyWithImpl<$Res> implements _$UserProfileCopyWith<$Res> {
       email: freezed == email
           ? _self.email
           : email // ignore: cast_nullable_to_non_nullable
+              as String?,
+      displayName: freezed == displayName
+          ? _self.displayName
+          : displayName // ignore: cast_nullable_to_non_nullable
               as String?,
       timezone: null == timezone
           ? _self.timezone

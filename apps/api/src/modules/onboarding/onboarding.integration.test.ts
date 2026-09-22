@@ -63,7 +63,7 @@ describeIfDb('onboarding (real Postgres)', () => {
   /** Persona C from the spec: 20-year-old woman, 163 cm, 59 kg, light activity, 4 days. */
   const personaC = [
     { step: 'goal', goalType: 'muscle-gain' },
-    { step: 'about', sex: 'female', birthDate: '2006-03-15', heightCm: 163, weightKg: 59, consent },
+    { step: 'about', displayName: 'Persona', sex: 'female', birthDate: '2006-03-15', heightCm: 163, weightKg: 59, consent },
     { step: 'experience', experienceLevel: 'beginner', trainingDaysPerWeek: 4, activityLevel: 'light' },
     { step: 'training', trainingLocation: 'campus-gym', equipment: ['dumbbell', 'machine'] },
     { step: 'food', dietType: 'vegetarian', allergies: [{ allergen: 'peanut', severity: 'severe' }] },

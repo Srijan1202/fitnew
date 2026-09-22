@@ -34,6 +34,12 @@ abstract class AuthRepository {
   /// Firebase and Google, clears local storage. Always ends `signedOut`.
   Future<void> signOut();
 
+  /// Phase 6.6: the name the identity provider holds for the signed-in
+  /// account (Google sign-in sets one), for pre-filling onboarding. Null
+  /// when unknown. Not FITOS's canonical name — that is `displayName` on
+  /// the profile.
+  String? get suggestedDisplayName;
+
   /// Updates the cached profile so the next cold start routes correctly.
   /// Called after `/onboarding/complete` succeeds; the server is already
   /// authoritative, this keeps the local fast path in step with it.

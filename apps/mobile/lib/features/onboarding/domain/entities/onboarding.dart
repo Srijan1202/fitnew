@@ -30,6 +30,8 @@ sealed class OnboardingAnswer with _$OnboardingAnswer {
 
   @FreezedUnionValue('about')
   const factory OnboardingAnswer.about({
+    /// Phase 6.6: "What should we call you?" — first field of the step.
+    required String displayName,
     required Sex sex,
     required String birthDate,
     required double heightCm,

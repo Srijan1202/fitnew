@@ -29,7 +29,7 @@ import {
 type Db = DatabaseHandle['db'];
 
 export interface ProfileBundle {
-  readonly user: { readonly timezone: string; readonly locale: string };
+  readonly user: { readonly displayName: string | null; readonly timezone: string; readonly locale: string };
   readonly profile: UserProfileRow | null;
   readonly goal: UserGoalRow | null;
   readonly diet: DietPreferencesRow | null;
@@ -45,7 +45,7 @@ export class UserRepository {
   /** Everything the profile and onboarding endpoints need, in one round trip per table. */
   async loadBundle(userId: string): Promise<ProfileBundle | null> {
     const [user] = await this.db
-      .select({ timezone: users.timezone, locale: users.locale })
+      .select({ displayName: users.displayName, timezone: users.timezone, locale: users.locale })
       .from(users)
       .where(eq(users.id, userId));
     if (user === undefined) return null;
@@ -79,6 +79,14 @@ export class UserRepository {
       .returning();
     if (row === undefined) throw new Error('profile upsert returned no row');
     return row;
+  }
+
+  /** Phase 6.6: the canonical display name lives on `users`. */
+  async updateDisplayName(userId: string, displayName: string): Promise<void> {
+    await this.db
+      .update(users)
+      .set({ displayName, updatedAt: sql`now()` })
+      .where(eq(users.id, userId));
   }
 
   async updateUserLocale(userId: string, patch: { timezone?: string; locale?: string }): Promise<void> {
