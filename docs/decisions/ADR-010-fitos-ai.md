@@ -107,8 +107,10 @@ navigation actions and tool names.
 `GEMINI_MODEL` is env-driven. On 2026-09-22 Google reported
 `gemini-2.5-flash` "no longer available to new users" (404) and pointed
 to `gemini-3.6-flash`, which works with our request shape and requires
-thought signatures to be echoed on tool rounds (done). The owner decides
-the pinned name; nothing in code assumes one.
+thought signatures to be echoed on tool rounds (done). Owner decision
+(2026-09-22): the alpha model is `gemini-3.6-flash`; it is the documented
+example and the schema default, still overridable per environment.
+Nothing in application logic assumes a name.
 
 ## Consequences
 

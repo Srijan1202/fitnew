@@ -31,7 +31,7 @@ function scriptedFetch(status: number, body: unknown, calls: { url: string; init
 function gemini(status: number, body: unknown, calls: { url: string; init: RequestInit }[] = []) {
   return new GeminiProvider({
     apiKey: KEY,
-    model: 'gemini-2.5-flash',
+    model: 'gemini-3.6-flash',
     timeoutMs: 1000,
     maxOutputTokens: 256,
     fetchImpl: scriptedFetch(status, body, calls),
@@ -63,7 +63,7 @@ describe('GeminiProvider', () => {
     expect(r).toEqual({ text: 'Pull day. Four movements.', toolCalls: [], finishReason: 'stop', usage: { inputTokens: 120, outputTokens: 18 } });
     expect(calls).toHaveLength(1);
     const { url, init } = calls[0]!;
-    expect(url).toBe('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent');
+    expect(url).toBe('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent');
     expect(url).not.toContain(KEY);
     expect((init.headers as Record<string, string>)['x-goog-api-key']).toBe(KEY);
     const body = JSON.parse(init.body as string) as Record<string, unknown>;
@@ -122,7 +122,7 @@ describe('GeminiProvider', () => {
   it('a hung upstream → timeout after AI_TIMEOUT_MS', async () => {
     const p = new GeminiProvider({
       apiKey: KEY,
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.6-flash',
       timeoutMs: 50,
       maxOutputTokens: 256,
       fetchImpl: ((_url: unknown, init?: RequestInit) =>
@@ -137,7 +137,7 @@ describe('GeminiProvider', () => {
   it('a network failure → unavailable', async () => {
     const p = new GeminiProvider({
       apiKey: KEY,
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.6-flash',
       timeoutMs: 1000,
       maxOutputTokens: 256,
       fetchImpl: (async () => {
@@ -194,20 +194,20 @@ describe('AiService', () => {
 describe('configuration', () => {
   const base = { DATABASE_URL: 'postgres://u:p@localhost:5432/d', FIREBASE_PROJECT_ID: 'p' };
 
-  it('boots without a key: model default gemini-2.5-flash, sane limits', () => {
+  it('boots without a key: model default gemini-3.6-flash, sane limits', () => {
     const env = loadEnv({ ...base });
     expect(env.GEMINI_API_KEY).toBeUndefined();
-    expect(env.GEMINI_MODEL).toBe('gemini-2.5-flash');
+    expect(env.GEMINI_MODEL).toBe('gemini-3.6-flash');
     expect(env.AI_TIMEOUT_MS).toBe(25_000);
     expect(env.AI_MAX_OUTPUT_TOKENS).toBe(2048);
     expect(providerFromEnv(env).name).toBe('none');
   });
 
   it('with a key: a Gemini provider on the configured model; the key is not on the provider', () => {
-    const env = loadEnv({ ...base, GEMINI_API_KEY: KEY, GEMINI_MODEL: 'gemini-2.5-flash', AI_TIMEOUT_MS: '10000' });
+    const env = loadEnv({ ...base, GEMINI_API_KEY: KEY, GEMINI_MODEL: 'gemini-3.6-flash', AI_TIMEOUT_MS: '10000' });
     const p = providerFromEnv(env);
     expect(p.name).toBe('gemini');
-    expect(p.model).toBe('gemini-2.5-flash');
+    expect(p.model).toBe('gemini-3.6-flash');
     expect(JSON.stringify({ name: p.name, model: p.model })).not.toContain(KEY);
   });
 

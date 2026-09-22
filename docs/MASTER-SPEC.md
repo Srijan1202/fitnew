@@ -332,7 +332,7 @@ Everything else in your preferred stack is kept: Cloud Run, Firebase Auth, FCM, 
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `users` | `id`, `firebase_uid` UNIQUE, `email`, `timezone`, `locale`, `created_at`, `deleted_at` | No password. Firebase owns credentials. |
+| `users` | `id`, `firebase_uid` UNIQUE, `email`, `display_name` (Phase 6.6, nullable, ≤ 60), `timezone`, `locale`, `created_at`, `deleted_at` | No password. Firebase owns credentials. |
 | `user_profiles` | `user_id` PK/FK, `sex`, `birth_date`, `height_cm`, `experience_level`, `training_days_per_week`, `activity_level`, `preferred_session_minutes`, `onboarding_stage` | 1:1 |
 | `user_goals` | `id`, `user_id`, `goal_type`, `target_weight_kg`, `started_at`, `ended_at` | History; active row has `ended_at IS NULL`. Partial unique index on active. |
 | `diet_preferences` | `user_id` PK/FK, `diet_type`, `excluded_dish_ids jsonb`, `budget_tier` | |
@@ -467,6 +467,8 @@ Codes: `UNAUTHENTICATED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `VALIDATIO
 | POST | `/training/sessions/{id}/complete` | Finish; recompute volume, PRs, progression | Returns PRs earned |
 | GET | `/training/sessions` | History | Paginated |
 | GET | `/training/volume` | Weekly per-muscle vs landmarks | |
+| GET | `/ai/status` | Whether FITOS AI is configured; provider, model, what it never sees | Phase 6.6 |
+| POST | `/ai/chat` | One assistant turn over the user's own FITOS data (§19.4) | Phase 6.6; 20/min/user; stateless |
 | GET | `/nutrition/today` | Targets, consumed, remaining, logs | |
 | GET | `/nutrition/day/{date}` | Historical day | |
 | POST | `/nutrition/logs` | Log food (`clientLogId`) | Idempotent |
@@ -878,6 +880,19 @@ Validation gates every AI output before it can reach the user:
 
 Cost control: `AI_ENABLED` kill switch; 20 requests/hour/user; strict output token caps; log every call's token count to `audit_logs`.
 
+### 19.4 FITOS AI assistant (Phase 6.6, ADR-010)
+
+Shipped ahead of Phase 14 as an *explanation and Q&A* layer only; §19.1's left column is untouched and §19.2's draft contract still governs anything that would write.
+
+- **Path:** Flutter → `POST /v1/ai/chat` → `AiService` → `AiProvider` seam → Gemini REST. The phone holds no model credential and calls no model host. `GEMINI_API_KEY` lives in the backend environment only (`docker/.env` / `apps/api/.env`, gitignored) and is never logged, echoed or returned. Without it the server boots, `/ai/status` says `configured: false`, and the app shows "Not set up on this server yet".
+- **Model name is configuration:** `GEMINI_MODEL` (alpha: `gemini-3.6-flash` — `gemini-2.5-flash` stopped being offered to new keys on 2026-09-22). Nothing in code assumes a name. `AI_TIMEOUT_MS` and `AI_MAX_OUTPUT_TOKENS` likewise.
+- **Context (bounded, from services only):** profile, goal + targets with reason, programme shape, today with the engine's recommendations and reasons, the last 3 completed sessions, this week's volume. Always present and always negative: `nutrition.loggingAvailable: false` (until Phase 8) and `health.availableToServer: false`.
+- **Tools:** 13 allowlisted, read-only, strict-Zod tools over existing services with the authenticated user id closed over; no write tool; unknown tools / bad arguments / 404s become results the model reads. Tool loop capped at 4 rounds. Conversations are not persisted; the client sends the last 12 turns.
+- **Authority:** FITOS numbers are the only truth; the assistant explains with the engine's own `reason` strings, never invents history, never changes data (it points to the screen), no diagnosis. Answers are plain text, stripped of markdown server-side.
+- **Privacy boundary (owner B4):** Health Connect data never reaches the backend or the model; the integration suite asserts no health keys in the instruction. Asked about steps / sleep / resting HR, the assistant says FITOS does not send that data to the cloud AI.
+- **Failures:** every provider error maps to the §10 envelope — `UPSTREAM_UNAVAILABLE` 503, `RATE_LIMITED` 429, `VALIDATION_FAILED` 422 — with user-safe messages; the free-tier per-minute quota surfaces as "busy".
+- **Gate 5 (same seam):** natural-language programme requests are *extracted* by the model into a structured request, *executed* by the deterministic generator, validated, and explained — the model never produces a programme itself.
+
 ---
 
 ## 20. Admin System
@@ -951,7 +966,7 @@ Firebase Analytics, privacy-conscious.
 | SQL | Drizzle parameterised queries only. No string-built SQL. |
 | Rate limiting | `@fastify/rate-limit`; stricter on auth and AI routes |
 | Secrets | **Google Secret Manager.** Never in the repo, never in the Flutter binary. |
-| Mobile secrets | The app holds only the Firebase config (public by design). No API keys, no service accounts. |
+| Mobile secrets | The app holds only the Firebase config (public by design). No API keys, no service accounts. The Gemini key is backend-only (§19.4). |
 | File upload | Signed URLs, 10 MB cap, content-type allowlist, magic-byte verification |
 | Storage | Private bucket; time-limited signed read URLs |
 | Logging | pino redaction on `email`, `token`, `authorization`, `weight`, `photo_path` |
@@ -1242,6 +1257,18 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 **Tests:** provider normalization for every metric and availability, local day / night / week boundaries in two zones, no double counting across sources, cache round trip · engine: every rule, exclusions, thresholds, deterministic order, surfaces · Home widget states: no Health Connect, not connected, partial, all, no food, no sleep, active, completed, revoked-then-refresh · floating bar geometry and shell navigation · all Phase 0–6 tests unchanged.
 **Acceptance:** Home loads without Health Connect · a metric is never a fake 0 · aggregate never summed from raw records · a revoked permission shows as denied on the next foreground read · the carousel follows the session state · nothing health-related reaches the API, Gemini, analytics or crash logs.
 **Manual:** the 27-point checklist in `docs/phase-reports/phase-6.5.md` on a device with Health Connect and at least one data source.
+
+---
+
+### PHASE 6.6 — Closed alpha + FITOS AI + product polish
+
+**Prereq:** 6.5. Inserted by the owner 2026-09-22; decisions B1–B6; ADR-010. Does not consume or rename Phase 7.
+**Tasks:** display name end to end (onboarding `about` first field, `users.display_name`, pre-filled from Firebase, existing users asked once, Summary greets by it); FITOS branding (mark, launcher + adaptive icons, splash, wordmark); Gemini behind the backend (`AiProvider` seam, `GeminiProvider`, fake + not-configured providers, env config, `/ai/status`); FITOS AI (bounded context assembler, 13 allowlisted read-only tools, capped tool loop, `/ai/chat`, Flutter AI screen replacing the placeholder); AI programme generation through the deterministic generator (Gate 5); alpha configuration (LAN backend `http://<PC-IP>:8080` via `--dart-define`, flavour, gitignored `alpha.env` helper, `1.0.0-alpha.1`); release-like APK; S24 manual checklist that folds in Phase 6.5's 27 points.
+**DB:** migration 0008 `users.display_name`. **APIs:** `GET /ai/status`, `POST /ai/chat`; display name on `/auth/session`, `/user/profile`, onboarding `about`.
+**UI:** onboarding name field, Home greeting + name prompt, AI tab (chat), branding.
+**Tests:** display name contract / API / onboarding / Home · provider mapping incl. thought-signature round trip, failure table, timeout · registry allowlist, unknown tool, bad args, `userId` rejected · loop: direct answer, tool round, cap, fallback, history bound · integration on real Postgres: default-deny, real context, isolation between users, tools on real data, 503/429/422 without the upstream body, **no rows written by a full tool sweep**, no health keys in the instruction · Flutter AI screen states + conformance · all Phase 0–6.5 tests unchanged.
+**Acceptance:** the server boots and every suite passes with no key · the key is in no client, resource, APK, commit or log · the assistant answers from real FITOS data with the engine's reasons, refuses to invent, states honestly what it cannot see (food not logged, Health Connect on-device) · live smoke on the owner's account verified current workout, progression, exercise search, the Health Connect boundary and the target-vs-intake distinction · CI green on all three workflows.
+**Manual:** `docs/alpha/PHASE-6.6-ALPHA-CHECKLIST.md` on the Samsung S24 against the LAN backend.
 
 ---
 
@@ -1581,6 +1608,8 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 **Phase 6** — [ ] progression wired · [ ] **volume engine built** · [ ] landmarks · [ ] neglect detection · [ ] deload trigger · [ ] PR detection · [ ] heatmap UI
 
 **Phase 6.5** — [x] Health Connect channel + provider abstraction · [x] availability model · [x] permission flow by category · [x] foreground refresh + honest cache · [x] suggestion engine · [x] Home redesign · [x] floating bar · [x] Health Data screen · [ ] **manual acceptance (27 points) on a device**
+
+**Phase 6.6** — [x] display name end to end · [x] branding · [x] Gemini provider seam + config + `/ai/status` · [x] context assembler · [x] 13 allowlisted tools · [x] capped chat loop + `/ai/chat` · [x] Flutter AI screen · [x] live Gemini smoke · [ ] AI programme generation via the deterministic generator · [ ] alpha config (LAN, flavour, defines) · [ ] release-like APK · [ ] **S24 manual checklist (incl. Phase 6.5's 27 points)**
 
 **Phase 7** — [ ] licensing confirmed · [ ] food tables with ranges · [ ] 500 foods seeded · [ ] trigram search · [ ] aliases · [ ] custom foods
 

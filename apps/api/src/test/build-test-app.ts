@@ -19,7 +19,7 @@ export function testEnv(overrides: Partial<Env> = {}): Env {
     DATABASE_URL: 'postgres://unused:unused@localhost:5432/unused',
     FIREBASE_PROJECT_ID: 'fitos-test',
     CONSENT_IP_SALT: 'test-salt-not-secret',
-    GEMINI_MODEL: 'gemini-2.5-flash',
+    GEMINI_MODEL: 'gemini-3.6-flash',
     AI_TIMEOUT_MS: 5000,
     AI_MAX_OUTPUT_TOKENS: 512,
     ...overrides,

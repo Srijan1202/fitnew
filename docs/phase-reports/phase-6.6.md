@@ -86,8 +86,9 @@ LIVE GEMINI SMOKE (owner's key in `docker/.env`, never printed)
     Free-tier per-minute quota surfaced as 429 "busy" when calls were sent back to back.
 
 KNOWN ISSUES (Gate 4)
-  - **Model name**: `gemini-2.5-flash` is unavailable to this key; set `GEMINI_MODEL=gemini-3.6-flash`
-    in `docker/.env` (owner decision — nothing in code assumes a name).
+  - **Model name**: `gemini-2.5-flash` is unavailable to this key. Owner decision: the alpha model is
+    `gemini-3.6-flash` — now the env default and the documented example (`apps/api/.env.example`,
+    `docker/.env.example`, compose fallback); still env-configurable, nothing in code assumes a name.
   - Free-tier quota: bursts of more than a few calls a minute return 429; the screen says "busy".
   - Sets logged with no weight are read by the engine as bodyweight (Phase 6 rule 1b); the
     assistant repeats that reason faithfully.

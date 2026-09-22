@@ -28,7 +28,7 @@ const envSchema = z.object({
   // logged, never echoed, never sent to a client.
   // Compose passes '' when docker/.env has no key: treat empty as absent.
   GEMINI_API_KEY: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
-  GEMINI_MODEL: z.string().min(1).default('gemini-2.5-flash'),
+  GEMINI_MODEL: z.string().min(1).default('gemini-3.6-flash'),
   AI_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120_000).default(25_000),
   // Gemini 3 spends part of this budget thinking; 2048 leaves room to answer.
   AI_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(64).max(8192).default(2048),
