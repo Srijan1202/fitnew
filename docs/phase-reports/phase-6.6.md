@@ -10,8 +10,8 @@
 | 2 | Summary personalization (display name), branding | **verified** (CI 241 mobile / 168 API) | `3998d0e` `4a281e0` `72cfac3` |
 | 3 | Gemini backend foundation | **verified** (CI 199 API) | `ea58b88` |
 | 4 | AI context, allowlisted tools, chat, Flutter AI screen | **verified** (CI 222 API / 251 mobile) | `71c54c1` `56441a4` `77a623c` |
-| 5 | AI programme generation through the deterministic generator | **implemented, awaiting owner verification** — see below | see report |
-| 6 | Alpha configuration (LAN backend, flavour, Firebase defines) | pending | |
+| 5 | AI programme generation through the deterministic generator | **verified** (owner 2026-09-22) | `cc8157a` |
+| 6 | Alpha configuration (LAN backend, flavour, Firebase defines) | **implemented; S24 integration checks A1–A22 pending (owner)** | `a061b89` |
 | 7 | Release-like APK | pending | |
 | 8 | Samsung S24 manual alpha checklist | pending | |
 
@@ -131,6 +131,46 @@ LIVE SMOKE (real account, key never printed; programme count 8 → 8, active unc
     `{3, 45, [back]}`. `gemini-3.5-flash-lite`: "the 5-day bodybuilding split on 3 days" →
     rejected by the engine ("5-day structure; cannot run on 3 days"), the two valid 3-day
     structures named, nothing offered.
+
+### Gate 6 — Alpha configuration + integration
+
+IMPLEMENTED (`a061b89`, CI green)
+  - **LAN endpoint** — `API_BASE_URL` is the single source: `lib/core/config/env.dart` reads it;
+    `android/app/build.gradle.kts` reads the same `--dart-define` (Flutter forwards defines to
+    Gradle as `-Pdart-defines`) and *generates* `res/xml/network_security_config.xml` with
+    `base-config cleartextTrafficPermitted="false"` plus one `domain-config` for that host. An
+    `https://` URL produces no cleartext entry. Verified by building with a test host (the entry
+    appears in the APK's `res/xml/`) and with an https URL (no entry). No IP is committed.
+  - **Manifest** — `INTERNET` in the main manifest (Flutter grants it in debug/profile only);
+    `android:networkSecurityConfig` wired.
+  - **Alpha build script** — `apps/mobile/tool/alpha.ps1` (+ `alpha.sh`): reads the gitignored
+    `apps/mobile/alpha.env` (Firebase five, `API_HOST=auto|<ip>`, `API_PORT`), resolves the PC's
+    Wi-Fi IPv4 (`Get-NetIPAddress`, virtual adapters excluded; refuses 10.0.2.2/localhost),
+    passes `FLAVOR=alpha`, `APP_VERSION`, `API_BASE_URL` and the Firebase defines; `-Install`,
+    `-Run`, `-Release`, `-ApiHostOverride`. Prints values masked. Dry-run with a throwaway env:
+    resolved `172.16.205.86` (the Wi-Fi adapter), APK built, config generated for that host.
+  - **Build identity** — `Env.isAlpha / apiHost / appVersion`; Profile shows
+    `FITOS 1.0.0-alpha.1 · <flavour> · <host>`; pubspec `1.0.0-alpha.1+2`.
+  - **Friendly failure** — Home shows "Can't reach FITOS — <failure's words>" with Retry when
+    `/today` fails and nothing is cached; Health blocks stay (device data). Other screens already
+    had Retry states (week, browser, history, AI, profile); the AI screen's not-configured /
+    unreachable / busy lines exist from Gate 4.
+  - **Docs** — `docs/alpha/ALPHA-SETUP.md`, `docs/alpha/PHASE-6.6-ALPHA-CHECKLIST.md` §A (22 S24
+    checks), README pointer.
+
+VERIFIED ON THE PC
+  - Docker: `fitos-api` listens on every interface; host publishes `0.0.0.0:8080` (`netstat`);
+    `GET http://172.16.205.86:8080/health` from the PC → 200 `{"status":"ok","database":
+    {"reachable":true}}`; `ai: configured`, model `gemini-3.6-flash`; `/v1/ai/status` 401 without
+    a token. Windows Firewall: Docker Desktop's inbound allow rules for `com.docker.backend.exe`
+    (TCP/UDP any port, Public profile); the Wi-Fi network is Public → applies.
+  - CORS: not applicable (native app, no browser origin); the phone's browser check of `/health`
+    is a plain GET.
+  - Mobile tests 255; API 230; core 461; contracts 35.
+
+NOT YET VERIFIED — needs the S24 (owner): A1–A22 in the checklist. The alpha APK itself has
+not been built with real Firebase values (`alpha.env` does not exist on this machine's checkout;
+the script refuses without it).
 
 KNOWN ISSUES (Gate 5)
   - The free tier is unusable for an alpha with real users (20 requests/day/model); a paid tier
