@@ -7,15 +7,61 @@ verified on the Samsung S24.
 
 | # | Issue | Severity | Blocks alpha? | Status |
 |---|---|---|---|---|
-| KI-1 | Health Connect **Connect** button crashes FITOS on the S24 | High | No — "Manage permissions" is a working path | **UNRESOLVED** |
+| KI-1 | Health Connect **Connect** button crashes FITOS on the S24 | High | No — "Manage permissions" is a working path | **PASS on the S24** (owner, 2026-09-23) — fixed by `d66d54b` |
 | KI-2 | The backend address is compiled into the APK; the PC's LAN address changes between networks | Medium | No — rebuild on the current network | Mitigated, by design for LAN alpha |
 | KI-3 | Gemini free tier: 20 requests/day/model | Medium | Partly — AI testing is rationed | Open (needs a paid tier) |
 | KI-4 | `com.example.fitos` application id and debug-key signing | Low for alpha | No | Accepted for closed alpha |
 | KI-5 | The release-mode (R8) APK has not yet been run on a device | Medium | Unknown until B/A1 on the S24 | Open — Gate 7 check |
+| KI-6 | Sessions finished "1 not synced" and reached History only after Retry | High | Yes — fixed, **S24 retest pending** | Fixed in code (Gate 7), see below |
+| KI-7 | No way to edit personal details collected at onboarding | Medium | No | Implemented (Gate 7), **S24 retest pending** |
 
 ---
 
-## KI-1 — Health Connect "Connect" crashes on the S24 (UNRESOLVED)
+## KI-6 — Workout sync needed Retry (fixed in code; S24 retest pending)
+
+**Seen on the S24:** complete a session → summary → "1 not synced · Retry";
+only after Retry did it reach History / Home; two sessions finished before
+syncing both waited for Retry.
+
+**Evidence (API logs, 2026-09-23):** every `DELETE /sets/<id>` → **422**
+"Body cannot be empty when content-type is set to 'application/json'"
+(sign-out's `DELETE /auth/session` too); then `POST /sets` → **409** "A set
+already exists at that position" (5 attempts in a backoff pattern, then
+parked); `POST /sets` → 409 "This session is completed" when the parked
+batch was retried. Sessions with no removed or double-tapped sets synced
+on their own.
+
+**Root cause (four defects, one chain):**
+1. Dio stamped `Content-Type: application/json` on body-less requests;
+   Fastify rejects that, so **no DELETE ever succeeded**. A removed set
+   stayed on the server.
+2. Re-logging the freed slot (or a quick double tap) created a second live
+   set at the same position → the server's `set_logs_live_position` rule
+   → 409, retried then **parked** ("1 not synced").
+3. After a backoff the engine waited for "the next kick" — a tap. After a
+   session's last request there is none, so the queue sat until Retry.
+4. `historyProvider` did not follow drains (today/volume did), so a
+   session that did sync in the background still did not show in History
+   or Home's week until a manual refresh.
+
+A batch edited or removed *while on the wire* could also be lost / leave a
+set on the server (a seal applied too late); fixed together.
+
+**Fix:** body-less requests declare no content type; the engine wakes
+itself after a backoff or an unreachable server (15 s doubling to 2 min);
+one live set per slot on the phone (a double tap corrects the set); a
+batch on the wire is sealed atomically, so edits/removals during flight
+are queued behind it; History refreshes on every successful drain. Local
+first is unchanged: offline, everything stays queued and syncs by itself.
+
+**After installing the new APK:** tap Retry once if any old "not synced"
+entries remain from the previous APK — they will now go through (their
+DELETEs are sent correctly).
+
+## KI-1 — Health Connect "Connect" crashes on the S24 (PASS on the S24 since `d66d54b`)
+
+> **Update 2026-09-23:** the owner reports Connect now works on the S24.
+> The entry below is kept as the record of the diagnosis.
 
 **Action:** FITOS → Profile → Health data → **Connect**.
 **Expected:** the Android health-permission sheet opens; granting or

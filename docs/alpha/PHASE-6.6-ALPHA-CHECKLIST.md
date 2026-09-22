@@ -144,6 +144,34 @@ note · — not run. **PC** means verified on the build PC, not the phone.
 | F6 | Fresh install (or Android Settings → FITOS → Clear storage) with the API stopped → sign in | After ~30 s (three connection attempts) sign-in stops with the named "Could not reach FITOS at 10.160.235.11:8080…" line — not a bare "offline", no crash | |
 | F7 | Compare the sign-in / Profile address with the PC's `ipconfig` | They match | |
 
+### Gate 7 — owner results so far (2026-09-23, S24)
+
+| Area | Result |
+|---|---|
+| Google sign-in; sign-out → sign-in | ✅ |
+| AI chat; AI programme generation | ✅ |
+| Exercise add / remove; custom programme | ✅ |
+| Health Connect **Connect** (E6) | ✅ now passes (KI-1) |
+| Workout sync | ❌ needed Retry — KI-6, fixed in code, retest below |
+| Profile personal-data editing | ❌ missing — KI-7, implemented, retest below |
+
+### B-G. Retest after the Gate 7 fixes (new APK)
+
+| # | Do | Expect | Result |
+|---|---|---|---|
+| G1 | Online: start a session, log 3 sets (include one removed and re-logged, and one quick double tap), Complete | Summary; within a few seconds no "to sync"/"not synced" pill — **no Retry** | |
+| G2 | History right after G1 | The session is listed, with the sets as you left them (the removed set gone, the double tap = one set) | |
+| G3 | Home right after G1 | This week / next move reflect the finished session | |
+| G4 | Wi-Fi off → a session → log a set → Complete | "n to sync" pill; nothing parked; the session is on the phone | |
+| G5 | Wi-Fi on (do nothing else) | Within ~15 s it syncs by itself; History shows it | |
+| G6 | Wi-Fi off → two sessions completed → Wi-Fi on | Both sync with no Retry | |
+| G7 | PC: `docker compose stop api` → complete a session → `docker compose start api` (Wi-Fi stays on) | It syncs by itself within ~2 min of the API returning | |
+| G8 | Profile → **Edit personal details** → change name, height, weight, sex, activity → Save | "Saved. FITOS recalculated your targets."; Profile shows the new values and new targets with "· weight-change" or "· profile-change" | |
+| G9 | PC: `docker compose exec postgres psql -U fitos -c "select measured_on, weight_kg, source from body_metrics order by measured_on desc limit 3"` | Today's row = your weight, `manual`; earlier days untouched | |
+| G10 | Personal details with Health Connect weight granted | A line "Health Connect on this phone: … kg · date"; the FITOS field keeps your value until you type another | |
+| G11 | Health Connect still works (Home steps) and AI still answers (one question) | ✅ both | |
+| G12 | Sign out → sign in | No 422 in `docker compose logs api` for `DELETE /v1/auth/session` | |
+
 ## C. Failure log
 
 One entry per ❌ or ⚠:

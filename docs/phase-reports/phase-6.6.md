@@ -1,8 +1,8 @@
 ## PHASE 6.6 — Closed alpha + FITOS AI + product polish — IN PROGRESS
 
-**Status: NOT complete.** Gates 1–5 verified; Gate 6 verified on the S24 except the Health
-Connect **Connect** crash (KI-1, unresolved); Gate 7 in progress (APK built and inspected, S24
-acceptance pending). Nothing merged to `main`.
+**Status: NOT complete.** Gates 1–5 verified; Gate 6 verified on the S24 (Health Connect
+**Connect** now passes — KI-1); Gate 7 in progress: S24 found a sync bug (KI-6) and a missing
+Personal details editor (KI-7), both fixed in code, **S24 retest pending**. Nothing merged to `main`.
 
 **Branch** `phase-6.6` (stacked on `phase-6.5`) · **Plan** owner brief 2026-09-22, decisions B1–B6 · **Records** [ADR-010](../decisions/ADR-010-fitos-ai.md) (FITOS AI), ADR-008/009 (6.5)
 
@@ -227,11 +227,68 @@ TESTS
     unchanged. (Two other API failures in the first run were timeouts under a parallel release
     build; they pass alone and in the full run.)
 
-S24 ACCEPTANCE — pending (owner): `docs/alpha/PHASE-6.6-ALPHA-CHECKLIST.md` §B (A–F, 45 rows)
+S24 RESULTS (owner, 2026-09-23): sign-in, sign-out/in, AI chat, AI programme generation, exercise
+add/remove, custom programme, Health Connect **Connect** — ✅. Workout sync — ❌ (needed Retry).
+Profile personal-data editing — ❌ (missing).
+
+KI-6 — WORKOUT SYNC (fixed in code; retest G1–G7, G12)
+  - Evidence: the API logs of the S24 session — every `DELETE /sets/<id>` (and sign-out's
+    `DELETE /auth/session`) → 422 "Body cannot be empty when content-type is set to
+    'application/json'"; then `POST /sets` → 409 "A set already exists at that position", five
+    attempts in a backoff pattern, parked; retried later → 409 "This session is completed".
+  - Root cause, one chain: (1) Dio's `BaseOptions.contentType` stamped `application/json` on
+    body-less requests, which Fastify rejects — no DELETE ever succeeded, so a removed set stayed
+    on the server; (2) re-logging that slot, or a quick double tap (the log handler mints a new id
+    per tap), created a second live set at a position the server's `set_logs_live_position` rule
+    forbids → 409 → parked, "1 not synced"; (3) after a backoff the engine waited for "the next
+    kick" — the next tap, which never comes after a session's last request; (4) `historyProvider`
+    did not follow drains, so History / Home's week stayed stale even when a drain did succeed.
+    Found while testing: an edit or removal while a batch was on the wire could be lost (the batch
+    was sealed after its payload had been read) — and my first engine change opened a lost-kick
+    window after the new scheduling await; both closed.
+  - Fix: `NoBodyNoContentType` interceptor; the engine schedules its own wake after a backoff (at
+    the entry's due time) or an unreachable server (15 s doubling to 2 min; signed-out stays
+    asleep), re-checks kicks after scheduling, and seals a set batch in the same transaction that
+    picks it; `logSet` at an occupied live slot corrects that set; `historyProvider` watches
+    `serverRefreshProvider`; `syncWakesItselfProvider` (off only in widget tests, which drive the
+    queue on a fake clock). Local-first behaviour unchanged.
+  - Tests: `automatic_sync_test.dart` (11, real timers; the fake server now enforces the
+    position rule): A online completion syncs with no `sync()` call; B offline → pending, nothing
+    parked, retry scheduled; C server back with Wi-Fi never dropping → drains alone; D two
+    sessions → both; E a rejected request retries itself, parks, never drops, later work still
+    syncs; F Retry recovers; H double tap → one set, removed + re-logged → delete first, no 409,
+    removed or edited while on the wire → server correct, lost answer re-sent → one set.
+    G `server_refresh_test.dart`: a background sync refreshes History. `dio_client_test.dart`:
+    no content type without a body; JSON with one; auth header kept. Ran 5× green.
+
+KI-7 — PROFILE → PERSONAL DETAILS (implemented; retest G8–G10)
+  - API: `patchProfileRequestSchema` + `sex`, + `weightKg` (today's `body_metrics` reading,
+    `source = manual`, one per day, earlier days kept); both are target inputs; recompute through
+    the existing `TargetsService` path with `reason = weight-change` (weight only) or
+    `profile-change`; targets remain server-only (a `kcal` / `targets` key is 422). Goal changes
+    use the existing `PUT /user/goal`. 6 integration tests (history kept, same-day replace, bounds,
+    one recompute per save, goal-change reason); the suite's client address is now per user (the
+    extra onboardings tripped the per-IP rate limit).
+  - App: `PersonalDetailsScreen` at `/profile/details` (name, sex, height, weight, activity;
+    goal links to the existing editor; birth date shown, not editable), onboarding's validators and
+    choice widgets; one PATCH with only what changed; Profile re-reads the goal so the server's new
+    targets show. `ProfileController.savePersonalDetails`, `PersonalDetailsChange`. 9 widget tests +
+    a conformance test (body keys and enum values ⊂ the PATCH schema; no target keys).
+  - Weight vs Health Connect: **ADR-011** — the FITOS weight is the user's; Health Connect's is
+    shown beside the field as the phone's reading, never sent, never auto-copied (B4).
+
+TESTS (after the fixes): mobile **301**; API **235 / 236** locally — the mesocycle-week test
+passes alone in 5.5 s, over vitest's 5 s default, because the local Postgres was slow (290 ms per
+`/health` DB ping); CI authoritative. Core 461, contracts 35; typecheck, lint, analyze
+`--fatal-infos`, custom_lint, format clean.
+
+S24 ACCEPTANCE — pending (owner): `docs/alpha/PHASE-6.6-ALPHA-CHECKLIST.md` §B (A–F, 45 rows) and
+§B-G (G1–G12, the retest of KI-6 / KI-7)
 with the failure log in §C. PC-verified rows are pre-marked. Health Connect E6 (Connect) is expected
 ❌ and is recorded, not waived.
 
-KNOWN ISSUES → `docs/alpha/KNOWN-ISSUES.md` (KI-1 Health Connect Connect crash — **unresolved**;
+KNOWN ISSUES → `docs/alpha/KNOWN-ISSUES.md` (KI-1 Health Connect Connect — **PASS on the S24**;
+KI-6 sync, KI-7 personal details — fixed, retest pending;
 KI-2 compiled-in LAN address; KI-3 Gemini free-tier quota; KI-4 application id + debug signing;
 KI-5 release-mode APK not yet run on a device).
 
