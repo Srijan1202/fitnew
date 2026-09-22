@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fitos/features/ai/data/ai_api.dart';
+import 'package:fitos/features/ai/domain/entities/ai.dart';
 import 'package:fitos/features/auth/domain/entities/user_profile.dart';
 import 'package:fitos/features/exercise/domain/entities/exercise.dart';
 import 'package:fitos/features/onboarding/domain/entities/onboarding.dart';
@@ -1140,6 +1142,68 @@ void main() {
       expect(
         DeloadState.fromJson(wire(deload.toJson()) as Map<String, dynamic>),
         deload,
+      );
+    });
+  });
+
+  group('FITOS AI (Phase 6.6)', () {
+    Map<String, dynamic> items(Map<String, dynamic> schema, String key) =>
+        (properties(schema)[key] as Map<String, dynamic>)['items']
+            as Map<String, dynamic>;
+
+    test('status, chat request and chat response shapes; action and role enums',
+        () {
+      final status = schemaOf('/ai/status', 'get');
+      expect(
+        const AiStatus(
+          configured: true,
+          provider: 'gemini',
+          model: 'm',
+          excludes: ['health-connect'],
+        ).toJson().keys.toSet(),
+        keysOf(status),
+      );
+      final request = schemaOf('/ai/chat', 'post', request: true);
+      final body = DioAiApi.chatJson(
+        const AiChatRequest(
+          message: 'hi',
+          history: [AiChatMessage(role: AiRole.assistant, content: 'x')],
+        ),
+      );
+      expect(body.keys.toSet(), keysOf(request));
+      expect(
+        (body['history'] as List<Map<String, dynamic>>).first.keys.toSet(),
+        keysOf(items(request, 'history')),
+      );
+      expect(
+        AiRole.values.map((r) => r.wire).toList(),
+        enumOf(
+          properties(items(request, 'history'))['role'] as Map<String, dynamic>,
+        ),
+      );
+      final response = schemaOf('/ai/chat', 'post');
+      const answer = AiChatResponse(
+        text: 't',
+        actions: [AiAction(type: AiActionType.openWorkout, label: 'l')],
+        toolsUsed: ['get_today'],
+        model: 'm',
+      );
+      expect(answer.toJson().keys.toSet(), keysOf(response));
+      expect(
+        answer.actions.first.toJson().keys.toSet(),
+        keysOf(items(response, 'actions')),
+      );
+      expect(
+        AiActionType.values.map((a) => a.wire).toList(),
+        enumOf(
+          properties(items(response, 'actions'))['type']
+              as Map<String, dynamic>,
+        ),
+      );
+      // Excludes name what the server never sees.
+      expect(
+        enumOf(properties(status)['excludes'] as Map<String, dynamic>),
+        ['health-connect', 'food-log'],
       );
     });
   });

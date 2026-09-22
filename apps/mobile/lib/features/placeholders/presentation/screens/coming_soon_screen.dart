@@ -44,16 +44,6 @@ class ComingSoonScreen extends StatelessWidget {
 }
 
 /// The three placeholders, named once so the router and tests agree.
-class AiChatPlaceholderScreen extends StatelessWidget {
-  const AiChatPlaceholderScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) => const ComingSoonScreen(
-        title: 'AI Chat',
-        blurb: 'The AI fitness assistant will live here.',
-      );
-}
-
 class NutritionPlaceholderScreen extends StatelessWidget {
   const NutritionPlaceholderScreen({super.key});
 

@@ -22,6 +22,7 @@ import '../../features/training/presentation/screens/template_library_screen.dar
 import '../../features/training/presentation/screens/template_preview_screen.dart';
 import '../../features/training/presentation/screens/workout_week_screen.dart';
 import '../../features/workout/presentation/screens/active_session_screen.dart';
+import '../../features/ai/presentation/screens/ai_chat_screen.dart';
 import '../../features/health/presentation/screens/health_data_screen.dart';
 import '../../features/workout/presentation/screens/history_screen.dart';
 import '../../features/workout/presentation/screens/volume_screen.dart';
@@ -261,7 +262,7 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
               GoRoute(
                 path: Routes.chat,
                 name: 'chat',
-                builder: (context, state) => const AiChatPlaceholderScreen(),
+                builder: (context, state) => const AiChatScreen(),
               ),
             ],
           ),

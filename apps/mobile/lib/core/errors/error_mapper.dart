@@ -62,6 +62,11 @@ abstract final class ErrorMapper {
         message ?? 'Too many attempts. Wait a minute and try again.',
       );
     }
+    // 503: the server's message is written for the user ("AI is not set up
+    // on this server", "FITOS AI took too long") — keep it.
+    if (code == 'UPSTREAM_UNAVAILABLE' || status == 503) {
+      return Unknown(message ?? 'Something is unavailable right now.');
+    }
     return const Unknown();
   }
 
