@@ -7,6 +7,8 @@ import 'package:fitos/features/auth/domain/entities/user_profile.dart';
 import 'package:fitos/features/exercise/domain/entities/exercise.dart';
 import 'package:fitos/features/onboarding/domain/entities/onboarding.dart';
 import 'package:fitos/features/profile/domain/entities/profile.dart';
+import 'package:fitos/features/profile/data/profile_repository.dart'
+    show PersonalDetailsChange;
 import 'package:fitos/features/profile/domain/entities/vocabulary.dart';
 import 'package:fitos/features/training/domain/entities/program.dart';
 import 'package:fitos/features/workout/data/workout_api.dart';
@@ -1152,6 +1154,39 @@ void main() {
         deload,
       );
     });
+  });
+
+  test(
+      'Personal details (Phase 6.6 Gate 7): the editor sends only keys PATCH /user/profile accepts, in its enum values',
+      () {
+    final patch = schemaOf('/user/profile', 'patch', request: true);
+    const everything = PersonalDetailsChange(
+      displayName: 'A',
+      sex: Sex.male,
+      heightCm: 170,
+      weightKg: 70,
+      activityLevel: ActivityLevel.moderate,
+    );
+    expect(keysOf(patch), containsAll(everything.toJson().keys));
+    expect(
+      Sex.values.map((v) => v.wire).toList(),
+      enumOf(properties(patch)['sex'] as Map<String, dynamic>),
+    );
+    expect(
+      ActivityLevel.values.map((v) => v.wire).toList(),
+      enumOf(properties(patch)['activityLevel'] as Map<String, dynamic>),
+    );
+    // Targets are the server's: no target field is writable through PATCH.
+    for (final k in [
+      'kcal',
+      'proteinG',
+      'carbG',
+      'fatG',
+      'fiberG',
+      'targets',
+    ]) {
+      expect(keysOf(patch), isNot(contains(k)));
+    }
   });
 
   group('FITOS AI (Phase 6.6)', () {

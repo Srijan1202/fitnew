@@ -18,7 +18,7 @@ import type {
 import { AppError } from '../../lib/errors.js';
 import { stripUndefined } from '../../lib/objects.js';
 import type { ProfileBundle, UserRepository } from './repository.js';
-import { TargetsService, targetInputFrom, toContract } from './targets.service.js';
+import { TargetsService, targetInputFrom, toContract, todayIn } from './targets.service.js';
 
 export function profileDetailFrom(bundle: ProfileBundle): UserProfileDetail {
   const p = bundle.profile;
@@ -77,6 +77,8 @@ export function preferencesFrom(bundle: ProfileBundle): UserPreferences {
 
 /** Fields whose change must produce a new targets row. */
 const TARGET_INPUTS: ReadonlySet<keyof PatchProfileRequest> = new Set([
+  'sex',
+  'weightKg',
   'heightCm',
   'trainingDaysPerWeek',
   'activityLevel',
@@ -101,8 +103,17 @@ export class UserService {
 
   async patchProfile(userId: string, patch: PatchProfileRequest): Promise<UserProfileDetail> {
     await this.bundleOrThrow(userId);
-    const { timezone, locale, heightCm, displayName, ...rest } = patch;
+    const { timezone, locale, heightCm, displayName, weightKg, ...rest } = patch;
     if (displayName !== undefined) await this.repo.updateDisplayName(userId, displayName);
+    if (weightKg !== undefined) {
+      // A dated reading, not an overwrite: the history stays (one per day).
+      const before = await this.bundleOrThrow(userId);
+      await this.repo.upsertWeight(userId, {
+        measuredOn: todayIn(before.user.timezone),
+        weightKg: String(weightKg),
+        source: 'manual',
+      });
+    }
     await this.repo.updateUserLocale(userId, { ...(timezone !== undefined ? { timezone } : {}), ...(locale !== undefined ? { locale } : {}) });
     const profilePatch = stripUndefined({
       ...rest,
@@ -115,7 +126,8 @@ export class UserService {
     // before onboarding completes there is nothing to keep current.
     const touchesTargets = Object.keys(patch).some((k) => TARGET_INPUTS.has(k as keyof PatchProfileRequest));
     if (touchesTargets && after.targets !== null && !('missing' in targetInputFrom(after))) {
-      await this.targets.recompute(userId, after, 'profile-change');
+      const onlyWeight = Object.keys(patch).every((k) => k === 'weightKg' || !TARGET_INPUTS.has(k as keyof PatchProfileRequest));
+      await this.targets.recompute(userId, after, onlyWeight ? 'weight-change' : 'profile-change');
     }
     return profileDetailFrom(after);
   }

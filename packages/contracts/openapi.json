@@ -932,6 +932,18 @@
                     "minLength": 1,
                     "maxLength": 40
                   },
+                  "sex": {
+                    "type": "string",
+                    "enum": [
+                      "male",
+                      "female"
+                    ]
+                  },
+                  "weightKg": {
+                    "type": "number",
+                    "minimum": 30,
+                    "maximum": 300
+                  },
                   "heightCm": {
                     "type": "number",
                     "minimum": 100,

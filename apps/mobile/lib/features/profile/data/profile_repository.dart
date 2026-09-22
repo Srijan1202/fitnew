@@ -7,6 +7,7 @@ import '../../../core/errors/result.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
 import '../../auth/presentation/controllers/auth_providers.dart';
 import '../domain/entities/profile.dart';
+import '../domain/entities/vocabulary.dart';
 
 /// /v1/user/* — profile and goal. Thin; the server owns every decision.
 abstract class ProfileRepository {
@@ -16,6 +17,14 @@ abstract class ProfileRepository {
 
   /// Phase 6.6: `PATCH /user/profile { displayName }`.
   Future<Result<UserProfileDetail>> setDisplayName(String displayName);
+
+  /// Phase 6.6 Gate 7: Profile → Personal details. One `PATCH /user/profile`
+  /// with only the fields that changed. The server stores them, records a
+  /// weight as today's reading, and recomputes targets itself when a
+  /// formula input changed — the app never computes or writes a target.
+  Future<Result<UserProfileDetail>> updatePersonalDetails(
+    PersonalDetailsChange change,
+  );
 }
 
 class DioProfileRepository implements ProfileRepository {
@@ -59,6 +68,18 @@ class DioProfileRepository implements ProfileRepository {
       );
 
   @override
+  Future<Result<UserProfileDetail>> updatePersonalDetails(
+    PersonalDetailsChange change,
+  ) =>
+      _guard(
+        () => _dio.patch<Map<String, dynamic>>(
+          '/v1/user/profile',
+          data: change.toJson(),
+        ),
+        UserProfileDetail.fromJson,
+      );
+
+  @override
   Future<Result<GoalResponse>> putGoal(PutGoalRequest request) => _guard(
         () => _dio.put<Map<String, dynamic>>(
           '/v1/user/goal',
@@ -71,6 +92,46 @@ class DioProfileRepository implements ProfileRepository {
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return DioProfileRepository(ref.watch(dioProvider));
 });
+
+/// What the Personal details editor changed. Only non-null fields are
+/// sent (`.strict()` on the server); the wire names are the contract's.
+class PersonalDetailsChange {
+  const PersonalDetailsChange({
+    this.displayName,
+    this.sex,
+    this.heightCm,
+    this.weightKg,
+    this.activityLevel,
+  });
+
+  final String? displayName;
+  final Sex? sex;
+  final double? heightCm;
+  final double? weightKg;
+  final ActivityLevel? activityLevel;
+
+  bool get isEmpty =>
+      displayName == null &&
+      sex == null &&
+      heightCm == null &&
+      weightKg == null &&
+      activityLevel == null;
+
+  /// Height, weight, sex or activity feed the targets formula.
+  bool get touchesTargets =>
+      sex != null ||
+      heightCm != null ||
+      weightKg != null ||
+      activityLevel != null;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (displayName != null) 'displayName': displayName,
+        if (sex != null) 'sex': sex!.wire,
+        if (heightCm != null) 'heightCm': heightCm,
+        if (weightKg != null) 'weightKg': weightKg,
+        if (activityLevel != null) 'activityLevel': activityLevel!.wire,
+      };
+}
 
 /// Profile + goal + targets, loaded together for the profile screen.
 class ProfileView {
@@ -108,6 +169,30 @@ class ProfileController extends AsyncNotifier<ProfileView> {
       },
       err: (f) => f,
     );
+  }
+
+  /// Phase 6.6 Gate 7: save the Personal details editor. When a formula
+  /// input changed, the goal (with the targets the server recomputed) is
+  /// re-read so Profile shows the new numbers; nothing is computed here.
+  Future<Failure?> savePersonalDetails(PersonalDetailsChange change) async {
+    if (change.isEmpty) return null;
+    final result = await _repo.updatePersonalDetails(change);
+    switch (result) {
+      case Err<UserProfileDetail>(:final failure):
+        return failure;
+      case Ok<UserProfileDetail>(:final value):
+        var goal = state.value?.goal;
+        if (change.touchesTargets || goal == null) {
+          final g = await _repo.getGoal();
+          if (g case Ok<GoalResponse>(value: final fresh)) goal = fresh;
+        }
+        if (goal != null) {
+          state = AsyncData(ProfileView(profile: value, goal: goal));
+        } else {
+          ref.invalidateSelf();
+        }
+        return null;
+    }
   }
 
   /// PUT the goal; on success the new goal and recomputed targets replace

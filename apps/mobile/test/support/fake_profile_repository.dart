@@ -1,3 +1,4 @@
+import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:fitos/features/profile/domain/entities/profile.dart';
@@ -32,6 +33,34 @@ class FakeProfileRepository implements ProfileRepository {
     final p = nextProfile;
     if (p is Ok<UserProfileDetail>) {
       nextProfile = Ok(p.value.copyWith(displayName: displayName));
+    }
+    return nextProfile;
+  }
+
+  final personalChanges = <Map<String, dynamic>>[];
+
+  /// When set, the next personal-details save fails with it.
+  Failure? failPersonalDetails;
+
+  @override
+  Future<Result<UserProfileDetail>> updatePersonalDetails(
+    PersonalDetailsChange change,
+  ) async {
+    calls.add('updatePersonalDetails');
+    personalChanges.add(change.toJson());
+    final f = failPersonalDetails;
+    if (f != null) return Err(f);
+    final p = nextProfile;
+    if (p is Ok<UserProfileDetail>) {
+      nextProfile = Ok(
+        p.value.copyWith(
+          displayName: change.displayName ?? p.value.displayName,
+          sex: change.sex ?? p.value.sex,
+          heightCm: change.heightCm ?? p.value.heightCm,
+          latestWeightKg: change.weightKg ?? p.value.latestWeightKg,
+          activityLevel: change.activityLevel ?? p.value.activityLevel,
+        ),
+      );
     }
     return nextProfile;
   }

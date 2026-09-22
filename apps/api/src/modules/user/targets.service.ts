@@ -33,7 +33,7 @@ export function ageYears(birthDate: string, today: string): number {
   return age;
 }
 
-export type TargetsReason = 'onboarding' | 'goal-change' | 'profile-change';
+export type TargetsReason = 'onboarding' | 'goal-change' | 'profile-change' | 'weight-change';
 
 /**
  * Assembles the engine input from what is stored. Returns null with the

@@ -180,7 +180,7 @@ export const nutritionTargetsSchema = z.object({
   bmr: z.number().int(),
   tdeeEstimate: z.number().int(),
   rationale: z.array(z.string()),
-  /** Why this row exists: 'onboarding', 'goal-change', 'profile-change'. */
+  /** Why this row exists: 'onboarding', 'goal-change', 'profile-change', 'weight-change'. */
   reason: z.string(),
 });
 export type NutritionTargets = z.infer<typeof nutritionTargetsSchema>;
@@ -190,6 +190,15 @@ export type NutritionTargets = z.infer<typeof nutritionTargetsSchema>;
 export const patchProfileRequestSchema = z
   .object({
     displayName: displayNameSchema.optional(),
+    /** Phase 6.6 Gate 7 (Profile → Personal details). A BMR input: recomputes targets. */
+    sex: sexSchema.optional(),
+    /**
+     * Phase 6.6 Gate 7: today's weight, entered by the user. Recorded as a
+     * dated `body_metrics` reading (source `manual`, one per day — a second
+     * entry the same day replaces the first); earlier readings are kept.
+     * Recomputes targets. Health Connect readings are never sent here (B4).
+     */
+    weightKg: weightKgSchema.optional(),
     heightCm: heightCmSchema.optional(),
     experienceLevel: experienceLevelSchema.optional(),
     trainingDaysPerWeek: trainingDaysSchema.optional(),

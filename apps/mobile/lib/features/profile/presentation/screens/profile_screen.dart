@@ -98,6 +98,13 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: FitSpacing.sm),
                       _Facts(profile: view.profile),
+                      const SizedBox(height: FitSpacing.md),
+                      OutlinedButton(
+                        key: const ValueKey('profile.personalDetails'),
+                        onPressed: () => context.push(Routes.personalDetails),
+                        style: _outlined,
+                        child: const Text('Edit personal details'),
+                      ),
                     ],
                   ),
                 ),

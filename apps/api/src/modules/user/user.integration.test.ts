@@ -34,7 +34,13 @@ describeIfDb('/v1/user (real Postgres)', () => {
   });
 
   const call = (method: 'GET' | 'PUT' | 'PATCH' | 'POST', path: string, payload?: Record<string, unknown>) =>
-    app.inject({ method, url: `/v1${path}`, headers: { authorization: `Bearer ${token}` }, ...(payload !== undefined ? { payload } : {}) });
+    // One client address per user, as the session calls do: the API rate-limits by IP.
+    app.inject({
+      method,
+      url: `/v1${path}`,
+      headers: { authorization: `Bearer ${token}`, 'x-forwarded-for': `198.51.100.${100 + n}` },
+      ...(payload !== undefined ? { payload } : {}),
+    });
 
   const consent = { policyVersion: CURRENT_POLICY_VERSION, types: ['privacy-policy', 'health-data-processing'] };
 
@@ -92,6 +98,78 @@ describeIfDb('/v1/user (real Postgres)', () => {
         payload: {},
       });
       expect(r.json().user.displayName).toBeNull();
+    });
+  });
+
+  describe('personal details editor (Phase 6.6 Gate 7)', () => {
+    const latest = async () =>
+      (await sql<{ weight_kg: string; source: string; measured_on: string }[]>`
+        select weight_kg, source, measured_on from body_metrics
+        where user_id = (select id from users where firebase_uid = ${'us-uid-' + n}) and deleted_at is null
+        order by measured_on desc`);
+    const reasons = async () =>
+      (await sql<{ reason: string; kcal: number }[]>`
+        select reason, kcal from nutrition_targets
+        where user_id = (select id from users where firebase_uid = ${'us-uid-' + n})
+        order by created_at`).map((r) => r.reason);
+
+    it('sex is editable and recomputes targets through the server; the earlier targets row is kept', async () => {
+      const before = (await call('GET', '/user/goal')).json().targets;
+      const r = await call('PATCH', '/user/profile', { sex: 'female' });
+      expect(r.statusCode, r.body).toBe(200);
+      expect(r.json().sex).toBe('female');
+      const after = (await call('GET', '/user/goal')).json().targets;
+      expect(after.bmr).toBeLessThan(before.bmr);
+      expect(await reasons()).toEqual(['onboarding', 'profile-change']);
+    });
+
+    it('weight is recorded as the manual reading of today (one per day), shown as the latest, and recomputes targets as a weight change', async () => {
+      const before = (await call('GET', '/user/goal')).json().targets;
+      const r = await call('PATCH', '/user/profile', { weightKg: 76.5 });
+      expect(r.statusCode, r.body).toBe(200);
+      expect(r.json().latestWeightKg).toBe(76.5);
+      const rows = await latest();
+      // Onboarding recorded today too: the same day's reading is replaced, not duplicated.
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({ weight_kg: '76.50', source: 'manual' });
+      const after = (await call('GET', '/user/goal')).json().targets;
+      expect(after.kcal).not.toBe(before.kcal);
+      expect(await reasons()).toEqual(['onboarding', 'weight-change']);
+    });
+
+    it('the reading of an earlier day is history, not overwritten', async () => {
+      await sql`update body_metrics set measured_on = '2026-01-01'
+        where user_id = (select id from users where firebase_uid = ${'us-uid-' + n})`;
+      await call('PATCH', '/user/profile', { weightKg: 80 });
+      const rows = await latest();
+      expect(rows.map((x) => [x.measured_on === '2026-01-01' ? 'earlier' : 'today', x.weight_kg, x.source])).toEqual([
+        ['today', '80.00', 'manual'],
+        ['earlier', '82.00', 'onboarding'],
+      ]);
+      expect((await call('GET', '/user/profile')).json().latestWeightKg).toBe(80);
+    });
+
+    it('name, sex, height, weight and activity in one save: one targets recompute, all stored', async () => {
+      const r = await call('PATCH', '/user/profile', { displayName: 'Asha', sex: 'female', heightCm: 165, weightKg: 60, activityLevel: 'moderate' });
+      expect(r.statusCode, r.body).toBe(200);
+      expect(r.json()).toMatchObject({ displayName: 'Asha', sex: 'female', heightCm: 165, latestWeightKg: 60, activityLevel: 'moderate' });
+      expect(await reasons()).toEqual(['onboarding', 'profile-change']);
+    });
+
+    it('the contract bounds apply: impossible weight, unknown sex, and targets are never client-writable', async () => {
+      expect((await call('PATCH', '/user/profile', { weightKg: 20 })).statusCode).toBe(422);
+      expect((await call('PATCH', '/user/profile', { weightKg: 301 })).statusCode).toBe(422);
+      expect((await call('PATCH', '/user/profile', { sex: 'other' })).statusCode).toBe(422);
+      expect((await call('PATCH', '/user/profile', { kcal: 1500 })).statusCode).toBe(422);
+      expect((await call('PATCH', '/user/profile', { targets: { kcal: 1500 } })).statusCode).toBe(422);
+      expect(await reasons()).toEqual(['onboarding']);
+    });
+
+    it('a goal change goes through PUT /user/goal: the old goal is closed and targets recompute as a goal change', async () => {
+      const r = await call('PUT', '/user/goal', { goalType: 'muscle-gain' });
+      expect(r.statusCode, r.body).toBe(200);
+      expect(r.json().goal.goalType).toBe('muscle-gain');
+      expect(await reasons()).toEqual(['onboarding', 'goal-change']);
     });
   });
 
