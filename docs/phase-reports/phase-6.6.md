@@ -9,7 +9,7 @@
 | 1 | Audit | reported, approved | — |
 | 2 | Summary personalization (display name), branding | **verified** (CI 241 mobile / 168 API) | `3998d0e` `4a281e0` `72cfac3` |
 | 3 | Gemini backend foundation | **verified** (CI 199 API) | `ea58b88` |
-| 4 | AI context, allowlisted tools, chat, Flutter AI screen | **verified** — see below | see report |
+| 4 | AI context, allowlisted tools, chat, Flutter AI screen | **verified** (CI 222 API / 251 mobile) | `71c54c1` `56441a4` `77a623c` |
 | 5 | AI programme generation through the deterministic generator | pending | |
 | 6 | Alpha configuration (LAN backend, flavour, Firebase defines) | pending | |
 | 7 | Release-like APK | pending | |
@@ -68,6 +68,10 @@ TESTS
     limited / offline / expired, not configured, status unreachable, action routes) + a
     conformance group for status / request / response / enums.
   - Local: typecheck, lint, `dart analyze --fatal-infos`, custom_lint, format, APK — clean.
+    The Flutter suite was also run in a Linux container (`ghcr.io/cirruslabs/flutter:stable`,
+    251/251) because `flutter_tester` is blocked on the host; CI remains authoritative.
+  - Docker: `docker compose up --build -d api` → "ai: configured", `/health` 200,
+    `/v1/ai/status` and `/v1/ai/chat` 401 without a token.
 
 LIVE GEMINI SMOKE (owner's key in `docker/.env`, never printed)
   - `gemini-2.5-flash` (as configured): Google answers **404 "no longer available to new
