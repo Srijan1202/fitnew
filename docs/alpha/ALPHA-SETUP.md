@@ -100,7 +100,13 @@ guest network with client isolation).
   script now checks `/health` at the resolved address first and refuses to
   build when it does not answer (`-SkipHealthCheck` overrides).
 
-## 5. Verify from the S24 (Gate 6 integration checks)
+Known issues and workarounds (including the Health Connect **Connect**
+crash — use **Manage permissions** meanwhile): `docs/alpha/KNOWN-ISSUES.md`.
+
+## 5. Verify from the S24 (Gate 6 integration checks; Gate 7 acceptance)
+
+Gate 7 uses the release-like APK: `.	oollpha.ps1 -Release -Install`,
+then section B of the checklist.
 
 Use `docs/alpha/PHASE-6.6-ALPHA-CHECKLIST.md`, section A. In short:
 open `http://<PC-LAN-IP>:8080/health` in the phone's browser (expect

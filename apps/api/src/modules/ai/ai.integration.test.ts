@@ -171,7 +171,17 @@ describeIfDb('/v1/ai (real Postgres, scripted model)', () => {
       { text: '', toolCalls: [{ name: 'get_today', args: {} }, { name: 'get_progression', args: { exerciseId: lift.exerciseId } }, { name: 'get_training_volume', args: {} }, { name: 'search_exercises', args: { equipment: 'dumbbell', muscle: 'chest', limit: 3 } }], finishReason: 'tool' },
       (req) => {
         const [today, progression, volume, search] = req.toolResults!.map((r) => r.result) as Loose[];
-        expect(today!['today']).toMatchObject({ sessionName: expect.any(String) });
+        // Whatever weekday the suite runs on: the tool reports the programme's
+        // own plan for today — a named session, or a rest day. (Asserting a
+        // session unconditionally failed every Wednesday.)
+        const t = today!['today'] as { date: string; status: string; sessionName: string | null };
+        const isoDow = ((new Date(`${t.date}T00:00:00Z`).getUTCDay() + 6) % 7) + 1;
+        const planned = program.days.find((d) => d.dayOfWeek === isoDow)!;
+        if (planned.isRest) {
+          expect(t).toMatchObject({ status: 'rest', sessionName: null });
+        } else {
+          expect(t.sessionName).toBe(planned.sessionName);
+        }
         expect(progression!['progression']).toMatchObject({ exerciseId: lift.exerciseId, recommendation: { reason: expect.any(String) } });
         expect(volume!['current']['muscles'].length).toBeGreaterThan(0);
         expect(search!['items'].length).toBeGreaterThan(0);

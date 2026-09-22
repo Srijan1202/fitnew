@@ -21,7 +21,7 @@ Write the host it printed here: `http://__________:8080`.
 | A6 | Profile | Name, goal, targets shown (from `/user/profile` and `/user/goal` over the LAN) | |
 | A7 | If asked for a name on Home: enter one → Save | Greeting shows the name; Profile shows it after a pull-to-refresh | |
 | A8 | Home | Greeting + date; "Your next move" with your session; Today grid; no "Can't reach FITOS" notice | |
-| A9 | Turn Wi-Fi off on the phone → Home → pull to refresh | "Can't reach FITOS — You appear to be offline…" with Retry; Health blocks unaffected; Wi-Fi on → Retry → notice gone | |
+| A9 | Turn Wi-Fi off on the phone → Home → pull to refresh | No crash; Home keeps today's plan from the phone's cache. (The "Can't reach FITOS" notice appears only when nothing is cached yet — see B-F6.) | |
 | A10 | Training tab | The week loads; open a day; exercises with target loads and reasons | |
 | A11 | Start today's session → log 2 sets (tap-to-log) → Complete | Summary shows; History lists the session; sync pill shows synced | |
 | A12 | Wi-Fi off → start a session → log a set → Wi-Fi on | The set is queued while offline (pill), then drains; History on the PC's DB has it (`docker compose exec postgres psql -U fitos -c "select count(*) from set_logs"` grows) | |
@@ -39,8 +39,123 @@ Write the host it printed here: `http://__________:8080`.
 Quota note: the Gemini free tier allows **20 requests/day/model**; A14–A16
 use about 6. Do not repeat AI rows more than needed.
 
-## B. Gate 8 — full alpha acceptance
+### Gate 6 result (owner, 2026-09-23) — NOT fully accepted
 
-Filled in at Gate 8: FITOS AI in depth, Phase 6.5's 27 Health Connect /
-Home points (`docs/phase-reports/phase-6.5.md`), branding, crash-free
-session, release-like APK behaviour.
+| Area | Result |
+|---|---|
+| LAN API reachable from the S24 (`/health` in the phone browser) | ✅ |
+| Firebase Google Sign-In | ✅ |
+| `/v1/auth/session` bootstrap after sign-in | ✅ after the stale-address fix (`fbe053e`) |
+| Corrected alpha APK | ✅ |
+| Health Connect → **Manage permissions** → grant | ✅ |
+| Health Connect → **Connect** | ❌ **crashes** — KI-1, unresolved after `d66d54b` |
+
+The remaining A-rows are re-covered by section B below.
+
+## B. Gate 7 — alpha APK + S24 acceptance
+
+**The APK:** the release-like build (AOT, R8, not debuggable), built on the
+network you test on:
+
+```powershell
+cd "D:\dev\fit new\apps\mobile"
+.\tool\alpha.ps1 -Release -Install
+```
+
+(`adb install -r` replaces the debug build in place: same package, same
+signing key, sign-in survives.) If a row fails only in the release APK,
+re-run it with the debug APK (`.\tool\alpha.ps1 -Install`) and note both.
+
+Result column: ✅ pass · ❌ fail (log it in section C) · ⚠ pass with a
+note · — not run. **PC** means verified on the build PC, not the phone.
+
+### B-A. APK / build
+
+| # | Do | Expect | Result |
+|---|---|---|---|
+| A1 | `.\tool\alpha.ps1 -Release` | Prints `API_BASE_URL` and `/health 200 OK`, then builds `app-release.apk` | ✅ PC 2026-09-23 (`http://10.160.235.11:8080`, 64 MB) |
+| A2 | Build with an unreachable host | Refuses before building (`/health did NOT answer…`), exit 1 | ✅ PC (`-ApiHostOverride 192.0.2.1`) |
+| A3 | Build with a Firebase value missing / `API_HOST=10.0.2.2` | Refuses, naming the missing key / the unreachable alias | ✅ PC |
+| A4 | Inspect the APK | `com.example.fitos` · `1.0.0-alpha.1` (2) · label FITOS · not debuggable · INTERNET + exactly 10 health READ permissions · base-config HTTPS-only, cleartext for the one host · Dart compiled to that host · no Gemini key / service account / private key inside | ✅ PC (aapt + byte scan) |
+| A5 | Install on the S24 | Installs; launcher shows the FITOS icon and name; splash shows the FITOS mark | |
+| A6 | Sign-in screen | Bottom line `Backend 10.160.235.11:8080 · FITOS 1.0.0-alpha.1` (= the host that works in the phone browser) | |
+| A7 | Anywhere | No debug banner, no "local"/emulator text, no stack traces | |
+
+### B-B. Authentication
+
+| # | Do | Expect | Result |
+|---|---|---|---|
+| B1 | Continue with Google (existing account) | Home loads, greeting uses your name | |
+| B2 | Continue with Google (a second account), if available | Onboarding starts at the name step; finishing generates a programme | |
+| B3 | Force-stop FITOS → reopen | Still signed in, Home loads | |
+| B4 | Profile → Sign out | Back to sign-in | |
+| B5 | Sign in again | Home loads; data intact (same programme, same history) | |
+| B6 | PC: `docker compose logs api \| Select-String "auth/session"` | A `POST /v1/auth/session` 200 for each sign-in | |
+
+### B-C. Core app
+
+| # | Do | Expect | Result |
+|---|---|---|---|
+| C1 | Home | Greeting + date, "Your next move", Today grid, This week; no "Can't reach FITOS" | |
+| C2 | Profile | Name, goal, targets (kcal / protein / carbs / fat / fibre), build line `FITOS 1.0.0-alpha.1 · alpha · 10.160.235.11` | |
+| C3 | Training tab | The week loads; a day shows exercises with sets, reps, RIR, target load and reason | |
+| C4 | Exercise library → search "bench" → open one | Results filter; detail shows muscles, equipment, alternatives | |
+| C5 | Start today's (or any) session | Session screen with prescribed sets | |
+| C6 | Log 2–3 sets: weight, reps, RIR | Each set saves; rest timer runs; sync pill settles | |
+| C7 | Complete the session | Summary: sets, tonnage, any PRs | |
+| C8 | History | The session is listed; opening it shows the logged sets | |
+| C9 | Open the lift you just logged (progression) | A recommendation with its reason | |
+| C10 | Home → Training volume | This week's sets per muscle with On track / High / Very high | |
+| C11 | Wi-Fi off → start a session → log a set → Wi-Fi on | The set is queued offline, then drains; History shows it | |
+
+### B-D. FITOS AI (≈ 8 of the day's 20 requests)
+
+| # | Do | Expect | Result |
+|---|---|---|---|
+| D1 | AI tab | Empty state with starter prompts (not "Not set up on this server yet") | |
+| D2 | "What should I do today?" | An answer from your real programme within ~10 s | |
+| D3 | "What did I bench last time?" | Your real last bench sets (or "no bench logged yet" — never invented) | |
+| D4 | "How many steps did I take today?" | Says it cannot see Health Connect data; points to Home. Never a number | |
+| D5 | "Build me a 3-day programme with more back work, 45 minutes each" | A proposal + **Use this programme**; Training still shows the old programme | |
+| D6 | **Use this programme** → Keep current | Nothing changes | |
+| D7 | **Use this programme** → confirm | Plan opens with the new programme; Home's next move updates | |
+| D8 | Any AI error you meet (quota "busy", server stopped) | One plain FITOS line with Retry; no stack trace, no key, no provider name | |
+
+### B-E. Health Connect (KI-1 is known and NOT a Gate 7 blocker)
+
+| # | Do | Expect | Result |
+|---|---|---|---|
+| E1 | Profile → Health data → **Manage permissions** | Health Connect opens on FITOS's permissions | ✅ owner, Gate 6 |
+| E2 | Grant permissions there → back to FITOS | Health data shows Connected with the granted categories | ✅ owner (grant), confirm the FITOS screen |
+| E3 | Home | Steps (and sleep / weight / resting HR if a source exists) with their source and freshness; a missing metric says why — never a fake 0 | |
+| E4 | Health Connect → revoke one category → back to FITOS | That category reads "Not allowed"; no stale number | |
+| E5 | AI D4 after granting | Still cannot see steps | |
+| E6 | Health data → **Connect** | **Known crash (KI-1).** Record ❌ and, if the phone is on USB, capture the logcat in KI-1. Do not mark ✅ unless it really works | ❌ expected |
+
+### B-F. Network resilience
+
+| # | Do | Expect | Result |
+|---|---|---|---|
+| F1 | Backend reachable | Core rows above work | |
+| F2 | PC: `docker compose stop api` → FITOS Home → pull to refresh | No crash. Home keeps today's plan from the phone's cache (`/today` is network-first, cached — local-first by design); Health blocks unaffected | |
+| F3 | With the API still stopped: AI → send "hi" | "Could not reach FITOS at 10.160.235.11:8080. Check your Wi-Fi and that the server is running." with Retry; no crash | |
+| F4 | PC: `docker compose start api` → Retry | The answer arrives | |
+| F5 | Phone Wi-Fi off → AI → send; then Home → pull to refresh | AI shows the same named line; Home keeps cached data; no crash. Wi-Fi on → Retry works | |
+| F6 | Fresh install (or Android Settings → FITOS → Clear storage) with the API stopped → sign in | After ~30 s (three connection attempts) sign-in stops with the named "Could not reach FITOS at 10.160.235.11:8080…" line — not a bare "offline", no crash | |
+| F7 | Compare the sign-in / Profile address with the PC's `ipconfig` | They match | |
+
+## C. Failure log
+
+One entry per ❌ or ⚠:
+
+```
+Row:            (e.g. C6)
+Action:         exactly what was tapped / typed
+Expected:       from the table
+Actual:         what happened (text on screen, crash dialog, hang for N s)
+Reproducible:   yes / no / N of M tries
+Evidence:       screenshot / logcat (adb logcat -v time AndroidRuntime:E flutter:E *:S)
+APK:            release / debug
+Severity:       blocker / high / medium / low
+Blocks alpha?:  yes / no — why
+```

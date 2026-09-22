@@ -1,6 +1,8 @@
 ## PHASE 6.6 — Closed alpha + FITOS AI + product polish — IN PROGRESS
 
-**Status: NOT complete.** Gates 1–4 done and verified; Gates 5–8 pending. Nothing merged to `main`.
+**Status: NOT complete.** Gates 1–5 verified; Gate 6 verified on the S24 except the Health
+Connect **Connect** crash (KI-1, unresolved); Gate 7 in progress (APK built and inspected, S24
+acceptance pending). Nothing merged to `main`.
 
 **Branch** `phase-6.6` (stacked on `phase-6.5`) · **Plan** owner brief 2026-09-22, decisions B1–B6 · **Records** [ADR-010](../decisions/ADR-010-fitos-ai.md) (FITOS AI), ADR-008/009 (6.5)
 
@@ -11,9 +13,8 @@
 | 3 | Gemini backend foundation | **verified** (CI 199 API) | `ea58b88` |
 | 4 | AI context, allowlisted tools, chat, Flutter AI screen | **verified** (CI 222 API / 251 mobile) | `71c54c1` `56441a4` `77a623c` |
 | 5 | AI programme generation through the deterministic generator | **verified** (owner 2026-09-22) | `cc8157a` |
-| 6 | Alpha configuration (LAN backend, flavour, Firebase defines) | **implemented; S24 integration checks A1–A22 pending (owner)** | `a061b89` |
-| 7 | Release-like APK | pending | |
-| 8 | Samsung S24 manual alpha checklist | pending | |
+| 6 | Alpha configuration (LAN backend, flavour, Firebase defines) | **verified on the S24 — NOT fully accepted**: Health Connect Connect crashes (KI-1) | `a061b89` `fbe053e` `d66d54b` |
+| 7 | Alpha APK + S24 acceptance (owner brief 2026-09-23; absorbs the old Gate 8 checklist) | **in progress** — APK built + inspected on the PC; S24 matrix pending | see Gate 7 |
 
 ### Gate 4 — FITOS AI (context + tools + chat + screen)
 
@@ -171,6 +172,68 @@ VERIFIED ON THE PC
 NOT YET VERIFIED — needs the S24 (owner): A1–A22 in the checklist. The alpha APK itself has
 not been built with real Firebase values (`alpha.env` does not exist on this machine's checkout;
 the script refuses without it).
+
+#### Gate 6 on the S24 (owner, 2026-09-23)
+
+  - ✅ LAN API from the phone; ✅ Google Sign-In; ✅ `/v1/auth/session` bootstrap — after
+    `fbe053e`. Root cause of the earlier hang: the APK carried the PC's build-time LAN address
+    (`172.16.205.86`) while the PC had moved to `10.160.235.11`; every request timed out and
+    the only feedback was "offline". Fix: failures name the address; the sign-in screen shows the
+    compiled-in backend; the build script refuses to build when `/health` does not answer.
+  - ✅ Health Connect via **Manage permissions**.
+  - ❌ Health Connect **Connect** still crashes on the S24 after `d66d54b` (which fixed a real,
+    bytecode-evidenced `ActivityNotFoundException` in that path). No logcat yet. Carried forward
+    as **KI-1** in `docs/alpha/KNOWN-ISSUES.md`; not a Gate 7 blocker (owner).
+
+### Gate 7 — Alpha APK + S24 acceptance (in progress)
+
+AUDIT (2026-09-23, before any change)
+  - Branch `phase-6.6` at `d66d54b`, working tree clean, 24 commits ahead of `main`.
+  - **Secrets:** a scan that loads the real values from the gitignored env files and reports only
+    presence found the Gemini key, the three Firebase client values and the service-account key id
+    **absent** from every tracked file, from the entire Git history (all branches), and from both
+    APKs; no PEM key in any tracked file. `alpha.env`, `docker/.env`, `apps/api/.env`,
+    `apps/api/.secrets/` are all gitignored (`git check-ignore`).
+  - **Alpha config:** `alpha.env` has the five Firebase keys + `API_HOST=auto` + `API_PORT=8080`;
+    `API_BASE_URL` → Dart `Env.apiBaseUrl` and the generated network-security config from the same
+    define; version `1.0.0-alpha.1+2`; release signed with the debug key (KI-4).
+  - **Backend:** `fitos-api` + `fitos-postgres` up; `/health` 200 over the LAN address; `/v1/ai/status`
+    401 without a token; `ai: configured`, `gemini-3.6-flash`; no API/contracts/core change since the
+    image was built (`cc8157a`). The LAN architecture remains appropriate for a one-phone closed
+    alpha; its one sharp edge is KI-2 (address changes between networks).
+  - Health Connect implementation not touched.
+
+BUILD + INSPECTION (PC)
+  - `.\tool\alpha.ps1 -Release` → `http://10.160.235.11:8080`, `/health 200 OK`, `app-release.apk`
+    64.0 MB (AOT, R8), 936 s cold.
+  - Refusals exercised: unreachable host (`192.0.2.1`) → exit 1 before building; missing
+    `GOOGLE_WEB_CLIENT_ID` → refused; `10.0.2.2` → refused.
+  - `aapt`: `com.example.fitos` · versionName `1.0.0-alpha.1` · versionCode 2 · label FITOS ·
+    not debuggable · minSdk 26 / targetSdk 36 · INTERNET + exactly the ten health READ permissions.
+  - Network config (shrunk to `res/8G.xml`): base-config cleartext **false**; one domain-config,
+    cleartext true, `10.160.235.11` only. Dart AOT (`libapp.so`, arm64) carries exactly
+    `http://10.160.235.11:8080`, flavour `alpha`, version `1.0.0-alpha.1`.
+  - Dex: `FlutterFragmentActivity` present (the `d66d54b` change is in the build); the channel's
+    wire name `fitos/health_connect` survives R8 in both dex and Dart AOT.
+  - No Gemini key, service-account material or private key in the release APK.
+
+TESTS
+  - Core 461 · contracts 35 · API **230** · mobile **275**; API typecheck + lint, mobile analyze
+    `--fatal-infos`, custom_lint, format — clean.
+  - One API test fixed: `ai.integration.test.ts` asserted that `get_today` always returns a
+    session name. On 2026-09-23 (a Wednesday, a rest day in the generated 4-day programme) the tool
+    correctly returned `status: rest, sessionName: null`, so the test failed deterministically on
+    rest days. It now checks the tool against the programme's own plan for the day. Product
+    unchanged. (Two other API failures in the first run were timeouts under a parallel release
+    build; they pass alone and in the full run.)
+
+S24 ACCEPTANCE — pending (owner): `docs/alpha/PHASE-6.6-ALPHA-CHECKLIST.md` §B (A–F, 45 rows)
+with the failure log in §C. PC-verified rows are pre-marked. Health Connect E6 (Connect) is expected
+❌ and is recorded, not waived.
+
+KNOWN ISSUES → `docs/alpha/KNOWN-ISSUES.md` (KI-1 Health Connect Connect crash — **unresolved**;
+KI-2 compiled-in LAN address; KI-3 Gemini free-tier quota; KI-4 application id + debug signing;
+KI-5 release-mode APK not yet run on a device).
 
 KNOWN ISSUES (Gate 5)
   - The free tier is unusable for an alpha with real users (20 requests/day/model); a paid tier
