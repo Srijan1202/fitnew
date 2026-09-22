@@ -20,6 +20,9 @@ const env: Env = {
   DATABASE_URL: 'postgres://unused:unused@localhost:5432/unused',
   FIREBASE_PROJECT_ID: 'openapi-export',
   CONSENT_IP_SALT: 'export-salt-not-secret',
+  GEMINI_MODEL: 'gemini-2.5-flash',
+  AI_TIMEOUT_MS: 5000,
+  AI_MAX_OUTPUT_TOKENS: 512,
 };
 
 const out = fileURLToPath(new URL('../../../../packages/contracts/openapi.json', import.meta.url));

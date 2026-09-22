@@ -16,9 +16,12 @@ import type { Env } from './lib/env.js';
 import type { DatabaseHandle } from './db/client.js';
 import { loggerOptions } from './lib/logger.js';
 import { FirebaseTokenVerifier, type TokenVerifier } from './lib/token-verifier.js';
+import aiPlugin from './plugins/ai.js';
 import authPlugin, { PROTECTED_PREFIX } from './plugins/auth.js';
 import dbPlugin from './plugins/db.js';
 import errorHandlerPlugin from './plugins/error-handler.js';
+import { aiRoutes } from './modules/ai/routes.js';
+import type { AiProvider } from './modules/ai/provider.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { healthRoutes } from './modules/health/routes.js';
 import { exerciseRoutes } from './modules/exercise/routes.js';
@@ -41,6 +44,8 @@ export interface BuildAppOptions {
    * test so a route added in any later phase is checked automatically.
    */
   readonly onRoute?: (route: RouteOptions) => void;
+  /** Supplied by tests to script the language model (Phase 6.6). */
+  readonly aiProvider?: AiProvider;
 }
 
 export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise<FastifyInstance> {
@@ -118,6 +123,8 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
       }),
   });
 
+  await app.register(aiPlugin, options.aiProvider !== undefined ? { provider: options.aiProvider } : { env });
+
   // /health is intentionally unversioned — probes should not have to track
   // an API version to know whether the service is alive.
   await app.register(healthRoutes);
@@ -131,6 +138,7 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
       await v1.register(exerciseRoutes);
       await v1.register(trainingRoutes);
       await v1.register(workoutRoutes);
+      await v1.register(aiRoutes);
     },
     { prefix: PROTECTED_PREFIX },
   );

@@ -48,6 +48,13 @@ services:
       # crash-loop on a missing FIREBASE_PROJECT_ID.
       FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:?set FIREBASE_PROJECT_ID in docker/.env}
       GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase/${FIREBASE_KEY_FILE:?set FIREBASE_KEY_FILE in docker/.env}
+      # Phase 6.6 — FITOS AI (owner B2). Optional: absent → the API boots and
+      # /v1/ai/* answers 503 "AI is not set up". Put the key in docker/.env
+      # (gitignored) only; it never reaches the image, a client or a log.
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      AI_TIMEOUT_MS: ${AI_TIMEOUT_MS:-25000}
+      AI_MAX_OUTPUT_TOKENS: ${AI_MAX_OUTPUT_TOKENS:-1024}
     volumes:
       # The service-account key never enters the image (.dockerignore); it is
       # mounted read-only at runtime from the gitignored .secrets/ directory.

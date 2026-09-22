@@ -21,6 +21,16 @@ const envSchema = z.object({
   // development; production sets a real secret via Secret Manager so hashes
   // cannot be brute-forced against the IPv4 space.
   CONSENT_IP_SALT: z.string().min(8).default('dev-only-salt-not-secret'),
+
+  // Phase 6.6 — FITOS AI through the backend (owner B2). The key is optional
+  // so every environment boots; without it the AI routes answer 503
+  // "AI is not set up on this server" and nothing else changes. Never
+  // logged, never echoed, never sent to a client.
+  // Compose passes '' when docker/.env has no key: treat empty as absent.
+  GEMINI_API_KEY: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
+  GEMINI_MODEL: z.string().min(1).default('gemini-2.5-flash'),
+  AI_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120_000).default(25_000),
+  AI_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(64).max(8192).default(1024),
 });
 
 export type Env = z.infer<typeof envSchema>;
