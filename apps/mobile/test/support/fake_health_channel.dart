@@ -24,6 +24,10 @@ class FakeHealthChannel implements HealthConnectChannel {
   /// Throw this code from every read.
   String? failWith;
 
+  /// Throw this code from `requestPermissions` (the native layer failing to
+  /// launch or parse Health Connect's answer).
+  String? failRequestWith;
+
   /// Every call with its arguments, in order.
   final calls = <String>[];
   final ranges = <(String, DateTime, DateTime)>[];
@@ -47,6 +51,9 @@ class FakeHealthChannel implements HealthConnectChannel {
   @override
   Future<List<String>> requestPermissions(List<String> metrics) async {
     calls.add('requestPermissions:${metrics.join(',')}');
+    if (failRequestWith != null) {
+      throw HealthChannelException(failRequestWith!);
+    }
     granted = [
       ...granted,
       for (final m in metrics)

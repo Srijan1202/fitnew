@@ -2,8 +2,8 @@ package com.example.fitos
 
 import android.app.Activity
 import android.content.Intent
+import androidx.activity.result.ActivityResultLauncher
 import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BasalMetabolicRateRecord
@@ -36,10 +36,17 @@ import kotlinx.coroutines.withContext
  * documented behaviour — never summed from raw records here). Nothing is
  * logged: values cross the channel and nowhere else.
  */
-class HealthConnectChannel(private val activity: Activity) : MethodChannel.MethodCallHandler {
+class HealthConnectChannel(
+    private val activity: Activity,
+    /**
+     * Registered by the activity before it is CREATED (Gate 6 fix). Null only
+     * in a host that cannot register one; the request then fails as a
+     * structured channel error instead of crashing.
+     */
+    private val permissionLauncher: ActivityResultLauncher<Set<String>>? = null,
+) : MethodChannel.MethodCallHandler {
     companion object {
         const val NAME = "fitos/health_connect"
-        private const val REQUEST_PERMISSIONS = 0x4843 // "HC"
 
         /** Permission string ↔ the record class it reads. */
         private val READ_PERMISSIONS: Map<String, String> = mapOf(
@@ -58,7 +65,6 @@ class HealthConnectChannel(private val activity: Activity) : MethodChannel.Metho
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var pendingPermissionResult: MethodChannel.Result? = null
-    private val permissionContract = PermissionController.createRequestPermissionResultContract()
 
     fun dispose() {
         scope.cancel()
@@ -101,6 +107,13 @@ class HealthConnectChannel(private val activity: Activity) : MethodChannel.Metho
         return READ_PERMISSIONS.filterValues { it in granted }.keys.toList()
     }
 
+    /**
+     * Ask for the READ permissions behind the given metric keys, through the
+     * launcher the activity registered (never a hand-built intent: on Android
+     * 14+ the contract's intent is a sentinel only `ActivityResultRegistry`
+     * understands). Answers when the user comes back — granted, partially
+     * granted, denied or backed out — with what Health Connect really grants.
+     */
     private fun requestPermissions(call: MethodCall, result: MethodChannel.Result) {
         if (client() == null) {
             result.success(emptyList<String>())
@@ -111,33 +124,62 @@ class HealthConnectChannel(private val activity: Activity) : MethodChannel.Metho
             return
         }
         val keys = call.argument<List<String>>("metrics") ?: emptyList()
+        // Only permissions this app declares in its manifest, mapped from the
+        // keys Dart knows: an unknown key is dropped, never forwarded.
         val permissions = keys.mapNotNull { READ_PERMISSIONS[it] }.toSet()
         if (permissions.isEmpty()) {
             result.success(emptyList<String>())
             return
         }
+        val launcher = permissionLauncher
+        if (launcher == null) {
+            result.error("unavailable", "No permission launcher is registered.", null)
+            return
+        }
         pendingPermissionResult = result
-        val intent = permissionContract.createIntent(activity, permissions)
-        @Suppress("DEPRECATION")
-        activity.startActivityForResult(intent, REQUEST_PERMISSIONS)
+        try {
+            launcher.launch(permissions)
+        } catch (e: Throwable) {
+            // A launch can still fail (no Health Connect UI, an activity in a
+            // state that cannot launch). The user sees FITOS say so; the app
+            // does not die.
+            pendingPermissionResult = null
+            result.error("permissions", e.javaClass.simpleName, null)
+        }
     }
 
-    /** MainActivity forwards its activity result here. Returns true when handled. */
-    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        if (requestCode != REQUEST_PERMISSIONS) return false
-        val pending = pendingPermissionResult ?: return true
+    /**
+     * The launcher's callback. The contract's own set is a hint only — some
+     * OEM builds answer with an empty set even when the user granted — so the
+     * source of truth is what Health Connect reports as granted now.
+     */
+    fun onPermissionResult(granted: Set<String>) {
+        val pending = pendingPermissionResult ?: return
         pendingPermissionResult = null
-        // The contract's answer is unreliable on some OEM builds; the source
-        // of truth is what Health Connect now says is granted.
         scope.launch {
             try {
-                permissionContract.parseResult(resultCode, data)
-                pending.success(grantedPermissions())
+                reply(pending) { it.success(grantedPermissions()) }
             } catch (e: Exception) {
-                pending.error("permissions", e.message, null)
+                // Health Connect could not be asked after the fact: fall back
+                // to what the contract reported rather than failing the call.
+                reply(pending) { r ->
+                    r.success(READ_PERMISSIONS.filterValues { it in granted }.keys.toList())
+                }
             }
         }
-        return true
+    }
+
+    /**
+     * Send one answer to Flutter. The activity can be gone by the time the
+     * user comes back from Health Connect; a dead reply channel must not take
+     * the process with it.
+     */
+    private inline fun reply(result: MethodChannel.Result, body: (MethodChannel.Result) -> Unit) {
+        try {
+            body(result)
+        } catch (e: IllegalStateException) {
+            // "Reply already submitted" / detached engine: nothing to do.
+        }
     }
 
     private fun openSettings(): Boolean = try {
