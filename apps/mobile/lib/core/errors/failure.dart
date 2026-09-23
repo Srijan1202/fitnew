@@ -46,6 +46,13 @@ final class Offline extends Failure {
 
 /// Wrong password, unknown email, weak password — the credential cases
 /// Firebase reports. `code` is Firebase's, e.g. `wrong-password`.
+/// Server said 404: the thing asked for does not exist (for this user) —
+/// e.g. a queued session naming a programme day the user has since
+/// replaced. The server's own message is kept.
+final class NotFound extends Failure {
+  const NotFound([super.message = 'That no longer exists.']);
+}
+
 final class Credential extends Failure {
   const Credential(super.message, {required this.code});
   final String code;

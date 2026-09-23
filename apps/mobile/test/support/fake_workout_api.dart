@@ -105,12 +105,29 @@ class FakeWorkoutApi implements WorkoutApi {
     );
   }
 
+  /// The active programme's day ids, when a test scripts a programme
+  /// change. Null accepts any day (most tests).
+  Set<String>? activeProgramDayIds;
+
+  /// Every start request as received (the S24 404s were in the body).
+  final startRequests = <StartSessionRequest>[];
+
   @override
   Future<Result<WorkoutSession>> start(StartSessionRequest request) async {
     calls.add('start');
+    startRequests.add(request);
     return _guard(() {
       final existing = sessions[request.clientSessionId];
       if (existing != null) return Ok(existing);
+      // The server checks the day before the one-active-session guard.
+      final days = activeProgramDayIds;
+      if (days != null &&
+          request.programDayId != null &&
+          !days.contains(request.programDayId)) {
+        return const Err(
+          NotFound('That day is not in your active programme.'),
+        );
+      }
       final active =
           sessions.values.where((s) => s.status == SessionStatus.active);
       if (active.isNotEmpty) {

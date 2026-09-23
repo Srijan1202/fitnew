@@ -805,6 +805,35 @@ void main() {
       expect(item.toJson().keys.toSet(), keysOf(items(list, 'items')));
     });
 
+    test(
+        'Phase 6.6 Gate 7: one weekday convention — ISO 1..7 in the API and in Dart; the start names its day by id, and the ad-hoc resend omits it',
+        () {
+      // The API's dayOfWeek (programme days, /today?dayOfWeek) is ISO 1..7.
+      final days = schemaOf('/training/program', 'get');
+      final day = (properties(days)['days'] as Map<String, dynamic>)['items']
+          as Map<String, dynamic>;
+      final dow = properties(day)['dayOfWeek'] as Map<String, dynamic>;
+      expect(dow['minimum'], 1);
+      expect(dow['maximum'], 7);
+      // Dart's DateTime.weekday is the same ISO numbering: the S24's week.
+      expect(
+        [for (var d = 21; d <= 27; d++) DateTime(2026, 9, d).weekday],
+        [1, 2, 3, 4, 5, 6, 7],
+      );
+      expect(DateTime(2026, 9, 23).weekday, 3, reason: 'Wednesday');
+      // The start body identifies the day by id — no weekday at all.
+      final start = schemaOf('/training/sessions', 'post', request: true);
+      expect(keysOf(start), isNot(contains('dayOfWeek')));
+      expect(keysOf(start), contains('programDayId'));
+      expect(
+        DioWorkoutApi.startJson(
+          const StartSessionRequest(clientSessionId: 'c', startedAt: 's'),
+        ).keys,
+        isNot(contains('programDayId')),
+        reason: 'the ad-hoc resend must omit it, not send null',
+      );
+    });
+
     test('request bodies send exactly the accepted properties', () {
       final start = schemaOf('/training/sessions', 'post', request: true);
       final startBody = DioWorkoutApi.startJson(

@@ -464,7 +464,21 @@ class SyncEngine {
     final kind = SyncKind.values.byName(entry.kind);
     final payload = jsonDecode(entry.payloadJson) as Map<String, dynamic>;
     if (kind == SyncKind.start) {
-      final result = await _api.start(StartSessionRequest.fromJson(payload));
+      final request = StartSessionRequest.fromJson(payload);
+      var result = await _api.start(request);
+      // Phase 6.6 Gate 7 (S24): the programme day this session was started
+      // from is no longer in the user's active programme — they replaced the
+      // programme while the session waited in the queue — so the server
+      // refuses it (404, and rightly). The workout still happened: send it
+      // once as an ad-hoc session (owner 8.6), keeping this phone's own
+      // exercises so every logged set replays against them. Stored, so a
+      // later retry sends the same thing. Never mapped onto another day.
+      if (result case Err(failure: NotFound())
+          when request.programDayId != null) {
+        final adHoc = request.copyWith(programDayId: null);
+        await _writePayload(entry.id, adHoc.toJson());
+        result = await _api.start(adHoc);
+      }
       return _settle(entry, result);
     }
     final serverId = await _serverSessionId(entry.clientSessionId);

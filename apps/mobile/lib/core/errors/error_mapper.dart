@@ -86,6 +86,9 @@ abstract final class ErrorMapper {
     }
     // 503: the server's message is written for the user ("AI is not set up
     // on this server", "FITOS AI took too long") — keep it.
+    if (code == 'NOT_FOUND' || status == 404) {
+      return NotFound(message ?? 'That no longer exists.');
+    }
     if (code == 'UPSTREAM_UNAVAILABLE' || status == 503) {
       return Unknown(message ?? 'Something is unavailable right now.');
     }

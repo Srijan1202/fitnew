@@ -27,6 +27,15 @@ describe('local dates', () => {
     expect(isoDayOfWeek('2026-09-21')).toBe(1);
     expect(isoDayOfWeek('2026-09-27')).toBe(7);
   });
+
+  it('Phase 6.6 Gate 7: every weekday of the S24 week maps to ISO 1..7 — Wednesday 23 September 2026 is 3, in Kolkata too', () => {
+    const week = ['2026-09-21', '2026-09-22', '2026-09-23', '2026-09-24', '2026-09-25', '2026-09-26', '2026-09-27'];
+    expect(week.map(isoDayOfWeek)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    // 01:09 UTC on the 23rd (the S24 failure) is 06:39 IST, still Wednesday.
+    expect(isoDayOfWeek(localDate(new Date('2026-09-23T01:09:04Z'), 'Asia/Kolkata'))).toBe(3);
+    // Late on Tuesday UTC is already Wednesday in Kolkata.
+    expect(isoDayOfWeek(localDate(new Date('2026-09-22T20:00:00Z'), 'Asia/Kolkata'))).toBe(3);
+  });
 });
 
 describeIfDb('/v1/training/sessions (real Postgres, real seed)', () => {
@@ -182,6 +191,56 @@ describeIfDb('/v1/training/sessions (real Postgres, real seed)', () => {
     const history = (await app.inject({ method: 'GET', url: '/v1/training/sessions?limit=20', headers: auth(token) })).json();
     expect(history.items.map((i: { id: string }) => i.id)).toContain(orphan.id);
     expect((await sql`select count(*)::int as c from workout_sessions where status = 'active' and user_id = (select user_id from workout_sessions where id = ${orphan.id})`)[0]!.c).toBe(1);
+  });
+
+  it('Phase 6.6 Gate 7: each ISO weekday 1..7 — /today?dayOfWeek=d names the programme day, and a session started from it is accepted', async () => {
+    const { token, program } = await withProgram();
+    // A 4-day programme: training on some weekdays, rest on the others ("only selected days").
+    expect(program.days.map((d) => d.dayOfWeek)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(program.days.some((d) => d.isRest)).toBe(true);
+    for (const d of [1, 2, 3, 4, 5, 6, 7]) {
+      const t = (await app.inject({ method: 'GET', url: `/v1/training/today?dayOfWeek=${d}`, headers: auth(token) })).json();
+      const planned = program.days.find((x) => x.dayOfWeek === d)!;
+      expect(t.dayOfWeek, `day ${d}`).toBe(d);
+      expect(t.programDayId, `day ${d}`).toBe(planned.id);
+      expect(t.isRest).toBe(planned.isRest);
+      const r = await start(token, { clientSessionId: randomUUID(), programDayId: t.programDayId, startedAt: at(d) });
+      expect(r.statusCode, `start on day ${d}: ${r.body}`).toBe(201);
+      const s = r.json() as WorkoutSession;
+      expect(s.exercises.length).toBe(planned.exercises.length);
+      // One active at a time: end it before the next weekday.
+      expect((await app.inject({ method: 'POST', url: `/v1/training/sessions/${s.id}/abandon`, headers: auth(token) })).statusCode).toBe(200);
+    }
+  });
+
+  it('Phase 6.6 Gate 7: a day of a REPLACED programme is still refused (404, validation intact); the same workout as an ad-hoc session with its own exercises is accepted and its sets replay', async () => {
+    const { token, day: oldDay } = await withProgram();
+    // The phone seeds its session from the day and queues it…
+    const mine = oldDay.exercises.map((x, i) => ({ clientExerciseId: randomUUID(), exerciseId: x.exerciseId, plannedExerciseId: x.id, orderIndex: i }));
+    const body = { clientSessionId: randomUUID(), programDayId: oldDay.id, startedAt: at(0), exercises: mine };
+    // …then the user applies another programme before it syncs.
+    expect((await app.inject({ method: 'POST', url: '/v1/training/program/from-template/bro-split', headers: auth(token), payload: {} })).statusCode).toBe(200);
+    const stale = await start(token, body);
+    expect(stale.statusCode).toBe(404);
+    expect(stale.json().error.message).toBe('That day is not in your active programme.');
+    // A day id that never existed: 404 too.
+    expect((await start(token, { ...body, clientSessionId: randomUUID(), programDayId: randomUUID() })).statusCode).toBe(404);
+    // What the phone now sends once: the same session, no programme day.
+    const adHoc = { clientSessionId: body.clientSessionId, startedAt: body.startedAt, exercises: body.exercises };
+    const created = await start(token, adHoc);
+    expect(created.statusCode, created.body).toBe(201);
+    const s = created.json() as WorkoutSession;
+    expect(s.programId).toBeNull();
+    expect(s.exercises.map((x) => x.clientExerciseId)).toEqual(mine.map((x) => x.clientExerciseId));
+    const logged = await log(token, s.id, [{ clientSetId: randomUUID(), clientExerciseId: mine[0]!.clientExerciseId, setIndex: 1, weightKg: 40, reps: 10, rir: 2, loggedAt: at(5) }]);
+    expect(logged.statusCode, logged.body).toBe(200);
+    expect((await complete(token, s.id, 20)).statusCode).toBe(200);
+    const history = (await app.inject({ method: 'GET', url: '/v1/training/sessions?limit=20', headers: auth(token) })).json();
+    expect(history.items.map((i: { id: string }) => i.id)).toContain(s.id);
+    // Replay of the ad-hoc start: the same session, not a second one.
+    const again = await start(token, adHoc);
+    expect(again.statusCode).toBe(200);
+    expect((again.json() as WorkoutSession).id).toBe(s.id);
   });
 
   it('an ad-hoc session has no exercises until one is added, and uses the same set logging', async () => {

@@ -311,6 +311,95 @@ void main() {
     });
   });
 
+  group(
+      'Gate 7 (S24, 2026-09-23 01:07–01:11 UTC): a session queued from a day of a programme that was replaced before it synced',
+      () {
+    test(
+        'the server refuses the stale day (404); the phone sends it ONCE as an ad-hoc session with its own exercises — sets and completion follow, nothing dropped, no 404 loop',
+        () async {
+      // It never reached the server (the S24's orphan held the slot)…
+      api.offline = true;
+      final s = await repo.startSession(day: api.todayResponse);
+      final x = s.exercises.first;
+      await repo.logSet(s.clientSessionId, set(x, 1));
+      await repo.complete(s.clientSessionId);
+      // …and meanwhile the user applied another programme.
+      api.activeProgramDayIds = {'bro-split-wednesday'};
+      api.startRequests.clear(); // count only what reaches the server now
+      api.offline = false;
+      await repo.sync();
+
+      await eventually(clean, reason: 'drained as an ad-hoc session');
+      final starts = api.startRequests
+          .where((r) => r.clientSessionId == s.clientSessionId)
+          .toList();
+      expect(
+        starts,
+        hasLength(2),
+        reason: 'the stale one, then the ad-hoc one',
+      );
+      expect(starts.first.programDayId, api.todayResponse.programDayId);
+      expect(
+        starts.last.programDayId,
+        isNull,
+        reason: 'resent without the day',
+      );
+      expect(
+        starts.last.exercises!.map((e) => e.clientExerciseId),
+        s.exercises.map((e) => e.clientExerciseId),
+        reason: 'its own exercises, so the sets replay',
+      );
+      expect(
+        starts.where((r) => r.programDayId != null),
+        hasLength(1),
+        reason: 'one 404, not a loop',
+      );
+      final synced = onServer(s.clientSessionId)!;
+      expect(synced.status, SessionStatus.completed);
+      expect(synced.exercises.first.sets, hasLength(1));
+      expect((await repo.syncStatus()).parked, 0);
+    });
+
+    test(
+        'it does not hold back a later session started from the new programme; Retry afterwards is a no-op',
+        () async {
+      api.offline = true;
+      final old = await repo.startSession(day: api.todayResponse);
+      await repo.logSet(old.clientSessionId, set(old.exercises.first, 1));
+      await repo.complete(old.clientSessionId);
+      final newDay =
+          api.todayResponse.copyWith(programDayId: 'bro-split-wednesday');
+      final fresh = await repo.startSession(day: newDay);
+      await repo.logSet(fresh.clientSessionId, set(fresh.exercises.first, 1));
+      await repo.complete(fresh.clientSessionId);
+      api.activeProgramDayIds = {'bro-split-wednesday'};
+      api.offline = false;
+      await repo.sync();
+
+      await eventually(clean);
+      expect(onServer(old.clientSessionId)!.status, SessionStatus.completed);
+      expect(onServer(fresh.clientSessionId)!.status, SessionStatus.completed);
+      final starts = api.calls.where((c) => c == 'start').length;
+      await repo.retryParked();
+      await repo.sync();
+      expect(api.calls.where((c) => c == 'start').length, starts);
+      expect(api.sessions, hasLength(2));
+    });
+
+    test(
+        'a start whose day IS in the active programme is sent as is — never rewritten',
+        () async {
+      api.activeProgramDayIds = {api.todayResponse.programDayId!};
+      final s = await repo.startSession(day: api.todayResponse);
+      await eventually(clean);
+      expect(
+        api.startRequests.single.programDayId,
+        api.todayResponse.programDayId,
+      );
+      expect(onServer(s.clientSessionId), isNotNull);
+    });
+  });
+
   group('H: one live set per position — no duplicates, no 409', () {
     test(
         'a double tap on the same row corrects the set instead of queueing a second',

@@ -33,6 +33,21 @@ void main() {
       );
     });
 
+    test(
+        'Phase 6.6 Gate 7: a 404 is NotFound and keeps the server message (the sync engine acts on it)',
+        () {
+      final f = ErrorMapper.fromEnvelope(404, {
+        'error': {
+          'code': 'NOT_FOUND',
+          'message': 'That day is not in your active programme.',
+          'requestId': 'r',
+        },
+      });
+      expect(f, isA<NotFound>());
+      expect(f.message, 'That day is not in your active programme.');
+      expect(ErrorMapper.fromEnvelope(404, 'not json'), isA<NotFound>());
+    });
+
     test('carries the failing field for validation errors', () {
       final f = ErrorMapper.fromEnvelope(
         422,
