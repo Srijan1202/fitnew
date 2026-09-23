@@ -43,17 +43,7 @@ class ComingSoonScreen extends StatelessWidget {
   }
 }
 
-/// The three placeholders, named once so the router and tests agree.
-class NutritionPlaceholderScreen extends StatelessWidget {
-  const NutritionPlaceholderScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) => const ComingSoonScreen(
-        title: 'Nutrition',
-        blurb: 'Your targets, the mess menu and food logging will live here.',
-      );
-}
-
+/// The remaining placeholder, named once so the router and tests agree.
 class MarketplacePlaceholderScreen extends StatelessWidget {
   const MarketplacePlaceholderScreen({super.key});
 

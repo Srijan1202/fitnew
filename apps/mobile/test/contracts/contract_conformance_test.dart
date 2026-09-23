@@ -5,6 +5,7 @@ import 'package:fitos/features/ai/data/ai_api.dart';
 import 'package:fitos/features/ai/domain/entities/ai.dart';
 import 'package:fitos/features/auth/domain/entities/user_profile.dart';
 import 'package:fitos/features/exercise/domain/entities/exercise.dart';
+import 'package:fitos/features/nutrition/domain/entities/food.dart';
 import 'package:fitos/features/onboarding/domain/entities/onboarding.dart';
 import 'package:fitos/features/profile/domain/entities/profile.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart'
@@ -17,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../support/fake_auth_repository.dart';
 import '../support/fake_exercise_repository.dart';
+import '../support/fake_food_repository.dart';
 import '../support/fake_training_repository.dart';
 import '../support/fake_onboarding_repository.dart';
 import '../support/fake_workout_api.dart';
@@ -1304,6 +1306,123 @@ void main() {
         enumOf(properties(status)['excludes'] as Map<String, dynamic>),
         ['health-connect', 'food-log'],
       );
+    });
+  });
+
+  group('food library (Phase 7)', () {
+    late Map<String, dynamic> search;
+    late Map<String, dynamic> item;
+    late Map<String, dynamic> nutrition;
+    late Map<String, dynamic> created;
+    late Map<String, dynamic> request;
+
+    setUpAll(() {
+      final paths = doc['paths'] as Map<String, dynamic>;
+      final op = (paths['/nutrition/foods/search']
+          as Map<String, dynamic>)['get'] as Map<String, dynamic>;
+      final params = (op['parameters'] as List<dynamic>)
+          .cast<Map<String, dynamic>>()
+          .map((p) => p['name'])
+          .toSet();
+      expect(params, {'q', 'limit'});
+      search = schemaOf('/nutrition/foods/search', 'get');
+      item = properties(search)['items']['items'] as Map<String, dynamic>;
+      nutrition =
+          properties(item)['nutrition']['items'] as Map<String, dynamic>;
+      created = schemaOf('/nutrition/foods', 'post');
+      request = schemaOf('/nutrition/foods', 'post', request: true);
+    });
+
+    test('FoodSource, NutritionBasis, NutritionConfidence, FoodMatchKind', () {
+      expect(
+        FoodSource.values.map((v) => v.wire).toList(),
+        enumOf(properties(item)['source'] as Map<String, dynamic>),
+      );
+      expect(
+        NutritionBasis.values.map((v) => v.wire).toList(),
+        enumOf(properties(nutrition)['basis'] as Map<String, dynamic>),
+      );
+      expect(
+        NutritionConfidence.values.map((v) => v.wire).toList(),
+        enumOf(properties(nutrition)['confidence'] as Map<String, dynamic>),
+      );
+      expect(
+        FoodMatchKind.values.map((v) => v.wire).toList(),
+        enumOf(properties(item)['match'] as Map<String, dynamic>),
+      );
+      expect(
+        NutritionBasis.values.map((v) => v.wire).toList(),
+        enumOf(properties(request)['basis'] as Map<String, dynamic>),
+      );
+    });
+
+    test('Food, FoodNutrition, FoodSearchResult, FoodSearchResponse', () {
+      expect(keysOf(search), {'items'});
+      expect(
+        const FoodSearchResponse(items: []).toJson().keys.toSet(),
+        keysOf(search),
+      );
+      const hit = FoodSearchResult(food: honey, match: FoodMatchKind.exact);
+      expect(hit.toJson().keys.toSet(), keysOf(item));
+      expect(honey.toJson().keys.toSet(), keysOf(created));
+      expect(honey.nutrition.first.toJson().keys.toSet(), keysOf(nutrition));
+      // A created food is the same shape as a search hit, minus `match`.
+      expect(keysOf(item).difference(keysOf(created)), {'match'});
+    });
+
+    test('CreateFoodRequest sends exactly the accepted properties', () {
+      const full = CreateFoodRequest(
+        clientFoodId: '0b1f6a8e-4d2c-4b8e-9d5f-1a2b3c4d5e6f',
+        name: 'Protein bar',
+        brand: 'Brand',
+        basis: NutritionBasis.perServing,
+        servingLabel: '1 bar',
+        servingGrams: 60,
+        kcal: 220,
+        proteinG: 20,
+        carbG: 22,
+        fatG: 7,
+        fibreG: 3,
+      );
+      expect(full.toJson().keys.toSet(), keysOf(request));
+      expect(request['additionalProperties'], isFalse);
+      // A per-100 g label omits the serving label (the contract has it
+      // optional, not nullable) and still sends only accepted keys.
+      const per100 = CreateFoodRequest(
+        clientFoodId: '0b1f6a8e-4d2c-4b8e-9d5f-1a2b3c4d5e6f',
+        name: 'Oats',
+        brand: null,
+        basis: NutritionBasis.per100g,
+        servingLabel: null,
+        servingGrams: null,
+        kcal: 389,
+        proteinG: 13.2,
+        carbG: 67.7,
+        fatG: 7.6,
+        fibreG: null,
+      );
+      expect(per100.toJson().containsKey('servingLabel'), isFalse);
+      expect(keysOf(request).containsAll(per100.toJson().keys), isTrue);
+      final required = (request['required'] as List<dynamic>).cast<String>();
+      expect(per100.toJson().keys.toSet().containsAll(required), isTrue);
+    });
+
+    test('Food and search results round-trip through JSON', () {
+      Object? wire(Object? v) => jsonDecode(jsonEncode(v));
+      for (final food in [honey, dalTadka, lassi]) {
+        expect(
+          Food.fromJson(wire(food.toJson()) as Map<String, dynamic>),
+          food,
+        );
+      }
+      final hit = FoodSearchResult.fromJson(
+        wire(
+          const FoodSearchResult(food: dalTadka, match: FoodMatchKind.alias)
+              .toJson(),
+        ) as Map<String, dynamic>,
+      );
+      expect(hit.food, dalTadka);
+      expect(hit.match, FoodMatchKind.alias);
     });
   });
 
