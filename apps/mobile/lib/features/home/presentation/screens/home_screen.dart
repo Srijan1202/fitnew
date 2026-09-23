@@ -7,6 +7,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../../health/domain/entities/health.dart';
 import '../../../health/presentation/controllers/health_providers.dart';
 import '../../../workout/presentation/controllers/workout_providers.dart';
+import '../../../workout/presentation/widgets/orphan_session_notice.dart';
 import '../../domain/home_context.dart';
 import '../../domain/home_suggestion_engine.dart';
 import '../controllers/home_providers.dart';
@@ -97,6 +98,18 @@ class HomeScreen extends ConsumerWidget {
                   ServerNotice(
                     message: f.message,
                     onRetry: () => _refresh(ref),
+                  ),
+                // Phase 6.6 Gate 7: a session FITOS holds that this phone
+                // lost (sign-out / cleared data) blocks every new one.
+                if (ref.watch(orphanedSessionProvider).value != null)
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      FitSpacing.screen,
+                      0,
+                      FitSpacing.screen,
+                      FitSpacing.md,
+                    ),
+                    child: OrphanSessionNotice(),
                   ),
                 if (loading && suggestions.isEmpty)
                   const HomeSkeleton()

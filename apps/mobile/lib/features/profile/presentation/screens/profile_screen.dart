@@ -10,6 +10,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/hairline_section.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
+import '../../../workout/presentation/controllers/workout_providers.dart';
 import '../../data/profile_repository.dart';
 import '../../domain/entities/profile.dart';
 import '../widgets/targets_display.dart';
@@ -117,8 +118,8 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: FitSpacing.md),
                 OutlinedButton(
-                  onPressed: () =>
-                      ref.read(authControllerProvider.notifier).signOut(),
+                  key: const ValueKey('profile.signOut'),
+                  onPressed: () => _signOut(context, ref),
                   style: _outlined,
                   child: const Text('Sign out'),
                 ),
@@ -140,6 +141,48 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Phase 6.6 Gate 7: signing out wipes this phone's workout data, sync
+/// queue included — which once deleted the queued end of a session FITOS
+/// already had, leaving it "in progress" on the server and blocking every
+/// later session. Give the queue one chance to reach FITOS; if anything is
+/// still unsynced, say so and let the user choose.
+Future<void> _signOut(BuildContext context, WidgetRef ref) async {
+  final repo = ref.read(workoutRepositoryProvider);
+  await repo.sync().timeout(const Duration(seconds: 8), onTimeout: () {});
+  final status = await repo.syncStatus();
+  if (!status.clean) {
+    if (!context.mounted) return;
+    final n = status.pending + status.parked;
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        key: const ValueKey('signOut.unsynced'),
+        title: const Text('Unsynced workout changes'),
+        content: Text(
+          '$n ${n == 1 ? 'change has' : 'changes have'} not reached FITOS yet. '
+          'Signing out deletes ${n == 1 ? 'it' : 'them'} from this phone — '
+          'including the end of any session that has not synced. '
+          'Stay signed in and let it sync first?',
+        ),
+        actions: <Widget>[
+          TextButton(
+            key: const ValueKey('signOut.anyway'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sign out anyway'),
+          ),
+          FilledButton(
+            key: const ValueKey('signOut.stay'),
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Stay signed in'),
+          ),
+        ],
+      ),
+    );
+    if (go != true) return;
+  }
+  await ref.read(authControllerProvider.notifier).signOut();
 }
 
 final _outlined = OutlinedButton.styleFrom(

@@ -5,6 +5,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../../training/domain/entities/program.dart';
 import '../../domain/entities/workout.dart';
 import '../controllers/workout_providers.dart';
+import 'orphan_session_notice.dart';
 
 /// "Start session" on a training day, "Start empty session" on a rest
 /// day, "Resume · 12 min" whenever a session is in progress on this phone
@@ -23,6 +24,22 @@ class StartSessionButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final button = _button(ref);
+    // Phase 6.6 Gate 7: say why a new session would not reach FITOS, right
+    // where it is started. Starting stays possible (gyms have no signal).
+    if (ref.watch(orphanedSessionProvider).value == null) return button;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const OrphanSessionNotice(),
+        const SizedBox(height: FitSpacing.sm),
+        button,
+      ],
+    );
+  }
+
+  Widget _button(WidgetRef ref) {
     final active = ref.watch(activeSessionProvider).value;
     if (active != null) {
       final minutes =

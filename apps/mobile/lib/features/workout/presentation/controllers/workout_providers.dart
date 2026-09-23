@@ -155,6 +155,27 @@ final historyProvider = FutureProvider<SessionListResponse>(
   retry: (_, __) => null,
 );
 
+/// Phase 6.6 Gate 7 — an active session the SERVER holds that this phone
+/// does not have. Its local copy (and the queued request that would have
+/// ended it) was wiped — at sign-out, or by clearing the app's data —
+/// before it reached FITOS. The server allows one active session per user,
+/// so until the user finishes or discards it, every new session started on
+/// this phone is refused (409) and Retry can never succeed. Null when there
+/// is none, when the server's active session is this phone's own, or when
+/// `/today` has not answered.
+final orphanedSessionProvider = FutureProvider<WorkoutSession?>(
+  (ref) async {
+    requireSession(ref);
+    final server = ref.watch(todayProvider).value?.activeSession;
+    if (server == null) return null;
+    final local = await ref
+        .read(workoutRepositoryProvider)
+        .session(server.clientSessionId);
+    return local == null ? server : null;
+  },
+  retry: (_, __) => null,
+);
+
 /// Phase 6: weekly volume vs the landmarks; cached for offline.
 final volumeProvider = FutureProvider<VolumeResponse>(
   (ref) async {

@@ -8,6 +8,7 @@ import 'package:fitos/features/home/presentation/screens/home_screen.dart';
 import 'package:fitos/features/onboarding/presentation/controllers/onboarding_controller.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:fitos/features/profile/domain/entities/vocabulary.dart';
+import 'package:fitos/features/workout/presentation/controllers/workout_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -75,6 +76,42 @@ void main() {
     expect(find.byType(HomeScreen), findsOneWidget);
     expect(find.byKey(const ValueKey('home.date')), findsOneWidget);
     expect(find.text('Continue with Google'), findsNothing);
+  });
+
+  testWidgets(
+      'Gate 7: sign-out with an unsynced workout asks first — Stay keeps it; Sign out anyway proceeds',
+      (tester) async {
+    repo.restoreResult = AuthState.signedIn(testProfile);
+    workoutApi.offline = true; // the session below cannot reach FITOS
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    final container =
+        ProviderScope.containerOf(tester.element(find.byType(HomeScreen)));
+    await container
+        .read(workoutRepositoryProvider)
+        .startSession(day: workoutApi.todayResponse);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('home.profile')));
+    await tester.pumpAndSettle();
+    final signOut = find.byKey(const ValueKey('profile.signOut'));
+    await tester.ensureVisible(signOut);
+    await tester.tap(signOut);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('signOut.unsynced')), findsOneWidget);
+    expect(find.textContaining('not reached FITOS yet'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('signOut.stay')));
+    await tester.pumpAndSettle();
+    expect(repo.calls, isNot(contains('signOut')));
+
+    await tester.ensureVisible(signOut);
+    await tester.tap(signOut);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('signOut.anyway')));
+    await tester.pumpAndSettle();
+    expect(repo.calls, contains('signOut'));
+    expect(find.text('Continue with Google'), findsOneWidget);
   });
 
   testWidgets(

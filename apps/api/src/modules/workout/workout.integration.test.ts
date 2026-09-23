@@ -149,6 +149,41 @@ describeIfDb('/v1/training/sessions (real Postgres, real seed)', () => {
     expect((await start(token, { clientSessionId: randomUUID(), startedAt: at(2) })).statusCode).toBe(201);
   });
 
+  it('Phase 6.6 Gate 7 — a session left active by a phone that lost it: new starts are refused with its id, /today names it with its sets, the user finishing it frees the slot, and the blocked start then replays idempotently', async () => {
+    const { token, day } = await withProgram();
+    // The phone that owned it signed out before its end was sent.
+    const orphan: WorkoutSession = (await start(token, { clientSessionId: randomUUID(), programDayId: day.id, startedAt: at(0) })).json();
+    await logFirst(token, orphan, 50, 10);
+    // The phone, knowing nothing of it, starts a new session (queued, replayed by Retry).
+    const next = { clientSessionId: randomUUID(), programDayId: day.id, startedAt: at(30) };
+    for (let i = 0; i < 3; i++) {
+      const refused = await start(token, next);
+      expect(refused.statusCode).toBe(409);
+      expect(refused.json().error.details[0]).toEqual({ path: 'activeSessionId', issue: orphan.id });
+    }
+    // The guard never let a second session in, however often it was retried.
+    expect((await sql`select count(*)::int as c from workout_sessions where client_session_id = ${next.clientSessionId}`)[0]!.c).toBe(0);
+    // /today tells the phone what is holding the slot, with its sets.
+    const today = (await app.inject({ method: 'GET', url: '/v1/training/today', headers: auth(token) })).json();
+    expect(today.activeSession.id).toBe(orphan.id);
+    expect(today.activeSession.clientSessionId).toBe(orphan.clientSessionId);
+    expect(today.activeSession.exercises[0].sets.length).toBeGreaterThan(0);
+    // The user explicitly finishes it (at its last set, as the app sends).
+    const done = await complete(token, orphan.id, 25);
+    expect(done.statusCode, done.body).toBe(200);
+    expect((done.json() as WorkoutSession).status).toBe('completed');
+    // The same queued start now succeeds once, and replays return it.
+    const created = await start(token, next);
+    expect(created.statusCode, created.body).toBe(201);
+    const replay = await start(token, next);
+    expect(replay.statusCode).toBe(200);
+    expect((replay.json() as WorkoutSession).id).toBe((created.json() as WorkoutSession).id);
+    // History has the finished one; exactly one session is active.
+    const history = (await app.inject({ method: 'GET', url: '/v1/training/sessions?limit=20', headers: auth(token) })).json();
+    expect(history.items.map((i: { id: string }) => i.id)).toContain(orphan.id);
+    expect((await sql`select count(*)::int as c from workout_sessions where status = 'active' and user_id = (select user_id from workout_sessions where id = ${orphan.id})`)[0]!.c).toBe(1);
+  });
+
   it('an ad-hoc session has no exercises until one is added, and uses the same set logging', async () => {
     const token = await onboarded();
     const s: WorkoutSession = (await start(token, { clientSessionId: randomUUID(), startedAt: at(0) })).json();

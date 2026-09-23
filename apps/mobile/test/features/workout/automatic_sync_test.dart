@@ -211,6 +211,106 @@ void main() {
     });
   });
 
+  group(
+      'Gate 7 (S24, 2026-09-23): a session FITOS holds that this phone lost blocks new starts',
+      () {
+    /// What the S24 did: a session was started and synced, then sign-out
+    /// wiped the phone (queue included) before its end reached FITOS. The
+    /// server still has it active; this phone knows nothing of it.
+    Future<WorkoutSession> orphanOnServer() async {
+      final r = await api.start(
+        StartSessionRequest(
+          clientSessionId: const Uuid().v4(),
+          startedAt: DateTime.now().toUtc().toIso8601String(),
+        ),
+      );
+      return (r as Ok<WorkoutSession>).value;
+    }
+
+    test(
+        'the new session is kept on the phone, its start is refused, retried and parked — never a second session on the server, however often Retry is pressed',
+        () async {
+      final orphan = await orphanOnServer();
+      final s = await repo.startSession(day: api.todayResponse);
+      await repo.logSet(s.clientSessionId, set(s.exercises.first, 1));
+      await repo.complete(s.clientSessionId);
+
+      await eventually(() async => (await repo.syncStatus()).parked > 0);
+      for (var i = 0; i < 3; i++) {
+        await repo.retryParked();
+        await eventually(() async => (await repo.syncStatus()).parked > 0);
+      }
+      expect(api.sessions, hasLength(1), reason: 'only the orphan');
+      expect(api.sessions.values.single.id, orphan.id);
+      expect(
+        (await repo.session(s.clientSessionId))!.status,
+        SessionStatus.completed,
+        reason: 'the phone keeps its own session',
+      );
+    });
+
+    test(
+        'once the user ends the orphan, Retry sends the blocked session exactly once — start, sets, completion — and a second Retry is a no-op',
+        () async {
+      final orphan = await orphanOnServer();
+      final s = await repo.startSession(day: api.todayResponse);
+      await repo.logSet(s.clientSessionId, set(s.exercises.first, 1));
+      await repo.complete(s.clientSessionId);
+      await eventually(() async => (await repo.syncStatus()).parked > 0);
+
+      // The user's explicit choice (the notice's "Finish it").
+      await api.complete(
+        orphan.id,
+        CompleteSessionRequest(completedAt: orphan.startedAt),
+      );
+      await repo.retryParked();
+
+      await eventually(clean, reason: 'everything drained after the block');
+      expect(api.sessions, hasLength(2));
+      final mine = onServer(s.clientSessionId)!;
+      expect(mine.status, SessionStatus.completed);
+      expect(mine.exercises.first.sets, hasLength(1));
+      final starts = api.calls.where((c) => c == 'start').length;
+      await repo.retryParked();
+      await repo.sync();
+      expect(api.calls.where((c) => c == 'start').length, starts);
+      expect(api.sessions, hasLength(2), reason: 'Retry again changes nothing');
+    });
+
+    test(
+        'app restart with a completed session still queued: the next engine drains it without Retry',
+        () async {
+      api.offline = true;
+      final s = await repo.startSession(day: api.todayResponse);
+      await repo.logSet(s.clientSessionId, set(s.exercises.first, 1));
+      await repo.complete(s.clientSessionId);
+      engine.dispose(); // the app is killed; the queue stays on disk
+
+      api.offline = false;
+      final engine2 = SyncEngine(
+        db,
+        api,
+        baseDelay: const Duration(milliseconds: 1),
+        offlineRetry: const Duration(milliseconds: 20),
+      );
+      addTearDown(engine2.dispose);
+      final restarted = LocalWorkoutRepository(
+        db,
+        api,
+        engine: engine2,
+        uuid: const Uuid(),
+      );
+      // What the app does on launch (SyncCoordinator): one drain.
+      await restarted.sync();
+
+      await eventually(
+        () async => (await restarted.syncStatus()).clean,
+        reason: 'restart drained the queue',
+      );
+      expect(onServer(s.clientSessionId)!.status, SessionStatus.completed);
+    });
+  });
+
   group('H: one live set per position — no duplicates, no 409', () {
     test(
         'a double tap on the same row corrects the set instead of queueing a second',
