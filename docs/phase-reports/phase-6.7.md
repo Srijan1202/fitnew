@@ -433,7 +433,8 @@ NOT VERIFIED YET (by design, later gates)
 
 ### Gate 6.7-2 — Hosted mobile profile — implemented 2026-09-23, awaiting approval
 
-Commits: `c2124e2` (mobile) · `b62a021` (runbook) · this report. Server, contracts,
+Commits: `c2124e2` (mobile) · `b62a021` (runbook) · `5e7d780` / `0a8abbd` (this report) ·
+`5ed2168` (CI: failing Flutter tests named as check-run annotations). Server, contracts,
 `pubspec.yaml`, `tool/alpha.ps1` and MASTER-SPEC unchanged. No GCP resource, no DNS.
 
 HOSTED CONFIGURATION
@@ -512,3 +513,11 @@ INTENTIONALLY / NOT YET VERIFIED
     CI's `ci-mobile` builds the default debug APK on Linux.
   - The derived run.app URL: confirmed only after the first deploy (Gate 6.7-3).
   - Nothing on the S24 yet: hosted install, sign-in and live outage behaviour are Gate 6.7-5.
+  - **One unexplained CI test failure.** `ci-mobile` on `0a8abbd` reported "373 tests passed,
+    1 failed". The test couldn't be named: logs need a token; annotations give counts only.
+    It did **not** recur:
+    - CI on `5ed2168` passed (all three workflows);
+    - the full suite passed 3× in a CPU-limited container (1.5 CPUs);
+    - the timing-sensitive files (automatic sync + all new core tests) passed 8× at 0.5 CPU.
+    Treated as an intermittent test, not fixed. `ci-mobile` now annotates any failing test with
+    its name, file, line and error, so a recurrence is identifiable.
