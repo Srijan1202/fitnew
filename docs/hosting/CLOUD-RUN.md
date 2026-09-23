@@ -200,6 +200,27 @@ foreach ($p in '/livez', '/health', '/docs', '/docs/json') {
 
 ---
 
+## The hosted APK (Gate 6.7-2)
+
+```powershell
+cd apps\mobile
+.\tool\hosted.ps1                                  # needs the service up: checks https://…/health first
+.\tool\hosted.ps1 -SkipHealthCheck                 # before the first deploy
+.\tool\hosted.ps1 -TargetPlatform android-arm64    # this PC: Smart App Control blocks the 32-bit ARM compiler
+.\tool\hosted.ps1 -Install                         # then adb install -r on the S24
+```
+
+- **Where its settings come from:**
+  - The Firebase values come from `apps/mobile/hosted.env`, falling back to `alpha.env` (same Firebase project).
+  - `API_BASE_URL` comes from `hosted.env`. If it isn't set, the script derives Cloud Run's deterministic URL `https://fitos-api-alpha-<project number>.asia-south1.run.app`, where the project number is `FIREBASE_MESSAGING_SENDER_ID`.
+- **After the first deploy:** confirm the derived URL equals `gcloud run services describe fitos-api-alpha --region asia-south1 --format='value(status.url)'`, or set it in `hosted.env`.
+- **What it builds:** `FLAVOR=hosted`, version **1.0.0-alpha.2 (3)** at build time (`pubspec.yaml` unchanged, so the LAN build stays 1.0.0-alpha.1 (2)). Output: `buildpp\outputslutter-apkitos-hosted-1.0.0-alpha.2.apk`.
+- **Refused:**
+  - `http://`, IP addresses (including `10.0.2.2` / `127.0.0.1`), `localhost`, any port, and any path.
+  - The script checks with the app's own rules (`tool/check_hosted_api_url.dart`); Gradle checks the same rules again, so a hand-run `flutter build` can't bypass them.
+  - The generated network config allows **no** unencrypted HTTP at all.
+- **Custom domain:** `https://api.tryfitos.me` later, with `-ApiBaseUrl` or `hosted.env`, once Firebase Hosting rewrites are set up. Not part of 6.7-2.
+
 ## Every release
 
 1. Push to `phase-6.7` (later `main`); `ci-api` goes green and pushes the image.
