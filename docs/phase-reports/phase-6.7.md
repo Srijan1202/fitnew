@@ -471,11 +471,11 @@ OUTAGE HANDLING (C10)
 
 TESTS — mobile **374** (320 → 374; Flutter container), analyze `--fatal-infos`, custom_lint,
 format clean.
-  - URL rules (32): run.app and `api.tryfitos.me` accepted. Rejected: `http://`, `localhost`
+  - URL rules and flavours (29): run.app and `api.tryfitos.me` accepted. Rejected: `http://`, `localhost`
     (+ subdomains), `127.0.0.1`, `10.0.2.2`, `192.168.x`, the LAN IP, IPv6, `0x7f.0.0.1`,
     `:443`, `:8080`, `:8443`, single-label hosts, paths, queries, credentials, empty.
     LAN `alpha` / `local` keep `http://<IP>:8080` (no problem reported).
-  - Mapper (9): 502 / 503 / 504 / Cloud Run 429 → ServiceUnavailable naming the host; FITOS 429
+  - Mapper (8): 502 / 503 / 504 / Cloud Run 429 → ServiceUnavailable naming the host; FITOS 429
     → RateLimited; FITOS 503 keeps its three messages; 500 → Unknown.
   - HTTP plumbing (7): the real Dio client + `DioWorkoutApi` against HTML / plain-text outage
     bodies, each sent once.
