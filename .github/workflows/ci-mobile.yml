@@ -57,7 +57,13 @@ jobs:
         run: dart format --output=none --set-exit-if-changed .
 
       - name: Test
-        run: flutter test
+        run: flutter test --file-reporter json:build/test-results.json
+
+      # Job logs need a token; annotations do not. On failure, name each failed
+      # test (file, line, error) as an annotation (Phase 6.7).
+      - name: Name failing tests
+        if: failure()
+        run: python3 ../../.github/scripts/flutter_test_annotations.py build/test-results.json
 
       # Debug APK is enough to prove the app assembles. Release signing is set
       # up in Phase 19 with the Play Store internal track.
