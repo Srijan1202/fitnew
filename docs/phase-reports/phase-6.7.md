@@ -2,7 +2,8 @@
 
 **Status:** Gate 6.7-0 **approved** (owner, 2026-09-23: O1–O8 as recommended; domain `tryfitos.me`
 claimed, not configured). Gate 6.7-1 (server C1–C8) **implemented, awaiting owner approval** —
-see the Gate 6.7-1 section at the end. No cloud resource created; nothing merged.
+approved by the owner. Gate 6.7-2 (hosted mobile profile) **implemented, awaiting owner approval** —
+see the Gate 6.7-2 section at the end. No cloud resource created; nothing merged.
 
 **Branch** `phase-6.7` from the frozen Phase 6.6 commit `7f2b7c3` · **Not in MASTER-SPEC** (owner
 instruction: an intermediate phase; Phase 7 remains *Food database*) · Supersedes the earlier
@@ -427,3 +428,87 @@ NOT VERIFIED YET (by design, later gates)
   - The Artifact Registry push step (needs WIF, Gate 6.7-3).
   - The app still treats a 503 / 502 / 504 as an ordinary failure — the mobile half of the
     outage handling is Gate 6.7-2 (C10).
+
+---
+
+### Gate 6.7-2 — Hosted mobile profile — implemented 2026-09-23, awaiting approval
+
+Commits: `c2124e2` (mobile) · `b62a021` (runbook) · this report. Server, contracts,
+`pubspec.yaml`, `tool/alpha.ps1` and MASTER-SPEC unchanged. No GCP resource, no DNS.
+
+HOSTED CONFIGURATION
+  - `FLAVOR=hosted`, built by `tool/hosted.ps1` from gitignored `hosted.env`. The Firebase values
+    fall back to `alpha.env` (same project `fitos-dev-3208b`, sign-in unchanged).
+  - `API_BASE_URL` defaults to Cloud Run's deterministic URL
+    `https://fitos-api-alpha-<project number>.asia-south1.run.app`. The project number is
+    `FIREBASE_MESSAGING_SENDER_ID`, and the URL is confirmed after the first deploy (Gate 6.7-3).
+    `https://api.tryfitos.me` comes later via `-ApiBaseUrl` / `hosted.env`; not configured.
+  - Version `1.0.0-alpha.2` (3) via `--build-name/--build-number`. The LAN build keeps
+    `1.0.0-alpha.1` (2).
+  - The address must be https, a DNS name with an alphabetic top-level label, no port (not even
+    `:443`), no path / query / credentials. One rule set, `lib/core/config/hosted_api_url.dart`:
+    - checked by the app at start-up (a bad hosted build stops on the splash with the reason and
+      never initialises Firebase);
+    - checked by the script (`tool/check_hosted_api_url.dart`);
+    - mirrored by `android/app/build.gradle.kts`, which **refuses to build** a hosted APK
+      otherwise.
+  - Network security for https: `base-config cleartextTrafficPermitted=false`, no exceptions.
+  - The sign-in "Backend <host> · FITOS <version>" line shows for `alpha` and `hosted` (not
+    `local`). Profile's build line already shows flavour + host.
+
+OUTAGE HANDLING (C10)
+  - `ServiceUnavailable` is a subtype of `Offline`. It covers:
+    - 502, 504;
+    - 503 from the front end, or FITOS's own `UPSTREAM_UNAVAILABLE` (server message kept);
+    - a 429 **without** the FITOS envelope (Cloud Run).
+  - FITOS's own 429 (`RATE_LIMITED`) stays `RateLimited`, with the same message.
+  - `SyncEngine`: `Offline` (now including `ServiceUnavailable`) and `RateLimited` →
+    `_Stop(retry: true)`. No attempt spent, never parked, the engine wakes itself (15 s doubling
+    to 2 min).
+  - Genuine failures (500 and the rest) are counted and parked exactly as in 6.6.
+  - Ordering, the KI-10 hold and 404 → ad-hoc: untouched.
+  - The retry interceptor is unchanged: a 5xx POST is never re-sent blindly (tested: 1 request).
+
+TESTS — mobile **374** (320 → 374; Flutter container), analyze `--fatal-infos`, custom_lint,
+format clean.
+  - URL rules (32): run.app and `api.tryfitos.me` accepted. Rejected: `http://`, `localhost`
+    (+ subdomains), `127.0.0.1`, `10.0.2.2`, `192.168.x`, the LAN IP, IPv6, `0x7f.0.0.1`,
+    `:443`, `:8080`, `:8443`, single-label hosts, paths, queries, credentials, empty.
+    LAN `alpha` / `local` keep `http://<IP>:8080` (no problem reported).
+  - Mapper (9): 502 / 503 / 504 / Cloud Run 429 → ServiceUnavailable naming the host; FITOS 429
+    → RateLimited; FITOS 503 keeps its three messages; 500 → Unknown.
+  - HTTP plumbing (7): the real Dio client + `DioWorkoutApi` against HTML / plain-text outage
+    bodies, each sent once.
+  - Sync (10): for each of Cloud Run 502, 503, 504, 429, FITOS 503 and FITOS 429, a full session
+    waits through the outage with 0 attempts and 0 parked, retries by itself with backoff (fewer
+    than 40 tries in 400 ms of test time), and after recovery syncs once with no Retry / `sync()`.
+    Also covered:
+    - the 500 contrast (still parks);
+    - offline → Cloud Run 503 → back;
+    - an outage starting mid-session (no duplicate sets);
+    - the **S24 KI-10 queue under a 502 outage** (drains afterwards in the same order, 0 × 409,
+      nothing parked).
+
+BUILDS (this PC)
+  - `tool\hosted.ps1 -SkipHealthCheck -TargetPlatform android-arm64` →
+    `fitos-hosted-1.0.0-alpha.2.apk` (26.2 MB): `com.example.fitos` `1.0.0-alpha.2` (3), not
+    debuggable, network config **cleartext false, no domain exception**, the run.app host
+    compiled in, no LAN IP, no `10.0.2.2`.
+  - Hosted script / Gradle refusals verified: `http://10.160.235.11:8080`, `https://10.0.2.2`,
+    `https://api.tryfitos.me:443`, `https://localhost` → exit 1 with the reason.
+  - LAN: `tool\alpha.ps1` (unchanged; its default debug build) → `/health` 200 at
+    `10.160.235.11`, built. A LAN release build with `alpha.ps1 -Release`'s flags plus
+    `--target-platform android-arm64` → `1.0.0-alpha.1` (2), not debuggable, cleartext **only**
+    for `10.160.235.11` — identical to the Phase 6.6 Gate 8 inspection.
+  - Secret scan of every entry of all three APKs: 0 × the backend Gemini key (compared, not
+    printed), `GEMINI_API_KEY`, model hosts, private keys, service-account JSON, `postgres://`,
+    `neon.tech`, `fitos_app` / `fitos_migrator`, Secret Manager names, `CONSENT_IP_SALT`.
+
+INTENTIONALLY / NOT YET VERIFIED
+  - **All-ABI release builds on this PC:** Windows Smart App Control now blocks Flutter's 32-bit
+    ARM `gen_snapshot.exe` (the 6.6 builds passed). `android-arm64` builds fine, and the S24 is
+    arm64. `hosted.ps1` defaults to all ABIs; `-TargetPlatform android-arm64` is the workaround.
+    A Linux-container build was tried and could not reach Gradle's plugin repository from Docker.
+    CI's `ci-mobile` builds the default debug APK on Linux.
+  - The derived run.app URL: confirmed only after the first deploy (Gate 6.7-3).
+  - Nothing on the S24 yet: hosted install, sign-in and live outage behaviour are Gate 6.7-5.
