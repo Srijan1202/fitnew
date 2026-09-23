@@ -1,5 +1,6 @@
 /**
- * Seed runner for the global reference data in database/seeds/ (§29).
+ * Seed runner for the global reference data in database/seeds/ (§29): the
+ * exercise library (Phase 3) and the food library (Phase 7, food-seed/load.ts).
  *
  * Exercises (Phase 3): the JSON is validated against the contract schema
  * first — a bad entry fails the whole run before a single row is touched —
@@ -22,6 +23,7 @@ import {
 } from '@fitos/contracts';
 
 import { createDatabase } from './client.js';
+import { seedFoods } from './food-seed/load.js';
 import {
   exerciseAlternatives,
   exerciseContraindications,
@@ -155,10 +157,13 @@ if (isDirectRun) {
     process.exit(1);
   }
   seedExercises(url)
-    .then((r) => {
+    .then(async (r) => {
       console.log(
         `seeded ${r.exercises} exercises, ${r.muscles} muscle rows, ${r.alternatives} alternatives, ${r.contraindications} contraindications`,
       );
+      // Phase 7 — the food library, from database/seeds/foods.json.
+      const f = await seedFoods(url);
+      console.log(`seeded ${f.foods} foods, ${f.nutritionRows} nutrition rows, ${f.aliases} aliases`);
     })
     .catch((error: unknown) => {
       console.error(error);

@@ -70,7 +70,7 @@ describeIfDb('migrations (real Postgres)', () => {
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
   const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
   const PHASE6_TABLES = ['muscle_volume_weekly', 'exercise_rejections'];
-  const TOTAL_MIGRATIONS = 9;
+  const TOTAL_MIGRATIONS = 10;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -308,6 +308,40 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'mig-name'`;
   });
 
+  it('0009: food library — ranges enforced, fibre both-or-neither, ownership follows source, estimates never verified, aliases normalised, cascades (Phase 7)', async () => {
+    for (const t of ['foods', 'food_nutrition', 'food_aliases']) expect(await tableExists(client, t), t).toBe(true);
+    const [g] = await client<{ id: string; search_name: string }[]>`
+      insert into foods (slug, name, source, source_ref, is_verified) values ('mig-dal', 'Dal (Tadka)!', 'estimated', 'test', false)
+      returning id, search_name`;
+    expect(g!.search_name).toBe('dal tadka');
+    const row = (over: string) => client.unsafe(
+      `insert into food_nutrition (food_id, position, basis, serving_label, serving_grams, kcal_low, kcal_high, protein_low, protein_high, carb_low, carb_high, fat_low, fat_high, fibre_low, fibre_high, confidence)
+       values ('${g!.id}', ${over})`,
+    );
+    await row(`0, 'per_serving', '1 katori', 150, 120, 185, 6, 9, 16, 23, 3, 7, null, null, 'medium'`);
+    await expect(row(`1, 'per_serving', 'x1', 150, 200, 100, 6, 9, 16, 23, 3, 7, null, null, 'medium'`)).rejects.toThrow(/kcal_range/);
+    await expect(row(`2, 'per_serving', 'x2', 150, 100, 120, 6, 9, 16, 23, 3, 7, 2, null, 'medium'`)).rejects.toThrow(/fibre_range/);
+    await expect(row(`3, 'per_serving', 'x3', 150, 100, 120, 6, 9, 16, 23, 3, 7, 3, 1, 'medium'`)).rejects.toThrow(/fibre_range/);
+    await expect(row(`4, 'per_serving', 'x4', 150, -1, 120, 6, 9, 16, 23, 3, 7, null, null, 'medium'`)).rejects.toThrow(/nonnegative/);
+    await expect(client`update foods set is_verified = true where id = ${g!.id}`).rejects.toThrow(/unverified_sources/);
+    await expect(client`insert into foods (slug, name, source, client_food_id) values ('mig-u', 'X', 'user', gen_random_uuid())`).rejects.toThrow(/owner_matches_source/);
+    await expect(client`insert into food_aliases (food_id, alias) values (${g!.id}, 'Dhal')`).rejects.toThrow(/normalised/);
+    await client`insert into food_aliases (food_id, alias) values (${g!.id}, 'dhal')`;
+
+    await client`insert into users (firebase_uid) values ('mig-food')`;
+    const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-food'`;
+    await expect(client`insert into foods (slug, name, source, owner_user_id) values ('mig-c0', 'Bar', 'user', ${u!.id})`).rejects.toThrow(/client_id_custom_only/);
+    await client`insert into foods (slug, name, source, owner_user_id, client_food_id) values ('mig-c1', 'Bar', 'user', ${u!.id}, '11111111-1111-4111-8111-111111111111')`;
+    await expect(
+      client`insert into foods (slug, name, source, owner_user_id, client_food_id) values ('mig-c2', 'Bar', 'user', ${u!.id}, '11111111-1111-4111-8111-111111111111')`,
+    ).rejects.toThrow(/foods_owner_client_idx/);
+    await client`delete from users where id = ${u!.id}`;
+    expect((await client`select 1 from foods where slug = 'mig-c1'`).length).toBe(0);
+    await client`delete from foods where id = ${g!.id}`;
+    expect((await client`select 1 from food_nutrition where food_id = ${g!.id}`).length).toBe(0);
+    expect((await client`select 1 from food_aliases where food_id = ${g!.id}`).length).toBe(0);
+  });
+
   it('one active goal per user is a database fact', async () => {
     await client`insert into users (firebase_uid) values ('mig-goal')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-goal'`;
@@ -362,7 +396,14 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'uid-dup'`;
   });
 
-  it('down removes 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+  it('down removes 0009, 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0009_food_library');
+    for (const t of ['foods', 'food_nutrition', 'food_aliases']) expect(await tableExists(client, t), t).toBe(false);
+    const foodEnums = await client<{ typname: string }[]>`
+      select typname from pg_type where typname in ('food_source', 'nutrition_basis', 'nutrition_confidence')`;
+    expect(foodEnums).toHaveLength(0);
+    expect(await appliedCount(client)).toBe(9);
+
     expect(await rollbackLastMigration(connectionString)).toBe('0008_display_name');
     const ucols = await client<{ column_name: string }[]>`
       select column_name from information_schema.columns where table_name = 'users'`;

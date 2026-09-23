@@ -13,13 +13,16 @@ import { pgEnum } from 'drizzle-orm/pg-core';
 import {
   ALLERGENS,
   ALTERNATIVE_REASONS,
+  CONFIDENCE_LEVELS,
   CONSENT_TYPES,
   DIFFICULTIES,
   EQUIPMENT,
+  FOOD_SOURCES,
   GOAL_TYPES,
   MOVEMENT_PATTERNS,
   MUSCLE_GROUPS,
   MUSCLE_ROLES,
+  NUTRITION_BASES,
   ONBOARDING_STEPS,
   ONBOARDING_COMPLETE,
   PR_TYPES,
@@ -62,3 +65,8 @@ export const programSourceEnum = pgEnum('program_source', PROGRAM_SOURCES);
 export const setTypeEnum = pgEnum('set_type', SET_TYPES);
 export const sessionStatusEnum = pgEnum('session_status', SESSION_STATUSES);
 export const prTypeEnum = pgEnum('pr_type', PR_TYPES);
+
+// Phase 7 — food library
+export const foodSourceEnum = pgEnum('food_source', FOOD_SOURCES);
+export const nutritionBasisEnum = pgEnum('nutrition_basis', NUTRITION_BASES);
+export const nutritionConfidenceEnum = pgEnum('nutrition_confidence', CONFIDENCE_LEVELS);

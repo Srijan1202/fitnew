@@ -25590,6 +25590,927 @@
         }
       }
     },
+    "/nutrition/foods/search": {
+      "get": {
+        "summary": "Search foods: exact name, then alias, prefix, fuzzy. Global foods plus your own custom foods.",
+        "tags": [
+          "nutrition"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "in": "query",
+            "name": "q",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "slug": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "name": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "brand": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "barcode": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "source": {
+                            "type": "string",
+                            "enum": [
+                              "estimated",
+                              "usda",
+                              "ifct",
+                              "indb",
+                              "user",
+                              "user-corrected"
+                            ]
+                          },
+                          "sourceRef": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "isVerified": {
+                            "type": "boolean"
+                          },
+                          "isCustom": {
+                            "type": "boolean"
+                          },
+                          "aliases": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "nutrition": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "basis": {
+                                  "type": "string",
+                                  "enum": [
+                                    "per_100g",
+                                    "per_serving"
+                                  ]
+                                },
+                                "servingLabel": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 60
+                                },
+                                "servingGrams": {
+                                  "type": "number",
+                                  "exclusiveMinimum": true,
+                                  "minimum": 0,
+                                  "maximum": 5000,
+                                  "nullable": true
+                                },
+                                "kcalLow": {
+                                  "type": "number",
+                                  "minimum": 0
+                                },
+                                "kcalHigh": {
+                                  "type": "number",
+                                  "minimum": 0
+                                },
+                                "proteinLow": {
+                                  "type": "number",
+                                  "minimum": 0
+                                },
+                                "proteinHigh": {
+                                  "type": "number",
+                                  "minimum": 0
+                                },
+                                "carbLow": {
+                                  "type": "number",
+                                  "minimum": 0
+                                },
+                                "carbHigh": {
+                                  "type": "number",
+                                  "minimum": 0
+                                },
+                                "fatLow": {
+                                  "type": "number",
+                                  "minimum": 0
+                                },
+                                "fatHigh": {
+                                  "type": "number",
+                                  "minimum": 0
+                                },
+                                "fibreLow": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "nullable": true
+                                },
+                                "fibreHigh": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "nullable": true
+                                },
+                                "confidence": {
+                                  "type": "string",
+                                  "enum": [
+                                    "high",
+                                    "medium",
+                                    "low"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "basis",
+                                "servingLabel",
+                                "servingGrams",
+                                "kcalLow",
+                                "kcalHigh",
+                                "proteinLow",
+                                "proteinHigh",
+                                "carbLow",
+                                "carbHigh",
+                                "fatLow",
+                                "fatHigh",
+                                "fibreLow",
+                                "fibreHigh",
+                                "confidence"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "minItems": 1
+                          },
+                          "match": {
+                            "type": "string",
+                            "enum": [
+                              "exact",
+                              "alias",
+                              "prefix",
+                              "fuzzy"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "slug",
+                          "name",
+                          "brand",
+                          "barcode",
+                          "source",
+                          "sourceRef",
+                          "isVerified",
+                          "isCustom",
+                          "aliases",
+                          "nutrition",
+                          "match"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nutrition/foods": {
+      "post": {
+        "summary": "Create a custom food from a label (retry-safe by clientFoodId; visible only to you)",
+        "tags": [
+          "nutrition"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "clientFoodId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "brand": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60,
+                    "nullable": true
+                  },
+                  "basis": {
+                    "type": "string",
+                    "enum": [
+                      "per_100g",
+                      "per_serving"
+                    ]
+                  },
+                  "servingLabel": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60
+                  },
+                  "servingGrams": {
+                    "type": "number",
+                    "exclusiveMinimum": true,
+                    "minimum": 0,
+                    "maximum": 5000,
+                    "nullable": true
+                  },
+                  "kcal": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 5000
+                  },
+                  "proteinG": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 500
+                  },
+                  "carbG": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 500
+                  },
+                  "fatG": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 500
+                  },
+                  "fibreG": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 500,
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "clientFoodId",
+                  "name",
+                  "basis",
+                  "kcal",
+                  "proteinG",
+                  "carbG",
+                  "fatG"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "slug": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "brand": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "barcode": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "estimated",
+                        "usda",
+                        "ifct",
+                        "indb",
+                        "user",
+                        "user-corrected"
+                      ]
+                    },
+                    "sourceRef": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "isVerified": {
+                      "type": "boolean"
+                    },
+                    "isCustom": {
+                      "type": "boolean"
+                    },
+                    "aliases": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "nutrition": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "basis": {
+                            "type": "string",
+                            "enum": [
+                              "per_100g",
+                              "per_serving"
+                            ]
+                          },
+                          "servingLabel": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          },
+                          "servingGrams": {
+                            "type": "number",
+                            "exclusiveMinimum": true,
+                            "minimum": 0,
+                            "maximum": 5000,
+                            "nullable": true
+                          },
+                          "kcalLow": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "kcalHigh": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "proteinLow": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "proteinHigh": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "carbLow": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "carbHigh": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "fatLow": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "fatHigh": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "fibreLow": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "fibreHigh": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "confidence": {
+                            "type": "string",
+                            "enum": [
+                              "high",
+                              "medium",
+                              "low"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "basis",
+                          "servingLabel",
+                          "servingGrams",
+                          "kcalLow",
+                          "kcalHigh",
+                          "proteinLow",
+                          "proteinHigh",
+                          "carbLow",
+                          "carbHigh",
+                          "fatLow",
+                          "fatHigh",
+                          "fibreLow",
+                          "fibreHigh",
+                          "confidence"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "slug",
+                    "name",
+                    "brand",
+                    "barcode",
+                    "source",
+                    "sourceRef",
+                    "isVerified",
+                    "isCustom",
+                    "aliases",
+                    "nutrition"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "slug": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "brand": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "barcode": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "estimated",
+                        "usda",
+                        "ifct",
+                        "indb",
+                        "user",
+                        "user-corrected"
+                      ]
+                    },
+                    "sourceRef": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "isVerified": {
+                      "type": "boolean"
+                    },
+                    "isCustom": {
+                      "type": "boolean"
+                    },
+                    "aliases": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "nutrition": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "basis": {
+                            "type": "string",
+                            "enum": [
+                              "per_100g",
+                              "per_serving"
+                            ]
+                          },
+                          "servingLabel": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          },
+                          "servingGrams": {
+                            "type": "number",
+                            "exclusiveMinimum": true,
+                            "minimum": 0,
+                            "maximum": 5000,
+                            "nullable": true
+                          },
+                          "kcalLow": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "kcalHigh": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "proteinLow": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "proteinHigh": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "carbLow": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "carbHigh": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "fatLow": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "fatHigh": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "fibreLow": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "fibreHigh": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          },
+                          "confidence": {
+                            "type": "string",
+                            "enum": [
+                              "high",
+                              "medium",
+                              "low"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "basis",
+                          "servingLabel",
+                          "servingGrams",
+                          "kcalLow",
+                          "kcalHigh",
+                          "proteinLow",
+                          "proteinHigh",
+                          "carbLow",
+                          "carbHigh",
+                          "fatLow",
+                          "fatHigh",
+                          "fibreLow",
+                          "fibreHigh",
+                          "confidence"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "slug",
+                    "name",
+                    "brand",
+                    "barcode",
+                    "source",
+                    "sourceRef",
+                    "isVerified",
+                    "isCustom",
+                    "aliases",
+                    "nutrition"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/ai/status": {
       "get": {
         "summary": "Whether FITOS AI is set up on this server, and what it never sees",

@@ -118,6 +118,7 @@ jobs:
           check 404 http://localhost:8080/docs/json
           # Route must exist (401), not be missing (404) from a stale build.
           check 401 -X POST http://localhost:8080/v1/auth/session -H 'content-type: application/json' -d '{}'
+          check 401 'http://localhost:8080/v1/nutrition/foods/search?q=rice'
           docker rm -f api-smoke
 
       # Phase 6.7 (O5) — publish the image that was just smoke-tested.

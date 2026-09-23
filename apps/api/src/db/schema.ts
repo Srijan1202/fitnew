@@ -16,6 +16,7 @@
  *   Phase 4  programs, program_days, planned_exercises, planned_sets
  *   Phase 5  workout_sessions, session_exercises, set_logs, exercise_prs
  *   Phase 6  muscle_volume_weekly, exercise_rejections (+ programs deload columns)
+ *   Phase 7  foods, food_nutrition, food_aliases
  */
 export * from './schema/enums.js';
 export * from './schema/users.js';
@@ -26,3 +27,4 @@ export * from './schema/exercise.js';
 export * from './schema/training.js';
 export * from './schema/workout.js';
 export * from './schema/volume.js';
+export * from './schema/food.js';
