@@ -13,6 +13,7 @@ import {
   isResponseSerializationError,
 } from 'fastify-type-provider-zod';
 
+import { isDatabaseUnavailable } from '../db/errors.js';
 import { AppError, HTTP_STATUS_FOR_CODE, type ErrorCode } from '../lib/errors.js';
 
 function envelope(
@@ -101,6 +102,16 @@ export default fp(
         void reply
           .status(429)
           .send(envelope('RATE_LIMITED', 'Too many requests. Slow down and retry.', request.id));
+        return;
+      }
+
+      // The database is unreachable (Phase 6.7): temporary, not our bug. 503
+      // tells the phone to wait and retry instead of counting a failure.
+      if (isDatabaseUnavailable(error)) {
+        request.log.error({ err: error }, 'Database unavailable');
+        void reply
+          .status(HTTP_STATUS_FOR_CODE.UPSTREAM_UNAVAILABLE)
+          .send(envelope('UPSTREAM_UNAVAILABLE', 'FITOS is temporarily unavailable. Try again shortly.', request.id));
         return;
       }
 

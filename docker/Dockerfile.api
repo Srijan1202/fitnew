@@ -37,6 +37,13 @@ COPY --from=build /app/packages ./packages
 COPY --from=build /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=build /app/apps/api/dist ./apps/api/dist
 COPY --from=build /app/apps/api/package.json ./apps/api/
+# Phase 6.7 — the release's own migrations and seed data, so the SAME image
+# runs them as Cloud Run jobs before its revision takes traffic:
+#   node apps/api/dist/db/migrate.js up     node apps/api/dist/db/seed.js
+# (both resolve ../../../../database/ from dist/db → /app/database). Never
+# run by the server itself on boot.
+COPY database/migrations ./database/migrations
+COPY database/seeds ./database/seeds
 
 # Never run as root.
 USER node

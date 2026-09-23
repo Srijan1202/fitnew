@@ -12,7 +12,7 @@ import {
   jsonSchemaTransform,
 } from 'fastify-type-provider-zod';
 
-import type { Env } from './lib/env.js';
+import { isHostedEnvironment, parseTrustProxy, type Env } from './lib/env.js';
 import type { DatabaseHandle } from './db/client.js';
 import { loggerOptions } from './lib/logger.js';
 import { FirebaseTokenVerifier, type TokenVerifier } from './lib/token-verifier.js';
@@ -52,8 +52,10 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
   const app = Fastify({
     logger: loggerOptions(env.LOG_LEVEL, env.NODE_ENV === 'development'),
     // Cloud Run terminates TLS and forwards the client IP in X-Forwarded-For;
-    // without this the rate limiter would see one proxy IP for every user.
-    trustProxy: true,
+    // without trusting it the rate limiter would see one proxy IP for every
+    // user. How far to trust it is TRUST_PROXY (Phase 6.7): a hop count when
+    // hosted, because the first entry is whatever the client sent.
+    trustProxy: parseTrustProxy(env.TRUST_PROXY),
     disableRequestLogging: false,
   });
 
@@ -88,7 +90,11 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
     },
     transform: jsonSchemaTransform,
   });
-  await app.register(swaggerUi, { routePrefix: '/docs' });
+  // The document itself stays (the OpenAPI export reads it); the browsable
+  // /docs and /docs/json are not published from a hosted server (Phase 6.7).
+  if (!isHostedEnvironment(env.NODE_ENV)) {
+    await app.register(swaggerUi, { routePrefix: '/docs' });
+  }
 
   // §10: default 120 req/min/user. /auth/session tightens this to 10/min/IP on
   // its own routes; AI routes tighten further in Phase 14.

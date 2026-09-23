@@ -4,7 +4,7 @@
  * tools it drew on out. Default-deny like every /v1 route; chat is rate
  * limited tighter than the rest (§10: AI routes tighten).
  */
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 import { aiChatRequestSchema, aiChatResponseSchema, aiStatusResponseSchema, errorEnvelopeSchema } from '@fitos/contracts';
@@ -27,8 +27,22 @@ function requireUserId(userId: string | null): string {
   return userId;
 }
 
-/** Per-user: a chat is a model call; 20 a minute is generous for a person. */
-export const AI_CHAT_RATE_LIMIT = { max: 20, timeWindow: '1 minute' };
+/**
+ * Per user: a chat is a model call; 20 a minute is generous for a person.
+ *
+ * Keyed by the authenticated user (Phase 6.7, O7). Until then it fell back to
+ * the plugin's default key, the client IP — people sharing a carrier NAT or
+ * a Wi-Fi shared one allowance. It runs at preHandler because the user id is
+ * only known once the auth hook (onRequest) has verified the token; a request
+ * without a valid token is refused there and never reaches this limit.
+ */
+export const AI_CHAT_RATE_LIMIT = {
+  max: 20,
+  timeWindow: '1 minute',
+  hook: 'preHandler',
+  keyGenerator: (request: FastifyRequest): string =>
+    request.userId !== null ? `user:${request.userId}` : `ip:${request.ip}`,
+} as const;
 
 export async function aiRoutes(app: FastifyInstance): Promise<void> {
   const db = app.database.db;

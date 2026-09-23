@@ -13,6 +13,12 @@ export const healthResponseSchema = z.object({
   }),
 });
 
+/** GET /livez (Phase 6.7): the process answers. No database, no network. */
+export const livezResponseSchema = z.object({
+  status: z.literal('ok'),
+  uptimeSeconds: z.number().nonnegative(),
+});
+
 export const healthUnavailableSchema = z.object({
   error: z.object({
     code: z.literal('UPSTREAM_UNAVAILABLE'),

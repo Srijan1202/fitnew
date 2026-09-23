@@ -306,6 +306,22 @@ describeIfDb('/v1/ai (real Postgres, scripted model)', () => {
     const after = await sql<{ n: number }[]>`select (select count(*) from set_logs)::int + (select count(*) from workout_sessions)::int + (select count(*) from programs)::int + (select count(*) from users)::int as n`;
     expect(after[0]!.n).toBe(before[0]!.n);
   });
+
+  it('Phase 6.7 (O7): the chat limit is per user — two people behind one IP each get their own 20 a minute', async () => {
+    const [alice, bob] = [await onboarded('Rate A'), await onboarded('Rate B')];
+    const sameIp = (token: string) => ({ authorization: `Bearer ${token}`, 'x-forwarded-for': '203.0.116.240' });
+    const send = (token: string) =>
+      app.inject({ method: 'POST', url: '/v1/ai/chat', headers: sameIp(token), payload: { message: 'hi' } });
+    for (let i = 0; i < 20; i += 1) {
+      const r = await send(alice);
+      expect(r.statusCode, `alice #${i + 1}: ${r.body}`).toBe(200);
+    }
+    const refused = await send(alice);
+    expect(refused.statusCode).toBe(429);
+    expect(refused.json().error.code).toBe('RATE_LIMITED');
+    // Same IP, different user: untouched by alice's allowance.
+    expect((await send(bob)).statusCode).toBe(200);
+  });
 });
 
 const TOOL_LIKE_CALLS = [
