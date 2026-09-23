@@ -16,8 +16,53 @@ verified on the Samsung S24.
 | KI-7 | No way to edit personal details collected at onboarding | Medium | No | Implemented (Gate 7), **S24 retest pending** |
 | KI-8 | Every new session refused: "A session is already in progress" (409), Retry never helps | High | Yes — fixed, **S24 retest pending** | Fixed in code (Gate 7), see below — the orphan was discarded on the S24 via the notice (01:07:31) |
 | KI-9 | Queued sessions refused 404 "That day is not in your active programme" after the programme was replaced | High | Yes — fixed, **S24 retest pending** | Fixed in code (Gate 7), see below |
+| KI-10 | After KI-9's fix: each old session one 404, then repeated 409 "A session is already in progress" — the phone's own newer session blocked them, and they blocked its completion | High | Yes — fixed, **S24 retest pending** | Fixed in code (Gate 7), see below |
 
 ---
+
+## KI-10 — Old queued sessions and the phone's own newer session wait on each other (fixed in code; S24 retest pending)
+
+**Seen on the S24 (API log 2026-09-23 01:43:51–01:45:46 UTC, APK `d362279`):**
+per old session exactly **one** 404 then the ad-hoc resend (KI-9's fix
+working) — and that resend, and every retry after it, → **409 "A session is
+already in progress"**; five tries, parked; Retry repeats.
+
+**Database:** the session holding the slot was **this phone's own**
+`a0932540…` (Bro Split, started and synced normally); it was completed on the
+phone at 01:43:23 but its `/complete` reached the server only at 01:45:43.
+None of the old sessions was created — they are still on the phone.
+
+**Cause — `SyncEngine._loop` (`sync_engine.dart`), two rules together:**
+1. **Global queue order.** An entry was only sent when *no* earlier entry
+   was pending, and a failed entry in backoff stopped the whole drain. The
+   old starts had lower queue ids than `a0932540`'s completion, so the
+   completion waited behind them.
+2. **409 was a generic failure.** The old starts were refused because
+   `a0932540` was still open on the server — which only that completion
+   (queued behind them) could change. Circular wait → 5 attempts → park.
+
+**Fix (Flutter only; the server's one-active-session rule unchanged):**
+- Order is kept **within a session** (start → exercises → sets → completion),
+  not across sessions: another session's pending entry no longer holds one
+  back, and one session's backoff no longer stops the others.
+- A queued **start is not sent while another of this phone's sessions is
+  open on the server** (it has a server id and is in progress here, or its
+  completion / discard is still queued). It waits — no attempt counted,
+  never parked — and goes as soon as that session's close is acknowledged.
+- A start refused (409) naming **one of this phone's own sessions** (its
+  local view was behind) is the same wait, one request per sync pass at
+  most. A 409 naming a session this phone does **not** know (KI-8's orphan)
+  still fails, parks and shows the "Unfinished session on FITOS" notice.
+- Nothing is marked synced unless the server accepted it; old sessions are
+  never mapped onto a day of the new programme (they go ad-hoc, KI-9).
+
+**Test:** `automatic_sync_test.dart` group "Gate 7 (S24, … 01:43–01:45 UTC)"
+replays the S24 queue — on the previous engine it ends with all six old
+entries parked after repeated refused starts; now: Y's completion, then per old
+session one 404 → one 201 → sets → completion, zero 409s, nothing parked.
+
+**On the S24 now:** install the new APK; if the "not synced · Retry" pill
+shows, tap **Retry** once — the old sessions sync as ad-hoc sessions.
 
 ## KI-9 — A queued session names a day of a programme that was replaced (fixed in code; S24 retest pending)
 

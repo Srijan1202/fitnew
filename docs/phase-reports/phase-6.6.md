@@ -299,13 +299,32 @@ KI-8 — "A SESSION IS ALREADY IN PROGRESS" ON EVERY START (fixed in code; retes
     and completion exactly once; restart with a queued completion drains; the notice's Finish /
     Discard / Not now / failure / not-for-own-session; the sign-out guard. Mobile 311, API 237.
 
+KI-9 — QUEUED SESSIONS FROM A REPLACED PROGRAMME → 404 (fixed in code, `d362279`; retest I1–I4)
+  - Starts queued while Upper / Lower was active named its day ids; the programme was replaced
+    before they synced, so the server's day check refused them (404) — correctly. A start refused
+    as NotFound is resent once without `programDayId` (ad-hoc, owner 8.6, own exercises kept);
+    never remapped. Server validation unchanged.
+
+KI-10 — OLD SESSIONS AND THE PHONE'S OWN NEWER SESSION WAIT ON EACH OTHER (fixed in code; retest J1–J5)
+  - S24 log 01:43:51–01:45:46 UTC: one 404 per old session (KI-9 working), then 409 on every
+    resend; the slot was held by this phone's own `a0932540…`, whose `/complete` was queued behind
+    the old starts. `SyncEngine._loop` kept one global queue order (and stopped the drain on any
+    backoff) and treated 409 as a generic failure → circular wait → parked.
+  - Fix (Flutter only; server one-active rule unchanged): order within a session only; a queued
+    start waits (no attempt, never parked) while another of this phone's sessions is open on the
+    server; a 409 naming the phone's own session is the same wait (one request per pass); a 409
+    naming an unknown session still parks and surfaces the orphan notice.
+  - Tests: 4 in `automatic_sync_test.dart` — the S24 queue replayed (fails on the previous engine:
+    six entries parked after repeated refused starts), a start waiting behind an in-progress session with
+    no request sent, a 409 naming the phone's own session, the orphan still parking. Mobile 320.
+
 S24 ACCEPTANCE — pending (owner): `docs/alpha/PHASE-6.6-ALPHA-CHECKLIST.md` §B (A–F, 45 rows),
-§B-G (G1–G12, KI-6 / KI-7) and §B-H (H1–H8, KI-8 — do these first)
+§B-G (G1–G12, KI-6 / KI-7), §B-H (H1–H8, KI-8), §B-I (I1–I4, KI-9) and §B-J (J1–J5, KI-10)
 with the failure log in §C. PC-verified rows are pre-marked. Health Connect E6 (Connect) is expected
 ❌ and is recorded, not waived.
 
 KNOWN ISSUES → `docs/alpha/KNOWN-ISSUES.md` (KI-1 Health Connect Connect — **PASS on the S24**;
-KI-6 sync, KI-7 personal details — fixed, retest pending;
+KI-6 sync, KI-7 personal details, KI-8 orphan, KI-9 stale day, KI-10 queue wait — fixed, retest pending;
 KI-2 compiled-in LAN address; KI-3 Gemini free-tier quota; KI-4 application id + debug signing;
 KI-5 release-mode APK not yet run on a device).
 

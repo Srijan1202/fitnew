@@ -196,6 +196,18 @@ Do these **first**, before new sessions, on the new APK:
 | I3 | Training → today (Wednesday = Shoulders) → Start → log 2 sets → Complete | 201 once, syncs by itself, History + Home update | |
 | I4 | Offline: start a session → Training → apply another programme (AI or template) online later → Complete → Wi-Fi on | The session syncs as ad-hoc (one 404 then 201), not parked | |
 
+### B-J. Retest — old sessions waiting behind a newer one (KI-10)
+
+Do these on the new APK, **before** I1–I4 if those have not been done yet:
+
+| # | Do | Expect | Result |
+|---|---|---|---|
+| J1 | Install; open FITOS. If "n not synced · Retry" shows, tap **Retry** once | Pill clears within seconds. `docker compose logs api`: per old session **one 404 then one 201**, then its sets and `/complete` — **no 409** | |
+| J2 | History | The old sessions appear as ad-hoc "Session" entries with their sets; the Bro Split sessions unchanged | |
+| J3 | PC: `docker compose exec postgres psql -U fitos -d fitos -c "select status, count(*) from workout_sessions group by 1"` | At most one `active` | |
+| J4 | Wi-Fi off → Start today's session → log 2 sets → Complete → Wi-Fi on | Syncs by itself: one 201, sets, complete — no Retry, no 409 | |
+| J5 | Start a session (online), log a set; leave it **in progress**; tap Retry if the pill shows | Nothing old is sent while it is open (no 409 in the log); Complete it → any queued old work follows by itself | |
+
 ## C. Failure log
 
 One entry per ❌ or ⚠:
