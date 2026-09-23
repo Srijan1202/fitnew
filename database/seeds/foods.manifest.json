@@ -1,0 +1,4723 @@
+{
+  "manifestVersion": 1,
+  "builderVersion": "1.0.0",
+  "builder": "apps/api/src/scripts/build-food-seed.ts",
+  "datasets": [
+    {
+      "key": "foundation",
+      "name": "USDA FoodData Central — Foundation Foods",
+      "release": "2026-04-30",
+      "releaseDate": "2026-04-30",
+      "file": "FoodData_Central_foundation_food_json_2026-04-30.zip",
+      "sha256": "186e988ec542e913f51ef62b86a47758e8cdd0d1dc3889e7b055581f3c09c77a",
+      "license": "Public domain — \"USDA FoodData Central data are in the public domain and they are not copyrighted. They are published under CC0 1.0 Universal (CC0 1.0).\" (FDC API guide)",
+      "citation": "U.S. Department of Agriculture, Agricultural Research Service. FoodData Central, 2019. fdc.nal.usda.gov."
+    },
+    {
+      "key": "sr_legacy",
+      "name": "USDA FoodData Central — SR Legacy",
+      "release": "2018-04",
+      "releaseDate": "2018-04",
+      "file": "FoodData_Central_sr_legacy_food_json_2018-04.zip",
+      "sha256": "0fe8ae486a2c8eb42cb96413f058deb51863a46c8fb8eeb4b1fb45006dd338ef",
+      "license": "Public domain — \"USDA FoodData Central data are in the public domain and they are not copyrighted. They are published under CC0 1.0 Universal (CC0 1.0).\" (FDC API guide)",
+      "citation": "U.S. Department of Agriculture, Agricultural Research Service. FoodData Central, 2019. fdc.nal.usda.gov."
+    }
+  ],
+  "excludedSources": [
+    "USDA FoodData Central — Branded Foods (industry-provided label data)",
+    "USDA FoodData Central — FNDDS / Survey Foods",
+    "USDA FoodData Central — Experimental Foods",
+    "IFCT 2017 (licensing not confirmed in writing)",
+    "INDB (licensing not confirmed in writing)"
+  ],
+  "inputs": {
+    "usdaPicks": {
+      "file": "database/seeds/food-sources/usda-picks.json",
+      "version": 1,
+      "sha256": "4384d63484691fd6b7fd0e9293e5fd900d380eff345dd3149ed28d04d3fef26d"
+    },
+    "carried": {
+      "file": "database/seeds/food-sources/carried.json",
+      "version": 1,
+      "sha256": "e35ef209bf95902b50606fb5837486f25eaed530379d17918f5c540949a7503c"
+    },
+    "recipes": {
+      "file": "database/seeds/food-sources/recipes.json",
+      "version": 1,
+      "sha256": "f2367911309b3525d5de3a7b1fc232934318bd8957d9c1763385c991a182a4b4"
+    }
+  },
+  "seed": {
+    "file": "database/seeds/foods.json",
+    "sha256": "5fdc8cdeb2c35a8e2e4bb99878571d1f3b73f9de219669b8c8ec33623fe1067b"
+  },
+  "counts": {
+    "total": 305,
+    "usda": 175,
+    "estimatedCarried": 76,
+    "estimatedComposite": 54,
+    "nutritionRows": 580,
+    "aliases": 339,
+    "usdaPicksDropped": 0,
+    "targetApprox": 500,
+    "gapToTarget": 195
+  },
+  "rules": {
+    "usdaEnergy": "nutrient 208 (Energy, kcal); if absent 958 (Atwater specific), then 957 (Atwater general)",
+    "usdaRounding": "nearest: kcal to 0 decimals, grams to 1 decimal; low == high",
+    "usdaPortions": "per 100 g, plus up to two USDA household portions in USDA order (RACC, labels over 60 characters and portions over 1000 g skipped)",
+    "compositeRounding": "outward: lows rounded down, highs rounded up (kcal 0 decimals, grams 1 decimal)",
+    "wideningRule": "sum ingredients (per-100 g × grams / 100); low end with the least oil, high end with the most; then low × (1 − w), high × (1 + w) with the recipe's w",
+    "fibre": "null (unknown) when the source does not report it — never 0; a composite is unknown if any ingredient is",
+    "carriedConfidence": "carried-over core estimates keep their numbers unchanged; a core confidence of high is seeded as medium (a FITOS estimate is never high)"
+  },
+  "usdaFoods": [
+    {
+      "slug": "almonds-raw",
+      "fdcId": 2346393,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Nuts, almonds, whole, raw",
+      "energyNutrient": "958",
+      "fibreReported": true,
+      "portions": 0
+    },
+    {
+      "slug": "amaranth-grain",
+      "fdcId": 170682,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Amaranth grain, uncooked",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "apple-raw-with-skin",
+      "fdcId": 171688,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "ash-gourd-raw",
+      "fdcId": 170069,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Waxgourd, (chinese preserving melon), raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "banana-raw",
+      "fdcId": 173944,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Bananas, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "barley-pearled-raw",
+      "fdcId": 170284,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Barley, pearled, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "beans-snap-green-raw",
+      "fdcId": 2346400,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Beans, snap, green, raw",
+      "energyNutrient": "958",
+      "fibreReported": true,
+      "portions": 0
+    },
+    {
+      "slug": "beets-raw",
+      "fdcId": 2685576,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Beets, raw",
+      "energyNutrient": "958",
+      "fibreReported": true,
+      "portions": 0
+    },
+    {
+      "slug": "bitter-gourd-raw",
+      "fdcId": 168393,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Balsam-pear (bitter gourd), pods, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "black-pepper",
+      "fdcId": 170931,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Spices, pepper, black",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "bottle-gourd-raw",
+      "fdcId": 169232,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Gourd, white-flowered (calabash), raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "bread-white",
+      "fdcId": 174924,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Bread, white, commercially prepared (includes soft bread crumbs)",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "bread-whole-wheat",
+      "fdcId": 172688,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Bread, whole-wheat, commercially prepared",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "broccoli-raw",
+      "fdcId": 747447,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Broccoli, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "buckwheat-flour",
+      "fdcId": 170687,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Buckwheat flour, whole-groat",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "butter-oil-anhydrous",
+      "fdcId": 173412,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Butter oil, anhydrous",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "butter-salted",
+      "fdcId": 173410,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Butter, salted",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "cabbage-raw",
+      "fdcId": 169975,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Cabbage, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "cantaloupe-raw",
+      "fdcId": 746770,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Melons, cantaloupe, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "cardamom",
+      "fdcId": 170919,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Spices, cardamom",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "carrots-raw",
+      "fdcId": 170393,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Carrots, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "cashews-dry-roasted",
+      "fdcId": 170571,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Nuts, cashew nuts, dry roasted, without salt added",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "cashews-raw",
+      "fdcId": 2515374,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Nuts, cashew nuts, raw",
+      "energyNutrient": "958",
+      "fibreReported": true,
+      "portions": 0
+    },
+    {
+      "slug": "cauliflower-raw",
+      "fdcId": 2685573,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Cauliflower, raw",
+      "energyNutrient": "958",
+      "fibreReported": true,
+      "portions": 0
+    },
+    {
+      "slug": "cheese-cheddar",
+      "fdcId": 328637,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Cheese, cheddar",
+      "energyNutrient": "208",
+      "fibreReported": false,
+      "portions": 2
+    },
+    {
+      "slug": "cheese-cottage-creamed",
+      "fdcId": 172179,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Cheese, cottage, creamed, large or small curd",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "cheese-mozzarella-whole-milk",
+      "fdcId": 170845,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Cheese, mozzarella, whole milk",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "chia-seeds",
+      "fdcId": 170554,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Seeds, chia seeds, dried",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "chicken-breast-raw",
+      "fdcId": 171077,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "chicken-breast-roasted",
+      "fdcId": 171477,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Chicken, broilers or fryers, breast, meat only, cooked, roasted",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "chicken-drumstick-braised",
+      "fdcId": 331897,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Chicken, broilers or fryers, drumstick, meat only, cooked, braised",
+      "energyNutrient": "208",
+      "fibreReported": false,
+      "portions": 2
+    },
+    {
+      "slug": "chicken-thigh-roasted",
+      "fdcId": 172388,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Chicken, broilers or fryers, thigh, meat only, cooked, roasted",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "chickpea-flour",
+      "fdcId": 174288,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Chickpea flour (besan)",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "chickpeas-boiled",
+      "fdcId": 173757,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "chickpeas-raw",
+      "fdcId": 173756,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Chickpeas (garbanzo beans, bengal gram), mature seeds, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "cocoa-powder-unsweetened",
+      "fdcId": 169593,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Cocoa, dry powder, unsweetened",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "coconut-desiccated",
+      "fdcId": 170170,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Nuts, coconut meat, dried (desiccated), not sweetened",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "coconut-meat-raw",
+      "fdcId": 170169,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Nuts, coconut meat, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "coconut-water",
+      "fdcId": 170174,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Nuts, coconut water (liquid from coconuts)",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "coffee-brewed",
+      "fdcId": 171890,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Beverages, coffee, brewed, prepared with tap water",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "coriander-leaves-raw",
+      "fdcId": 169997,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Coriander (cilantro) leaves, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "coriander-seed",
+      "fdcId": 170922,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Spices, coriander seed",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "corn-flour-whole-grain-yellow",
+      "fdcId": 170290,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Corn flour, whole-grain, yellow",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "cowpeas-boiled",
+      "fdcId": 173759,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Cowpeas, common (blackeyes, crowder, southern), mature seeds, cooked, boiled, without salt",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "cowpeas-raw",
+      "fdcId": 173758,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Cowpeas, common (blackeyes, crowder, southern), mature seeds, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "cream-heavy-whipping",
+      "fdcId": 170859,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Cream, fluid, heavy whipping",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "cucumber-raw",
+      "fdcId": 168409,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Cucumber, with peel, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "cumin-seed",
+      "fdcId": 170923,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Spices, cumin seed",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "dates-deglet-noor",
+      "fdcId": 171726,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Dates, deglet noor",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "dates-medjool",
+      "fdcId": 168191,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Dates, medjool",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "drumstick-pods-raw",
+      "fdcId": 170483,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Drumstick pods, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "egg-white-raw",
+      "fdcId": 172183,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Egg, white, raw, fresh",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "egg-whole-hard-boiled",
+      "fdcId": 173424,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Egg, whole, cooked, hard-boiled",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "egg-whole-raw",
+      "fdcId": 171287,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Egg, whole, raw, fresh",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "egg-whole-scrambled",
+      "fdcId": 172187,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Egg, whole, cooked, scrambled",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "eggplant-raw",
+      "fdcId": 2685577,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Eggplant, raw",
+      "energyNutrient": "958",
+      "fibreReported": true,
+      "portions": 0
+    },
+    {
+      "slug": "fenugreek-seed",
+      "fdcId": 171324,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Spices, fenugreek seed",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "figs-dried",
+      "fdcId": 746768,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Figs, dried, uncooked",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "fish-catfish-farmed-cooked",
+      "fdcId": 175166,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Fish, catfish, channel, farmed, cooked, dry heat",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "fish-mackerel-atlantic-cooked",
+      "fdcId": 175120,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Fish, mackerel, Atlantic, cooked, dry heat",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "fish-pompano-cooked",
+      "fdcId": 173683,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Fish, pompano, florida, cooked, dry heat",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "fish-salmon-farmed-cooked",
+      "fdcId": 175168,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Fish, salmon, Atlantic, farmed, cooked, dry heat",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "fish-sardine-canned-oil",
+      "fdcId": 175139,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Fish, sardine, Atlantic, canned in oil, drained solids with bone",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "fish-tilapia-cooked",
+      "fdcId": 175177,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Fish, tilapia, cooked, dry heat",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "fish-tuna-light-canned-water",
+      "fdcId": 334194,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Fish, tuna, light, canned in water, drained solids",
+      "energyNutrient": "208",
+      "fibreReported": false,
+      "portions": 2
+    },
+    {
+      "slug": "flaxseed",
+      "fdcId": 169414,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Seeds, flaxseed",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "garlic-raw",
+      "fdcId": 1104647,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Garlic, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 0
+    },
+    {
+      "slug": "ginger-root-raw",
+      "fdcId": 169231,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Ginger root, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "goat-raw",
+      "fdcId": 175303,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Game meat, goat, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "goat-roasted",
+      "fdcId": 175304,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Game meat, goat, cooked, roasted",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "grapes-raw",
+      "fdcId": 174683,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Grapes, red or green (European type, such as Thompson seedless), raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "green-bell-pepper-raw",
+      "fdcId": 170427,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Peppers, sweet, green, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "green-chili-raw",
+      "fdcId": 170497,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Peppers, hot chili, green, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "guava-raw",
+      "fdcId": 173044,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Guavas, common, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "honey",
+      "fdcId": 169640,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Honey",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "jackfruit-raw",
+      "fdcId": 174687,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Jackfruit, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "java-plum-raw",
+      "fdcId": 168150,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Java-plum, (jambolan), raw",
+      "energyNutrient": "208",
+      "fibreReported": false,
+      "portions": 2
+    },
+    {
+      "slug": "kidney-beans-boiled",
+      "fdcId": 175194,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Beans, kidney, red, mature seeds, cooked, boiled, without salt",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "kidney-beans-raw",
+      "fdcId": 173744,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Beans, kidney, red, mature seeds, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "kiwifruit-green-raw",
+      "fdcId": 327046,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Kiwifruit, green, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 0
+    },
+    {
+      "slug": "lamb-ground-raw",
+      "fdcId": 174370,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Lamb, ground, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "lemon-juice-raw",
+      "fdcId": 167747,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Lemon juice, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "lentils-boiled",
+      "fdcId": 172421,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Lentils, mature seeds, cooked, boiled, without salt",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "lentils-raw",
+      "fdcId": 172420,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Lentils, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "lentils-red-raw",
+      "fdcId": 174284,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Lentils, pink or red, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "lettuce-iceberg-raw",
+      "fdcId": 2346388,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Lettuce, iceberg, raw",
+      "energyNutrient": "958",
+      "fibreReported": false,
+      "portions": 0
+    },
+    {
+      "slug": "litchi-raw",
+      "fdcId": 169086,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Litchis, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "mango-raw",
+      "fdcId": 169910,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Mangos, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "milk-goat",
+      "fdcId": 171278,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Milk, goat, fluid, with added vitamin D",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "milk-nonfat",
+      "fdcId": 746776,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Milk, nonfat, fluid, with added vitamin A and vitamin D (fat free or skim)",
+      "energyNutrient": "208",
+      "fibreReported": false,
+      "portions": 1
+    },
+    {
+      "slug": "milk-reduced-fat-2",
+      "fdcId": 746778,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Milk, reduced fat, fluid, 2% milkfat, with added vitamin A and vitamin D",
+      "energyNutrient": "208",
+      "fibreReported": false,
+      "portions": 1
+    },
+    {
+      "slug": "milk-whole",
+      "fdcId": 746782,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Milk, whole, 3.25% milkfat, with added vitamin D",
+      "energyNutrient": "208",
+      "fibreReported": false,
+      "portions": 1
+    },
+    {
+      "slug": "millet-flour",
+      "fdcId": 172023,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Millet flour",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "millet-raw",
+      "fdcId": 169702,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Millet, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "mothbeans-boiled",
+      "fdcId": 172426,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Mothbeans, mature seeds, cooked, boiled, without salt",
+      "energyNutrient": "208",
+      "fibreReported": false,
+      "portions": 1
+    },
+    {
+      "slug": "mothbeans-raw",
+      "fdcId": 172425,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Mothbeans, mature seeds, raw",
+      "energyNutrient": "208",
+      "fibreReported": false,
+      "portions": 1
+    },
+    {
+      "slug": "mung-bean-sprouts-raw",
+      "fdcId": 169957,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Mung beans, mature seeds, sprouted, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "mung-beans-boiled",
+      "fdcId": 174257,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Mung beans, mature seeds, cooked, boiled, without salt",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "mung-beans-raw",
+      "fdcId": 174256,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Mung beans, mature seeds, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "mungo-beans-boiled",
+      "fdcId": 172427,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Mungo beans, mature seeds, cooked, boiled, without salt",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "mungo-beans-raw",
+      "fdcId": 174259,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Mungo beans, mature seeds, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "mushrooms-white-raw",
+      "fdcId": 169251,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Mushrooms, white, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "mustard-greens-raw",
+      "fdcId": 169256,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Mustard greens, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "oats-rolled",
+      "fdcId": 2346396,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Oats, whole grain, rolled, old fashioned",
+      "energyNutrient": "958",
+      "fibreReported": false,
+      "portions": 0
+    },
+    {
+      "slug": "oil-coconut",
+      "fdcId": 171412,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Oil, coconut",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "oil-mustard",
+      "fdcId": 172337,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Oil, mustard",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "oil-olive",
+      "fdcId": 171413,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Oil, olive, salad or cooking",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "oil-peanut",
+      "fdcId": 171410,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Oil, peanut, salad or cooking",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "oil-sesame",
+      "fdcId": 171016,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Oil, sesame, salad or cooking",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "oil-soybean",
+      "fdcId": 171411,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Oil, soybean, salad or cooking",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "oil-sunflower",
+      "fdcId": 171017,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Oil, sunflower, linoleic (less than 60%)",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "okra-raw",
+      "fdcId": 169260,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Okra, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "onions-raw",
+      "fdcId": 170000,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Onions, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "orange-raw",
+      "fdcId": 169097,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Oranges, raw, all commercial varieties",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "papaya-raw",
+      "fdcId": 169926,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Papayas, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "pasta-dry-enriched",
+      "fdcId": 169736,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Pasta, dry, enriched",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "peanut-butter-smooth",
+      "fdcId": 172470,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Peanut butter, smooth style, without salt",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "peanuts-dry-roasted",
+      "fdcId": 173806,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Peanuts, all types, dry-roasted, without salt",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "peanuts-raw",
+      "fdcId": 172430,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Peanuts, all types, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "pears-bartlett-raw",
+      "fdcId": 746773,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Pears, raw, bartlett",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "peas-green-frozen-boiled",
+      "fdcId": 170017,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Peas, green, frozen, cooked, boiled, drained, without salt",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "peas-green-raw",
+      "fdcId": 170419,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Peas, green, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "pigeon-peas-boiled",
+      "fdcId": 172437,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Pigeon peas (red gram), mature seeds, cooked, boiled, without salt",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "pigeon-peas-raw",
+      "fdcId": 172436,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Pigeon peas (red gram), mature seeds, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "pineapple-raw",
+      "fdcId": 169124,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Pineapple, raw, all varieties",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "pistachios-raw",
+      "fdcId": 2515379,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Nuts, pistachio nuts, raw",
+      "energyNutrient": "958",
+      "fibreReported": true,
+      "portions": 0
+    },
+    {
+      "slug": "plantain-green-raw",
+      "fdcId": 168215,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Plantains, green, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "pomegranate-raw",
+      "fdcId": 169134,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Pomegranates, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "potatoes-boiled",
+      "fdcId": 170440,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Potatoes, boiled, cooked without skin, flesh, without salt",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "potatoes-raw",
+      "fdcId": 170026,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Potatoes, flesh and skin, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "pumpkin-raw",
+      "fdcId": 168448,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Pumpkin, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "pumpkin-seeds",
+      "fdcId": 170556,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Seeds, pumpkin and squash seed kernels, dried",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "quinoa-cooked",
+      "fdcId": 168917,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Quinoa, cooked",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "quinoa-uncooked",
+      "fdcId": 168874,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Quinoa, uncooked",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "radish-oriental-raw",
+      "fdcId": 168451,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Radishes, oriental, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "raisins-dark-seedless",
+      "fdcId": 168165,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Raisins, dark, seedless (Includes foods for USDA's Food Distribution Program)",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "rice-brown-long-grain-cooked",
+      "fdcId": 169704,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Rice, brown, long-grain, cooked (Includes foods for USDA's Food Distribution Program)",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "rice-brown-long-grain-raw",
+      "fdcId": 169703,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Rice, brown, long-grain, raw (Includes foods for USDA's Food Distribution Program)",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "rice-flour-white",
+      "fdcId": 169714,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Rice flour, white, unenriched",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "rice-white-long-grain-cooked",
+      "fdcId": 169757,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Rice, white, long-grain, regular, unenriched, cooked without salt",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "rice-white-long-grain-raw",
+      "fdcId": 169756,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Rice, white, long-grain, regular, raw, unenriched",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "sapodilla-raw",
+      "fdcId": 167759,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Sapodilla, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "semolina",
+      "fdcId": 168933,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Semolina, unenriched",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "sesame-seeds",
+      "fdcId": 170150,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Seeds, sesame seeds, whole, dried",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "shrimp-cooked",
+      "fdcId": 175180,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Crustaceans, shrimp, cooked",
+      "energyNutrient": "208",
+      "fibreReported": false,
+      "portions": 1
+    },
+    {
+      "slug": "shrimp-raw",
+      "fdcId": 175179,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Crustaceans, shrimp, raw",
+      "energyNutrient": "208",
+      "fibreReported": false,
+      "portions": 1
+    },
+    {
+      "slug": "sorghum-flour-whole-grain",
+      "fdcId": 168943,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Sorghum flour, whole-grain",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "sorghum-grain",
+      "fdcId": 169716,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Sorghum grain",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "soybeans-boiled",
+      "fdcId": 174271,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Soybeans, mature cooked, boiled, without salt",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "soybeans-raw",
+      "fdcId": 174270,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Soybeans, mature seeds, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "spearmint-fresh",
+      "fdcId": 173475,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Spearmint, fresh",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "spinach-boiled",
+      "fdcId": 168463,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Spinach, cooked, boiled, drained, without salt",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "spinach-raw",
+      "fdcId": 168462,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Spinach, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "sponge-gourd-raw",
+      "fdcId": 168414,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Gourd, dishcloth (towelgourd), raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "strawberries-raw",
+      "fdcId": 2346409,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Strawberries, raw",
+      "energyNutrient": "958",
+      "fibreReported": false,
+      "portions": 0
+    },
+    {
+      "slug": "sugar-apple-raw",
+      "fdcId": 168175,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Sugar-apples, (sweetsop), raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "sugar-brown",
+      "fdcId": 168833,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Sugars, brown",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "sugar-granulated",
+      "fdcId": 746784,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Sugars, granulated",
+      "energyNutrient": "208",
+      "fibreReported": false,
+      "portions": 2
+    },
+    {
+      "slug": "sunflower-seeds",
+      "fdcId": 170562,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Seeds, sunflower seed kernels, dried",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "sweet-corn-yellow-raw",
+      "fdcId": 169998,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Corn, sweet, yellow, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "sweet-potato-boiled",
+      "fdcId": 168484,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Sweet potato, cooked, boiled, without skin",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "sweet-potato-raw",
+      "fdcId": 168482,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Sweet potato, raw, unprepared (Includes foods for USDA's Food Distribution Program)",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "tapioca-pearl-dry",
+      "fdcId": 169717,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Tapioca, pearl, dry",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "taro-raw",
+      "fdcId": 169308,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Taro, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "tea-black-brewed",
+      "fdcId": 173227,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Beverages, tea, black, brewed, prepared with tap water",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "tofu-raw",
+      "fdcId": 172476,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Tofu, raw, regular, prepared with calcium sulfate",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "tomato-ketchup",
+      "fdcId": 168556,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Catsup",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "tomatoes-raw",
+      "fdcId": 170457,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Tomatoes, red, ripe, raw, year round average",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "turmeric-ground",
+      "fdcId": 172231,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Spices, turmeric, ground",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "walnuts-raw",
+      "fdcId": 2346394,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Nuts, walnuts, English, halves, raw",
+      "energyNutrient": "958",
+      "fibreReported": true,
+      "portions": 0
+    },
+    {
+      "slug": "watermelon-raw",
+      "fdcId": 167765,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Watermelon, raw",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "wheat-flour-white-all-purpose",
+      "fdcId": 169761,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Wheat flour, white, all-purpose, unenriched",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "wheat-flour-whole-grain",
+      "fdcId": 168893,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Wheat flour, whole-grain (Includes foods for USDA's Food Distribution Program)",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 1
+    },
+    {
+      "slug": "yogurt-plain-low-fat",
+      "fdcId": 170886,
+      "dataset": "sr_legacy",
+      "release": "2018-04",
+      "description": "Yogurt, plain, low fat",
+      "energyNutrient": "208",
+      "fibreReported": true,
+      "portions": 2
+    },
+    {
+      "slug": "yogurt-plain-whole-milk",
+      "fdcId": 2259793,
+      "dataset": "foundation",
+      "release": "2026-04-30",
+      "description": "Yogurt, plain, whole milk",
+      "energyNutrient": "958",
+      "fibreReported": false,
+      "portions": 0
+    }
+  ],
+  "droppedPicks": [],
+  "carriedFoods": [
+    {
+      "slug": "badam-milk",
+      "coreTerm": "badam milk",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "bhatura",
+      "coreTerm": "bhatura",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "boiled-eggs",
+      "coreTerm": "boiled eggs",
+      "coreSource": "estimated-table",
+      "coreConfidence": "high",
+      "confidence": "medium"
+    },
+    {
+      "slug": "bonda",
+      "coreTerm": "bonda",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "butter-chicken",
+      "coreTerm": "butter chicken",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "buttermilk",
+      "coreTerm": "buttermilk",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "chana-masala",
+      "coreTerm": "channa masala",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "chapati",
+      "coreTerm": "chapati",
+      "coreSource": "estimated-table",
+      "coreConfidence": "high",
+      "confidence": "medium"
+    },
+    {
+      "slug": "chicken-65",
+      "coreTerm": "chicken 65",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "chicken-biryani",
+      "coreTerm": "chicken biryani",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "chicken-curry",
+      "coreTerm": "chicken gravy",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "chicken-tikka-masala",
+      "coreTerm": "chicken tikka masala",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "chutney",
+      "coreTerm": "chutney",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "coffee-with-milk",
+      "coreTerm": "coffee",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "curd",
+      "coreTerm": "curd",
+      "coreSource": "estimated-table",
+      "coreConfidence": "high",
+      "confidence": "medium"
+    },
+    {
+      "slug": "curd-rice",
+      "coreTerm": "curd rice",
+      "coreSource": "estimated-table",
+      "coreConfidence": "high",
+      "confidence": "medium"
+    },
+    {
+      "slug": "dal-makhani",
+      "coreTerm": "dal makhani",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "dal-tadka",
+      "coreTerm": "dal tadka",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "egg-bhurji",
+      "coreTerm": "egg bhurji",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "egg-fried-rice",
+      "coreTerm": "egg fried rice",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "egg-puff",
+      "coreTerm": "egg puff",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "fish-fry",
+      "coreTerm": "fish fry",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "french-toast",
+      "coreTerm": "french toast",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "green-gram-sprouts",
+      "coreTerm": "green gram sprouts",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "green-salad",
+      "coreTerm": "salad",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "gulab-jamun",
+      "coreTerm": "gulab jamun",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "halwa",
+      "coreTerm": "halwa",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "idli",
+      "coreTerm": "idli",
+      "coreSource": "estimated-table",
+      "coreConfidence": "high",
+      "confidence": "medium"
+    },
+    {
+      "slug": "jalebi",
+      "coreTerm": "jalebi",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "kadai-paneer",
+      "coreTerm": "kadai paneer",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "kadhi-pakora",
+      "coreTerm": "kadhi pakoda",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "kheer",
+      "coreTerm": "kheer",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "khichdi",
+      "coreTerm": "kitchadi",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "kootu",
+      "coreTerm": "kootu",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "laddu",
+      "coreTerm": "laddu",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "lemon-rice",
+      "coreTerm": "lemon rice",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "masala-dosa",
+      "coreTerm": "masala dosa",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "medu-vada",
+      "coreTerm": "vada",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "milkshake",
+      "coreTerm": "milk shake",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "mixed-veg-curry",
+      "coreTerm": "mixed veg gravy",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "nimbu-sharbat",
+      "coreTerm": "nimbu sarbat",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "omelette",
+      "coreTerm": "omelette",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "pakora",
+      "coreTerm": "pakora",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "paneer-65",
+      "coreTerm": "paneer 65",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "paneer-butter-masala",
+      "coreTerm": "paneer butter masala",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "papad",
+      "coreTerm": "papad",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "paratha",
+      "coreTerm": "paratha",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "pav-bhaji",
+      "coreTerm": "pav bhaji",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "payasam",
+      "coreTerm": "payasam",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "plain-dosa",
+      "coreTerm": "plain dosa",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "poha",
+      "coreTerm": "poha",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "pongal",
+      "coreTerm": "pongal",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "puri",
+      "coreTerm": "puri",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "raita",
+      "coreTerm": "raita",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "rajma-masala",
+      "coreTerm": "rajma masala",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "rasam",
+      "coreTerm": "rasam",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "rasgulla",
+      "coreTerm": "rasgulla",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "sambar",
+      "coreTerm": "sambar",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "samosa",
+      "coreTerm": "samosa",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "sundal",
+      "coreTerm": "sundal",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "sweet-lassi",
+      "coreTerm": "sweet lassi",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "tamarind-rice",
+      "coreTerm": "tamarind rice",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "tandoori-chicken",
+      "coreTerm": "tandoori chicken",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "tea-with-milk",
+      "coreTerm": "tea",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "upma",
+      "coreTerm": "upma",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "uttapam",
+      "coreTerm": "uthappam",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "vada-pav",
+      "coreTerm": "vada pav",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "veg-biryani",
+      "coreTerm": "veg biryani",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "veg-cutlet",
+      "coreTerm": "cutlet",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "veg-fried-rice",
+      "coreTerm": "veg fried rice",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "veg-kurma",
+      "coreTerm": "kurma",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "veg-puff",
+      "coreTerm": "puff",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "veg-pulao",
+      "coreTerm": "veg pulao",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "vegetable-poriyal",
+      "coreTerm": "poriyal",
+      "coreSource": "estimated-table",
+      "coreConfidence": "medium",
+      "confidence": "medium"
+    },
+    {
+      "slug": "vegetable-soup",
+      "coreTerm": "soup",
+      "coreSource": "estimated-table",
+      "coreConfidence": "low",
+      "confidence": "low"
+    },
+    {
+      "slug": "white-rice-cooked",
+      "coreTerm": "white rice",
+      "coreSource": "estimated-table",
+      "coreConfidence": "high",
+      "confidence": "medium"
+    }
+  ],
+  "compositeFoods": [
+    {
+      "slug": "adai",
+      "recipeId": "adai",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 100,
+      "ingredients": [
+        {
+          "fdcId": 169756,
+          "grams": 25,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 172436,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 173756,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 174259,
+          "grams": 5,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 174256,
+          "grams": 5,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 5,
+        "gramsHigh": 10
+      },
+      "widening": 0.25,
+      "confidence": "low"
+    },
+    {
+      "slug": "aloo-chaat",
+      "recipeId": "aloo-chaat",
+      "recipeVersion": 1,
+      "servingLabel": "1 plate",
+      "servingGrams": 150,
+      "ingredients": [
+        {
+          "fdcId": 170440,
+          "grams": 120,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 15,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 167747,
+          "grams": 5,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 5,
+        "gramsHigh": 10
+      },
+      "widening": 0.25,
+      "confidence": "low"
+    },
+    {
+      "slug": "aloo-gobi",
+      "recipeId": "aloo-gobi",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 150,
+      "ingredients": [
+        {
+          "fdcId": 170026,
+          "grams": 70,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169986,
+          "grams": 70,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 15,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 15,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 7,
+        "gramsHigh": 12
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "aloo-jeera",
+      "recipeId": "aloo-jeera",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 130,
+      "ingredients": [
+        {
+          "fdcId": 170440,
+          "grams": 130,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170923,
+          "grams": 2,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 6,
+        "gramsHigh": 10
+      },
+      "widening": 0.15,
+      "confidence": "medium"
+    },
+    {
+      "slug": "aloo-matar",
+      "recipeId": "aloo-matar",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 170,
+      "ingredients": [
+        {
+          "fdcId": 170026,
+          "grams": 70,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170419,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 6,
+        "gramsHigh": 12
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "aloo-paratha",
+      "recipeId": "aloo-paratha",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 110,
+      "ingredients": [
+        {
+          "fdcId": 168893,
+          "grams": 45,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170440,
+          "grams": 50,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 5,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170497,
+          "grams": 2,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169997,
+          "grams": 2,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 173412,
+        "gramsLow": 5,
+        "gramsHigh": 10
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "aloo-tikki",
+      "recipeId": "aloo-tikki",
+      "recipeVersion": 1,
+      "servingLabel": "2 pieces",
+      "servingGrams": 100,
+      "ingredients": [
+        {
+          "fdcId": 170440,
+          "grams": 80,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170419,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169714,
+          "grams": 5,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 6,
+        "gramsHigh": 15
+      },
+      "widening": 0.25,
+      "confidence": "low"
+    },
+    {
+      "slug": "appam",
+      "recipeId": "appam",
+      "recipeVersion": 1,
+      "servingLabel": "2 pieces",
+      "servingGrams": 120,
+      "ingredients": [
+        {
+          "fdcId": 169756,
+          "grams": 50,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170169,
+          "grams": 15,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169655,
+          "grams": 3,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171412,
+        "gramsLow": 1,
+        "gramsHigh": 3
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "avial",
+      "recipeId": "avial",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 170,
+      "ingredients": [
+        {
+          "fdcId": 170393,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169961,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 168448,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170483,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170169,
+          "grams": 25,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 171284,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171412,
+        "gramsLow": 3,
+        "gramsHigh": 6
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "baingan-bharta",
+      "recipeId": "baingan-bharta",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 160,
+      "ingredients": [
+        {
+          "fdcId": 169228,
+          "grams": 150,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 6,
+        "gramsHigh": 12
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "bajra-roti",
+      "recipeId": "bajra-roti",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 60,
+      "ingredients": [
+        {
+          "fdcId": 172023,
+          "grams": 45,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 173412,
+        "gramsLow": 2,
+        "gramsHigh": 5
+      },
+      "widening": 0.25,
+      "confidence": "low"
+    },
+    {
+      "slug": "besan-chilla",
+      "recipeId": "besan-chilla",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 100,
+      "ingredients": [
+        {
+          "fdcId": 174288,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 15,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 15,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170497,
+          "grams": 2,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169997,
+          "grams": 2,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 4,
+        "gramsHigh": 8
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "besan-ladoo",
+      "recipeId": "besan-ladoo",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 35,
+      "ingredients": [
+        {
+          "fdcId": 174288,
+          "grams": 18,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169655,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 173412,
+        "gramsLow": 6,
+        "gramsHigh": 9
+      },
+      "widening": 0.15,
+      "confidence": "medium"
+    },
+    {
+      "slug": "bhindi-masala",
+      "recipeId": "bhindi-masala",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 140,
+      "ingredients": [
+        {
+          "fdcId": 169260,
+          "grams": 120,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 8,
+        "gramsHigh": 15
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "chicken-tikka",
+      "recipeId": "chicken-tikka",
+      "recipeVersion": 1,
+      "servingLabel": "1 serving (6 pieces)",
+      "servingGrams": 150,
+      "ingredients": [
+        {
+          "fdcId": 171077,
+          "grams": 150,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 171284,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 4,
+        "gramsHigh": 8
+      },
+      "widening": 0.15,
+      "confidence": "medium"
+    },
+    {
+      "slug": "dal-palak",
+      "recipeId": "dal-palak",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 180,
+      "ingredients": [
+        {
+          "fdcId": 172436,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 168462,
+          "grams": 60,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 15,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 3,
+        "gramsHigh": 7
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "dhokla",
+      "recipeId": "dhokla",
+      "recipeVersion": 1,
+      "servingLabel": "2 pieces",
+      "servingGrams": 100,
+      "ingredients": [
+        {
+          "fdcId": 174288,
+          "grams": 35,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 171284,
+          "grams": 15,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169655,
+          "grams": 3,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 2,
+        "gramsHigh": 5
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "egg-curry",
+      "recipeId": "egg-curry",
+      "recipeVersion": 1,
+      "servingLabel": "1 serving (2 eggs)",
+      "servingGrams": 200,
+      "ingredients": [
+        {
+          "fdcId": 171287,
+          "grams": 100,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 7,
+        "gramsHigh": 12
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "fish-curry",
+      "recipeId": "fish-curry",
+      "recipeVersion": 1,
+      "servingLabel": "1 serving",
+      "servingGrams": 200,
+      "ingredients": [
+        {
+          "fdcId": 175176,
+          "grams": 120,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170169,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 6,
+        "gramsHigh": 12
+      },
+      "widening": 0.25,
+      "confidence": "low"
+    },
+    {
+      "slug": "gajar-halwa",
+      "recipeId": "gajar-halwa",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 150,
+      "ingredients": [
+        {
+          "fdcId": 170393,
+          "grams": 100,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 171265,
+          "grams": 80,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169655,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170162,
+          "grams": 3,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 173412,
+        "gramsLow": 8,
+        "gramsHigh": 15
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "gobi-paratha",
+      "recipeId": "gobi-paratha",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 105,
+      "ingredients": [
+        {
+          "fdcId": 168893,
+          "grams": 45,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169986,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 5,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170497,
+          "grams": 2,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169997,
+          "grams": 2,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 173412,
+        "gramsLow": 5,
+        "gramsHigh": 10
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "idiyappam",
+      "recipeId": "idiyappam",
+      "recipeVersion": 1,
+      "servingLabel": "3 pieces",
+      "servingGrams": 120,
+      "ingredients": [
+        {
+          "fdcId": 169714,
+          "grams": 50,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": null,
+      "widening": 0.15,
+      "confidence": "medium"
+    },
+    {
+      "slug": "jowar-roti",
+      "recipeId": "jowar-roti",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 60,
+      "ingredients": [
+        {
+          "fdcId": 168943,
+          "grams": 45,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 0,
+        "gramsHigh": 3
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "kachori",
+      "recipeId": "kachori",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 60,
+      "ingredients": [
+        {
+          "fdcId": 169761,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 174256,
+          "grams": 12,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 10,
+        "gramsHigh": 18
+      },
+      "widening": 0.25,
+      "confidence": "low"
+    },
+    {
+      "slug": "kachumber-salad",
+      "recipeId": "kachumber-salad",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 100,
+      "ingredients": [
+        {
+          "fdcId": 168409,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 25,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 35,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 167747,
+          "grams": 5,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": null,
+      "widening": 0.1,
+      "confidence": "medium"
+    },
+    {
+      "slug": "karela-sabzi",
+      "recipeId": "karela-sabzi",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 110,
+      "ingredients": [
+        {
+          "fdcId": 168393,
+          "grams": 100,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 8,
+        "gramsHigh": 14
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "keema",
+      "recipeId": "keema",
+      "recipeVersion": 1,
+      "servingLabel": "1 serving",
+      "servingGrams": 170,
+      "ingredients": [
+        {
+          "fdcId": 174370,
+          "grams": 100,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170419,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 5,
+        "gramsHigh": 10
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "kulcha",
+      "recipeId": "kulcha",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 85,
+      "ingredients": [
+        {
+          "fdcId": 169761,
+          "grams": 55,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 171284,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 171265,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 173410,
+        "gramsLow": 4,
+        "gramsHigh": 8
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "lauki-sabzi",
+      "recipeId": "lauki-sabzi",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 160,
+      "ingredients": [
+        {
+          "fdcId": 169232,
+          "grams": 150,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 4,
+        "gramsHigh": 8
+      },
+      "widening": 0.15,
+      "confidence": "medium"
+    },
+    {
+      "slug": "makki-di-roti",
+      "recipeId": "makki-di-roti",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 70,
+      "ingredients": [
+        {
+          "fdcId": 170290,
+          "grams": 50,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 173412,
+        "gramsLow": 3,
+        "gramsHigh": 8
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "mango-lassi",
+      "recipeId": "mango-lassi",
+      "recipeVersion": 1,
+      "servingLabel": "1 glass",
+      "servingGrams": 250,
+      "ingredients": [
+        {
+          "fdcId": 171284,
+          "grams": 120,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169910,
+          "grams": 80,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 171265,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169655,
+          "grams": 12,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": null,
+      "widening": 0.15,
+      "confidence": "medium"
+    },
+    {
+      "slug": "masala-sweet-corn",
+      "recipeId": "masala-sweet-corn",
+      "recipeVersion": 1,
+      "servingLabel": "1 cup",
+      "servingGrams": 150,
+      "ingredients": [
+        {
+          "fdcId": 169998,
+          "grams": 140,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 167747,
+          "grams": 5,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 173410,
+        "gramsLow": 3,
+        "gramsHigh": 8
+      },
+      "widening": 0.15,
+      "confidence": "medium"
+    },
+    {
+      "slug": "masoor-dal-cooked",
+      "recipeId": "masoor-dal-cooked",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 180,
+      "ingredients": [
+        {
+          "fdcId": 174284,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 15,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 3,
+        "gramsHigh": 7
+      },
+      "widening": 0.15,
+      "confidence": "medium"
+    },
+    {
+      "slug": "mathri",
+      "recipeId": "mathri",
+      "recipeVersion": 1,
+      "servingLabel": "2 pieces",
+      "servingGrams": 30,
+      "ingredients": [
+        {
+          "fdcId": 169761,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 173412,
+        "gramsLow": 6,
+        "gramsHigh": 10
+      },
+      "widening": 0.2,
+      "confidence": "low"
+    },
+    {
+      "slug": "missi-roti",
+      "recipeId": "missi-roti",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 55,
+      "ingredients": [
+        {
+          "fdcId": 168893,
+          "grams": 25,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 174288,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 5,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170497,
+          "grams": 2,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 3,
+        "gramsHigh": 6
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "moong-dal",
+      "recipeId": "moong-dal",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 180,
+      "ingredients": [
+        {
+          "fdcId": 174256,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 15,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 173412,
+        "gramsLow": 3,
+        "gramsHigh": 7
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "moong-dal-chilla",
+      "recipeId": "moong-dal-chilla",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 100,
+      "ingredients": [
+        {
+          "fdcId": 174256,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169231,
+          "grams": 2,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 4,
+        "gramsHigh": 8
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "murukku",
+      "recipeId": "murukku",
+      "recipeVersion": 1,
+      "servingLabel": "1 small portion",
+      "servingGrams": 30,
+      "ingredients": [
+        {
+          "fdcId": 169714,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 174259,
+          "grams": 5,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170150,
+          "grams": 1,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 7,
+        "gramsHigh": 11
+      },
+      "widening": 0.2,
+      "confidence": "low"
+    },
+    {
+      "slug": "mushroom-masala",
+      "recipeId": "mushroom-masala",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 170,
+      "ingredients": [
+        {
+          "fdcId": 169251,
+          "grams": 120,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170859,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 6,
+        "gramsHigh": 10
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "mutton-curry",
+      "recipeId": "mutton-curry",
+      "recipeVersion": 1,
+      "servingLabel": "1 serving",
+      "servingGrams": 200,
+      "ingredients": [
+        {
+          "fdcId": 175303,
+          "grams": 120,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 50,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 171284,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 8,
+        "gramsHigh": 15
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "naan",
+      "recipeId": "naan",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 90,
+      "ingredients": [
+        {
+          "fdcId": 169761,
+          "grams": 60,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 171284,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 171265,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169655,
+          "grams": 2,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 173412,
+        "gramsLow": 3,
+        "gramsHigh": 6
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "neer-dosa",
+      "recipeId": "neer-dosa",
+      "recipeVersion": 1,
+      "servingLabel": "2 pieces",
+      "servingGrams": 100,
+      "ingredients": [
+        {
+          "fdcId": 169756,
+          "grams": 45,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170169,
+          "grams": 5,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 2,
+        "gramsHigh": 4
+      },
+      "widening": 0.15,
+      "confidence": "medium"
+    },
+    {
+      "slug": "oats-porridge-milk",
+      "recipeId": "oats-porridge-milk",
+      "recipeVersion": 1,
+      "servingLabel": "1 bowl",
+      "servingGrams": 250,
+      "ingredients": [
+        {
+          "fdcId": 169705,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 171265,
+          "grams": 200,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169655,
+          "grams": 8,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": null,
+      "widening": 0.1,
+      "confidence": "medium"
+    },
+    {
+      "slug": "pani-puri",
+      "recipeId": "pani-puri",
+      "recipeVersion": 1,
+      "servingLabel": "1 plate (6 pieces)",
+      "servingGrams": 110,
+      "ingredients": [
+        {
+          "fdcId": 168933,
+          "grams": 15,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169761,
+          "grams": 5,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170440,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 173757,
+          "grams": 15,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 6,
+        "gramsHigh": 12
+      },
+      "widening": 0.25,
+      "confidence": "low"
+    },
+    {
+      "slug": "pesarattu",
+      "recipeId": "pesarattu",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 100,
+      "ingredients": [
+        {
+          "fdcId": 174256,
+          "grams": 45,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169756,
+          "grams": 5,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169231,
+          "grams": 2,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170497,
+          "grams": 2,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 4,
+        "gramsHigh": 8
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "prawn-masala",
+      "recipeId": "prawn-masala",
+      "recipeVersion": 1,
+      "servingLabel": "1 serving",
+      "servingGrams": 180,
+      "ingredients": [
+        {
+          "fdcId": 175179,
+          "grams": 120,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170457,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 8,
+        "gramsHigh": 14
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "puttu",
+      "recipeId": "puttu",
+      "recipeVersion": 1,
+      "servingLabel": "1 serving",
+      "servingGrams": 120,
+      "ingredients": [
+        {
+          "fdcId": 169714,
+          "grams": 60,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170169,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": null,
+      "widening": 0.15,
+      "confidence": "medium"
+    },
+    {
+      "slug": "rava-dosa",
+      "recipeId": "rava-dosa",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 90,
+      "ingredients": [
+        {
+          "fdcId": 168933,
+          "grams": 25,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169714,
+          "grams": 20,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169761,
+          "grams": 5,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170000,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 5,
+        "gramsHigh": 10
+      },
+      "widening": 0.2,
+      "confidence": "low"
+    },
+    {
+      "slug": "rava-idli",
+      "recipeId": "rava-idli",
+      "recipeVersion": 1,
+      "servingLabel": "2 pieces",
+      "servingGrams": 120,
+      "ingredients": [
+        {
+          "fdcId": 168933,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 171284,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170393,
+          "grams": 10,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 171017,
+        "gramsLow": 2,
+        "gramsHigh": 4
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "sabudana-khichdi",
+      "recipeId": "sabudana-khichdi",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 180,
+      "ingredients": [
+        {
+          "fdcId": 169717,
+          "grams": 60,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 172430,
+          "grams": 15,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170440,
+          "grams": 30,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170497,
+          "grams": 2,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 173412,
+        "gramsLow": 5,
+        "gramsHigh": 10
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "sarson-ka-saag",
+      "recipeId": "sarson-ka-saag",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 170,
+      "ingredients": [
+        {
+          "fdcId": 169256,
+          "grams": 120,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 168462,
+          "grams": 40,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 170290,
+          "grams": 8,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 173412,
+        "gramsLow": 6,
+        "gramsHigh": 12
+      },
+      "widening": 0.2,
+      "confidence": "medium"
+    },
+    {
+      "slug": "shrikhand",
+      "recipeId": "shrikhand",
+      "recipeVersion": 1,
+      "servingLabel": "1 katori",
+      "servingGrams": 100,
+      "ingredients": [
+        {
+          "fdcId": 171284,
+          "grams": 150,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169655,
+          "grams": 25,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": null,
+      "widening": 0.25,
+      "confidence": "low"
+    },
+    {
+      "slug": "tandoori-roti",
+      "recipeId": "tandoori-roti",
+      "recipeVersion": 1,
+      "servingLabel": "1 piece",
+      "servingGrams": 55,
+      "ingredients": [
+        {
+          "fdcId": 168893,
+          "grams": 45,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": {
+        "fdcId": 173410,
+        "gramsLow": 0,
+        "gramsHigh": 4
+      },
+      "widening": 0.15,
+      "confidence": "medium"
+    },
+    {
+      "slug": "turmeric-milk",
+      "recipeId": "turmeric-milk",
+      "recipeVersion": 1,
+      "servingLabel": "1 glass",
+      "servingGrams": 250,
+      "ingredients": [
+        {
+          "fdcId": 171265,
+          "grams": 240,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 172231,
+          "grams": 2,
+          "dataset": "sr_legacy"
+        },
+        {
+          "fdcId": 169655,
+          "grams": 8,
+          "dataset": "sr_legacy"
+        }
+      ],
+      "oil": null,
+      "widening": 0.1,
+      "confidence": "medium"
+    }
+  ],
+  "compositeInputs": {
+    "167747": {
+      "dataset": "sr_legacy",
+      "description": "Lemon juice, raw",
+      "per100g": {
+        "kcal": 22,
+        "protein": 0.35,
+        "carb": 6.9,
+        "fat": 0.24,
+        "fibre": 0.3
+      }
+    },
+    "168393": {
+      "dataset": "sr_legacy",
+      "description": "Balsam-pear (bitter gourd), pods, raw",
+      "per100g": {
+        "kcal": 17,
+        "protein": 1,
+        "carb": 3.7,
+        "fat": 0.17,
+        "fibre": 2.8
+      }
+    },
+    "168409": {
+      "dataset": "sr_legacy",
+      "description": "Cucumber, with peel, raw",
+      "per100g": {
+        "kcal": 15,
+        "protein": 0.65,
+        "carb": 3.63,
+        "fat": 0.11,
+        "fibre": 0.5
+      }
+    },
+    "168448": {
+      "dataset": "sr_legacy",
+      "description": "Pumpkin, raw",
+      "per100g": {
+        "kcal": 26,
+        "protein": 1,
+        "carb": 6.5,
+        "fat": 0.1,
+        "fibre": 0.5
+      }
+    },
+    "168462": {
+      "dataset": "sr_legacy",
+      "description": "Spinach, raw",
+      "per100g": {
+        "kcal": 23,
+        "protein": 2.86,
+        "carb": 3.63,
+        "fat": 0.39,
+        "fibre": 2.2
+      }
+    },
+    "168893": {
+      "dataset": "sr_legacy",
+      "description": "Wheat flour, whole-grain (Includes foods for USDA's Food Distribution Program)",
+      "per100g": {
+        "kcal": 340,
+        "protein": 13.2,
+        "carb": 72,
+        "fat": 2.5,
+        "fibre": 10.7
+      }
+    },
+    "168933": {
+      "dataset": "sr_legacy",
+      "description": "Semolina, unenriched",
+      "per100g": {
+        "kcal": 360,
+        "protein": 12.7,
+        "carb": 72.8,
+        "fat": 1.05,
+        "fibre": 3.9
+      }
+    },
+    "168943": {
+      "dataset": "sr_legacy",
+      "description": "Sorghum flour, whole-grain",
+      "per100g": {
+        "kcal": 359,
+        "protein": 8.43,
+        "carb": 76.6,
+        "fat": 3.34,
+        "fibre": 6.6
+      }
+    },
+    "169228": {
+      "dataset": "sr_legacy",
+      "description": "Eggplant, raw",
+      "per100g": {
+        "kcal": 25,
+        "protein": 0.98,
+        "carb": 5.88,
+        "fat": 0.18,
+        "fibre": 3
+      }
+    },
+    "169231": {
+      "dataset": "sr_legacy",
+      "description": "Ginger root, raw",
+      "per100g": {
+        "kcal": 80,
+        "protein": 1.82,
+        "carb": 17.8,
+        "fat": 0.75,
+        "fibre": 2
+      }
+    },
+    "169232": {
+      "dataset": "sr_legacy",
+      "description": "Gourd, white-flowered (calabash), raw",
+      "per100g": {
+        "kcal": 14,
+        "protein": 0.62,
+        "carb": 3.39,
+        "fat": 0.02,
+        "fibre": 0.5
+      }
+    },
+    "169251": {
+      "dataset": "sr_legacy",
+      "description": "Mushrooms, white, raw",
+      "per100g": {
+        "kcal": 22,
+        "protein": 3.09,
+        "carb": 3.26,
+        "fat": 0.34,
+        "fibre": 1
+      }
+    },
+    "169256": {
+      "dataset": "sr_legacy",
+      "description": "Mustard greens, raw",
+      "per100g": {
+        "kcal": 27,
+        "protein": 2.86,
+        "carb": 4.67,
+        "fat": 0.42,
+        "fibre": 3.2
+      }
+    },
+    "169260": {
+      "dataset": "sr_legacy",
+      "description": "Okra, raw",
+      "per100g": {
+        "kcal": 33,
+        "protein": 1.93,
+        "carb": 7.45,
+        "fat": 0.19,
+        "fibre": 3.2
+      }
+    },
+    "169655": {
+      "dataset": "sr_legacy",
+      "description": "Sugars, granulated",
+      "per100g": {
+        "kcal": 387,
+        "protein": 0,
+        "carb": 100,
+        "fat": 0,
+        "fibre": 0
+      }
+    },
+    "169705": {
+      "dataset": "sr_legacy",
+      "description": "Oats (Includes foods for USDA's Food Distribution Program)",
+      "per100g": {
+        "kcal": 389,
+        "protein": 16.9,
+        "carb": 66.3,
+        "fat": 6.9,
+        "fibre": 10.6
+      }
+    },
+    "169714": {
+      "dataset": "sr_legacy",
+      "description": "Rice flour, white, unenriched",
+      "per100g": {
+        "kcal": 366,
+        "protein": 5.95,
+        "carb": 80.1,
+        "fat": 1.42,
+        "fibre": 2.4
+      }
+    },
+    "169717": {
+      "dataset": "sr_legacy",
+      "description": "Tapioca, pearl, dry",
+      "per100g": {
+        "kcal": 358,
+        "protein": 0.19,
+        "carb": 88.7,
+        "fat": 0.02,
+        "fibre": 0.9
+      }
+    },
+    "169756": {
+      "dataset": "sr_legacy",
+      "description": "Rice, white, long-grain, regular, raw, unenriched",
+      "per100g": {
+        "kcal": 365,
+        "protein": 7.13,
+        "carb": 80,
+        "fat": 0.66,
+        "fibre": 1.3
+      }
+    },
+    "169761": {
+      "dataset": "sr_legacy",
+      "description": "Wheat flour, white, all-purpose, unenriched",
+      "per100g": {
+        "kcal": 364,
+        "protein": 10.3,
+        "carb": 76.3,
+        "fat": 0.98,
+        "fibre": 2.7
+      }
+    },
+    "169910": {
+      "dataset": "sr_legacy",
+      "description": "Mangos, raw",
+      "per100g": {
+        "kcal": 60,
+        "protein": 0.82,
+        "carb": 15,
+        "fat": 0.38,
+        "fibre": 1.6
+      }
+    },
+    "169961": {
+      "dataset": "sr_legacy",
+      "description": "Beans, snap, green, raw",
+      "per100g": {
+        "kcal": 31,
+        "protein": 1.83,
+        "carb": 6.97,
+        "fat": 0.22,
+        "fibre": 2.7
+      }
+    },
+    "169986": {
+      "dataset": "sr_legacy",
+      "description": "Cauliflower, raw",
+      "per100g": {
+        "kcal": 25,
+        "protein": 1.92,
+        "carb": 4.97,
+        "fat": 0.28,
+        "fibre": 2
+      }
+    },
+    "169997": {
+      "dataset": "sr_legacy",
+      "description": "Coriander (cilantro) leaves, raw",
+      "per100g": {
+        "kcal": 23,
+        "protein": 2.13,
+        "carb": 3.67,
+        "fat": 0.52,
+        "fibre": 2.8
+      }
+    },
+    "169998": {
+      "dataset": "sr_legacy",
+      "description": "Corn, sweet, yellow, raw",
+      "per100g": {
+        "kcal": 86,
+        "protein": 3.27,
+        "carb": 18.7,
+        "fat": 1.35,
+        "fibre": 2
+      }
+    },
+    "170000": {
+      "dataset": "sr_legacy",
+      "description": "Onions, raw",
+      "per100g": {
+        "kcal": 40,
+        "protein": 1.1,
+        "carb": 9.34,
+        "fat": 0.1,
+        "fibre": 1.7
+      }
+    },
+    "170026": {
+      "dataset": "sr_legacy",
+      "description": "Potatoes, flesh and skin, raw",
+      "per100g": {
+        "kcal": 77,
+        "protein": 2.05,
+        "carb": 17.5,
+        "fat": 0.09,
+        "fibre": 2.1
+      }
+    },
+    "170150": {
+      "dataset": "sr_legacy",
+      "description": "Seeds, sesame seeds, whole, dried",
+      "per100g": {
+        "kcal": 573,
+        "protein": 17.7,
+        "carb": 23.4,
+        "fat": 49.7,
+        "fibre": 11.8
+      }
+    },
+    "170162": {
+      "dataset": "sr_legacy",
+      "description": "Nuts, cashew nuts, raw",
+      "per100g": {
+        "kcal": 553,
+        "protein": 18.2,
+        "carb": 30.2,
+        "fat": 43.8,
+        "fibre": 3.3
+      }
+    },
+    "170169": {
+      "dataset": "sr_legacy",
+      "description": "Nuts, coconut meat, raw",
+      "per100g": {
+        "kcal": 354,
+        "protein": 3.33,
+        "carb": 15.2,
+        "fat": 33.5,
+        "fibre": 9
+      }
+    },
+    "170290": {
+      "dataset": "sr_legacy",
+      "description": "Corn flour, whole-grain, yellow",
+      "per100g": {
+        "kcal": 361,
+        "protein": 6.93,
+        "carb": 76.8,
+        "fat": 3.86,
+        "fibre": 7.3
+      }
+    },
+    "170393": {
+      "dataset": "sr_legacy",
+      "description": "Carrots, raw",
+      "per100g": {
+        "kcal": 41,
+        "protein": 0.93,
+        "carb": 9.58,
+        "fat": 0.24,
+        "fibre": 2.8
+      }
+    },
+    "170419": {
+      "dataset": "sr_legacy",
+      "description": "Peas, green, raw",
+      "per100g": {
+        "kcal": 81,
+        "protein": 5.42,
+        "carb": 14.4,
+        "fat": 0.4,
+        "fibre": 5.7
+      }
+    },
+    "170440": {
+      "dataset": "sr_legacy",
+      "description": "Potatoes, boiled, cooked without skin, flesh, without salt",
+      "per100g": {
+        "kcal": 86,
+        "protein": 1.71,
+        "carb": 20,
+        "fat": 0.1,
+        "fibre": 1.8
+      }
+    },
+    "170457": {
+      "dataset": "sr_legacy",
+      "description": "Tomatoes, red, ripe, raw, year round average",
+      "per100g": {
+        "kcal": 18,
+        "protein": 0.88,
+        "carb": 3.89,
+        "fat": 0.2,
+        "fibre": 1.2
+      }
+    },
+    "170483": {
+      "dataset": "sr_legacy",
+      "description": "Drumstick pods, raw",
+      "per100g": {
+        "kcal": 37,
+        "protein": 2.1,
+        "carb": 8.53,
+        "fat": 0.2,
+        "fibre": 3.2
+      }
+    },
+    "170497": {
+      "dataset": "sr_legacy",
+      "description": "Peppers, hot chili, green, raw",
+      "per100g": {
+        "kcal": 40,
+        "protein": 2,
+        "carb": 9.46,
+        "fat": 0.2,
+        "fibre": 1.5
+      }
+    },
+    "170859": {
+      "dataset": "sr_legacy",
+      "description": "Cream, fluid, heavy whipping",
+      "per100g": {
+        "kcal": 340,
+        "protein": 2.84,
+        "carb": 2.84,
+        "fat": 36.1,
+        "fibre": 0
+      }
+    },
+    "170923": {
+      "dataset": "sr_legacy",
+      "description": "Spices, cumin seed",
+      "per100g": {
+        "kcal": 375,
+        "protein": 17.8,
+        "carb": 44.2,
+        "fat": 22.3,
+        "fibre": 10.5
+      }
+    },
+    "171017": {
+      "dataset": "sr_legacy",
+      "description": "Oil, sunflower, linoleic (less than 60%)",
+      "per100g": {
+        "kcal": 884,
+        "protein": 0,
+        "carb": 0,
+        "fat": 100,
+        "fibre": 0
+      }
+    },
+    "171077": {
+      "dataset": "sr_legacy",
+      "description": "Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw",
+      "per100g": {
+        "kcal": 120,
+        "protein": 22.5,
+        "carb": 0,
+        "fat": 2.62,
+        "fibre": 0
+      }
+    },
+    "171265": {
+      "dataset": "sr_legacy",
+      "description": "Milk, whole, 3.25% milkfat, with added vitamin D",
+      "per100g": {
+        "kcal": 61,
+        "protein": 3.15,
+        "carb": 4.8,
+        "fat": 3.25,
+        "fibre": 0
+      }
+    },
+    "171284": {
+      "dataset": "sr_legacy",
+      "description": "Yogurt, plain, whole milk",
+      "per100g": {
+        "kcal": 61,
+        "protein": 3.47,
+        "carb": 4.66,
+        "fat": 3.25,
+        "fibre": 0
+      }
+    },
+    "171287": {
+      "dataset": "sr_legacy",
+      "description": "Egg, whole, raw, fresh",
+      "per100g": {
+        "kcal": 143,
+        "protein": 12.6,
+        "carb": 0.72,
+        "fat": 9.51,
+        "fibre": 0
+      }
+    },
+    "171412": {
+      "dataset": "sr_legacy",
+      "description": "Oil, coconut",
+      "per100g": {
+        "kcal": 892,
+        "protein": 0,
+        "carb": 0,
+        "fat": 99.1,
+        "fibre": 0
+      }
+    },
+    "172023": {
+      "dataset": "sr_legacy",
+      "description": "Millet flour",
+      "per100g": {
+        "kcal": 382,
+        "protein": 10.8,
+        "carb": 75.1,
+        "fat": 4.25,
+        "fibre": 3.5
+      }
+    },
+    "172231": {
+      "dataset": "sr_legacy",
+      "description": "Spices, turmeric, ground",
+      "per100g": {
+        "kcal": 312,
+        "protein": 9.68,
+        "carb": 67.1,
+        "fat": 3.25,
+        "fibre": 22.7
+      }
+    },
+    "172430": {
+      "dataset": "sr_legacy",
+      "description": "Peanuts, all types, raw",
+      "per100g": {
+        "kcal": 567,
+        "protein": 25.8,
+        "carb": 16.1,
+        "fat": 49.2,
+        "fibre": 8.5
+      }
+    },
+    "172436": {
+      "dataset": "sr_legacy",
+      "description": "Pigeon peas (red gram), mature seeds, raw",
+      "per100g": {
+        "kcal": 343,
+        "protein": 21.7,
+        "carb": 62.8,
+        "fat": 1.49,
+        "fibre": 15
+      }
+    },
+    "173410": {
+      "dataset": "sr_legacy",
+      "description": "Butter, salted",
+      "per100g": {
+        "kcal": 717,
+        "protein": 0.85,
+        "carb": 0.06,
+        "fat": 81.1,
+        "fibre": 0
+      }
+    },
+    "173412": {
+      "dataset": "sr_legacy",
+      "description": "Butter oil, anhydrous",
+      "per100g": {
+        "kcal": 876,
+        "protein": 0.28,
+        "carb": 0,
+        "fat": 99.5,
+        "fibre": 0
+      }
+    },
+    "173756": {
+      "dataset": "sr_legacy",
+      "description": "Chickpeas (garbanzo beans, bengal gram), mature seeds, raw",
+      "per100g": {
+        "kcal": 378,
+        "protein": 20.5,
+        "carb": 63,
+        "fat": 6.04,
+        "fibre": 12.2
+      }
+    },
+    "173757": {
+      "dataset": "sr_legacy",
+      "description": "Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",
+      "per100g": {
+        "kcal": 164,
+        "protein": 8.86,
+        "carb": 27.4,
+        "fat": 2.59,
+        "fibre": 7.6
+      }
+    },
+    "174256": {
+      "dataset": "sr_legacy",
+      "description": "Mung beans, mature seeds, raw",
+      "per100g": {
+        "kcal": 347,
+        "protein": 23.9,
+        "carb": 62.6,
+        "fat": 1.15,
+        "fibre": 16.3
+      }
+    },
+    "174259": {
+      "dataset": "sr_legacy",
+      "description": "Mungo beans, mature seeds, raw",
+      "per100g": {
+        "kcal": 341,
+        "protein": 25.2,
+        "carb": 59,
+        "fat": 1.64,
+        "fibre": 18.3
+      }
+    },
+    "174284": {
+      "dataset": "sr_legacy",
+      "description": "Lentils, pink or red, raw",
+      "per100g": {
+        "kcal": 358,
+        "protein": 23.9,
+        "carb": 63.1,
+        "fat": 2.17,
+        "fibre": 10.8
+      }
+    },
+    "174288": {
+      "dataset": "sr_legacy",
+      "description": "Chickpea flour (besan)",
+      "per100g": {
+        "kcal": 387,
+        "protein": 22.4,
+        "carb": 57.8,
+        "fat": 6.69,
+        "fibre": 10.8
+      }
+    },
+    "174370": {
+      "dataset": "sr_legacy",
+      "description": "Lamb, ground, raw",
+      "per100g": {
+        "kcal": 282,
+        "protein": 16.6,
+        "carb": 0,
+        "fat": 23.4,
+        "fibre": 0
+      }
+    },
+    "175176": {
+      "dataset": "sr_legacy",
+      "description": "Fish, tilapia, raw",
+      "per100g": {
+        "kcal": 96,
+        "protein": 20.1,
+        "carb": 0,
+        "fat": 1.7,
+        "fibre": 0
+      }
+    },
+    "175179": {
+      "dataset": "sr_legacy",
+      "description": "Crustaceans, shrimp, raw",
+      "per100g": {
+        "kcal": 85,
+        "protein": 20.1,
+        "carb": 0,
+        "fat": 0.51,
+        "fibre": null
+      }
+    },
+    "175303": {
+      "dataset": "sr_legacy",
+      "description": "Game meat, goat, raw",
+      "per100g": {
+        "kcal": 109,
+        "protein": 20.6,
+        "carb": 0,
+        "fat": 2.31,
+        "fibre": 0
+      }
+    }
+  }
+}
