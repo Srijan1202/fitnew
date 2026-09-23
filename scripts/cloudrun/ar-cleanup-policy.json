@@ -1,0 +1,12 @@
+[
+  {
+    "name": "keep-three-newest",
+    "action": { "type": "Keep" },
+    "mostRecentVersions": { "keepCount": 3 }
+  },
+  {
+    "name": "delete-the-rest",
+    "action": { "type": "Delete" },
+    "condition": { "tagState": "any", "olderThan": "1d" }
+  }
+]

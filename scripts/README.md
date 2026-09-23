@@ -12,4 +12,6 @@ Reserved by spec §29.
   here means giving `scripts/` a package.json; that happens when
   `rebuild-derived.ts` (Phase 12) needs the same.
 
-Empty at Phase 0.
+- `cloudrun/` — Phase 6.7. Owner-run release scripts for the hosted alpha
+  (`deploy.ps1`, `rollback.ps1`), the Neon roles script and the Artifact
+  Registry cleanup policy. Runbook: `docs/hosting/CLOUD-RUN.md`.
