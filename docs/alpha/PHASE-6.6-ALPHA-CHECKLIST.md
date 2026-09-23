@@ -187,6 +187,15 @@ Do these **first**, before new sessions, on the new APK:
 | H7 | Wi-Fi off → start + log + Complete → Profile → Sign out | "Unsynced workout changes" dialog. **Stay signed in** → Wi-Fi on → it syncs; then Sign out works without the dialog | |
 | H8 | Today after H5 | Home's next move / week reflect the finished session | |
 
+### B-I. Retest — queued sessions from a replaced programme (KI-9)
+
+| # | Do | Expect | Result |
+|---|---|---|---|
+| I1 | Install the new APK; if a "n not synced · Retry" pill shows, tap **Retry** once | Within seconds the pill clears; `docker compose logs api` shows each old session as one 404 then a 201 — no burst of 404s | |
+| I2 | History | The old sessions appear (as "Session", ad-hoc — their programme no longer exists); your Bro Split sessions as before | |
+| I3 | Training → today (Wednesday = Shoulders) → Start → log 2 sets → Complete | 201 once, syncs by itself, History + Home update | |
+| I4 | Offline: start a session → Training → apply another programme (AI or template) online later → Complete → Wi-Fi on | The session syncs as ad-hoc (one 404 then 201), not parked | |
+
 ## C. Failure log
 
 One entry per ❌ or ⚠:

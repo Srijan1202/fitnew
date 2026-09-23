@@ -14,9 +14,40 @@ verified on the Samsung S24.
 | KI-5 | The release-mode (R8) APK has not yet been run on a device | Medium | Unknown until B/A1 on the S24 | Open — Gate 7 check |
 | KI-6 | Sessions finished "1 not synced" and reached History only after Retry | High | Yes — fixed, **S24 retest pending** | Fixed in code (Gate 7), see below |
 | KI-7 | No way to edit personal details collected at onboarding | Medium | No | Implemented (Gate 7), **S24 retest pending** |
-| KI-8 | Every new session refused: "A session is already in progress" (409), Retry never helps | High | Yes — fixed, **S24 retest pending** | Fixed in code (Gate 7), see below |
+| KI-8 | Every new session refused: "A session is already in progress" (409), Retry never helps | High | Yes — fixed, **S24 retest pending** | Fixed in code (Gate 7), see below — the orphan was discarded on the S24 via the notice (01:07:31) |
+| KI-9 | Queued sessions refused 404 "That day is not in your active programme" after the programme was replaced | High | Yes — fixed, **S24 retest pending** | Fixed in code (Gate 7), see below |
 
 ---
+
+## KI-9 — A queued session names a day of a programme that was replaced (fixed in code; S24 retest pending)
+
+**Seen on the S24 (API log 2026-09-23 01:07:32–01:11:09 UTC):** 70×
+`POST /v1/training/sessions` → 404 "That day is not in your active
+programme."; the newer sessions got 201 only at 01:11:32.
+
+**Not a weekday mismatch.** ISO 1 = Monday … 7 = Sunday everywhere (DB
+check 1–7, contract, API `isoDayOfWeek`, Dart `DateTime.weekday`); the
+active programme (Bro Split `a72047b0`, since 00:37:46) has Wednesday = 3 =
+Shoulders `3f85b5cb`, and starts with that day succeeded. The start body
+names the day by **`programDayId`**, not a weekday.
+
+**Cause:** sessions started 00:29–00:36 while **Upper / Lower** was the
+active programme carry its day ids; they waited behind the orphan (409).
+At 00:37:46 `from-template/bro-split` replaced the programme; when the
+orphan was discarded (01:07:31) those starts reached the day check (which
+runs before the active-session guard) → 404. The engine treated 404 as a
+generic failure: 5 attempts, park, Retry repeats — delaying later sessions
+and never delivering these workouts.
+
+**Fix (Flutter only; server validation unchanged):** 404 maps to a
+`NotFound` failure; a queued `start` refused as NotFound is resent **once
+without `programDayId`** — an ad-hoc session (owner 8.6) keeping the phone's
+own exercises, so its sets and completion replay; the rewritten payload is
+stored. Never mapped onto another programme's day. History lists these as
+ad-hoc "Session" entries.
+
+**On the S24 now:** the stuck entries are still parked on the phone; after
+installing the new APK tap **Retry** once — they sync as ad-hoc sessions.
 
 ## KI-8 — A session FITOS holds that the phone lost blocks every new one (fixed in code; S24 retest pending)
 
