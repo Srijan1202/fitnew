@@ -1,7 +1,8 @@
-## PHASE 6.7 — Hosted backend (Cloud Run) + external HTTPS access — PLANNING
+## PHASE 6.7 — Hosted backend (Cloud Run) + external HTTPS access — IN PROGRESS
 
-**Status: Gate 6.7-0 (decisions + accounts) — report written, awaiting owner approval.** Nothing
-implemented: no application code changed, no cloud resource created, no domain registered.
+**Status:** Gate 6.7-0 **approved** (owner, 2026-09-23: O1–O8 as recommended; domain `tryfitos.me`
+claimed, not configured). Gate 6.7-1 (server C1–C8) **implemented, awaiting owner approval** —
+see the Gate 6.7-1 section at the end. No cloud resource created; nothing merged.
 
 **Branch** `phase-6.7` from the frozen Phase 6.6 commit `7f2b7c3` · **Not in MASTER-SPEC** (owner
 instruction: an intermediate phase; Phase 7 remains *Food database*) · Supersedes the earlier
@@ -373,5 +374,56 @@ No schema migration. No change to the sync architecture beyond C10's classificat
 2. Install and authenticate the `gcloud` CLI on the PC (`gcloud auth login`), or run the runbook in Cloud Shell.
 3. Create the Neon project `fitos-alpha` (Postgres 18, the O2 region) and give me nothing. You'll paste the two generated connection strings **directly into Secret Manager**, never into chat or files.
 4. Create a new Gemini API key for hosting (O8) and put it **directly into Secret Manager**.
-5. Run the runbook's commands for the service accounts, IAM, Workload Identity Federation, the registry, jobs and the service. Then add the four GitHub **repository variables** it prints. They are identifiers, not secrets.
+5. Run the runbook's commands for the service accounts, IAM, Workload Identity Federation, the registry, jobs and the service. Then add the three GitHub **repository variables** it prints. They are identifiers, not secrets.
 6. Under O4(A): approve the one-time read-only `pg_dump` of the local `fitos` database.
+
+---
+
+### Gate 6.7-1 — Server Cloud Run readiness (C1–C8) — implemented 2026-09-23, awaiting approval
+
+Commits: `d06ecf2` (server, C1–C6) · `a5d5f2e` (CI, C7) · `7cfb098` (runbook, ADR-012, scripts, C8)
+· this report. Mobile untouched (Gate 6.7-2). `docker/docker-compose.yml` unchanged.
+
+| # | Change | Where |
+|---|---|---|
+| C1 | Runtime image carries `database/migrations` + `database/seeds`; `node apps/api/dist/db/migrate.js up` / `seed.js` run from the image | `docker/Dockerfile.api` |
+| C2 | `TRUST_PROXY` (hop count / `false` / address list); unset keeps Phase 6.6 (`true`) | `lib/env.ts`, `app.ts` |
+| C3 | `NODE_ENV=production|staging` refuses the dev `CONSENT_IP_SALT` (or one < 16 chars) and a missing `TRUST_PROXY`; `/docs` + `/docs/json` not registered there | `lib/env.ts`, `app.ts` |
+| C4 | `GET /livez` — process only, no database; `/health` unchanged (DB ping) | `modules/health/*`, `openapi.json` (+ `/livez`, additive) |
+| C5 | Connection-class database errors (Node network codes, postgres.js `CONNECTION_*`/`CONNECT_TIMEOUT`, SQLSTATE `08xxx`, `57P01-3`, `53300`, followed through `cause`) → **503 `UPSTREAM_UNAVAILABLE`**; everything else still 500 `INTERNAL` | `db/errors.ts`, `plugins/error-handler.ts` |
+| C6 | `/v1/ai/chat` 20/min keyed `user:<id>` at `preHandler` (after auth); unauthenticated requests are refused by auth first | `modules/ai/routes.ts` |
+| C7 | CI: the image runs migrate twice (idempotent) + seed, must **refuse** to boot in production without salt / `TRUST_PROXY`, then serves in production mode (`/livez` 200, `/health` 200, `/docs` + `/docs/json` 404, `/v1/auth/session` 401); then the same image is pushed to Artifact Registry via keyless WIF — **skipped** until the three repository variables exist; job permission `id-token: write` | `.github/workflows/ci-api.yml` |
+| C8 | Runbook (every Gate 6.7-3 command), ADR-012, `deploy.ps1` (image check → migrate job → no-traffic tagged revision → smoke on its URL → traffic, or stop), `rollback.ps1`, `neon-roles.sql`, Artifact Registry cleanup policy (keep 3) | `docs/hosting/CLOUD-RUN.md`, `docs/decisions/ADR-012-…`, `scripts/cloudrun/*` |
+
+ACCEPTANCE (Gate 6.7-1 criteria from §11)
+  - Suites: core **461**, contracts **35**, API **284** (240 → 284: +44 — `hosting.test.ts` 29,
+    env 14, AI per-user 1), mobile **320** (Flutter container, with the regenerated `openapi.json`).
+    Typecheck, lint (core / contracts / api), `flutter analyze --fatal-infos`, `dart format` clean.
+  - **CI on `7cfb098`:** `apps/api`, `packages/core`, `apps/mobile` success; step "Docker image
+    migrates, seeds and serves in production mode" success; the two Artifact Registry steps skipped.
+  - Image built locally (133 MB compressed) and run against a throwaway Postgres 18: migrate ×2,
+    seed (151 exercises), journal 9 rows; boot without salt / `TRUST_PROXY` refused naming both;
+    production boot `/livez` 200, `/health` 200, `/docs` 404, `/docs/json` 404, auth 401; database
+    stopped → `/livez` 200, `/health` 503. A real postgres.js `ECONNREFUSED` on `/v1/user/profile`
+    answers 503 with no host, port or driver text in the body (test).
+  - `TRUST_PROXY=1`: `X-Forwarded-For: 6.6.6.6, 203.0.113.7` → client `203.0.113.7`; rotating the
+    spoofed entry still hits 429 at request 121 (test). Unset → `6.6.6.6` (Phase 6.6 behaviour kept).
+  - AI: two users behind one IP — the first is refused at request 21 (429 `RATE_LIMITED`), the
+    second still gets 200 (real Postgres test).
+  - LAN no-regression: the image with the compose's environment (`NODE_ENV=development`, no salt,
+    no `TRUST_PROXY`) boots, `/docs/json` 200, `/health` 200 — exactly as in 6.6.
+  - `neon-roles.sql` run on Postgres 18 as a **non-superuser** owner (how Neon works): the first
+    version failed (`permission denied to change default privileges`) and was fixed (the owner
+    joins `fitos_migrator` for the two statements and leaves). Then: the image's migrate + seed as
+    `fitos_migrator`; `fitos_app` can select / insert / update / delete and **cannot** create, alter
+    or drop tables or read the `drizzle` journal; `pg_dump` as `fitos_migrator` works (backup path).
+  - `deploy.ps1` / `rollback.ps1`: 0 parse errors (PowerShell 5.1 parser). **Not executed** — no
+    `gcloud`, no cloud project yet (Gate 6.7-3).
+  - Secrets: none added anywhere; `.dockerignore` unchanged; no secret value in any new file.
+
+NOT VERIFIED YET (by design, later gates)
+  - The Cloud Run hop count for `TRUST_PROXY` (runbook step 10, Gate 6.7-3) — `1` is the expected
+    value, to be confirmed against real logs.
+  - The Artifact Registry push step (needs WIF, Gate 6.7-3).
+  - The app still treats a 503 / 502 / 504 as an ordinary failure — the mobile half of the
+    outage handling is Gate 6.7-2 (C10).
