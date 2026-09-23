@@ -1,9 +1,9 @@
 ## PHASE 6.7 — Hosted backend (Cloud Run) + external HTTPS access — IN PROGRESS
 
 **Status:** Gate 6.7-0 **approved** (owner, 2026-09-23: O1–O8 as recommended; domain `tryfitos.me`
-claimed, not configured). Gate 6.7-1 (server C1–C8) **implemented, awaiting owner approval** —
-approved by the owner. Gate 6.7-2 (hosted mobile profile) **implemented, awaiting owner approval** —
-see the Gate 6.7-2 section at the end. No cloud resource created; nothing merged.
+claimed, not configured). Gate 6.7-1 (server C1–C8) **accepted** by the owner. Gate 6.7-2 (hosted
+mobile profile) **accepted** by the owner (2026-09-23), after the CI failure investigation below.
+Gate 6.7-3 not started. No cloud resource created; nothing merged.
 
 **Branch** `phase-6.7` from the frozen Phase 6.6 commit `7f2b7c3` · **Not in MASTER-SPEC** (owner
 instruction: an intermediate phase; Phase 7 remains *Food database*) · Supersedes the earlier
@@ -380,7 +380,7 @@ No schema migration. No change to the sync architecture beyond C10's classificat
 
 ---
 
-### Gate 6.7-1 — Server Cloud Run readiness (C1–C8) — implemented 2026-09-23, awaiting approval
+### Gate 6.7-1 — Server Cloud Run readiness (C1–C8) — ACCEPTED 2026-09-23
 
 Commits: `d06ecf2` (server, C1–C6) · `a5d5f2e` (CI, C7) · `7cfb098` (runbook, ADR-012, scripts, C8)
 · this report. Mobile untouched (Gate 6.7-2). `docker/docker-compose.yml` unchanged.
@@ -431,7 +431,7 @@ NOT VERIFIED YET (by design, later gates)
 
 ---
 
-### Gate 6.7-2 — Hosted mobile profile — implemented 2026-09-23, awaiting approval
+### Gate 6.7-2 — Hosted mobile profile — ACCEPTED 2026-09-23
 
 Commits: `c2124e2` (mobile) · `b62a021` (runbook) · `5e7d780` / `0a8abbd` (this report) ·
 `5ed2168` (CI: failing Flutter tests named as check-run annotations). Server, contracts,
@@ -513,11 +513,55 @@ INTENTIONALLY / NOT YET VERIFIED
     CI's `ci-mobile` builds the default debug APK on Linux.
   - The derived run.app URL: confirmed only after the first deploy (Gate 6.7-3).
   - Nothing on the S24 yet: hosted install, sign-in and live outage behaviour are Gate 6.7-5.
-  - **One unexplained CI test failure.** `ci-mobile` on `0a8abbd` reported "373 tests passed,
-    1 failed". The test couldn't be named: logs need a token; annotations give counts only.
-    It did **not** recur:
-    - CI on `5ed2168` passed (all three workflows);
-    - the full suite passed 3× in a CPU-limited container (1.5 CPUs);
-    - the timing-sensitive files (automatic sync + all new core tests) passed 8× at 0.5 CPU.
-    Treated as an intermittent test, not fixed. `ci-mobile` now annotates any failing test with
-    its name, file, line and error, so a recurrence is identifiable.
+  - The CI failure on `0a8abbd` is explained below. It is **not** a Gate 6.7-2 defect.
+
+CI FAILURE ON `0a8abbd` — REPRODUCED; A PRE-EXISTING PHASE 6.6 TEST RELIABILITY ISSUE
+  - **Symptom:** `ci-mobile` on `0a8abbd` reported "373 tests passed, 1 failed". The job log
+    needs a token, no artifacts were uploaded, and the annotations gave counts only, so CI
+    could not name the test.
+  - **Same code, different outcomes:** `0a8abbd`, `5ed2168` and `a8365e8` have identical app
+    and test code (only CI / doc files differ). The first failed; the other two passed.
+  - **Reproduced on this PC with CI's Flutter 3.47.2** (the host test runner works again; the
+    earlier Flutter 3.44 container runs never hit it):
+
+    | Run | Failures |
+    |---|---|
+    | Full suite, 16 runs | 4 |
+    | `automatic_sync_test.dart` at HEAD, 25 runs | 7 |
+    | The same file at **frozen Phase 6.6 `7f2b7c3`**, 25 runs | **7** |
+    | The same file at `7f2b7c3`, 30 more runs to name the tests | 9 |
+
+  - **Error, every time:** `CouldNotRollBackException: Bad state: This database has already
+    been closed`, thrown inside `SyncEngine._loop` (`sync_engine.dart:395`, the next pick
+    transaction).
+  - **Affected tests:** only those that end the moment an entry parks, both from Phase 6.6:
+    - "a session this phone does not know (an orphan) still parks and surfaces" (KI-10,
+      `eead165`);
+    - "the new session is kept on the phone, its start is refused, retried and parked" (KI-8).
+  - **Cause — a race in test teardown:**
+    1. The engine writes `parked = true`, then immediately picks the next entry.
+    2. The test's `eventually(parked > 0)` sees it and the test ends; its assertions have
+       already passed.
+    3. `tearDown` calls `engine.dispose()`, which only cancels the wake timer and does not
+       wait for a drain in progress, then `db.close()`.
+    4. The drain's pending query hits the closed database, and the error is reported against
+       the test.
+  - **Classification:**
+    - Timing / thread scheduling: yes. The rate depends on the machine (~28% here, 1 in 8
+      completed CI runs since the test was added).
+    - Test ordering: no (6 random-order runs).
+    - Network: no (fake server).
+    - Product nondeterminism: no.
+  - **It predates Gate 6.7-2:** the same failure at the same rate at `7f2b7c3`. None of the
+    54 new Gate 6.7-2 tests failed in any run.
+  - **Not an app problem:** the app's database lives for the whole process. It's a root
+    `Provider`, closed only when the `ProviderScope` is disposed; sign-out clears rows but
+    never closes it. So the engine can never be mid-query on a closed database.
+  - **Handling (owner decision, 2026-09-23):**
+    - Recorded as a pre-existing Phase 6.6 test reliability issue.
+    - **Not fixed in Gate 6.7-2**; `SyncEngine` not modified for it.
+    - No assertion was weakened, nothing retried or suppressed.
+    - The likely future fix is in the test harness: cleanup waits for an in-progress drain
+      before closing the database (a separate, approved change).
+    - `ci-mobile` now names any failing test in its annotations (`5ed2168`), so a recurrence
+      is identifiable from the check run.
