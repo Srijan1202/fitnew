@@ -17,6 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    # id-token: the Workload Identity token for the image push (Phase 6.7);
+    # it grants nothing by itself — the GCP side limits it to one repository.
+    permissions:
+      contents: read
+      id-token: write
+
     # Postgres 18 to match docker/docker-compose.yml and Neon (18.6 verified
     # 2026-09-20). Keep all three on the same major.
     # The health integration test and, from Phase 1, the migration check run
@@ -75,27 +81,71 @@ jobs:
       - name: Build
         run: pnpm --filter @fitos/api build
 
-      # Phase 1 adds: drizzle-kit migrations applied here, then re-applied to
-      # confirm they are idempotent, before the Docker build.
-
       - name: Docker build
         run: docker build -f docker/Dockerfile.api -t fitos-api:ci .
 
       # A green `docker build` proved nothing about whether the image RUNS.
       # Phase 1 shipped an image that crash-looped (contracts exported .ts,
       # which plain Node cannot load) and CI was green. Boot it and hit it.
-      - name: Docker image boots and serves
+      # Phase 6.7: exactly as Cloud Run will — the image's own migrate / seed
+      # jobs first, then the server in production mode (the image default).
+      - name: Docker image migrates, seeds and serves in production mode
         run: |
-          docker run -d --name api-smoke --network host             -e DATABASE_URL="$DATABASE_URL"             -e FIREBASE_PROJECT_ID=ci-smoke             -e LOG_LEVEL=warn             fitos-api:ci
+          set -euo pipefail
+          job() { docker run --rm --network host -e DATABASE_URL="$DATABASE_URL" fitos-api:ci "$@"; }
+          job node apps/api/dist/db/migrate.js up
+          job node apps/api/dist/db/migrate.js up   # a re-run is a no-op
+          job node apps/api/dist/db/seed.js
+          # A hosted server must refuse development fallbacks (no salt, no TRUST_PROXY).
+          if timeout 60 docker run --rm --network host -e DATABASE_URL="$DATABASE_URL"                -e FIREBASE_PROJECT_ID=ci-smoke fitos-api:ci > /tmp/refused.log 2>&1; then
+            echo "booted in production without CONSENT_IP_SALT / TRUST_PROXY"; exit 1
+          fi
+          grep -q 'TRUST_PROXY' /tmp/refused.log && grep -q 'CONSENT_IP_SALT' /tmp/refused.log
+          docker run -d --name api-smoke --network host             -e DATABASE_URL="$DATABASE_URL"             -e FIREBASE_PROJECT_ID=ci-smoke             -e LOG_LEVEL=warn             -e TRUST_PROXY=1             -e CONSENT_IP_SALT=ci-smoke-salt-not-a-secret             fitos-api:ci
           for i in $(seq 1 20); do
-            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/health || true)
-            [ "$code" = "200" ] && break
+            [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/livez || true)" = "200" ] && break
             sleep 2
           done
-          echo "GET /health -> $code"
-          [ "$code" = "200" ] || { docker logs api-smoke; exit 1; }
+          check() {
+            want=$1; shift
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$@" || true)
+            echo "$* -> $code (want $want)"
+            [ "$code" = "$want" ] || { docker logs api-smoke; exit 1; }
+          }
+          check 200 http://localhost:8080/livez
+          check 200 http://localhost:8080/health
+          check 404 http://localhost:8080/docs
+          check 404 http://localhost:8080/docs/json
           # Route must exist (401), not be missing (404) from a stale build.
-          auth=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/v1/auth/session             -H 'content-type: application/json' -d '{}')
-          echo "POST /v1/auth/session -> $auth"
-          [ "$auth" = "401" ] || { docker logs api-smoke; exit 1; }
+          check 401 -X POST http://localhost:8080/v1/auth/session -H 'content-type: application/json' -d '{}'
           docker rm -f api-smoke
+
+      # Phase 6.7 (O5) — publish the image that was just smoke-tested.
+      # Keyless: GitHub's OIDC token is exchanged through Workload Identity
+      # Federation for fitos-ci-publisher, which may ONLY push to the
+      # asia-south1 `fitos` Artifact Registry repository — it cannot deploy,
+      # read secrets or touch Cloud Run. The three repository VARIABLES are
+      # identifiers, not secrets. Skipped until they exist (Gate 6.7-3).
+      - name: Authenticate to Google Cloud (image push only)
+        id: gcp
+        if: >-
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/phase-6.7') &&
+          vars.GCP_WIF_PROVIDER != ''
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_CI_SERVICE_ACCOUNT }}
+          token_format: access_token
+
+      - name: Push image to Artifact Registry
+        if: steps.gcp.outcome == 'success'
+        env:
+          IMAGE: asia-south1-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/fitos/fitos-api:${{ github.sha }}
+          TOKEN: ${{ steps.gcp.outputs.access_token }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$TOKEN" | docker login -u oauth2accesstoken --password-stdin https://asia-south1-docker.pkg.dev
+          docker tag fitos-api:ci "$IMAGE"
+          docker push "$IMAGE"
+          echo "pushed $IMAGE"
