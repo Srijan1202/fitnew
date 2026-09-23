@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/errors/result.dart';
@@ -400,6 +401,194 @@ void main() {
     });
   });
 
+  group(
+      'Gate 7 (S24, 2026-09-23 01:43–01:45 UTC): stale queued sessions and a newer session of this phone — no 409 loop',
+      () {
+    /// The S24's queue after d362279: two sessions from the replaced
+    /// programme, parked by earlier failures (the orphan), and nothing on
+    /// the server for them.
+    Future<List<WorkoutSession>> staleParked() async {
+      api.offline = true;
+      final stale = <WorkoutSession>[];
+      for (var i = 0; i < 2; i++) {
+        final x = await repo.startSession(day: api.todayResponse);
+        await repo.logSet(x.clientSessionId, set(x.exercises.first, 1));
+        await repo.complete(x.clientSessionId);
+        stale.add(x);
+      }
+      await db.update(db.syncQueue).write(
+            const SyncQueueCompanion(parked: Value(true), attempts: Value(5)),
+          );
+      api.activeProgramDayIds = {'bro-split-wednesday'};
+      api.offline = false;
+      return stale;
+    }
+
+    TodayResponse newDay() =>
+        api.todayResponse.copyWith(programDayId: 'bro-split-wednesday');
+
+    Future<bool> hasSets(String clientSessionId, int n) async =>
+        (onServer(clientSessionId)?.exercises.firstOrNull?.sets.length ?? 0) ==
+        n;
+
+    test(
+        'the S24 sequence: Y completes first, then each stale session goes 404 → ad-hoc 201 → sets → completion, one at a time — zero 409s, nothing parked',
+        () async {
+      final stale = await staleParked();
+      // Y — the new programme's session — started and logged online.
+      final y = await repo.startSession(day: newDay());
+      await repo.logSet(y.clientSessionId, set(y.exercises.first, 1));
+      await eventually(() => hasSets(y.clientSessionId, 1));
+      // Completed while the PC was unreachable…
+      api.offline = true;
+      await repo.complete(y.clientSessionId);
+      // …and Retry (d362279's APK) re-queued the stale sessions AHEAD of
+      // Y's completion, as on the S24 at 01:43:51.
+      await repo.retryParked();
+      api.startLog.clear();
+      api.offline = false;
+
+      await eventually(clean, reason: 'everything drained by itself');
+
+      expect(
+        api.startLog.where((e) => e.$2 == '409'),
+        isEmpty,
+        reason: 'never sent while this phone had a session open there',
+      );
+      final yServer = onServer(y.clientSessionId)!;
+      expect(yServer.status, SessionStatus.completed);
+      expect(
+        api.startLog,
+        [
+          for (final x in stale) ...[
+            (x.clientSessionId, '404'),
+            (x.clientSessionId, '201'),
+          ],
+        ],
+        reason: 'one 404 and one ad-hoc start per stale session, in order',
+      );
+      expect(
+        api.completed.indexOf(yServer.id),
+        lessThan(
+          api.completed.indexOf(onServer(stale.first.clientSessionId)!.id),
+        ),
+        reason: 'Y closed before the first stale session was created',
+      );
+      for (final x in stale) {
+        final server = onServer(x.clientSessionId)!;
+        expect(server.status, SessionStatus.completed);
+        expect(server.programDayId, isNull, reason: 'ad-hoc, not remapped');
+        expect(server.exercises.first.sets, hasLength(1));
+      }
+      expect(api.sessions, hasLength(3));
+      expect(
+        api.sessions.values.where((x) => x.status == SessionStatus.active),
+        isEmpty,
+      );
+      final st = await repo.syncStatus();
+      expect(st.parked, 0);
+      expect(st.pending, 0);
+    });
+
+    test(
+        "a stale start waits while this phone's own session is in progress: not sent, no attempt counted, never parked — then syncs once it is completed",
+        () async {
+      final stale = await staleParked();
+      final y = await repo.startSession(day: newDay());
+      await eventually(() async => onServer(y.clientSessionId) != null);
+      await repo.retryParked();
+      api.startLog.clear();
+      for (var i = 0; i < 5; i++) {
+        await repo.sync();
+      }
+      await repo.logSet(y.clientSessionId, set(y.exercises.first, 1));
+      await eventually(() => hasSets(y.clientSessionId, 1));
+
+      expect(api.startLog, isEmpty, reason: 'no POST storm, no 409');
+      final waiting = await db.select(db.syncQueue).get();
+      expect(waiting, isNotEmpty);
+      expect(waiting.where((q) => q.parked), isEmpty);
+      expect(
+        waiting.where((q) => q.attempts > 0),
+        isEmpty,
+        reason: 'waiting is not failing',
+      );
+      for (final x in stale) {
+        expect(onServer(x.clientSessionId), isNull);
+        expect(
+          (await repo.session(x.clientSessionId))!.status,
+          SessionStatus.completed,
+          reason: 'kept on the phone, not marked synced',
+        );
+      }
+
+      await repo.complete(y.clientSessionId);
+
+      await eventually(clean, reason: 'completion releases the queue');
+      expect(api.startLog.where((e) => e.$2 == '409'), isEmpty);
+      for (final x in stale) {
+        expect(onServer(x.clientSessionId)!.status, SessionStatus.completed);
+      }
+    });
+
+    test(
+        "a 409 naming one of this phone's own sessions (its local view behind) is a wait — no attempt, not parked, one request per drain; it syncs when that session closes",
+        () async {
+      // Z synced and completed here, but FITOS still has it open.
+      final z = await repo.startSession(day: newDay());
+      await repo.complete(z.clientSessionId);
+      await eventually(clean);
+      final zId = onServer(z.clientSessionId)!.id;
+      api.sessions[z.clientSessionId] =
+          onServer(z.clientSessionId)!.copyWith(status: SessionStatus.active);
+
+      final stale = await staleParked();
+      await repo.retryParked();
+      await repo.sync();
+      await repo.sync();
+
+      final refused = api.startLog.where((e) => e.$2 == '409').toList();
+      expect(
+        refused.length,
+        inInclusiveRange(1, 3),
+        reason: 'one try per drain, not a loop',
+      );
+      expect(refused.map((e) => e.$1).toSet(), {stale.first.clientSessionId});
+      final queue = await db.select(db.syncQueue).get();
+      expect(queue.where((q) => q.parked), isEmpty);
+      expect(queue.where((q) => q.attempts > 0), isEmpty);
+
+      await api.complete(
+        zId,
+        CompleteSessionRequest(
+          completedAt: DateTime.now().toUtc().toIso8601String(),
+        ),
+      );
+      await repo.sync();
+
+      await eventually(clean);
+      for (final x in stale) {
+        expect(onServer(x.clientSessionId)!.status, SessionStatus.completed);
+      }
+    });
+
+    test(
+        'a session this phone does not know (an orphan) still parks and surfaces — the wait is only for its own sessions',
+        () async {
+      final orphan = await api.start(
+        StartSessionRequest(
+          clientSessionId: const Uuid().v4(),
+          startedAt: DateTime.now().toUtc().toIso8601String(),
+        ),
+      );
+      expect(orphan, isA<Ok<WorkoutSession>>());
+      final s = await repo.startSession(day: api.todayResponse);
+      await repo.complete(s.clientSessionId);
+      await eventually(() async => (await repo.syncStatus()).parked > 0);
+      expect(onServer(s.clientSessionId), isNull);
+    });
+  });
+
   group('H: one live set per position — no duplicates, no 409', () {
     test(
         'a double tap on the same row corrects the set instead of queueing a second',
@@ -509,6 +698,36 @@ void main() {
 /// The fake server, plus: a gate that holds a logSets request on the wire,
 /// a switch that rejects sets, and a lost answer (applied, then "offline").
 class _GatedApi extends FakeWorkoutApi {
+  /// Each start that reached the server: (clientSessionId, answer).
+  final startLog = <(String, String)>[];
+
+  /// Server ids of sessions completed, in order.
+  final completed = <String>[];
+
+  @override
+  Future<Result<WorkoutSession>> start(StartSessionRequest request) async {
+    final r = await super.start(request);
+    final answer = switch (r) {
+      Ok() => '201',
+      Err(failure: NotFound()) => '404',
+      Err(failure: Conflict()) => '409',
+      Err(failure: Offline()) => null,
+      Err() => 'error',
+    };
+    if (answer != null) startLog.add((request.clientSessionId, answer));
+    return r;
+  }
+
+  @override
+  Future<Result<WorkoutSession>> complete(
+    String id,
+    CompleteSessionRequest request,
+  ) async {
+    final r = await super.complete(id, request);
+    if (r is Ok<WorkoutSession>) completed.add(id);
+    return r;
+  }
+
   Completer<void>? gate;
   bool waiting = false;
   bool rejectSets = false;

@@ -376,6 +376,13 @@ class SyncEngine {
   /// Sends until the queue is empty, blocked, or the server is unreachable;
   /// answers the stop, if that is why it ended.
   Future<_Stop?> _loop() async {
+    // Starts held back in this pass: waiting for another of this phone's
+    // sessions to close on the server. Re-considered after anything is sent
+    // (that may be the close they wait for), and on the next drain.
+    final held = <int>{};
+    // FITOS answered that one of this phone's sessions is open there: every
+    // other start would get the same answer — hold them all this pass.
+    var serverBusy = false;
     while (true) {
       // Pick the next entry and, for a set batch, seal it — in ONE
       // transaction. The repository edits batches inside its own
@@ -385,7 +392,7 @@ class SyncEngine {
       // payload already read for sending, then be trimmed away on landing.
       final entry = await _db.transaction(() async {
         final now = _now().toUtc().toIso8601String();
-        final next = await (_db.select(_db.syncQueue)
+        final due = await (_db.select(_db.syncQueue)
               ..where(
                 (t) =>
                     t.parked.equals(false) &
@@ -393,28 +400,47 @@ class SyncEngine {
                         t.nextAttemptAt.isSmallerOrEqualValue(now)),
               )
               ..orderBy([(t) => OrderingTerm.asc(t.id)])
-              ..limit(1))
-            .getSingleOrNull();
-        if (next == null) return null;
-        // An entry ahead of it is waiting on backoff: keep order, stop here.
-        final blocker = await (_db.select(_db.syncQueue)
-              ..where(
-                (t) =>
-                    t.parked.equals(false) & t.id.isSmallerThanValue(next.id),
-              )
-              ..limit(1))
-            .getSingleOrNull();
-        if (blocker != null) return null;
-        if (next.kind == SyncKind.logSets.name) {
-          _sealedBatchId = next.id;
-          _sealedSetIds = {
-            for (final x in LogSetsRequest.fromJson(
-              jsonDecode(next.payloadJson) as Map<String, dynamic>,
-            ).sets)
-              x.clientSetId,
-          };
+              ..limit(200))
+            .get();
+        for (final next in due) {
+          if (held.contains(next.id)) continue;
+          // Order matters WITHIN a session (start, sets, complete), not
+          // across sessions: only an earlier pending entry of the same
+          // session holds this one back. A global rule let one session's
+          // waiting start stall every other session — on the S24 an old
+          // start waited on the newer session's completion, which waited
+          // behind the old start (Phase 6.6 Gate 7).
+          final blocker = await (_db.select(_db.syncQueue)
+                ..where(
+                  (t) =>
+                      t.parked.equals(false) &
+                      t.clientSessionId.equals(next.clientSessionId) &
+                      t.id.isSmallerThanValue(next.id),
+                )
+                ..limit(1))
+              .getSingleOrNull();
+          if (blocker != null) continue;
+          // One active session per user (the server's rule): while another
+          // of this phone's sessions is open on the server, a start waits
+          // instead of being refused (409) and counted as a failure.
+          if (next.kind == SyncKind.start.name &&
+              (serverBusy ||
+                  await _otherSessionOpenOnServer(next.clientSessionId))) {
+            held.add(next.id);
+            continue;
+          }
+          if (next.kind == SyncKind.logSets.name) {
+            _sealedBatchId = next.id;
+            _sealedSetIds = {
+              for (final x in LogSetsRequest.fromJson(
+                jsonDecode(next.payloadJson) as Map<String, dynamic>,
+              ).sets)
+                x.clientSetId,
+            };
+          }
+          return next;
         }
-        return next;
+        return null;
       });
       if (entry == null) return null;
 
@@ -429,6 +455,13 @@ class SyncEngine {
         case _Sent():
           _sentAny = true;
           _offlineMisses = 0;
+          // What was sent may be the close a held start waits for.
+          held.clear();
+          serverBusy = false;
+          continue;
+        case _Held():
+          held.add(entry.id);
+          serverBusy = true;
           continue;
         case _Stop():
           return outcome;
@@ -447,10 +480,50 @@ class SyncEngine {
               ),
             ),
           );
-          if (park) continue; // the next entry may be independent
-          return null; // wait out the backoff; _scheduleNext wakes us
+          // Other sessions carry on; this one waits out its backoff and
+          // _scheduleNext wakes the engine when it is due.
+          continue;
       }
     }
+  }
+
+  /// Another session of this phone that the server holds open: it has a
+  /// server id and is either still active here or its complete / abandon
+  /// has not been acknowledged yet (still queued).
+  Future<bool> _otherSessionOpenOnServer(String clientSessionId) async {
+    final ending = await (_db.selectOnly(_db.syncQueue, distinct: true)
+          ..addColumns([_db.syncQueue.clientSessionId])
+          ..where(
+            _db.syncQueue.kind
+                    .isIn([SyncKind.complete.name, SyncKind.abandon.name]) &
+                _db.syncQueue.clientSessionId.equals(clientSessionId).not(),
+          ))
+        .map((r) => r.read(_db.syncQueue.clientSessionId)!)
+        .get();
+    final open = await (_db.select(_db.localSessions)
+          ..where(
+            (t) =>
+                t.serverId.isNotNull() &
+                t.clientSessionId.equals(clientSessionId).not() &
+                (t.status.equals(SessionStatus.active.wire) |
+                    t.clientSessionId.isIn(ending)),
+          )
+          ..limit(1))
+        .getSingleOrNull();
+    return open != null;
+  }
+
+  /// Whether [serverId] is one of this phone's sessions other than [self].
+  Future<bool> _isOwnOtherSession(String serverId, String self) async {
+    final row = await (_db.select(_db.localSessions)
+          ..where(
+            (t) =>
+                t.serverId.equals(serverId) &
+                t.clientSessionId.equals(self).not(),
+          )
+          ..limit(1))
+        .getSingleOrNull();
+    return row != null;
   }
 
   Future<String?> _serverSessionId(String clientSessionId) async {
@@ -478,6 +551,16 @@ class SyncEngine {
         final adHoc = request.copyWith(programDayId: null);
         await _writePayload(entry.id, adHoc.toJson());
         result = await _api.start(adHoc);
+      }
+      // Refused because one of THIS phone's sessions is still open on the
+      // server (our local view was behind): wait for it to close — no attempt
+      // spent, never parked. A session this phone does not know (an orphan)
+      // is a real failure and keeps the park-and-notice path.
+      if (result
+          case Err(
+            failure: Conflict(path: 'activeSessionId', issue: final active?)
+          ) when await _isOwnOtherSession(active, request.clientSessionId)) {
+        return const _Held();
       }
       return _settle(entry, result);
     }
@@ -725,6 +808,12 @@ class _Stop extends _Outcome {
 
   /// Whether waiting and trying again on our own can help.
   final bool retry;
+}
+
+/// Not sent / not accepted yet because another of this phone's sessions is
+/// open on the server; no attempt is counted.
+class _Held extends _Outcome {
+  const _Held();
 }
 
 class _Failed extends _Outcome {
