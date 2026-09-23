@@ -11,7 +11,8 @@ Future<void> main() async {
 
   // Firebase owns credentials (§11). Options come from --dart-define so a
   // build without them is a clear splash-screen message, not a native crash.
-  if (Env.firebaseConfigured) {
+  // A hosted build with a disallowed API address stops there too (Phase 6.7).
+  if (Env.ready) {
     await Firebase.initializeApp(options: FirebaseConfig.android);
   }
 

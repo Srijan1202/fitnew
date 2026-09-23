@@ -24,7 +24,21 @@ class SplashGateScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const FitosWordmark(),
-              if (!Env.firebaseConfigured) ...<Widget>[
+              if (Env.configurationProblem case final problem?) ...<Widget>[
+                const SizedBox(height: FitSpacing.lg),
+                const Divider(color: FitColors.rule, height: 1),
+                const SizedBox(height: FitSpacing.afterRule),
+                Text(
+                  'This hosted build has an unusable server address.',
+                  style: textTheme.titleMedium,
+                ),
+                const SizedBox(height: FitSpacing.sm),
+                Text(
+                  '$problem. Rebuild with tool/hosted.ps1 and an https:// '
+                  'address such as the Cloud Run URL.',
+                  style: textTheme.bodyMedium,
+                ),
+              ] else if (!Env.firebaseConfigured) ...<Widget>[
                 const SizedBox(height: FitSpacing.lg),
                 const Divider(color: FitColors.rule, height: 1),
                 const SizedBox(height: FitSpacing.afterRule),

@@ -24,6 +24,37 @@ val apiBaseUrl: String = dartDefines["API_BASE_URL"] ?: "http://10.0.2.2:8080"
 val apiUri = URI(apiBaseUrl)
 val cleartextApiHost: String? = if (apiUri.scheme == "http" && !apiUri.host.isNullOrBlank()) apiUri.host else null
 
+// Phase 6.7 — a HOSTED build (FLAVOR=hosted, tool/hosted.ps1) talks to FITOS on
+// the internet: https, a DNS name, the default port, the server root. The same
+// rules as lib/core/config/hosted_api_url.dart, applied here so no hosted APK
+// can be built with http://, a LAN / emulator IP, localhost or a port — even
+// with `flutter build` run by hand. The LAN alpha and local builds are untouched.
+fun hostedApiUrlProblem(url: String): String? {
+    val trimmed = url.trim()
+    val uri = runCatching { URI(trimmed) }.getOrNull() ?: return "is not a URL"
+    if (uri.scheme != "https") return "must use https:// (got ${uri.scheme ?: "no scheme"})"
+    if (uri.rawUserInfo != null) return "must not contain credentials"
+    val host = (uri.host ?: "").lowercase().removePrefix("[").removeSuffix("]")
+    if (host.isEmpty()) return "has no host"
+    if (host.contains(':')) return "must not be an IP address ($host)"
+    if (host == "localhost" || host.endsWith(".localhost")) return "must not be localhost"
+    val authority = trimmed.substringAfter("://").split('/', '?', '#').first()
+    if (uri.port != -1 || authority.contains(':')) return "must not name a port"
+    val labels = host.split('.')
+    if (labels.size < 2 || labels.any { it.isEmpty() }) return "must be a DNS name"
+    if (!Regex("^[a-z]{2,63}$").matches(labels.last())) return "must not be an IP address ($host)"
+    if (!uri.rawPath.isNullOrEmpty() && uri.rawPath != "/") return "must be the server root, without a path"
+    if (uri.rawQuery != null || uri.rawFragment != null) return "must not have a query or fragment"
+    return null
+}
+
+if (dartDefines["FLAVOR"] == "hosted") {
+    hostedApiUrlProblem(apiBaseUrl)?.let { problem ->
+        throw GradleException("FLAVOR=hosted: API_BASE_URL $problem — refusing to build (Phase 6.7).")
+    }
+    check(cleartextApiHost == null) { "a hosted build must not allow cleartext" }
+}
+
 /** Writes `xml/network_security_config.xml` into a generated res root. */
 abstract class GenerateNetworkSecurityConfig : DefaultTask() {
     @get:Input

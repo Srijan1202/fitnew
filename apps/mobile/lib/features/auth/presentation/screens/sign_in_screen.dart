@@ -130,7 +130,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     ),
                     child: const Text('Continue with Google'),
                   ),
-                  if (Env.isAlpha) ...<Widget>[
+                  if (Env.showsBackend) ...<Widget>[
                     const SizedBox(height: FitSpacing.lg),
                     // Which backend this build talks to. The address is baked
                     // in at build time, so a tester can tell at a glance that

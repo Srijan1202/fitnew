@@ -19,7 +19,11 @@ abstract final class ErrorMapper {
         // the phone's own Wi-Fi, and it is already on the Profile screen.
         return Offline(offlineMessage(_authorityOf(e)));
       case DioExceptionType.badResponse:
-        return fromEnvelope(e.response?.statusCode ?? 0, e.response?.data);
+        return fromEnvelope(
+          e.response?.statusCode ?? 0,
+          e.response?.data,
+          authority: _authorityOf(e),
+        );
       case DioExceptionType.cancel:
       case DioExceptionType.badCertificate:
       case DioExceptionType.unknown:
@@ -44,9 +48,17 @@ abstract final class ErrorMapper {
       ? 'You appear to be offline.'
       : 'Could not reach FITOS at $authority. Check your Wi-Fi and that the server is running.';
 
+  /// The words for "reached, but not answering" (Phase 6.7): a hosted front
+  /// end's 502 / 503 / 504, or Cloud Run's own 429.
+  static String unavailableMessage(String? authority) => authority == null
+      ? 'FITOS is not answering right now. Try again in a moment.'
+      : 'FITOS is not answering at $authority right now. Try again in a moment.';
+
   /// Reads the §10 envelope. Falls back to the status code if the body is not
   /// ours. Public so it can be unit-tested without constructing a DioException.
-  static Failure fromEnvelope(int status, Object? body) {
+  /// [authority] (`host[:port]` of the request) names the server in the
+  /// "not answering" message.
+  static Failure fromEnvelope(int status, Object? body, {String? authority}) {
     String? code;
     String? message;
     String? field;
@@ -79,18 +91,29 @@ abstract final class ErrorMapper {
     if (code == 'VALIDATION_FAILED' || status == 422) {
       return Validation(message ?? 'Please check your details.', field: field);
     }
-    if (code == 'RATE_LIMITED' || status == 429) {
-      return RateLimited(
-        message ?? 'Too many attempts. Wait a minute and try again.',
-      );
+    // 429 from FITOS itself (its envelope says RATE_LIMITED): the API's own
+    // limit, as before. A 429 WITHOUT our envelope came from Cloud Run (no
+    // instance free to take the request): the service is busy, not the user.
+    if (code == 'RATE_LIMITED' || (status == 429 && code == null)) {
+      return code == 'RATE_LIMITED'
+          ? RateLimited(
+              message ?? 'Too many attempts. Wait a minute and try again.',
+            )
+          : ServiceUnavailable(unavailableMessage(authority));
     }
-    // 503: the server's message is written for the user ("AI is not set up
-    // on this server", "FITOS AI took too long") — keep it.
     if (code == 'NOT_FOUND' || status == 404) {
       return NotFound(message ?? 'That no longer exists.');
     }
-    if (code == 'UPSTREAM_UNAVAILABLE' || status == 503) {
-      return Unknown(message ?? 'Something is unavailable right now.');
+    // 503 from FITOS (UPSTREAM_UNAVAILABLE): its message is written for the
+    // user ("AI is not set up on this server", "FITOS AI took too long",
+    // "FITOS is temporarily unavailable") — keep it. A 502 / 503 / 504 from
+    // the hosted front end (no envelope): the service is not answering.
+    // Either way temporary (Phase 6.7): the sync queue waits, never parks.
+    if (code == 'UPSTREAM_UNAVAILABLE' ||
+        status == 502 ||
+        status == 503 ||
+        status == 504) {
+      return ServiceUnavailable(message ?? unavailableMessage(authority));
     }
     return const Unknown();
   }

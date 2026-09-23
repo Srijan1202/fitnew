@@ -695,7 +695,13 @@ class SyncEngine {
 
   _Outcome _fail(Failure failure) => switch (failure) {
         // The server did not answer: nothing is charged, try again later.
+        // Offline includes ServiceUnavailable (Phase 6.7): a hosted API's
+        // 502 / 503 / 504 or Cloud Run's 429 waits like no network does —
+        // no attempt spent, never parked, the engine wakes itself.
         Offline() => const _Stop(retry: true),
+        // FITOS's own rate limit: slow down, don't fail. Counting it as an
+        // attempt parked the queue within seconds of a one-minute window.
+        RateLimited() => const _Stop(retry: true),
         // Signed out: the next sign-in drains; retrying alone cannot help.
         Unauthenticated() => const _Stop(retry: false),
         _ => _Failed(failure.message),

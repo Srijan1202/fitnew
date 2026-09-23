@@ -44,6 +44,21 @@ final class Offline extends Failure {
   const Offline([super.message = 'You appear to be offline.']);
 }
 
+/// Phase 6.7 — the server was reached but is temporarily unable to answer:
+/// Cloud Run / its front end said 502, 503 or 504 (a revision starting or
+/// being replaced, no instance free, a request cut off), Cloud Run's own 429
+/// (no instance available), or FITOS's own 503 `UPSTREAM_UNAVAILABLE` (its
+/// database unreachable). On the LAN a stopped API refused the connection
+/// (→ [Offline]); behind a hosted front end the same outage arrives as one
+/// of these statuses instead. It IS an [Offline]: everything that waits out
+/// "offline" — the sync queue above all, which must not spend retries or
+/// park work on an outage — waits this out too.
+final class ServiceUnavailable extends Offline {
+  const ServiceUnavailable([
+    super.message = 'FITOS is not answering right now. Try again in a moment.',
+  ]);
+}
+
 /// Wrong password, unknown email, weak password — the credential cases
 /// Firebase reports. `code` is Firebase's, e.g. `wrong-password`.
 /// Server said 404: the thing asked for does not exist (for this user) —

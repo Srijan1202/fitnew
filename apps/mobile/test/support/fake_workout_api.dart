@@ -12,6 +12,12 @@ import 'package:fitos/features/workout/domain/entities/workout.dart';
 class FakeWorkoutApi implements WorkoutApi {
   bool offline = false;
 
+  /// Phase 6.7: while set, every call answers with this failure — the
+  /// hosted outages (a 502 / 503 / 504 / Cloud Run 429 mapped by
+  /// ErrorMapper), FITOS's own 429, or a 500 for contrast. Requests that
+  /// reach the fake are counted in [calls] with a `down:` prefix.
+  Failure? down;
+
   /// Every call, in order: 'start', 'logSets:3', 'complete', …
   final calls = <String>[];
 
@@ -26,6 +32,10 @@ class FakeWorkoutApi implements WorkoutApi {
 
   Result<T> _guard<T>(Result<T> Function() body) {
     if (offline) return const Err(Offline());
+    if (down case final failure?) {
+      calls.add('down:${failure.runtimeType}');
+      return Err(failure);
+    }
     return body();
   }
 

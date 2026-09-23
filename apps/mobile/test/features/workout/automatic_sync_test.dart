@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/drift.dart' show Value;
 import 'package:fitos/core/db/app_database.dart';
+import 'package:fitos/core/errors/error_mapper.dart';
 import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/features/workout/data/local_workout_repository.dart';
@@ -586,6 +587,227 @@ void main() {
       await repo.complete(s.clientSessionId);
       await eventually(() async => (await repo.syncStatus()).parked > 0);
       expect(onServer(s.clientSessionId), isNull);
+    });
+
+    test(
+        'Phase 6.7: the same S24 queue meets a Cloud Run 502 outage mid-drain — it waits, then drains in the KI-10 order with zero 409s and nothing parked',
+        () async {
+      final stale = await staleParked();
+      final y = await repo.startSession(day: newDay());
+      await repo.logSet(y.clientSessionId, set(y.exercises.first, 1));
+      await eventually(() => hasSets(y.clientSessionId, 1));
+      api.offline = true;
+      await repo.complete(y.clientSessionId);
+      await repo.retryParked();
+      api.startLog.clear();
+      // The phone is back online — but the hosted service is not answering.
+      api.down = ErrorMapper.fromEnvelope(
+        502,
+        '<html>502</html>',
+        authority: 'fitos-api-alpha-1.asia-south1.run.app',
+      );
+      api.offline = false;
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      final during = await db.select(db.syncQueue).get();
+      expect(during, isNotEmpty);
+      expect(during.where((q) => q.parked), isEmpty, reason: 'never parked');
+      expect(
+        during.where((q) => q.attempts > 0),
+        isEmpty,
+        reason: 'an outage spends no attempts',
+      );
+      expect(
+        api.calls.where((c) => c.startsWith('down:')),
+        isNotEmpty,
+        reason: 'it kept trying by itself',
+      );
+
+      api.down = null;
+      await eventually(clean, reason: 'recovers with no Retry and no sync()');
+      expect(api.startLog.where((e) => e.$2 == '409'), isEmpty);
+      expect(
+        api.startLog,
+        [
+          for (final x in stale) ...[
+            (x.clientSessionId, '404'),
+            (x.clientSessionId, '201'),
+          ],
+        ],
+        reason: 'KI-10 order unchanged by the outage',
+      );
+      expect(onServer(y.clientSessionId)!.status, SessionStatus.completed);
+      for (final x in stale) {
+        expect(onServer(x.clientSessionId)!.status, SessionStatus.completed);
+        expect(onServer(x.clientSessionId)!.programDayId, isNull);
+      }
+      expect((await repo.syncStatus()).parked, 0);
+    });
+  });
+
+  group(
+      'Phase 6.7 Gate 6.7-2: a hosted outage (Cloud Run 502 / 503 / 504 / 429, FITOS 503 / 429) waits — it never spends attempts or parks the queue',
+      () {
+    const host = 'fitos-api-alpha-123456789012.asia-south1.run.app';
+    Map<String, dynamic> envelope(String code, String message) => {
+          'error': {'code': code, 'message': message, 'requestId': 'r'},
+        };
+
+    /// Every queue entry is still pending: nothing parked, no attempt spent.
+    Future<void> expectWaitingNotFailing() async {
+      final queue = await db.select(db.syncQueue).get();
+      expect(queue, isNotEmpty, reason: 'the work is still queued');
+      expect(queue.where((q) => q.parked), isEmpty, reason: 'never parked');
+      expect(
+        queue.where((q) => q.attempts > 0),
+        isEmpty,
+        reason: 'an outage is not a failed attempt',
+      );
+    }
+
+    for (final (label, failure) in <(String, Failure)>[
+      (
+        'Cloud Run 502',
+        ErrorMapper.fromEnvelope(502, '<html>502</html>', authority: host),
+      ),
+      (
+        'Cloud Run 503',
+        ErrorMapper.fromEnvelope(503, '<html>503</html>', authority: host),
+      ),
+      (
+        'Cloud Run 504',
+        ErrorMapper.fromEnvelope(
+          504,
+          'upstream request timeout',
+          authority: host,
+        ),
+      ),
+      (
+        'Cloud Run 429 (no instance free)',
+        ErrorMapper.fromEnvelope(429, 'Rate exceeded.', authority: host),
+      ),
+      (
+        'FITOS 503 (database unreachable)',
+        ErrorMapper.fromEnvelope(
+          503,
+          envelope('UPSTREAM_UNAVAILABLE', 'FITOS is temporarily unavailable.'),
+          authority: host,
+        ),
+      ),
+      (
+        'FITOS 429 (its own rate limit)',
+        ErrorMapper.fromEnvelope(
+          429,
+          envelope('RATE_LIMITED', 'Too many requests. Slow down and retry.'),
+          authority: host,
+        ),
+      ),
+    ]) {
+      test(
+          '$label: a whole session (start, sets, completion) waits out the outage, retries by itself with backoff, then syncs once — no Retry',
+          () async {
+        api.down = failure;
+        final s = await repo.startSession(day: api.todayResponse);
+        await repo.logSet(s.clientSessionId, set(s.exercises.first, 1));
+        await repo.logSet(s.clientSessionId, set(s.exercises.first, 2));
+        await repo.complete(s.clientSessionId);
+
+        // Far longer than the old path needed to park (5 attempts, ~5 s at
+        // production backoff; milliseconds here).
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+        await expectWaitingNotFailing();
+        final tries = api.calls.where((c) => c.startsWith('down:')).length;
+        expect(tries, greaterThanOrEqualTo(2), reason: 'it retried by itself');
+        expect(
+          tries,
+          lessThan(40),
+          reason:
+              'backoff, not a request storm (15 s doubling to 2 min in production)',
+        );
+        expect(onServer(s.clientSessionId), isNull);
+
+        api.down = null;
+        await eventually(clean, reason: 'recovers when the service returns');
+        final synced = onServer(s.clientSessionId)!;
+        expect(synced.status, SessionStatus.completed);
+        expect(synced.exercises.first.sets, hasLength(2));
+        expect(api.sessions, hasLength(1), reason: 'exactly one session');
+      });
+    }
+
+    test(
+        'contrast: a 500 (a real server bug) is still counted and parked after the normal attempts — Phase 6.6 semantics for genuine failures',
+        () async {
+      api.down = ErrorMapper.fromEnvelope(
+        500,
+        'Internal Server Error',
+        authority: host,
+      );
+      final s = await repo.startSession(day: api.todayResponse);
+      await repo.complete(s.clientSessionId);
+      await eventually(
+        () async => (await repo.syncStatus()).parked > 0,
+        reason: 'parks as before',
+      );
+      api.down = null;
+      await repo.retryParked();
+      await eventually(clean);
+      expect(onServer(s.clientSessionId)!.status, SessionStatus.completed);
+    });
+
+    test(
+        'offline → Cloud Run 503 (the service still starting) → back: one uninterrupted wait, no attempts spent, then it drains',
+        () async {
+      api.offline = true;
+      final s = await repo.startSession(day: api.todayResponse);
+      await repo.logSet(s.clientSessionId, set(s.exercises.first, 1));
+      await repo.complete(s.clientSessionId);
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+      await expectWaitingNotFailing();
+
+      // Connectivity is back, the service is not yet.
+      api.down = ErrorMapper.fromEnvelope(
+        503,
+        '<html>503</html>',
+        authority: host,
+      );
+      api.offline = false;
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+      await expectWaitingNotFailing();
+
+      api.down = null;
+      await eventually(clean);
+      expect(onServer(s.clientSessionId)!.status, SessionStatus.completed);
+      expect(onServer(s.clientSessionId)!.exercises.first.sets, hasLength(1));
+    });
+
+    test(
+        'an outage that starts mid-session: what synced stays synced, the rest waits, nothing is sent twice',
+        () async {
+      final s = await repo.startSession(day: api.todayResponse);
+      await repo.logSet(s.clientSessionId, set(s.exercises.first, 1));
+      await eventually(
+        () async =>
+            (onServer(s.clientSessionId)?.exercises.first.sets.length ?? 0) ==
+            1,
+      );
+
+      api.down = ErrorMapper.fromEnvelope(
+        502,
+        '<html>502</html>',
+        authority: host,
+      );
+      await repo.logSet(s.clientSessionId, set(s.exercises.first, 2));
+      await repo.complete(s.clientSessionId);
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      await expectWaitingNotFailing();
+
+      api.down = null;
+      await eventually(clean);
+      final synced = onServer(s.clientSessionId)!;
+      expect(synced.status, SessionStatus.completed);
+      expect(synced.exercises.first.sets, hasLength(2));
+      expect(liveSetsAt(s.clientSessionId, 1), hasLength(1));
+      expect(liveSetsAt(s.clientSessionId, 2), hasLength(1));
     });
   });
 

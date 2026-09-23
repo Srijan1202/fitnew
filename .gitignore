@@ -14,6 +14,8 @@ build/
 # Phase 6.6 alpha: the owner's Firebase defines + LAN API host for the
 # alpha build script live here, never in Git (only the .example is tracked).
 alpha.env
+# Phase 6.7 hosted build: the same kind of file for tool/hosted.ps1.
+hosted.env
 
 # Service-account keys. Firebase downloads these as
 # <project>-firebase-adminsdk-<hash>.json, which no narrow pattern catches, so

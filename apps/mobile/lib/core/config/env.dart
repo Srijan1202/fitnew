@@ -1,3 +1,5 @@
+import 'hosted_api_url.dart';
+
 /// Build-time configuration.
 ///
 /// The app holds the public Firebase config and an API base URL and nothing
@@ -15,15 +17,38 @@ abstract final class Env {
     defaultValue: 'http://10.0.2.2:8080', // Android emulator -> host loopback
   );
 
-  /// `local` (emulator, developer PC) or `alpha` (a physical phone on the
-  /// owner's Wi-Fi against the PC's Docker API — Phase 6.6 Gate 6). Built by
-  /// `tool/alpha.ps1` / `tool/alpha.sh` from the gitignored `alpha.env`.
+  /// `local` (emulator, developer PC), `alpha` (a physical phone on the
+  /// owner's Wi-Fi against the PC's Docker API — Phase 6.6 Gate 6; built by
+  /// `tool/alpha.ps1` / `tool/alpha.sh` from the gitignored `alpha.env`) or
+  /// `hosted` (the internet API on Cloud Run over HTTPS — Phase 6.7; built by
+  /// `tool/hosted.ps1` from the gitignored `hosted.env`).
   static const String flavor = String.fromEnvironment(
     'FLAVOR',
     defaultValue: 'local',
   );
 
   static bool get isAlpha => flavor == 'alpha';
+  static bool get isHosted => flavor == 'hosted';
+
+  /// The sign-in screen names the backend a build talks to on real phones:
+  /// the LAN alpha (its address changes with the Wi-Fi) and hosted builds.
+  static bool get showsBackend => showsBackendFor(flavor);
+  static bool showsBackendFor(String flavor) =>
+      flavor == 'alpha' || flavor == 'hosted';
+
+  /// Why this build's API address cannot be used, or null. Only a hosted
+  /// build is checked (HTTPS, a DNS name, no port); the LAN alpha and local
+  /// profiles keep their `http://<LAN IP>:8080` / emulator addresses.
+  static String? get configurationProblem =>
+      configurationProblemFor(flavor: flavor, apiBaseUrl: apiBaseUrl);
+  static String? configurationProblemFor({
+    required String flavor,
+    required String apiBaseUrl,
+  }) {
+    if (flavor != 'hosted') return null;
+    final problem = hostedApiUrlProblem(apiBaseUrl);
+    return problem == null ? null : 'API_BASE_URL $problem';
+  }
 
   /// The API host as the phone sees it, for the build line in Profile.
   static String get apiHost => Uri.tryParse(apiBaseUrl)?.host ?? apiBaseUrl;
@@ -65,4 +90,9 @@ abstract final class Env {
       firebaseAppId.isNotEmpty &&
       firebaseMessagingSenderId.isNotEmpty &&
       firebaseProjectId.isNotEmpty;
+
+  /// The build can start: Firebase is configured and the API address is
+  /// allowed for this flavour. Otherwise the splash screen says why and the
+  /// app goes no further (Firebase is not even initialised).
+  static bool get ready => firebaseConfigured && configurationProblem == null;
 }
