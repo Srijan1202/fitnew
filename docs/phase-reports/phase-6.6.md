@@ -282,8 +282,25 @@ passes alone in 5.5 s, over vitest's 5 s default, because the local Postgres was
 `/health` DB ping); CI authoritative. Core 461, contracts 35; typecheck, lint, analyze
 `--fatal-infos`, custom_lint, format clean.
 
-S24 ACCEPTANCE — pending (owner): `docs/alpha/PHASE-6.6-ALPHA-CHECKLIST.md` §B (A–F, 45 rows) and
-§B-G (G1–G12, the retest of KI-6 / KI-7)
+KI-8 — "A SESSION IS ALREADY IN PROGRESS" ON EVERY START (fixed in code; retest H1–H8)
+  - Database: `34dd254f…` is completed; the slot is held by `a7ce5a4a…` (active since 2026-09-22
+    20:42 UTC, 5 sets). API log: created 20:43:41, synced, then sign-out 20:46:15 wiped the phone and
+    its queue before any `/complete` or `/abandon` was sent — an orphan on the server. Each new
+    session's start meets `one_active_session` → 409 → parked; the phone never read the server's
+    `activeSession`, so it could not resolve it.
+  - Fix (server guard unchanged): `orphanedSessionProvider` (the server's active session when this
+    phone does not have it) → `OrphanSessionNotice` on Home and above Start: Finish (completed at its
+    last set) / Discard (abandoned), each confirmed (owner 8.5), then `retryParked()` and refresh.
+    Sign-out first syncs; if work is still unsynced it asks before deleting it.
+  - Tests: API integration — the orphan scenario end to end (409 naming it on repeated starts, never a
+    second session, `/today` names it with sets, finishing frees the slot, the blocked start then 201
+    once and replays 200, History has it, one active). App — the blocked session is kept and parked,
+    repeated Retry never creates a second session; after the orphan ends one Retry sends start, sets
+    and completion exactly once; restart with a queued completion drains; the notice's Finish /
+    Discard / Not now / failure / not-for-own-session; the sign-out guard. Mobile 311, API 237.
+
+S24 ACCEPTANCE — pending (owner): `docs/alpha/PHASE-6.6-ALPHA-CHECKLIST.md` §B (A–F, 45 rows),
+§B-G (G1–G12, KI-6 / KI-7) and §B-H (H1–H8, KI-8 — do these first)
 with the failure log in §C. PC-verified rows are pre-marked. Health Connect E6 (Connect) is expected
 ❌ and is recorded, not waived.
 

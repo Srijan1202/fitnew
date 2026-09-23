@@ -172,6 +172,21 @@ note · — not run. **PC** means verified on the build PC, not the phone.
 | G11 | Health Connect still works (Home steps) and AI still answers (one question) | ✅ both | |
 | G12 | Sign out → sign in | No 422 in `docker compose logs api` for `DELETE /v1/auth/session` | |
 
+### B-H. Retest — the stuck "session already in progress" (KI-8)
+
+Do these **first**, before new sessions, on the new APK:
+
+| # | Do | Expect | Result |
+|---|---|---|---|
+| H1 | Open FITOS → Home | "UNFINISHED SESSION ON FITOS" — the session from 2026-09-23 ~02:12 with 5 sets. (Also above Start session on the Training tab) | |
+| H2 | Tap **Finish it** → confirm (or **Discard it** if you would rather not keep it) | The notice disappears; any "not synced" pill clears within a few seconds | |
+| H3 | History | The finished session is listed (if you chose Finish); your newer sessions are listed too | |
+| H4 | PC: `docker compose exec postgres psql -U fitos -d fitos -c "select status, count(*) from workout_sessions group by 1"` | At most one `active` | |
+| H5 | Start a session, log 2 sets, Complete | Syncs by itself — no Retry, no 409 in `docker compose logs api` | |
+| H6 | Start a session, log a set, **force-stop** FITOS, reopen | The session is still there (Resume); completing it syncs | |
+| H7 | Wi-Fi off → start + log + Complete → Profile → Sign out | "Unsynced workout changes" dialog. **Stay signed in** → Wi-Fi on → it syncs; then Sign out works without the dialog | |
+| H8 | Today after H5 | Home's next move / week reflect the finished session | |
+
 ## C. Failure log
 
 One entry per ❌ or ⚠:

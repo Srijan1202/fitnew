@@ -14,8 +14,49 @@ verified on the Samsung S24.
 | KI-5 | The release-mode (R8) APK has not yet been run on a device | Medium | Unknown until B/A1 on the S24 | Open — Gate 7 check |
 | KI-6 | Sessions finished "1 not synced" and reached History only after Retry | High | Yes — fixed, **S24 retest pending** | Fixed in code (Gate 7), see below |
 | KI-7 | No way to edit personal details collected at onboarding | Medium | No | Implemented (Gate 7), **S24 retest pending** |
+| KI-8 | Every new session refused: "A session is already in progress" (409), Retry never helps | High | Yes — fixed, **S24 retest pending** | Fixed in code (Gate 7), see below |
 
 ---
+
+## KI-8 — A session FITOS holds that the phone lost blocks every new one (fixed in code; S24 retest pending)
+
+**Seen on the S24 (API log, 2026-09-23 00:33–00:36 UTC):** `POST /v1/training/sessions`
+→ 409 "A session is already in progress" in bursts of five, again after
+each Retry; `GET /v1/training/sessions/34dd254f…` 200 alongside.
+
+**Database:** `34dd254f…` is **completed** (the phone fetches it because
+`/today` names it as today's finished session). The session holding the
+slot is **`a7ce5a4a-5908-4dca-ac40-eb50b28fd320`** (client id
+`d5f83926…`), `status = active` since 2026-09-22 20:42 UTC, 5 live sets —
+never completed or abandoned. The guard is the partial unique index
+`one_active_session (user_id) WHERE status = 'active' AND deleted_at IS NULL`.
+
+**How it was orphaned (API log, 2026-09-22 UTC):** 20:43:41 `a7ce5a4a` created
+from the phone, its sets and 8 exercise edits synced; 20:43:46 a leftover
+batch for the previous session failed (409) and the old APK waited for a
+tap; **20:46:15 sign-out** — which wipes the phone's workout data *and its
+sync queue*. No `/complete` or `/abandon` for `a7ce5a4a` was ever sent. The
+server still has it active; the phone has no record of it.
+
+**Why Retry cannot help:** each new session's `start` (its own client id)
+meets the one-active-session rule → 409 → five attempts → parked; Retry
+resets and repeats. The retry path is correct — it is not re-creating
+`a7ce5a4a` — but the phone never looked at the server's `activeSession`
+(Home and Start read only the phone's own), so it never learned what was
+blocking it. The server guard is correct and unchanged.
+
+**Fix:** (1) Home — and the Start button — show **"Unfinished session on
+FITOS"** when `/today` names an active session this phone does not have:
+name, start time, sets; **Finish it** (completed at its last set, into
+History) or **Discard it** (abandoned), each confirmed — the user decides
+(owner 8.5, sessions never end by themselves). Then the parked work is
+re-sent and today / history / volume refresh. (2) **Sign-out** first tries
+to sync; if anything is still unsynced it asks ("Stay signed in" / "Sign
+out anyway") instead of silently deleting it.
+
+**On your S24 now:** after installing the new APK, Home will show the
+notice for `a7ce5a4a` (Pull · 5 sets, started 2026-09-23 02:12 IST). Choose
+Finish or Discard; your newer sessions then sync by themselves.
 
 ## KI-6 — Workout sync needed Retry (fixed in code; S24 retest pending)
 
