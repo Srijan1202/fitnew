@@ -1,8 +1,9 @@
 ## PHASE 6.6 — Closed alpha + FITOS AI + product polish — IN PROGRESS
 
-**Status: NOT complete.** Gates 1–5 verified; Gate 6 verified on the S24 (Health Connect
-**Connect** now passes — KI-1); Gate 7 in progress: S24 found a sync bug (KI-6) and a missing
-Personal details editor (KI-7), both fixed in code, **S24 retest pending**. Nothing merged to `main`.
+**Status: NOT complete — closed-alpha acceptance pending the owner's S24 rows (Gate 8).**
+Gates 1–5 verified; Gate 6 verified on the S24 (Health Connect **Connect** passes — KI-1); Gate 7
+S24 findings KI-6 … KI-10 fixed in code, the latest build already exercised on the S24 without
+a single 4xx; Gate 8 audit found **no code blocker**. Nothing merged to `main`.
 
 **Branch** `phase-6.6` (stacked on `phase-6.5`) · **Plan** owner brief 2026-09-22, decisions B1–B6 · **Records** [ADR-010](../decisions/ADR-010-fitos-ai.md) (FITOS AI), ADR-008/009 (6.5)
 
@@ -13,8 +14,9 @@ Personal details editor (KI-7), both fixed in code, **S24 retest pending**. Noth
 | 3 | Gemini backend foundation | **verified** (CI 199 API) | `ea58b88` |
 | 4 | AI context, allowlisted tools, chat, Flutter AI screen | **verified** (CI 222 API / 251 mobile) | `71c54c1` `56441a4` `77a623c` |
 | 5 | AI programme generation through the deterministic generator | **verified** (owner 2026-09-22) | `cc8157a` |
-| 6 | Alpha configuration (LAN backend, flavour, Firebase defines) | **verified on the S24 — NOT fully accepted**: Health Connect Connect crashes (KI-1) | `a061b89` `fbe053e` `d66d54b` |
-| 7 | Alpha APK + S24 acceptance (owner brief 2026-09-23; absorbs the old Gate 8 checklist) | **in progress** — APK built + inspected on the PC; S24 matrix pending | see Gate 7 |
+| 6 | Alpha configuration (LAN backend, flavour, Firebase defines) | **verified on the S24** (Connect passes since `d66d54b`, KI-1) | `a061b89` `fbe053e` `d66d54b` |
+| 7 | Alpha APK + S24 acceptance (owner brief 2026-09-23) | **fixes done** (KI-6 … KI-10); S24 retest rows pending | see Gate 7 |
+| 8 | Final closed-alpha acceptance audit | **audited 2026-09-23 — no code blocker; NOT accepted until the owner's S24 rows pass** | see Gate 8 |
 
 ### Gate 4 — FITOS AI (context + tools + chat + screen)
 
@@ -327,6 +329,94 @@ KNOWN ISSUES → `docs/alpha/KNOWN-ISSUES.md` (KI-1 Health Connect Connect — *
 KI-6 sync, KI-7 personal details, KI-8 orphan, KI-9 stale day, KI-10 queue wait — fixed, retest pending;
 KI-2 compiled-in LAN address; KI-3 Gemini free-tier quota; KI-4 application id + debug signing;
 KI-5 release-mode APK not yet run on a device).
+
+### Gate 8 — Final closed-alpha acceptance audit (2026-09-23)
+
+**Verdict: NOT ACCEPTED YET.** No code, build, security or configuration blocker was found. The
+only fix needed was in the checklist: MASTER-SPEC Phase 6.6 requires Phase 6.5's 27 manual points
+in it, and they were missing (now §B-K). Acceptance now depends only on the owner's S24 rows below,
+plus one condition before anyone other than the owner uses it.
+
+AUTOMATED — all green on `76f7444`
+  - CI: `apps/api`, `packages/core`, `apps/mobile` — success.
+  - Local: core 461, contracts 35, API 240 (real Postgres, `_test` DB), mobile 320 (Flutter
+    container); typecheck; lint for api / core / contracts; `flutter analyze --fatal-infos`,
+    `custom_lint`, `dart format`; `openapi.json` regenerated with no diff. (`apps/admin`'s
+    `next lint` stops at an interactive ESLint setup prompt — Phase 0 scaffold, untouched since,
+    not built until Phase 16, not in CI; not a Phase 6.6 item.)
+
+BUILD — `app-release.apk` (64 MB) for `http://10.160.235.11:8080`, built through `alpha.ps1 -Release`
+  - `com.example.fitos` · `1.0.0-alpha.1` (2) · target SDK 36 · label FITOS · **not debuggable**.
+  - Network security: base config cleartext **false**; cleartext only for `10.160.235.11`.
+  - The host is compiled into `libapp.so` and the network config only; no `10.0.2.2` / localhost.
+
+SECURITY
+  - The backend's Gemini key (read from `docker/.env` and compared, never printed): in **0** tracked
+    files, **0** places in all git history, **0** of the APK's 432 entries (scanned unzipped), **0**
+    API log lines, 0 mobile source files. No model host (`generativelanguage` / `aiplatform`), no
+    `GEMINI_API_KEY` name, no private key or service account in the APK.
+  - `docker/.env`, `apps/api/.env`, `apps/mobile/alpha.env` are gitignored; only `*.example`
+    files are tracked. No API-key / private-key pattern anywhere in history.
+  - API logs (debug level): method / URL / status only — 0 bearer or ID tokens, 0 request bodies,
+    0 personal fields (weight, height, name, email, chat messages).
+  - CI runs with no Gemini secret; the server boots and every suite passes without one.
+  - Health boundary (B4): no Health Connect import on any path that talks to the API; no analytics
+    or crash SDK in the app; the personal-details PATCH conformance test (only schema keys are sent) and the AI "no health keys
+    in the instruction" integration test pass.
+
+CONFIGURATION (running stack) — `/health` 200 (DB reachable); `/v1/ai/status` default-deny (401);
+`GEMINI_MODEL=gemini-3.6-flash` from env, `AI_TIMEOUT_MS=25000`, `AI_MAX_OUTPUT_TOKENS=2048`; the
+running API image contains every non-test server change on the branch.
+
+SPEC CONFORMANCE (MASTER-SPEC Phase 6.6)
+  - Display name end to end (migration `0008`, onboarding, `/auth/session`, `/user/profile`, Home
+    greeting) · branding · `AiProvider` seam with Gemini / fake / not-configured providers ·
+    `/ai/status`, `/ai/chat` · bounded context with `health.availableToServer: false` · 13
+    read-only tools + Gate 5's `propose_program` (builds a preview, stores nothing — integration
+    test) · tool loop capped at 4 · Flutter AI screen · AI programme generation through the
+    deterministic generator with preview and confirmation · alpha config (`--dart-define`
+    `API_BASE_URL`, `FLAVOR=alpha`, gitignored `alpha.env`, `1.0.0-alpha.1`) · release-like APK:
+    **present and tested**. §38's "alpha config" and "release-like APK" boxes are now ticked.
+  - S24 checklist including Phase 6.5's 27 points: **folded in (§B-K), not yet run** — Phase 6.5's
+    own manual acceptance was never performed, so this is also what completes Phase 6.5.
+
+DEVICE EVIDENCE ALREADY ON THE PC (API log + DB, the KI-10 build, 2026-09-23 02:12–02:19 UTC)
+  - 194 requests from the S24: 182 × 200, 11 × 201, 1 × 503 (AI timeout), **zero 4xx**.
+  - The 8 old Upper / Lower sessions synced as completed **ad-hoc** sessions (02:14:06–02:14:18),
+    with their sets and completion, and no 404 or 409. d362279 had already stored their ad-hoc
+    payload. None was mapped onto a Bro Split day.
+  - Three new sessions, 12–19 sets each: start → sets → complete in one pass, no Retry.
+  - Personal details: `PATCH /user/profile`, `PUT /user/goal` 200; `body_metrics` today = `manual`,
+    earlier days untouched (G9 ✅ PC).
+  - AI: one answer timed out at 25 s → the plain "took too long" line with Retry (503); the next
+    question answered in 9 s. Correct handling of a slow upstream, not a defect.
+  - At most one active session per user (H4 / J3 ✅ PC).
+
+REMAINING TO ACCEPT — owner, on the S24 (`docs/alpha/PHASE-6.6-ALPHA-CHECKLIST.md`)
+  1. §B-J (J1 phone part, J2, J4, J5), then §B-H, §B-I, §B-G — the retests of KI-6 … KI-10.
+  2. §B-A A5–A7 — confirm the installed APK is the **release** build (KI-5 stays open until then).
+  3. §B-B authentication (B6 / G12 need a sign-in / sign-out on the current API container).
+  4. §B-C core, §B-D AI (≈ 8 requests of the day's 20), §B-E E3–E5, §B-F resilience.
+  5. §B-K — Phase 6.5's 27 points.
+  Any ❌ goes into §C; each is triaged as blocker / non-blocker before acceptance.
+
+CONDITION FOR ANY TESTER OTHER THAN THE OWNER (not a code change)
+  - KI-3 / MASTER-SPEC §19.3: the backend key is on the Gemini **free tier**. That is acceptable
+    only for the owner's own accounts. A paid tier is required before anyone else's data reaches
+    the model.
+  - KI-2: the APK is built for one LAN address; rebuild when the network changes.
+    KI-4: `com.example.fitos` with debug signing — accepted for a closed alpha.
+
+OBSERVATIONS — not blockers, no change made
+  - The second account (created 21 Sep) has had a session in progress since 21 Sep 21:11 UTC, with
+    0 sets. The one-active rule is per user, so the owner's account is unaffected. If that account
+    signs in on a fresh install, the KI-8 notice offers Finish / Discard.
+  - The manifest leaves `allowBackup` at Android's default (true). Android auto-backup can copy the
+    app's local store, including the Health Connect snapshot cache, to the user's own Google
+    backup. It never reaches FITOS or Gemini. Revisit before an open beta.
+  - Plugin-merged permissions beyond INTERNET + 10 health reads (notifications, exact alarm,
+    vibrate, biometric, network state) come from existing features; `USE_EXACT_ALARM` matters for
+    Play review, not sideloading.
 
 KNOWN ISSUES (Gate 5)
   - The free tier is unusable for an alpha with real users (20 requests/day/model); a paid tier

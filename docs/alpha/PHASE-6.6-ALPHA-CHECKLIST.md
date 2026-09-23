@@ -167,7 +167,7 @@ note · — not run. **PC** means verified on the build PC, not the phone.
 | G6 | Wi-Fi off → two sessions completed → Wi-Fi on | Both sync with no Retry | |
 | G7 | PC: `docker compose stop api` → complete a session → `docker compose start api` (Wi-Fi stays on) | It syncs by itself within ~2 min of the API returning | |
 | G8 | Profile → **Edit personal details** → change name, height, weight, sex, activity → Save | "Saved. FITOS recalculated your targets."; Profile shows the new values and new targets with "· weight-change" or "· profile-change" | |
-| G9 | PC: `docker compose exec postgres psql -U fitos -c "select measured_on, weight_kg, source from body_metrics order by measured_on desc limit 3"` | Today's row = your weight, `manual`; earlier days untouched | |
+| G9 | PC: `docker compose exec postgres psql -U fitos -c "select measured_on, weight_kg, source from body_metrics order by measured_on desc limit 3"` | Today's row = your weight, `manual`; earlier days untouched | ✅ PC 2026-09-23: today `manual`, 21–22 Sep `onboarding` rows untouched |
 | G10 | Personal details with Health Connect weight granted | A line "Health Connect on this phone: … kg · date"; the FITOS field keeps your value until you type another | |
 | G11 | Health Connect still works (Home steps) and AI still answers (one question) | ✅ both | |
 | G12 | Sign out → sign in | No 422 in `docker compose logs api` for `DELETE /v1/auth/session` | |
@@ -181,7 +181,7 @@ Do these **first**, before new sessions, on the new APK:
 | H1 | Open FITOS → Home | "UNFINISHED SESSION ON FITOS" — the session from 2026-09-23 ~02:12 with 5 sets. (Also above Start session on the Training tab) | |
 | H2 | Tap **Finish it** → confirm (or **Discard it** if you would rather not keep it) | The notice disappears; any "not synced" pill clears within a few seconds | |
 | H3 | History | The finished session is listed (if you chose Finish); your newer sessions are listed too | |
-| H4 | PC: `docker compose exec postgres psql -U fitos -d fitos -c "select status, count(*) from workout_sessions group by 1"` | At most one `active` | |
+| H4 | PC: `docker compose exec postgres psql -U fitos -d fitos -c "select status, count(*) from workout_sessions group by 1"` | At most one `active` | ✅ PC 2026-09-23: at most one `active` per user |
 | H5 | Start a session, log 2 sets, Complete | Syncs by itself — no Retry, no 409 in `docker compose logs api` | |
 | H6 | Start a session, log a set, **force-stop** FITOS, reopen | The session is still there (Resume); completing it syncs | |
 | H7 | Wi-Fi off → start + log + Complete → Profile → Sign out | "Unsynced workout changes" dialog. **Stay signed in** → Wi-Fi on → it syncs; then Sign out works without the dialog | |
@@ -202,11 +202,52 @@ Do these on the new APK, **before** I1–I4 if those have not been done yet:
 
 | # | Do | Expect | Result |
 |---|---|---|---|
-| J1 | Install; open FITOS. If "n not synced · Retry" shows, tap **Retry** once | Pill clears within seconds. `docker compose logs api`: per old session **one 404 then one 201**, then its sets and `/complete` — **no 409** | |
+| J1 | Install; open FITOS. If "n not synced · Retry" shows, tap **Retry** once | Pill clears within seconds. `docker compose logs api`: per old session **one 404 then one 201**, then its sets and `/complete` — **no 409** | ⚠ PC log ✅ 02:14:06–02:14:20 UTC: 8 old sessions → 201 ad-hoc + sets + complete, zero 404 / 409 (their ad-hoc payload was stored by `d362279`); phone pill: owner |
 | J2 | History | The old sessions appear as ad-hoc "Session" entries with their sets; the Bro Split sessions unchanged | |
-| J3 | PC: `docker compose exec postgres psql -U fitos -d fitos -c "select status, count(*) from workout_sessions group by 1"` | At most one `active` | |
+| J3 | PC: `docker compose exec postgres psql -U fitos -d fitos -c "select status, count(*) from workout_sessions group by 1"` | At most one `active` | ✅ PC 2026-09-23: at most one `active` per user (the one active row belongs to the second account, since 21 Sep) |
 | J4 | Wi-Fi off → Start today's session → log 2 sets → Complete → Wi-Fi on | Syncs by itself: one 201, sets, complete — no Retry, no 409 | |
 | J5 | Start a session (online), log a set; leave it **in progress**; tap Retry if the pill shows | Nothing old is sent while it is open (no 409 in the log); Complete it → any queued old work follows by itself | |
+
+### B-K. Phase 6.5 manual acceptance (Part K, 27 points) — folded in
+
+MASTER-SPEC Phase 6.6 requires this checklist to carry Phase 6.5's 27
+points (`docs/phase-reports/phase-6.5.md`, "Manual acceptance (Part K)"),
+never run until now. Use the **alpha APK** above — not the old debug build
+with `10.0.2.2`. Needs a step source; 5–6 need a sleep and a weight source.
+Rows already covered elsewhere are marked; do them once.
+
+| # | Do | Expect | Result |
+|---|---|---|---|
+| K1 | Open FITOS signed in, Health Connect untouched | Home loads: greeting + date, "Your next move" (your session), Today grid with Steps "Connect Health data", Food "Not logged yet · Target …", Recovery "Connect Health data to see recovery metrics." | |
+| K2 | Home → More for you → "Connect Health data" (or tap Steps) | Health Data screen: Not connected, three categories "Not allowed", Connect / Manage / Refresh | |
+| K3 | Connect → in the Health Connect sheet allow **Steps only** | Screen: Connected, Activity "Partly allowed"; back on Home: Steps shows a number and "n% of 8,000"; Active calories "Not allowed"; recovery still asks | |
+| K4 | Allow activity (Health Data → "Allow activity") | Steps / Active calories (+ "n kcal in total") / distance populate where the source has them; "No data yet" where it does not | |
+| K5 | Allow recovery | Recovery grid: Sleep "6h 12m" (last night), Resting HR "62 bpm · Today/Yesterday/Last recorded …" | |
+| K6 | Allow body | Body section appears: Weight "60.5 kg · Last recorded 18 Sep", Body fat, BMR (or "No data yet") | |
+| K7 | In Health Connect settings revoke Steps → return to FITOS | Home refreshes on resume: Steps "Not allowed", the old number is gone; Health Data shows Activity "Partly allowed" (= E4) | |
+| K8 | A category allowed, no data in the source | "No data yet", never 0 | |
+| K9 | Two step sources (phone + watch / two apps) | Steps equals Health Connect's own total, not the sum | |
+| K10 | Change a permission in Health Connect, come back | Data changes without restarting (resume refresh) | |
+| K11 | Start a workout from the carousel | Card becomes "<day> is in progress · n sets logged" with Resume; Workout block "In progress" | |
+| K12 | Complete it | "<day> done · n sets · kg moved" card → See the summary; Workout "Completed"; PR card if a record | |
+| K13–14 | Food | "Not logged yet" with the target (Phase 8 not built) — never "0 kcal" | |
+| K15 | Steps well below goal after 15:00 / 19:00 | MOVE card "You're n steps from your goal · An easy m-minute walk gets you there" | |
+| K16 | Protein remaining | Cannot appear until Phase 8 (documented) — mark ✅ if absent | |
+| K17 | Sleep < 6 h last night | RECOVER card "Sleep was 5h 45m · Keep today's session controlled" | |
+| K18 | Deload offered (Phase 6 checklist step 8) | DELOAD card first; "Open your plan"; nothing applied until Accept on the plan | |
+| K19 | "Training volume →" | Opens the Phase 6 volume screen (= C10) | |
+| K20 | Body freshness | "Today" / "Yesterday" / "Last recorded d Mon" matches the reading's date | |
+| K21 | Kill and reopen | Health values return at once (cache), then refresh; footer "Health data read just now" | |
+| K22 | Airplane mode | Home renders from cached today; health blocks unaffected or "Unavailable right now"; no crash (≈ F5) | |
+| K23 | Bottom bar | Floats, translucent over content on all five tabs; each tab switches; content not hidden behind it | |
+| K24 | Back | Deeper screen pops; non-home tab root → Home; Home root → leaves | |
+| K25 | ~360 px device | No overflow (carousel titles ellipsise at two lines) — S24 is ~393 dp; use Settings → Display → larger font / zoom if you want to approximate | |
+| K26 | Wide phone | Spacing intact | |
+| K27 | Accessibility | Every block has a label + text; status never colour-only; targets ≥ 48 px | |
+
+Rows that need a source you do not have (K9 two step sources, K17 a short
+night, K18 a deload): mark "— not run" with the reason; they are covered by
+the Phase 6.5 automated tests and do not block the alpha on their own.
 
 ## C. Failure log
 

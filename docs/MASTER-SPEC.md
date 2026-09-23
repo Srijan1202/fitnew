@@ -1609,7 +1609,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 **Phase 6.5** — [x] Health Connect channel + provider abstraction · [x] availability model · [x] permission flow by category · [x] foreground refresh + honest cache · [x] suggestion engine · [x] Home redesign · [x] floating bar · [x] Health Data screen · [ ] **manual acceptance (27 points) on a device**
 
-**Phase 6.6** — [x] display name end to end · [x] branding · [x] Gemini provider seam + config + `/ai/status` · [x] context assembler · [x] 13 allowlisted tools · [x] capped chat loop + `/ai/chat` · [x] Flutter AI screen · [x] live Gemini smoke · [x] AI programme generation via the deterministic generator (extraction → `propose_program` → preview, never stored → user confirms → ordinary route) · [ ] alpha config (LAN, flavour, defines) · [ ] release-like APK · [ ] **S24 manual checklist (incl. Phase 6.5's 27 points)**
+**Phase 6.6** — [x] display name end to end · [x] branding · [x] Gemini provider seam + config + `/ai/status` · [x] context assembler · [x] 13 allowlisted tools · [x] capped chat loop + `/ai/chat` · [x] Flutter AI screen · [x] live Gemini smoke · [x] AI programme generation via the deterministic generator (extraction → `propose_program` → preview, never stored → user confirms → ordinary route) · [x] alpha config (LAN, flavour, defines) · [x] release-like APK · [ ] **S24 manual checklist (incl. Phase 6.5's 27 points, §B-K)**
 
 **Phase 7** — [ ] licensing confirmed · [ ] food tables with ranges · [ ] 500 foods seeded · [ ] trigram search · [ ] aliases · [ ] custom foods
 
