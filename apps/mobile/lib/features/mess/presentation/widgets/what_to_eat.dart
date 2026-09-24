@@ -266,13 +266,29 @@ class _WhatToEatSectionState extends ConsumerState<WhatToEatSection>
           ),
           whyNot,
         ];
-      case RecommendationStatus.nothingFits:
+      case RecommendationStatus.noMeal:
         return [
           ...logged,
           safety,
           const _Note(
-            key: ValueKey('rec.nothingFits'),
-            text: 'No dish at this meal fits what is left of your calories.',
+            key: ValueKey('rec.noMeal'),
+            text:
+                'No meal can be made from what this menu offers you: there is no staple (rice, roti, idli…) or protein dish that fits your diet and allergies. A drink, dessert or side on its own is never suggested as a meal.',
+            colour: FitColors.oxide,
+          ),
+          whyNot,
+        ];
+      case RecommendationStatus.nothingFits:
+        final smallest = rec.smallestMealKcal;
+        final left = rec.target?.dayRemainingKcal;
+        return [
+          ...logged,
+          safety,
+          _Note(
+            key: const ValueKey('rec.nothingFits'),
+            text: smallest != null && left != null
+                ? 'There is a meal on this menu, but even the smallest (about ${FoodFormat.number(smallest)} kcal) is more than you have left today (${FoodFormat.number(left)} kcal), so FITOS does not suggest one.'
+                : 'There is a meal on this menu, but even the smallest is more than you have left today.',
           ),
           whyNot,
         ];
@@ -297,6 +313,19 @@ class _WhatToEatSectionState extends ConsumerState<WhatToEatSection>
               colour: FitColors.amber,
             ),
           const SizedBox(height: FitSpacing.sm),
+          Text(
+            ReasonText.structure(plate.structure),
+            key: const ValueKey('rec.structure'),
+            style: textTheme.titleSmall?.copyWith(
+              color: switch (plate.structure.kind) {
+                StructureKind.limited ||
+                StructureKind.limitedNoStaple =>
+                  FitColors.amber,
+                _ => FitColors.ink,
+              },
+            ),
+          ),
+          const SizedBox(height: FitSpacing.xs),
           Center(
             child: ThaliView(
               key: ValueKey('rec.thali.${plate.rank}'),

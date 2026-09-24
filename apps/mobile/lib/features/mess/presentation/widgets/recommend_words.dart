@@ -27,6 +27,46 @@ abstract final class ReasonText {
         _ => 'your goal',
       };
 
+  static String _missing(List<dynamic>? parts) {
+    final words = [
+      for (final p in parts ?? const <dynamic>[])
+        switch (p) {
+          'staple' => 'staple (rice, roti, idli…)',
+          'protein' => 'protein dish',
+          'strong-protein' => 'dal, paneer, egg or meat dish',
+          'vegetable' => 'vegetable dish',
+          _ => '$p',
+        },
+    ];
+    if (words.isEmpty) return '';
+    if (words.length == 1) return words.first;
+    return '${words.sublist(0, words.length - 1).join(', ')} or ${words.last}';
+  }
+
+  /// The label over a plate (ADR-016): what meal it makes.
+  static String structure(PlateStructure s) => switch (s.kind) {
+        StructureKind.completeMeal => 'Complete meal',
+        StructureKind.meal => 'Meal · no vegetable dish',
+        StructureKind.mealWeakProtein =>
+          'Meal · protein only from sambar, kootu or curd',
+        StructureKind.limited => 'Limited menu · no protein dish',
+        StructureKind.limitedNoStaple =>
+          'Limited menu · no staple (rice, roti, idli…)',
+        StructureKind.snack => 'Snack — not a full meal',
+      };
+
+  static String _component(String? wire) => switch (wire) {
+        'beverage' => 'drink',
+        'dessert' => 'dessert',
+        'crisp' => 'crisp side (papad, chips)',
+        'condiment' => 'condiment',
+        'soup' => 'soup',
+        'snack' => 'snack',
+        'veg' => 'vegetable dish',
+        'pulse-gravy' => 'sambar or kootu',
+        _ => 'dish FITOS does not recognise',
+      };
+
   /// A plate reason. [names] maps dish slugs to names (from the plate).
   static String plate(Reason r, Map<String, String> names) {
     String name() => names[r.s('dishSlug')] ?? r.s('dishSlug') ?? '';
@@ -58,6 +98,25 @@ abstract final class ReasonText {
           final g =>
             'Weighted for ${_goal(g)}: calories kept close to this meal\'s share.',
         },
+      'meal-structure' => switch (r.s('kind')) {
+          'complete-meal' => 'A complete meal.',
+          'meal' => 'A meal without a vegetable dish.',
+          'meal-weak-protein' =>
+            'A meal whose protein comes only from sambar, kootu or curd.',
+          'limited' => 'A limited plate: a staple without a protein dish.',
+          'limited-no-staple' =>
+            'A limited plate: a protein dish without a staple.',
+          'snack' => 'A snack, not a full meal.',
+          _ => 'A meal.',
+        },
+      'staple-anchor' => '${name()} is the staple.',
+      'protein-anchor' => r.s('strength') == 'weak'
+          ? '${name()} gives some protein.'
+          : '${name()} is the protein.',
+      'vegetable-component' => '${name()} is the vegetable.',
+      'supporting-side' => '${name()} on the side.',
+      'limited-menu' =>
+        'Limited menu: nothing here that fits your diet and allergies is a ${_missing(r.values['missing'] as List<dynamic>?)}.',
       'top-protein-dish' =>
         '${name()} is the most protein-dense dish on this plate.',
       'post-workout-carbs' =>
@@ -88,7 +147,9 @@ abstract final class ReasonText {
         'no-estimate' => 'No nutrition estimate yet.',
         'ambient' =>
           'Served with every meal — not part of the plate. You can still log it.',
-        'not-a-plate-dish' => 'A side, not a plate dish.',
+        'not-a-meal-component' => r.s('component') == 'beverage'
+            ? 'A drink — never part of a suggested plate. You can still log it.'
+            : 'A ${_component(r.s('component'))} — not part of a suggested plate at this meal. You can still log it.',
         'disliked' => 'You asked not to be suggested this.',
         'not-top-candidate' =>
           'Less protein per calorie than the dishes considered.',

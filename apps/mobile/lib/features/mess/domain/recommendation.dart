@@ -2,8 +2,9 @@ import '../../nutrition/domain/entities/food_log.dart';
 import '../../profile/domain/entities/vocabulary.dart';
 import 'mess.dart';
 
-/// Wire shapes of `@fitos/contracts` mess-recommend.ts (Phase 10). The server
-/// computes every plate, number and reason; the app draws them and words the
+/// Wire shapes of `@fitos/contracts` mess-recommend.ts (Phase 10, ADR-015 and
+/// ADR-016). The server computes every plate — always a meal, never the
+/// cheapest dish — its numbers and reasons; the app draws them and words the
 /// reason codes. Nothing here is computed, stored or reused later.
 
 enum RecommendationStatus {
@@ -13,6 +14,11 @@ enum RecommendationStatus {
   menuUnavailable('menu-unavailable'),
   mealNotServed('meal-not-served'),
   nothingSafe('nothing-safe'),
+
+  /// ADR-016: dishes pass your filters, but no meal can be made from them.
+  noMeal('no-meal'),
+
+  /// ADR-016: a meal exists, but even the smallest goes over what is left today.
   nothingFits('nothing-fits');
 
   const RecommendationStatus(this.wire);
@@ -20,6 +26,63 @@ enum RecommendationStatus {
 
   static RecommendationStatus fromWire(String w) =>
       values.firstWhere((s) => s.wire == w, orElse: () => nothingSafe);
+}
+
+/// What part of a meal a dish is (ADR-016).
+enum MealComponent {
+  staple('staple'),
+  complete('complete'),
+  protein('protein'),
+  pulseGravy('pulse-gravy'),
+  dairy('dairy'),
+  veg('veg'),
+  soup('soup'),
+  fruit('fruit'),
+  snack('snack'),
+  dessert('dessert'),
+  crisp('crisp'),
+  beverage('beverage'),
+  condiment('condiment'),
+  other('other');
+
+  const MealComponent(this.wire);
+  final String wire;
+
+  static MealComponent fromWire(String? w) =>
+      values.firstWhere((c) => c.wire == w, orElse: () => other);
+}
+
+/// The meal a plate makes (ADR-016).
+enum StructureKind {
+  completeMeal('complete-meal'),
+  meal('meal'),
+  mealWeakProtein('meal-weak-protein'),
+  limited('limited'),
+  limitedNoStaple('limited-no-staple'),
+  snack('snack');
+
+  const StructureKind(this.wire);
+  final String wire;
+
+  static StructureKind fromWire(String? w) =>
+      values.firstWhere((k) => k.wire == w, orElse: () => limited);
+}
+
+/// A plate's structure, and what it lacks for a complete meal
+/// (`staple`, `protein`, `strong-protein`, `vegetable`).
+class PlateStructure {
+  const PlateStructure({required this.kind, required this.missing});
+
+  factory PlateStructure.fromJson(Map<String, dynamic> j) => PlateStructure(
+        kind: StructureKind.fromWire(j['kind'] as String?),
+        missing: (j['missing'] as List<dynamic>).cast<String>(),
+      );
+
+  final StructureKind kind;
+  final List<String> missing;
+
+  Map<String, dynamic> toJson() =>
+      <String, dynamic>{'kind': kind.wire, 'missing': missing};
 }
 
 /// A reason: a code and its values. Worded by [ReasonText].
@@ -96,6 +159,7 @@ class PlateItem {
     required this.servingGrams,
     required this.macros,
     required this.confidence,
+    required this.component,
   });
 
   factory PlateItem.fromJson(Map<String, dynamic> j) => PlateItem(
@@ -106,6 +170,7 @@ class PlateItem {
         servingGrams: (j['servingGrams'] as num?)?.toDouble(),
         macros: Macros.fromJson(j),
         confidence: j['confidence'] as String,
+        component: MealComponent.fromWire(j['component'] as String?),
       );
 
   final String dishSlug;
@@ -115,6 +180,7 @@ class PlateItem {
   final double? servingGrams;
   final Macros macros;
   final String confidence;
+  final MealComponent component;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         'dishSlug': dishSlug,
@@ -124,6 +190,7 @@ class PlateItem {
         'servingGrams': servingGrams,
         ...macros.toJson(),
         'confidence': confidence,
+        'component': component.wire,
       };
 }
 
@@ -133,6 +200,7 @@ class Plate {
     required this.items,
     required this.totals,
     required this.confidence,
+    required this.structure,
     required this.reasons,
   });
 
@@ -143,6 +211,8 @@ class Plate {
             .toList(),
         totals: Macros.fromJson(j['totals'] as Map<String, dynamic>),
         confidence: j['confidence'] as String,
+        structure:
+            PlateStructure.fromJson(j['structure'] as Map<String, dynamic>),
         reasons: (j['reasons'] as List<dynamic>)
             .map((e) => Reason.fromJson(e as Map<String, dynamic>))
             .toList(),
@@ -152,6 +222,7 @@ class Plate {
   final List<PlateItem> items;
   final Macros totals;
   final String confidence;
+  final PlateStructure structure;
   final List<Reason> reasons;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -159,6 +230,7 @@ class Plate {
         'items': items.map((i) => i.toJson()).toList(),
         'totals': totals.toJson(),
         'confidence': confidence,
+        'structure': structure.toJson(),
         'reasons': reasons.map((r) => r.toJson()).toList(),
       };
 }
@@ -276,6 +348,7 @@ class MealTarget {
     required this.protein,
     required this.carb,
     required this.fat,
+    required this.dayRemainingKcal,
   });
 
   factory MealTarget.fromJson(Map<String, dynamic> j) => MealTarget(
@@ -284,6 +357,7 @@ class MealTarget {
         protein: (j['protein'] as num).toDouble(),
         carb: (j['carb'] as num).toDouble(),
         fat: (j['fat'] as num).toDouble(),
+        dayRemainingKcal: (j['dayRemainingKcal'] as num).toDouble(),
       );
 
   final double share;
@@ -292,12 +366,16 @@ class MealTarget {
   final double carb;
   final double fat;
 
+  /// Everything left today, conservatively (for `nothing-fits`).
+  final double dayRemainingKcal;
+
   Map<String, dynamic> toJson() => <String, dynamic>{
         'share': share,
         'kcal': kcal,
         'protein': protein,
         'carb': carb,
         'fat': fat,
+        'dayRemainingKcal': dayRemainingKcal,
       };
 }
 
@@ -321,6 +399,7 @@ class MessRecommendation {
     required this.proteinShortfall,
     required this.kcalShortfall,
     required this.dishes,
+    required this.smallestMealKcal,
   });
 
   factory MessRecommendation.fromJson(Map<String, dynamic> j) {
@@ -361,6 +440,7 @@ class MessRecommendation {
       dishes: (j['dishes'] as List<dynamic>)
           .map((e) => DishOutcome.fromJson(e as Map<String, dynamic>))
           .toList(),
+      smallestMealKcal: (j['smallestMealKcal'] as num?)?.toDouble(),
     );
   }
 
@@ -387,6 +467,9 @@ class MessRecommendation {
   final Gap? kcalShortfall;
   final List<DishOutcome> dishes;
 
+  /// `nothing-fits` only: the low-end kcal of the smallest meal on the menu.
+  final double? smallestMealKcal;
+
   Map<String, dynamic> toJson() => <String, dynamic>{
         'status': status.wire,
         'mess': mess.toJson(),
@@ -412,5 +495,6 @@ class MessRecommendation {
                 'kcal': kcalShortfall?.toJson(),
               },
         'dishes': dishes.map((d) => d.toJson()).toList(),
+        'smallestMealKcal': smallestMealKcal,
       };
 }

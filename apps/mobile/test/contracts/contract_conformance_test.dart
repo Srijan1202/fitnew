@@ -1990,6 +1990,19 @@ void main() {
         full.plates.first.totals.toJson().keys.toSet(),
         keysOf(p(plate, 'totals')),
       );
+      // ADR-016: the plate's structure and each item's component.
+      expect(
+        full.plates.first.structure.toJson().keys.toSet(),
+        keysOf(p(plate, 'structure')),
+      );
+      expect(
+        StructureKind.values.map((k) => k.wire).toList(),
+        enumOf(p(p(plate, 'structure'), 'kind')),
+      );
+      expect(
+        MealComponent.values.map((c) => c.wire).toList(),
+        enumOf(p(items(plate, 'items'), 'component')),
+      );
       final shortfall = full.toJson()['shortfall'] as Map<String, dynamic>;
       expect(shortfall.keys.toSet(), keysOf(p(rec, 'shortfall')));
       expect(

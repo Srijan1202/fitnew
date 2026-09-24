@@ -370,6 +370,13 @@ void main() {
       expect(find.byKey(const ValueKey('rec.thali.2')), findsOneWidget);
       await tap(tester, find.byKey(const ValueKey('rec.whyNot')));
       expect(find.text('Egg — not vegetarian.'), findsOneWidget);
+      // Owner C5: a drink is never a plate — and it says so.
+      expect(
+        find.text(
+          'A drink — never part of a suggested plate. You can still log it.',
+        ),
+        findsOneWidget,
+      );
       expect(find.text('or Paneer Bhurji — veg'), findsOneWidget);
       expect(find.text('Contains peanut.'), findsOneWidget);
     });
@@ -402,6 +409,7 @@ void main() {
       (RecommendationStatus.menuUnavailable, 'rec.unavailable'),
       (RecommendationStatus.mealNotServed, 'rec.notServed'),
       (RecommendationStatus.nothingSafe, 'rec.nothingSafe'),
+      (RecommendationStatus.noMeal, 'rec.noMeal'),
       (RecommendationStatus.nothingFits, 'rec.nothingFits'),
     ]) {
       testWidgets('status ${status.wire}: its own message, and no plate',
@@ -421,6 +429,74 @@ void main() {
       });
     }
 
+    testWidgets(
+        'ADR-016: the plate says what meal it makes; limited plates say what is missing',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      expect(text(tester, 'rec.structure'), 'Meal · no vegetable dish');
+      expect(
+        find.text(
+          '· Limited menu: nothing here that fits your diet and allergies is a vegetable dish.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('· Phulka is the staple.'), findsOneWidget);
+      expect(find.text('· Dhal Makhani is the protein.'), findsOneWidget);
+
+      mess.recommendations['$today/dinner'] = FakeMessApi.defaultRecommendation(
+        'mens-veg',
+        today,
+        slot: MealSlot.dinner,
+        structure: const PlateStructure(
+          kind: StructureKind.limited,
+          missing: ['protein', 'vegetable'],
+        ),
+      );
+      await tap(tester, find.byKey(const ValueKey('rec.slot.Dinner')));
+      expect(text(tester, 'rec.structure'), 'Limited menu · no protein dish');
+    });
+
+    testWidgets(
+        'no-meal vs nothing-fits: each says why, with the numbers when it is calories',
+        (tester) async {
+      tall(tester);
+      mess.recommendations['$today/default'] =
+          FakeMessApi.defaultRecommendation(
+        'mens-veg',
+        today,
+        status: RecommendationStatus.noMeal,
+      );
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      expect(
+        text(tester, 'rec.noMeal'),
+        contains('A drink, dessert or side on its own is never suggested'),
+      );
+
+      mess.recommendations['$today/dinner'] = FakeMessApi.defaultRecommendation(
+        'mens-veg',
+        today,
+        slot: MealSlot.dinner,
+        status: RecommendationStatus.nothingFits,
+        smallestMealKcal: 350,
+        target: const MealTarget(
+          share: 1,
+          kcal: 100,
+          protein: 20,
+          carb: 10,
+          fat: 0,
+          dayRemainingKcal: 100,
+        ),
+      );
+      await tap(tester, find.byKey(const ValueKey('rec.slot.Dinner')));
+      expect(
+        text(tester, 'rec.nothingFits'),
+        'There is a meal on this menu, but even the smallest (about 350 kcal) is more than you have left today (100 kcal), so FITOS does not suggest one.',
+      );
+    });
+
     testWidgets('zero budget still names the protein still needed',
         (tester) async {
       tall(tester);
@@ -429,8 +505,14 @@ void main() {
         'mens-veg',
         today,
         status: RecommendationStatus.targetReached,
-        target:
-            const MealTarget(share: 1, kcal: 0, protein: 40, carb: 0, fat: 0),
+        target: const MealTarget(
+          share: 1,
+          kcal: 0,
+          protein: 40,
+          carb: 0,
+          fat: 0,
+          dayRemainingKcal: 0,
+        ),
       );
       await tester.pumpWidget(harness());
       await settle(tester);
@@ -527,6 +609,14 @@ void main() {
       'repeat': {'dishSlug': 'dal', 'days': 2},
       'low-confidence-dish': {'dishSlug': 'dal'},
       'inferred-menu': {'sourceDate': '2026-09-18'},
+      'meal-structure': {'kind': 'meal-weak-protein'},
+      'staple-anchor': {'dishSlug': 'dal'},
+      'protein-anchor': {'dishSlug': 'dal', 'strength': 'weak'},
+      'vegetable-component': {'dishSlug': 'dal'},
+      'supporting-side': {'dishSlug': 'dal'},
+      'limited-menu': {
+        'missing': ['staple', 'strong-protein'],
+      },
     };
     test('every plate code has words (never the raw code)', () {
       for (final e in codes.entries) {
@@ -583,6 +673,13 @@ void main() {
           d,
         ),
         'Its alternative Peanut Rice: contains peanut.',
+      );
+      expect(
+        ReasonText.dish(
+          const Reason('not-a-meal-component', {'component': 'crisp'}),
+          d,
+        ),
+        'A crisp side (papad, chips) — not part of a suggested plate at this meal. You can still log it.',
       );
       expect(
         ReasonText.dish(const Reason('ambient', {}), d),
@@ -663,8 +760,19 @@ void main() {
         'menu-unavailable',
         'meal-not-served',
         'nothing-safe',
+        'no-meal',
         'nothing-fits',
       ],
+    );
+    expect(
+      StructureKind.values
+          .map(
+            (k) => ReasonText.structure(
+              PlateStructure(kind: k, missing: const []),
+            ),
+          )
+          .toSet(),
+      hasLength(StructureKind.values.length),
     );
     expect(
       DietClass.values.map((d) => d.wire),

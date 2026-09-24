@@ -103,8 +103,9 @@ class FakeMessApi implements MessApi {
     String slug,
     String name,
     int servings,
-    FoodNutrition row,
-  ) =>
+    FoodNutrition row, {
+    MealComponent component = MealComponent.staple,
+  }) =>
       PlateItem(
         dishSlug: slug,
         name: name,
@@ -122,6 +123,7 @@ class FakeMessApi implements MessApi {
           fatHigh: row.fatHigh * servings,
         ),
         confidence: row.confidence.wire,
+        component: component,
       );
 
   static Macros sum(List<PlateItem> items) => Macros(
@@ -153,13 +155,36 @@ class FakeMessApi implements MessApi {
       protein: 45,
       carb: 110,
       fat: 25,
+      dayRemainingKcal: 2400,
     ),
+    PlateStructure structure = const PlateStructure(
+      kind: StructureKind.meal,
+      missing: ['vegetable'],
+    ),
+    double? smallestMealKcal,
   }) {
+    // ADR-016: every plate is a meal — a staple and a protein.
     final plate1 = [
       plateItem('phulka', 'Phulka', 3, phulka),
-      plateItem('dhal-makhani', 'Dhal Makhani', 1, dal),
+      plateItem(
+        'dhal-makhani',
+        'Dhal Makhani',
+        1,
+        dal,
+        component: MealComponent.protein,
+      ),
     ];
-    final plate2 = [plateItem('dhal-makhani', 'Dhal Makhani', 2, dal)];
+    // A meaningful alternative (owner C3): a different staple.
+    final plate2 = [
+      plateItem('white-rice', 'White Rice', 1, phulka),
+      plateItem(
+        'dhal-makhani',
+        'Dhal Makhani',
+        2,
+        dal,
+        component: MealComponent.protein,
+      ),
+    ];
     return MessRecommendation(
       status: status,
       mess: messOf(code),
@@ -183,6 +208,7 @@ class FakeMessApi implements MessApi {
                 items: plate1,
                 totals: sum(plate1),
                 confidence: 'medium',
+                structure: structure,
                 reasons: const [
                   Reason(
                     'protein-may-fall-short',
@@ -190,6 +216,15 @@ class FakeMessApi implements MessApi {
                   ),
                   Reason('kcal-within', {'target': 900, 'high': 620}),
                   Reason('goal-weighting', {'goal': 'muscle-gain'}),
+                  Reason('meal-structure', {'kind': 'meal'}),
+                  Reason('staple-anchor', {'dishSlug': 'phulka'}),
+                  Reason(
+                    'protein-anchor',
+                    {'dishSlug': 'dhal-makhani', 'strength': 'strong'},
+                  ),
+                  Reason('limited-menu', {
+                    'missing': ['vegetable'],
+                  }),
                   Reason('top-protein-dish', {'dishSlug': 'dhal-makhani'}),
                 ],
               ),
@@ -198,6 +233,10 @@ class FakeMessApi implements MessApi {
                 items: plate2,
                 totals: sum(plate2),
                 confidence: 'medium',
+                structure: const PlateStructure(
+                  kind: StructureKind.meal,
+                  missing: ['vegetable'],
+                ),
                 reasons: const [
                   Reason('goal-weighting', {'goal': 'muscle-gain'}),
                 ],
@@ -205,7 +244,18 @@ class FakeMessApi implements MessApi {
             ],
       proteinShortfall: proteinShortfall,
       kcalShortfall: kcalShortfall,
+      smallestMealKcal: smallestMealKcal,
       dishes: const [
+        DishOutcome(
+          dishSlug: 'watermelon-juice',
+          name: 'Watermelon Juice',
+          diet: DietClass.veg,
+          onPlate: false,
+          reasons: [
+            Reason('not-a-meal-component', {'component': 'beverage'}),
+          ],
+          alternatives: [],
+        ),
         DishOutcome(
           dishSlug: 'phulka',
           name: 'Phulka',
