@@ -319,11 +319,11 @@ describe('snacks, alternatives, statuses', () => {
     expect(noMeal.dishes.find((o) => o.dish.name === 'Gulab Jamun')!.reasons).toEqual([{ code: 'not-a-meal-component', component: 'dessert' }]);
 
     const day = menu('lunch', 'White Rice, Dhal, Beetroot Poriyal');
-    // 100 kcal left today: even the smallest meal (Rice + Dhal + Poriyal) goes over the whole day.
+    // 100 kcal left today: even the smallest meal (Rice + Dhal) goes over the whole day.
     const fits = recommendMeal(input({ menu: day, slot: 'lunch', eaten: { ...NOTHING_EATEN, kcalLow: 2200, kcalHigh: 2300 }, loggedSlots: ['breakfast'] }));
     expect(fits.status).toBe('nothing-fits');
     expect(fits.target!.dayRemainingKcal).toBe(100);
-    expect(fits.smallestMealKcal).toBe(175 + 120 + 55);
+    expect(fits.smallestMealKcal).toBe(175 + 120);
     expect(fits.plates).toEqual([]);
     // 400 kcal left today: over this meal's share, but within the day → the meal, with an honest kcal reason.
     const over = recommendMeal(input({ menu: day, slot: 'lunch', eaten: { ...NOTHING_EATEN, kcalLow: 1900, kcalHigh: 2000 }, loggedSlots: ['breakfast'] }));
@@ -332,6 +332,27 @@ describe('snacks, alternatives, statuses', () => {
     expect(over.plates[0]!.reasons.some((r) => r.code === 'kcal-over' || r.code === 'kcal-may-exceed')).toBe(true);
     // Nothing safe stays its own status.
     expect(recommendMeal(input({ menu: menu('lunch', 'Chicken Gravy, Egg Curry'), slot: 'lunch', diet: 'vegetarian' })).status).toBe('nothing-safe');
+  });
+
+  it('the best meal that fits the day is offered; calories never push a plate into a limited tier', () => {
+    // Real menu (women's veg, 7 Sep), the S24 state: the complete meal (Chole Bhatura + Sabji,
+    // at least 645 kcal) does not fit the 561 kcal left today; Rice + Sambar + Sabji does.
+    const rec = recommendMeal(input({
+      menu: dayOf('hostel-2-mess-2', '2026-09-07'), slot: 'dinner', goal: 'fat-loss',
+      targets: { kcal: 1774, proteinG: 135, carbG: 198, fatG: 49 }, eaten: S24_EATEN, loggedSlots: ['breakfast', 'lunch', 'snacks'],
+    }));
+    expect(rec.status).toBe('ok');
+    const top = rec.plates[0]!;
+    expect(top.structure.kind).toBe('meal-weak-protein');
+    expect(top.macros.kcalLow).toBeLessThanOrEqual(561);
+    for (const p of rec.plates) expect(p.macros.kcalLow).toBeLessThanOrEqual(rec.target!.dayRemainingKcal);
+    // With room for only a bowl of dal, a menu with a staple says nothing-fits, not "dal alone as lunch".
+    const tight = recommendMeal(input({
+      menu: menu('lunch', 'White Rice, Dhal, Beetroot Poriyal'), slot: 'lunch',
+      eaten: { ...NOTHING_EATEN, kcalLow: 2200, kcalHigh: 2270 }, loggedSlots: ['breakfast'],
+    }));
+    expect(tight.target!.dayRemainingKcal).toBe(130);
+    expect(tight.status).toBe('nothing-fits'); // Dhal alone (120 kcal) would fit, but is not a meal here.
   });
 
   it('12. limited-menu names only what the menu (after your filters) lacks', () => {

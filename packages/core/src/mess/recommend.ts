@@ -26,7 +26,7 @@ import { defaultMealSlot, snapshotNutrition } from '../nutrition/log.js';
 import { allergenFailures, type Allergen } from './allergens.js';
 import {
   COMPONENT_CANDIDATES, MEAL_COMPONENTS, PLATE_COMPONENTS, PLATE_DISH_CAPS, PLATE_MAX_DISHES,
-  classifyComponent, isAnchor, lastTier, partsOf, servingCap, structureOf, tierNeeds,
+  classifyComponent, isAnchor, lastTier, mealGradeLast, partsOf, servingCap, structureOf, tierNeeds,
   type MealComponent, type MissingPart, type Parts, type Structure, type StructureKind,
 } from './components.js';
 import type { DietClass, MacroRange, MealSlot, MessDish, MessMeal } from './types.js';
@@ -116,6 +116,12 @@ export interface PlateRequest {
   readonly postWorkout?: boolean;
   /** Phase 10: slug → distinct days (0–3) it was logged in the 3 days before the menu date. */
   readonly varietyDays?: Readonly<Record<string, number>>;
+  /**
+   * ADR-016 (owner C4): everything left today. A plate whose low end is above
+   * it would put the day over for certain, so it is never offered; the best
+   * meal that fits is. Omitted → no day limit.
+   */
+  readonly dayKcalLimit?: number;
 }
 
 /* ----------------------------------------------------------- constants -- */
@@ -518,8 +524,10 @@ export interface PlateSearch {
   readonly menuMax: { readonly proteinHigh: number; readonly kcalHigh: number };
   /** What the filtered menu can provide. */
   readonly menuParts: Parts;
-  /** The low-end kcal of the smallest plate of the best tier (null: no valid meal). */
+  /** The low-end kcal of the smallest meal the menu can make (null: no valid meal at all). */
   readonly smallestMealKcal: number | null;
+  /** Valid meals exist, but none fits within the day's limit (owner C4: `nothing-fits`). */
+  readonly nothingFits: boolean;
 }
 
 const COMPONENT_INDEX = new Map<MealComponent, number>(MEAL_COMPONENTS.map((c, i) => [c, i]));
@@ -556,7 +564,7 @@ export function searchPlates(request: PlateRequest, maxResults = 3): PlateSearch
   const picked = selectCandidates(request);
   const candidates = picked.map((c) => c.dish);
   const menuParts = partsOf(picked.map((c) => c.component));
-  const none = { plates: [], candidates, menuMax: { proteinHigh: 0, kcalHigh: 0 }, menuParts, smallestMealKcal: null };
+  const none = { plates: [], candidates, menuMax: { proteinHigh: 0, kcalHigh: 0 }, menuParts, smallestMealKcal: null, nothingFits: false };
   if (picked.length === 0) return none;
 
   const cheapest = new Map<MealComponent, number>();
@@ -605,6 +613,7 @@ export function searchPlates(request: PlateRequest, maxResults = 3): PlateSearch
   interface Kept { score: number; counts: Int8Array; kcalLow: number; key?: string }
   const kept = new Map<number, Map<number, Kept>>(); // tier → anchor bits → best plate
   const smallest = new Map<number, number>(); // tier → smallest low-end kcal
+  const dayLimit = request.dayKcalLimit ?? Infinity;
   let maxProtein = 0;
   let maxKcal = 0;
 
@@ -628,6 +637,8 @@ export function searchPlates(request: PlateRequest, maxResults = 3): PlateSearch
     maxKcal = Math.max(maxKcal, acc[o + KH]!);
     const kcalLow = acc[o + KL]!;
     smallest.set(structure.tier, Math.min(smallest.get(structure.tier) ?? Infinity, kcalLow));
+    // Over everything left today at its LOW end: never a candidate (owner C4).
+    if (kcalLow > dayLimit + EPS) return;
 
     const k = (acc[o + KL]! + acc[o + KH]!) / 2;
     const p = (acc[o + PL]! + acc[o + PH]!) / 2;
@@ -689,9 +700,18 @@ export function searchPlates(request: PlateRequest, maxResults = 3): PlateSearch
   };
   walk(0, 0, 0, 0, 0);
 
-  const tiers = [...kept.keys()].sort((a, b) => a - b);
-  const bestTier = tiers[0];
-  if (bestTier === undefined) return none;
+  // The best achievable tier within the day. When the best structure does not
+  // fit, fall back only through meal-grade tiers (a staple with a protein);
+  // limited tiers are for menus that lack a component, never for calories.
+  const lastAllowed = best.tier <= mealGradeLast(slot) ? mealGradeLast(slot) : lastTier(slot);
+  let bestTier: number | undefined;
+  let smallestAllowed = Infinity;
+  for (let tier = best.tier; tier <= lastAllowed; tier += 1) {
+    smallestAllowed = Math.min(smallestAllowed, smallest.get(tier) ?? Infinity);
+    if (bestTier === undefined && (kept.get(tier)?.size ?? 0) > 0) bestTier = tier;
+  }
+  const smallestMealKcal = Number.isFinite(smallestAllowed) ? Math.round(smallestAllowed) : null;
+  if (bestTier === undefined) return { ...none, smallestMealKcal, nothingFits: smallestMealKcal !== null };
 
   // Best tier, score descending, plate key ascending; then owner C3.
   const ranked = [...kept.get(bestTier)!.entries()]
@@ -744,13 +764,13 @@ export function searchPlates(request: PlateRequest, maxResults = 3): PlateSearch
     };
   });
 
-  const smallestKcal = smallest.get(bestTier);
   return {
     plates,
     candidates,
     menuMax: { proteinHigh: round1(maxProtein), kcalHigh: Math.round(maxKcal) },
     menuParts,
-    smallestMealKcal: smallestKcal === undefined ? null : Math.round(smallestKcal),
+    smallestMealKcal,
+    nothingFits: false,
   };
 }
 

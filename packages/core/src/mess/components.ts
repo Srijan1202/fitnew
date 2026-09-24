@@ -232,6 +232,15 @@ export function lastTier(slot: MealSlot): number {
   return slot === 'snacks' ? 1 : slot === 'breakfast' ? 4 : 5;
 }
 
+/**
+ * The last tier that is still a meal (a staple with a protein): lunch and
+ * dinner T3, breakfast T2. Calories may push a plate down to it, never below
+ * (ADR-016 §8); the limited tiers belong to menus that lack a component.
+ */
+export function mealGradeLast(slot: MealSlot): number {
+  return slot === 'snacks' ? 1 : slot === 'breakfast' ? 2 : 3;
+}
+
 /** Anchors decide whether two plates are meaningfully different (owner C3). */
 export function isAnchor(slot: MealSlot, component: MealComponent): boolean {
   if (slot === 'snacks') return true; // every snack item is the snack

@@ -212,6 +212,7 @@ export function recommendMeal(input: MealRecommendationInput): MealRecommendatio
     normalKcal: (input.targets?.kcal ?? 0) * weight,
     normalCarb: (input.targets?.carbG ?? 0) * weight,
     normalFat: (input.targets?.fatG ?? 0) * weight,
+    dayKcalLimit: target?.dayRemainingKcal ?? Infinity,
     diet: input.diet,
     goal: input.goal,
     excludedDishIds: input.excludedDishIds,
@@ -243,12 +244,12 @@ export function recommendMeal(input: MealRecommendationInput): MealRecommendatio
   }
   const search = searchPlates(request);
   const candidateIds = new Set(search.candidates.map((d) => d.id));
-  // Safe dishes exist, but no structurally valid meal (owner C4).
-  if (search.plates.length === 0) return empty('no-meal', target, filtered(new Map(), candidateIds));
-  // A valid meal exists, but even the smallest goes over everything left today (owner C4 + decision 8).
-  if (search.smallestMealKcal !== null && search.smallestMealKcal > target.dayRemainingKcal) {
+  // A valid meal exists, but none fits within everything left today (owner C4 + decision 8).
+  if (search.nothingFits) {
     return { ...empty('nothing-fits', target, filtered(new Map(), candidateIds)), smallestMealKcal: search.smallestMealKcal };
   }
+  // Safe dishes exist, but no structurally valid meal (owner C4).
+  if (search.plates.length === 0) return empty('no-meal', target, filtered(new Map(), candidateIds));
 
   const inferred: PlateReason[] = r.kind === 'cycle-inferred' ? [{ code: 'inferred-menu', sourceDate: r.sourceDate }] : [];
   const plates: RankedPlate[] = search.plates.map((p, i) => ({ ...p, reasons: [...p.reasons, ...inferred], rank: i + 1 }));
