@@ -33,3 +33,4 @@ export * from './schema/volume.js';
 export * from './schema/food.js';
 export * from './schema/mess.js';
 export * from './schema/food-log.js';
+export * from './schema/today.js';

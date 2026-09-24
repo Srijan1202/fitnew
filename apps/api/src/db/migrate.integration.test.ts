@@ -70,7 +70,7 @@ describeIfDb('migrations (real Postgres)', () => {
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
   const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
   const PHASE6_TABLES = ['muscle_volume_weekly', 'exercise_rejections'];
-  const TOTAL_MIGRATIONS = 13;
+  const TOTAL_MIGRATIONS = 14;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -476,7 +476,96 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from mess_providers where id = ${prov!.id}`;
   });
 
+  it('0013: TODAY recommendations and events — identity, checks, event rules, cascades; down drops them (Phase 11, ADR-017)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0013_today');
+    expect(await tableExists(client, 'recommendations')).toBe(false);
+    expect(await tableExists(client, 'recommendation_events')).toBe(false);
+    for (const t of ['today_action_kind', 'action_basis', 'action_target', 'recommendation_event']) expect(await enumLabels(client, t), t).toEqual([]);
+    await migrateUp(connectionString);
+    expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
+
+    expect(await enumLabels(client, 'today_action_kind')).toEqual([
+      'deload', 'injured-limitation', 'start-workout', 'eat-protein', 'eat-meal', 'progress-load', 'muscle-neglected', 'rest-day', 'celebrate-pr', 'log-weight',
+    ]);
+    expect(await enumLabels(client, 'action_basis')).toEqual(['logged', 'calculated', 'estimated']);
+    expect(await enumLabels(client, 'action_target')).toEqual(['train', 'eat', 'progress', 'today']);
+    expect(await enumLabels(client, 'recommendation_event')).toEqual(['shown', 'opened', 'accepted', 'dismissed', 'completed']);
+    const cols = await client<{ column_name: string }[]>`
+      select column_name from information_schema.columns where table_name = 'recommendations' order by ordinal_position`;
+    expect(cols.map((c) => c.column_name)).toEqual([
+      'id', 'user_id', 'generated_for', 'kind', 'subject_key', 'rank', 'priority', 'basis', 'target', 'payload',
+      'engine_version', 'input_digest', 'headline', 'detail', 'content_hash', 'created_at',
+    ]);
+    const evCols = await client<{ column_name: string }[]>`
+      select column_name from information_schema.columns where table_name = 'recommendation_events' order by ordinal_position`;
+    expect(evCols.map((c) => c.column_name)).toEqual(['id', 'recommendation_id', 'user_id', 'event', 'client_event_id', 'occurred_at', 'received_at']);
+    // Actions are day-level decisions: no foreign keys to logs, menus or workouts.
+    const fks = await client<{ table_name: string; foreign_table: string }[]>`
+      select tc.table_name, ccu.table_name as foreign_table
+      from information_schema.table_constraints tc
+      join information_schema.constraint_column_usage ccu on ccu.constraint_name = tc.constraint_name
+      where tc.constraint_type = 'FOREIGN KEY' and tc.table_name in ('recommendations', 'recommendation_events')
+      order by tc.table_name, ccu.table_name`;
+    expect(fks.map((f) => `${f.table_name}->${f.foreign_table}`)).toEqual([
+      'recommendation_events->recommendations', 'recommendation_events->users', 'recommendations->users',
+    ]);
+
+    await client`insert into users (firebase_uid) values ('mig-today')`;
+    const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-today'`;
+    const H = 'a'.repeat(64);
+    const rec = (over: Record<string, string | number> = {}) => {
+      const v = { kind: 'eat-meal', subject: 'lunch', rank: 1, priority: 75, hash: H, digest: H, headline: 'h', ...over };
+      return client.unsafe<{ id: string }[]>(
+        `insert into recommendations (user_id, generated_for, kind, subject_key, rank, priority, basis, target, payload, engine_version, input_digest, headline, detail, content_hash)
+         values ('${u!.id}', '2026-09-24', '${v.kind}', '${v.subject}', ${v.rank}, ${v.priority}, 'calculated', 'eat', '{}'::jsonb, 'today-1', '${v.digest}', '${v.headline}', 'd', '${v.hash}') returning id`,
+      );
+    };
+    const [r1] = await rec();
+    // The D4 identity: the same (user, day, kind, subject, content hash) twice is refused …
+    await expect(rec()).rejects.toThrow(/recommendations_identity/);
+    // … changed content is a new row beside it; the old row is kept.
+    await rec({ hash: 'b'.repeat(64), rank: 2 });
+    await expect(rec({ hash: 'c'.repeat(64), rank: 5 })).rejects.toThrow(/recommendations_rank/);
+    await expect(rec({ hash: 'c'.repeat(64), priority: 101 })).rejects.toThrow(/recommendations_priority/);
+    await expect(rec({ hash: 'NOT-HEX' })).rejects.toThrow(/recommendations_content_hash/);
+    await expect(rec({ hash: 'c'.repeat(64), digest: 'x' })).rejects.toThrow(/recommendations_input_digest/);
+    await expect(rec({ hash: 'c'.repeat(64), headline: '' })).rejects.toThrow(/recommendations_text/);
+    await expect(rec({ hash: 'c'.repeat(64), kind: 'hydrate' })).rejects.toThrow(/invalid input value for enum today_action_kind/);
+
+    const ev = (event: string, clientId: string) =>
+      client.unsafe(
+        `insert into recommendation_events (recommendation_id, user_id, event, client_event_id, occurred_at) values ('${r1!.id}', '${u!.id}', '${event}', '${clientId}', now())`,
+      );
+    await ev('shown', '11111111-1111-4111-8111-111111111111');
+    // One client id per user; each event once per recommendation.
+    await expect(ev('opened', '11111111-1111-4111-8111-111111111111')).rejects.toThrow(/recommendation_events_client_id/);
+    await expect(ev('shown', '22222222-2222-4222-8222-222222222222')).rejects.toThrow(/recommendation_events_once/);
+    await expect(ev('liked', '33333333-3333-4333-8333-333333333333')).rejects.toThrow(/invalid input value for enum recommendation_event/);
+    const [stored] = await client<{ received_at: Date }[]>`select received_at from recommendation_events where recommendation_id = ${r1!.id}`;
+    expect(stored!.received_at).toBeInstanceOf(Date);
+
+    // Deleting a recommendation takes its events; deleting the user takes everything.
+    await client`delete from recommendations where id = ${r1!.id}`;
+    expect((await client`select 1 from recommendation_events where recommendation_id = ${r1!.id}`).length).toBe(0);
+    await client`delete from users where id = ${u!.id}`;
+    expect((await client`select 1 from recommendations where user_id = ${u!.id}`).length).toBe(0);
+
+    // Down with data present drops both tables and the four types.
+    await client`insert into users (firebase_uid) values ('mig-today-down')`;
+    const [d] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-today-down'`;
+    await client.unsafe(
+      `insert into recommendations (user_id, generated_for, kind, subject_key, rank, priority, basis, target, payload, engine_version, input_digest, headline, detail, content_hash)
+       values ('${d!.id}', '2026-09-24', 'log-weight', '', 1, 45, 'calculated', 'progress', '{}'::jsonb, 'today-1', '${H}', 'h', 'd', '${H}')`,
+    );
+    expect(await rollbackLastMigration(connectionString)).toBe('0013_today');
+    expect(await tableExists(client, 'recommendations')).toBe(false);
+    expect(await enumLabels(client, 'recommendation_event')).toEqual([]);
+    await migrateUp(connectionString);
+    await client`delete from users where id = ${d!.id}`;
+  });
+
   it('0012: four Phase 9 estimates corrected with provenance, only where still wrong; down restores them (Phase 10 Amendment B)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0013_today');
     expect(await rollbackLastMigration(connectionString)).toBe('0012_mess_estimate_corrections');
     expect(await tableExists(client, 'mess_dish_nutrition_revisions')).toBe(false);
     const row = (slug: string, name: string, label: string, grams: number, v: readonly number[]) => client.unsafe(
@@ -511,6 +600,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await expect(client`insert into mess_dish_nutrition_revisions (dish_slug, reason, previous, current) values ('curd-rice', ' ', '{}', '{}')`).rejects.toThrow(/revisions_reason/);
 
     // Down puts the recorded previous values back and drops the provenance table.
+    expect(await rollbackLastMigration(connectionString)).toBe('0013_today');
     expect(await rollbackLastMigration(connectionString)).toBe('0012_mess_estimate_corrections');
     expect(await tableExists(client, 'mess_dish_nutrition_revisions')).toBe(false);
     expect(await est('curd-rice')).toEqual({ serving_label: '1 cup', serving_grams: '120.00', kcal_low: '65.00', kcal_high: '105.00', protein_low: '4.00', fat_high: '5.50', confidence: 'medium' });
@@ -574,7 +664,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'uid-dup'`;
   });
 
-  it('down removes 0012 (restoring the corrected estimates), 0011 (rebuilding food_entry_method; mess logs and meals go, the day cache is rebuilt), 0010, 0009, 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+  it('down removes 0013 (TODAY), 0012 (restoring the corrected estimates), 0011 (rebuilding food_entry_method; mess logs and meals go, the day cache is rebuilt), 0010, 0009, 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
     // Data that only 0011 can hold, next to data 0010 keeps.
     await client`insert into users (firebase_uid) values ('mig-down')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-down'`;
@@ -593,6 +683,8 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Mess lunch', '[{"kind":"mess","dishSlug":"dal","name":"Dal","servings":1}]'::jsonb)`;
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Plain', '[{"kind":"quick-add","name":"X","kcal":1,"proteinG":0,"carbG":0,"fatG":0,"fibreG":null}]'::jsonb)`;
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0013_today');
+    expect(await tableExists(client, 'recommendations')).toBe(false);
     expect(await rollbackLastMigration(connectionString)).toBe('0012_mess_estimate_corrections');
     expect(await tableExists(client, 'mess_dish_nutrition_revisions')).toBe(false);
     expect(await rollbackLastMigration(connectionString)).toBe('0011_mess');
