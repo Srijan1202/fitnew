@@ -13,7 +13,7 @@ import { addDays, localDateOf } from '@fitos/core/nutrition/log';
 import type { Goal } from '@fitos/core/nutrition/targets';
 import type { MealSlot } from '@fitos/core/mess/types';
 import { todayActions, todayClock, type PrType, type TrainingState, type UserModel } from '@fitos/core/recommend/engine';
-import { COMPLETION_EVIDENCE, checkEventTiming, checkTransition, type TodayEvent } from '@fitos/core/recommend/events';
+import { CLOCK_SKEW_MS, COMPLETION_EVIDENCE, checkEventTiming, checkTransition, type TodayEvent } from '@fitos/core/recommend/events';
 import { trainingFromPlan, type PlannedExerciseFacts } from '@fitos/core/recommend/model';
 
 import type { RecommendationEventRow, RecommendationRow } from '../../db/schema.js';
@@ -21,7 +21,6 @@ import { AppError } from '../../lib/errors.js';
 import type { RecommendRepository } from '../mess/recommend-repository.js';
 import type { FoodLogRepository } from '../nutrition/log-repository.js';
 import type { TrainingRepository } from '../training/repository.js';
-import { ProgressionAssembler } from '../workout/progression.js';
 import { isoDayOfWeek, type WorkoutService } from '../workout/service.js';
 import type { TodayRepository } from './repository.js';
 
@@ -202,7 +201,12 @@ export class TodayService {
   /* ----------------------------------------------------------- events -- */
 
   /** Whether the server's own records prove `completed` for this action (D7). */
-  private async completionProven(userId: string, rec: RecommendationRow, timeZone: string): Promise<boolean> {
+  private async completionProven(
+    userId: string,
+    rec: RecommendationRow,
+    recorded: readonly RecommendationEventRow[],
+    timeZone: string,
+  ): Promise<boolean> {
     const evidence = COMPLETION_EVIDENCE[rec.kind];
     const day = rec.generatedFor;
     const sessionsOnDay = async (): Promise<string[]> => {
@@ -224,9 +228,15 @@ export class TodayService {
       case 'weight-logged':
         return this.repo.weighedOn(userId, day);
       case 'deload-accepted': {
-        // "The deload is now active (accepted)": the programme's lighter week is running.
-        const window = ProgressionAssembler.deloadWindow(await this.training.activeProgram(userId));
-        return window !== null && this.now().getTime() < window.endsAt.getTime();
+        // "Deload accepted": this offer was accepted, THEN the offer was activated.
+        // Activation is Phase 6's `POST /training/deload/accept`, which stamps the
+        // active programme's `deload_started_at` (server time) only while a deload
+        // is offered. It counts when it happened after this recommendation existed
+        // and no earlier than its `accepted` event (phone time, so the 5-minute skew).
+        const accepted = recorded.find((r) => r.event === 'accepted');
+        const started = (await this.training.activeProgram(userId))?.program.deloadStartedAt ?? null;
+        if (accepted === undefined || started === null) return false;
+        return started.getTime() >= Math.max(rec.createdAt.getTime(), accepted.occurredAt.getTime() - CLOCK_SKEW_MS);
       }
       case null:
         return false;
@@ -234,26 +244,48 @@ export class TodayService {
   }
 
   /**
-   * POST /today/actions/{id}/event. 201 when stored; 200 with the stored
-   * event on a replay of the client id or a repeat of an event already
-   * recorded (each event once per recommendation, D7).
+   * A stored event with the request's client id: an exact replay (same
+   * action, event and instant) returns it; anything else is a collision —
+   * never an unrelated event passed off as a replay.
+   */
+  private replayOf(prior: RecommendationEventRow, id: string, event: TodayEvent, occurredAt: Date): TodayEventRecord {
+    const mismatches: { path: string; issue: string }[] = [];
+    if (prior.recommendationId !== id) mismatches.push({ path: 'clientEventId', issue: 'different-action' });
+    if (prior.event !== event) mismatches.push({ path: 'clientEventId', issue: 'different-event' });
+    if (prior.occurredAt.getTime() !== occurredAt.getTime()) mismatches.push({ path: 'clientEventId', issue: 'different-occurred-at' });
+    if (mismatches.length > 0) {
+      throw new AppError('CONFLICT', 'This clientEventId was already used for a different event.', mismatches);
+    }
+    return eventRecord(prior);
+  }
+
+  /**
+   * POST /today/actions/{id}/event, in this order:
+   *   1. client-id replay → 200 (exact) or 409 (collision) — before any other
+   *      check, so an exact replay stays idempotent after the timing window;
+   *   2. the caller's own action → else 404;
+   *   3. P3 timing for the new event → 422;
+   *   4. the Q2 transition (a repeat of a recorded event → 200 with it) → 422;
+   *   5. completion evidence → 422;
+   *   6. insert → 201.
    */
   async recordEvent(userId: string, id: string, body: TodayEventRequest): Promise<{ created: boolean; event: TodayEventRecord }> {
+    const event = body.event as TodayEvent;
+    const occurredAt = new Date(body.occurredAt);
+
+    const prior = await this.repo.eventByClientId(userId, body.clientEventId);
+    if (prior !== null) return { created: false, event: this.replayOf(prior, id, event, occurredAt) };
+
     const rec = await this.repo.recommendation(userId, id);
     if (rec === null) throw new AppError('NOT_FOUND', 'No such action.');
 
-    const replay = await this.repo.eventByClientId(userId, body.clientEventId);
-    if (replay !== null) return { created: false, event: eventRecord(replay) };
-
     const timeZone = await this.logs.timezoneOf(userId);
-    const occurredAt = new Date(body.occurredAt);
     const receivedAt = this.now();
     const timing = checkEventTiming({ generatedFor: rec.generatedFor, timeZone, createdAt: rec.createdAt, occurredAt, receivedAt });
     if (!timing.ok) {
       throw new AppError('VALIDATION_FAILED', 'This event is outside its action’s window.', [{ path: 'occurredAt', issue: timing.code }]);
     }
 
-    const event = body.event as TodayEvent;
     const outcome = await this.repo.withEvents(rec.id, async (recorded, insert) => {
       const transition = checkTransition(rec.kind, recorded.map((r) => r.event), event);
       if (transition.outcome === 'duplicate') {
@@ -262,7 +294,7 @@ export class TodayService {
       if (transition.outcome === 'reject') {
         throw new AppError('VALIDATION_FAILED', `Cannot record "${event}" for this action.`, [{ path: 'event', issue: transition.code }]);
       }
-      if (event === 'completed' && !(await this.completionProven(userId, rec, timeZone))) {
+      if (event === 'completed' && !(await this.completionProven(userId, rec, recorded, timeZone))) {
         throw new AppError('VALIDATION_FAILED', 'Nothing on record completes this action yet.', [{ path: 'event', issue: 'no-evidence' }]);
       }
       const row = await insert({ recommendationId: rec.id, userId, event, clientEventId: body.clientEventId, occurredAt, receivedAt });
@@ -270,9 +302,9 @@ export class TodayService {
     });
     if (outcome !== null) return { created: outcome.created, event: eventRecord(outcome.row) };
 
-    // The client id was stored by a concurrent request since the replay check.
+    // A concurrent request stored this client id after step 1: the same replay-or-collision rule.
     const raced = await this.repo.eventByClientId(userId, body.clientEventId);
     if (raced === null) throw new Error('TODAY: event insert conflicted but no row was found');
-    return { created: false, event: eventRecord(raced) };
+    return { created: false, event: this.replayOf(raced, id, event, occurredAt) };
   }
 }

@@ -64,14 +64,16 @@ export async function todayRoutes(app: FastifyInstance): Promise<void> {
       schema: {
         summary: 'Record how you responded to a TODAY action: shown, opened, accepted, dismissed or completed',
         description:
-          'Idempotent per `clientEventId` (201 when stored, 200 on a replay). Each event is recorded once per action; a repeat ' +
-          'returns 200 with the stored one. Impossible transitions, `completed` without evidence on record, and times outside ' +
-          'the action\'s day (through 03:00 the next local day, delivered within 7 days) are 422. Another user\'s action is 404.',
+          'Order: an exact replay of a stored `clientEventId` (same action, event and occurredAt) is 200 with the stored event, ' +
+          'even after the timing window; the same `clientEventId` for a different action, event or occurredAt is 409. Then: ' +
+          "another user's or an unknown action is 404; a new event outside its action's window (5-minute skew, the local day " +
+          'through 03:00 the next, delivered within 7 days) is 422; an impossible transition is 422 (a repeat of an event already ' +
+          'recorded is 200 with it); `completed` without evidence on record is 422; otherwise 201.',
         tags: ['today'],
         security,
         params: todayActionParamsSchema,
         body: todayEventRequestSchema,
-        response: { 200: todayEventResponseSchema, 201: todayEventResponseSchema, ...errors },
+        response: { 200: todayEventResponseSchema, 201: todayEventResponseSchema, 409: errorEnvelopeSchema, ...errors },
       },
     },
     async (request, reply) => {

@@ -533,6 +533,158 @@ describeIfDb('/v1/today (real Postgres, real seed)', { timeout: 60_000 }, () => 
     expect(issue(late)).toBe('delivered-too-late');
   });
 
+  /* ------------------------------------------- client event id rules -- */
+
+  it('clientEventId: an exact replay is 200 with the original; reuse for another action, event or time is 409; nothing unrelated is returned', async () => {
+    await settleClock();
+    const u = await bare(zoneAt(12));
+    const t = await today(u);
+    const weight = find(t, 'log-weight')!.id;
+    const rest = find(t, 'rest-day')!.id;
+    const occurredAt = new Date(Date.now() - 60_000);
+    const body = { clientEventId: randomUUID(), event: 'shown', occurredAt: occurredAt.toISOString() };
+    const first = await event(u, weight, body);
+    expect(first.statusCode).toBe(201);
+    const original = first.json().event;
+
+    // Exact replay — also when the same instant is written with another offset.
+    const replay = await event(u, weight, body);
+    expect(replay.statusCode).toBe(200);
+    expect(replay.json().event).toEqual(original);
+    const ist = new Date(occurredAt.getTime() + 5.5 * 3_600_000).toISOString().replace('Z', '+05:30');
+    const sameInstant = await event(u, weight, { ...body, occurredAt: ist });
+    expect(sameInstant.statusCode).toBe(200);
+    expect(sameInstant.json().event.id).toBe(original.id);
+
+    const conflict = async (id: string, over: Record<string, unknown>, issues: string[]) => {
+      const r = await event(u, id, { ...body, ...over });
+      expect(r.statusCode, r.body).toBe(409);
+      expect((r.json() as { error: { code: string; details: { issue: string }[] } }).error.details.map((d) => d.issue)).toEqual(issues);
+      expect(r.body).not.toContain(original.id);
+    };
+    await conflict(rest, {}, ['different-action']);
+    await conflict(weight, { event: 'opened' }, ['different-event']);
+    await conflict(weight, { occurredAt: new Date(occurredAt.getTime() + 1000).toISOString() }, ['different-occurred-at']);
+    await conflict(rest, { event: 'dismissed' }, ['different-action', 'different-event']);
+
+    // Nothing was stored by the collisions; the rest-day action has no events.
+    const stored = await sql<{ recommendation_id: string; event: string }[]>`select recommendation_id, event from recommendation_events where user_id = ${u.id}`;
+    expect(stored).toEqual([{ recommendation_id: weight, event: 'shown' }]);
+
+    // Client ids are per user: another user may use the same value for their own event.
+    const other = await bare(zoneAt(12));
+    const theirs = find(await today(other), 'log-weight')!.id;
+    expect((await event(other, theirs, body)).statusCode).toBe(201);
+  });
+
+  it('order: replay/collision before ownership, ownership before timing, timing before transition, transition before evidence', async () => {
+    await settleClock();
+    const u = await bare(zoneAt(12));
+    const other = await bare(zoneAt(12));
+    const mine = find(await today(u), 'log-weight')!.id;
+    const theirs = find(await today(other), 'log-weight')!.id;
+    const used = { clientEventId: randomUUID(), event: 'shown', occurredAt: new Date().toISOString() };
+    expect((await event(u, mine, used)).statusCode).toBe(201);
+
+    // 2–4 before 5: a used client id on any other id is a collision, whether or not that action exists or is ours.
+    expect((await event(u, randomUUID(), used)).statusCode).toBe(409);
+    expect((await event(u, theirs, used)).statusCode).toBe(409);
+    // 5 before 6: another user's action with an out-of-window time is still 404.
+    const future = new Date(Date.now() + 60 * 60_000).toISOString();
+    expect((await event(u, theirs, { clientEventId: randomUUID(), event: 'shown', occurredAt: future })).statusCode).toBe(404);
+    // 6 before 7: a new event that is both badly timed and an impossible transition fails on timing.
+    const fresh = find(await today(other), 'rest-day')!.id;
+    const r = await event(other, fresh, { clientEventId: randomUUID(), event: 'opened', occurredAt: future });
+    expect(r.statusCode).toBe(422);
+    expect(issue(r)).toBe('in-future');
+    // 7 before 8: completed before shown is a transition error, not missing evidence.
+    const c = await ev(other, fresh, 'completed');
+    expect(issue(c)).toBe('not-shown');
+  });
+
+  it('an exact replay stays idempotent after the timing window; a NEW event at the same time is still rejected', async () => {
+    await settleClock();
+    const tz = zoneAt(12);
+    const u = await bare(tz);
+    const id = find(await today(u), 'log-weight')!.id;
+    const body = { clientEventId: randomUUID(), event: 'shown', occurredAt: new Date().toISOString() };
+    const stored = (await event(u, id, body)).json().event;
+    // Nine days pass (the action, its event and the phone's time all move back together).
+    const nineDaysAgo = new Date(Date.now() - 9 * 86_400_000);
+    await sql`update recommendations set generated_for = ${localDateOf(nineDaysAgo, tz)}, created_at = ${new Date(nineDaysAgo.getTime() - 60_000)} where id = ${id}`;
+    await sql`update recommendation_events set occurred_at = ${nineDaysAgo} where id = ${stored.id}`;
+    const late = { ...body, occurredAt: nineDaysAgo.toISOString() };
+
+    const replay = await event(u, id, late);
+    expect(replay.statusCode).toBe(200);
+    expect(replay.json().event.id).toBe(stored.id);
+
+    const fresh = await event(u, id, { ...late, clientEventId: randomUUID(), event: 'opened' });
+    expect(fresh.statusCode).toBe(422);
+    expect(issue(fresh)).toBe('delivered-too-late');
+  });
+
+  /* ---------------------------------------------------- deload evidence -- */
+
+  /** A training user with fatigue on two lead lifts: the programme offers a deload today (Phase 6). */
+  async function deloadOffered(tz: string): Promise<U & { deloadId: string; programId: string }> {
+    const u = await training(tz);
+    const plan = await workoutToday(u);
+    const compounds = plan.exercises
+      .map((x, i) => ({ x, i }))
+      .filter(({ x }) => ['squat', 'hinge', 'horizontal-push', 'vertical-push', 'horizontal-pull', 'vertical-pull'].includes(x.movementPattern));
+    expect(compounds.length).toBeGreaterThanOrEqual(2);
+    const [a, b] = compounds as unknown as [{ i: number }, { i: number }];
+    for (const [ago, reps, rir] of [[6, 10, 3], [4, 9, 2], [2, 8, 1]] as const) {
+      const completedAt = new Date(Date.now() - ago * 86_400_000);
+      const startedAt = new Date(completedAt.getTime() - 50 * 60_000).toISOString();
+      const s: WorkoutSession = (await app.inject({ method: 'POST', url: '/v1/training/sessions', headers: auth(u.token), payload: { clientSessionId: randomUUID(), programDayId: u.day.id, startedAt } })).json();
+      const sets = [[a.i, 80], [b.i, 50]].flatMap(([i, weight]) =>
+        s.exercises[i!]!.targets.map((t) => ({ clientSetId: randomUUID(), sessionExerciseId: s.exercises[i!]!.id, setIndex: t.setIndex, weightKg: weight, reps, rir, loggedAt: startedAt })),
+      );
+      expect((await app.inject({ method: 'POST', url: `/v1/training/sessions/${s.id}/sets`, headers: auth(u.token), payload: { sets } })).statusCode).toBe(200);
+      expect((await app.inject({ method: 'POST', url: `/v1/training/sessions/${s.id}/complete`, headers: auth(u.token), payload: { completedAt: completedAt.toISOString() } })).statusCode).toBe(200);
+    }
+    expect((await workoutToday(u)).deload).toMatchObject({ state: 'offered', trigger: 'fatigue' });
+    const deload = find(await today(u), 'deload')!;
+    expect(deload).toMatchObject({ rank: 1, priority: 95, reason: { code: 'deload-offered', values: { trigger: 'fatigue' } } });
+    const [p] = await sql<{ id: string }[]>`select id from programs where user_id = ${u.id} and active`;
+    return { ...u, deloadId: deload.id, programId: p!.id };
+  }
+
+  const acceptDeload = (u: U) => app.inject({ method: 'POST', url: '/v1/training/deload/accept', headers: auth(u.token) });
+
+  it('deload: accepted, then the offer activated (Phase 6 accept) → completed 201; accepted without activation → 422 no-evidence', async () => {
+    await settleClock();
+    const u = await deloadOffered(zoneAt(12));
+    expect((await ev(u, u.deloadId, 'shown')).statusCode).toBe(201);
+    expect((await ev(u, u.deloadId, 'accepted')).statusCode).toBe(201);
+    // Accepted on the card, but the offer was never activated: not completed.
+    const early = await ev(u, u.deloadId, 'completed');
+    expect(early.statusCode).toBe(422);
+    expect(issue(early)).toBe('no-evidence');
+    // The user activates the offered week in Training.
+    const acc = await acceptDeload(u);
+    expect(acc.statusCode, acc.body).toBe(200);
+    expect(acc.json().state).toBe('active');
+    expect((await ev(u, u.deloadId, 'completed')).statusCode).toBe(201);
+  });
+
+  it('deload: an activation from BEFORE this action was accepted is not its evidence', async () => {
+    await settleClock();
+    const u = await deloadOffered(zoneAt(12));
+    // The action appeared 30 minutes ago; the week was activated 20 minutes ago, outside TODAY …
+    await sql`update recommendations set created_at = now() - interval '30 minutes' where id = ${u.deloadId}`;
+    expect((await acceptDeload(u)).statusCode).toBe(200);
+    await sql`update programs set deload_started_at = now() - interval '20 minutes' where id = ${u.programId}`;
+    // … and only now is the card accepted: that acceptance did not lead to the activation.
+    expect((await ev(u, u.deloadId, 'shown')).statusCode).toBe(201);
+    expect((await ev(u, u.deloadId, 'accepted')).statusCode).toBe(201);
+    const r = await ev(u, u.deloadId, 'completed');
+    expect(r.statusCode).toBe(422);
+    expect(issue(r)).toBe('no-evidence');
+  });
+
   /* ------------------------------------------------------- performance -- */
 
   it('p95 of GET /today under 300 ms for a training user with history, targets and logs', async () => {

@@ -37098,7 +37098,7 @@
         "tags": [
           "today"
         ],
-        "description": "Idempotent per `clientEventId` (201 when stored, 200 on a replay). Each event is recorded once per action; a repeat returns 200 with the stored one. Impossible transitions, `completed` without evidence on record, and times outside the action's day (through 03:00 the next local day, delivered within 7 days) are 422. Another user's action is 404.",
+        "description": "Order: an exact replay of a stored `clientEventId` (same action, event and occurredAt) is 200 with the stored event, even after the timing window; the same `clientEventId` for a different action, event or occurredAt is 409. Then: another user's or an unknown action is 404; a new event outside its action's window (5-minute skew, the local day through 03:00 the next, delivered within 7 days) is 422; an impossible transition is 422 (a repeat of an event already recorded is 200 with it); `completed` without evidence on record is 422; otherwise 201.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -37338,6 +37338,71 @@
             }
           },
           "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
             "description": "Default Response",
             "content": {
               "application/json": {
