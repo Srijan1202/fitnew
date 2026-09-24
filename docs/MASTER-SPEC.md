@@ -373,11 +373,11 @@ Everything else in your preferred stack is kept: Cloud Run, Firebase Auth, FCM, 
 | `foods` | `id`, `name`, `brand`, `barcode`, `source` (`ifct`/`indb`/`usda`/`user`/`estimated`), `is_verified`, `owner_user_id` NULL | Trigram index on `name` for search |
 | `food_nutrition` | `food_id`, `basis` (`per_100g`/`per_serving`), `serving_label`, `serving_grams`, `kcal_low`, `kcal_high`, `protein_low`, `protein_high`, `carb_low`, `carb_high`, `fat_low`, `fat_high`, `fiber_low`, `fiber_high`, `confidence` | **Ranges are mandatory.** A verified food simply has `low == high`. |
 | `food_aliases` | `food_id`, `alias` | Handles `Dhal`/`Dal`, `Panneer`/`Paneer` |
-| `food_logs` | `id`, `user_id`, `logged_at`, `meal_slot`, `entry_method`, `client_log_id` UNIQUE, `deleted_at` | |
-| `food_log_items` | `id`, `food_log_id`, `food_id` NULL, `mess_dish_id` NULL, `servings numeric`, `kcal_low..fat_high`, `confidence` | Macros **snapshotted at log time** so history doesn't shift when the table is corrected |
-| `daily_nutrition` | `user_id`, `date`, `kcal`, `protein_g`, `carb_g`, `fat_g`, `fiber_g`, `kcal_target`, `protein_target_g` | Derived cache, rebuildable |
+| `food_logs` | `id`, `user_id`, `logged_at`, `local_date` (Phase 8), `meal_slot`, `entry_method`, `saved_meal_id` NULL (Phase 8), `client_log_id` UNIQUE per user, `deleted_at` | `local_date` = `logged_at` in `users.timezone`, fixed at write (ADR-013) |
+| `food_log_items` | `id`, `food_log_id`, `food_id` NULL, `mess_dish_id` NULL (added in Phase 9), `servings numeric`, `kcal_low..fat_high`, `confidence`; Phase 8 also snapshots `food_name`, `food_source`, the row (`basis`, `serving_label`, `serving_grams`), `grams`, `fibre_low/high` (NULL = unknown) | Macros **snapshotted at log time** so history doesn't shift when the table is corrected |
+| `daily_nutrition` | `user_id`, `date`, low/high sums of kcal, protein, carb, fat; known-fibre low/high + `fibre_unknown_items`; `item_count` (Phase 8: ranges, no target copies — the day's target is the `nutrition_targets` row in effect then; ADR-013) | Derived cache, rebuildable |
 | `nutrition_targets` | `id`, `user_id`, `effective_from date`, `kcal`, `protein_g`, `carb_g`, `fat_g`, `fiber_g`, `tdee_estimate`, `reason` | History; never mutate a past row |
-| `saved_meals` | `id`, `user_id`, `name`, `items jsonb` | One-tap re-log |
+| `saved_meals` | `id`, `user_id`, `client_meal_id` (Phase 8), `name`, `items jsonb` | One-tap re-log. Made from logged meals only (ADR-013) |
 
 **Mess**
 
@@ -472,7 +472,10 @@ Codes: `UNAUTHENTICATED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `VALIDATIO
 | GET | `/nutrition/today` | Targets, consumed, remaining, logs | |
 | GET | `/nutrition/day/{date}` | Historical day | |
 | POST | `/nutrition/logs` | Log food (`clientLogId`) | Idempotent |
-| DELETE | `/nutrition/logs/{id}` | Remove | |
+| DELETE | `/nutrition/logs/{clientLogId}` | Remove the whole log | Idempotent; by client id (ADR-013) |
+| GET | `/nutrition/foods/recent` | Recently logged foods, last portion | Phase 8 "recent-first" (ADR-013) |
+| GET/POST | `/nutrition/saved-meals` | List; save logged meals as one (`clientMealId`) | Phase 8 (ADR-013) |
+| DELETE | `/nutrition/saved-meals/{id}` | Remove a saved meal | Phase 8 |
 | GET | `/nutrition/foods/search` | `?q&limit` | Trigram + alias |
 | GET | `/nutrition/foods/barcode/{code}` | Barcode lookup | |
 | POST | `/nutrition/foods` | Create custom food | |
@@ -602,7 +605,7 @@ Priority order: `user-corrected` → `ifct`/`indb` → `usda` → `estimated`.
 
 | Method | Phase | Notes |
 |---|---|---|
-| Search | 8 | Trigram + alias; recent-first |
+| Search | 8 | Trigram + alias; recent-first (a separate Recent list; search ranking unchanged — ADR-013) |
 | Quick add | 8 | Raw kcal/macros |
 | Saved meals | 8 | One tap |
 | Mess selection | 9 | Tap dishes from today's menu |
@@ -886,7 +889,7 @@ Shipped ahead of Phase 14 as an *explanation and Q&A* layer only; §19.1's left 
 
 - **Path:** Flutter → `POST /v1/ai/chat` → `AiService` → `AiProvider` seam → Gemini REST. The phone holds no model credential and calls no model host. `GEMINI_API_KEY` lives in the backend environment only (`docker/.env` / `apps/api/.env`, gitignored) and is never logged, echoed or returned. Without it the server boots, `/ai/status` says `configured: false`, and the app shows "Not set up on this server yet".
 - **Model name is configuration:** `GEMINI_MODEL` (alpha: `gemini-3.6-flash` — `gemini-2.5-flash` stopped being offered to new keys on 2026-09-22). Nothing in code assumes a name. `AI_TIMEOUT_MS` and `AI_MAX_OUTPUT_TOKENS` likewise.
-- **Context (bounded, from services only):** profile, goal + targets with reason, programme shape, today with the engine's recommendations and reasons, the last 3 completed sessions, this week's volume. Always present and always negative: `nutrition.loggingAvailable: false` (until Phase 8) and `health.availableToServer: false`.
+- **Context (bounded, from services only):** profile, goal + targets with reason, programme shape, today with the engine's recommendations and reasons, the last 3 completed sessions, this week's volume. Always present and always negative: `nutrition.foodLogShared: false` (Phase 8: food logging exists, but the log is not shared with the assistant — ADR-013) and `health.availableToServer: false`.
 - **Tools:** 13 allowlisted, read-only, strict-Zod tools over existing services with the authenticated user id closed over; no write tool; unknown tools / bad arguments / 404s become results the model reads. Tool loop capped at 4 rounds. Conversations are not persisted; the client sends the last 12 turns.
 - **Authority:** FITOS numbers are the only truth; the assistant explains with the engine's own `reason` strings, never invents history, never changes data (it points to the screen), no diagnosis. Answers are plain text, stripped of markdown server-side.
 - **Privacy boundary (owner B4):** Health Connect data never reaches the backend or the model; the integration suite asserts no health keys in the instruction. Asked about steps / sleep / resting HR, the assistant says FITOS does not send that data to the cloud AI.
@@ -1145,6 +1148,8 @@ fitos/
 | TODAY action ranking | NO | **YES** | NO |
 | Readiness score | NO | **YES** | NO |
 | Food search | Input only | **YES** | **YES** (trigram) |
+| Food-log snapshot, day totals, remaining vs target (Phase 8) | NO | **YES** | Cache table |
+| Portion preview while choosing / before sync (Phase 8, ADR-013) | Display only — never a total | **YES** (authoritative) | NO |
 | PR detection | NO | **YES** | Cache table |
 | Referential integrity | NO | Validates | **YES** (FKs) |
 | Auth state | Holds token | **YES** (verifies) | NO |
@@ -1290,7 +1295,7 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 **Prereq:** 7.
 **Tasks:** food logs with idempotency; daily rollup; targets vs consumed; saved meals; quick add.
 **DB:** `food_logs`, `food_log_items`, `daily_nutrition`, `saved_meals`.
-**APIs:** `GET /nutrition/today`, `/nutrition/day/{date}`, `POST/DELETE /nutrition/logs`.
+**APIs:** `GET /nutrition/today`, `/nutrition/day/{date}`, `POST/DELETE /nutrition/logs`. (Also built: `GET /nutrition/foods/recent`, saved-meal routes — ADR-013.)
 **UI:** EAT screen (remaining macros as hero), log sheet, day history.
 **Tests:** rollup correctness across timezone boundaries; **macros snapshotted at log time don't change when the food table is corrected**; idempotent re-log.
 **Acceptance:** log→total in <5s · day boundary respects `users.timezone` · deleting a log updates totals.
@@ -1460,7 +1465,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 **Requires network:** program generation, recommendations, food search, sync.
 
-**Mechanism:** drift mirrors `workout_sessions`, `set_logs`, `food_logs`, plus a `sync_queue` table (`id`, `endpoint`, `payload`, `client_key`, `attempts`, `created_at`).
+**Mechanism:** drift mirrors `workout_sessions`, `set_logs`, `food_logs`, plus a `sync_queue` table (`id`, `endpoint`, `payload`, `client_key`, `attempts`, `created_at`). Food logs (Phase 8) have their own `local_food_logs` + `nutrition_sync_queue` and engine, with the same policy (ADR-013).
 
 1. Write locally first, render optimistically.
 2. Enqueue the mutation with a `client_*` idempotency key.
