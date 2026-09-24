@@ -16,7 +16,9 @@ import {
   CONFIDENCE_LEVELS,
   CONSENT_TYPES,
   DIFFICULTIES,
+  ENTRY_METHODS,
   EQUIPMENT,
+  MEAL_SLOTS,
   FOOD_SOURCES,
   GOAL_TYPES,
   MOVEMENT_PATTERNS,
@@ -70,3 +72,7 @@ export const prTypeEnum = pgEnum('pr_type', PR_TYPES);
 export const foodSourceEnum = pgEnum('food_source', FOOD_SOURCES);
 export const nutritionBasisEnum = pgEnum('nutrition_basis', NUTRITION_BASES);
 export const nutritionConfidenceEnum = pgEnum('nutrition_confidence', CONFIDENCE_LEVELS);
+
+// Phase 8 — food logging
+export const mealSlotEnum = pgEnum('meal_slot', MEAL_SLOTS);
+export const foodEntryMethodEnum = pgEnum('food_entry_method', ENTRY_METHODS);

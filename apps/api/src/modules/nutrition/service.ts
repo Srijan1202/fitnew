@@ -26,7 +26,7 @@ const MATCH_FOR_TIER: Readonly<Record<SearchTier, FoodMatchKind>> = {
 const toNumber = (v: string): number => Number(v);
 const toNumberOrNull = (v: string | null): number | null => (v === null ? null : Number(v));
 
-function nutritionFrom(n: FoodNutritionRow): FoodNutrition {
+export function nutritionFrom(n: FoodNutritionRow): FoodNutrition {
   return {
     basis: n.basis,
     servingLabel: n.servingLabel,

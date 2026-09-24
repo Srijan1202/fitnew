@@ -6,9 +6,9 @@
  * small: today's session, the programme's shape, the last three completed
  * sessions summarised, the current week's volume, targets. Every part is
  * optional and says so when absent. Health Connect data is not here and
- * cannot be: it never reaches the server (owner B4). Food intake is not
- * here because Phase 8 has not been built; the context says that too, so
- * the model never invents either.
+ * cannot be: it never reaches the server (owner B4). The food log (Phase 8)
+ * is not here either — it is deliberately not shared with the assistant
+ * (owner J17); the context says so, so the model never invents either.
  */
 import type {
   Program,
@@ -102,7 +102,7 @@ export interface FitosAiContext {
   } | null;
   readonly nutrition: {
     readonly targets: NutritionTargetsSummary | null;
-    readonly loggingAvailable: false;
+    readonly foodLogShared: false;
     readonly note: string;
   };
   readonly health: {
@@ -148,8 +148,8 @@ export class UserContextAssembler {
       volume: volume === null ? null : UserContextAssembler.volumeOf(volume),
       nutrition: {
         targets,
-        loggingAvailable: false,
-        note: 'Food logging is not available in this version; the user\'s intake today is unknown. Only the targets are known.',
+        foodLogShared: false,
+        note: 'The user can log food in FITOS (the Nutrition tab), but the food log is not shared with the assistant; what they ate is unknown to you. Only the targets are known.',
       },
       health: {
         availableToServer: false,

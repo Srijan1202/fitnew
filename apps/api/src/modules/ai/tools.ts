@@ -64,12 +64,12 @@ export const TOOLS: readonly ToolDefinition[] = [
   },
   {
     name: 'get_nutrition_targets',
-    description: "The user's nutrition targets. Food intake is NOT logged in this version: the tool says so.",
+    description: "The user's nutrition targets. The food log is not shared with the assistant: the tool says so.",
     args: noArgs,
     parameters: noParams,
     execute: async (userId, _a, s) => {
       const g = await s.user.getGoal(userId);
-      return { targets: g.targets, loggingAvailable: false, intakeToday: 'unknown — food logging is not available in this version' };
+      return { targets: g.targets, foodLogShared: false, intakeToday: 'not shared with FITOS AI — the Nutrition tab shows what was logged' };
     },
   },
   {

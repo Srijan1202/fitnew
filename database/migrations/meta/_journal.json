@@ -71,6 +71,13 @@
       "when": 1790201139481,
       "tag": "0009_food_library",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790214956011,
+      "tag": "0010_nutrition_logging",
+      "breakpoints": true
     }
   ]
 }

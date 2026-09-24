@@ -70,7 +70,7 @@ describeIfDb('migrations (real Postgres)', () => {
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
   const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
   const PHASE6_TABLES = ['muscle_volume_weekly', 'exercise_rejections'];
-  const TOTAL_MIGRATIONS = 10;
+  const TOTAL_MIGRATIONS = 11;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -342,6 +342,58 @@ describeIfDb('migrations (real Postgres)', () => {
     expect((await client`select 1 from food_aliases where food_id = ${g!.id}`).length).toBe(0);
   });
 
+  it('0010: food logging — snapshot ranges and both-or-neither fibre, per-user client ids, soft delete, no target copies, cascades (Phase 8)', async () => {
+    for (const t of ['food_logs', 'food_log_items', 'daily_nutrition', 'saved_meals']) expect(await tableExists(client, t), t).toBe(true);
+    await client`insert into users (firebase_uid) values ('mig-log-a'), ('mig-log-b')`;
+    const [a] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-log-a'`;
+    const [b] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-log-b'`;
+    const cid = '22222222-2222-4222-8222-222222222222';
+    const [log] = await client<{ id: string }[]>`
+      insert into food_logs (user_id, client_log_id, logged_at, local_date, meal_slot, entry_method)
+      values (${a!.id}, ${cid}, now(), '2026-09-24', 'lunch', 'search') returning id`;
+    // Unique per user (owner J12): the same client id is fine for another user, not twice for one.
+    await client`insert into food_logs (user_id, client_log_id, logged_at, local_date, meal_slot, entry_method) values (${b!.id}, ${cid}, now(), '2026-09-24', 'lunch', 'search')`;
+    await expect(
+      client`insert into food_logs (user_id, client_log_id, logged_at, local_date, meal_slot, entry_method) values (${a!.id}, ${cid}, now(), '2026-09-24', 'lunch', 'search')`,
+    ).rejects.toThrow(/food_logs_user_client_id/);
+    await expect(
+      client`insert into food_logs (user_id, client_log_id, logged_at, local_date, meal_slot, entry_method) values (${a!.id}, gen_random_uuid(), now(), '24-09-2026', 'lunch', 'search')`,
+    ).rejects.toThrow(/local_date_format/);
+    await expect(
+      client`insert into food_logs (user_id, client_log_id, logged_at, local_date, meal_slot, entry_method) values (${a!.id}, gen_random_uuid(), now(), '2026-09-24', 'brunch', 'search')`,
+    ).rejects.toThrow(/invalid input value for enum/);
+    const item = (over: string) => client.unsafe(
+      `insert into food_log_items (food_log_id, position, food_name, food_source, basis, serving_label, servings, kcal_low, kcal_high, protein_low, protein_high, carb_low, carb_high, fat_low, fat_high, fibre_low, fibre_high, confidence)
+       values ('${log!.id}', ${over})`,
+    );
+    await item(`0, 'Dal', 'estimated', 'per_serving', '1 katori', 1.5, 180, 278, 9, 13.5, 24, 34.5, 4.5, 11.3, null, null, 'medium'`);
+    await item(`1, 'Quick add', 'user', null, null, 1, 250, 250, 12, 12, 30, 30, 9, 9, 2, 2, 'medium'`);
+    await expect(item(`2, 'X', 'user', null, null, 1, 300, 250, 1, 1, 1, 1, 1, 1, null, null, 'medium'`)).rejects.toThrow(/kcal_range/);
+    await expect(item(`3, 'X', 'user', null, null, 1, 250, 250, 1, 1, 1, 1, 1, 1, 2, null, 'medium'`)).rejects.toThrow(/fibre_range/);
+    await expect(item(`4, 'X', 'user', null, null, 0, 250, 250, 1, 1, 1, 1, 1, 1, null, null, 'medium'`)).rejects.toThrow(/servings_positive/);
+    await expect(item(`5, 'X', 'user', 'per_serving', null, 1, 250, 250, 1, 1, 1, 1, 1, 1, null, null, 'medium'`)).rejects.toThrow(/row_both_or_neither/);
+    await expect(item(`6, ' ', 'user', null, null, 1, 250, 250, 1, 1, 1, 1, 1, 1, null, null, 'medium'`)).rejects.toThrow(/name_nonempty/);
+    await expect(item(`1, 'Dup', 'user', null, null, 1, 1, 1, 1, 1, 1, 1, 1, 1, null, null, 'medium'`)).rejects.toThrow(/food_log_items_log_position/);
+    // A saved meal: named, non-empty; only a saved-meal log may point at one.
+    await expect(client`insert into saved_meals (user_id, client_meal_id, name, items) values (${a!.id}, gen_random_uuid(), 'M', '[]'::jsonb)`).rejects.toThrow(/items_nonempty/);
+    const [meal] = await client<{ id: string }[]>`insert into saved_meals (user_id, client_meal_id, name, items) values (${a!.id}, gen_random_uuid(), 'M', '[{"kind":"quick-add"}]'::jsonb) returning id`;
+    await expect(client`update food_logs set saved_meal_id = ${meal!.id} where id = ${log!.id}`).rejects.toThrow(/saved_meal_method/);
+    // daily_nutrition: counts sane; no target columns (owner J2).
+    await expect(client`insert into daily_nutrition (user_id, local_date, fibre_unknown_items, item_count) values (${a!.id}, '2026-09-24', 2, 1)`).rejects.toThrow(/daily_nutrition_counts/);
+    const cols = await client<{ column_name: string }[]>`select column_name from information_schema.columns where table_name = 'daily_nutrition'`;
+    expect(cols.map((c) => c.column_name).filter((c) => c.includes('target'))).toEqual([]);
+    // Soft delete keeps the row and its items.
+    await client`update food_logs set deleted_at = now() where id = ${log!.id}`;
+    expect((await client`select 1 from food_log_items where food_log_id = ${log!.id}`).length).toBe(2);
+    // Cascades: the user takes logs, items, days and meals with them.
+    await client`insert into daily_nutrition (user_id, local_date) values (${a!.id}, '2026-09-24')`;
+    await client`delete from users where id in (${a!.id}, ${b!.id})`;
+    for (const t of ['food_logs', 'saved_meals', 'daily_nutrition']) {
+      expect((await client.unsafe(`select 1 from ${t} where user_id in ('${a!.id}', '${b!.id}')`)).length, t).toBe(0);
+    }
+    expect((await client`select 1 from food_log_items where food_log_id = ${log!.id}`).length).toBe(0);
+  });
+
   it('one active goal per user is a database fact', async () => {
     await client`insert into users (firebase_uid) values ('mig-goal')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-goal'`;
@@ -396,7 +448,14 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'uid-dup'`;
   });
 
-  it('down removes 0009, 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+  it('down removes 0010, 0009, 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0010_nutrition_logging');
+    for (const t of ['food_logs', 'food_log_items', 'daily_nutrition', 'saved_meals']) expect(await tableExists(client, t), t).toBe(false);
+    const logEnums = await client<{ typname: string }[]>`select typname from pg_type where typname in ('meal_slot', 'food_entry_method')`;
+    expect(logEnums).toHaveLength(0);
+    expect(await tableExists(client, 'foods')).toBe(true);
+    expect(await appliedCount(client)).toBe(10);
+
     expect(await rollbackLastMigration(connectionString)).toBe('0009_food_library');
     for (const t of ['foods', 'food_nutrition', 'food_aliases']) expect(await tableExists(client, t), t).toBe(false);
     const foodEnums = await client<{ typname: string }[]>`

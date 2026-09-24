@@ -113,7 +113,7 @@ describeIfDb('/v1/ai (real Postgres, scripted model)', () => {
     expect(ctx['recentSessions']).toHaveLength(1);
     expect(ctx['recentSessions'][0]).toMatchObject({ sessionId: session.id, name: session.name, workingSets: session.exercises[0]!.targets.length });
     expect(ctx['recentSessions'][0]['exercises'][0]['sets'][0]).toBe('50kg×12@1');
-    expect(ctx['nutrition']).toMatchObject({ loggingAvailable: false });
+    expect(ctx['nutrition']).toMatchObject({ foodLogShared: false });
     expect(ctx['health']).toMatchObject({ availableToServer: false });
     // Nothing that only the phone knows: no health *values*, only the
     // statement that they are unavailable. And nothing internal.

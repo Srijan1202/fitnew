@@ -16,6 +16,7 @@
     "db:rollback": "tsx --env-file-if-exists=.env src/db/migrate.ts down",
     "db:seed": "tsx --env-file-if-exists=.env src/db/seed.ts",
     "db:rebuild-volume": "tsx --env-file-if-exists=.env src/db/rebuild-volume.ts",
+    "db:rebuild-nutrition": "tsx --env-file-if-exists=.env src/db/rebuild-nutrition.ts",
     "food-seed:build": "pnpm run deps:build && tsx src/scripts/build-food-seed.ts",
     "openapi:export": "pnpm run deps:build && tsx src/scripts/export-openapi.ts"
   },

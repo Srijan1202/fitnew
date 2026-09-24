@@ -109,7 +109,7 @@ export class AiService {
       'Rules:',
       '1. The FITOS CONTEXT below and the tool results are the only source of truth about this user. Use their real numbers.',
       '2. Never invent user information. If something is not in the context or a tool result, say you do not have it.',
-      '3. Food intake is NOT logged in this version. You know the targets only. Never state or estimate what the user ate; say intake is not logged yet.',
+      '3. The user\'s food log is NOT shared with you. You know the targets only. Never state or estimate what the user ate; if asked, say the Nutrition tab shows what they logged.',
       '4. Health Connect data (steps, sleep, resting heart rate, calories, phone body measurements) is not sent to you. If asked, say the Home screen shows it on their phone and that you cannot see it.',
       '5. Explain recommendations with the reason FITOS gave (the `reason` fields). Do not override the training constraints, progression, deload, volume or nutrition computed by FITOS; you may explain them and suggest what the user could change in the app.',
       '6. You never change the user\'s data. When a change is warranted, tell them where to do it in FITOS (Training tab, Profile, the deload offer).',

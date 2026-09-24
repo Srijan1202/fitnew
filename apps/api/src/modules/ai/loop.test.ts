@@ -80,7 +80,7 @@ function fakeContext(): FitosAiContext {
     },
     recentSessions: [],
     volume: null,
-    nutrition: { targets: null, loggingAvailable: false, note: 'Food logging is not available.' },
+    nutrition: { targets: null, foodLogShared: false, note: 'The food log is not shared with the assistant.' },
     health: { availableToServer: false, note: 'Health Connect data stays on the phone.' },
   };
 }
@@ -125,10 +125,11 @@ describe('ToolRegistry (allowlist)', () => {
     expect(calls).toEqual([`progression:user-1:${BENCH}`, 'getProfile:user-1']);
   });
 
-  it('nutrition targets say intake is unknown', async () => {
+  it('nutrition targets say the food log is not shared (Phase 8, owner J17)', async () => {
     const out = await new ToolRegistry(stubServices([])).execute('user-1', 'get_nutrition_targets', {});
-    expect(out).toMatchObject({ loggingAvailable: false });
-    expect(JSON.stringify(out)).toMatch(/not available/);
+    expect(out).toMatchObject({ foodLogShared: false });
+    expect(JSON.stringify(out)).toMatch(/not shared with FITOS AI/);
+    expect(JSON.stringify(out)).not.toMatch(/not available/);
   });
 });
 
@@ -149,10 +150,11 @@ describe('AiService.chat (tool loop)', () => {
     expect(r).toEqual({ text: 'Pull is ready: 4 movements.', actions: [{ type: 'open-workout', label: "Open today's workout" }], toolsUsed: [], model: 'fake-1' });
     const req = provider.requests[0]!;
     expect(req.system).toContain('You are FITOS AI');
-    expect(req.system).toContain('Food intake is NOT logged');
+    expect(req.system).toContain('food log is NOT shared with you');
     expect(req.system).toContain('Health Connect data');
     expect(req.system).toContain('"displayName":"Srijan"');
-    expect(req.system).toContain('"loggingAvailable":false');
+    expect(req.system).toContain('"foodLogShared":false');
+    expect(req.system).not.toContain('not logged in this version');
     expect(req.system).toContain('"availableToServer":false');
     expect(req.messages).toEqual([{ role: 'user', content: 'What should I train today?' }]);
     expect(req.tools!.map((t) => t.name)).toEqual(TOOL_NAMES);
