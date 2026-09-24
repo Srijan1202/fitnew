@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { ALLERGENS, allergenStatus } from '../src/mess/allergens.js';
+import { isAmbient } from '../src/mess/classify.js';
 import {
   COMPONENT_CANDIDATES, PLATE_COMPONENTS, PLATE_DISH_CAPS, PLATE_MAX_DISHES, classifyComponent, partsOf,
   servingCap, structureOf, type MealComponent,
@@ -379,6 +380,41 @@ describe('snacks, alternatives, statuses', () => {
     const p = rec.plates[0]!;
     expect(p.structure.kind).toBe('complete-meal');
     for (const i of p.items) expect(i.servings).toBeLessThanOrEqual(servingCap(i.name, i.component));
+  });
+});
+
+/* ------------------------------------------- ambient, by head noun -- */
+
+describe('ambient items are the accompaniment itself, not a dish that names one (owner blocker 1)', () => {
+  it.each([
+    // False positives of the old anywhere-in-the-name match: real dishes.
+    ['Paneer Butter Masala', false], ['Butter Chicken Masala', false], ['Spring Roll With Sauce', false],
+    ['Bread Halwa', false], ['Milk Peda', false], ['Butter Naan', false],
+    // Genuine ambient accompaniments stay ambient.
+    ['Garlic Sauce', true], ['Pickle', true], ['Mango Pickle', true], ['Butter', true], ['Bread', true], ['Jam', true],
+    ['Butter Milk', true], ['Tea', true], ['Masala Tea', true], ['Coffee', true], ['Milk', true], ['Cold Milk', true],
+    ['Rose Milk', true], ['Chocos', true], ['Corn Flakes', true],
+  ] as const)('%s → ambient %s', (name, ambient) => {
+    expect(isAmbient(name)).toBe(ambient);
+  });
+
+  it('Paneer Butter Masala and Butter Chicken Masala reach plates; Garlic Sauce and Butter do not', () => {
+    const veg = recommendMeal(input({ menu: menu('lunch', 'White Rice, Paneer Butter Masala, Beetroot Poriyal, Pickle'), slot: 'lunch', diet: 'vegetarian' }));
+    expect(veg.plates[0]!.items.map((i) => i.name)).toContain('Paneer Butter Masala');
+    expect(veg.dishes.find((o) => o.dish.name === 'Pickle')!.reasons).toEqual([{ code: 'ambient' }]);
+    const nonveg = recommendMeal(input({ menu: menu('dinner', 'Phulka, Butter Chicken Masala, Garlic Sauce, Mix Veg Gravy', true), slot: 'dinner' }));
+    expect(nonveg.plates[0]!.items.map((i) => i.name)).toContain('Butter Chicken Masala');
+    expect(nonveg.dishes.find((o) => o.dish.name === 'Garlic Sauce')!.reasons).toEqual([{ code: 'ambient' }]);
+    const breakfast = recommendMeal(input({ menu: menu('breakfast', 'Bread, Butter, Jam, Idly, Sambar', true), slot: 'breakfast' }));
+    for (const n of ['Bread', 'Butter', 'Jam']) expect(breakfast.dishes.find((o) => o.dish.name === n)!.reasons).toEqual([{ code: 'ambient' }]);
+  });
+
+  it('the real men’s special snack of 9 Sep (Spring Roll With Sauce) is a snack again, not no-meal', () => {
+    const day = dayOf('hostel-1-mess-1', '2026-09-09');
+    const rec = recommendMeal(input({ menu: day, slot: 'snacks' }));
+    expect(rec.status).toBe('ok');
+    expect(rec.plates[0]!.items.map((i) => i.name)).toEqual(['Spring Roll With Sauce']);
+    expect(rec.plates[0]!.structure.kind).toBe('snack');
   });
 });
 

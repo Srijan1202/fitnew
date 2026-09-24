@@ -177,6 +177,16 @@ const AMBIENT_TERMS = [
   'chocos', 'sauce', 'pickle',
 ] as const;
 
+/**
+ * Ambient only when the item IS the accompaniment — when its name ENDS with
+ * one of the terms (the head noun: "Garlic Sauce", "Butter Milk", "Cold
+ * Milk", "Bread"). A term that only qualifies a dish is not ambient: "Paneer
+ * Butter Masala", "Butter Chicken Masala", "Bread Halwa", "Milk Peda".
+ * A trailing "with …" names what comes alongside, not the dish, so
+ * "Spring Roll With Sauce" is a spring roll. (Phase 10, owner: the old
+ * anywhere-in-the-name match hid real dishes from recommendations.)
+ */
 export function isAmbient(name: string): boolean {
-  return has(name, AMBIENT_TERMS);
+  const n = ` ${name.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim()} `.replace(/ with .*$/, ' ');
+  return AMBIENT_TERMS.some((term) => n.endsWith(` ${term} `));
 }
