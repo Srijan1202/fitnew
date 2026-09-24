@@ -85,7 +85,7 @@ Persona C is the go-to-market wedge: geographically concentrated, underserved, a
 | Mess domain types | `mess/types.ts` | **Preserve** | Becomes shared contract source |
 | Menu string parser | `mess/parse.ts` | **Preserve** | Hardened against 7 real defects; do not "simplify" |
 | Diet/role classifier | `mess/classify.ts` | **Preserve + extend** | Extend keyword lists only; keep fail-safe semantics |
-| Nutrition estimate table | `mess/nutrition.ts` | **Extend** | ~55 dishes now; grow to ~300 and add IFCT mapping (Phase 9) |
+| Nutrition estimate table | `mess/nutrition.ts` | **Extend** | ~55 dishes now; grow to ~300 and add IFCT mapping (Phase 9). `AMENDED 2026-09-24 (Phase 9, ADR-014)`: Phase 9 adds only dishes seen on the live menus, appended after the base table; IFCT mapping waits on licensing |
 | Plate recommender | `mess/recommend.ts` | **Preserve + extend** | Add carb/fat/budget/variety terms (Phase 10) |
 | VIT provider + config | `mess/providers/vit/` | **Preserve** | Add server-side mirroring (Phase 9) |
 | Targets (Mifflin-St Jeor) | `nutrition/targets.ts` | **Preserve** | Add recomposition + maintenance goals (Phase 2) |
@@ -274,7 +274,7 @@ apps/api/src/
       schemas.ts               # Zod request/response
       <module>.test.ts
   db/  schema/ (Drizzle tables), migrations/, seeds/
-  jobs/ mess-mirror.ts, daily-rollup.ts, adjustment-sweep.ts
+  jobs/ mirror-mess.ts, daily-rollup.ts, adjustment-sweep.ts
   lib/ gemini.ts, errors.ts, logger.ts
 ```
 
@@ -373,8 +373,8 @@ Everything else in your preferred stack is kept: Cloud Run, Firebase Auth, FCM, 
 | `foods` | `id`, `name`, `brand`, `barcode`, `source` (`ifct`/`indb`/`usda`/`user`/`estimated`), `is_verified`, `owner_user_id` NULL | Trigram index on `name` for search |
 | `food_nutrition` | `food_id`, `basis` (`per_100g`/`per_serving`), `serving_label`, `serving_grams`, `kcal_low`, `kcal_high`, `protein_low`, `protein_high`, `carb_low`, `carb_high`, `fat_low`, `fat_high`, `fiber_low`, `fiber_high`, `confidence` | **Ranges are mandatory.** A verified food simply has `low == high`. |
 | `food_aliases` | `food_id`, `alias` | Handles `Dhal`/`Dal`, `Panneer`/`Paneer` |
-| `food_logs` | `id`, `user_id`, `logged_at`, `local_date` (Phase 8), `meal_slot`, `entry_method`, `saved_meal_id` NULL (Phase 8), `client_log_id` UNIQUE per user, `deleted_at` | `local_date` = `logged_at` in `users.timezone`, fixed at write (ADR-013) |
-| `food_log_items` | `id`, `food_log_id`, `food_id` NULL, `mess_dish_id` NULL (added in Phase 9), `servings numeric`, `kcal_low..fat_high`, `confidence`; Phase 8 also snapshots `food_name`, `food_source`, the row (`basis`, `serving_label`, `serving_grams`), `grams`, `fibre_low/high` (NULL = unknown) | Macros **snapshotted at log time** so history doesn't shift when the table is corrected |
+| `food_logs` | `id`, `user_id`, `logged_at`, `local_date` (Phase 8), `meal_slot`, `entry_method` (+ `mess`, Phase 9), `saved_meal_id` NULL (Phase 8), `mess_id` NULL (Phase 9), `client_log_id` UNIQUE per user, `deleted_at` | `local_date` = `logged_at` in `users.timezone`, fixed at write (ADR-013) |
+| `food_log_items` | `id`, `food_log_id`, `food_id` NULL, `mess_dish_slug` NULL (Phase 9: provenance only, no foreign key — ADR-014), `servings numeric`, `kcal_low..fat_high`, `confidence`; Phase 8 also snapshots `food_name`, `food_source`, the row (`basis`, `serving_label`, `serving_grams`), `grams`, `fibre_low/high` (NULL = unknown) | Macros **snapshotted at log time** so history doesn't shift when the table is corrected |
 | `daily_nutrition` | `user_id`, `date`, low/high sums of kcal, protein, carb, fat; known-fibre low/high + `fibre_unknown_items`; `item_count` (Phase 8: ranges, no target copies — the day's target is the `nutrition_targets` row in effect then; ADR-013) | Derived cache, rebuildable |
 | `nutrition_targets` | `id`, `user_id`, `effective_from date`, `kcal`, `protein_g`, `carb_g`, `fat_g`, `fiber_g`, `tdee_estimate`, `reason` | History; never mutate a past row |
 | `saved_meals` | `id`, `user_id`, `client_meal_id` (Phase 8), `name`, `items jsonb` | One-tap re-log. Made from logged meals only (ADR-013) |
@@ -383,14 +383,12 @@ Everything else in your preferred stack is kept: Cloud Run, Firebase Auth, FCM, 
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `mess_providers` | `id`, `slug` (`vit-vellore`), `display_name`, `status`, `last_sync_at` | |
-| `messes` | `id`, `provider_id`, `hostel_id`, `mess_id`, `hostel_label`, `mess_label`, `serves_non_veg`, `source_url` | The six rows |
-| `mess_menu_snapshots` | `id`, `mess_id`, `fetched_at`, `raw_payload jsonb`, `payload_hash` | **Server-side mirror.** Survives upstream outage; gives history the endpoints don't keep. |
-| `mess_days` | `id`, `mess_id`, `menu_date`, `resolution` (`exact`/`cycle_inferred`/`unavailable`), `source_date`, `cycle_length_days`, `snapshot_id` | |
-| `mess_meals` | `id`, `mess_day_id`, `slot`, `raw_menu text` | Verbatim upstream string retained |
-| `mess_dishes` | `id`, `mess_meal_id`, `dish_slug`, `name`, `raw`, `label`, `diet_class`, `dish_role`, `alternatives[]`, `is_ambient` | |
-| `mess_dish_nutrition` | `dish_slug` PK, `food_id` NULL, `serving_label`, `serving_grams`, `kcal_low..fat_high`, `confidence`, `source` | **Keyed by slug, not dish id** — one correction fixes every future occurrence |
-| `mess_dish_corrections` | `id`, `dish_slug`, `user_id` NULL, `field`, `value`, `status`, `reviewed_by` | Community + admin corrections |
+| `mess_providers` | `id`, `slug` (`vit-vellore`), `display_name`, `status` | Sync status is per mess (below), not per provider (Phase 9, ADR-014) |
+| `messes` | `id`, `provider_id`, `code` (`mens-veg`), `hostel_id`, `mess_id`, `hostel_label`, `mess_label`, `serves_non_veg`, `source_url`; mirror status `last_attempt_at`, `last_success_at`, `last_changed_at`, `last_error`, `consecutive_failures` | The six rows; freshness differs per endpoint (§14.2) |
+| `mess_menu_snapshots` | `id`, `mess_id`, `raw_payload jsonb`, `payload_hash`, `dates text[]`, `first_seen_at`, `last_seen_at` | **Server-side mirror.** Survives upstream outage; gives history the endpoints don't keep. One row per distinct payload per mess; never edited or deleted |
+| ~~`mess_days`, `mess_meals`, `mess_dishes`~~ | — | `AMENDED 2026-09-24 (Phase 9, ADR-014)`: not built. Menus are parsed from the snapshots on read by packages/core (resolution, source date, verbatim `raw_menu`, dishes) |
+| `mess_dish_nutrition` | `dish_slug` PK, `food_id` NULL (unused), `name`, `serving_label`, `serving_grams`, `kcal_low..fat_high`, `fibre_low/high` (NULL), `confidence` (never `high`, a CHECK), `source` (`estimated`) | **Keyed by slug, not dish id** — one correction fixes every future occurrence. Written on first sighting, never overwritten by a re-run |
+| `mess_dish_corrections` | `id`, `dish_slug`, `user_id`, `client_correction_id`, `field`, `value_low/high` or `diet_value` or `note`, `status` (`pending` until reviewed), `reviewed_by`, `reviewed_at` | Community + admin corrections. Phase 9 stores them as pending; review is Phase 16 |
 
 **Recommendations, recovery, ops**
 
@@ -410,7 +408,7 @@ CREATE INDEX ON set_logs (session_exercise_id, set_index);
 CREATE INDEX ON workout_sessions (user_id, started_at DESC) WHERE deleted_at IS NULL;
 CREATE INDEX ON food_logs (user_id, logged_at DESC) WHERE deleted_at IS NULL;
 CREATE UNIQUE INDEX ON body_metrics (user_id, measured_on);
-CREATE INDEX ON mess_days (mess_id, menu_date);
+CREATE INDEX ON mess_menu_snapshots USING gin (dates);  -- Phase 9: replaces mess_days (mess_id, menu_date), ADR-014
 CREATE INDEX food_name_trgm ON foods USING gin (name gin_trgm_ops);
 CREATE UNIQUE INDEX one_active_program ON programs (user_id) WHERE active AND deleted_at IS NULL;
 CREATE UNIQUE INDEX one_active_goal ON user_goals (user_id) WHERE ended_at IS NULL;
@@ -418,7 +416,7 @@ CREATE UNIQUE INDEX one_active_goal ON user_goals (user_id) WHERE ended_at IS NU
 
 ### 9.4 Derived vs stored
 
-`DECISION` — these are **caches** and must be rebuildable by a script from source rows: `muscle_volume_weekly`, `daily_nutrition`, `exercise_prs`, `mess_days`/`mess_meals`/`mess_dishes` (from `mess_menu_snapshots`). Trend weight is **never stored** — it is computed from `body_metrics` on read, so changing the smoothing constant doesn't require a backfill.
+`DECISION` — these are **caches** and must be rebuildable by a script from source rows: `muscle_volume_weekly`, `daily_nutrition`, `exercise_prs`. (Phase 9: mess menus are not cached in tables; they are parsed from `mess_menu_snapshots` on read — ADR-014.) Trend weight is **never stored** — it is computed from `body_metrics` on read, so changing the smoothing constant doesn't require a backfill.
 
 Ship `scripts/rebuild-derived.ts` in Phase 12 and run it in CI against seed data.
 
@@ -444,7 +442,7 @@ Codes: `UNAUTHENTICATED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `VALIDATIO
 |---|---|---|---|
 | POST | `/auth/session` | Exchange Firebase token → create/fetch user | Idempotent |
 | DELETE | `/auth/session` | Sign out (revoke refresh) | |
-| GET/PATCH | `/user/profile` | Profile read/update | Partial update |
+| GET/PATCH | `/user/profile` | Profile read/update | Partial update. Phase 9: `isVitStudent`, `mess` (a listed mess only) |
 | GET/PUT | `/user/goal` | Active goal; PUT closes old, opens new | Recomputes targets |
 | GET/PUT | `/user/diet-preferences` | Diet, allergies, exclusions | |
 | GET/PATCH | `/user/preferences` | Units, notifications | |
@@ -484,9 +482,9 @@ Codes: `UNAUTHENTICATED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `VALIDATIO
 | GET | `/nutrition/targets` | Current + history | |
 | GET | `/mess/providers` | Available providers | |
 | GET | `/mess/providers/{slug}/messes` | The six messes | |
-| GET | `/mess/menu` | `?messId&date` → menu + **resolution** | Resolution always present |
+| GET | `/mess/menu` | `?mess&date` → menu + **resolution** + mirror freshness (`mess` = a mess code; default: the user's mess) | Resolution always present |
 | GET | `/mess/menu/recommend` | Ranked plates for a meal | |
-| POST | `/mess/dishes/{slug}/correction` | Report wrong nutrition | Queued for review |
+| POST | `/mess/dishes/{slug}/correction` | Report wrong nutrition | Queued for review (stored pending; changes nothing until reviewed) |
 | GET | `/today` | **Ranked actions** | The core endpoint |
 | POST | `/today/actions/{id}/event` | shown/accepted/dismissed/completed | Feeds `recommendation_events` |
 | GET | `/progress/summary` | Trend, PRs, volume, adherence | `?window=30d` |
@@ -726,6 +724,8 @@ Then a **positive vegetarian classifier** recognises ~90 dishes (rice, dal, curd
 Rationale: half the endpoints were stale for weeks at capture; MessIT is unofficial with no SLA; and the endpoints keep no history. Mirroring removes a hard dependency on someone else's uptime, gives us history, and means an upstream outage degrades to "yesterday's data" instead of a blank screen.
 
 Client cache: 6h TTL. Runtime shape validation (`isMessItResponse`) rejects malformed payloads rather than rendering nonsense.
+
+`AMENDED 2026-09-24 (Phase 9, ADR-014)`: the mirror is a job (`dist/jobs/mirror-mess.js`), advisory-locked, runnable by hand and ready for Cloud Scheduler — which is **not set up** while GCP work is paused (a deferred deployment dependency). Locally the API runs it on a development-only 12 h timer. The app shows the server's menu on every view and keeps the last copy of today's and tomorrow's for offline; there is no client TTL. `isMessItResponse` checks every entry.
 
 ---
 
@@ -1307,7 +1307,8 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 
 **Prereq:** 8. **Highest-differentiation phase.**
 **Tasks:** wire the existing `VITMessProvider`; mess schema; **Cloud Scheduler mirroring job (twice daily)**; nutrition enrichment persisted by `dish_slug`; mess selection in onboarding; correction submission.
-**DB:** all `mess_*` tables.
+`AMENDED 2026-09-24 (ADR-014)`: the mirroring job is built; its Cloud Scheduler trigger is deferred while GCP is paused. The mess can also be changed in Profile.
+**DB:** all `mess_*` tables (not `mess_days`/`mess_meals`/`mess_dishes` — ADR-014).
 **APIs:** `/mess/providers`, `/mess/providers/{slug}/messes`, `/mess/menu`, `POST /mess/dishes/{slug}/correction`.
 **UI:** mess picker (onboarding), MESS screen with menu by slot, **resolution banner for `cycle-inferred`**, dish tap-to-log.
 **Tests:** all six endpoints as fixtures · the nine defects · cycle inference · stale endpoint · malformed payload rejection · diet classification both labelled and unlabelled · mirroring dedupe by `payload_hash`.
@@ -1465,7 +1466,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 **Requires network:** program generation, recommendations, food search, sync.
 
-**Mechanism:** drift mirrors `workout_sessions`, `set_logs`, `food_logs`, plus a `sync_queue` table (`id`, `endpoint`, `payload`, `client_key`, `attempts`, `created_at`). Food logs (Phase 8) have their own `local_food_logs` + `nutrition_sync_queue` and engine, with the same policy (ADR-013).
+**Mechanism:** drift mirrors `workout_sessions`, `set_logs`, `food_logs`, plus a `sync_queue` table (`id`, `endpoint`, `payload`, `client_key`, `attempts`, `created_at`). Food logs (Phase 8) have their own `local_food_logs` + `nutrition_sync_queue` and engine, with the same policy (ADR-013). Mess menus (Phase 9) are kept in the `cached_json` table; mess dishes log through the Phase 8 queue (ADR-014).
 
 1. Write locally first, render optimistically.
 2. Enqueue the mutation with a `client_*` idempotency key.
@@ -1686,16 +1687,16 @@ sequenceDiagram
   participant DB
   participant APP as Flutter
 
-  SCH->>API: POST /jobs/mirror-mess
+  SCH->>API: mirror-mess job (Scheduler deferred while GCP is paused — ADR-014)
   API->>M: GET × 6 endpoints
   M-->>API: JSON (possibly stale)
   API->>API: validate shape
   API->>DB: upsert snapshot (dedupe by hash)
-  API->>API: parse · classify · enrich
-  API->>DB: mess_days / meals / dishes
+  API->>API: parse · classify · enrich (new slugs only)
+  API->>DB: mess_dish_nutrition
 
-  APP->>API: GET /mess/menu?messId&date
-  API->>DB: lookup
+  APP->>API: GET /mess/menu?mess&date
+  API->>DB: snapshots → parse on read
   alt exact date present
     API-->>APP: menu + resolution=exact
   else 14-day cycle match
