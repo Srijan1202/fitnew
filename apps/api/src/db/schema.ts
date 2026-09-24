@@ -18,6 +18,8 @@
  *   Phase 6  muscle_volume_weekly, exercise_rejections (+ programs deload columns)
  *   Phase 7  foods, food_nutrition, food_aliases
  *   Phase 8  food_logs, food_log_items, daily_nutrition, saved_meals
+ *   Phase 9  mess_providers, messes, mess_menu_snapshots, mess_dish_nutrition,
+ *            mess_dish_corrections (+ food_logs.mess_id, food_log_items.mess_dish_slug)
  */
 export * from './schema/enums.js';
 export * from './schema/users.js';
@@ -29,4 +31,5 @@ export * from './schema/training.js';
 export * from './schema/workout.js';
 export * from './schema/volume.js';
 export * from './schema/food.js';
+export * from './schema/mess.js';
 export * from './schema/food-log.js';

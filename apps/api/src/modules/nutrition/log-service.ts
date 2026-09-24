@@ -6,7 +6,13 @@
  *
  * The snapshot is taken HERE, from the food row as it is at log time, and
  * stored in full on the item. Nothing reads the food table to show history.
+ *
+ * Phase 9: a mess dish is logged the same way. Its stored estimate
+ * (`mess_dish_nutrition`) is the row, snapshotted now; the item keeps only the
+ * dish slug as provenance (owner D10). Saved meals keep a mess dish as a mess
+ * dish and re-snapshot its current estimate when logged (owner D11).
  */
+import { capMessConfidence } from '@fitos/core/mess/nutrition';
 import { exactFoodNutrition, roundFoodNutrition, type FoodNutritionRange } from '@fitos/core/nutrition/food';
 import {
   checkLogDate,
@@ -24,6 +30,7 @@ import type {
   FoodLog,
   FoodLogItem,
   LogFoodItemRequest,
+  LogMessDishRequest,
   NutritionDay,
   NutritionTotals,
   QuickAdd,
@@ -33,7 +40,9 @@ import type {
 } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
-import type { DailyNutritionRow, FoodLogItemRow, FoodNutritionRow, SavedMealRow } from '../../db/schema.js';
+import type { DailyNutritionRow, FoodLogItemRow, FoodNutritionRow, MessDishNutritionRow, SavedMealRow } from '../../db/schema.js';
+import type { MessService } from '../mess/service.js';
+import { nutritionFromRow } from '../mess/service.js';
 import { toContract as targetsToContract } from '../user/targets.service.js';
 import type { FoodDetailRows, FoodRepository } from './repository.js';
 import type { FoodLogRepository, LogWithItems, NewLogItem } from './log-repository.js';
@@ -44,7 +53,8 @@ const QUICK_ADD_NAME = 'Quick add';
 /** A saved meal's stored item (jsonb). The response adds the food's current row. */
 type StoredSavedItem =
   | { kind: 'food'; foodId: string; foodName: string; basis: 'per_100g' | 'per_serving'; servingLabel: string; servings: number; grams: number | null }
-  | { kind: 'quick-add'; name: string; kcal: number; proteinG: number; carbG: number; fatG: number; fibreG: number | null };
+  | { kind: 'quick-add'; name: string; kcal: number; proteinG: number; carbG: number; fatG: number; fibreG: number | null }
+  | { kind: 'mess'; dishSlug: string; name: string; servings: number };
 
 const num = (v: string): number => Number(v);
 const numOrNull = (v: string | null): number | null => (v === null ? null : Number(v));
@@ -52,6 +62,19 @@ const str = (v: number): string => String(v);
 const strOrNull = (v: number | null): string | null => (v === null ? null : String(v));
 
 function rangeOfRow(n: FoodNutritionRow): FoodNutritionRange {
+  return {
+    macros: {
+      kcalLow: num(n.kcalLow), kcalHigh: num(n.kcalHigh),
+      proteinLow: num(n.proteinLow), proteinHigh: num(n.proteinHigh),
+      carbLow: num(n.carbLow), carbHigh: num(n.carbHigh),
+      fatLow: num(n.fatLow), fatHigh: num(n.fatHigh),
+    },
+    fibre: n.fibreLow === null || n.fibreHigh === null ? null : { low: num(n.fibreLow), high: num(n.fibreHigh) },
+  };
+}
+
+/** A mess dish's stored estimate as a row: always a range; fibre unknown unless stored. */
+function rangeOfMessRow(n: MessDishNutritionRow): FoodNutritionRange {
   return {
     macros: {
       kcalLow: num(n.kcalLow), kcalHigh: num(n.kcalHigh),
@@ -118,6 +141,7 @@ function itemFrom(i: FoodLogItemRow): FoodLogItem {
     id: i.id,
     position: i.position,
     foodId: i.foodId,
+    messDishSlug: i.messDishSlug,
     foodName: i.foodName,
     foodSource: i.foodSource,
     basis: i.basis,
@@ -148,6 +172,7 @@ export function logFrom(l: LogWithItems): FoodLog {
     mealSlot: l.log.mealSlot,
     entryMethod: l.log.entryMethod,
     savedMealId: l.log.savedMealId,
+    messCode: l.messCode,
     items: l.items.map(itemFrom),
     totals: totalsFrom(rollupDay(l.items.map(rangeOfItem))),
   };
@@ -167,6 +192,7 @@ function quickAddItem(q: QuickAdd | Extract<StoredSavedItem, { kind: 'quick-add'
   return {
     position,
     foodId: null,
+    messDishSlug: null,
     foodName: name,
     foodSource: 'user',
     basis: null,
@@ -184,7 +210,65 @@ export class FoodLogService {
     private readonly logs: FoodLogRepository,
     private readonly foods: FoodRepository,
     private readonly now: () => Date = () => new Date(),
+    /** Phase 9: mess menus and dish estimates. */
+    private readonly mess: MessService | null = null,
   ) {}
+
+  private messOrThrow(): MessService {
+    if (this.mess === null) throw new AppError('INTERNAL', 'Mess logging is not wired on this server.');
+    return this.mess;
+  }
+
+  /**
+   * A mess dish snapshot: its stored estimate x the portion (owner D10). The
+   * estimate is a per-serving row; grams only when the serving has a weight.
+   * Confidence is capped at medium again here (the database also refuses high).
+   */
+  private messItem(row: MessDishNutritionRow, req: { servings?: number | undefined; grams?: number | undefined }, position: number, path: string): NewLogItem {
+    const servingGrams = numOrNull(row.servingGrams);
+    const portion = resolvePortion(
+      { basis: 'per_serving', servingGrams },
+      req.servings !== undefined ? { servings: req.servings } : { grams: req.grams as number },
+    );
+    if (!portion.ok) throw invalid(req.servings !== undefined ? `${path}.servings` : `${path}.grams`, portion.problem);
+    const snap = snapshotNutrition(rangeOfMessRow(row), portion.portion.servings);
+    return {
+      position,
+      foodId: null,
+      messDishSlug: row.dishSlug,
+      foodName: row.name,
+      foodSource: 'estimated',
+      basis: 'per_serving',
+      servingLabel: row.servingLabel,
+      servingGrams: row.servingGrams,
+      servings: String(Math.round(portion.portion.servings * 10_000) / 10_000),
+      grams: strOrNull(portion.portion.grams),
+      ...snapshotColumns(snap),
+      confidence: capMessConfidence(row.confidence),
+    };
+  }
+
+  /** Each dish must be on that mess menu for that date and have an estimate. */
+  private async messItems(code: string, menuDate: string, reqs: readonly LogMessDishRequest[]): Promise<{ messId: string; items: NewLogItem[] }> {
+    const mess = this.messOrThrow();
+    const row = await mess.messByCode(code);
+    if (row === null) throw new AppError('NOT_FOUND', 'No such mess.', [{ path: 'mess', issue: code }]);
+    const onMenu = await mess.dishesOnMenu(row, menuDate);
+    reqs.forEach((r, n) => {
+      if (!onMenu.has(r.dishSlug)) {
+        throw new AppError('NOT_FOUND', 'That dish is not on this mess menu for that day.', [{ path: `items.${n}.dishSlug`, issue: r.dishSlug }]);
+      }
+    });
+    const estimates = await mess.nutritionFor(reqs.map((r) => r.dishSlug));
+    const items = reqs.map((r, n) => {
+      const est = estimates.get(r.dishSlug);
+      if (est === undefined) {
+        throw invalid(`items.${n}.dishSlug`, `"${r.dishSlug}" has no estimate yet`, 'That dish has no nutrition estimate yet; use quick add.');
+      }
+      return this.messItem(est, r, n, `items.${n}`);
+    });
+    return { messId: row.id, items };
+  }
 
   /** A food item snapshot: the visible food's named row × the portion. */
   private foodItem(food: FoodDetailRows, req: Pick<LogFoodItemRequest, 'basis' | 'servingLabel' | 'servings' | 'grams'>, position: number, path: string): NewLogItem {
@@ -208,6 +292,7 @@ export class FoodLogService {
       grams: strOrNull(portion.portion.grams),
       ...snapshotColumns(snap),
       confidence: row.confidence,
+      messDishSlug: null,
     };
   }
 
@@ -270,6 +355,7 @@ export class FoodLogService {
 
     let items: NewLogItem[];
     let savedMealId: string | null = null;
+    let messId: string | null = null;
     switch (body.entryMethod) {
       case 'search': {
         const foods = await this.visibleFoods(userId, body.items.map((i) => i.foodId));
@@ -286,6 +372,12 @@ export class FoodLogService {
         items = await this.expandSavedMeal(userId, meal);
         break;
       }
+      case 'mess': {
+        const resolved = await this.messItems(body.mess, body.menuDate, body.items);
+        messId = resolved.messId;
+        items = resolved.items;
+        break;
+      }
     }
 
     const { created } = await this.logs.insertLog({
@@ -296,6 +388,7 @@ export class FoodLogService {
       mealSlot: body.mealSlot,
       entryMethod: body.entryMethod,
       savedMealId,
+      messId,
       items,
     });
     const stored = await this.logs.byClientId(userId, body.clientLogId);
@@ -303,14 +396,24 @@ export class FoodLogService {
     return { log: logFrom(stored), day: await this.day(userId, stored.log.localDate), created };
   }
 
-  /** Food items re-snapshot the food's CURRENT row; quick-add items keep their values. */
+  /**
+   * Food items re-snapshot the food's CURRENT row; quick-add items keep their
+   * values; mess items re-snapshot the dish's CURRENT estimate (owner D11).
+   */
   private async expandSavedMeal(userId: string, meal: SavedMealRow): Promise<NewLogItem[]> {
     const stored = meal.items as StoredSavedItem[];
     const foodIds = stored.flatMap((i) => (i.kind === 'food' ? [i.foodId] : []));
     const found = await this.foods.details([...new Set(foodIds)], userId);
     const byId = new Map(found.map((f) => [f.food.id, f]));
+    const messSlugs = stored.flatMap((i) => (i.kind === 'mess' ? [i.dishSlug] : []));
+    const estimates = messSlugs.length === 0 ? new Map<string, MessDishNutritionRow>() : await this.messOrThrow().nutritionFor(messSlugs);
     return stored.map((item, n) => {
       if (item.kind === 'quick-add') return quickAddItem(item, n);
+      if (item.kind === 'mess') {
+        const est = estimates.get(item.dishSlug);
+        if (est === undefined) throw invalid(`items.${n}`, `"${item.name}" has no estimate any more`, 'A dish in this meal has no estimate any more.');
+        return this.messItem(est, { servings: item.servings }, n, `items.${n}`);
+      }
       const food = byId.get(item.foodId);
       if (food === undefined) throw invalid(`items.${n}`, `"${item.foodName}" is no longer in your library`, 'A food in this meal is no longer available.');
       return this.foodItem(food, { basis: item.basis, servingLabel: item.servingLabel, servings: item.servings }, n, `items.${n}`);
@@ -353,8 +456,15 @@ export class FoodLogService {
     const foodIds = stored.flatMap((i) => (i.kind === 'food' ? [i.foodId] : []));
     const found = await this.foods.details([...new Set(foodIds)], userId);
     const byId = new Map(found.map((f) => [f.food.id, f]));
+    const messSlugs = stored.flatMap((i) => (i.kind === 'mess' ? [i.dishSlug] : []));
+    const estimates =
+      messSlugs.length === 0 || this.mess === null ? new Map<string, MessDishNutritionRow>() : await this.mess.nutritionFor(messSlugs);
     const items: SavedMealItem[] = stored.map((i) => {
       if (i.kind === 'quick-add') return i;
+      if (i.kind === 'mess') {
+        const est = estimates.get(i.dishSlug);
+        return { ...i, row: est === undefined ? null : nutritionFromRow(est) };
+      }
       const food = byId.get(i.foodId);
       const row0 = food?.nutrition.find((n) => n.basis === i.basis && n.servingLabel === i.servingLabel);
       return { ...i, row: row0 === undefined ? null : nutritionFrom(row0) };
@@ -377,7 +487,10 @@ export class FoodLogService {
     }
     const items: StoredSavedItem[] = logs.flatMap((l) =>
       l.items.map((i): StoredSavedItem =>
-        i.foodId !== null && i.basis !== null && i.servingLabel !== null
+        // Owner D11: a mess dish stays a mess dish (slug + portion), never an exact quick add.
+        i.messDishSlug !== null
+          ? { kind: 'mess', dishSlug: i.messDishSlug, name: i.foodName, servings: Number(i.servings) }
+          : i.foodId !== null && i.basis !== null && i.servingLabel !== null
           ? { kind: 'food', foodId: i.foodId, foodName: i.foodName, basis: i.basis, servingLabel: i.servingLabel, servings: Number(i.servings), grams: numOrNull(i.grams) }
           : {
               kind: 'quick-add',

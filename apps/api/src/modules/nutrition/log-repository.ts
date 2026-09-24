@@ -15,6 +15,7 @@ import {
   dailyNutrition,
   foodLogItems,
   foodLogs,
+  messes,
   nutritionTargets,
   savedMeals,
   users,
@@ -31,6 +32,8 @@ type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 export interface LogWithItems {
   readonly log: FoodLogRow;
   readonly items: readonly FoodLogItemRow[];
+  /** Phase 9: the code of the mess a `mess` log came from. */
+  readonly messCode: string | null;
 }
 
 export type NewLogItem = Omit<typeof foodLogItems.$inferInsert, 'id' | 'foodLogId'>;
@@ -43,6 +46,8 @@ export interface NewLog {
   readonly mealSlot: FoodLogRow['mealSlot'];
   readonly entryMethod: FoodLogRow['entryMethod'];
   readonly savedMealId: string | null;
+  /** Phase 9: the mess a `mess` log came from. */
+  readonly messId?: string | null;
   readonly items: readonly NewLogItem[];
 }
 
@@ -139,7 +144,16 @@ export class FoodLogRepository {
       .from(foodLogItems)
       .where(inArray(foodLogItems.foodLogId, logs.map((l) => l.id)))
       .orderBy(asc(foodLogItems.foodLogId), asc(foodLogItems.position));
-    return logs.map((log) => ({ log, items: items.filter((i) => i.foodLogId === log.id) }));
+    const messIds = [...new Set(logs.flatMap((l) => (l.messId === null ? [] : [l.messId])))];
+    const codes =
+      messIds.length === 0
+        ? new Map<string, string>()
+        : new Map((await this.db.select({ id: messes.id, code: messes.code }).from(messes).where(inArray(messes.id, messIds))).map((r) => [r.id, r.code]));
+    return logs.map((log) => ({
+      log,
+      items: items.filter((i) => i.foodLogId === log.id),
+      messCode: log.messId === null ? null : (codes.get(log.messId) ?? null),
+    }));
   }
 
   /** Any log with this client id, deleted or not (a replay must find it either way). */
@@ -191,6 +205,7 @@ export class FoodLogRepository {
             mealSlot: input.mealSlot,
             entryMethod: input.entryMethod,
             savedMealId: input.savedMealId,
+            messId: input.messId ?? null,
           })
           .onConflictDoNothing({ target: [foodLogs.userId, foodLogs.clientLogId] })
           .returning({ id: foodLogs.id });

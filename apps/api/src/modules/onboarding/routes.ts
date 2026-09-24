@@ -13,6 +13,7 @@ import {
 
 import { AppError } from '../../lib/errors.js';
 import { UserRepository } from '../user/repository.js';
+import { messServiceFor } from '../mess/routes.js';
 import { OnboardingService } from './service.js';
 
 export interface OnboardingRouteOptions {
@@ -25,7 +26,8 @@ function requireUserId(userId: string | null): string {
 }
 
 export async function onboardingRoutes(app: FastifyInstance, opts: OnboardingRouteOptions): Promise<void> {
-  const service = new OnboardingService(new UserRepository(app.database.db));
+  const mess = messServiceFor(app.database.db);
+  const service = new OnboardingService(new UserRepository(app.database.db), async (ref) => (await mess.messForRef(ref)) !== null);
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const errors = { 401: errorEnvelopeSchema, 404: errorEnvelopeSchema, 409: errorEnvelopeSchema, 422: errorEnvelopeSchema };
 

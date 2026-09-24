@@ -712,17 +712,27 @@
                     "onboardingStage": {
                       "type": "string"
                     },
+                    "isVitStudent": {
+                      "type": "boolean",
+                      "nullable": true
+                    },
                     "mess": {
                       "type": "object",
                       "properties": {
                         "providerId": {
-                          "type": "string"
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 40
                         },
                         "hostelId": {
-                          "type": "string"
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 40
                         },
                         "messId": {
-                          "type": "string"
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 40
                         }
                       },
                       "required": [
@@ -749,6 +759,7 @@
                     "timezone",
                     "locale",
                     "onboardingStage",
+                    "isVitStudent",
                     "mess"
                   ],
                   "additionalProperties": false
@@ -1045,6 +1056,36 @@
                   "locale": {
                     "type": "string",
                     "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$"
+                  },
+                  "isVitStudent": {
+                    "type": "boolean"
+                  },
+                  "mess": {
+                    "type": "object",
+                    "properties": {
+                      "providerId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
+                      "hostelId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
+                      "messId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      }
+                    },
+                    "required": [
+                      "providerId",
+                      "hostelId",
+                      "messId"
+                    ],
+                    "additionalProperties": false,
+                    "nullable": true
                   }
                 },
                 "additionalProperties": false
@@ -1154,17 +1195,27 @@
                     "onboardingStage": {
                       "type": "string"
                     },
+                    "isVitStudent": {
+                      "type": "boolean",
+                      "nullable": true
+                    },
                     "mess": {
                       "type": "object",
                       "properties": {
                         "providerId": {
-                          "type": "string"
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 40
                         },
                         "hostelId": {
-                          "type": "string"
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 40
                         },
                         "messId": {
-                          "type": "string"
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 40
                         }
                       },
                       "required": [
@@ -1191,6 +1242,7 @@
                     "timezone",
                     "locale",
                     "onboardingStage",
+                    "isVitStudent",
                     "mess"
                   ],
                   "additionalProperties": false
@@ -3372,17 +3424,27 @@
                         "onboardingStage": {
                           "type": "string"
                         },
+                        "isVitStudent": {
+                          "type": "boolean",
+                          "nullable": true
+                        },
                         "mess": {
                           "type": "object",
                           "properties": {
                             "providerId": {
-                              "type": "string"
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 40
                             },
                             "hostelId": {
-                              "type": "string"
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 40
                             },
                             "messId": {
-                              "type": "string"
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 40
                             }
                           },
                           "required": [
@@ -3409,6 +3471,7 @@
                         "timezone",
                         "locale",
                         "onboardingStage",
+                        "isVitStudent",
                         "mess"
                       ],
                       "additionalProperties": false
@@ -4203,17 +4266,27 @@
                         "onboardingStage": {
                           "type": "string"
                         },
+                        "isVitStudent": {
+                          "type": "boolean",
+                          "nullable": true
+                        },
                         "mess": {
                           "type": "object",
                           "properties": {
                             "providerId": {
-                              "type": "string"
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 40
                             },
                             "hostelId": {
-                              "type": "string"
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 40
                             },
                             "messId": {
-                              "type": "string"
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 40
                             }
                           },
                           "required": [
@@ -4240,6 +4313,7 @@
                         "timezone",
                         "locale",
                         "onboardingStage",
+                        "isVitStudent",
                         "mess"
                       ],
                       "additionalProperties": false
@@ -4695,17 +4769,27 @@
                         "onboardingStage": {
                           "type": "string"
                         },
+                        "isVitStudent": {
+                          "type": "boolean",
+                          "nullable": true
+                        },
                         "mess": {
                           "type": "object",
                           "properties": {
                             "providerId": {
-                              "type": "string"
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 40
                             },
                             "hostelId": {
-                              "type": "string"
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 40
                             },
                             "messId": {
-                              "type": "string"
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 40
                             }
                           },
                           "required": [
@@ -4732,6 +4816,7 @@
                         "timezone",
                         "locale",
                         "onboardingStage",
+                        "isVitStudent",
                         "mess"
                       ],
                       "additionalProperties": false
@@ -26826,12 +26911,19 @@
                             "enum": [
                               "search",
                               "quick-add",
-                              "saved-meal"
+                              "saved-meal",
+                              "mess"
                             ]
                           },
                           "savedMealId": {
                             "type": "string",
                             "format": "uuid",
+                            "nullable": true
+                          },
+                          "messCode": {
+                            "type": "string",
+                            "maxLength": 40,
+                            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
                             "nullable": true
                           },
                           "items": {
@@ -26850,6 +26942,12 @@
                                 "foodId": {
                                   "type": "string",
                                   "format": "uuid",
+                                  "nullable": true
+                                },
+                                "messDishSlug": {
+                                  "type": "string",
+                                  "maxLength": 120,
+                                  "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
                                   "nullable": true
                                 },
                                 "foodName": {
@@ -26951,6 +27049,7 @@
                                 "id",
                                 "position",
                                 "foodId",
+                                "messDishSlug",
                                 "foodName",
                                 "foodSource",
                                 "basis",
@@ -27051,6 +27150,7 @@
                           "mealSlot",
                           "entryMethod",
                           "savedMealId",
+                          "messCode",
                           "items",
                           "totals"
                         ],
@@ -27596,12 +27696,19 @@
                             "enum": [
                               "search",
                               "quick-add",
-                              "saved-meal"
+                              "saved-meal",
+                              "mess"
                             ]
                           },
                           "savedMealId": {
                             "type": "string",
                             "format": "uuid",
+                            "nullable": true
+                          },
+                          "messCode": {
+                            "type": "string",
+                            "maxLength": 40,
+                            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
                             "nullable": true
                           },
                           "items": {
@@ -27620,6 +27727,12 @@
                                 "foodId": {
                                   "type": "string",
                                   "format": "uuid",
+                                  "nullable": true
+                                },
+                                "messDishSlug": {
+                                  "type": "string",
+                                  "maxLength": 120,
+                                  "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
                                   "nullable": true
                                 },
                                 "foodName": {
@@ -27721,6 +27834,7 @@
                                 "id",
                                 "position",
                                 "foodId",
+                                "messDishSlug",
                                 "foodName",
                                 "foodSource",
                                 "basis",
@@ -27821,6 +27935,7 @@
                           "mealSlot",
                           "entryMethod",
                           "savedMealId",
+                          "messCode",
                           "items",
                           "totals"
                         ],
@@ -28246,6 +28361,82 @@
                       "savedMealId"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "clientLogId": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "loggedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "mealSlot": {
+                        "type": "string",
+                        "enum": [
+                          "breakfast",
+                          "lunch",
+                          "snacks",
+                          "dinner"
+                        ]
+                      },
+                      "entryMethod": {
+                        "type": "string",
+                        "enum": [
+                          "mess"
+                        ]
+                      },
+                      "mess": {
+                        "type": "string",
+                        "maxLength": 40,
+                        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                      },
+                      "menuDate": {
+                        "type": "string",
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                      },
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "dishSlug": {
+                              "type": "string",
+                              "maxLength": 120,
+                              "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                            },
+                            "servings": {
+                              "type": "number",
+                              "minimum": 0.1,
+                              "maximum": 20
+                            },
+                            "grams": {
+                              "type": "number",
+                              "exclusiveMinimum": true,
+                              "minimum": 0,
+                              "maximum": 5000
+                            }
+                          },
+                          "required": [
+                            "dishSlug"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "minItems": 1,
+                        "maxItems": 20
+                      }
+                    },
+                    "required": [
+                      "clientLogId",
+                      "mealSlot",
+                      "entryMethod",
+                      "mess",
+                      "menuDate",
+                      "items"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -28298,12 +28489,19 @@
                           "enum": [
                             "search",
                             "quick-add",
-                            "saved-meal"
+                            "saved-meal",
+                            "mess"
                           ]
                         },
                         "savedMealId": {
                           "type": "string",
                           "format": "uuid",
+                          "nullable": true
+                        },
+                        "messCode": {
+                          "type": "string",
+                          "maxLength": 40,
+                          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
                           "nullable": true
                         },
                         "items": {
@@ -28322,6 +28520,12 @@
                               "foodId": {
                                 "type": "string",
                                 "format": "uuid",
+                                "nullable": true
+                              },
+                              "messDishSlug": {
+                                "type": "string",
+                                "maxLength": 120,
+                                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
                                 "nullable": true
                               },
                               "foodName": {
@@ -28423,6 +28627,7 @@
                               "id",
                               "position",
                               "foodId",
+                              "messDishSlug",
                               "foodName",
                               "foodSource",
                               "basis",
@@ -28523,6 +28728,7 @@
                         "mealSlot",
                         "entryMethod",
                         "savedMealId",
+                        "messCode",
                         "items",
                         "totals"
                       ],
@@ -28827,12 +29033,19 @@
                                 "enum": [
                                   "search",
                                   "quick-add",
-                                  "saved-meal"
+                                  "saved-meal",
+                                  "mess"
                                 ]
                               },
                               "savedMealId": {
                                 "type": "string",
                                 "format": "uuid",
+                                "nullable": true
+                              },
+                              "messCode": {
+                                "type": "string",
+                                "maxLength": 40,
+                                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
                                 "nullable": true
                               },
                               "items": {
@@ -28851,6 +29064,12 @@
                                     "foodId": {
                                       "type": "string",
                                       "format": "uuid",
+                                      "nullable": true
+                                    },
+                                    "messDishSlug": {
+                                      "type": "string",
+                                      "maxLength": 120,
+                                      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
                                       "nullable": true
                                     },
                                     "foodName": {
@@ -28952,6 +29171,7 @@
                                     "id",
                                     "position",
                                     "foodId",
+                                    "messDishSlug",
                                     "foodName",
                                     "foodSource",
                                     "basis",
@@ -29052,6 +29272,7 @@
                               "mealSlot",
                               "entryMethod",
                               "savedMealId",
+                              "messCode",
                               "items",
                               "totals"
                             ],
@@ -29120,12 +29341,19 @@
                           "enum": [
                             "search",
                             "quick-add",
-                            "saved-meal"
+                            "saved-meal",
+                            "mess"
                           ]
                         },
                         "savedMealId": {
                           "type": "string",
                           "format": "uuid",
+                          "nullable": true
+                        },
+                        "messCode": {
+                          "type": "string",
+                          "maxLength": 40,
+                          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
                           "nullable": true
                         },
                         "items": {
@@ -29144,6 +29372,12 @@
                               "foodId": {
                                 "type": "string",
                                 "format": "uuid",
+                                "nullable": true
+                              },
+                              "messDishSlug": {
+                                "type": "string",
+                                "maxLength": 120,
+                                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
                                 "nullable": true
                               },
                               "foodName": {
@@ -29245,6 +29479,7 @@
                               "id",
                               "position",
                               "foodId",
+                              "messDishSlug",
                               "foodName",
                               "foodSource",
                               "basis",
@@ -29345,6 +29580,7 @@
                         "mealSlot",
                         "entryMethod",
                         "savedMealId",
+                        "messCode",
                         "items",
                         "totals"
                       ],
@@ -29649,12 +29885,19 @@
                                 "enum": [
                                   "search",
                                   "quick-add",
-                                  "saved-meal"
+                                  "saved-meal",
+                                  "mess"
                                 ]
                               },
                               "savedMealId": {
                                 "type": "string",
                                 "format": "uuid",
+                                "nullable": true
+                              },
+                              "messCode": {
+                                "type": "string",
+                                "maxLength": 40,
+                                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
                                 "nullable": true
                               },
                               "items": {
@@ -29673,6 +29916,12 @@
                                     "foodId": {
                                       "type": "string",
                                       "format": "uuid",
+                                      "nullable": true
+                                    },
+                                    "messDishSlug": {
+                                      "type": "string",
+                                      "maxLength": 120,
+                                      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
                                       "nullable": true
                                     },
                                     "foodName": {
@@ -29774,6 +30023,7 @@
                                     "id",
                                     "position",
                                     "foodId",
+                                    "messDishSlug",
                                     "foodName",
                                     "foodSource",
                                     "basis",
@@ -29874,6 +30124,7 @@
                               "mealSlot",
                               "entryMethod",
                               "savedMealId",
+                              "messCode",
                               "items",
                               "totals"
                             ],
@@ -30429,12 +30680,19 @@
                                 "enum": [
                                   "search",
                                   "quick-add",
-                                  "saved-meal"
+                                  "saved-meal",
+                                  "mess"
                                 ]
                               },
                               "savedMealId": {
                                 "type": "string",
                                 "format": "uuid",
+                                "nullable": true
+                              },
+                              "messCode": {
+                                "type": "string",
+                                "maxLength": 40,
+                                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
                                 "nullable": true
                               },
                               "items": {
@@ -30453,6 +30711,12 @@
                                     "foodId": {
                                       "type": "string",
                                       "format": "uuid",
+                                      "nullable": true
+                                    },
+                                    "messDishSlug": {
+                                      "type": "string",
+                                      "maxLength": 120,
+                                      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
                                       "nullable": true
                                     },
                                     "foodName": {
@@ -30554,6 +30818,7 @@
                                     "id",
                                     "position",
                                     "foodId",
+                                    "messDishSlug",
                                     "foodName",
                                     "foodSource",
                                     "basis",
@@ -30654,6 +30919,7 @@
                               "mealSlot",
                               "entryMethod",
                               "savedMealId",
+                              "messCode",
                               "items",
                               "totals"
                             ],
@@ -31543,6 +31809,127 @@
                                     "fibreG"
                                   ],
                                   "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "mess"
+                                      ]
+                                    },
+                                    "dishSlug": {
+                                      "type": "string",
+                                      "maxLength": 120,
+                                      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                                    },
+                                    "name": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "servings": {
+                                      "type": "number",
+                                      "exclusiveMinimum": true,
+                                      "minimum": 0
+                                    },
+                                    "row": {
+                                      "type": "object",
+                                      "properties": {
+                                        "servingLabel": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "servingGrams": {
+                                          "type": "number",
+                                          "exclusiveMinimum": true,
+                                          "minimum": 0,
+                                          "nullable": true
+                                        },
+                                        "kcalLow": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "kcalHigh": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "proteinLow": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "proteinHigh": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "carbLow": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "carbHigh": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "fatLow": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "fatHigh": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "fibreLow": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "nullable": true
+                                        },
+                                        "fibreHigh": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "nullable": true
+                                        },
+                                        "confidence": {
+                                          "type": "string",
+                                          "enum": [
+                                            "medium",
+                                            "low"
+                                          ]
+                                        },
+                                        "source": {
+                                          "type": "string",
+                                          "enum": [
+                                            "estimated"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "servingLabel",
+                                        "servingGrams",
+                                        "kcalLow",
+                                        "kcalHigh",
+                                        "proteinLow",
+                                        "proteinHigh",
+                                        "carbLow",
+                                        "carbHigh",
+                                        "fatLow",
+                                        "fatHigh",
+                                        "fibreLow",
+                                        "fibreHigh",
+                                        "confidence",
+                                        "source"
+                                      ],
+                                      "additionalProperties": false,
+                                      "nullable": true
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "dishSlug",
+                                    "name",
+                                    "servings",
+                                    "row"
+                                  ],
+                                  "additionalProperties": false
                                 }
                               ]
                             },
@@ -32028,6 +32415,127 @@
                               "fibreG"
                             ],
                             "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "mess"
+                                ]
+                              },
+                              "dishSlug": {
+                                "type": "string",
+                                "maxLength": 120,
+                                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                              },
+                              "name": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "servings": {
+                                "type": "number",
+                                "exclusiveMinimum": true,
+                                "minimum": 0
+                              },
+                              "row": {
+                                "type": "object",
+                                "properties": {
+                                  "servingLabel": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "servingGrams": {
+                                    "type": "number",
+                                    "exclusiveMinimum": true,
+                                    "minimum": 0,
+                                    "nullable": true
+                                  },
+                                  "kcalLow": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "kcalHigh": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "proteinLow": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "proteinHigh": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "carbLow": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "carbHigh": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "fatLow": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "fatHigh": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "fibreLow": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "nullable": true
+                                  },
+                                  "fibreHigh": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "nullable": true
+                                  },
+                                  "confidence": {
+                                    "type": "string",
+                                    "enum": [
+                                      "medium",
+                                      "low"
+                                    ]
+                                  },
+                                  "source": {
+                                    "type": "string",
+                                    "enum": [
+                                      "estimated"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "servingLabel",
+                                  "servingGrams",
+                                  "kcalLow",
+                                  "kcalHigh",
+                                  "proteinLow",
+                                  "proteinHigh",
+                                  "carbLow",
+                                  "carbHigh",
+                                  "fatLow",
+                                  "fatHigh",
+                                  "fibreLow",
+                                  "fibreHigh",
+                                  "confidence",
+                                  "source"
+                                ],
+                                "additionalProperties": false,
+                                "nullable": true
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "dishSlug",
+                              "name",
+                              "servings",
+                              "row"
+                            ],
+                            "additionalProperties": false
                           }
                         ]
                       },
@@ -32260,6 +32768,127 @@
                               "carbG",
                               "fatG",
                               "fibreG"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "mess"
+                                ]
+                              },
+                              "dishSlug": {
+                                "type": "string",
+                                "maxLength": 120,
+                                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                              },
+                              "name": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "servings": {
+                                "type": "number",
+                                "exclusiveMinimum": true,
+                                "minimum": 0
+                              },
+                              "row": {
+                                "type": "object",
+                                "properties": {
+                                  "servingLabel": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "servingGrams": {
+                                    "type": "number",
+                                    "exclusiveMinimum": true,
+                                    "minimum": 0,
+                                    "nullable": true
+                                  },
+                                  "kcalLow": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "kcalHigh": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "proteinLow": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "proteinHigh": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "carbLow": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "carbHigh": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "fatLow": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "fatHigh": {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  "fibreLow": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "nullable": true
+                                  },
+                                  "fibreHigh": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "nullable": true
+                                  },
+                                  "confidence": {
+                                    "type": "string",
+                                    "enum": [
+                                      "medium",
+                                      "low"
+                                    ]
+                                  },
+                                  "source": {
+                                    "type": "string",
+                                    "enum": [
+                                      "estimated"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "servingLabel",
+                                  "servingGrams",
+                                  "kcalLow",
+                                  "kcalHigh",
+                                  "proteinLow",
+                                  "proteinHigh",
+                                  "carbLow",
+                                  "carbHigh",
+                                  "fatLow",
+                                  "fatHigh",
+                                  "fibreLow",
+                                  "fibreHigh",
+                                  "confidence",
+                                  "source"
+                                ],
+                                "additionalProperties": false,
+                                "nullable": true
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "dishSlug",
+                              "name",
+                              "servings",
+                              "row"
                             ],
                             "additionalProperties": false
                           }
@@ -32649,6 +33278,1759 @@
             }
           },
           "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mess/providers": {
+      "get": {
+        "summary": "Mess menu providers (VIT Vellore)",
+        "tags": [
+          "mess"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slug": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "displayName": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "active",
+                              "disabled"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "slug",
+                          "displayName",
+                          "status"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mess/providers/{slug}/messes": {
+      "get": {
+        "summary": "A provider's messes, each with how fresh the server's copy of its menu is",
+        "tags": [
+          "mess"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "in": "path",
+            "name": "slug",
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "provider": {
+                      "type": "object",
+                      "properties": {
+                        "slug": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "displayName": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "disabled"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "slug",
+                        "displayName",
+                        "status"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "maxLength": 40,
+                            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                          },
+                          "providerSlug": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "hostelId": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "hostelLabel": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "messId": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "messLabel": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "servesNonVeg": {
+                            "type": "boolean"
+                          },
+                          "freshness": {
+                            "type": "object",
+                            "properties": {
+                              "lastSuccessAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "nullable": true
+                              },
+                              "lastAttemptAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "nullable": true
+                              },
+                              "lastError": {
+                                "type": "string",
+                                "enum": [
+                                  "unreachable",
+                                  "malformed"
+                                ],
+                                "nullable": true
+                              },
+                              "stale": {
+                                "type": "boolean"
+                              },
+                              "latestPublishedDate": {
+                                "type": "string",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                                "nullable": true
+                              }
+                            },
+                            "required": [
+                              "lastSuccessAt",
+                              "lastAttemptAt",
+                              "lastError",
+                              "stale",
+                              "latestPublishedDate"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "providerSlug",
+                          "hostelId",
+                          "hostelLabel",
+                          "messId",
+                          "messLabel",
+                          "servesNonVeg",
+                          "freshness"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "provider",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mess/menu": {
+      "get": {
+        "summary": "A mess menu for a day (default: today, your mess): published, inferred from the cycle, or unavailable",
+        "tags": [
+          "mess"
+        ],
+        "description": "Served from the server's mirror of MessIT, never live. `resolution` says whether the mess published this date; `mess.freshness` says when the server last fetched it. Each dish carries its stored estimate (a range) or null.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "in": "query",
+            "name": "date",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 40,
+              "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+            },
+            "in": "query",
+            "name": "mess",
+            "required": false
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mess": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "maxLength": 40,
+                          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                        },
+                        "providerSlug": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "hostelId": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "hostelLabel": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "messId": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "messLabel": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "servesNonVeg": {
+                          "type": "boolean"
+                        },
+                        "freshness": {
+                          "type": "object",
+                          "properties": {
+                            "lastSuccessAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "nullable": true
+                            },
+                            "lastAttemptAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "nullable": true
+                            },
+                            "lastError": {
+                              "type": "string",
+                              "enum": [
+                                "unreachable",
+                                "malformed"
+                              ],
+                              "nullable": true
+                            },
+                            "stale": {
+                              "type": "boolean"
+                            },
+                            "latestPublishedDate": {
+                              "type": "string",
+                              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                              "nullable": true
+                            }
+                          },
+                          "required": [
+                            "lastSuccessAt",
+                            "lastAttemptAt",
+                            "lastError",
+                            "stale",
+                            "latestPublishedDate"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "providerSlug",
+                        "hostelId",
+                        "hostelLabel",
+                        "messId",
+                        "messLabel",
+                        "servesNonVeg",
+                        "freshness"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "date": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "today": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "resolution": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "exact"
+                              ]
+                            },
+                            "date": {
+                              "type": "string",
+                              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "date"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "cycle-inferred"
+                              ]
+                            },
+                            "date": {
+                              "type": "string",
+                              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                            },
+                            "sourceDate": {
+                              "type": "string",
+                              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                            },
+                            "cycleLengthDays": {
+                              "type": "integer",
+                              "exclusiveMinimum": true,
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "date",
+                            "sourceDate",
+                            "cycleLengthDays"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "unavailable"
+                              ]
+                            },
+                            "date": {
+                              "type": "string",
+                              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                            },
+                            "latestAvailable": {
+                              "type": "string",
+                              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                              "nullable": true
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "date",
+                            "latestAvailable"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "meals": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "slot": {
+                            "type": "string",
+                            "enum": [
+                              "breakfast",
+                              "lunch",
+                              "snacks",
+                              "dinner"
+                            ]
+                          },
+                          "rawMenu": {
+                            "type": "string"
+                          },
+                          "dishes": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "slug": {
+                                  "type": "string",
+                                  "maxLength": 120,
+                                  "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "nullable": true
+                                },
+                                "diet": {
+                                  "type": "string",
+                                  "enum": [
+                                    "veg",
+                                    "egg",
+                                    "nonveg",
+                                    "unknown"
+                                  ]
+                                },
+                                "role": {
+                                  "type": "string",
+                                  "enum": [
+                                    "staple",
+                                    "protein",
+                                    "legume",
+                                    "vegetable",
+                                    "dairy",
+                                    "fruit",
+                                    "sweet",
+                                    "fried",
+                                    "beverage",
+                                    "condiment",
+                                    "other"
+                                  ]
+                                },
+                                "alternatives": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "isAmbient": {
+                                  "type": "boolean"
+                                },
+                                "nutrition": {
+                                  "type": "object",
+                                  "properties": {
+                                    "servingLabel": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "servingGrams": {
+                                      "type": "number",
+                                      "exclusiveMinimum": true,
+                                      "minimum": 0,
+                                      "nullable": true
+                                    },
+                                    "kcalLow": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "kcalHigh": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "proteinLow": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "proteinHigh": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "carbLow": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "carbHigh": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "fatLow": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "fatHigh": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "fibreLow": {
+                                      "type": "number",
+                                      "minimum": 0,
+                                      "nullable": true
+                                    },
+                                    "fibreHigh": {
+                                      "type": "number",
+                                      "minimum": 0,
+                                      "nullable": true
+                                    },
+                                    "confidence": {
+                                      "type": "string",
+                                      "enum": [
+                                        "medium",
+                                        "low"
+                                      ]
+                                    },
+                                    "source": {
+                                      "type": "string",
+                                      "enum": [
+                                        "estimated"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "servingLabel",
+                                    "servingGrams",
+                                    "kcalLow",
+                                    "kcalHigh",
+                                    "proteinLow",
+                                    "proteinHigh",
+                                    "carbLow",
+                                    "carbHigh",
+                                    "fatLow",
+                                    "fatHigh",
+                                    "fibreLow",
+                                    "fibreHigh",
+                                    "confidence",
+                                    "source"
+                                  ],
+                                  "additionalProperties": false,
+                                  "nullable": true
+                                },
+                                "correctionPending": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "slug",
+                                "name",
+                                "label",
+                                "diet",
+                                "role",
+                                "alternatives",
+                                "isAmbient",
+                                "nutrition",
+                                "correctionPending"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "slot",
+                          "rawMenu",
+                          "dishes"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "logged": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "dishSlug": {
+                            "type": "string",
+                            "maxLength": 120,
+                            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                          },
+                          "mealSlot": {
+                            "type": "string",
+                            "enum": [
+                              "breakfast",
+                              "lunch",
+                              "snacks",
+                              "dinner"
+                            ]
+                          },
+                          "clientLogId": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        },
+                        "required": [
+                          "dishSlug",
+                          "mealSlot",
+                          "clientLogId"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "mess",
+                    "date",
+                    "today",
+                    "resolution",
+                    "meals",
+                    "logged"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mess/dishes/{slug}/correction": {
+      "post": {
+        "summary": "Report a dish's estimate as wrong. Stored as pending; changes nothing until reviewed. Retry-safe (201, then 200)",
+        "tags": [
+          "mess"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "clientCorrectionId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "field": {
+                    "type": "string",
+                    "enum": [
+                      "kcal",
+                      "protein",
+                      "carb",
+                      "fat",
+                      "diet",
+                      "other"
+                    ]
+                  },
+                  "low": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 5000
+                  },
+                  "high": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 5000
+                  },
+                  "diet": {
+                    "type": "string",
+                    "enum": [
+                      "veg",
+                      "egg",
+                      "nonveg"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 280
+                  }
+                },
+                "required": [
+                  "clientCorrectionId",
+                  "field"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": true
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+            },
+            "in": "path",
+            "name": "slug",
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "clientCorrectionId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "dishSlug": {
+                      "type": "string",
+                      "maxLength": 120,
+                      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                    },
+                    "field": {
+                      "type": "string",
+                      "enum": [
+                        "kcal",
+                        "protein",
+                        "carb",
+                        "fat",
+                        "diet",
+                        "other"
+                      ]
+                    },
+                    "low": {
+                      "type": "number",
+                      "nullable": true
+                    },
+                    "high": {
+                      "type": "number",
+                      "nullable": true
+                    },
+                    "diet": {
+                      "type": "string",
+                      "enum": [
+                        "veg",
+                        "egg",
+                        "nonveg"
+                      ],
+                      "nullable": true
+                    },
+                    "note": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "accepted",
+                        "rejected"
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "clientCorrectionId",
+                    "dishSlug",
+                    "field",
+                    "low",
+                    "high",
+                    "diet",
+                    "note",
+                    "status",
+                    "createdAt"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "clientCorrectionId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "dishSlug": {
+                      "type": "string",
+                      "maxLength": 120,
+                      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                    },
+                    "field": {
+                      "type": "string",
+                      "enum": [
+                        "kcal",
+                        "protein",
+                        "carb",
+                        "fat",
+                        "diet",
+                        "other"
+                      ]
+                    },
+                    "low": {
+                      "type": "number",
+                      "nullable": true
+                    },
+                    "high": {
+                      "type": "number",
+                      "nullable": true
+                    },
+                    "diet": {
+                      "type": "string",
+                      "enum": [
+                        "veg",
+                        "egg",
+                        "nonveg"
+                      ],
+                      "nullable": true
+                    },
+                    "note": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "accepted",
+                        "rejected"
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "clientCorrectionId",
+                    "dishSlug",
+                    "field",
+                    "low",
+                    "high",
+                    "diet",
+                    "note",
+                    "status",
+                    "createdAt"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "429": {
             "description": "Default Response",
             "content": {
               "application/json": {

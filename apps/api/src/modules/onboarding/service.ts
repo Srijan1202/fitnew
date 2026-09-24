@@ -29,7 +29,7 @@ import {
 
 import { AppError } from '../../lib/errors.js';
 import type { ProfileBundle, UserRepository } from '../user/repository.js';
-import { goalFrom, profileDetailFrom } from '../user/service.js';
+import { goalFrom, profileDetailFrom, unknownMess, type MessRefCheck } from '../user/service.js';
 import { TargetsService, ageYears, todayIn } from '../user/targets.service.js';
 
 /** Which steps have a stored answer. Pure; unit-tested without a database. */
@@ -74,7 +74,11 @@ export interface AnswerContext {
 export class OnboardingService {
   private readonly targets: TargetsService;
 
-  constructor(private readonly repo: UserRepository) {
+  constructor(
+    private readonly repo: UserRepository,
+    /** Phase 9 (owner D13): the mess must be one the server lists. */
+    private readonly messExists: MessRefCheck,
+  ) {
     this.targets = new TargetsService(repo);
   }
 
@@ -183,6 +187,7 @@ export class OnboardingService {
         break;
 
       case 'vit':
+        if (answer.mess !== null && !(await this.messExists(answer.mess))) throw unknownMess();
         await this.repo.upsertProfile(userId, {
           isVitStudent: answer.isVitStudent,
           messProviderId: answer.mess?.providerId ?? null,

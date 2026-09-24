@@ -24,6 +24,7 @@ import {
 
 import { createDatabase } from './client.js';
 import { seedFoods } from './food-seed/load.js';
+import { seedMesses } from './seed-mess.js';
 import {
   exerciseAlternatives,
   exerciseContraindications,
@@ -164,6 +165,14 @@ if (isDirectRun) {
       // Phase 7 — the food library, from database/seeds/foods.json.
       const f = await seedFoods(url);
       console.log(`seeded ${f.foods} foods, ${f.nutritionRows} nutrition rows, ${f.aliases} aliases`);
+      // Phase 9 - the mess provider and its six messes, from packages/core config.
+      const handle = createDatabase(url);
+      try {
+        const m = await seedMesses(handle.db);
+        console.log(`seeded ${m.providers} mess provider, ${m.messes} messes`);
+      } finally {
+        await handle.client.end({ timeout: 5 });
+      }
     })
     .catch((error: unknown) => {
       console.error(error);

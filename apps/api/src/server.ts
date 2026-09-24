@@ -6,6 +6,7 @@
  */
 import { buildApp } from './app.js';
 import { loadEnv } from './lib/env.js';
+import { startMirrorTimer } from './modules/mess/mirror-timer.js';
 
 async function main(): Promise<void> {
   const env = loadEnv();
@@ -26,6 +27,9 @@ async function main(): Promise<void> {
 
   // 0.0.0.0 is required on Cloud Run; localhost-only would fail health checks.
   await app.listen({ port: env.PORT, host: '0.0.0.0' });
+  // Phase 9: development only by default (see mirror-timer.ts).
+  const stopMirror = startMirrorTimer(app, env);
+  app.addHook('onClose', async () => stopMirror());
 }
 
 main().catch((error: unknown) => {

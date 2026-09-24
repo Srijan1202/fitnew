@@ -18,6 +18,7 @@ import {
 
 import { AppError } from '../../lib/errors.js';
 import { UserRepository } from './repository.js';
+import { messServiceFor } from '../mess/routes.js';
 import { UserService } from './service.js';
 
 function requireUserId(userId: string | null): string {
@@ -26,7 +27,8 @@ function requireUserId(userId: string | null): string {
 }
 
 export async function userRoutes(app: FastifyInstance): Promise<void> {
-  const service = new UserService(new UserRepository(app.database.db));
+  const mess = messServiceFor(app.database.db);
+  const service = new UserService(new UserRepository(app.database.db), async (ref) => (await mess.messForRef(ref)) !== null);
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const errors = { 401: errorEnvelopeSchema, 404: errorEnvelopeSchema, 422: errorEnvelopeSchema };
 

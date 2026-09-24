@@ -70,7 +70,7 @@ describeIfDb('migrations (real Postgres)', () => {
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
   const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
   const PHASE6_TABLES = ['muscle_volume_weekly', 'exercise_rejections'];
-  const TOTAL_MIGRATIONS = 11;
+  const TOTAL_MIGRATIONS = 12;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -394,6 +394,88 @@ describeIfDb('migrations (real Postgres)', () => {
     expect((await client`select 1 from food_log_items where food_log_id = ${log!.id}`).length).toBe(0);
   });
 
+  it('0011: VIT mess: providers, messes, deduped snapshots, the medium cap, pending corrections, mess logs (Phase 9)', async () => {
+    for (const t of ['mess_providers', 'messes', 'mess_menu_snapshots', 'mess_dish_nutrition', 'mess_dish_corrections']) {
+      expect(await tableExists(client, t), t).toBe(true);
+    }
+    // Owner D2: no derived day/meal/dish tables.
+    for (const t of ['mess_days', 'mess_meals', 'mess_dishes']) expect(await tableExists(client, t), t).toBe(false);
+    expect(await enumLabels(client, 'food_entry_method')).toEqual(['search', 'quick-add', 'saved-meal', 'mess']);
+
+    const [prov] = await client<{ id: string }[]>`insert into mess_providers (slug, display_name) values ('mig-prov', 'Mig') returning id`;
+    const [mess] = await client<{ id: string }[]>`
+      insert into messes (provider_id, code, hostel_id, hostel_label, mess_id, mess_label, serves_non_veg, source_url)
+      values (${prov!.id}, 'mig-veg', 'mig', 'Mig', 'veg', 'Veg', false, 'https://example.invalid/hostel-9-mess-9.json') returning id`;
+    await expect(
+      client`insert into messes (provider_id, code, hostel_id, hostel_label, mess_id, mess_label, serves_non_veg, source_url)
+             values (${prov!.id}, 'Mig Veg', 'mig', 'M', 'other', 'O', false, 'x')`,
+    ).rejects.toThrow(/messes_code_format/);
+    await expect(client`update messes set last_error = 'teapot' where id = ${mess!.id}`).rejects.toThrow(/messes_last_error/);
+
+    // Snapshots: one row per (mess, payload hash) (owner D3).
+    const hash = 'a'.repeat(64);
+    await client`insert into mess_menu_snapshots (mess_id, raw_payload, payload_hash, dates) values (${mess!.id}, '{}'::jsonb, ${hash}, array['2026-09-24'])`;
+    await expect(
+      client`insert into mess_menu_snapshots (mess_id, raw_payload, payload_hash, dates) values (${mess!.id}, '{}'::jsonb, ${hash}, array['2026-09-24'])`,
+    ).rejects.toThrow(/mess_menu_snapshots_mess_hash/);
+    await expect(
+      client`insert into mess_menu_snapshots (mess_id, raw_payload, payload_hash, dates) values (${mess!.id}, '{}'::jsonb, 'nothex', array['2026-09-24'])`,
+    ).rejects.toThrow(/hash_format/);
+
+    // The medium cap is structural (owner): the database refuses high confidence and non-estimates.
+    const dish = (slug: string, confidence: string, source = 'estimated') => client.unsafe(
+      `insert into mess_dish_nutrition (dish_slug, name, serving_label, serving_grams, kcal_low, kcal_high, protein_low, protein_high, carb_low, carb_high, fat_low, fat_high, confidence, source)
+       values ('${slug}', 'Dal', '1 katori', 150, 120, 185, 6, 9, 16, 23, 3, 7, '${confidence}', '${source}')`,
+    );
+    await dish('mig-dal', 'medium');
+    await expect(dish('mig-rice', 'high')).rejects.toThrow(/confidence_cap/);
+    await expect(dish('mig-rice', 'low', 'usda')).rejects.toThrow(/mess_dish_nutrition_source/);
+    await expect(dish('Mig Rice', 'low')).rejects.toThrow(/slug_format/);
+
+    // Corrections: pending by default, retry-safe per user, a value that fits the field.
+    await client`insert into users (firebase_uid) values ('mig-mess-a')`;
+    const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-mess-a'`;
+    const ccid = '33333333-3333-4333-8333-333333333333';
+    await client`insert into mess_dish_corrections (dish_slug, user_id, client_correction_id, field, value_low, value_high) values ('mig-dal', ${u!.id}, ${ccid}, 'kcal', 150, 200)`;
+    const [c] = await client<{ status: string }[]>`select status from mess_dish_corrections where client_correction_id = ${ccid}`;
+    expect(c!.status).toBe('pending');
+    await expect(
+      client`insert into mess_dish_corrections (dish_slug, user_id, client_correction_id, field, value_low, value_high) values ('mig-dal', ${u!.id}, ${ccid}, 'kcal', 150, 200)`,
+    ).rejects.toThrow(/user_client_id/);
+    await expect(
+      client`insert into mess_dish_corrections (dish_slug, user_id, client_correction_id, field, value_low, value_high) values ('mig-dal', ${u!.id}, gen_random_uuid(), 'kcal', 200, 150)`,
+    ).rejects.toThrow(/mess_dish_corrections_value/);
+    await expect(
+      client`insert into mess_dish_corrections (dish_slug, user_id, client_correction_id, field, diet_value) values ('mig-dal', ${u!.id}, gen_random_uuid(), 'diet', 'unknown')`,
+    ).rejects.toThrow(/mess_dish_corrections_value/);
+
+    // A mess log: only entry_method 'mess' names a mess; an item is a food OR a mess dish.
+    const [log] = await client<{ id: string }[]>`
+      insert into food_logs (user_id, client_log_id, logged_at, local_date, meal_slot, entry_method, mess_id)
+      values (${u!.id}, gen_random_uuid(), now(), '2026-09-24', 'lunch', 'mess', ${mess!.id}) returning id`;
+    await expect(
+      client`insert into food_logs (user_id, client_log_id, logged_at, local_date, meal_slot, entry_method, mess_id)
+             values (${u!.id}, gen_random_uuid(), now(), '2026-09-24', 'lunch', 'search', ${mess!.id})`,
+    ).rejects.toThrow(/food_logs_mess_method/);
+    const [food] = await client<{ id: string }[]>`select id from foods limit 1`;
+    const item = (over: string) => client.unsafe(
+      `insert into food_log_items (food_log_id, position, food_id, mess_dish_slug, food_name, food_source, basis, serving_label, servings, kcal_low, kcal_high, protein_low, protein_high, carb_low, carb_high, fat_low, fat_high, confidence)
+       values ('${log!.id}', ${over}, 'Dal', 'estimated', 'per_serving', '1 katori', 1, 120, 185, 6, 9, 16, 23, 3, 7, 'medium')`,
+    );
+    await item(`0, null, 'mig-dal'`);
+    if (food !== undefined) await expect(item(`1, '${food.id}', 'mig-dal'`)).rejects.toThrow(/food_log_items_mess_or_food/);
+    // A logged dish keeps its snapshot when the mess, its menus and estimates go.
+    await client`delete from messes where id = ${mess!.id}`;
+    const [after] = await client<{ mess_id: string | null }[]>`select mess_id from food_logs where id = ${log!.id}`;
+    expect(after!.mess_id).toBeNull();
+    expect((await client`select 1 from mess_menu_snapshots where payload_hash = ${hash}`).length).toBe(0);
+    await client`delete from mess_dish_nutrition where dish_slug = 'mig-dal'`;
+    const [kept] = await client<{ mess_dish_slug: string; kcal_high: string }[]>`select mess_dish_slug, kcal_high from food_log_items where food_log_id = ${log!.id}`;
+    expect(kept).toEqual({ mess_dish_slug: 'mig-dal', kcal_high: '185.00' });
+    await client`delete from users where id = ${u!.id}`;
+    await client`delete from mess_providers where id = ${prov!.id}`;
+  });
+
   it('one active goal per user is a database fact', async () => {
     await client`insert into users (firebase_uid) values ('mig-goal')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-goal'`;
@@ -448,7 +530,40 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'uid-dup'`;
   });
 
-  it('down removes 0010, 0009, 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+  it('down removes 0011 (rebuilding food_entry_method; mess logs and meals go, the day cache is rebuilt), 0010, 0009, 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+    // Data that only 0011 can hold, next to data 0010 keeps.
+    await client`insert into users (firebase_uid) values ('mig-down')`;
+    const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-down'`;
+    const logRow = async (method: string) => {
+      const [l] = await client.unsafe<{ id: string }[]>(
+        `insert into food_logs (user_id, client_log_id, logged_at, local_date, meal_slot, entry_method) values ('${u!.id}', gen_random_uuid(), now(), '2026-09-20', 'lunch', '${method}') returning id`,
+      );
+      await client.unsafe(
+        `insert into food_log_items (food_log_id, position, mess_dish_slug, food_name, food_source, basis, serving_label, servings, kcal_low, kcal_high, protein_low, protein_high, carb_low, carb_high, fat_low, fat_high, confidence)
+         values ('${l!.id}', 0, ${method === 'quick-add' ? 'null' : "'dal'"}, 'Dal', 'estimated', 'per_serving', '1 katori', 1, 100, 150, 5, 8, 10, 20, 2, 6, 'medium')`,
+      );
+    };
+    await logRow('mess');
+    await logRow('quick-add');
+    await client`insert into daily_nutrition (user_id, local_date, kcal_low, kcal_high, item_count) values (${u!.id}, '2026-09-20', 200, 300, 2)`;
+    await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Mess lunch', '[{"kind":"mess","dishSlug":"dal","name":"Dal","servings":1}]'::jsonb)`;
+    await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Plain', '[{"kind":"quick-add","name":"X","kcal":1,"proteinG":0,"carbG":0,"fatG":0,"fibreG":null}]'::jsonb)`;
+
+    expect(await rollbackLastMigration(connectionString)).toBe('0011_mess');
+    for (const t of ['mess_providers', 'messes', 'mess_menu_snapshots', 'mess_dish_nutrition', 'mess_dish_corrections']) {
+      expect(await tableExists(client, t), t).toBe(false);
+    }
+    expect(await enumLabels(client, 'food_entry_method')).toEqual(['search', 'quick-add', 'saved-meal']);
+    const methods = await client<{ entry_method: string }[]>`select entry_method from food_logs where user_id = ${u!.id}`;
+    expect(methods.map((m) => m.entry_method)).toEqual(['quick-add']);
+    const [day] = await client<{ kcal_low: string; item_count: number }[]>`select kcal_low, item_count from daily_nutrition where user_id = ${u!.id}`;
+    expect(day).toEqual({ kcal_low: '100.00', item_count: 1 });
+    const meals = await client<{ name: string }[]>`select name from saved_meals where user_id = ${u!.id}`;
+    expect(meals.map((m) => m.name)).toEqual(['Plain']);
+    await expect(client`update food_logs set saved_meal_id = gen_random_uuid() where user_id = ${u!.id}`).rejects.toThrow(/saved_meal_method|foreign key/);
+    await client`delete from users where id = ${u!.id}`;
+    expect(await appliedCount(client)).toBe(11);
+
     expect(await rollbackLastMigration(connectionString)).toBe('0010_nutrition_logging');
     for (const t of ['food_logs', 'food_log_items', 'daily_nutrition', 'saved_meals']) expect(await tableExists(client, t), t).toBe(false);
     const logEnums = await client<{ typname: string }[]>`select typname from pg_type where typname in ('meal_slot', 'food_entry_method')`;

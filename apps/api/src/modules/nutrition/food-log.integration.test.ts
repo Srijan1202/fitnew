@@ -466,7 +466,7 @@ describeIfDb('/v1/nutrition logging (real Postgres, real food seed)', () => {
     expect([r1.statusCode, r2.statusCode]).toEqual([201, 200]);
     const meal: SavedMeal = r1.json();
     expect((r2.json() as SavedMeal).id).toBe(meal.id);
-    expect(meal.items.map((i) => (i.kind === 'food' ? [i.kind, i.foodName, i.servings] : [i.kind, i.name, i.kcal]))).toEqual([
+    expect(meal.items.map((i) => (i.kind === 'food' ? [i.kind, i.foodName, i.servings] : i.kind === 'quick-add' ? [i.kind, i.name, i.kcal] : [i.kind, i.name, i.servings]))).toEqual([
       ['food', 'Dal tadka', 1],
       ['food', 'Chapati', 2],
       ['quick-add', 'Curd', 60],

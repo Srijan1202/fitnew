@@ -5,6 +5,7 @@
  */
 import type {
   DietPreferences,
+  MessRef,
   Goal,
   GoalResponse,
   PatchPreferencesRequest,
@@ -37,6 +38,7 @@ export function profileDetailFrom(bundle: ProfileBundle): UserProfileDetail {
     timezone: bundle.user.timezone,
     locale: bundle.user.locale,
     onboardingStage: p?.onboardingStage ?? 'goal',
+    isVitStudent: p?.isVitStudent ?? null,
     mess:
       p?.messProviderId && p.messHostelId && p.messMessId
         ? { providerId: p.messProviderId, hostelId: p.messHostelId, messId: p.messMessId }
@@ -84,11 +86,47 @@ const TARGET_INPUTS: ReadonlySet<keyof PatchProfileRequest> = new Set([
   'activityLevel',
 ]);
 
+/** Phase 9 (owner D13): is this a mess the server lists? */
+export type MessRefCheck = (ref: MessRef) => Promise<boolean>;
+
+export function unknownMess(): AppError {
+  return new AppError('VALIDATION_FAILED', 'That mess is not one FITOS knows.', [{ path: 'mess', issue: 'unknown mess' }]);
+}
+
 export class UserService {
   private readonly targets: TargetsService;
 
-  constructor(private readonly repo: UserRepository) {
+  constructor(
+    private readonly repo: UserRepository,
+    private readonly messExists: MessRefCheck,
+  ) {
     this.targets = new TargetsService(repo);
+  }
+
+  /**
+   * Phase 9 (owner D13): the VIT answer after onboarding. `isVitStudent:
+   * false` clears the mess; a mess implies a VIT student; a VIT student must
+   * keep a mess. The mess must be one the server lists.
+   */
+  private async vitPatch(
+    userId: string,
+    isVitStudent: boolean | undefined,
+    mess: MessRef | null | undefined,
+  ): Promise<{ isVitStudent?: boolean; messProviderId?: string | null; messHostelId?: string | null; messMessId?: string | null }> {
+    if (isVitStudent === undefined && mess === undefined) return {};
+    if (isVitStudent === false) return { isVitStudent: false, messProviderId: null, messHostelId: null, messMessId: null };
+    if (mess !== undefined && mess !== null) {
+      if (!(await this.messExists(mess))) throw unknownMess();
+      return { isVitStudent: true, messProviderId: mess.providerId, messHostelId: mess.hostelId, messMessId: mess.messId };
+    }
+    // isVitStudent true with no new mess, or the mess cleared: a VIT student keeps one.
+    const current = (await this.bundleOrThrow(userId)).profile;
+    const stillVit = isVitStudent === true || current?.isVitStudent === true;
+    const hasMess = mess === undefined && current !== null && current !== undefined && current.messProviderId !== null && current.messHostelId !== null && current.messMessId !== null;
+    if (stillVit && !hasMess) {
+      throw new AppError('VALIDATION_FAILED', 'A VIT student must pick a mess.', [{ path: 'mess', issue: 'required' }]);
+    }
+    return mess === null ? { messProviderId: null, messHostelId: null, messMessId: null } : { isVitStudent: true };
   }
 
   private async bundleOrThrow(userId: string): Promise<ProfileBundle> {
@@ -103,7 +141,8 @@ export class UserService {
 
   async patchProfile(userId: string, patch: PatchProfileRequest): Promise<UserProfileDetail> {
     await this.bundleOrThrow(userId);
-    const { timezone, locale, heightCm, displayName, weightKg, ...rest } = patch;
+    const { timezone, locale, heightCm, displayName, weightKg, isVitStudent, mess, ...rest } = patch;
+    const vit = await this.vitPatch(userId, isVitStudent, mess);
     if (displayName !== undefined) await this.repo.updateDisplayName(userId, displayName);
     if (weightKg !== undefined) {
       // A dated reading, not an overwrite: the history stays (one per day).
@@ -117,6 +156,7 @@ export class UserService {
     await this.repo.updateUserLocale(userId, { ...(timezone !== undefined ? { timezone } : {}), ...(locale !== undefined ? { locale } : {}) });
     const profilePatch = stripUndefined({
       ...rest,
+      ...vit,
       heightCm: heightCm !== undefined ? String(heightCm) : undefined,
     });
     if (Object.keys(profilePatch).length > 0) await this.repo.upsertProfile(userId, profilePatch);

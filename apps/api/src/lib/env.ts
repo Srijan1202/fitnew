@@ -81,6 +81,11 @@ const envSchema = z.object({
   AI_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120_000).default(25_000),
   // Gemini 3 spends part of this budget thinking; 2048 leaves room to answer.
   AI_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(64).max(8192).default(2048),
+
+  // Phase 9 - the in-process MessIT mirror timer, in hours (0 = off). Unset:
+  // 12 in development, off elsewhere (hosted, Cloud Scheduler is the trigger:
+  // deferred while GCP work is paused). The job itself is dist/jobs/mirror-mess.js.
+  MESS_MIRROR_INTERVAL_HOURS: z.coerce.number().min(0).max(168).optional(),
 }).superRefine((env, ctx) => {
   // Phase 6.7 — a hosted server must not boot on development fallbacks.
   if (!isHostedEnvironment(env.NODE_ENV)) return;

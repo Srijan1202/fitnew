@@ -1,6 +1,7 @@
 /**
  * /v1/nutrition — food logging (Phase 8). HTTP and Zod only (§8.3).
- * Default-deny like every /v1 route. No AI, mess or barcode endpoints here.
+ * Default-deny like every /v1 route. No AI or barcode endpoints here; mess
+ * dishes are logged here too (Phase 9, entryMethod `mess`).
  */
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
@@ -26,6 +27,7 @@ import { AppError } from '../../lib/errors.js';
 import { FoodLogRepository } from './log-repository.js';
 import { FoodLogService } from './log-service.js';
 import { FoodRepository } from './repository.js';
+import { messServiceFor } from '../mess/routes.js';
 
 function requireUserId(userId: string | null): string {
   if (userId === null) throw new AppError('UNAUTHENTICATED', 'Create a session first (POST /auth/session).');
@@ -33,7 +35,12 @@ function requireUserId(userId: string | null): string {
 }
 
 export async function foodLogRoutes(app: FastifyInstance): Promise<void> {
-  const service = new FoodLogService(new FoodLogRepository(app.database.db), new FoodRepository(app.database.db));
+  const service = new FoodLogService(
+    new FoodLogRepository(app.database.db),
+    new FoodRepository(app.database.db),
+    undefined,
+    messServiceFor(app.database.db),
+  );
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const security = [{ bearerAuth: [] }];
   const errors = { 401: errorEnvelopeSchema, 404: errorEnvelopeSchema, 422: errorEnvelopeSchema };

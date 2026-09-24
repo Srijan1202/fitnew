@@ -23,6 +23,7 @@ import {
 
 import { foodEntryMethodEnum, foodSourceEnum, mealSlotEnum, nutritionBasisEnum, nutritionConfidenceEnum } from './enums.js';
 import { foods } from './food.js';
+import { messes } from './mess.js';
 import { users } from './users.js';
 
 const userRef = () =>
@@ -70,6 +71,8 @@ export const foodLogs = pgTable(
     mealSlot: mealSlotEnum('meal_slot').notNull(),
     entryMethod: foodEntryMethodEnum('entry_method').notNull(),
     savedMealId: uuid('saved_meal_id').references(() => savedMeals.id, { onDelete: 'set null' }),
+    /** Phase 9: the mess a `mess` log came from (owner D10). */
+    messId: uuid('mess_id').references(() => messes.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     /** §9.1: user-authored content soft-deletes. */
@@ -82,6 +85,8 @@ export const foodLogs = pgTable(
     index('food_logs_user_logged_at_idx').on(t.userId, t.loggedAt.desc()).where(sql`${t.deletedAt} IS NULL`),
     check('food_logs_local_date_format', sql`${t.localDate} ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'`),
     check('food_logs_saved_meal_method', sql`${t.savedMealId} IS NULL OR ${t.entryMethod} = 'saved-meal'`),
+    // ::text: the enum value is added in the same migration and cannot be used there as an enum.
+    check('food_logs_mess_method', sql`${t.messId} IS NULL OR ${t.entryMethod}::text = 'mess'`),
   ],
 );
 
@@ -95,6 +100,12 @@ export const foodLogItems = pgTable(
     position: smallint('position').notNull(),
     /** The food it came from; NULL for quick add. The snapshot never depends on it. */
     foodId: uuid('food_id').references(() => foods.id, { onDelete: 'set null' }),
+    /**
+     * Phase 9 (owner D10): the mess dish it came from — provenance only. No
+     * foreign key (dishes are parsed from snapshots, not stored); the numbers
+     * are the snapshot below, as for any food.
+     */
+    messDishSlug: text('mess_dish_slug'),
     // --- snapshot of what was logged (owner J18) ---
     foodName: text('food_name').notNull(),
     foodSource: foodSourceEnum('food_source').notNull(),
@@ -120,6 +131,7 @@ export const foodLogItems = pgTable(
   (t) => [
     uniqueIndex('food_log_items_log_position').on(t.foodLogId, t.position),
     index('food_log_items_food_idx').on(t.foodId),
+    check('food_log_items_mess_or_food', sql`${t.messDishSlug} IS NULL OR ${t.foodId} IS NULL`),
     check('food_log_items_name_nonempty', sql`length(btrim(${t.foodName})) > 0`),
     check('food_log_items_servings_positive', sql`${t.servings} > 0`),
     check('food_log_items_grams_positive', sql`${t.grams} IS NULL OR ${t.grams} > 0`),

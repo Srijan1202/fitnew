@@ -15,6 +15,7 @@ import { ExerciseService } from '../exercise/service.js';
 import { TrainingRepository } from '../training/repository.js';
 import { TrainingService } from '../training/service.js';
 import { UserRepository } from '../user/repository.js';
+import { messServiceFor } from '../mess/routes.js';
 import { UserService } from '../user/service.js';
 import { WorkoutRepository } from '../workout/repository.js';
 import { WorkoutService } from '../workout/service.js';
@@ -47,7 +48,7 @@ export const AI_CHAT_RATE_LIMIT = {
 export async function aiRoutes(app: FastifyInstance): Promise<void> {
   const db = app.database.db;
   const services = {
-    user: new UserService(new UserRepository(db)),
+    user: new UserService(new UserRepository(db), async (ref) => (await messServiceFor(db).messForRef(ref)) !== null),
     training: new TrainingService(new TrainingRepository(db)),
     workout: new WorkoutService(new WorkoutRepository(db), new TrainingRepository(db)),
     exercise: new ExerciseService(new ExerciseRepository(db)),
