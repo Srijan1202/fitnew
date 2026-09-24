@@ -483,7 +483,7 @@ Codes: `UNAUTHENTICATED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `VALIDATIO
 | GET | `/mess/providers` | Available providers | |
 | GET | `/mess/providers/{slug}/messes` | The six messes | |
 | GET | `/mess/menu` | `?mess&date` → menu + **resolution** + mirror freshness (`mess` = a mess code; default: the user's mess) | Resolution always present |
-| GET | `/mess/menu/recommend` | Ranked plates for a meal | `?date&mess&slot`: date = today or tomorrow (tomorrow is planning, not loggable; else 422); slot defaults to the next unlogged meal; 404 without a mess. `status` = ok / no-targets / target-reached / menu-unavailable / meal-not-served / nothing-safe / nothing-fits. Reason codes, no prose; nothing stored (Phase 10, ADR-015) |
+| GET | `/mess/menu/recommend` | Ranked plates for a meal | `?date&mess&slot`: date = today or tomorrow (tomorrow is planning, not loggable; else 422); slot defaults to the next unlogged meal; 404 without a mess. `status` = ok / no-targets / target-reached / menu-unavailable / meal-not-served / nothing-safe / no-meal / nothing-fits. Every plate is a meal with its `structure`; items carry their meal `component` (ADR-016). Reason codes, no prose; nothing stored (Phase 10, ADR-015) |
 | POST | `/mess/dishes/{slug}/correction` | Report wrong nutrition | Queued for review (stored pending; changes nothing until reviewed) |
 | GET | `/today` | **Ranked actions** | The core endpoint |
 | POST | `/today/actions/{id}/event` | shown/accepted/dismissed/completed | Feeds `recommendation_events` |
@@ -765,7 +765,27 @@ Protein leads because it is the macro mess-eating students most reliably under-h
 
 `AMENDED 2026-09-24 (Phase 10, ADR-015)` — the exact, fixed formula (constants pinned by tests; no silent tuning):
 
-**Roles.** Plates may also take fried, sweet, beverage and other dishes, 1 serving each, as the line above says (only ambient items and condiments are excluded).
+**Roles.** ~~Plates may also take fried, sweet, beverage and other dishes, 1 serving each.~~ Superseded by the meal composition below (ADR-016).
+
+`AMENDED 2026-09-24 (Phase 10 Amendment A, ADR-016)` — **FITOS recommends a MEAL, not the nutritionally cheapest dish.**
+- **Components.** Each dish gets a meal component from its name and diet class (term families, no dish lists): staple, complete (a staple with its protein), protein, pulse-gravy, dairy, veg, soup, fruit, snack, dessert, crisp, beverage, condiment, other. The Phase 9 `role` is unchanged.
+- **What may go on a plate.**
+  - Drinks: never.
+  - Desserts and crisps: snacks only.
+  - Condiments and unrecognised dishes: never.
+  - Each of these stays loggable.
+- **Structure is a constraint** (tiers ranked before the score):
+  - lunch and dinner: staple + strong protein + veg › staple + strong › staple + weak (sambar/kootu/curd) › staple only (limited) › strong without staple (limited);
+  - breakfast: main + strong › main + weak › main only (limited) › strong without main (limited);
+  - snacks: any substantive item, labelled a snack.
+  - A plate without a staple and without a strong protein is never a meal.
+- **Tier choice.** Only the best achievable tier is returned, among plates that fit within everything left today. Calories may move a plate down through the meal-grade tiers, never into a limited one.
+- **Candidates and caps.**
+  - Candidates are chosen per component, anchors first, so a staple always survives.
+  - Distinct dishes per plate are capped by component, with at most 5 dishes (breakfast 4, snacks 2).
+  - Serving caps: rice-type staples 2, bread-type 3, protein and pulse-gravy 2, everything else 1.
+  - The kcal ceiling always admits the smallest valid meal.
+- **Alternatives** must replace a staple or protein anchor (their anchor sets are never equal, subset or superset); fewer are returned rather than manufactured.
 
 **Meal target.**
 - Meal weights: breakfast 0.25, lunch 0.35, snacks 0.10, dinner 0.30.
@@ -777,16 +797,18 @@ Protein leads because it is the macro mess-eating students most reliably under-h
 ```
 score = proteinScore + carbReward − kcalPenalty − carbPenalty − fatPenalty − shapePenalty − varietyPenalty
 proteinScore   = 100 × min(p / Tp, 1.25)
-kcalPenalty    = W_over × max(0, k − Tk)/Tk + W_under × max(0, Tk − k)/Tk
+kcalPenalty    = W_over × max(0, k − Tk)/max(Tk, Nk) + W_under × max(0, Tk − k)/Tk      (F1, ADR-016)
                  W_over/W_under: muscle-gain 110/55 · fat-loss 180/35 · recomposition 180/35 · strength, general, maintenance 110/35
-carbPenalty    = (40, or 20 post-workout) × max(0, c − Tc)/Tc
-fatPenalty     = 50 × max(0, f − Tf)/Tf
+carbPenalty    = (40, or 20 post-workout) × max(0, c − Tc)/max(Tc, Nc)
+fatPenalty     = 50 × max(0, f − Tf)/max(Tf, Nf)
+                 N = a normal-sized meal: the day target × the meal weight (F1, ADR-016: an empty
+                 remainder can no longer make every real meal cost hundreds of points)
 carbReward     = post-workout ? 20 × min(c / Tc, 1) : 0
 shapePenalty   = |itemCount − 4| × 4 + max(0, totalServings − 7) × 6
 varietyPenalty = Σ dishes 6 × days seen in the 3 days before the menu date (max 18 per dish; never an exclusion)
 ```
 - Post-workout = a session completed within 3 h, today.
-- Search: 9 candidates, ≤ 8 servings, pruning at `max(1.5 × Tk, 400)` kcal, ties broken by plate key.
+- Search: per-component candidates (ADR-016), ≤ 8 servings, pruning at `max(1.5 × Tk, 400, 1.5 × the smallest valid meal)` kcal, ties broken by plate key.
 - **Budget tier is removed:** there is no price data (§36: V2).
 
 **Confidence:** a plate is only as trustworthy as its worst dish — `worstConfidence()` returns the minimum.
@@ -799,6 +821,11 @@ Return the best available plate **and say it falls short**. Do not inflate estim
 - **When there is a shortfall:** for the top plate, separately for protein and kcal, exactly when the plate's **high** end is below the meal target `T`. There is no percentage threshold.
 - **How it is reported:** the gap as the range `[T − high, T − low]`, never inflated, with the most any searched plate reaches (`menuMax`) and whether any plate could meet `T` (`menuCanMeet`).
 - **What is not a shortfall:** a plate that may reach `T` (`low < T ≤ high`) carries a "may fall short" reason instead.
+
+`AMENDED 2026-09-24 (Phase 10 Amendment A, ADR-016)`:
+- **Limited menu:** a plate missing a component because the filtered menu has none (no protein dish, no vegetable, no staple) is labelled limited, with a `limited-menu` reason naming what is missing. The shortfall stays honest.
+- **`no-meal`:** safe dishes exist, but no structurally valid meal can be made; no plate is returned.
+- **`nothing-fits`:** a valid meal exists, but no meal-grade plate fits within everything left today; the smallest meal's kcal is given.
 
 ---
 

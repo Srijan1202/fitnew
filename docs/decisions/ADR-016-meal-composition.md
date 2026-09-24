@@ -42,11 +42,13 @@ But `role` drives the Phase 9 estimator and the `/mess/menu` contract, which are
 3. **Drinks never go on a plate (C5).** Desserts and crisps never go on lunch or dinner plates (C6); only snacks may use them. All of them stay loggable.
 4. **Snacks are their own kind.** A substantive item may stand alone and is labelled a snack. Snack rules never apply to other meals.
 5. **Candidates are chosen per component, anchors first** (a staple is always a candidate). The kcal ceiling always admits the smallest valid meal. Serving caps stay realistic and are never inflated.
-6. **F1 (C2).** Over-penalties divide by `max(remaining meal target, normal meal)`, where normal meal = day target × meal weight, instead of `max(target, 1)`. The under-term, the constants and the goal weights are unchanged. Tests pin the values (e.g. a fat target of 0 at dinner with 49 g a day: 18 g of fat costs 61.2, not 900).
+6. **F1 (C2).** Over-penalties divide by `max(remaining meal target, normal meal)`, where normal meal = day target × meal weight, instead of `max(target, 1)`. The under-term, the constants and the goal weights are unchanged. Tests pin the values (e.g. a fat target of 0 at dinner with 49 g a day: 18 g of fat costs 61.2, not 850).
 7. **Meaningful alternatives (C3).** Plates 2 and 3 must *replace* an anchor (a staple, a strong protein or a complete dish): their anchor set may be neither equal to, nor a subset or superset of, an earlier plate's. They come from the same tier, and fewer are returned rather than manufactured.
 8. **`no-meal` (C4), distinct from `nothing-fits`.**
    - `no-meal`: the filtered menu cannot form a structurally valid meal.
-   - `nothing-fits`: a valid meal exists, but even the smallest one's low-end kcal exceeds everything left today.
+   - `nothing-fits`: a valid meal exists, but no meal-grade plate fits within everything left today.
+   - A plate whose low end is above what is left today is never offered.
+   - When the best structure doesn't fit the day, the recommender falls back through meal-grade tiers only (lunch/dinner T1–T3, breakfast T1–T2). Calories never push a plate into a limited tier; those are for menus that lack a component.
    - A meal that only exceeds this meal's share is returned, with its kcal reason and an honest shortfall.
 9. **Structured reasons.** A plate carries its structure, its anchors, its components and, when the menu lacks a component, `limited-menu` with what is missing. The app words each code; no model is involved.
 10. **Four Phase 9 estimate corrections, mess only.** Curd Rice, Rice Papad, Chole Bhatura and Dahi Vada were wrong through rule order.
@@ -61,3 +63,4 @@ But `role` drives the Phase 9 estimator and the `/mess/menu` contract, which are
 - Juice, tea, desserts and crisps are never suggested for main meals. They remain loggable.
 - Persona snapshots change as a reviewed diff. A new persona, `fat-budget-spent`, freezes the S24 case.
 - The Phase 7 food "Curd rice" carries the same curd values; it is reported, not changed (Phase 7 is frozen).
+- **Found, not fixed (outside the approved scope):** Phase 9's ambient check matches `butter` and `sauce`, so "Paneer Butter Masala", "Butter Chicken Masala" and "Spring Roll With Sauce" are treated as ambient and never reach a plate. This is reported to the owner; the ambient rule belongs to accepted Phase 9.

@@ -596,9 +596,12 @@ Status order: `menu-unavailable`, `meal-not-served`, `no-targets`, `target-reach
 
 - **`nothing-safe`** (unchanged): no dish passes diet, allergy and estimate.
 - **`no-meal`** (new): dishes pass, but the filtered menu has no structurally valid meal, e.g. only rasam, fruit and papad pass. No plate; "Why not" lists every dish.
-- **`nothing-fits`** (redefined): a valid meal exists, but even the smallest one's low-end kcal exceeds **everything left today** (`dayRemainingKcal`, the conservative low end), so eating it guarantees going over the day. The app says so with both numbers.
+- **`nothing-fits`** (redefined): a valid meal exists, but no meal-grade plate fits within **everything left today** (`dayRemainingKcal`, the conservative low end). The app says so with the smallest meal's kcal and what is left.
+  - A plate whose low end is above what is left today is never offered.
   - A meal that merely exceeds this meal's share is still returned, with the kcal reason.
   - This refines owner decision 8 (no over-budget plate) together with C4 (never drop the smallest valid meal only because the ceiling is tight).
+- **Clarified during implementation (2026-09-24), to match C4 exactly:** when the best structure the menu offers doesn't fit the day, the recommender falls back to the next **meal-grade** tier (lunch and dinner T1–T3, breakfast T1–T2), e.g. Rice + Sambar + Sabji when Chole Bhatura doesn't fit. It **never** drops into a limited tier because of calories: the limited tiers are for menus that lack a component. So a bowl of dal alone is never offered as lunch when the menu has a staple; that case is `nothing-fits`.
+  - Found by the stored-menu sweep: 6 dinners (women's veg, 7 Sep, the S24 state) had returned `nothing-fits` although a valid tier-3 meal fitted.
 - **`target-reached`** (Tk = 0) is unchanged.
 
 ### 20.7 Scoring change F1 (C2) — amends ADR-015 §3
@@ -612,7 +615,8 @@ fatPen   = W_fat  × max(0, f − Tf) / max(Tf, Nf)
 ```
 
 - **Unchanged:** the under-term (`/ max(Tk, 1)`), every constant and every goal weight.
-- **Pinned example:** with a day fat target of 49 g at dinner (Nf = 14.7) and Tf = 0, a meal with 18 g fat at its midpoint costs 50 × 18 / 14.7 = **61.2** (it was 900). Tests pin this and the equivalent carb case.
+- **Pinned example:** with a day fat target of 49 g at dinner (Nf = 14.7) and Tf = 0, a meal with 18 g fat at its midpoint costs 50 × 18 / 14.7 = **61.2** (it was 850 under ADR-015's floor of 1 g: 50 × (18 − 1) / 1). Tests pin this and the equivalent carb case.
+- The excess is measured over the real target, so a target of 0 gives an excess of the full amount; a request without a normal meal keeps ADR-015's exact terms.
 
 ### 20.8 Reasons, contract and app
 - **New plate reasons:**

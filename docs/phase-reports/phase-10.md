@@ -1,4 +1,4 @@
-## PHASE 10 — Mess recommendations — IMPLEMENTED, AWAITING S24 ACCEPTANCE
+## PHASE 10 — Mess recommendations — AMENDMENT A/B IMPLEMENTED, AWAITING OWNER REVIEW AND A NEW S24 RUN
 
 **Date** 2026-09-24 · **Branch** `phase-10` from `main` at `08a085b` (the accepted Phase 9, fast-forwarded per D26) · not merged (owner instruction)
 
@@ -8,11 +8,76 @@
 - `0edba9e` — `GET /v1/mess/menu/recommend`
 - `cbf7224` — mobile: "What should I eat?", log this plate, Profile → Food
 - `18fa3ad` — ADR-015 and the MASTER-SPEC amendments
+- `d53126b`, `43b3cb6`, `6159f3f` — this report, and the APK address
+- **After the first S24 run (Amendments A and B):**
+  - `fb6a610` — the plan amendment and ADR-016, written before any code
+  - `56c9443` — core meal composition, F1, the four estimate corrections (mess path), tests, sweep and latency
+  - `7addd02` — migration 0012: the four stored estimates corrected, with provenance
+  - `38eaca5` — the recommend contract and API (structure, component, `no-meal`, `dayRemainingKcal`, `smallestMealKcal`)
+  - `94a5b15` — mobile: structure label, statuses, wording, conformance
+  - `f4ca077` — `nothing-fits` exactly as C4 defines it: fall back through meal-grade tiers only
+  - plus the docs commit (ADR-015 amendment, MASTER-SPEC) and this report update
 - plus this report
 
 **Decision record:** the owner approved the audit (D1–D25; D12 clarified, D13 modified, D18 deferred), then the [plan](../phase-plans/phase-10-plan.md) with 29 locked decisions. [ADR-015](../decisions/ADR-015-mess-recommendations.md).
 
-**Status:** implemented and every automated gate passes. **Not accepted:** Phase 10 is accepted only after the owner's S24 manual acceptance (below). The §38 Phase 10 boxes stay unticked until then.
+**Status:** the first S24 run found the recommender suggesting single dishes as meals (Watermelon Juice for breakfast, White Rice for lunch, Rasam for dinner). The owner stopped acceptance, approved the meal-composition design (C1–C6) and a data correction (Amendment B), and both are implemented. Every automated gate passes. **Not accepted:** the owner reviews this report, then a new S24 run follows. The §38 Phase 10 boxes stay unticked.
+
+### AMENDMENT A/B — after the first S24 run (2026-09-24)
+
+**Why it happened** (reproduced exactly from the dev database, read-only):
+1. **The fat target collapsed to 0.** Fat eaten was 39.2–67.2 g against a 49 g target, and the conservative rule subtracts the high end. ADR-015's `50 × (f − 1)/1` then cost every real meal 475–950 points, so the lowest-fat single item won.
+2. **The search had no notion of a meal.** Any dish could be a plate alone, and global protein-density candidates could drop every staple.
+
+**What changed** ([plan §20–§22](../phase-plans/phase-10-plan.md), [ADR-016](../decisions/ADR-016-meal-composition.md)):
+- **A meal-component classifier** (`packages/core/src/mess/components.ts`). It works from term families, not dish lists; Phase 9 `role` is untouched. All 294 September dishes are frozen in a reviewed golden file.
+- **Structure tiers are a constraint**, ranked before the score:
+  - no drinks on any plate (C5);
+  - no desserts or crisps at lunch or dinner (C6);
+  - snacks labelled as snacks;
+  - per-component candidates, so a staple always survives.
+- **Meaningful alternatives (C3):** plates 2 and 3 replace a staple or protein anchor. The menu returns fewer plates rather than fake ones.
+- **`no-meal` vs `nothing-fits` (C4)**, each explained in the app.
+  - Clarified during implementation to match C4 exactly: a plate must fit within what is left today, and when the best structure doesn't, the recommender falls back through meal-grade tiers only (never into a limited tier because of calories).
+  - The stored-menu sweep found 6 dinners that had wrongly returned `nothing-fits`.
+- **F1 (C2):** over-penalties are measured against a normal-sized meal. Pinned: 18 g of fat with a fat target of 0 now costs 61.2, where it was 850.
+- **Amendment B:** Curd Rice, Rice Papad, Chole Bhatura and Dahi Vada are corrected.
+  - In core, only in the mess path. The Phase 7 path is unchanged, because the frozen Phase 7 seed reads it.
+  - In stored rows, by migration 0012, only where a row still held the exact wrong values. Each change keeps its previous and new values in `mess_dish_nutrition_revisions`; down restores them.
+  - Applied to the dev database: 4 rows corrected, 4 provenance rows.
+
+**The S24 account now** (same data, real service):
+
+| Meal | Before | Now |
+|---|---|---|
+| Breakfast | Watermelon Juice | Onion Uthappam + Sprouted Moong Dhal (complete meal); alternatives Poha + Moong Dhal, Uthappam + Masala Omelette |
+| Lunch | White Rice | Chapathi + Dhal Makhani + Mochai Kara Kulambu (complete meal); alternative with White Rice |
+| Snacks | Sweet Corn Chaat | Sweet Corn Chaat, labelled a snack |
+| Dinner | Rasam | White Rice + Dhal + Brinjal Fry + Seasonal Fruit (complete meal); alternatives with Phulka and Veg Chow Mein |
+
+**September sweep on the stored menus.** This covers every mess, day and meal in the dev database: 180 menus × 4 meals × 6 personas (vegetarian muscle-gain, vegetarian fat-loss, eggetarian, non-veg muscle-gain, the S24 state, and vegetarian with peanut and milk allergies). That is 4,320 recommendations and 7,449 plates.
+
+| Check | Count |
+|---|---|
+| a breakfast, lunch or dinner plate that is a single supporting item | **0** |
+| a lunch or dinner top plate without a staple when the filtered menu has one | **0** |
+| soup, juice or fruit as the top meal | **0** |
+| a drink on any plate | **0** |
+| a dessert or crisp at lunch or dinner | **0** |
+| a diet violation (primary or alternative) | **0** |
+| an allergy violation | **0** |
+| alternatives that do not differ by an anchor | **0** |
+| a different result on repeat | **0** |
+
+- **Statuses:** `ok` 3,812, `nothing-safe` 342 (allergy persona), `no-meal` 166 (snack menus with nothing but drinks and a dish the diet excludes), `nothing-fits` 0.
+- **Slowest single recommendation:** 6.0 ms.
+- **The same checks run in CI** as a core test over the September capture, plus a latency test on every real meal (each median-of-3 under 100 ms).
+
+**Found and reported, not fixed** (outside the approved scope):
+1. **Phase 9's ambient rule** matches `butter` and `sauce`. So "Paneer Butter Masala", "Butter Chicken Masala" and "Spring Roll With Sauce" count as ambient and never reach a plate. On 8 snack menus that leaves a non-vegetarian `no-meal`. Fixing it touches accepted Phase 9 classification, so it needs the owner's decision.
+2. **The frozen Phase 7 food "Curd rice"** carries the same curd values as the old mess row (65–105 kcal). It is not changed, because Phase 7 is frozen.
+3. **The first persona sweep showed** that with a whole day left (dinner with nothing logged), a plate can hold two staples with five servings (Curd Rice ×2 + Plain Dosa ×3 + Dal ×2 + Bhindi). This is within the caps and scoring; it is noted for review.
+
 
 No contradiction with the locked decisions or the plan came up during implementation. Three readings were made and are recorded in ADR-015:
 - "dinner: 19:00" means dinner from 19:00;
@@ -86,10 +151,10 @@ No contradiction with the locked decisions or the plan came up during implementa
 
 | Suite | Result | New in Phase 10 |
 |---|---|---|
-| core | **646 passed** (11 files) | 104: slot boundaries; meal share and target; default meal; every constant and goal weight pinned, plus each score term; **diet safety across every real menu**; allergen status table; **allergy hard filter across real menus** (every plate dish confirmed free, severity irrelevant); alternatives; the "Veg" prefix; snack plates; menu states and zero budget; shortfall (exists only when high < T, never inflated, `menuCanMeet`); deterministic, < 100 ms, coded reasons; variety; post-workout; the six personas snapshotted |
-| contracts | **65 passed** (10 files) | 4: query strictness, statuses and codes, reasons carry no text, the response shape |
-| API | **391 passed** (27 files) | 18 recommend integration tests (real Postgres, date-shifted capture) |
-| Flutter | **531 passed** | 34: 30 in `recommend_test.dart` and 4 conformance tests |
+| core | **724 passed** (12 files; 646 before Amendment A) | 104: slot boundaries; meal share and target; default meal; every constant and goal weight pinned, plus each score term; **diet safety across every real menu**; allergen status table; **allergy hard filter across real menus** (every plate dish confirmed free, severity irrelevant); alternatives; the "Veg" prefix; snack plates; menu states and zero budget; shortfall (exists only when high < T, never inflated, `menuCanMeet`); deterministic, < 100 ms, coded reasons; variety; post-workout; the six personas snapshotted |
+| contracts | **66 passed** (10 files) | 4: query strictness, statuses and codes, reasons carry no text, the response shape |
+| API | **394 passed** (27 files; incl. migration 0012 up/down, meals-not-dishes on every mess and meal, the corrected estimates) | 18 recommend integration tests (real Postgres, date-shifted capture) |
+| Flutter | **534 passed** (structure label, `no-meal`, `nothing-fits` numbers, drink under "Why not", conformance for the new shapes) | 34: 30 in `recommend_test.dart` and 4 conformance tests |
 
 **Persona snapshots** (`packages/core/test/fixtures/personas/`): `vegetarian-vit`, `eggetarian-vit`, `nonveg-vit`, `allergy-restricted`, `stale-mess-endpoint`, `protein-deficit`. Each file holds the frozen input and the ranked output, so any ranking change shows as a diff.
 
@@ -149,7 +214,7 @@ The PC's address depends on the network it joins. A first build targeted `172.16
 
 ### S24 MANUAL ACCEPTANCE — PENDING (owner)
 
-Install the new APK. The PC and the phone must be on the same Wi-Fi, with the API container running. Then check (decision 26):
+Install the new APK. The PC and the phone must be on the same Wi-Fi, with the API container running. Then check (decision 26, plus 17–20 for Amendment A):
 
 | # | Check | How | Result |
 |---|---|---|---|
@@ -169,6 +234,10 @@ Install the new APK. The PC and the phone must be on the same Wi-Fi, with the AP
 | 14 | Offline | Airplane mode: MESS shows the saved menu and "Suggestions need a connection", with no plate. | pending |
 | 15 | No non-veg for vegetarian | Across meals and messes browsed while vegetarian, no non-veg or unknown dish appears on a plate. | pending |
 | 16 | No allergic dish | With allergies set, no plate dish contains, likely contains, or is unconfirmed for an allergen (check "Why not"). | pending |
+| 17 | A meal, not a dish (the first run's cases) | Same account, same day. Breakfast, lunch and dinner each show a staple with a protein, and a "Complete meal" (or "Meal · …") label. Never Watermelon Juice, White Rice alone, or Rasam alone. | pending |
+| 18 | Drinks, desserts, crisps | Juice and tea never appear on a plate; papad, appalam and desserts never appear at lunch or dinner. "Why not" says why, and they can still be logged from the menu. | pending |
+| 19 | Meaningful alternatives | Other plates change the staple or the protein (e.g. Phulka instead of Rice), never just add rasam or curd. | pending |
+| 20 | Limited menu, no-meal, nothing-fits | With a milk allergy at lunch: "Limited menu · no protein dish" plus the shortfall. A snack of only drinks says no meal can be made. With almost no calories left: "even the smallest (about X kcal) is more than you have left today (Y kcal)". | pending |
 
 ### MASTER-SPEC AMENDMENTS (minimal; reasons in ADR-015)
 

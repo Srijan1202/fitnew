@@ -165,3 +165,14 @@ A dish is kept only if every step passes. The first step that fails is the reaso
 - Recommendations are reproducible: the same input gives the same ranked output, snapshotted for the six personas (`vegetarian-vit`, `eggetarian-vit`, `nonveg-vit`, `allergy-restricted`, `stale-mess-endpoint`, `protein-deficit`).
 - Users with allergies to peanut, sesame, soy, mustard or milk will often see `nothing-safe` or very small plates. This is by design; a wider `FREE` list needs ingredient data FITOS does not have.
 - Tuning any weight is a visible change to a pinned test and to this record.
+
+## Amendment — 2026-09-24, after the first S24 run ([ADR-016](ADR-016-meal-composition.md))
+
+The owner stopped acceptance after the S24 run produced Watermelon Juice as breakfast, White Rice as lunch and Rasam as dinner. The owner then approved C1–C6.
+
+- **§3, F1 (C2):** over-penalties now divide by `max(target, a normal-sized meal)` (the day target × the meal weight) instead of `max(target, 1)`, and measure the excess over the real target. The under-term, every constant and every goal weight are unchanged. Pinned: a fat target of 0 at dinner, 49 g a day, and 18 g of fat now costs 61.2 (it was 850).
+- **§4 is replaced by ADR-016's meal composition:** a component classifier, structure tiers ranked before the score, no drinks on plates, no desserts or crisps at lunch or dinner, per-component candidates and meaningful alternatives.
+- **§3's "9 candidates" is replaced** by per-component candidates.
+- **§7 and §8 add** `no-meal`, the refined `nothing-fits`, and `limited-menu`.
+- **Amendment B:** four stored Phase 9 estimates are corrected (migration 0012, with provenance).
+- The six personas were re-snapshotted as a reviewed diff; `fat-budget-spent` freezes the S24 case.
