@@ -70,7 +70,7 @@ describeIfDb('migrations (real Postgres)', () => {
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
   const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
   const PHASE6_TABLES = ['muscle_volume_weekly', 'exercise_rejections'];
-  const TOTAL_MIGRATIONS = 12;
+  const TOTAL_MIGRATIONS = 13;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -476,6 +476,50 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from mess_providers where id = ${prov!.id}`;
   });
 
+  it('0012: four Phase 9 estimates corrected with provenance, only where still wrong; down restores them (Phase 10 Amendment B)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0012_mess_estimate_corrections');
+    expect(await tableExists(client, 'mess_dish_nutrition_revisions')).toBe(false);
+    const row = (slug: string, name: string, label: string, grams: number, v: readonly number[]) => client.unsafe(
+      `insert into mess_dish_nutrition (dish_slug, name, serving_label, serving_grams, kcal_low, kcal_high, protein_low, protein_high, carb_low, carb_high, fat_low, fat_high, confidence)
+       values ('${slug}', '${name}', '${label}', ${grams}, ${v.join(', ')}, 'medium')`,
+    );
+    // The exact wrong Phase 9 rows …
+    await row('curd-rice', 'Curd Rice', '1 cup', 120, [65, 105, 4, 7, 5, 8, 3, 5.5]);
+    await row('rice-papad', 'Rice Papad', '1 katori', 150, [175, 215, 3.2, 4.5, 38, 48, 0.3, 1.2]);
+    await row('chole-bhatura', 'Chole Bhatura', '1 katori', 150, [150, 230, 7, 11, 20, 28, 4, 9]);
+    // … and one already changed by someone else: left alone. (Absent rows: nothing to do.)
+    await row('dahi-vada', 'Dahi Vada', '1 cup', 120, [70, 105, 4, 7, 5, 8, 3, 5.5]);
+
+    await migrateUp(connectionString);
+    expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
+    type Est = { serving_label: string; serving_grams: string; kcal_low: string; kcal_high: string; protein_low: string; fat_high: string; confidence: string };
+    const est = async (slug: string) =>
+      (await client<Est[]>`select serving_label, serving_grams, kcal_low, kcal_high, protein_low, fat_high, confidence from mess_dish_nutrition where dish_slug = ${slug}`)[0];
+    expect(await est('curd-rice')).toEqual({ serving_label: '1 katori', serving_grams: '180.00', kcal_low: '180.00', kcal_high: '260.00', protein_low: '5.00', fat_high: '8.00', confidence: 'medium' });
+    expect(await est('rice-papad')).toEqual({ serving_label: '1 small portion', serving_grams: '25.00', kcal_low: '95.00', kcal_high: '155.00', protein_low: '1.00', fat_high: '10.00', confidence: 'low' });
+    expect(await est('chole-bhatura')).toEqual({ serving_label: '1 plate (2 bhatura + chole)', serving_grams: '330.00', kcal_low: '590.00', kcal_high: '870.00', protein_low: '17.00', fat_high: '41.00', confidence: 'low' });
+    expect((await est('dahi-vada'))!.kcal_low).toBe('70.00');
+
+    const revs = await client<{ dish_slug: string; reason: string; previous: Record<string, unknown>; current: Record<string, unknown> }[]>`
+      select dish_slug, reason, previous, current from mess_dish_nutrition_revisions order by dish_slug`;
+    expect(revs.map((r) => r.dish_slug)).toEqual(['chole-bhatura', 'curd-rice', 'rice-papad']);
+    for (const r of revs) expect(r.reason).toBe('phase-10-estimate-correction');
+    const curd = revs.find((r) => r.dish_slug === 'curd-rice')!;
+    expect(Number(curd.previous['kcalLow'])).toBe(65);
+    expect(curd.previous['servingLabel']).toBe('1 cup');
+    expect(Number(curd.current['kcalLow'])).toBe(180);
+    await expect(client`insert into mess_dish_nutrition_revisions (dish_slug, reason, previous, current) values ('curd-rice', ' ', '{}', '{}')`).rejects.toThrow(/revisions_reason/);
+
+    // Down puts the recorded previous values back and drops the provenance table.
+    expect(await rollbackLastMigration(connectionString)).toBe('0012_mess_estimate_corrections');
+    expect(await tableExists(client, 'mess_dish_nutrition_revisions')).toBe(false);
+    expect(await est('curd-rice')).toEqual({ serving_label: '1 cup', serving_grams: '120.00', kcal_low: '65.00', kcal_high: '105.00', protein_low: '4.00', fat_high: '5.50', confidence: 'medium' });
+    expect((await est('dahi-vada'))!.kcal_low).toBe('70.00');
+
+    await migrateUp(connectionString);
+    await client`delete from mess_dish_nutrition where dish_slug in ('curd-rice', 'rice-papad', 'chole-bhatura', 'dahi-vada')`;
+  });
+
   it('one active goal per user is a database fact', async () => {
     await client`insert into users (firebase_uid) values ('mig-goal')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-goal'`;
@@ -530,7 +574,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'uid-dup'`;
   });
 
-  it('down removes 0011 (rebuilding food_entry_method; mess logs and meals go, the day cache is rebuilt), 0010, 0009, 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+  it('down removes 0012 (restoring the corrected estimates), 0011 (rebuilding food_entry_method; mess logs and meals go, the day cache is rebuilt), 0010, 0009, 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
     // Data that only 0011 can hold, next to data 0010 keeps.
     await client`insert into users (firebase_uid) values ('mig-down')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-down'`;
@@ -549,6 +593,8 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Mess lunch', '[{"kind":"mess","dishSlug":"dal","name":"Dal","servings":1}]'::jsonb)`;
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Plain', '[{"kind":"quick-add","name":"X","kcal":1,"proteinG":0,"carbG":0,"fatG":0,"fibreG":null}]'::jsonb)`;
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0012_mess_estimate_corrections');
+    expect(await tableExists(client, 'mess_dish_nutrition_revisions')).toBe(false);
     expect(await rollbackLastMigration(connectionString)).toBe('0011_mess');
     for (const t of ['mess_providers', 'messes', 'mess_menu_snapshots', 'mess_dish_nutrition', 'mess_dish_corrections']) {
       expect(await tableExists(client, t), t).toBe(false);

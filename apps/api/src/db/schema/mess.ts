@@ -204,3 +204,28 @@ export type MessRow = typeof messes.$inferSelect;
 export type MessMenuSnapshotRow = typeof messMenuSnapshots.$inferSelect;
 export type MessDishNutritionRow = typeof messDishNutrition.$inferSelect;
 export type MessDishCorrectionRow = typeof messDishCorrections.$inferSelect;
+
+/**
+ * Provenance for any change to a stored estimate (Phase 10 Amendment B,
+ * ADR-016). Estimates are write-once from the mirror; when one is corrected
+ * by a migration, the previous and the new values are kept here with the
+ * reason. Logged snapshots never change. This holds data corrections, not
+ * recommendations (nothing about recommendations is stored).
+ */
+export const messDishNutritionRevisions = pgTable(
+  'mess_dish_nutrition_revisions',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    dishSlug: text('dish_slug')
+      .notNull()
+      .references(() => messDishNutrition.dishSlug, { onDelete: 'cascade' }),
+    reason: text('reason').notNull(),
+    previous: jsonb('previous').notNull(),
+    current: jsonb('current').notNull(),
+    revisedAt: timestamp('revised_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('mess_dish_nutrition_revisions_slug_idx').on(t.dishSlug, t.revisedAt),
+    check('mess_dish_nutrition_revisions_reason', sql`length(btrim(${t.reason})) > 0`),
+  ],
+);
