@@ -1,6 +1,6 @@
 # Phase 10 — Mess recommendations: implementation plan
 
-**Status** PROPOSED — for the owner's final review. No Phase 10 code is written until it is approved.
+**Status** APPROVED 2026-09-24 and implemented. After the first S24 run, the owner approved **Amendment A (meal composition, C1–C6)** and **Amendment B (known estimate corrections)**: §20–§22 and ADR-016.
 **Date** 2026-09-24 · **Branch** `phase-10`, from `main` = `08a085b` (accepted Phase 9, fast-forwarded)
 **Decisions** from the Phase 10 audit:
 - **Approved:** D1–D11, D14–D17, D19–D25.
@@ -491,3 +491,214 @@ Reason = { code: ReasonCode, ...values }   // no English; the app words each cod
 4. **App:** entities and conformance; "What to eat" with the thali; log this plate; "Why not"; the EAT link; the Profile Food editor; tests B23–B24.
 5. **Docs:** ADR-015 and the §17 amendments; the report.
 6. Full suites, CI, an S24 APK, then your S24 acceptance.
+
+---
+
+## 20. Amendment A — meal composition (owner C1–C6, 2026-09-24)
+
+**Why.** The S24 acceptance run (fat-loss, non-vegetarian, women's special mess, three meals logged) produced Watermelon Juice for breakfast, White Rice for lunch and Rasam for dinner. The read-only audit found two causes:
+- **(A)** Fat eaten (39.2–67.2 g) exceeded the 49 g target at its high end, so the fat target was 0. The over-penalty `50 × (f − 0) / max(0, 1)` then cost every real meal 475–950 points, and the lowest-fat single item won.
+- **(B)** The search has no notion of a meal: any plate-eligible dish can make a plate alone, and global protein-density selection can drop every staple.
+
+**The owner's invariant:** *FITOS recommends a MEAL, not merely the nutritionally cheapest dish.* Structure is a constraint (a tier), never a penalty; no dish-specific penalties.
+
+**Pipeline** (replaces §8's candidate selection and the top of §9):
+
+```
+menu → diet + allergy hard filter (unchanged, primary and every alternative)
+     → meal component per dish (new classifier; Phase 9 `role` untouched)
+     → components allowed at this meal (C5, C6)
+     → per-component candidates (anchors first, capped)
+     → bounded serving search (whole servings, caps, kcal ceiling that always admits the smallest valid meal)
+     → structure tier per plate → keep the best achievable tier
+     → existing scoring within that tier (goal, carb/fat with F1, variety, post-workout)
+     → up to 3 plates that differ in a meaningful anchor (C3)
+```
+
+### 20.1 Meal components (C1)
+`packages/core/src/mess/components.ts` holds ordered, word-boundary term rules on the dish name plus its diet class. There are no per-dish lists and no nutrition thresholds, so it generalises by term family; an unrecognised name is `other`.
+
+| Component | Role in a meal | Examples |
+|---|---|---|
+| `staple` | carbohydrate anchor ("main" at breakfast) | rice dishes, phulka/roti/chapathi, idly, dosa, uthappam, pongal, upma, poha, kitchadi, poori, paratha, pulao, pasta, noodles, pav, Curd Rice, Podi Dosa/Idly/Rice |
+| `complete` | a staple and a strong protein in one dish | a staple term with egg or meat (Egg Fried Rice, Chicken Biriyani, Egg Chow Mein), Chole Bhatura, Meal Maker Pulao |
+| `protein` | strong protein anchor | any egg, meat or fish dish; paneer, soya, meal maker; dal/dhal family; channa/chana/chenna/chole/rajma/chickpea; sprouts; sundal |
+| `pulse-gravy` | weak protein | sambar family, kootu, kadhi/kadi |
+| `dairy` | weak protein | curd, dahi, raitha, buttermilk, lassi, Dahi Vada |
+| `veg` | vegetable component | poriyal, sabzi, kurma, kulambu, gravy, fry, masala, salad, kofta, stew, baby corn dishes |
+| `soup` | supporting only | rasam, every soup |
+| `fruit` | supporting / snack | banana, papaya, melons, grapes, "fruit" |
+| `snack` | snack item | samosa, puff, cutlet, bonda, bajji, vada, sandwich, pani puri, chaat, fries, spring roll, corn, peanuts |
+| `dessert` | snack only | sweets, cakes, ice cream, payasam, kheer, halwa |
+| `crisp` | snack only | appalam, papad, fryums, chips |
+| `beverage` | never on a plate | juice, tea, coffee, milk, milkshake, sarbat, mint lemon |
+| `condiment` | never on a plate | chutney, pickle, sauce, jam, butter, thokku, bare podi |
+| `other` | never on a plate | unrecognised names |
+
+A golden test covers every dish in the September capture.
+
+### 20.2 What may go on a plate (C5, C6)
+
+| Meal | Allowed components | Never |
+|---|---|---|
+| lunch, dinner | staple, complete, protein, pulse-gravy, dairy, veg, soup, fruit | **beverage (C5), dessert and crisp (C6)**, snack, condiment, other |
+| breakfast | staple, complete, protein, pulse-gravy, dairy, veg, fruit, snack (a vada as a side) | **beverage (C5)**, soup, dessert, crisp, condiment, other |
+| snacks | snack, dessert, fruit, dairy, protein, staple, complete, crisp | **beverage (C5)**, soup, pulse-gravy, veg, condiment, other |
+
+- A dish left out for its component shows under "Why not" with the reason `not-a-meal-component {component}`.
+- Drinks, desserts and crisps stay loggable from the menu and search as before.
+
+### 20.3 Structure tiers (C1)
+Definitions: *staple* = staple or complete; *strong* = protein or complete; *weak* = pulse-gravy or dairy; *veg* = veg.
+
+| Lunch / dinner | Kind | Breakfast | Kind |
+|---|---|---|---|
+| T1 staple + strong + veg | `complete-meal` | T1 staple + strong | `complete-meal` |
+| T2 staple + strong | `meal` (missing vegetable) | T2 staple + weak | `meal-weak-protein` |
+| T3 staple + weak | `meal-weak-protein` | T3 staple only | `limited` (missing protein) |
+| T4 staple only | `limited` (missing protein) | T4 strong, no staple | `limited-no-staple` |
+| T5 strong, no staple | `limited-no-staple` | | |
+
+- **Never returned:** a plate with no staple and no strong protein. That covers soup-, fruit-, veg- and weak-protein-only plates; drinks, desserts and crisps can't reach a lunch or dinner plate at all.
+- **Snacks:** any allowed item forms a plate of kind `snack` (at most 2 dishes). Snack rules never apply to other meals.
+- **Ranking:** plates rank by **(tier ascending, score descending, plate key)**, and only the best achievable tier is returned.
+
+### 20.4 Candidates and search
+- **Per-component candidates**, each group sorted by protein density (descending) with the slug breaking ties:
+  - staple 3, complete 2, protein 3;
+  - pulse-gravy 2, veg 2, dairy 1, soup 1, fruit 1;
+  - snack 2, dessert 2, crisp 1.
+  A staple is always a candidate when one exists.
+- **Dishes per plate, by component:**
+  - lunch and dinner: staple ≤ 2, complete ≤ 1, protein ≤ 2, pulse-gravy ≤ 1, dairy ≤ 1, veg ≤ 2, soup ≤ 1, fruit ≤ 1; at most **5 dishes**;
+  - breakfast: staple ≤ 2, complete ≤ 1, protein ≤ 2, pulse-gravy ≤ 1, dairy ≤ 1, veg ≤ 1, fruit ≤ 1, snack ≤ 1; at most **4 dishes**;
+  - snacks: at most **2 dishes**.
+  - Every meal: at most 8 servings (unchanged).
+- **Serving caps** (no inflation):
+  - rice-type and one-pot staples (rice, pulao, biryani, bath, pongal, upma, poha, kitchadi, pasta, noodles, semiya) 2; bread-type staples 3;
+  - complete 1; protein and pulse-gravy 2;
+  - everything else 1 (dairy drops from 2 to 1).
+- **kcal ceiling** = `max(1.5 × Tk, 400, 1.5 × floor)`. `floor` is the smallest single-serving kcal (low end) of a minimal plate of the best tier the filtered menu offers. The smallest valid meal is therefore never cut off; overshoot is reported with the existing `kcal-may-exceed` / `kcal-over` reasons.
+- **Performance** (under 100 ms on every real menu; a test on the widest real September menu):
+  - running macro sums are kept during the walk, with no allocation at the leaves;
+  - only the best plate per *anchor signature* in each tier is retained.
+
+### 20.5 Alternatives (C3)
+- **Anchor signature:** the plate's set of staple, complete and strong-protein dishes (servings ignored).
+- **Plate 1** is the best plate of the best tier.
+- **Plates 2 and 3** are the next best plates of the **same tier** whose signature is neither equal to, nor a subset or superset of, any plate already chosen. So they *replace* an anchor, never just add one.
+  - Rice + Dal + Veg, then Phulka + Dal + Veg, then Rice + Paneer + Veg: accepted.
+  - Rice + Dal + Rasam, or Rice + Dal + Curd, after Rice + Dal + Veg: rejected.
+- If the menu cannot produce three such plates, fewer are returned. None are manufactured.
+
+### 20.6 Statuses (C4)
+Status order: `menu-unavailable`, `meal-not-served`, `no-targets`, `target-reached`, `nothing-safe`, **`no-meal`**, **`nothing-fits`**, `ok`.
+
+- **`nothing-safe`** (unchanged): no dish passes diet, allergy and estimate.
+- **`no-meal`** (new): dishes pass, but the filtered menu has no structurally valid meal, e.g. only rasam, fruit and papad pass. No plate; "Why not" lists every dish.
+- **`nothing-fits`** (redefined): a valid meal exists, but even the smallest one's low-end kcal exceeds **everything left today** (`dayRemainingKcal`, the conservative low end), so eating it guarantees going over the day. The app says so with both numbers.
+  - A meal that merely exceeds this meal's share is still returned, with the kcal reason.
+  - This refines owner decision 8 (no over-budget plate) together with C4 (never drop the smallest valid meal only because the ceiling is tight).
+- **`target-reached`** (Tk = 0) is unchanged.
+
+### 20.7 Scoring change F1 (C2) — amends ADR-015 §3
+- **Change:** over-terms are divided by `max(remaining meal target, normal meal)`, where `normal meal` = day target × meal weight (0.25 / 0.35 / 0.10 / 0.30). Previously they were divided by `max(target, 1)`.
+- **Terms affected:**
+
+```
+kcalOver = W_over × max(0, k − Tk) / max(Tk, Nk)
+carbPen  = W_carb × max(0, c − Tc) / max(Tc, Nc)
+fatPen   = W_fat  × max(0, f − Tf) / max(Tf, Nf)
+```
+
+- **Unchanged:** the under-term (`/ max(Tk, 1)`), every constant and every goal weight.
+- **Pinned example:** with a day fat target of 49 g at dinner (Nf = 14.7) and Tf = 0, a meal with 18 g fat at its midpoint costs 50 × 18 / 14.7 = **61.2** (it was 900). Tests pin this and the equivalent carb case.
+
+### 20.8 Reasons, contract and app
+- **New plate reasons:**
+  - `meal-structure {kind}`
+  - `staple-anchor {dishSlug}`
+  - `protein-anchor {dishSlug, strength: strong|weak}`
+  - `vegetable-component {dishSlug}`
+  - `supporting-side {dishSlug}`
+  - `limited-menu {missing: (staple|protein|strong-protein|vegetable)[]}`, emitted when the best tier lacks something the menu (after your filters) doesn't offer
+- **Dish reasons:** `not-a-meal-component {component}` replaces `not-a-plate-dish {role}`.
+- **Contract:**
+  - each plate gains `structure {kind, missing[]}`;
+  - each item gains `component`;
+  - the status list adds `no-meal`;
+  - `target` gains `dayRemainingKcal`;
+  - the response gains `smallestMealKcal` (set only for `nothing-fits`).
+- **App:**
+  - the plate shows its structure ("Complete meal", "Meal · no vegetable dish on this menu", "Limited menu — no protein dish fits your filters", "Snack");
+  - `no-meal` and `nothing-fits` each get their own message;
+  - "Why not" explains the component exclusions.
+
+### 20.9 Tests (owner list 1–18) and the September sweep
+- **Core — safety and structure:**
+  - Watermelon Juice is never a breakfast plate;
+  - White Rice alone is `limited`;
+  - Rasam alone is never dinner;
+  - T1 beats any single supporting dish;
+  - vegetarian and allergy safety across every real menu;
+  - corn stays a valid `snack`;
+  - no drink on any plate;
+  - no dessert or crisp at lunch or dinner.
+- **Core — alternatives and statuses:**
+  - alternatives differ by an anchor (subset and superset rules);
+  - `no-meal` vs `nothing-fits`;
+  - `limited-menu` missing lists.
+- **Core — scoring, determinism and speed:**
+  - F1 with fat target 0 and carb target 0, pinned;
+  - determinism;
+  - under 100 ms on the widest real September menu;
+  - a new persona `fat-budget-spent` (the S24 state), and the six personas re-snapshotted as a reviewed diff.
+- **September sweep (core test over the 2026-09-24 capture, every mess, date and meal, several personas):**
+  - no breakfast, lunch or dinner top plate is a single supporting item;
+  - no lunch or dinner top plate lacks a staple when the filtered menu has one;
+  - no soup, juice or fruit is a top meal;
+  - diet and allergy safety holds;
+  - results are deterministic.
+- **API, contract and app:** the new fields and statuses, conformance, the new wording, and the corrected estimates (§21).
+
+## 21. Amendment B — known Phase 9 estimate corrections (owner, 2026-09-24)
+
+**The errors.** Four dishes carry wrong stored estimates, all caused by rule order in core `mess/nutrition.ts` (the first matching term wins):
+
+| Dish (slug) | Stored now | Cause | Corrected to |
+|---|---|---|---|
+| Curd Rice (`curd-rice`) | 1 cup curd: 65–105 kcal, 4–7 g P | `curd` matches before the existing `curd rice` entry | the table's own `curd rice` entry: 1 katori (180 g), 180–260 kcal, P 5–8, C 30–40, F 4–8, medium |
+| Rice Papad (`rice-papad`) | 1 katori rice: 175–215 kcal | `rice` matches before `rice papad` | the table's own crisp entry: 1 small portion (25 g), 95–155 kcal, P 1–2.5, C 11–17, F 5–10, low |
+| Chole Bhatura (`chole-bhatura`) | 1 katori chole: 150–230 kcal | `chole` matches first; the bhatura is lost | a sum of the table's own entries, chole (1 katori) + bhatura × 2: 1 plate (330 g), 590–870 kcal, P 17–27, C 80–112, F 20–41, low |
+| Dahi Vada (`dahi-vada`) | 1 cup curd: 65–105 kcal | `dahi` matches before `vada` | a sum of the table's own entries, vada × 2 + curd (1 cup): 2 pieces in curd (230 g), 305–485 kcal, P 10–18, C 31–48, F 15–29.5, low |
+
+No new nutrition numbers are invented: each correction is an existing table entry or a sum of existing entries, and is capped at medium confidence.
+
+**Scope:**
+- **Mess only.** The corrections apply in `enrichDish` (the mess path) through a `MESS_ESTIMATE_CORRECTIONS` overlay consulted before the table.
+- **`estimateNutrition` is unchanged**, because the frozen Phase 7 food seed reads it. The Phase 7 food "Curd rice" carries the same curd values; that is reported to the owner and not changed here.
+- Nothing else in Phase 9 data changes.
+
+**Why a migration is required.** Stored estimates are write-once (`insertNutritionIfAbsent` → `ON CONFLICT DO NOTHING`, ADR-014 D6), and nothing ever updates them. Phase 9 corrections are pending-only, and `mess_dish_nutrition` isn't seeded (the mirror writes it). Fixing core alone corrects only databases that have never seen these dishes. The dev database (and any later hosted one) would keep the wrong numbers forever, and recommendations and logs read the stored row.
+
+**The migration (`0012`):**
+1. Creates **`mess_dish_nutrition_revisions`** `(id, dish_slug → mess_dish_nutrition ON DELETE CASCADE, reason, previous jsonb, current jsonb, revised_at)` so every correction keeps its provenance. This stores data corrections, not recommendations (nothing about recommendations is persisted).
+2. For each of the four slugs, only where the row **still holds the exact wrong Phase 9 values**, records a revision (reason `phase-10-estimate-correction`) and updates the row. A row that is absent or already different is left alone.
+3. **Down** restores each row's `previous` values from its revision and drops the table.
+
+**What this doesn't touch:** logs already made keep their snapshot (Phase 8 immutability); new logs and recommendations read the corrected rows.
+
+**Tests:**
+- **core:** each correction equals its source entries; `estimateNutrition` is unchanged for every Phase 7 carried term; `enrichDish` returns the corrections;
+- **API migration test:** up and down with the wrong rows present (revision written, values corrected; down restores them), and no-ops for absent or edited rows;
+- **API integration test:** the recommendation plate and a new log use the corrected Curd Rice values;
+- **mirror:** a fresh database gets the corrected values.
+
+## 22. Implementation order (Amendment A and B)
+1. This amendment and ADR-016 (committed before code).
+2. Core: components, the composition search, F1, statuses, reasons and alternatives; the estimate overlay; tests, sweep and performance.
+3. Contracts and OpenAPI.
+4. Migration 0012 and the API (new fields, `dayRemainingKcal`, `smallestMealKcal`); tests.
+5. App: structure label, statuses, wording, DTOs, conformance and widget tests.
+6. Docs: the ADR-015 F1 amendment, MASTER-SPEC §15.1/§15.2/§10.1, and the phase report. §38 stays unticked.
+7. All suites, the sweep, the performance test, CI and the APK, then a report. **No acceptance claim**; the S24 run happens after the owner's review.
