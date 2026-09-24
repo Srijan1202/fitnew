@@ -1,0 +1,74 @@
+{
+  "model": {
+    "localDate": "2026-09-24",
+    "hourOfDay": 19,
+    "goal": "muscle-gain",
+    "training": {
+      "hasProgramme": true,
+      "sessionName": "Legs",
+      "exerciseCount": 6,
+      "plannedSetCount": 17,
+      "completedToday": true,
+      "activeSessionOpen": false,
+      "deload": {
+        "state": "none",
+        "trigger": null
+      },
+      "increaseLoad": [],
+      "limitationSwaps": [],
+      "neglected": [],
+      "prsToday": [],
+      "nextSession": {
+        "name": "Legs — Quads / Glutes",
+        "date": "2026-09-25"
+      }
+    },
+    "nutrition": {
+      "targets": {
+        "kcal": 2600,
+        "proteinG": 140
+      },
+      "eaten": {
+        "kcalLow": 2700,
+        "kcalHigh": 3100,
+        "proteinLow": 150,
+        "proteinHigh": 170
+      },
+      "loggedSlots": [
+        "breakfast",
+        "lunch",
+        "snacks"
+      ]
+    },
+    "body": {
+      "weighedToday": false,
+      "daysSinceWeighIn": 2
+    },
+    "dismissedToday": []
+  },
+  "today": {
+    "engineVersion": "today-1",
+    "localDate": "2026-09-24",
+    "inputDigest": "62a040ad2f82f84203a3b15c1ac288bb12d92a78d3ae4fa23986c6b4c70e4217",
+    "actions": [
+      {
+        "kind": "log-weight",
+        "subjectKey": "",
+        "priority": 45,
+        "basis": "calculated",
+        "target": "progress",
+        "reason": {
+          "code": "weigh-in-due",
+          "values": {
+            "daysSinceWeighIn": 2
+          }
+        },
+        "headline": "Log your weight",
+        "detail": "Last reading 2 days ago. The trend needs regular readings; single numbers do not matter.",
+        "engineVersion": "today-1",
+        "rank": 1,
+        "contentHash": "3e39fc06a8b881ac8fbcdbcc3ddfb92f2887221c741bac76991eaabd836f3429"
+      }
+    ]
+  }
+}

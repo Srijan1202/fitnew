@@ -119,32 +119,36 @@ for (const diet of ['non-vegetarian', 'vegetarian'] as const) {
 rule('6. TODAY  (ranked actions from the full user model)');
 
 const actions = topActions({
+  localDate: '2026-09-24',
+  hourOfDay: 20,
   goal: 'muscle-gain',
-  dietPreference: 'non-vegetarian',
-  todaysSessionName: 'Pull — Back / Biceps',
-  todaysSessionMinutes: 58,
-  workoutCompletedToday: false,
-  daysSinceLastWorkout: 1,
-  neglectedMuscles: ['Legs'],
-  leadLiftProgression: progression,
-  newPrToday: null,
-  kcalConsumed: consumed.kcal,
-  kcalTarget: targets.kcal,
-  proteinConsumed: consumed.protein,
-  proteinTarget: targets.proteinG,
-  nextMealSlot: 'dinner',
-  messConfigured: true,
-  loggedWeightToday: true,
-  daysSinceWeighIn: 0,
-  pendingCalorieAdjustment: adjustment.shouldAdjust
-    ? { deltaKcal: adjustment.deltaKcal, reason: adjustment.reason }
-    : null,
-  stepsToday: 5200,
-  weeklyAdherence: 0.86,
+  training: {
+    hasProgramme: true,
+    sessionName: 'Pull — Back / Biceps',
+    exerciseCount: 6,
+    plannedSetCount: 17,
+    completedToday: false,
+    activeSessionOpen: false,
+    deload: { state: progression.action === 'deload' ? 'offered' : 'none', trigger: progression.action === 'deload' ? 'fatigue' : null },
+    increaseLoad: progression.action === 'increase-load'
+      ? [{ exerciseId: 'lead-lift', exerciseName: 'Lead lift', weightKg: progression.weightKg, repTarget: progression.repTarget }]
+      : [],
+    limitationSwaps: [],
+    neglected: [{ muscle: 'quads', daysSince: 7 }],
+    prsToday: [],
+    nextSession: { name: 'Legs', date: '2026-09-25' },
+  },
+  nutrition: {
+    targets: { kcal: targets.kcal, proteinG: targets.proteinG },
+    eaten: { kcalLow: consumed.kcal, kcalHigh: consumed.kcal, proteinLow: consumed.protein, proteinHigh: consumed.protein },
+    loggedSlots: ['breakfast', 'lunch', 'snacks'],
+  },
+  body: { weighedToday: true, daysSinceWeighIn: 0 },
+  dismissedToday: [],
 });
 
 for (const action of actions) {
-  console.log(`  [${String(action.priority).padStart(2)}] ${action.headline}`);
+  console.log(`  [${String(action.priority).padStart(2)}] ${action.headline}  — ${action.reason.code} ${JSON.stringify(action.reason.values)}`);
   console.log(`       ${action.detail}`);
   console.log(`       → ${action.target}  (${action.basis})\n`);
 }

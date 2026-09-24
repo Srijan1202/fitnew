@@ -1,0 +1,93 @@
+{
+  "model": {
+    "localDate": "2026-09-24",
+    "hourOfDay": 9,
+    "goal": "muscle-gain",
+    "training": {
+      "hasProgramme": true,
+      "sessionName": null,
+      "exerciseCount": 0,
+      "plannedSetCount": 0,
+      "completedToday": false,
+      "activeSessionOpen": false,
+      "deload": {
+        "state": "offered",
+        "trigger": "mrv"
+      },
+      "increaseLoad": [],
+      "limitationSwaps": [],
+      "neglected": [],
+      "prsToday": [],
+      "nextSession": {
+        "name": "Legs — Quads / Glutes",
+        "date": "2026-09-25"
+      }
+    },
+    "nutrition": {
+      "targets": {
+        "kcal": 2500,
+        "proteinG": 140
+      },
+      "eaten": {
+        "kcalLow": 0,
+        "kcalHigh": 0,
+        "proteinLow": 0,
+        "proteinHigh": 0
+      },
+      "loggedSlots": []
+    },
+    "body": {
+      "weighedToday": true,
+      "daysSinceWeighIn": 0
+    },
+    "dismissedToday": []
+  },
+  "today": {
+    "engineVersion": "today-1",
+    "localDate": "2026-09-24",
+    "inputDigest": "87870ccd8f6d17b8a001fb54a15b8d1f2246e61e08a979a9934d614b4a1aaba4",
+    "actions": [
+      {
+        "kind": "deload",
+        "subjectKey": "",
+        "priority": 95,
+        "basis": "calculated",
+        "target": "train",
+        "reason": {
+          "code": "deload-offered",
+          "values": {
+            "trigger": "mrv"
+          }
+        },
+        "headline": "Take a lighter week",
+        "detail": "Your weekly volume has reached what you can recover from. A lighter week is offered; nothing changes until you accept it.",
+        "engineVersion": "today-1",
+        "rank": 1,
+        "contentHash": "2506f4f0b46383841195058b7fb6f3f0575397cdaf5f41ce1c0be388f5fa3c2a"
+      },
+      {
+        "kind": "eat-protein",
+        "subjectKey": "breakfast",
+        "priority": 80,
+        "basis": "calculated",
+        "target": "eat",
+        "reason": {
+          "code": "protein-behind",
+          "values": {
+            "slot": "breakfast",
+            "proteinTarget": 140,
+            "proteinLow": 0,
+            "proteinHigh": 0,
+            "kcalLeftLow": 2500,
+            "kcalLeftHigh": 2500
+          }
+        },
+        "headline": "140 g protein to go",
+        "detail": "Protein logged today is under three quarters of your 140 g target. Make breakfast count — about 2500 kcal are left.",
+        "engineVersion": "today-1",
+        "rank": 2,
+        "contentHash": "6d05e0be617d2fbd8f996d07eb27ec3658b8b9b331e7b8c5a6745053d5d68af5"
+      }
+    ]
+  }
+}

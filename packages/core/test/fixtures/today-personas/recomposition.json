@@ -1,0 +1,140 @@
+{
+  "model": {
+    "localDate": "2026-09-24",
+    "hourOfDay": 20,
+    "goal": "recomposition",
+    "training": {
+      "hasProgramme": true,
+      "sessionName": "Push A",
+      "exerciseCount": 6,
+      "plannedSetCount": 17,
+      "completedToday": true,
+      "activeSessionOpen": false,
+      "deload": {
+        "state": "none",
+        "trigger": null
+      },
+      "increaseLoad": [],
+      "limitationSwaps": [],
+      "neglected": [
+        {
+          "muscle": "calves",
+          "daysSince": null
+        }
+      ],
+      "prsToday": [
+        {
+          "prId": "66666666-6666-4666-8666-666666666666",
+          "exerciseName": "Barbell Bench Press",
+          "prType": "weight",
+          "value": 80,
+          "previous": 77.5
+        },
+        {
+          "prId": "77777777-7777-4777-8777-777777777777",
+          "exerciseName": "Overhead Press",
+          "prType": "reps",
+          "value": 9,
+          "previous": 8
+        }
+      ],
+      "nextSession": {
+        "name": "Legs — Quads / Glutes",
+        "date": "2026-09-25"
+      }
+    },
+    "nutrition": {
+      "targets": {
+        "kcal": 2200,
+        "proteinG": 160
+      },
+      "eaten": {
+        "kcalLow": 1500,
+        "kcalHigh": 1800,
+        "proteinLow": 100,
+        "proteinHigh": 118
+      },
+      "loggedSlots": [
+        "breakfast",
+        "lunch",
+        "snacks"
+      ]
+    },
+    "body": {
+      "weighedToday": true,
+      "daysSinceWeighIn": 0
+    },
+    "dismissedToday": []
+  },
+  "today": {
+    "engineVersion": "today-1",
+    "localDate": "2026-09-24",
+    "inputDigest": "8ab0c225e84306105bb4482f9cfa36eca6a90c8f15187ffba160cc1e6434791b",
+    "actions": [
+      {
+        "kind": "eat-protein",
+        "subjectKey": "dinner",
+        "priority": 88,
+        "basis": "calculated",
+        "target": "eat",
+        "reason": {
+          "code": "protein-behind",
+          "values": {
+            "slot": "dinner",
+            "proteinTarget": 160,
+            "proteinLow": 100,
+            "proteinHigh": 118,
+            "kcalLeftLow": 400,
+            "kcalLeftHigh": 700
+          }
+        },
+        "headline": "42–60 g protein to go",
+        "detail": "Protein logged today is under three quarters of your 160 g target. Make dinner count — about 400–700 kcal are left.",
+        "engineVersion": "today-1",
+        "rank": 1,
+        "contentHash": "ec937533c36864f7476b3792f0703cd8dad545f6ad37a5ada8bfa997dcda6be9"
+      },
+      {
+        "kind": "muscle-neglected",
+        "subjectKey": "calves",
+        "priority": 68,
+        "basis": "logged",
+        "target": "train",
+        "reason": {
+          "code": "muscle-untrained",
+          "values": {
+            "muscle": "calves",
+            "daysSince": null
+          }
+        },
+        "headline": "Calves is behind",
+        "detail": "No working set for calves yet this block.",
+        "engineVersion": "today-1",
+        "rank": 2,
+        "contentHash": "6a380cca23606f22ea5cc1707a11a47294e268af8bbdff0926099e93f221cdc5"
+      },
+      {
+        "kind": "celebrate-pr",
+        "subjectKey": "66666666-6666-4666-8666-666666666666",
+        "priority": 50,
+        "basis": "logged",
+        "target": "progress",
+        "reason": {
+          "code": "pr-today",
+          "values": {
+            "exerciseName": "Barbell Bench Press",
+            "prType": "weight",
+            "value": 80,
+            "previous": 77.5,
+            "count": 2
+          }
+        },
+        "headline": "New record on Barbell Bench Press",
+        "detail": "80 kg, up from 77.5 kg. 1 more record today.",
+        "engineVersion": "today-1",
+        "rank": 3,
+        "contentHash": "5fa8989292014f41fd392cfd2da7992f4c7d409b141bf56ff71c72e92c720b13"
+      }
+    ]
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "model": {
+    "localDate": "2026-09-24",
+    "hourOfDay": 21,
+    "goal": "fat-loss",
+    "training": {
+      "hasProgramme": true,
+      "sessionName": "Upper A",
+      "exerciseCount": 6,
+      "plannedSetCount": 17,
+      "completedToday": true,
+      "activeSessionOpen": false,
+      "deload": {
+        "state": "none",
+        "trigger": null
+      },
+      "increaseLoad": [],
+      "limitationSwaps": [],
+      "neglected": [],
+      "prsToday": [],
+      "nextSession": {
+        "name": "Legs — Quads / Glutes",
+        "date": "2026-09-25"
+      }
+    },
+    "nutrition": {
+      "targets": {
+        "kcal": 2000,
+        "proteinG": 140
+      },
+      "eaten": {
+        "kcalLow": 900,
+        "kcalHigh": 1150,
+        "proteinLow": 60,
+        "proteinHigh": 78
+      },
+      "loggedSlots": [
+        "breakfast",
+        "lunch"
+      ]
+    },
+    "body": {
+      "weighedToday": true,
+      "daysSinceWeighIn": 0
+    },
+    "dismissedToday": []
+  },
+  "today": {
+    "engineVersion": "today-1",
+    "localDate": "2026-09-24",
+    "inputDigest": "c74907bc99ef239d0dad8a9caac989beff9a2265667c49e9d1d951f3672c7898",
+    "actions": [
+      {
+        "kind": "eat-protein",
+        "subjectKey": "dinner",
+        "priority": 88,
+        "basis": "calculated",
+        "target": "eat",
+        "reason": {
+          "code": "protein-behind",
+          "values": {
+            "slot": "dinner",
+            "proteinTarget": 140,
+            "proteinLow": 60,
+            "proteinHigh": 78,
+            "kcalLeftLow": 850,
+            "kcalLeftHigh": 1100
+          }
+        },
+        "headline": "62–80 g protein to go",
+        "detail": "Protein logged today is under three quarters of your 140 g target. Make dinner count — about 850–1100 kcal are left.",
+        "engineVersion": "today-1",
+        "rank": 1,
+        "contentHash": "37969f3a45990ca977755c5d7f7496e50b42e49664e3fc01cfb8657a2083d0ab"
+      }
+    ]
+  }
+}

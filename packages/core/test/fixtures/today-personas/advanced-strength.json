@@ -1,0 +1,137 @@
+{
+  "model": {
+    "localDate": "2026-09-24",
+    "hourOfDay": 7,
+    "goal": "strength",
+    "training": {
+      "hasProgramme": true,
+      "sessionName": "Heavy Lower",
+      "exerciseCount": 5,
+      "plannedSetCount": 16,
+      "completedToday": false,
+      "activeSessionOpen": false,
+      "deload": {
+        "state": "offered",
+        "trigger": "fatigue"
+      },
+      "increaseLoad": [],
+      "limitationSwaps": [],
+      "neglected": [
+        {
+          "muscle": "hamstrings",
+          "daysSince": 7
+        }
+      ],
+      "prsToday": [],
+      "nextSession": {
+        "name": "Legs — Quads / Glutes",
+        "date": "2026-09-25"
+      }
+    },
+    "nutrition": {
+      "targets": {
+        "kcal": 3000,
+        "proteinG": 160
+      },
+      "eaten": {
+        "kcalLow": 0,
+        "kcalHigh": 0,
+        "proteinLow": 0,
+        "proteinHigh": 0
+      },
+      "loggedSlots": []
+    },
+    "body": {
+      "weighedToday": true,
+      "daysSinceWeighIn": 0
+    },
+    "dismissedToday": []
+  },
+  "today": {
+    "engineVersion": "today-1",
+    "localDate": "2026-09-24",
+    "inputDigest": "e639da916d54d1e31eff3c9738c9ff0aab2338f9fad5fb3fe05c1400b632585b",
+    "actions": [
+      {
+        "kind": "deload",
+        "subjectKey": "",
+        "priority": 95,
+        "basis": "calculated",
+        "target": "train",
+        "reason": {
+          "code": "deload-offered",
+          "values": {
+            "trigger": "fatigue"
+          }
+        },
+        "headline": "Take a lighter week",
+        "detail": "Your recent sessions show fatigue building. A lighter week is offered; nothing changes until you accept it.",
+        "engineVersion": "today-1",
+        "rank": 1,
+        "contentHash": "5196d36b023293a99ec748d36c749472c0ea773d2d35e84dc6d6e54949a06980"
+      },
+      {
+        "kind": "start-workout",
+        "subjectKey": "",
+        "priority": 90,
+        "basis": "calculated",
+        "target": "train",
+        "reason": {
+          "code": "session-scheduled",
+          "values": {
+            "sessionName": "Heavy Lower",
+            "exerciseCount": 5,
+            "minutes": 56
+          }
+        },
+        "headline": "Heavy Lower",
+        "detail": "5 exercises · about 56 minutes.",
+        "engineVersion": "today-1",
+        "rank": 2,
+        "contentHash": "05a7aea99edcfa01120d03c24f3cb464a835a6f241e8ef2f417c14f6d2d5447e"
+      },
+      {
+        "kind": "eat-protein",
+        "subjectKey": "breakfast",
+        "priority": 80,
+        "basis": "calculated",
+        "target": "eat",
+        "reason": {
+          "code": "protein-behind",
+          "values": {
+            "slot": "breakfast",
+            "proteinTarget": 160,
+            "proteinLow": 0,
+            "proteinHigh": 0,
+            "kcalLeftLow": 3000,
+            "kcalLeftHigh": 3000
+          }
+        },
+        "headline": "160 g protein to go",
+        "detail": "Protein logged today is under three quarters of your 160 g target. Make breakfast count — about 3000 kcal are left.",
+        "engineVersion": "today-1",
+        "rank": 3,
+        "contentHash": "91dcf28059c490bbe2ba8cbb85f29d834f016714a84c80ee8bebfa90407c2c17"
+      },
+      {
+        "kind": "muscle-neglected",
+        "subjectKey": "hamstrings",
+        "priority": 68,
+        "basis": "logged",
+        "target": "train",
+        "reason": {
+          "code": "muscle-untrained",
+          "values": {
+            "muscle": "hamstrings",
+            "daysSince": 7
+          }
+        },
+        "headline": "Hamstrings is behind",
+        "detail": "No working set for hamstrings in 7 days.",
+        "engineVersion": "today-1",
+        "rank": 4,
+        "contentHash": "bcc46fd0085cce060c5509940b317acedd097716ebc5d3ec6d662c9bea053e2c"
+      }
+    ]
+  }
+}

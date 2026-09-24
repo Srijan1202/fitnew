@@ -1,0 +1,99 @@
+{
+  "model": {
+    "localDate": "2026-09-24",
+    "hourOfDay": 12,
+    "goal": "general",
+    "training": {
+      "hasProgramme": true,
+      "sessionName": null,
+      "exerciseCount": 0,
+      "plannedSetCount": 0,
+      "completedToday": false,
+      "activeSessionOpen": false,
+      "deload": {
+        "state": "none",
+        "trigger": null
+      },
+      "increaseLoad": [],
+      "limitationSwaps": [],
+      "neglected": [],
+      "prsToday": [],
+      "nextSession": {
+        "name": "Lower A",
+        "date": "2026-09-25"
+      }
+    },
+    "nutrition": {
+      "targets": {
+        "kcal": 2300,
+        "proteinG": 120
+      },
+      "eaten": {
+        "kcalLow": 400,
+        "kcalHigh": 520,
+        "proteinLow": 14,
+        "proteinHigh": 20
+      },
+      "loggedSlots": [
+        "breakfast"
+      ]
+    },
+    "body": {
+      "weighedToday": false,
+      "daysSinceWeighIn": 1
+    },
+    "dismissedToday": []
+  },
+  "today": {
+    "engineVersion": "today-1",
+    "localDate": "2026-09-24",
+    "inputDigest": "58aa4fb3fa54b6bc5d9d4a6c073379eca9403ae1f5c5992a564cc58946bc19b3",
+    "actions": [
+      {
+        "kind": "eat-protein",
+        "subjectKey": "lunch",
+        "priority": 80,
+        "basis": "calculated",
+        "target": "eat",
+        "reason": {
+          "code": "protein-behind",
+          "values": {
+            "slot": "lunch",
+            "proteinTarget": 120,
+            "proteinLow": 14,
+            "proteinHigh": 20,
+            "kcalLeftLow": 1780,
+            "kcalLeftHigh": 1900
+          }
+        },
+        "headline": "100–106 g protein to go",
+        "detail": "Protein logged today is under three quarters of your 120 g target. Make lunch count — about 1780–1900 kcal are left.",
+        "engineVersion": "today-1",
+        "rank": 1,
+        "contentHash": "1bb6e35517655edc8b2900d1b72c25eb24429a675fb1b580b9be41fe42e84281"
+      },
+      {
+        "kind": "rest-day",
+        "subjectKey": "",
+        "priority": 60,
+        "basis": "calculated",
+        "target": "today",
+        "reason": {
+          "code": "rest-day",
+          "values": {
+            "hasProgramme": true,
+            "nextSessionName": "Lower A",
+            "nextSessionDate": "2026-09-25",
+            "kcalTarget": 2300,
+            "proteinTarget": 120
+          }
+        },
+        "headline": "Recovery day",
+        "detail": "Next: Lower A on 2026-09-25. Eat to about 2300 kcal and 120 g protein. A walk helps recovery without adding fatigue.",
+        "engineVersion": "today-1",
+        "rank": 2,
+        "contentHash": "0368ee242f142a8f748079ad9f3c3f5f3e450865167ca1c5f46e9f4f14ced2ea"
+      }
+    ]
+  }
+}

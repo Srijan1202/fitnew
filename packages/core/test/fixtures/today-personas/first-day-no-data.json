@@ -1,0 +1,94 @@
+{
+  "model": {
+    "localDate": "2026-09-24",
+    "hourOfDay": 10,
+    "goal": "general",
+    "training": {
+      "hasProgramme": false,
+      "sessionName": null,
+      "exerciseCount": 0,
+      "plannedSetCount": 0,
+      "completedToday": false,
+      "activeSessionOpen": false,
+      "deload": {
+        "state": "none",
+        "trigger": null
+      },
+      "increaseLoad": [],
+      "limitationSwaps": [],
+      "neglected": [],
+      "prsToday": [],
+      "nextSession": null
+    },
+    "nutrition": {
+      "targets": {
+        "kcal": 2200,
+        "proteinG": 110
+      },
+      "eaten": {
+        "kcalLow": 0,
+        "kcalHigh": 0,
+        "proteinLow": 0,
+        "proteinHigh": 0
+      },
+      "loggedSlots": []
+    },
+    "body": {
+      "weighedToday": true,
+      "daysSinceWeighIn": 0
+    },
+    "dismissedToday": []
+  },
+  "today": {
+    "engineVersion": "today-1",
+    "localDate": "2026-09-24",
+    "inputDigest": "d315582337eeba9d1f322f531774331019b0a0fd38e5bf898b9d6c03f0fc1b55",
+    "actions": [
+      {
+        "kind": "eat-protein",
+        "subjectKey": "breakfast",
+        "priority": 80,
+        "basis": "calculated",
+        "target": "eat",
+        "reason": {
+          "code": "protein-behind",
+          "values": {
+            "slot": "breakfast",
+            "proteinTarget": 110,
+            "proteinLow": 0,
+            "proteinHigh": 0,
+            "kcalLeftLow": 2200,
+            "kcalLeftHigh": 2200
+          }
+        },
+        "headline": "110 g protein to go",
+        "detail": "Protein logged today is under three quarters of your 110 g target. Make breakfast count — about 2200 kcal are left.",
+        "engineVersion": "today-1",
+        "rank": 1,
+        "contentHash": "b24974f9ea230b6706f2b1e64fa389e17216347aeb0540649c2d09e90d1756f3"
+      },
+      {
+        "kind": "rest-day",
+        "subjectKey": "",
+        "priority": 60,
+        "basis": "calculated",
+        "target": "today",
+        "reason": {
+          "code": "rest-day",
+          "values": {
+            "hasProgramme": false,
+            "nextSessionName": null,
+            "nextSessionDate": null,
+            "kcalTarget": 2200,
+            "proteinTarget": 110
+          }
+        },
+        "headline": "No session today",
+        "detail": "Set up a programme and FITOS will plan your sessions. A walk is a good start.",
+        "engineVersion": "today-1",
+        "rank": 2,
+        "contentHash": "8e624658cd7313c67259ed2e23a8479044f7742197b87ec4b76bc3a2beb455f4"
+      }
+    ]
+  }
+}

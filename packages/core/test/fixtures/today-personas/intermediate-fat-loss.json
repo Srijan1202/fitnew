@@ -1,0 +1,126 @@
+{
+  "model": {
+    "localDate": "2026-09-24",
+    "hourOfDay": 18,
+    "goal": "fat-loss",
+    "training": {
+      "hasProgramme": true,
+      "sessionName": "Upper B",
+      "exerciseCount": 7,
+      "plannedSetCount": 21,
+      "completedToday": false,
+      "activeSessionOpen": false,
+      "deload": {
+        "state": "none",
+        "trigger": null
+      },
+      "increaseLoad": [
+        {
+          "exerciseId": "11111111-1111-4111-8111-111111111111",
+          "exerciseName": "Barbell Bench Press",
+          "weightKg": 62.5,
+          "repTarget": "6–8"
+        }
+      ],
+      "limitationSwaps": [],
+      "neglected": [],
+      "prsToday": [],
+      "nextSession": {
+        "name": "Legs — Quads / Glutes",
+        "date": "2026-09-25"
+      }
+    },
+    "nutrition": {
+      "targets": {
+        "kcal": 1900,
+        "proteinG": 150
+      },
+      "eaten": {
+        "kcalLow": 1100,
+        "kcalHigh": 1350,
+        "proteinLow": 115,
+        "proteinHigh": 130
+      },
+      "loggedSlots": [
+        "breakfast",
+        "lunch",
+        "snacks"
+      ]
+    },
+    "body": {
+      "weighedToday": true,
+      "daysSinceWeighIn": 0
+    },
+    "dismissedToday": []
+  },
+  "today": {
+    "engineVersion": "today-1",
+    "localDate": "2026-09-24",
+    "inputDigest": "88bd7bf2a0434ee623cf237d1f4b4d5a2fb420242392bf27f9e4dd152b688aa5",
+    "actions": [
+      {
+        "kind": "start-workout",
+        "subjectKey": "",
+        "priority": 90,
+        "basis": "calculated",
+        "target": "train",
+        "reason": {
+          "code": "session-scheduled",
+          "values": {
+            "sessionName": "Upper B",
+            "exerciseCount": 7,
+            "minutes": 74
+          }
+        },
+        "headline": "Upper B",
+        "detail": "7 exercises · about 74 minutes.",
+        "engineVersion": "today-1",
+        "rank": 1,
+        "contentHash": "b323c87a3e62e1702659eb9b12361f852486132449d9b1f241e549df3f89555a"
+      },
+      {
+        "kind": "eat-meal",
+        "subjectKey": "dinner",
+        "priority": 75,
+        "basis": "calculated",
+        "target": "eat",
+        "reason": {
+          "code": "meal-remaining",
+          "values": {
+            "slot": "dinner",
+            "kcalLeftLow": 550,
+            "kcalLeftHigh": 800,
+            "proteinLeftLow": 20,
+            "proteinLeftHigh": 35
+          }
+        },
+        "headline": "Dinner",
+        "detail": "About 550–800 kcal and 20–35 g protein left today. Protein is on track.",
+        "engineVersion": "today-1",
+        "rank": 2,
+        "contentHash": "f1e7312d0fe0ac3fedc0cf2cc6b812770a20a0d1335a1075f092ef6d67c12963"
+      },
+      {
+        "kind": "progress-load",
+        "subjectKey": "11111111-1111-4111-8111-111111111111",
+        "priority": 72,
+        "basis": "calculated",
+        "target": "train",
+        "reason": {
+          "code": "load-increase-due",
+          "values": {
+            "exerciseId": "11111111-1111-4111-8111-111111111111",
+            "exerciseName": "Barbell Bench Press",
+            "weightKg": 62.5,
+            "repTarget": "6–8"
+          }
+        },
+        "headline": "Load goes up today",
+        "detail": "Barbell Bench Press: 62.5 kg for 6–8.",
+        "engineVersion": "today-1",
+        "rank": 3,
+        "contentHash": "c855ad6d21202362a279ff5ac195bec207ce8d9870faf060c1429b3fa3fb2a2a"
+      }
+    ]
+  }
+}

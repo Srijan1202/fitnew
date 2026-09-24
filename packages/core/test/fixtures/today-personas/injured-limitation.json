@@ -1,0 +1,169 @@
+{
+  "model": {
+    "localDate": "2026-09-24",
+    "hourOfDay": 17,
+    "goal": "muscle-gain",
+    "training": {
+      "hasProgramme": true,
+      "sessionName": "Lower A",
+      "exerciseCount": 6,
+      "plannedSetCount": 20,
+      "completedToday": false,
+      "activeSessionOpen": false,
+      "deload": {
+        "state": "none",
+        "trigger": null
+      },
+      "increaseLoad": [
+        {
+          "exerciseId": "55555555-5555-4555-8555-555555555555",
+          "exerciseName": "Romanian Deadlift",
+          "weightKg": 70,
+          "repTarget": "8–10"
+        }
+      ],
+      "limitationSwaps": [
+        {
+          "exerciseId": "22222222-2222-4222-8222-222222222222",
+          "exerciseName": "Barbell Back Squat",
+          "bodyParts": [
+            "knee"
+          ],
+          "alternativeId": "33333333-3333-4333-8333-333333333333",
+          "alternativeName": "Leg Press"
+        },
+        {
+          "exerciseId": "44444444-4444-4444-8444-444444444444",
+          "exerciseName": "Walking Lunge",
+          "bodyParts": [
+            "knee"
+          ],
+          "alternativeId": null,
+          "alternativeName": null
+        }
+      ],
+      "neglected": [],
+      "prsToday": [],
+      "nextSession": {
+        "name": "Legs — Quads / Glutes",
+        "date": "2026-09-25"
+      }
+    },
+    "nutrition": {
+      "targets": {
+        "kcal": 2700,
+        "proteinG": 140
+      },
+      "eaten": {
+        "kcalLow": 1200,
+        "kcalHigh": 1450,
+        "proteinLow": 95,
+        "proteinHigh": 112
+      },
+      "loggedSlots": [
+        "breakfast",
+        "lunch"
+      ]
+    },
+    "body": {
+      "weighedToday": true,
+      "daysSinceWeighIn": 0
+    },
+    "dismissedToday": []
+  },
+  "today": {
+    "engineVersion": "today-1",
+    "localDate": "2026-09-24",
+    "inputDigest": "27e0dd914d11dc750ca3738950599d78380b72f99c648f2704b49ff48b0263a3",
+    "actions": [
+      {
+        "kind": "injured-limitation",
+        "subjectKey": "22222222-2222-4222-8222-222222222222>33333333-3333-4333-8333-333333333333",
+        "priority": 91,
+        "basis": "logged",
+        "target": "train",
+        "reason": {
+          "code": "exercise-contraindicated",
+          "values": {
+            "exerciseId": "22222222-2222-4222-8222-222222222222",
+            "exerciseName": "Barbell Back Squat",
+            "bodyParts": [
+              "knee"
+            ],
+            "alternativeId": "33333333-3333-4333-8333-333333333333",
+            "alternativeName": "Leg Press",
+            "affectedCount": 1
+          }
+        },
+        "headline": "Swap Barbell Back Squat for Leg Press",
+        "detail": "Barbell Back Squat is ruled out by your knee limitation. Leg Press is the safer swap for today.",
+        "engineVersion": "today-1",
+        "rank": 1,
+        "contentHash": "72beada5cab49708018ef3ddba70a5c04aac8584bfeb5f6dc00e1e5b89bbc82e"
+      },
+      {
+        "kind": "start-workout",
+        "subjectKey": "",
+        "priority": 90,
+        "basis": "calculated",
+        "target": "train",
+        "reason": {
+          "code": "session-scheduled",
+          "values": {
+            "sessionName": "Lower A",
+            "exerciseCount": 6,
+            "minutes": 70
+          }
+        },
+        "headline": "Lower A",
+        "detail": "6 exercises · about 70 minutes.",
+        "engineVersion": "today-1",
+        "rank": 2,
+        "contentHash": "51b6c93d5ee6c40745e1c6d2452c144d881d6227204c0161843d39b3a8f7b0b4"
+      },
+      {
+        "kind": "eat-meal",
+        "subjectKey": "snacks",
+        "priority": 75,
+        "basis": "calculated",
+        "target": "eat",
+        "reason": {
+          "code": "meal-remaining",
+          "values": {
+            "slot": "snacks",
+            "kcalLeftLow": 1250,
+            "kcalLeftHigh": 1500,
+            "proteinLeftLow": 28,
+            "proteinLeftHigh": 45
+          }
+        },
+        "headline": "Snacks",
+        "detail": "About 1250–1500 kcal and 28–45 g protein left today. Protein is on track.",
+        "engineVersion": "today-1",
+        "rank": 3,
+        "contentHash": "874d6d4de990b2108e947318f8b10f1b1b21e1c5e195876ec6dfee603cf499a6"
+      },
+      {
+        "kind": "progress-load",
+        "subjectKey": "55555555-5555-4555-8555-555555555555",
+        "priority": 72,
+        "basis": "calculated",
+        "target": "train",
+        "reason": {
+          "code": "load-increase-due",
+          "values": {
+            "exerciseId": "55555555-5555-4555-8555-555555555555",
+            "exerciseName": "Romanian Deadlift",
+            "weightKg": 70,
+            "repTarget": "8–10"
+          }
+        },
+        "headline": "Load goes up today",
+        "detail": "Romanian Deadlift: 70 kg for 8–10.",
+        "engineVersion": "today-1",
+        "rank": 4,
+        "contentHash": "14f6a3a4de60e10a23f2cd93e442e6c620eef9f82ff6a096e71d8ae48607347b"
+      }
+    ]
+  }
+}
