@@ -40,6 +40,7 @@ _UserProfileDetail _$UserProfileDetailFromJson(Map<String, dynamic> json) =>
       timezone: json['timezone'] as String,
       locale: json['locale'] as String,
       onboardingStage: json['onboardingStage'] as String,
+      isVitStudent: json['isVitStudent'] as bool? ?? null,
       mess: json['mess'] == null
           ? null
           : MessRef.fromJson(json['mess'] as Map<String, dynamic>),
@@ -62,6 +63,7 @@ Map<String, dynamic> _$UserProfileDetailToJson(_UserProfileDetail instance) =>
       'timezone': instance.timezone,
       'locale': instance.locale,
       'onboardingStage': instance.onboardingStage,
+      'isVitStudent': instance.isVitStudent,
       'mess': instance.mess,
     };
 

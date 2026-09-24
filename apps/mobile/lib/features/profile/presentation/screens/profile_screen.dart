@@ -13,6 +13,7 @@ import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../../workout/presentation/controllers/workout_providers.dart';
 import '../../data/profile_repository.dart';
 import '../../domain/entities/profile.dart';
+import '../widgets/mess_setting.dart';
 import '../widgets/targets_display.dart';
 
 /// Profile: what the server holds about this user, the active goal with its
@@ -218,8 +219,6 @@ class _Facts extends StatelessWidget {
         ('Trains at', profile.trainingLocation!.label),
       if (profile.equipment.isNotEmpty)
         ('Equipment', profile.equipment.map((e) => e.label).join(', ')),
-      if (profile.mess != null)
-        ('Mess', '${profile.mess!.hostelId} · ${profile.mess!.messId}'),
       ('Time zone', profile.timezone),
     ];
     return Column(
@@ -240,6 +239,9 @@ class _Facts extends StatelessWidget {
           ),
           const Divider(color: FitColors.rule, height: 1),
         ],
+        // Phase 9 (owner D13): the mess by name, changeable here.
+        MessSettingRow(mess: profile.mess),
+        const Divider(color: FitColors.rule, height: 1),
       ],
     );
   }

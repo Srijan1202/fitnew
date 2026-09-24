@@ -74,4 +74,22 @@ class FakeProfileRepository implements ProfileRepository {
   @override
   Future<Result<GoalResponse>> putGoal(PutGoalRequest request) async =>
       nextGoal;
+
+  /// Phase 9: the mess saves; [failMess] makes the next one fail.
+  final messChanges = <MessRef?>[];
+  Failure? failMess;
+
+  @override
+  Future<Result<UserProfileDetail>> setMess(MessRef? mess) async {
+    calls.add('setMess');
+    messChanges.add(mess);
+    final f = failMess;
+    if (f != null) return Err(f);
+    final p = nextProfile;
+    if (p is Ok<UserProfileDetail>) {
+      nextProfile =
+          Ok(p.value.copyWith(isVitStudent: mess != null, mess: mess));
+    }
+    return nextProfile;
+  }
 }

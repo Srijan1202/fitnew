@@ -110,6 +110,48 @@ class FoodLogger {
     );
   }
 
+  /// Phase 9: a dish from a mess menu. The request names the mess, the menu
+  /// date and the dish — no numbers; the server snapshots the dish's stored
+  /// estimate when the log reaches it (online or later, from the queue).
+  Future<void> logMessDish({
+    required String messCode,
+    required String menuDate,
+    required String dishSlug,
+    required String dishName,
+    required FoodNutrition row,
+    required PortionResult portion,
+    required bool asGrams,
+    required LogTarget target,
+  }) {
+    final request = CreateLogRequest.mess(
+      clientLogId: _uuid.v4(),
+      loggedAt: loggedAtFor(target),
+      mealSlot: target.slot,
+      mess: messCode,
+      menuDate: menuDate,
+      messItems: [
+        LogMessDishRequest(
+          dishSlug: dishSlug,
+          servings: asGrams ? null : portion.servings,
+          grams: asGrams ? portion.grams : null,
+        ),
+      ],
+    );
+    return _repo.log(
+      request,
+      localDate: target.date,
+      preview: PendingPreview(
+        items: [
+          PendingItem(
+            name: dishName,
+            portion: portionText(row, portion, asGrams: asGrams),
+            preview: PortionPreview.scale(row, portion.servings!),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> logQuickAdd(QuickAdd quickAdd, {required LogTarget target}) =>
       _repo.log(
         CreateLogRequest.quickAdd(
@@ -151,6 +193,15 @@ class FoodLogger {
                   PendingItem(
                     name: item.foodName,
                     portion: '${FoodFormat.number(servings)} × $servingLabel',
+                    preview: row == null
+                        ? null
+                        : PortionPreview.scale(row, servings),
+                  ),
+                SavedMessItem(:final row, :final servings) => PendingItem(
+                    name: item.dishName,
+                    portion: row == null
+                        ? FoodFormat.number(servings)
+                        : '${FoodFormat.number(servings)} × ${row.servingLabel}',
                     preview: row == null
                         ? null
                         : PortionPreview.scale(row, servings),

@@ -31,6 +31,7 @@ Future<PortionChoice?> showPortionSheet(
   String? rowLabel,
   NutritionBasis? rowBasis,
   double? servings,
+  Widget? footer,
 }) {
   return showModalBottomSheet<PortionChoice>(
     context: context,
@@ -47,6 +48,7 @@ Future<PortionChoice?> showPortionSheet(
         rowLabel: rowLabel,
         rowBasis: rowBasis,
         servings: servings,
+        footer: footer,
       ),
     ),
   );
@@ -63,8 +65,13 @@ class PortionSheet extends StatefulWidget {
     this.rowLabel,
     this.rowBasis,
     this.servings,
+    this.footer,
     super.key,
   });
+
+  /// Phase 9: shown under the preview (a mess dish's estimate note and its
+  /// "Report wrong nutrition" action).
+  final Widget? footer;
 
   final Food food;
   final MealSlot slot;
@@ -298,6 +305,10 @@ class _PortionSheetState extends State<PortionSheet> {
                 key: const ValueKey('portion.preview.note'),
                 style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
               ),
+            ],
+            if (widget.footer != null) ...<Widget>[
+              const SizedBox(height: FitSpacing.sm),
+              widget.footer!,
             ],
             const SizedBox(height: FitSpacing.md),
             Text('MEAL', style: textTheme.labelSmall),

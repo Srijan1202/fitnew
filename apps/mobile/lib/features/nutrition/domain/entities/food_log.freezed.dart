@@ -17,6 +17,10 @@ mixin _$FoodLogItem {
   String get id;
   int get position;
   String? get foodId;
+
+  /// Phase 9: the mess dish it came from (provenance; the numbers are the
+  /// snapshot). Null for everything else.
+  String? get messDishSlug;
   String get foodName;
   FoodSource get foodSource;
   NutritionBasis? get basis;
@@ -55,6 +59,8 @@ mixin _$FoodLogItem {
             (identical(other.position, position) ||
                 other.position == position) &&
             (identical(other.foodId, foodId) || other.foodId == foodId) &&
+            (identical(other.messDishSlug, messDishSlug) ||
+                other.messDishSlug == messDishSlug) &&
             (identical(other.foodName, foodName) ||
                 other.foodName == foodName) &&
             (identical(other.foodSource, foodSource) ||
@@ -94,6 +100,7 @@ mixin _$FoodLogItem {
         id,
         position,
         foodId,
+        messDishSlug,
         foodName,
         foodSource,
         basis,
@@ -116,7 +123,7 @@ mixin _$FoodLogItem {
 
   @override
   String toString() {
-    return 'FoodLogItem(id: $id, position: $position, foodId: $foodId, foodName: $foodName, foodSource: $foodSource, basis: $basis, servingLabel: $servingLabel, servingGrams: $servingGrams, servings: $servings, grams: $grams, kcalLow: $kcalLow, kcalHigh: $kcalHigh, proteinLow: $proteinLow, proteinHigh: $proteinHigh, carbLow: $carbLow, carbHigh: $carbHigh, fatLow: $fatLow, fatHigh: $fatHigh, fibreLow: $fibreLow, fibreHigh: $fibreHigh, confidence: $confidence)';
+    return 'FoodLogItem(id: $id, position: $position, foodId: $foodId, messDishSlug: $messDishSlug, foodName: $foodName, foodSource: $foodSource, basis: $basis, servingLabel: $servingLabel, servingGrams: $servingGrams, servings: $servings, grams: $grams, kcalLow: $kcalLow, kcalHigh: $kcalHigh, proteinLow: $proteinLow, proteinHigh: $proteinHigh, carbLow: $carbLow, carbHigh: $carbHigh, fatLow: $fatLow, fatHigh: $fatHigh, fibreLow: $fibreLow, fibreHigh: $fibreHigh, confidence: $confidence)';
   }
 }
 
@@ -130,6 +137,7 @@ abstract mixin class $FoodLogItemCopyWith<$Res> {
       {String id,
       int position,
       String? foodId,
+      String? messDishSlug,
       String foodName,
       FoodSource foodSource,
       NutritionBasis? basis,
@@ -165,6 +173,7 @@ class _$FoodLogItemCopyWithImpl<$Res> implements $FoodLogItemCopyWith<$Res> {
     Object? id = null,
     Object? position = null,
     Object? foodId = freezed,
+    Object? messDishSlug = freezed,
     Object? foodName = null,
     Object? foodSource = null,
     Object? basis = freezed,
@@ -196,6 +205,10 @@ class _$FoodLogItemCopyWithImpl<$Res> implements $FoodLogItemCopyWith<$Res> {
       foodId: freezed == foodId
           ? _self.foodId
           : foodId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      messDishSlug: freezed == messDishSlug
+          ? _self.messDishSlug
+          : messDishSlug // ignore: cast_nullable_to_non_nullable
               as String?,
       foodName: null == foodName
           ? _self.foodName
@@ -370,6 +383,7 @@ extension FoodLogItemPatterns on FoodLogItem {
             String id,
             int position,
             String? foodId,
+            String? messDishSlug,
             String foodName,
             FoodSource foodSource,
             NutritionBasis? basis,
@@ -398,6 +412,7 @@ extension FoodLogItemPatterns on FoodLogItem {
             _that.id,
             _that.position,
             _that.foodId,
+            _that.messDishSlug,
             _that.foodName,
             _that.foodSource,
             _that.basis,
@@ -440,6 +455,7 @@ extension FoodLogItemPatterns on FoodLogItem {
             String id,
             int position,
             String? foodId,
+            String? messDishSlug,
             String foodName,
             FoodSource foodSource,
             NutritionBasis? basis,
@@ -467,6 +483,7 @@ extension FoodLogItemPatterns on FoodLogItem {
             _that.id,
             _that.position,
             _that.foodId,
+            _that.messDishSlug,
             _that.foodName,
             _that.foodSource,
             _that.basis,
@@ -508,6 +525,7 @@ extension FoodLogItemPatterns on FoodLogItem {
             String id,
             int position,
             String? foodId,
+            String? messDishSlug,
             String foodName,
             FoodSource foodSource,
             NutritionBasis? basis,
@@ -535,6 +553,7 @@ extension FoodLogItemPatterns on FoodLogItem {
             _that.id,
             _that.position,
             _that.foodId,
+            _that.messDishSlug,
             _that.foodName,
             _that.foodSource,
             _that.basis,
@@ -566,6 +585,7 @@ class _FoodLogItem extends FoodLogItem {
       {required this.id,
       required this.position,
       required this.foodId,
+      this.messDishSlug = null,
       required this.foodName,
       required this.foodSource,
       required this.basis,
@@ -594,6 +614,12 @@ class _FoodLogItem extends FoodLogItem {
   final int position;
   @override
   final String? foodId;
+
+  /// Phase 9: the mess dish it came from (provenance; the numbers are the
+  /// snapshot). Null for everything else.
+  @override
+  @JsonKey()
+  final String? messDishSlug;
   @override
   final String foodName;
   @override
@@ -655,6 +681,8 @@ class _FoodLogItem extends FoodLogItem {
             (identical(other.position, position) ||
                 other.position == position) &&
             (identical(other.foodId, foodId) || other.foodId == foodId) &&
+            (identical(other.messDishSlug, messDishSlug) ||
+                other.messDishSlug == messDishSlug) &&
             (identical(other.foodName, foodName) ||
                 other.foodName == foodName) &&
             (identical(other.foodSource, foodSource) ||
@@ -694,6 +722,7 @@ class _FoodLogItem extends FoodLogItem {
         id,
         position,
         foodId,
+        messDishSlug,
         foodName,
         foodSource,
         basis,
@@ -716,7 +745,7 @@ class _FoodLogItem extends FoodLogItem {
 
   @override
   String toString() {
-    return 'FoodLogItem(id: $id, position: $position, foodId: $foodId, foodName: $foodName, foodSource: $foodSource, basis: $basis, servingLabel: $servingLabel, servingGrams: $servingGrams, servings: $servings, grams: $grams, kcalLow: $kcalLow, kcalHigh: $kcalHigh, proteinLow: $proteinLow, proteinHigh: $proteinHigh, carbLow: $carbLow, carbHigh: $carbHigh, fatLow: $fatLow, fatHigh: $fatHigh, fibreLow: $fibreLow, fibreHigh: $fibreHigh, confidence: $confidence)';
+    return 'FoodLogItem(id: $id, position: $position, foodId: $foodId, messDishSlug: $messDishSlug, foodName: $foodName, foodSource: $foodSource, basis: $basis, servingLabel: $servingLabel, servingGrams: $servingGrams, servings: $servings, grams: $grams, kcalLow: $kcalLow, kcalHigh: $kcalHigh, proteinLow: $proteinLow, proteinHigh: $proteinHigh, carbLow: $carbLow, carbHigh: $carbHigh, fatLow: $fatLow, fatHigh: $fatHigh, fibreLow: $fibreLow, fibreHigh: $fibreHigh, confidence: $confidence)';
   }
 }
 
@@ -732,6 +761,7 @@ abstract mixin class _$FoodLogItemCopyWith<$Res>
       {String id,
       int position,
       String? foodId,
+      String? messDishSlug,
       String foodName,
       FoodSource foodSource,
       NutritionBasis? basis,
@@ -767,6 +797,7 @@ class __$FoodLogItemCopyWithImpl<$Res> implements _$FoodLogItemCopyWith<$Res> {
     Object? id = null,
     Object? position = null,
     Object? foodId = freezed,
+    Object? messDishSlug = freezed,
     Object? foodName = null,
     Object? foodSource = null,
     Object? basis = freezed,
@@ -798,6 +829,10 @@ class __$FoodLogItemCopyWithImpl<$Res> implements _$FoodLogItemCopyWith<$Res> {
       foodId: freezed == foodId
           ? _self.foodId
           : foodId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      messDishSlug: freezed == messDishSlug
+          ? _self.messDishSlug
+          : messDishSlug // ignore: cast_nullable_to_non_nullable
               as String?,
       foodName: null == foodName
           ? _self.foodName
@@ -1504,6 +1539,9 @@ mixin _$FoodLog {
   MealSlot get mealSlot;
   EntryMethod get entryMethod;
   String? get savedMealId;
+
+  /// Phase 9: the mess a `mess` log came from.
+  String? get messCode;
   List<FoodLogItem> get items;
   NutritionTotals get totals;
 
@@ -1535,6 +1573,8 @@ mixin _$FoodLog {
                 other.entryMethod == entryMethod) &&
             (identical(other.savedMealId, savedMealId) ||
                 other.savedMealId == savedMealId) &&
+            (identical(other.messCode, messCode) ||
+                other.messCode == messCode) &&
             const DeepCollectionEquality().equals(other.items, items) &&
             (identical(other.totals, totals) || other.totals == totals));
   }
@@ -1550,12 +1590,13 @@ mixin _$FoodLog {
       mealSlot,
       entryMethod,
       savedMealId,
+      messCode,
       const DeepCollectionEquality().hash(items),
       totals);
 
   @override
   String toString() {
-    return 'FoodLog(id: $id, clientLogId: $clientLogId, loggedAt: $loggedAt, localDate: $localDate, mealSlot: $mealSlot, entryMethod: $entryMethod, savedMealId: $savedMealId, items: $items, totals: $totals)';
+    return 'FoodLog(id: $id, clientLogId: $clientLogId, loggedAt: $loggedAt, localDate: $localDate, mealSlot: $mealSlot, entryMethod: $entryMethod, savedMealId: $savedMealId, messCode: $messCode, items: $items, totals: $totals)';
   }
 }
 
@@ -1572,6 +1613,7 @@ abstract mixin class $FoodLogCopyWith<$Res> {
       MealSlot mealSlot,
       EntryMethod entryMethod,
       String? savedMealId,
+      String? messCode,
       List<FoodLogItem> items,
       NutritionTotals totals});
 
@@ -1597,6 +1639,7 @@ class _$FoodLogCopyWithImpl<$Res> implements $FoodLogCopyWith<$Res> {
     Object? mealSlot = null,
     Object? entryMethod = null,
     Object? savedMealId = freezed,
+    Object? messCode = freezed,
     Object? items = null,
     Object? totals = null,
   }) {
@@ -1628,6 +1671,10 @@ class _$FoodLogCopyWithImpl<$Res> implements $FoodLogCopyWith<$Res> {
       savedMealId: freezed == savedMealId
           ? _self.savedMealId
           : savedMealId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      messCode: freezed == messCode
+          ? _self.messCode
+          : messCode // ignore: cast_nullable_to_non_nullable
               as String?,
       items: null == items
           ? _self.items
@@ -1752,6 +1799,7 @@ extension FoodLogPatterns on FoodLog {
             MealSlot mealSlot,
             EntryMethod entryMethod,
             String? savedMealId,
+            String? messCode,
             List<FoodLogItem> items,
             NutritionTotals totals)?
         $default, {
@@ -1768,6 +1816,7 @@ extension FoodLogPatterns on FoodLog {
             _that.mealSlot,
             _that.entryMethod,
             _that.savedMealId,
+            _that.messCode,
             _that.items,
             _that.totals);
       case _:
@@ -1798,6 +1847,7 @@ extension FoodLogPatterns on FoodLog {
             MealSlot mealSlot,
             EntryMethod entryMethod,
             String? savedMealId,
+            String? messCode,
             List<FoodLogItem> items,
             NutritionTotals totals)
         $default,
@@ -1813,6 +1863,7 @@ extension FoodLogPatterns on FoodLog {
             _that.mealSlot,
             _that.entryMethod,
             _that.savedMealId,
+            _that.messCode,
             _that.items,
             _that.totals);
       case _:
@@ -1842,6 +1893,7 @@ extension FoodLogPatterns on FoodLog {
             MealSlot mealSlot,
             EntryMethod entryMethod,
             String? savedMealId,
+            String? messCode,
             List<FoodLogItem> items,
             NutritionTotals totals)?
         $default,
@@ -1857,6 +1909,7 @@ extension FoodLogPatterns on FoodLog {
             _that.mealSlot,
             _that.entryMethod,
             _that.savedMealId,
+            _that.messCode,
             _that.items,
             _that.totals);
       case _:
@@ -1876,6 +1929,7 @@ class _FoodLog implements FoodLog {
       required this.mealSlot,
       required this.entryMethod,
       required this.savedMealId,
+      this.messCode = null,
       required final List<FoodLogItem> items,
       required this.totals})
       : _items = items;
@@ -1896,6 +1950,11 @@ class _FoodLog implements FoodLog {
   final EntryMethod entryMethod;
   @override
   final String? savedMealId;
+
+  /// Phase 9: the mess a `mess` log came from.
+  @override
+  @JsonKey()
+  final String? messCode;
   final List<FoodLogItem> _items;
   @override
   List<FoodLogItem> get items {
@@ -1940,6 +1999,8 @@ class _FoodLog implements FoodLog {
                 other.entryMethod == entryMethod) &&
             (identical(other.savedMealId, savedMealId) ||
                 other.savedMealId == savedMealId) &&
+            (identical(other.messCode, messCode) ||
+                other.messCode == messCode) &&
             const DeepCollectionEquality().equals(other._items, _items) &&
             (identical(other.totals, totals) || other.totals == totals));
   }
@@ -1955,12 +2016,13 @@ class _FoodLog implements FoodLog {
       mealSlot,
       entryMethod,
       savedMealId,
+      messCode,
       const DeepCollectionEquality().hash(_items),
       totals);
 
   @override
   String toString() {
-    return 'FoodLog(id: $id, clientLogId: $clientLogId, loggedAt: $loggedAt, localDate: $localDate, mealSlot: $mealSlot, entryMethod: $entryMethod, savedMealId: $savedMealId, items: $items, totals: $totals)';
+    return 'FoodLog(id: $id, clientLogId: $clientLogId, loggedAt: $loggedAt, localDate: $localDate, mealSlot: $mealSlot, entryMethod: $entryMethod, savedMealId: $savedMealId, messCode: $messCode, items: $items, totals: $totals)';
   }
 }
 
@@ -1978,6 +2040,7 @@ abstract mixin class _$FoodLogCopyWith<$Res> implements $FoodLogCopyWith<$Res> {
       MealSlot mealSlot,
       EntryMethod entryMethod,
       String? savedMealId,
+      String? messCode,
       List<FoodLogItem> items,
       NutritionTotals totals});
 
@@ -2004,6 +2067,7 @@ class __$FoodLogCopyWithImpl<$Res> implements _$FoodLogCopyWith<$Res> {
     Object? mealSlot = null,
     Object? entryMethod = null,
     Object? savedMealId = freezed,
+    Object? messCode = freezed,
     Object? items = null,
     Object? totals = null,
   }) {
@@ -2035,6 +2099,10 @@ class __$FoodLogCopyWithImpl<$Res> implements _$FoodLogCopyWith<$Res> {
       savedMealId: freezed == savedMealId
           ? _self.savedMealId
           : savedMealId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      messCode: freezed == messCode
+          ? _self.messCode
+          : messCode // ignore: cast_nullable_to_non_nullable
               as String?,
       items: null == items
           ? _self._items

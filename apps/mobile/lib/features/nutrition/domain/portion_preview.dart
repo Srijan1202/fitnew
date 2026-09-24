@@ -123,6 +123,9 @@ abstract final class PortionPreview {
         case SavedFoodItem(:final row, :final servings):
           if (row == null) return null;
           p = scale(row, servings);
+        case SavedMessItem(:final row, :final servings):
+          if (row == null) return null;
+          p = scale(row, servings);
         case SavedQuickAddItem():
           p = quickAdd(
             QuickAdd(

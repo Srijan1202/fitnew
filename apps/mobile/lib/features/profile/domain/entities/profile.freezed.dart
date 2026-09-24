@@ -362,6 +362,9 @@ mixin _$UserProfileDetail {
   String get timezone;
   String get locale;
   String get onboardingStage;
+
+  /// Screen 6's answer; null before it is answered (Phase 9 on the wire).
+  bool? get isVitStudent;
   MessRef? get mess;
 
   /// Create a copy of UserProfileDetail
@@ -406,6 +409,8 @@ mixin _$UserProfileDetail {
             (identical(other.locale, locale) || other.locale == locale) &&
             (identical(other.onboardingStage, onboardingStage) ||
                 other.onboardingStage == onboardingStage) &&
+            (identical(other.isVitStudent, isVitStudent) ||
+                other.isVitStudent == isVitStudent) &&
             (identical(other.mess, mess) || other.mess == mess));
   }
 
@@ -427,11 +432,12 @@ mixin _$UserProfileDetail {
       timezone,
       locale,
       onboardingStage,
+      isVitStudent,
       mess);
 
   @override
   String toString() {
-    return 'UserProfileDetail(displayName: $displayName, sex: $sex, birthDate: $birthDate, heightCm: $heightCm, experienceLevel: $experienceLevel, trainingDaysPerWeek: $trainingDaysPerWeek, activityLevel: $activityLevel, preferredSessionMinutes: $preferredSessionMinutes, trainingLocation: $trainingLocation, equipment: $equipment, latestWeightKg: $latestWeightKg, timezone: $timezone, locale: $locale, onboardingStage: $onboardingStage, mess: $mess)';
+    return 'UserProfileDetail(displayName: $displayName, sex: $sex, birthDate: $birthDate, heightCm: $heightCm, experienceLevel: $experienceLevel, trainingDaysPerWeek: $trainingDaysPerWeek, activityLevel: $activityLevel, preferredSessionMinutes: $preferredSessionMinutes, trainingLocation: $trainingLocation, equipment: $equipment, latestWeightKg: $latestWeightKg, timezone: $timezone, locale: $locale, onboardingStage: $onboardingStage, isVitStudent: $isVitStudent, mess: $mess)';
   }
 }
 
@@ -456,6 +462,7 @@ abstract mixin class $UserProfileDetailCopyWith<$Res> {
       String timezone,
       String locale,
       String onboardingStage,
+      bool? isVitStudent,
       MessRef? mess});
 
   $MessRefCopyWith<$Res>? get mess;
@@ -488,6 +495,7 @@ class _$UserProfileDetailCopyWithImpl<$Res>
     Object? timezone = null,
     Object? locale = null,
     Object? onboardingStage = null,
+    Object? isVitStudent = freezed,
     Object? mess = freezed,
   }) {
     return _then(_self.copyWith(
@@ -547,6 +555,10 @@ class _$UserProfileDetailCopyWithImpl<$Res>
           ? _self.onboardingStage
           : onboardingStage // ignore: cast_nullable_to_non_nullable
               as String,
+      isVitStudent: freezed == isVitStudent
+          ? _self.isVitStudent
+          : isVitStudent // ignore: cast_nullable_to_non_nullable
+              as bool?,
       mess: freezed == mess
           ? _self.mess
           : mess // ignore: cast_nullable_to_non_nullable
@@ -677,6 +689,7 @@ extension UserProfileDetailPatterns on UserProfileDetail {
             String timezone,
             String locale,
             String onboardingStage,
+            bool? isVitStudent,
             MessRef? mess)?
         $default, {
     required TResult orElse(),
@@ -699,6 +712,7 @@ extension UserProfileDetailPatterns on UserProfileDetail {
             _that.timezone,
             _that.locale,
             _that.onboardingStage,
+            _that.isVitStudent,
             _that.mess);
       case _:
         return orElse();
@@ -735,6 +749,7 @@ extension UserProfileDetailPatterns on UserProfileDetail {
             String timezone,
             String locale,
             String onboardingStage,
+            bool? isVitStudent,
             MessRef? mess)
         $default,
   ) {
@@ -756,6 +771,7 @@ extension UserProfileDetailPatterns on UserProfileDetail {
             _that.timezone,
             _that.locale,
             _that.onboardingStage,
+            _that.isVitStudent,
             _that.mess);
       case _:
         throw StateError('Unexpected subclass');
@@ -791,6 +807,7 @@ extension UserProfileDetailPatterns on UserProfileDetail {
             String timezone,
             String locale,
             String onboardingStage,
+            bool? isVitStudent,
             MessRef? mess)?
         $default,
   ) {
@@ -812,6 +829,7 @@ extension UserProfileDetailPatterns on UserProfileDetail {
             _that.timezone,
             _that.locale,
             _that.onboardingStage,
+            _that.isVitStudent,
             _that.mess);
       case _:
         return null;
@@ -837,6 +855,7 @@ class _UserProfileDetail implements UserProfileDetail {
       required this.timezone,
       required this.locale,
       required this.onboardingStage,
+      this.isVitStudent = null,
       required this.mess})
       : _equipment = equipment;
   factory _UserProfileDetail.fromJson(Map<String, dynamic> json) =>
@@ -878,6 +897,11 @@ class _UserProfileDetail implements UserProfileDetail {
   final String locale;
   @override
   final String onboardingStage;
+
+  /// Screen 6's answer; null before it is answered (Phase 9 on the wire).
+  @override
+  @JsonKey()
+  final bool? isVitStudent;
   @override
   final MessRef? mess;
 
@@ -928,6 +952,8 @@ class _UserProfileDetail implements UserProfileDetail {
             (identical(other.locale, locale) || other.locale == locale) &&
             (identical(other.onboardingStage, onboardingStage) ||
                 other.onboardingStage == onboardingStage) &&
+            (identical(other.isVitStudent, isVitStudent) ||
+                other.isVitStudent == isVitStudent) &&
             (identical(other.mess, mess) || other.mess == mess));
   }
 
@@ -949,11 +975,12 @@ class _UserProfileDetail implements UserProfileDetail {
       timezone,
       locale,
       onboardingStage,
+      isVitStudent,
       mess);
 
   @override
   String toString() {
-    return 'UserProfileDetail(displayName: $displayName, sex: $sex, birthDate: $birthDate, heightCm: $heightCm, experienceLevel: $experienceLevel, trainingDaysPerWeek: $trainingDaysPerWeek, activityLevel: $activityLevel, preferredSessionMinutes: $preferredSessionMinutes, trainingLocation: $trainingLocation, equipment: $equipment, latestWeightKg: $latestWeightKg, timezone: $timezone, locale: $locale, onboardingStage: $onboardingStage, mess: $mess)';
+    return 'UserProfileDetail(displayName: $displayName, sex: $sex, birthDate: $birthDate, heightCm: $heightCm, experienceLevel: $experienceLevel, trainingDaysPerWeek: $trainingDaysPerWeek, activityLevel: $activityLevel, preferredSessionMinutes: $preferredSessionMinutes, trainingLocation: $trainingLocation, equipment: $equipment, latestWeightKg: $latestWeightKg, timezone: $timezone, locale: $locale, onboardingStage: $onboardingStage, isVitStudent: $isVitStudent, mess: $mess)';
   }
 }
 
@@ -980,6 +1007,7 @@ abstract mixin class _$UserProfileDetailCopyWith<$Res>
       String timezone,
       String locale,
       String onboardingStage,
+      bool? isVitStudent,
       MessRef? mess});
 
   @override
@@ -1013,6 +1041,7 @@ class __$UserProfileDetailCopyWithImpl<$Res>
     Object? timezone = null,
     Object? locale = null,
     Object? onboardingStage = null,
+    Object? isVitStudent = freezed,
     Object? mess = freezed,
   }) {
     return _then(_UserProfileDetail(
@@ -1072,6 +1101,10 @@ class __$UserProfileDetailCopyWithImpl<$Res>
           ? _self.onboardingStage
           : onboardingStage // ignore: cast_nullable_to_non_nullable
               as String,
+      isVitStudent: freezed == isVitStudent
+          ? _self.isVitStudent
+          : isVitStudent // ignore: cast_nullable_to_non_nullable
+              as bool?,
       mess: freezed == mess
           ? _self.mess
           : mess // ignore: cast_nullable_to_non_nullable

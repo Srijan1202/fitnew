@@ -1,4 +1,5 @@
 import 'package:fitos/core/db/app_database.dart';
+import 'package:fitos/features/mess/presentation/mess_providers.dart';
 import 'package:fitos/features/nutrition/presentation/controllers/food_log_providers.dart';
 import 'package:fitos/features/workout/presentation/controllers/rest_timer.dart';
 import 'package:fitos/features/workout/presentation/controllers/workout_providers.dart';
@@ -6,6 +7,7 @@ import 'package:riverpod/misc.dart' show Override;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_food_log_api.dart';
+import 'fake_mess_api.dart';
 import 'fake_workout_api.dart';
 
 /// Everything a widget test needs so the workout feature runs on an
@@ -15,6 +17,7 @@ List<Override> workoutOverrides(
   AppDatabase db,
   FakeWorkoutApi api, {
   FakeFoodLogApi? foodLog,
+  FakeMessApi? mess,
 }) {
   SharedPreferences.setMockInitialValues(const {});
   return [
@@ -28,5 +31,7 @@ List<Override> workoutOverrides(
     // Phase 8: the nutrition feature (Home reads today's food) talks to a
     // scripted server too, never the network.
     foodLogApiProvider.overrideWithValue(foodLog ?? FakeFoodLogApi()),
+    // Phase 9: mess menus from a scripted server; no mess unless a test says.
+    messApiProvider.overrideWithValue(mess ?? FakeMessApi(mine: null)),
   ];
 }

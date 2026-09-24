@@ -25,6 +25,10 @@ abstract class ProfileRepository {
   Future<Result<UserProfileDetail>> updatePersonalDetails(
     PersonalDetailsChange change,
   );
+
+  /// Phase 9 (owner D13): `PATCH /user/profile { isVitStudent, mess }`. The
+  /// server accepts only a mess it lists; `isVitStudent: false` clears it.
+  Future<Result<UserProfileDetail>> setMess(MessRef? mess);
 }
 
 class DioProfileRepository implements ProfileRepository {
@@ -75,6 +79,17 @@ class DioProfileRepository implements ProfileRepository {
         () => _dio.patch<Map<String, dynamic>>(
           '/v1/user/profile',
           data: change.toJson(),
+        ),
+        UserProfileDetail.fromJson,
+      );
+
+  @override
+  Future<Result<UserProfileDetail>> setMess(MessRef? mess) => _guard(
+        () => _dio.patch<Map<String, dynamic>>(
+          '/v1/user/profile',
+          data: mess == null
+              ? <String, dynamic>{'isVitStudent': false}
+              : <String, dynamic>{'isVitStudent': true, 'mess': mess.toJson()},
         ),
         UserProfileDetail.fromJson,
       );
@@ -193,6 +208,22 @@ class ProfileController extends AsyncNotifier<ProfileView> {
         }
         return null;
     }
+  }
+
+  /// Phase 9: change (or clear) the mess; the profile in state takes the
+  /// server's answer.
+  Future<Failure?> setMess(MessRef? mess) async {
+    final result = await _repo.setMess(mess);
+    return result.when<Failure?>(
+      ok: (profile) {
+        final current = state.value;
+        if (current != null) {
+          state = AsyncData(ProfileView(profile: profile, goal: current.goal));
+        }
+        return null;
+      },
+      err: (f) => f,
+    );
   }
 
   /// PUT the goal; on success the new goal and recomputed targets replace

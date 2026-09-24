@@ -43,6 +43,9 @@ class FakeFoodLogApi implements FoodLogApi {
   /// Per food id, the snapshot the server would take (a test sets it).
   final Map<String, FoodLogItem Function(LogFoodItemRequest)> snapshot = {};
 
+  /// Phase 9: per mess dish slug, the snapshot the server would take.
+  final Map<String, FoodLogItem Function(LogMessDishRequest)> messSnapshot = {};
+
   Failure? _failure() {
     if (unauthenticated) return const Unauthenticated();
     if (offline) return const Offline();
@@ -186,6 +189,12 @@ class FakeFoodLogApi implements FoodLogApi {
         ];
       case EntryMethod.quickAdd:
         items = [quickItem(request.quickAdd!)];
+      case EntryMethod.mess:
+        items = [
+          for (final i in request.messItems!)
+            (messSnapshot[i.dishSlug] ??
+                (_) => throw StateError('no snapshot for ${i.dishSlug}'))(i),
+        ];
       case EntryMethod.savedMeal:
         final meal = meals.firstWhere((m) => m.id == request.savedMealId);
         items = [
@@ -204,6 +213,10 @@ class FakeFoodLogApi implements FoodLogApi {
                     servingLabel: servingLabel,
                     servings: servings,
                   ),
+                ),
+              SavedMessItem(:final dishSlug, :final servings) =>
+                messSnapshot[dishSlug]!(
+                  LogMessDishRequest(dishSlug: dishSlug, servings: servings),
                 ),
               SavedQuickAddItem() => quickItem(
                   QuickAdd(
@@ -226,6 +239,7 @@ class FakeFoodLogApi implements FoodLogApi {
       mealSlot: request.mealSlot,
       entryMethod: request.entryMethod,
       savedMealId: request.savedMealId,
+      messCode: request.mess,
       items: items,
       totals: totalsOf(items),
     );

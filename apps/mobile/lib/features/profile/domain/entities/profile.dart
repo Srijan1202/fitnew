@@ -38,6 +38,9 @@ abstract class UserProfileDetail with _$UserProfileDetail {
     required String timezone,
     required String locale,
     required String onboardingStage,
+
+    /// Screen 6's answer; null before it is answered (Phase 9 on the wire).
+    @Default(null) bool? isVitStudent,
     required MessRef? mess,
   }) = _UserProfileDetail;
 

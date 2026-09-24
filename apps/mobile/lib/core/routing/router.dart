@@ -9,6 +9,7 @@ import '../../features/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/auth/presentation/screens/splash_gate_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_browser_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_detail_screen.dart';
+import '../../features/mess/presentation/mess_screen.dart';
 import '../../features/nutrition/domain/entities/food.dart';
 import '../../features/nutrition/presentation/screens/custom_food_screen.dart';
 import '../../features/nutrition/presentation/screens/food_detail_screen.dart';
@@ -73,6 +74,9 @@ abstract final class Routes {
   static const String foodLibrary = '/nutrition/library';
   static const String foodLog = '/nutrition/log';
   static const String foodNew = '/nutrition/foods/new';
+
+  /// Phase 9: the MESS screen (root navigator).
+  static const String mess = '/nutrition/mess';
   static String foodDetail(String id) => '/nutrition/foods/$id';
 
   // Deeper training screens (root navigator; the bar is hidden).
@@ -309,6 +313,12 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
                           ? state.extra! as LogTarget
                           : null,
                     ),
+                  ),
+                  GoRoute(
+                    path: 'mess',
+                    name: 'mess',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const MessScreen(),
                   ),
                   GoRoute(
                     path: 'foods/new',

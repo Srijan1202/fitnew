@@ -45,7 +45,11 @@ enum EntryMethod {
   @JsonValue('quick-add')
   quickAdd('quick-add'),
   @JsonValue('saved-meal')
-  savedMeal('saved-meal');
+  savedMeal('saved-meal'),
+
+  /// Phase 9: a dish from a mess menu.
+  @JsonValue('mess')
+  mess('mess');
 
   const EntryMethod(this.wire);
   final String wire;
@@ -71,6 +75,10 @@ abstract class FoodLogItem with _$FoodLogItem {
     required String id,
     required int position,
     required String? foodId,
+
+    /// Phase 9: the mess dish it came from (provenance; the numbers are the
+    /// snapshot). Null for everything else.
+    @Default(null) String? messDishSlug,
     required String foodName,
     required FoodSource foodSource,
     required NutritionBasis? basis,
@@ -95,6 +103,8 @@ abstract class FoodLogItem with _$FoodLogItem {
       _$FoodLogItemFromJson(json);
 
   bool get isQuickAdd => basis == null;
+
+  bool get isMessDish => messDishSlug != null;
 }
 
 @freezed
@@ -132,6 +142,9 @@ abstract class FoodLog with _$FoodLog {
     required MealSlot mealSlot,
     required EntryMethod entryMethod,
     required String? savedMealId,
+
+    /// Phase 9: the mess a `mess` log came from.
+    @Default(null) String? messCode,
     required List<FoodLogItem> items,
     required NutritionTotals totals,
   }) = _FoodLog;
@@ -231,9 +244,11 @@ sealed class SavedMealItem {
   const SavedMealItem();
 
   factory SavedMealItem.fromJson(Map<String, dynamic> json) =>
-      json['kind'] == 'quick-add'
-          ? SavedQuickAddItem.fromJson(json)
-          : SavedFoodItem.fromJson(json);
+      switch (json['kind']) {
+        'quick-add' => SavedQuickAddItem.fromJson(json),
+        'mess' => SavedMessItem.fromJson(json),
+        _ => SavedFoodItem.fromJson(json),
+      };
 
   Map<String, dynamic> toJson();
   String get name;
@@ -332,6 +347,86 @@ class SavedQuickAddItem extends SavedMealItem {
       };
 }
 
+/// Phase 9 (owner D11): a mess dish keeps its identity and portion; logging
+/// the meal re-snapshots the dish's CURRENT estimate on the server, as a
+/// range. [row] is that estimate now, for a display-only preview.
+class SavedMessItem extends SavedMealItem {
+  const SavedMessItem({
+    required this.dishSlug,
+    required this.dishName,
+    required this.servings,
+    required this.row,
+  });
+
+  factory SavedMessItem.fromJson(Map<String, dynamic> json) => SavedMessItem(
+        dishSlug: json['dishSlug'] as String,
+        dishName: json['name'] as String,
+        servings: (json['servings'] as num).toDouble(),
+        row: json['row'] == null
+            ? null
+            : messRowFromJson(json['row'] as Map<String, dynamic>),
+      );
+
+  final String dishSlug;
+  final String dishName;
+  final double servings;
+
+  /// The dish's estimate now, as a per-serving row; null when it has none.
+  final FoodNutrition? row;
+
+  @override
+  String get name => dishName;
+
+  @override
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'kind': 'mess',
+        'dishSlug': dishSlug,
+        'name': dishName,
+        'servings': servings,
+        'row': row == null ? null : messRowToJson(row!),
+      };
+}
+
+/// A mess estimate (`MessDishNutrition` on the wire) as a per-serving
+/// [FoodNutrition] row, so the portion step and its preview treat a mess
+/// dish exactly like a food.
+FoodNutrition messRowFromJson(Map<String, dynamic> json) => FoodNutrition(
+      basis: NutritionBasis.perServing,
+      servingLabel: json['servingLabel'] as String,
+      servingGrams: (json['servingGrams'] as num?)?.toDouble(),
+      kcalLow: (json['kcalLow'] as num).toDouble(),
+      kcalHigh: (json['kcalHigh'] as num).toDouble(),
+      proteinLow: (json['proteinLow'] as num).toDouble(),
+      proteinHigh: (json['proteinHigh'] as num).toDouble(),
+      carbLow: (json['carbLow'] as num).toDouble(),
+      carbHigh: (json['carbHigh'] as num).toDouble(),
+      fatLow: (json['fatLow'] as num).toDouble(),
+      fatHigh: (json['fatHigh'] as num).toDouble(),
+      fibreLow: (json['fibreLow'] as num?)?.toDouble(),
+      fibreHigh: (json['fibreHigh'] as num?)?.toDouble(),
+      confidence: json['confidence'] == 'low'
+          ? NutritionConfidence.low
+          : NutritionConfidence.medium,
+    );
+
+/// The wire shape of a mess estimate (always `source: estimated`).
+Map<String, dynamic> messRowToJson(FoodNutrition row) => <String, dynamic>{
+      'servingLabel': row.servingLabel,
+      'servingGrams': row.servingGrams,
+      'kcalLow': row.kcalLow,
+      'kcalHigh': row.kcalHigh,
+      'proteinLow': row.proteinLow,
+      'proteinHigh': row.proteinHigh,
+      'carbLow': row.carbLow,
+      'carbHigh': row.carbHigh,
+      'fatLow': row.fatLow,
+      'fatHigh': row.fatHigh,
+      'fibreLow': row.fibreLow,
+      'fibreHigh': row.fibreHigh,
+      'confidence': row.confidence.wire,
+      'source': 'estimated',
+    };
+
 class SavedMeal {
   const SavedMeal({
     required this.id,
@@ -403,6 +498,30 @@ class LogFoodItemRequest {
       };
 }
 
+/// Phase 9: one mess dish at a portion of its serving. Exactly one of
+/// [servings] / [grams]. The numbers are the server's, taken at log time.
+class LogMessDishRequest {
+  const LogMessDishRequest({required this.dishSlug, this.servings, this.grams})
+      : assert((servings == null) != (grams == null));
+
+  factory LogMessDishRequest.fromJson(Map<String, dynamic> json) =>
+      LogMessDishRequest(
+        dishSlug: json['dishSlug'] as String,
+        servings: (json['servings'] as num?)?.toDouble(),
+        grams: (json['grams'] as num?)?.toDouble(),
+      );
+
+  final String dishSlug;
+  final double? servings;
+  final double? grams;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'dishSlug': dishSlug,
+        if (servings != null) 'servings': servings,
+        if (grams != null) 'grams': grams,
+      };
+}
+
 /// Quick add (owner J6): kcal and the three macros required; fibre optional.
 class QuickAdd {
   const QuickAdd({
@@ -442,7 +561,7 @@ class QuickAdd {
       };
 }
 
-/// `POST /nutrition/logs`: one of three methods, each with its own payload.
+/// `POST /nutrition/logs`: one of four methods, each with its own payload.
 class CreateLogRequest {
   const CreateLogRequest._({
     required this.clientLogId,
@@ -452,6 +571,9 @@ class CreateLogRequest {
     this.items,
     this.quickAdd,
     this.savedMealId,
+    this.mess,
+    this.menuDate,
+    this.messItems,
   });
 
   const CreateLogRequest.search({
@@ -493,9 +615,42 @@ class CreateLogRequest {
           savedMealId: savedMealId,
         );
 
+  /// Phase 9: dishes from a mess menu. No numbers: the server takes each
+  /// dish's stored estimate when the log reaches it.
+  const CreateLogRequest.mess({
+    required String clientLogId,
+    required String loggedAt,
+    required MealSlot mealSlot,
+    required String mess,
+    required String menuDate,
+    required List<LogMessDishRequest> messItems,
+  }) : this._(
+          clientLogId: clientLogId,
+          loggedAt: loggedAt,
+          mealSlot: mealSlot,
+          entryMethod: EntryMethod.mess,
+          mess: mess,
+          menuDate: menuDate,
+          messItems: messItems,
+        );
+
   factory CreateLogRequest.fromJson(Map<String, dynamic> json) {
     final method = EntryMethod.values
         .firstWhere((m) => m.wire == json['entryMethod'] as String);
+    if (method == EntryMethod.mess) {
+      return CreateLogRequest.mess(
+        clientLogId: json['clientLogId'] as String,
+        loggedAt: json['loggedAt'] as String,
+        mealSlot: MealSlot.fromWire(json['mealSlot'] as String),
+        mess: json['mess'] as String,
+        menuDate: json['menuDate'] as String,
+        messItems: (json['items'] as List<dynamic>)
+            .map(
+              (e) => LogMessDishRequest.fromJson(e as Map<String, dynamic>),
+            )
+            .toList(),
+      );
+    }
     return CreateLogRequest._(
       clientLogId: json['clientLogId'] as String,
       loggedAt: json['loggedAt'] as String,
@@ -522,6 +677,11 @@ class CreateLogRequest {
   final QuickAdd? quickAdd;
   final String? savedMealId;
 
+  /// Phase 9 (entryMethod `mess`): the mess code, the menu's date, the dishes.
+  final String? mess;
+  final String? menuDate;
+  final List<LogMessDishRequest>? messItems;
+
   Map<String, dynamic> toJson() => <String, dynamic>{
         'clientLogId': clientLogId,
         'loggedAt': loggedAt,
@@ -530,6 +690,10 @@ class CreateLogRequest {
         if (items != null) 'items': items!.map((i) => i.toJson()).toList(),
         if (quickAdd != null) 'quickAdd': quickAdd!.toJson(),
         if (savedMealId != null) 'savedMealId': savedMealId,
+        if (mess != null) 'mess': mess,
+        if (menuDate != null) 'menuDate': menuDate,
+        if (messItems != null)
+          'items': messItems!.map((i) => i.toJson()).toList(),
       };
 }
 

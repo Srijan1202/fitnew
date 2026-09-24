@@ -5,6 +5,7 @@ import 'package:fitos/features/ai/data/ai_api.dart';
 import 'package:fitos/features/ai/domain/entities/ai.dart';
 import 'package:fitos/features/auth/domain/entities/user_profile.dart';
 import 'package:fitos/features/exercise/domain/entities/exercise.dart';
+import 'package:fitos/features/mess/domain/mess.dart';
 import 'package:fitos/features/nutrition/domain/entities/food.dart';
 import 'package:fitos/features/nutrition/domain/entities/food_log.dart';
 import 'package:fitos/features/onboarding/domain/entities/onboarding.dart';
@@ -20,6 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../support/fake_auth_repository.dart';
 import '../support/fake_exercise_repository.dart';
 import '../support/fake_food_repository.dart';
+import '../support/fake_mess_api.dart';
 import '../support/fake_training_repository.dart';
 import '../support/fake_onboarding_repository.dart';
 import '../support/fake_workout_api.dart';
@@ -1676,6 +1678,244 @@ void main() {
         ).toJson().keys.toSet(),
         keysOf(schemaOf('/nutrition/saved-meals', 'post', request: true)),
       );
+    });
+  });
+
+  group('VIT mess (Phase 9)', () {
+    Map<String, dynamic> p(Map<String, dynamic> s, String k) =>
+        properties(s)[k] as Map<String, dynamic>;
+
+    late Map<String, dynamic> messes;
+    late Map<String, dynamic> menu;
+
+    setUpAll(() {
+      messes = schemaOf('/mess/providers/{slug}/messes', 'get');
+      menu = schemaOf('/mess/menu', 'get');
+    });
+
+    final menu0 = FakeMessApi.defaultMenu(
+      'mens-veg',
+      '2026-09-24',
+      logged: const [
+        MessLoggedDish(
+          dishSlug: 'phulka',
+          mealSlot: MealSlot.lunch,
+          clientLogId: 'c',
+        ),
+      ],
+    );
+
+    test('DietClass matches the server; unknown is a member', () {
+      final dish = p(
+        p(menu, 'meals')['items'] as Map<String, dynamic>,
+        'dishes',
+      )['items'] as Map<String, dynamic>;
+      expect(
+        DietClass.values.map((d) => d.wire).toList(),
+        enumOf(p(dish, 'diet')),
+      );
+      final fresh = p(
+        p(messes, 'items')['items'] as Map<String, dynamic>,
+        'freshness',
+      );
+      expect(
+        MirrorError.values.map((e) => e.wire).toSet(),
+        enumOf(p(fresh, 'lastError')).toSet(),
+      );
+    });
+
+    test('providers, messes, freshness', () {
+      final response = MessesResponse(
+        provider: const MessProviderInfo(
+          slug: 'vit-vellore',
+          displayName: 'VIT Vellore',
+          status: 'active',
+        ),
+        items: [FakeMessApi.messOf('mens-veg')],
+      );
+      expect(response.toJson().keys.toSet(), keysOf(messes));
+      expect(
+        response.provider.toJson().keys.toSet(),
+        keysOf(p(messes, 'provider')),
+      );
+      final item = p(messes, 'items')['items'] as Map<String, dynamic>;
+      expect(response.items.first.toJson().keys.toSet(), keysOf(item));
+      expect(
+        response.items.first.freshness.toJson().keys.toSet(),
+        keysOf(p(item, 'freshness')),
+      );
+      expect(
+        keysOf(
+          p(schemaOf('/mess/providers', 'get'), 'items')['items']
+              as Map<String, dynamic>,
+        ),
+        response.provider.toJson().keys.toSet(),
+      );
+    });
+
+    test('menu, resolution variants, meal, dish, estimate, logged', () {
+      expect(menu0.toJson().keys.toSet(), keysOf(menu));
+      final variants = (p(menu, 'resolution')['anyOf'] as List<dynamic>)
+          .cast<Map<String, dynamic>>();
+      Map<String, dynamic> variant(String kind) =>
+          variants.firstWhere((v) => enumOf(p(v, 'kind')).single == kind);
+      expect(
+        const ExactMenu('2026-09-24').toJson().keys.toSet(),
+        keysOf(variant('exact')),
+      );
+      expect(
+        const InferredMenu(
+          '2026-10-02',
+          sourceDate: '2026-09-18',
+          cycleLengthDays: 14,
+        ).toJson().keys.toSet(),
+        keysOf(variant('cycle-inferred')),
+      );
+      expect(
+        const UnavailableMenu('2026-10-02', latestAvailable: null)
+            .toJson()
+            .keys
+            .toSet(),
+        keysOf(variant('unavailable')),
+      );
+      final meal = p(menu, 'meals')['items'] as Map<String, dynamic>;
+      expect(menu0.meals.first.toJson().keys.toSet(), keysOf(meal));
+      final dish = p(meal, 'dishes')['items'] as Map<String, dynamic>;
+      final withEstimate = menu0
+          .meal(MealSlot.lunch)!
+          .dishes
+          .firstWhere((d) => d.nutrition != null);
+      expect(withEstimate.toJson().keys.toSet(), keysOf(dish));
+      expect(
+        (withEstimate.toJson()['nutrition'] as Map<String, dynamic>)
+            .keys
+            .toSet(),
+        keysOf(p(dish, 'nutrition')),
+      );
+      expect(
+        menu0.logged.first.toJson().keys.toSet(),
+        keysOf(p(menu, 'logged')['items'] as Map<String, dynamic>),
+      );
+      // The hand-written parsers read what the server sends.
+      Object? wire(Object? v) => jsonDecode(jsonEncode(v));
+      final back =
+          MessMenu.fromJson(wire(menu0.toJson()) as Map<String, dynamic>);
+      expect(back.toJson(), wire(menu0.toJson()));
+    });
+
+    test('corrections: each field sends only accepted properties; the answer',
+        () {
+      final accepted = keysOf(
+        schemaOf('/mess/dishes/{slug}/correction', 'post', request: true),
+      );
+      for (final r in [
+        const MessCorrectionRequest(
+          clientCorrectionId: 'c',
+          field: CorrectionField.kcal,
+          low: 1,
+          high: 2,
+          note: 'n',
+        ),
+        const MessCorrectionRequest(
+          clientCorrectionId: 'c',
+          field: CorrectionField.diet,
+          diet: DietClass.egg,
+        ),
+        const MessCorrectionRequest(
+          clientCorrectionId: 'c',
+          field: CorrectionField.other,
+          note: 'n',
+        ),
+      ]) {
+        expect(accepted.containsAll(r.toJson().keys), isTrue);
+      }
+      expect(
+        CorrectionField.values.map((f) => f.wire).toList(),
+        enumOf(
+          p(
+            schemaOf('/mess/dishes/{slug}/correction', 'post', request: true),
+            'field',
+          ),
+        ),
+      );
+      const answer = MessCorrection(
+        id: 'i',
+        clientCorrectionId: 'c',
+        dishSlug: 'phulka',
+        field: CorrectionField.kcal,
+        low: 1,
+        high: 2,
+        diet: null,
+        note: null,
+        status: 'pending',
+        createdAt: '2026-09-24T07:30:00.000Z',
+      );
+      expect(
+        answer.toJson().keys.toSet(),
+        keysOf(schemaOf('/mess/dishes/{slug}/correction', 'post')),
+      );
+    });
+
+    test('a mess log sends the mess, the date and dishes — and no numbers', () {
+      final request = const CreateLogRequest.mess(
+        clientLogId: '0b1f6a8e-4d2c-4b8e-9d5f-1a2b3c4d5e6f',
+        loggedAt: '2026-09-24T07:30:00.000Z',
+        mealSlot: MealSlot.lunch,
+        mess: 'mens-veg',
+        menuDate: '2026-09-24',
+        messItems: [LogMessDishRequest(dishSlug: 'phulka', servings: 1.5)],
+      ).toJson();
+      final variants =
+          (schemaOf('/nutrition/logs', 'post', request: true)['anyOf']
+                  as List<dynamic>)
+              .cast<Map<String, dynamic>>();
+      final mess = variants
+          .firstWhere((v) => enumOf(p(v, 'entryMethod')).single == 'mess');
+      expect(request.keys.toSet(), keysOf(mess));
+      final itemSchema = p(mess, 'items')['items'] as Map<String, dynamic>;
+      final item =
+          (request['items'] as List<dynamic>).first as Map<String, dynamic>;
+      expect(keysOf(itemSchema).containsAll(item.keys), isTrue);
+      expect(item.keys.any((k) => k.startsWith('kcal')), isFalse);
+      // It survives the queue: parsed back exactly.
+      expect(
+        CreateLogRequest.fromJson(
+          jsonDecode(jsonEncode(request)) as Map<String, dynamic>,
+        ).toJson(),
+        request,
+      );
+    });
+
+    test('a saved mess item is its own kind (owner D11) and round-trips', () {
+      final savedMeal =
+          p(schemaOf('/nutrition/saved-meals', 'get'), 'items')['items']
+              as Map<String, dynamic>;
+      final variants = ((p(savedMeal, 'items')['items']
+              as Map<String, dynamic>)['anyOf'] as List<dynamic>)
+          .cast<Map<String, dynamic>>();
+      final mess =
+          variants.firstWhere((v) => enumOf(p(v, 'kind')).single == 'mess');
+      const item = SavedMessItem(
+        dishSlug: 'dhal-makhani',
+        dishName: 'Dhal Makhani',
+        servings: 2,
+        row: FakeMessApi.dal,
+      );
+      expect(item.toJson().keys.toSet(), keysOf(mess));
+      expect(
+        (item.toJson()['row'] as Map<String, dynamic>).keys.toSet(),
+        keysOf(p(mess, 'row')),
+      );
+      final back = SavedMealItem.fromJson(
+        jsonDecode(jsonEncode(item.toJson())) as Map<String, dynamic>,
+      );
+      expect(back, isA<SavedMessItem>());
+      expect((back as SavedMessItem).row, FakeMessApi.dal);
+    });
+
+    test('the profile carries isVitStudent; PATCH accepts the mess', () {
+      final patch = keysOf(schemaOf('/user/profile', 'patch', request: true));
+      expect(patch.containsAll(['isVitStudent', 'mess']), isTrue);
     });
   });
 

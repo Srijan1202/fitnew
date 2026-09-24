@@ -4,6 +4,7 @@ import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:fitos/features/health/presentation/controllers/health_providers.dart';
 import 'package:fitos/features/home/presentation/controllers/home_providers.dart';
+import 'package:fitos/features/mess/presentation/mess_providers.dart';
 import 'package:fitos/features/nutrition/domain/entities/food.dart';
 import 'package:fitos/features/nutrition/domain/entities/food_log.dart';
 import 'package:fitos/features/nutrition/presentation/controllers/food_log_providers.dart';
@@ -19,6 +20,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../support/fake_food_log_api.dart';
+import '../../support/fake_mess_api.dart';
 import '../../support/fake_food_repository.dart';
 import 'eat_screen_test.dart' show serverSnapshot;
 
@@ -107,6 +109,8 @@ void main() {
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
         foodLogApiProvider.overrideWithValue(api),
+        // Phase 9: no mess configured — the Phase 8 screens as they were.
+        messApiProvider.overrideWithValue(FakeMessApi(mine: null)),
         foodRepositoryProvider.overrideWithValue(FakeFoodRepository()),
         connectivityStreamProvider.overrideWithValue(
           const Stream<List<ConnectivityResult>>.empty(),

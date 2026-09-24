@@ -2,13 +2,20 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/failure.dart';
 import '../../../../core/errors/result.dart';
 import '../../../../core/routing/navigation.dart';
+import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../../home/presentation/controllers/home_providers.dart';
+import '../../../mess/data/mess_repository.dart';
+import '../../../mess/domain/mess.dart';
+import '../../../mess/presentation/mess_providers.dart';
+import '../../../mess/presentation/widgets/mess_sheets.dart';
+import '../../../mess/presentation/widgets/mess_widgets.dart';
 import '../../data/nutrition_log_repository.dart';
 import '../../domain/entities/food.dart';
 import '../../domain/entities/food_log.dart';
@@ -22,6 +29,8 @@ import '../widgets/log_controls.dart';
 import '../widgets/portion_sheet.dart';
 
 enum LogSource {
+  /// Phase 9: the day's mess menu — offered when the user has a mess.
+  mess('Mess', Icons.restaurant_outlined),
   recent('Recent', Icons.history),
   search('Search', Icons.search),
   saved('Saved meals', Icons.bookmark_border),
@@ -67,7 +76,13 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
       widget.target?.date ?? ref.read(eatDateProvider.notifier).today;
   late MealSlot _slot =
       widget.target?.slot ?? MealSlot.forHour(ref.read(localHourProvider));
-  LogSource _source = LogSource.recent;
+  LogSource? _chosen;
+
+  /// Mess first when the user has one and it has a menu for the day
+  /// (Phase 9); otherwise the Phase 8 order, Recent first.
+  LogSource _source(bool hasMess) => _chosen == LogSource.mess && !hasMess
+      ? LogSource.recent
+      : _chosen ?? (hasMess ? LogSource.mess : LogSource.recent);
 
   LogTarget get _target => LogTarget(date: _date, slot: _slot);
 
@@ -106,6 +121,9 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final today = ref.watch(eatDateProvider.notifier).today;
+    final hasMess = ref.watch(messMenuProvider((date: _date, code: null))).value
+        is MenuLoaded;
+    final source = _source(hasMess);
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.popOrHome()),
@@ -148,18 +166,24 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
                     const SizedBox(height: FitSpacing.md),
                     SegmentBar<LogSource>(
                       keyPrefix: 'log.source',
-                      selected: _source,
-                      onSelect: (s) => setState(() => _source = s),
+                      selected: source,
+                      onSelect: (s) => setState(() => _chosen = s),
                       segments: [
                         for (final s in LogSource.values)
-                          Segment(value: s, label: s.label, icon: s.icon),
+                          if (s != LogSource.mess || hasMess)
+                            Segment(value: s, label: s.label, icon: s.icon),
                       ],
                     ),
                   ],
                 ),
               ),
             ),
-            switch (_source) {
+            switch (source) {
+              LogSource.mess => _MessPane(
+                  date: _date,
+                  slot: _slot,
+                  onLogged: _done,
+                ),
               LogSource.recent => _RecentPane(onPick: _logFood),
               LogSource.search => _SearchPane(onPick: (f) => _logFood(f)),
               LogSource.saved => _SavedPane(target: _target, onLogged: _done),
@@ -171,6 +195,91 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/* -------------------------------------------------------------- mess -- */
+
+/// Phase 9: the chosen meal's dishes from the user's mess menu for the day.
+/// Tap one for the portion step; it logs through the Phase 8 queue.
+class _MessPane extends ConsumerWidget {
+  const _MessPane({
+    required this.date,
+    required this.slot,
+    required this.onLogged,
+  });
+
+  final String date;
+  final MealSlot slot;
+  final VoidCallback onLogged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textTheme = Theme.of(context).textTheme;
+    final state = ref.watch(messMenuProvider((date: date, code: null))).value;
+    if (state is! MenuLoaded) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+    final menu = state.menu;
+    final meal = menu.meal(slot);
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
+      sliver: SliverList.list(
+        children: <Widget>[
+          const SizedBox(height: FitSpacing.sm),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  '${slot.label.toUpperCase()} · ${menu.mess.label.toUpperCase()}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.labelSmall,
+                ),
+              ),
+              TextButton(
+                key: const ValueKey('log.mess.full'),
+                onPressed: () {
+                  ref.read(messDateProvider.notifier).set(date);
+                  context.push(Routes.mess);
+                },
+                child: const Text('Full menu'),
+              ),
+            ],
+          ),
+          MenuStatus(state: state, now: DateTime.now()),
+          if (meal == null || meal.dishes.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
+              child: Text(
+                'No ${slot.label.toLowerCase()} on this menu.',
+                key: const ValueKey('log.mess.empty'),
+                style: textTheme.bodyLarge,
+              ),
+            )
+          else
+            for (final dish in <MessDish>[
+              ...meal.dishes.where((d) => !d.isAmbient),
+              ...meal.dishes.where((d) => d.isAmbient),
+            ])
+              MessDishRow(
+                dish: dish,
+                logged: menu.isLogged(dish.slug),
+                onTap: () async {
+                  FocusScope.of(context).unfocus();
+                  final logged = await openMessDish(
+                    context,
+                    ref,
+                    dish: dish,
+                    menu: menu,
+                    slot: slot,
+                  );
+                  if (logged) onLogged();
+                },
+              ),
+        ],
       ),
     );
   }

@@ -10,6 +10,7 @@ _FoodLogItem _$FoodLogItemFromJson(Map<String, dynamic> json) => _FoodLogItem(
       id: json['id'] as String,
       position: (json['position'] as num).toInt(),
       foodId: json['foodId'] as String?,
+      messDishSlug: json['messDishSlug'] as String? ?? null,
       foodName: json['foodName'] as String,
       foodSource: $enumDecode(_$FoodSourceEnumMap, json['foodSource']),
       basis: $enumDecodeNullable(_$NutritionBasisEnumMap, json['basis']),
@@ -35,6 +36,7 @@ Map<String, dynamic> _$FoodLogItemToJson(_FoodLogItem instance) =>
       'id': instance.id,
       'position': instance.position,
       'foodId': instance.foodId,
+      'messDishSlug': instance.messDishSlug,
       'foodName': instance.foodName,
       'foodSource': _$FoodSourceEnumMap[instance.foodSource]!,
       'basis': _$NutritionBasisEnumMap[instance.basis],
@@ -115,6 +117,7 @@ _FoodLog _$FoodLogFromJson(Map<String, dynamic> json) => _FoodLog(
       mealSlot: $enumDecode(_$MealSlotEnumMap, json['mealSlot']),
       entryMethod: $enumDecode(_$EntryMethodEnumMap, json['entryMethod']),
       savedMealId: json['savedMealId'] as String?,
+      messCode: json['messCode'] as String? ?? null,
       items: (json['items'] as List<dynamic>)
           .map((e) => FoodLogItem.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -129,6 +132,7 @@ Map<String, dynamic> _$FoodLogToJson(_FoodLog instance) => <String, dynamic>{
       'mealSlot': _$MealSlotEnumMap[instance.mealSlot]!,
       'entryMethod': _$EntryMethodEnumMap[instance.entryMethod]!,
       'savedMealId': instance.savedMealId,
+      'messCode': instance.messCode,
       'items': instance.items,
       'totals': instance.totals,
     };
@@ -144,6 +148,7 @@ const _$EntryMethodEnumMap = {
   EntryMethod.search: 'search',
   EntryMethod.quickAdd: 'quick-add',
   EntryMethod.savedMeal: 'saved-meal',
+  EntryMethod.mess: 'mess',
 };
 
 _RemainingRange _$RemainingRangeFromJson(Map<String, dynamic> json) =>
