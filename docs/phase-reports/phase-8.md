@@ -210,7 +210,7 @@
 ### BUILDS
 
 - LAN alpha debug APK at `build/app/outputs/flutter-apk/app-debug.apk`.
-- API `http://172.16.205.86:8080`, `/health` 200 at build time.
+- API `http://10.52.198.11:8080`, `/health` 200 at build time. The first Phase 8 build targeted `172.16.205.86` (the PC was on another network at the time) and could not reach the server once the PC was back on `10.52.198.11`, so the APK was rebuilt.
 - The PC's LAN address changed since Phase 7; rebuild if it changes again.
 
 ### CI
