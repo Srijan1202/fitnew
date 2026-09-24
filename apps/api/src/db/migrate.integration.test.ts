@@ -70,7 +70,7 @@ describeIfDb('migrations (real Postgres)', () => {
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
   const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
   const PHASE6_TABLES = ['muscle_volume_weekly', 'exercise_rejections'];
-  const TOTAL_MIGRATIONS = 14;
+  const TOTAL_MIGRATIONS = 15;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -476,7 +476,52 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from mess_providers where id = ${prov!.id}`;
   });
 
+  it('0014: every deload activation is kept by a trigger on programs (Phase 6 code untouched); backfill; down drops it (Phase 11)', async () => {
+    // Down, then a deload week already running when 0014 applies: the backfill records it.
+    expect(await rollbackLastMigration(connectionString)).toBe('0014_deload_activations');
+    expect(await tableExists(client, 'deload_activations')).toBe(false);
+    await client`insert into users (firebase_uid) values ('mig-deload')`;
+    const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-deload'`;
+    const [p] = await client<{ id: string }[]>`
+      insert into programs (user_id, name, split_type, days_per_week, source, deload_started_at)
+      values (${u!.id}, 'P', 'full-body', 3, 'generated', '2026-09-20T06:00:00Z') returning id`;
+    await migrateUp(connectionString);
+    expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
+    const history = async () =>
+      (await client<{ started_at: Date; user_id: string }[]>`select started_at, user_id from deload_activations where program_id = ${p!.id} order by started_at`).map((r) => [r.user_id, r.started_at.toISOString()]);
+    expect(await history()).toEqual([[u!.id, '2026-09-20T06:00:00.000Z']]);
+
+    // The week closes (Phase 6 clears the column): the history stays. Clearing records nothing.
+    await client`update programs set deload_started_at = null where id = ${p!.id}`;
+    expect(await history()).toHaveLength(1);
+    // A later activation is appended; setting the same value again, or touching other columns, is not a new one.
+    await client`update programs set deload_started_at = '2026-10-01T06:00:00Z' where id = ${p!.id}`;
+    await client`update programs set deload_started_at = '2026-10-01T06:00:00Z', mesocycle_week = 2 where id = ${p!.id}`;
+    await client`update programs set name = 'Q' where id = ${p!.id}`;
+    expect(await history()).toEqual([[u!.id, '2026-09-20T06:00:00.000Z'], [u!.id, '2026-10-01T06:00:00.000Z']]);
+    // A programme created mid-deload (INSERT) is recorded too.
+    const [q] = await client<{ id: string }[]>`
+      insert into programs (user_id, name, split_type, days_per_week, source, active, deload_started_at)
+      values (${u!.id}, 'Old', 'full-body', 3, 'generated', false, '2026-08-01T06:00:00Z') returning id`;
+    expect((await client`select 1 from deload_activations where program_id = ${q!.id}`).length).toBe(1);
+
+    // Deleting a programme, or the user, takes its history.
+    await client`delete from programs where id = ${q!.id}`;
+    expect((await client`select 1 from deload_activations where program_id = ${q!.id}`).length).toBe(0);
+
+    // Down removes the trigger, its function and the table; programs keeps working as in Phase 6.
+    expect(await rollbackLastMigration(connectionString)).toBe('0014_deload_activations');
+    expect(await tableExists(client, 'deload_activations')).toBe(false);
+    const fns = await client`select 1 from pg_proc where proname = 'record_deload_activation'`;
+    expect(fns.length).toBe(0);
+    await client`update programs set deload_started_at = now() where id = ${p!.id}`;
+    await migrateUp(connectionString);
+    await client`delete from users where id = ${u!.id}`;
+    expect((await client`select 1 from deload_activations where user_id = ${u!.id}`).length).toBe(0);
+  });
+
   it('0013: TODAY recommendations and events — identity, checks, event rules, cascades; down drops them (Phase 11, ADR-017)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0014_deload_activations');
     expect(await rollbackLastMigration(connectionString)).toBe('0013_today');
     expect(await tableExists(client, 'recommendations')).toBe(false);
     expect(await tableExists(client, 'recommendation_events')).toBe(false);
@@ -557,6 +602,7 @@ describeIfDb('migrations (real Postgres)', () => {
       `insert into recommendations (user_id, generated_for, kind, subject_key, rank, priority, basis, target, payload, engine_version, input_digest, headline, detail, content_hash)
        values ('${d!.id}', '2026-09-24', 'log-weight', '', 1, 45, 'calculated', 'progress', '{}'::jsonb, 'today-1', '${H}', 'h', 'd', '${H}')`,
     );
+    expect(await rollbackLastMigration(connectionString)).toBe('0014_deload_activations');
     expect(await rollbackLastMigration(connectionString)).toBe('0013_today');
     expect(await tableExists(client, 'recommendations')).toBe(false);
     expect(await enumLabels(client, 'recommendation_event')).toEqual([]);
@@ -565,6 +611,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0012: four Phase 9 estimates corrected with provenance, only where still wrong; down restores them (Phase 10 Amendment B)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0014_deload_activations');
     expect(await rollbackLastMigration(connectionString)).toBe('0013_today');
     expect(await rollbackLastMigration(connectionString)).toBe('0012_mess_estimate_corrections');
     expect(await tableExists(client, 'mess_dish_nutrition_revisions')).toBe(false);
@@ -600,6 +647,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await expect(client`insert into mess_dish_nutrition_revisions (dish_slug, reason, previous, current) values ('curd-rice', ' ', '{}', '{}')`).rejects.toThrow(/revisions_reason/);
 
     // Down puts the recorded previous values back and drops the provenance table.
+    expect(await rollbackLastMigration(connectionString)).toBe('0014_deload_activations');
     expect(await rollbackLastMigration(connectionString)).toBe('0013_today');
     expect(await rollbackLastMigration(connectionString)).toBe('0012_mess_estimate_corrections');
     expect(await tableExists(client, 'mess_dish_nutrition_revisions')).toBe(false);
@@ -664,7 +712,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'uid-dup'`;
   });
 
-  it('down removes 0013 (TODAY), 0012 (restoring the corrected estimates), 0011 (rebuilding food_entry_method; mess logs and meals go, the day cache is rebuilt), 0010, 0009, 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+  it('down removes 0014 (deload activations), 0013 (TODAY), 0012 (restoring the corrected estimates), 0011 (rebuilding food_entry_method; mess logs and meals go, the day cache is rebuilt), 0010, 0009, 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
     // Data that only 0011 can hold, next to data 0010 keeps.
     await client`insert into users (firebase_uid) values ('mig-down')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-down'`;
@@ -683,6 +731,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Mess lunch', '[{"kind":"mess","dishSlug":"dal","name":"Dal","servings":1}]'::jsonb)`;
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Plain', '[{"kind":"quick-add","name":"X","kcal":1,"proteinG":0,"carbG":0,"fatG":0,"fibreG":null}]'::jsonb)`;
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0014_deload_activations');
     expect(await rollbackLastMigration(connectionString)).toBe('0013_today');
     expect(await tableExists(client, 'recommendations')).toBe(false);
     expect(await rollbackLastMigration(connectionString)).toBe('0012_mess_estimate_corrections');

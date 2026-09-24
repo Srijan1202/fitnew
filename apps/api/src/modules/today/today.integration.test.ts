@@ -670,19 +670,63 @@ describeIfDb('/v1/today (real Postgres, real seed)', { timeout: 60_000 }, () => 
     expect((await ev(u, u.deloadId, 'completed')).statusCode).toBe(201);
   });
 
-  it('deload: an activation from BEFORE this action was accepted is not its evidence', async () => {
+  /** Phase 6 activation at a chosen instant: the same column `POST /training/deload/accept` sets (its trigger records it). */
+  const activateAt = (programId: string, at: Date) => sql`update programs set deload_started_at = ${at} where id = ${programId}`;
+  const minutes = (m: number) => new Date(Date.now() + m * 60_000);
+
+  it('deload, delayed: accepted → activated → the week closes → completed 5 days later (inside 7) still has its evidence', async () => {
+    await settleClock();
+    const tz = zoneAt(12);
+    const u = await deloadOffered(tz);
+    expect((await ev(u, u.deloadId, 'shown')).statusCode).toBe(201);
+    expect((await ev(u, u.deloadId, 'accepted')).statusCode).toBe(201);
+    expect((await acceptDeload(u)).statusCode).toBe(200);
+    // The week ends (Phase 6 clears deload_started_at) …
+    await sql`update programs set deload_started_at = null where id = ${u.programId}`;
+    expect((await workoutToday(u)).deload.state).not.toBe('active');
+    // … and all of it happened five days ago: the action, its events, the activation.
+    const base = new Date(Date.now() - 5 * 86_400_000);
+    await sql`update recommendations set generated_for = ${localDateOf(base, tz)}, created_at = ${new Date(base.getTime() - 60_000)} where id = ${u.deloadId}`;
+    await sql`update recommendation_events set occurred_at = ${base} where recommendation_id = ${u.deloadId}`;
+    await sql`update deload_activations set started_at = ${new Date(base.getTime() + 60_000)} where user_id = ${u.id}`;
+    // The phone only now delivers the completion it recorded then.
+    const late = await event(u, u.deloadId, { clientEventId: randomUUID(), event: 'completed', occurredAt: new Date(base.getTime() + 2 * 60_000).toISOString() });
+    expect(late.statusCode, late.body).toBe(201);
+  });
+
+  it('deload: an activation from BEFORE this action existed or was accepted is not its evidence', async () => {
     await settleClock();
     const u = await deloadOffered(zoneAt(12));
     // The action appeared 30 minutes ago; the week was activated 20 minutes ago, outside TODAY …
     await sql`update recommendations set created_at = now() - interval '30 minutes' where id = ${u.deloadId}`;
-    expect((await acceptDeload(u)).statusCode).toBe(200);
-    await sql`update programs set deload_started_at = now() - interval '20 minutes' where id = ${u.programId}`;
+    await activateAt(u.programId, minutes(-20));
     // … and only now is the card accepted: that acceptance did not lead to the activation.
     expect((await ev(u, u.deloadId, 'shown')).statusCode).toBe(201);
     expect((await ev(u, u.deloadId, 'accepted')).statusCode).toBe(201);
     const r = await ev(u, u.deloadId, 'completed');
     expect(r.statusCode).toBe(422);
     expect(issue(r)).toBe('no-evidence');
+  });
+
+  it('deload: a stale week (activated and closed before this action) or one activated after the reported completion does not count', async () => {
+    await settleClock();
+    const u = await deloadOffered(zoneAt(12));
+    // A previous deload week, 10 days ago, long closed.
+    await activateAt(u.programId, new Date(Date.now() - 10 * 86_400_000));
+    await sql`update programs set deload_started_at = null where id = ${u.programId}`;
+    // The action existed an hour ago; accepted 50 minutes ago; "completed" claimed 40 minutes ago.
+    await sql`update recommendations set created_at = now() - interval '60 minutes' where id = ${u.deloadId}`;
+    expect((await ev(u, u.deloadId, 'shown', minutes(-55))).statusCode).toBe(201);
+    expect((await ev(u, u.deloadId, 'accepted', minutes(-50))).statusCode).toBe(201);
+    const stale = await ev(u, u.deloadId, 'completed', minutes(-40));
+    expect(issue(stale)).toBe('no-evidence');
+    // Activated only now — after the completion it is supposed to prove.
+    expect((await acceptDeload(u)).statusCode).toBe(200);
+    const after = await ev(u, u.deloadId, 'completed', minutes(-40));
+    expect(after.statusCode).toBe(422);
+    expect(issue(after)).toBe('no-evidence');
+    const [n] = await sql<{ n: number }[]>`select count(*)::int as n from deload_activations where user_id = ${u.id}`;
+    expect(n!.n).toBe(2); // both activations are on record; neither is this action's evidence
   });
 
   /* ------------------------------------------------------- performance -- */

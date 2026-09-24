@@ -17,6 +17,7 @@
 import { sql } from 'drizzle-orm';
 import { check, date, index, jsonb, pgEnum, pgTable, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
+import { programs } from './training.js';
 import { users } from './users.js';
 
 export const todayActionKindEnum = pgEnum('today_action_kind', [
@@ -93,6 +94,34 @@ export const recommendationEvents = pgTable(
     uniqueIndex('recommendation_events_client_id').on(t.userId, t.clientEventId),
     uniqueIndex('recommendation_events_once').on(t.recommendationId, t.event),
     index('recommendation_events_user_received_idx').on(t.userId, t.receivedAt),
+  ],
+);
+
+/**
+ * Every activation of a deload week, kept after the week closes (migration
+ * 0014). Phase 6 stores only the CURRENT week in `programs.deload_started_at`
+ * and clears it when the week ends, which would erase the evidence a delayed
+ * TODAY `completed` event needs (P3: up to 7 days late). A trigger on
+ * `programs` appends a row whenever `deload_started_at` is set, so the Phase 6
+ * code and lifecycle are unchanged. Read only by TODAY's completion evidence.
+ */
+export const deloadActivations = pgTable(
+  'deload_activations',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    programId: uuid('program_id')
+      .notNull()
+      .references(() => programs.id, { onDelete: 'cascade' }),
+    /** The activation time Phase 6 wrote to `programs.deload_started_at` (server time). */
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
+    recordedAt: timestamp('recorded_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('deload_activations_program_started').on(t.programId, t.startedAt),
+    index('deload_activations_user_started_idx').on(t.userId, t.startedAt),
   ],
 );
 

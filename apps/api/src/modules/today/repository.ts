@@ -7,6 +7,7 @@ import { and, asc, eq, gte, inArray, isNull, lte, sql } from 'drizzle-orm';
 import type { DatabaseHandle } from '../../db/client.js';
 import {
   bodyMetrics,
+  deloadActivations,
   exerciseContraindications,
   exerciseMuscles,
   exercisePrs,
@@ -236,6 +237,16 @@ export class TodayRepository {
       .select({ id: foodLogs.id })
       .from(foodLogs)
       .where(and(eq(foodLogs.userId, userId), eq(foodLogs.localDate, localDate), sql`${foodLogs.mealSlot}::text = ${slot}`, isNull(foodLogs.deletedAt)))
+      .limit(1);
+    return row !== undefined;
+  }
+
+  /** Whether a deload week was activated for the user within [from, to] (`deload_activations`, 0014). */
+  async deloadActivatedBetween(userId: string, from: Date, to: Date): Promise<boolean> {
+    const [row] = await this.db
+      .select({ id: deloadActivations.id })
+      .from(deloadActivations)
+      .where(and(eq(deloadActivations.userId, userId), gte(deloadActivations.startedAt, from), lte(deloadActivations.startedAt, to)))
       .limit(1);
     return row !== undefined;
   }

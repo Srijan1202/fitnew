@@ -205,6 +205,7 @@ export class TodayService {
     userId: string,
     rec: RecommendationRow,
     recorded: readonly RecommendationEventRow[],
+    completedAt: Date,
     timeZone: string,
   ): Promise<boolean> {
     const evidence = COMPLETION_EVIDENCE[rec.kind];
@@ -228,15 +229,20 @@ export class TodayService {
       case 'weight-logged':
         return this.repo.weighedOn(userId, day);
       case 'deload-accepted': {
-        // "Deload accepted": this offer was accepted, THEN the offer was activated.
-        // Activation is Phase 6's `POST /training/deload/accept`, which stamps the
-        // active programme's `deload_started_at` (server time) only while a deload
-        // is offered. It counts when it happened after this recommendation existed
-        // and no earlier than its `accepted` event (phone time, so the 5-minute skew).
+        // "Deload accepted": THIS action was accepted, then the offer was activated,
+        // then `completed` was reported. Activation is Phase 6's
+        // `POST /training/deload/accept` (it sets `programs.deload_started_at`);
+        // migration 0014 keeps every activation in `deload_activations`, so the
+        // evidence survives the week closing (P3: a completed event may arrive up
+        // to 7 days late). The activation must fall after this action existed, no
+        // earlier than its `accepted` event and no later than the `completed`
+        // event itself (both phone time, hence the 5-minute skew) — so an older
+        // week, or one activated after the fact, never counts.
         const accepted = recorded.find((r) => r.event === 'accepted');
-        const started = (await this.training.activeProgram(userId))?.program.deloadStartedAt ?? null;
-        if (accepted === undefined || started === null) return false;
-        return started.getTime() >= Math.max(rec.createdAt.getTime(), accepted.occurredAt.getTime() - CLOCK_SKEW_MS);
+        if (accepted === undefined) return false;
+        const from = new Date(Math.max(rec.createdAt.getTime(), accepted.occurredAt.getTime() - CLOCK_SKEW_MS));
+        const to = new Date(completedAt.getTime() + CLOCK_SKEW_MS);
+        return from.getTime() <= to.getTime() && this.repo.deloadActivatedBetween(userId, from, to);
       }
       case null:
         return false;
@@ -294,7 +300,7 @@ export class TodayService {
       if (transition.outcome === 'reject') {
         throw new AppError('VALIDATION_FAILED', `Cannot record "${event}" for this action.`, [{ path: 'event', issue: transition.code }]);
       }
-      if (event === 'completed' && !(await this.completionProven(userId, rec, recorded, timeZone))) {
+      if (event === 'completed' && !(await this.completionProven(userId, rec, recorded, occurredAt, timeZone))) {
         throw new AppError('VALIDATION_FAILED', 'Nothing on record completes this action yet.', [{ path: 'event', issue: 'no-evidence' }]);
       }
       const row = await insert({ recommendationId: rec.id, userId, event, clientEventId: body.clientEventId, occurredAt, receivedAt });
