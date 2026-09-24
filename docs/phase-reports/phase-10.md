@@ -200,15 +200,15 @@ No contradiction with the locked decisions or the plan came up during implementa
   - `dart format --set-exit-if-changed`: 0 changed;
   - the full suite also ran locally this phase.
 
-**CI on `18fa3ad` (all green):**
+**CI on `92164ee` (Amendment A/B head; all green):** ci-core ✓, ci-api ✓ (including migration 0012 up and down), ci-mobile ✓. Before the amendment, CI was also all green on `18fa3ad`:
 - **ci-core ✓**
 - **ci-api ✓:** typecheck, lint, tests, build, the image migrates, seeds and boots, and the smoke check including the new route's 401.
 - **ci-mobile ✓:** analyze `--fatal-infos`, custom_lint, format, the full Flutter suite, APK.
 
 ### BUILDS
 
-- **LAN API container:** `docker compose up --build -d api` (development), rebuilt from `phase-10`. `GET /v1/mess/menu/recommend` answers 401 without a session.
-- **LAN APK:** `apps/mobile/build/app/outputs/flutter-apk/app-debug.apk` (debug, `.\tool\alpha.ps1`), built from `phase-10` at `18fa3ad`. It targets `http://10.52.198.11:8080` (the PC on the S24 hotspot), and `/health` returned 200 at build time. The owner installs it by hand; no phone was connected over adb.
+- **LAN API container:** `docker compose up --build -d api` (development), rebuilt from `phase-10` at `92164ee`. Migration 0012 was applied to the dev database with `pnpm --filter @fitos/api db:migrate`, because the container does not migrate itself. `GET /v1/mess/menu/recommend` answers 401 without a session.
+- **LAN APK:** `apps/mobile/build/app/outputs/flutter-apk/app-debug.apk` (debug, `.\tool\alpha.ps1`), built from `phase-10` at `92164ee` (Amendment A/B). It targets `http://10.52.198.11:8080` (the PC on the S24 hotspot), and `/health` returned 200 at build time. The owner installs it by hand; no phone was connected over adb.
 
 The PC's address depends on the network it joins. A first build targeted `172.16.205.86` (another Wi-Fi) and was replaced when the PC moved back to the hotspot. **Rebuild with `.\tool\alpha.ps1` whenever the address changes.**
 
