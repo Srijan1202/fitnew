@@ -143,9 +143,9 @@ No contradiction with the locked decisions or the plan came up during implementa
 ### BUILDS
 
 - **LAN API container:** `docker compose up --build -d api` (development), rebuilt from `phase-10`. `GET /v1/mess/menu/recommend` answers 401 without a session.
-- **LAN APK:** `apps/mobile/build/app/outputs/flutter-apk/app-debug.apk` (debug, `.	oollpha.ps1`), built from `phase-10` at `18fa3ad`. It targets `http://10.52.198.11:8080` (the PC on the S24 hotspot), and `/health` returned 200 at build time. The owner installs it by hand; no phone was connected over adb.
+- **LAN APK:** `apps/mobile/build/app/outputs/flutter-apk/app-debug.apk` (debug, `.\tool\alpha.ps1`), built from `phase-10` at `18fa3ad`. It targets `http://10.52.198.11:8080` (the PC on the S24 hotspot), and `/health` returned 200 at build time. The owner installs it by hand; no phone was connected over adb.
 
-The PC's address depends on the network it joins. A first build targeted `172.16.205.86` (another Wi-Fi) and was replaced when the PC moved back to the hotspot. **Rebuild with `.	oollpha.ps1` whenever the address changes.**
+The PC's address depends on the network it joins. A first build targeted `172.16.205.86` (another Wi-Fi) and was replaced when the PC moved back to the hotspot. **Rebuild with `.\tool\alpha.ps1` whenever the address changes.**
 
 ### S24 MANUAL ACCEPTANCE — PENDING (owner)
 
