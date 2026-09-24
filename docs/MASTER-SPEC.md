@@ -394,8 +394,8 @@ Everything else in your preferred stack is kept: Cloud Run, Firebase Auth, FCM, 
 
 | Table | Key columns | Notes |
 |---|---|---|
-| `recommendations` | `id`, `user_id`, `generated_for date`, `kind`, `headline`, `detail`, `target`, `priority`, `basis`, `payload jsonb` | |
-| `recommendation_events` | `id`, `recommendation_id`, `event` (`shown`/`opened`/`accepted`/`dismissed`/`completed`), `occurred_at` | Measures whether the engine actually helps |
+| `recommendations` | `id`, `user_id`, `generated_for date`, `kind`, `headline`, `detail`, `target`, `priority`, `basis`, `payload jsonb` | `AMENDED 2026-09-24 (Phase 11, ADR-017)`: also `subject_key`, `rank` (at first generation), `engine_version`, `input_digest`, `content_hash`, `created_at`. **Immutable**; UNIQUE `(user_id, generated_for, kind, subject_key, content_hash)`, so the same content reuses its id. Never stores the whole `UserModel`. Kept indefinitely; cascades on user deletion |
+| `recommendation_events` | `id`, `recommendation_id`, `event` (`shown`/`opened`/`accepted`/`dismissed`/`completed`), `occurred_at` | Measures whether the engine actually helps. `AMENDED 2026-09-24 (Phase 11, ADR-017)`: also `user_id`, `client_event_id` (UNIQUE per user: idempotency) and `received_at`. Each event at most once per recommendation. Product records, not analytics |
 | `recovery_logs` | `id`, `user_id`, `logged_on date`, `sleep_hours`, `sleep_quality`, `soreness`, `energy`, `stress`, `source` | UNIQUE `(user_id, logged_on)` |
 | `health_samples` | `id`, `user_id`, `sample_type`, `value`, `unit`, `recorded_at`, `source` | Health Connect / HealthKit (V2) |
 | `notifications` | `id`, `user_id`, `kind`, `scheduled_for`, `sent_at`, `opened_at` | |
@@ -851,6 +851,10 @@ Return the best available plate **and say it falls short**. Do not inflate estim
 | 30 | `hydrate` | Hydration reminder |
 
 **Mutual exclusions (tested):** `eat-protein` XOR `eat-meal`; `deload` suppresses `rest-day`. Surface is capped at **4 actions**. Every action carries `basis: logged | calculated | estimated`.
+
+`AMENDED 2026-09-24 (Phase 11, ADR-017)`:
+- **Server vs device:** the server engine owns every rule it has authoritative data for. The phone keeps only the rules that need device-only data (ADR-008/009): resume the in-progress session (92), sleep (65), steps (40), connect Health Connect (35). Home merges both by band, showing at most 4.
+- **Every server action carries** a structured reason (`code` + `values`, the source of truth), deterministic English `headline`/`detail` (never an LLM), a `subject_key`, and an `engine_version`.
 
 ### 16.2 Rest days
 
@@ -1407,6 +1411,15 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 **Tests:** all persona fixtures (§26.2) with **snapshotted ranked output** · mutual exclusions · deload outranks everything · cap of 4 · determinism.
 **Acceptance:** TODAY renders in <1s · actions match fixtures exactly · events recorded · every action carries a reason and a basis.
 **Manual:** verify TODAY across a training day, a rest day, and a deload-due state.
+`AMENDED 2026-09-24 (Phase 11 plan, ADR-017; owner D1–D19)`:
+- **Scope:** TODAY only. Saving or bookmarking mess plates is out.
+- **Server rules:** deload, start-workout, eat-protein, eat-meal, progress-load, muscle-neglected, rest-day, celebrate-pr, log-weight, injured-limitation.
+- **Deferred or not built:**
+  - `calorie-adjust` → Phase 12;
+  - `hydrate` → never fires (no data);
+  - `add-steps` → device-only;
+  - the `low-readiness` persona → Phase 13 (11 personas now).
+- **Not in Phase 11:** TODAY in the AI context (Phase 14), and Firebase Analytics.
 
 ---
 
