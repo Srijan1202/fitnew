@@ -1,6 +1,6 @@
 # ADR-017 — TODAY: one server engine over the full UserModel, immutable persisted actions, product events, and a bounded device remainder
 
-**Status** PROPOSED — owner decisions D1–D19 approved 2026-09-24. Plan points P1–P7 await the owner's review (see the [plan](../phase-plans/phase-11-plan.md) §15).
+**Status** PROPOSED — owner decisions D1–D19 approved 2026-09-24; plan points P1–P7 approved; the core, API and API-correction gates approved. Becomes ACCEPTED with Phase 11's acceptance (S24 manual checks pending). See the amendments at the end.
 **Date** 2026-09-24
 **Phase** 11
 **Affects**
@@ -54,3 +54,43 @@ What exists:
 - **Every displayed server action is explainable** after the fact from its immutable row, even though engine replay is not required.
 - **The acceptance rate** (§22's product metric) can later be computed from `recommendation_events` without any analytics SDK.
 - **`injured-limitation`** needs a §16.1 band. It is proposed at 91 (plan P1) and becomes part of §16.1 only on the owner's approval.
+
+## Amendments during implementation (owner-approved, 2026-09-24/25)
+
+These record what the owner approved or corrected after the plan, and what the implementation settled within those decisions. Nothing here adds a rule family.
+
+1. **P1–P7 approved as specified.** `injured-limitation` is at priority 91 and fires only with a valid swap; the 22:00 local eat cut-off stands (21:59 eligible, 22:00 not).
+2. **Q1 — limitations and progression.** Core `trainingFromPlan(exercises)` (in `recommend/model.ts`) is the only place the split is made: an exercise ruled out by an active limitation never enters `increaseLoad`, so a ruled-out lift with a load increase due and a valid swap gives `injured-limitation` and no `progress-load`. The API assembler calls it; nothing re-derives either list. The engine keeps one limitation rule.
+3. **Q2 — `completed` requires `accepted`;** `opened` is never required. Informational kinds (rest-day, celebrate-pr, injured-limitation) cannot be completed. A consequence: `dismissed` after `completed` is rejected as `accepted-and-dismissed`, because core checks that first; the `after-completed` code is no longer reachable. It is still a 422.
+4. **Event processing order (API correction gate):**
+   1. authenticate;
+   2. `clientEventId` replay or collision, scoped to the user;
+   3. an exact replay (the same action, event and `occurredAt` instant) → 200 with the original, even after the timing window;
+   4. any other reuse → 409 (`different-action`, `different-event`, `different-occurred-at`); an unrelated event is never returned;
+   5. ownership → 404;
+   6. P3 timing for new events → 422;
+   7. the transition → 422 (a repeat of an event already recorded → 200 with it);
+   8. completion evidence → 422 `no-evidence`;
+   9. insert → 201.
+5. **Deload evidence (migration 0014).** Phase 6 keeps only the current deload week in `programs.deload_started_at` and clears it when the week closes. A Phase-11-owned table `deload_activations` keeps every activation. It is appended by a trigger on `programs` whenever `deload_started_at` is set, backfilled for running weeks, with a hand-written down migration. No Phase 6 code or lifecycle changed. A deload `completed` needs an activation that falls:
+   - after the action existed;
+   - no earlier than its `accepted` event, and no later than the `completed` event itself, both with the 5-minute skew.
+
+   So a stale week, or one activated after the fact, never counts, while a completion delivered late (inside the 7-day window) after the week closed still has its evidence.
+6. **Offline (D8, amended by the owner's final rules).** Offline, Home shows the last valid plan **only if it is for the same local date**. It is labelled ("Offline — showing your plan from HH:MM"; the card eyebrow reads "· OFFLINE") and is never presented as a fresh decision. Responses to it are recorded and queued. A cached plan from an earlier day is never shown; without one, Home says "Suggestions need a connection." and keeps the device-only suggestions.
+7. **Mobile queue (D9), as built.**
+   - Drift schema v3 adds two tables:
+     - `today_event_queue`: FIFO; a row leaves on 201/200, and at once on 409, 422 or 404;
+     - `today_event_ledger`: one row per (action, event) recorded on this phone.
+   - The ledger is what makes `shown` go once per action however often Home rebuilds or restarts, and what hides a dismissed card at once.
+   - Offline and 401 stop without spending an attempt; other failures back off 300 ms · 2ⁿ for 5 attempts, then the entry leaves.
+   - Every retry reuses the event's `clientEventId` and `occurredAt`.
+   - A separate `TodayEventSync` drains it; the workout SyncEngine and the NutritionSyncEngine are unchanged.
+8. **`completed` on the phone** is sent only once the server already holds the evidence, read from server answers:
+   - start-workout, progress-load, muscle-neglected: the day's completed session;
+   - deload: its active state;
+   - eat actions: the server's food day, by meal;
+   - log-weight: a weight Personal details just saved.
+
+   It is never sent on accept alone, and never for informational kinds.
+9. **One display rule on the phone:** while a session is open on this phone, the server's `start-workout` card gives way to the device `resume` card — the session it asks for is already running. Otherwise the phone draws the server's actions in the server's rank order, merged with the device suggestions by band (ties to the server), at most four.
