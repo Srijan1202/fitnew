@@ -1621,7 +1621,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 **Phase 8** — [x] log tables · [x] daily rollup · [x] timezone-correct boundaries · [x] snapshot macros · [x] EAT screen · [x] saved meals · [x] quick add
 
-**Phase 9** — [ ] mess tables · [ ] provider wired · [ ] **mirroring job** · [ ] enrichment by slug · [ ] mess picker · [ ] MESS screen · [ ] **resolution banner** · [ ] correction submission · [ ] all 6 endpoints tested · [ ] 9 defects tested
+**Phase 9** — [x] mess tables · [x] provider wired · [x] **mirroring job** (job built and verified; its Cloud Scheduler trigger is deferred while GCP is paused — ADR-014) · [x] enrichment by slug · [x] mess picker · [x] MESS screen · [x] **resolution banner** · [x] correction submission · [x] all 6 endpoints tested · [x] 9 defects tested
 
 **Phase 10** — [ ] plate recommender wired · [ ] carb/fat/variety/budget/timing scoring · [ ] thali UI · [ ] log-this-plate · [ ] **veg safety test** · [ ] allergy filter test · [ ] honest shortfall test
 

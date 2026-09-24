@@ -1,4 +1,4 @@
-## PHASE 9 — VIT Mess — IMPLEMENTED, AWAITING S24 MANUAL ACCEPTANCE
+## PHASE 9 — VIT Mess — ACCEPTED
 
 **Date** 2026-09-24 · **Branch** `phase-9` from the accepted Phase 8 (`6097727`) · not merged (owner instruction)
 **Commits**
@@ -8,13 +8,14 @@
 - `726b0c2` — mobile: MESS screen, EAT strip, Mess log source, mess setting, offline menus
 - `9c8ce8e` — ADR-014 and the MASTER-SPEC amendments
 - `c912c52` — fix: the development server's boot order (see *Found and fixed*), test typing, suite timeout
-- plus this report
+- `9418ad2` — this report
+- plus the acceptance record (this update)
 
 **Decision record:**
 - The owner approved the Phase 9 audit with D1–D23 and clarifications on D1, D2, D10, D11 and D17, a structural confidence cap, and a fresh capture first.
 - [ADR-014](../decisions/ADR-014-vit-mess-mirror.md).
 
-**Status:** every automated check passes and CI is green on `c912c52`. The S24 manual acceptance has **not been done**. Phase 9 is **not** claimed complete, and the §38 Phase 9 boxes stay unticked until the owner accepts it.
+**Status:** **accepted** by the owner on 2026-09-24 after the 16-step S24 manual acceptance passed **16/16** (below). Every automated check passes and CI was green on `c912c52` and `9418ad2`. The §38 Phase 9 boxes are ticked. `phase-9` is **not merged** into `main` (owner instruction).
 
 ### Before any code: the fresh capture
 
@@ -161,10 +162,40 @@ The first Phase 9 container **crash-looped**. server.ts registered the timer's `
 
 ### BUILDS
 
-- LAN APK: `apps/mobile/build/app/outputs/flutter-apk/app-debug.apk`, targeting `http://10.52.198.11:8080`, the PC's address at build time (`.\tool\alpha.ps1`; `/health` returned 200). No phone was attached, so it is not installed. If the PC's address changes, rebuild with `.\tool\alpha.ps1`.
+- LAN APK: `apps/mobile/build/app/outputs/flutter-apk/app-debug.apk`, targeting `http://10.52.198.11:8080`, the PC's address at build time (`.\tool\alpha.ps1`; `/health` returned 200). Built from `phase-9` at `c912c52`; the later commits change documentation only. This is the build the owner accepted on the S24. If the PC's address changes, rebuild with `.\tool\alpha.ps1`.
 - The LAN API container runs Phase 9, with the mirror timer on.
 
-### S24 MANUAL ACCEPTANCE — NOT YET DONE (owner)
+### S24 MANUAL ACCEPTANCE — PASSED 16/16 (owner, 2026-09-24)
+
+**What was tested:**
+- **Device:** the owner's Samsung Galaxy S24.
+- **App:** the LAN alpha debug APK above (Phase 9 code at `c912c52`, built with `.\tool\alpha.ps1`).
+- **API:** the local Docker container `fitos-api` (`docker compose up --build -d api`), rebuilt from `c912c52`. It runs with `NODE_ENV=development` and the 12 h mirror timer on, at `http://10.52.198.11:8080` on the PC's Wi-Fi LAN.
+- **Database:** the local dev database (`fitos-postgres`, Postgres 18), migrated to `0011_mess` and seeded (1 provider, 6 messes).
+- **Mess data:** mirrored live from MessIT on 2026-09-24. `pnpm mess:mirror` stored all six endpoints (30 days each, 293 dish estimates, none `high`), and the container's first timer run found all six unchanged.
+- **Not used:** Cloud Scheduler, GCP and Cloud Run (all deferred).
+
+| Step | Result |
+|---|---|
+| 1 | PASS |
+| 2 | PASS |
+| 3 | PASS |
+| 4 | PASS |
+| 5 | PASS |
+| 6 | PASS |
+| 7 | PASS |
+| 8 | PASS |
+| 9 | PASS |
+| 10 | PASS |
+| 11 | PASS |
+| 12 | PASS |
+| 13 | PASS |
+| 14 | PASS |
+| 15 | PASS |
+| 16 | PASS |
+
+The steps:
+
 
 1. **Mess setting.** Profile shows the mess by name. Change it to each of the six in turn and back. "I do not eat at a VIT mess" clears it, and EAT then hides the mess strip.
 2. **All six messes render.** On MESS, use "Show another mess" for each. Each shows four meals, or an honest banner. Compare one day per mess against the live endpoint (open the URL in a browser).
@@ -209,7 +240,28 @@ The first Phase 9 container **crash-looped**. server.ts registered the timer's `
 - **§31 Phase 9:** the job is built and its trigger deferred; the DB note. **Tasks, tests and acceptance are unchanged.**
 - **§33:** the mess menu cache.
 - **The mess data-flow diagram.**
-- **Not changed:** the §38 checkboxes, acceptance criteria, the Phase 7 gap (305 foods, 195 short of ~500; IFCT/INDB pending), and every Phase 8 requirement.
+- **Not changed:** acceptance criteria, the Phase 7 gap (305 foods, 195 short of ~500; IFCT/INDB pending), and every Phase 8 requirement.
+
+### ACCEPTANCE AND CLOSEOUT (2026-09-24)
+
+- **S24 manual acceptance:** 16/16 PASS (owner).
+- **The §31 acceptance criteria are met:**
+  - all six messes render;
+  - a stale endpoint shows a clearly qualified inferred menu;
+  - an upstream outage still serves the mirror;
+  - a dish tap logs the correct estimated macros.
+- **§38 Phase 9:** all ten boxes are ticked. Each is backed by the tests above and the S24 run:
+  - mess tables (0011);
+  - provider wired (the VIT config seeds the messes; core's parser serves every menu);
+  - **mirroring job**: the job is built and verified by hand and on the development timer. The box is annotated that its Cloud Scheduler trigger is deferred while GCP is paused (ADR-014). Nothing claims Cloud Scheduler is set up;
+  - enrichment by slug;
+  - mess picker (onboarding and Profile);
+  - MESS screen;
+  - **resolution banner**;
+  - correction submission (pending);
+  - all 6 endpoints tested (both captures, and the API suite);
+  - 9 defects tested. Unsorted dates are covered through the real unsorted captures in the resolution tests; the other eight each have their own test.
+- **No change in the closeout:** no code, schema, API or contract change; Phase 8 untouched; no Phase 10 work.
 
 ### FOR THE OWNER
 
