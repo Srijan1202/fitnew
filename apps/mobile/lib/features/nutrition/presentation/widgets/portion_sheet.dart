@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/tokens.dart';
-import '../../../../shared/widgets/toggle_wrap.dart';
 import '../../domain/entities/food.dart';
 import '../../domain/entities/food_log.dart';
 import '../../domain/portion_preview.dart';
 import 'food_widgets.dart';
+import 'log_controls.dart';
 
 /// What the portion step hands back: the row, the resolved portion, whether
 /// it was entered in grams, and the slot.
@@ -145,6 +145,7 @@ class _PortionSheetState extends State<PortionSheet> {
     final preview =
         portion.ok ? PortionPreview.scale(_row, portion.servings!) : null;
     final rows = widget.food.nutrition;
+    String g(double lo, double hi) => '${FoodFormat.range(lo, hi)} g';
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -156,68 +157,77 @@ class _PortionSheetState extends State<PortionSheet> {
           FitSpacing.md,
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
+            // The food.
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Expanded(
                   child: Text(widget.food.name, style: textTheme.titleLarge),
                 ),
+                const SizedBox(width: FitSpacing.sm),
                 FoodSourceBadge(food: widget.food),
               ],
             ),
             const SizedBox(height: FitSpacing.md),
-            if (rows.length > 1) ...<Widget>[
-              Text('PORTION OF', style: textTheme.labelSmall),
-              ToggleWrap<FoodNutrition>(
-                keyPrefix: 'portion.row',
-                options: rows,
-                isSelected: (r) => r == _row,
-                onTap: (r) => setState(() {
-                  _row = r;
-                  _asGrams = r.basis == NutritionBasis.per100g;
-                  _amount.text = _asGrams ? '100' : '1';
-                }),
-                label: (r) => FoodFormat.serving(r),
-              ),
+            // Which row the amount is of.
+            Text('PORTION OF', style: textTheme.labelSmall),
+            const SizedBox(height: FitSpacing.xs),
+            ChoiceWrap<FoodNutrition>(
+              keyPrefix: 'portion.row',
+              options: rows,
+              selected: _row,
+              label: FoodFormat.serving,
+              onSelect: (r) => setState(() {
+                _row = r;
+                _asGrams = r.basis == NutritionBasis.per100g;
+                _amount.text = _asGrams ? '100' : '1';
+              }),
+            ),
+            if (_gramsPossible &&
+                _row.basis == NutritionBasis.perServing) ...<Widget>[
               const SizedBox(height: FitSpacing.sm),
-            ] else
-              Text(
-                FoodFormat.serving(_row),
-                style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
-              ),
-            if (_gramsPossible && _row.basis == NutritionBasis.perServing)
-              ToggleWrap<bool>(
+              SegmentBar<bool>(
                 keyPrefix: 'portion.mode',
-                options: const [false, true],
-                isSelected: (g) => g == _asGrams,
-                onTap: _setMode,
-                label: (g) => g ? 'Grams' : 'Servings',
+                height: 44,
+                selected: _asGrams,
+                onSelect: _setMode,
+                segments: const [
+                  Segment(value: false, label: 'Servings'),
+                  Segment(value: true, label: 'Grams'),
+                ],
               ),
-            const SizedBox(height: FitSpacing.sm),
+            ],
+            const SizedBox(height: FitSpacing.md),
+            // How much: [ - ]  1.5  [ + ]
             Row(
               children: <Widget>[
-                IconButton(
+                IconButton.outlined(
                   key: const ValueKey('portion.less'),
                   tooltip: 'Less',
                   onPressed: () => _step(_asGrams ? -10 : -0.5),
                   icon: const Icon(Icons.remove),
                 ),
+                const SizedBox(width: FitSpacing.sm),
                 Expanded(
                   child: TextField(
                     key: const ValueKey('portion.amount'),
                     controller: _amount,
                     textAlign: TextAlign.center,
+                    style: textTheme.displaySmall,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     onChanged: (_) => setState(() {}),
                     decoration: InputDecoration(
-                      suffixText: _asGrams ? 'g' : '× ${_row.servingLabel}',
+                      helperText: _asGrams ? 'grams' : '× ${_row.servingLabel}',
+                      helperMaxLines: 2,
                     ),
                   ),
                 ),
-                IconButton(
+                const SizedBox(width: FitSpacing.sm),
+                IconButton.outlined(
                   key: const ValueKey('portion.more'),
                   tooltip: 'More',
                   onPressed: () => _step(_asGrams ? 10 : 0.5),
@@ -225,37 +235,83 @@ class _PortionSheetState extends State<PortionSheet> {
                 ),
               ],
             ),
-            const SizedBox(height: FitSpacing.sm),
+            const SizedBox(height: FitSpacing.md),
+            // What it will log — a PREVIEW (owner J10); the server computes
+            // what is stored, from the food as it is when the log arrives.
             if (!portion.ok)
               Text(
                 portion.problem!,
                 key: const ValueKey('portion.problem'),
                 style: textTheme.bodyMedium?.copyWith(color: FitColors.oxide),
               )
-            else
-              Text(
-                '≈ ${FoodFormat.range(preview!.kcalLow, preview.kcalHigh)} kcal · '
-                '${FoodFormat.range(preview.proteinLow, preview.proteinHigh)} g protein'
-                '${portion.grams == null ? '' : ' · ${FoodFormat.number(portion.grams!)} g'}',
-                key: const ValueKey('portion.preview'),
-                style: textTheme.titleMedium,
+            else ...<Widget>[
+              Row(
+                children: <Widget>[
+                  Text('PREVIEW', style: textTheme.labelSmall),
+                  const SizedBox(width: FitSpacing.sm),
+                  if (portion.grams != null)
+                    Text(
+                      '${FoodFormat.number(portion.grams!)} g',
+                      key: const ValueKey('portion.grams'),
+                      style: textTheme.bodyMedium
+                          ?.copyWith(color: FitColors.ink60),
+                    ),
+                ],
               ),
-            Text(
-              'Preview only — FITOS works out what is logged when it saves.',
-              style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
-            ),
+              const SizedBox(height: FitSpacing.xs),
+              Wrap(
+                spacing: FitSpacing.lg,
+                runSpacing: FitSpacing.sm,
+                children: <Widget>[
+                  MacroCell(
+                    label: 'Calories',
+                    value:
+                        '${FoodFormat.range(preview!.kcalLow, preview.kcalHigh)} kcal',
+                    valueKey: const ValueKey('portion.preview.kcal'),
+                  ),
+                  MacroCell(
+                    label: 'Protein',
+                    value: g(preview.proteinLow, preview.proteinHigh),
+                    valueKey: const ValueKey('portion.preview.protein'),
+                  ),
+                  MacroCell(
+                    label: 'Carbs',
+                    value: g(preview.carbLow, preview.carbHigh),
+                  ),
+                  MacroCell(
+                    label: 'Fat',
+                    value: g(preview.fatLow, preview.fatHigh),
+                  ),
+                  MacroCell(
+                    label: 'Fibre',
+                    value: preview.fibreLow == null
+                        ? 'Not known'
+                        : g(preview.fibreLow!, preview.fibreHigh!),
+                    muted: preview.fibreLow == null,
+                    valueKey: const ValueKey('portion.preview.fibre'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: FitSpacing.xs),
+              Text(
+                'Preview only — FITOS works out what is logged when it saves.',
+                key: const ValueKey('portion.preview.note'),
+                style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+              ),
+            ],
             const SizedBox(height: FitSpacing.md),
             Text('MEAL', style: textTheme.labelSmall),
-            ToggleWrap<MealSlot>(
+            MealSlotBar(
               keyPrefix: 'portion.slot',
-              options: MealSlot.values,
-              isSelected: (s) => s == _slot,
-              onTap: (s) => setState(() => _slot = s),
-              label: (s) => s.label,
+              selected: _slot,
+              onSelect: (s) => setState(() => _slot = s),
             ),
             const SizedBox(height: FitSpacing.lg),
             FilledButton(
               key: const ValueKey('portion.log'),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+              ),
               onPressed: portion.ok
                   ? () => Navigator.of(context).pop(
                         PortionChoice(

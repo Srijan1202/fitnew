@@ -27,6 +27,36 @@ abstract final class EatFormat {
   static String grams(double low, double high) =>
       '${FoodFormat.range(low, high)} g';
 
+  static const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  static const _months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', //
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+
+  /// "Thu 24 Sep".
+  static String shortDate(String date) {
+    final p = date.split('-').map(int.parse).toList();
+    final d = DateTime.utc(p[0], p[1], p[2]);
+    return '${_days[d.weekday - 1]} ${d.day} ${_months[d.month - 1]}';
+  }
+
+  /// "Today", "Yesterday", else "Tue 22 Sep".
+  static String dayLabel(String date, String today) {
+    if (date == today) return 'Today';
+    final t = today.split('-').map(int.parse).toList();
+    final y = DateTime.utc(t[0], t[1], t[2] - 1);
+    final yesterday =
+        '${y.year}-${y.month.toString().padLeft(2, '0')}-${y.day.toString().padLeft(2, '0')}';
+    return date == yesterday ? 'Yesterday' : shortDate(date);
+  }
+
+  /// Protein for the macro strip: "38–45 g left", "10 g over", "at target".
+  static String proteinShort(RemainingRange r) => switch (r.state) {
+        RemainingState.under => '${grams(r.low, r.high)} left',
+        RemainingState.over => '${grams(-r.high, -r.low)} over',
+        RemainingState.around => 'at target',
+      };
+
   /// The hero: what is left, or how far over, as the server computed it.
   static ({String value, String caption}) heroKcal(RemainingRange r) {
     final target = _grouped(r.target);

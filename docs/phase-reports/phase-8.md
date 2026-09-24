@@ -181,7 +181,7 @@
 - **Screens:**
   - EAT empty state, no targets, estimate ranges plus unknown fibre, over target, stale-offline, day history (including 30 vs 31 days back and no future);
   - quick add → total, quick add missing macro;
-  - search → portion (preview, 0.01 refusal, slot, logged numbers equal the preview), per-100 g in grams;
+  - search → portion (preview, 0.01 refusal, slot, logged dartnumbers equal the preview), per-100 g in grams;
   - recents with the last portion, saved meal preview and log, "Save as meal";
   - offline log (pending, not in totals, then synced), parked + Retry, delete (exact reduction), offline delete ("deleting" while still counted), deleting an unsynced log (no request).
 - **Home:** the tile shows the server range; the J16 high-end rule fires and holds back correctly.
@@ -274,3 +274,78 @@ This report commit is documentation only.
   - recent foods and saved meals work offline once loaded;
   - a log for a past day uses the slot's representative local time (08:00 / 13:00 / 17:00 / 20:00).
 - **Known and untouched:** the Phase 6.6 teardown flake in the workout sync tests; the workout `SyncEngine` is unchanged.
+
+### UI REMEDIATION (after the first S24 run; functional behaviour unchanged)
+
+**What the S24 showed.** "BOTTOM OVERFLOWED BY 41 PIXELS" on Log Food with the keyboard open, Search covered by the Samsung keyboard, and a flat, text-heavy screen.
+
+**Root cause of the overflow.**
+- The shared `ToggleWrap` toggle is a `Container` with `alignment: center`, which expands to the full available width.
+- So the four meals and four sources rendered as eight full-width rows.
+- They sat in a fixed, non-scrolling header above an `Expanded`.
+- When the keyboard shrank the body, the header no longer fit.
+- The shared widget is unchanged (exercise and training use it). The nutrition screens now use their own compact controls.
+
+**What changed (UI only).** No schema, contract, calculation, sync-engine or search-ranking change.
+
+- **Log Food**
+  - ONE `CustomScrollView`:
+    - a compact meal bar (icon + label, four equal segments);
+    - a source bar (Recent · Search · Saved meals · Quick add, with icons);
+    - then the chosen pane.
+  - **Search:**
+    - the field is a `PinnedHeaderSliver`, so it stays in view above the keyboard while the results scroll under it;
+    - drag dismisses the keyboard, and tapping a result dismisses it and opens the portion step;
+    - with no text typed, Recent shows under the field.
+  - Food rows are compact: name; source badge with kcal (a range when estimated), protein and serving; an add affordance.
+  - **Saved meals** have their own treatment: bookmark, items, a preview marked as a preview, Log.
+  - **Quick add** is a titled form: kcal; protein and carbs side by side; fat and fibre side by side; a full-width "Add to Lunch".
+  - Loading states are static skeletons.
+- **EAT**
+  - Header: "EAT" and Food library, then a compact ‹ Today · Thu 24 Sep › (tap the date to come back to today).
+  - Hero:
+    - "REMAINING" (or "OVER TARGET") with the server's range, scaled to fit the width, never wrapped;
+    - a Protein / Carbs / Fat strip; eaten and fibre lines.
+  - **Log food** sits above the fold.
+  - All four meals always show, each with an icon and "Add". An empty meal says "Nothing yet — add food".
+  - Logged foods are compact two-line rows: name over portion, kcal range over protein. A quiet × deletes.
+  - "Save as meal" is a bookmark icon.
+- **Portion step**
+  - Content-width row chips; a Servings | Grams switch; a large [−] amount [+] stepper.
+  - A PREVIEW grid: Calories, Protein, Carbs, Fat, Fibre ("Not known" when unknown).
+  - "Preview only — FITOS works out what is logged when it saves."
+  - The compact meal bar.
+- **Text scaling:** every row holds at 200 % text (§6.8). Titles ellipsise, numbers scale down, and the "Save as meal" and "Add" actions stay on one row.
+
+**New tests** (`test/features/nutrition/log_layout_test.dart`, 12 tests)
+- **Sizes:** S24 (411×891) and a small phone (360×640), each at 100 % and 200 % text.
+- **States:**
+  - EAT empty, with food, and the previous day;
+  - Log Food: Recent, Saved, Quick add;
+  - Quick add with the keyboard open (the focused field sits above it);
+  - Search with the keyboard open: the field and results are above the keyboard, the field stays pinned while the results scroll, a result can be tapped, and the portion step opens;
+  - after the keyboard is dismissed.
+- Any Flutter overflow fails the test.
+- "Log food" is above the fold at normal text size.
+- Existing assertions were updated only where the layout moved text (name and portion are now two lines; the preview is now cells).
+
+**Results after remediation**
+- Flutter **454 passed** (442 + 12).
+- core 500, contracts 49, API 347, all unchanged and passing.
+- analyze, custom_lint and format clean; codegen current.
+
+**S24 re-check: not yet done by the owner.** No phone was attached to the PC, so the APK was built but not installed. It targets `http://172.16.205.86:8080`, the PC's Wi-Fi address at build time, so the phone must be on the same Wi-Fi. The 12 on-device checks:
+1. EAT with the keyboard closed.
+2. EAT with all meals empty.
+3. EAT with logged food.
+4. Search with the keyboard closed.
+5. Search with the keyboard open.
+6. Results while the keyboard is open.
+7. Selecting a food.
+8. The portion step.
+9. Quick add.
+10. Saved meals.
+11. The previous day.
+12. After the keyboard is dismissed.
+
+Across all of them, confirm there is no overflow stripe anywhere. Phase 8 stays **not accepted** and the §38 boxes stay unticked until the 17-step acceptance passes.

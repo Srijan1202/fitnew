@@ -14,13 +14,22 @@ import '../../domain/entities/food_log.dart';
 import '../controllers/food_log_providers.dart';
 import '../controllers/food_logger.dart';
 import '../widgets/eat_widgets.dart';
+import '../widgets/log_controls.dart';
 
-/// The Nutrition tab (Phase 8): EAT. What is left against today's target
-/// is the hero, then the day's meals, then "Log food". Every total is the
-/// server's (its snapshots, summed by it); a log this phone has not had
-/// confirmed yet is listed as "Not synced yet" with a preview, and is NOT
-/// in the totals until the server has it (owner J10). ‹ › walks back
-/// through past days (day history), never into the future.
+/// The Nutrition tab (Phase 8): EAT.
+///
+///   EAT                               Food library
+///   ‹            Today · Thu 24 Sep            ›
+///   REMAINING
+///   1,240–1,420                     (the hero)
+///   kcal left of 2,400
+///   PROTEIN · CARBS · FAT strip, eaten, fibre
+///   [ Log food ]
+///   Breakfast / Lunch / Snacks / Dinner, each with "Add"
+///
+/// One vertical scroll (a ListView under pull-to-refresh). Every total is the
+/// server's; a log not yet confirmed is listed as "Not synced yet" with a
+/// preview and is NOT in any total (owner J10).
 class EatScreen extends ConsumerWidget {
   const EatScreen({super.key});
 
@@ -42,7 +51,7 @@ class EatScreen extends ConsumerWidget {
             key: const ValueKey('eat.list'),
             padding: const EdgeInsets.fromLTRB(
               FitSpacing.screen,
-              FitSpacing.lg,
+              FitSpacing.md,
               FitSpacing.screen,
               FitSpacing.xl,
             ),
@@ -105,6 +114,8 @@ class EatScreen extends ConsumerWidget {
         ),
     ];
 
+    final meals = _meals(v, server, loggable);
+
     if (server == null) {
       return <Widget>[
         ...notices,
@@ -123,9 +134,10 @@ class EatScreen extends ConsumerWidget {
               child: const Text('Try again'),
             ),
           ),
+          const SizedBox(height: FitSpacing.lg),
         ],
-        ..._meals(context, ref, v, null, loggable),
         if (loggable) _LogButton(date: v.date),
+        if (v.pending.isNotEmpty) ...meals,
       ];
     }
 
@@ -133,26 +145,25 @@ class EatScreen extends ConsumerWidget {
     return <Widget>[
       ...notices,
       _Hero(day: server),
-      const SizedBox(height: FitSpacing.lg),
       if (empty) ...<Widget>[
+        const SizedBox(height: FitSpacing.sm),
         Text(
           v.date == today
               ? 'Nothing logged today.'
               : 'Nothing logged on this day.',
           key: const ValueKey('eat.empty'),
-          style: textTheme.titleLarge,
+          style: textTheme.bodyLarge,
         ),
-        const SizedBox(height: FitSpacing.xs),
-        Text(
-          loggable
-              ? 'Log what you eat to see what is left of your target.'
-              : 'Food can be logged up to 30 days back.',
-          style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
-        ),
-        const SizedBox(height: FitSpacing.md),
-      ] else
-        ..._meals(context, ref, v, server, loggable),
+        if (!loggable)
+          Text(
+            'Food can be logged up to 30 days back.',
+            style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+          ),
+      ],
+      const SizedBox(height: FitSpacing.md),
       if (loggable) _LogButton(date: v.date),
+      const SizedBox(height: FitSpacing.md),
+      ...meals,
     ];
   }
 
@@ -165,30 +176,19 @@ class EatScreen extends ConsumerWidget {
     return ' at $hh:$mm';
   }
 
-  List<Widget> _meals(
-    BuildContext context,
-    WidgetRef ref,
-    DayView v,
-    NutritionDay? server,
-    bool loggable,
-  ) {
-    final out = <Widget>[];
-    for (final slot in MealSlot.values) {
-      final logs = server?.logs.where((l) => l.mealSlot == slot).toList() ??
-          const <FoodLog>[];
-      final pending = v.pending.where((p) => p.mealSlot == slot).toList();
-      if (logs.isEmpty && pending.isEmpty) continue;
-      out.add(
-        _MealSection(
-          slot: slot,
-          logs: logs,
-          pending: pending,
-          deleting: v.deleting,
-        ),
-      );
-    }
-    return out;
-  }
+  /// All four meals, always: an empty meal says so and offers "Add".
+  List<Widget> _meals(DayView v, NutritionDay? server, bool loggable) => [
+        for (final slot in MealSlot.values)
+          _MealSection(
+            date: v.date,
+            slot: slot,
+            logs: server?.logs.where((l) => l.mealSlot == slot).toList() ??
+                const <FoodLog>[],
+            pending: v.pending.where((p) => p.mealSlot == slot).toList(),
+            deleting: v.deleting,
+            loggable: loggable,
+          ),
+      ];
 }
 
 class _Header extends ConsumerWidget {
@@ -197,46 +197,33 @@ class _Header extends ConsumerWidget {
   final String date;
   final String today;
 
-  static String label(String date, String today) {
-    if (date == today) return 'Today';
-    if (date == shiftDate(today, -1)) return 'Yesterday';
-    final p = date.split('-').map(int.parse).toList();
-    final d = DateTime.utc(p[0], p[1], p[2]);
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${days[d.weekday - 1]} ${d.day} ${months[d.month - 1]}';
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     final notifier = ref.read(eatDateProvider.notifier);
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Row(
           children: <Widget>[
-            Expanded(child: Text('NUTRITION', style: textTheme.labelSmall)),
-            TextButton(
-              key: const ValueKey('eat.library'),
-              onPressed: () => context.push(Routes.foodLibrary),
-              child: const Text('Food library'),
+            Text('EAT', style: textTheme.labelSmall),
+            const Spacer(),
+            // Flexible: at 200 % text the label ellipsises instead of overflowing.
+            Flexible(
+              child: TextButton.icon(
+                key: const ValueKey('eat.library'),
+                onPressed: () => context.push(Routes.foodLibrary),
+                icon: const Icon(Icons.menu_book_outlined, size: 18),
+                label: const Text(
+                  'Food library',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ),
           ],
         ),
+        // ‹  Today · Thu 24 Sep  ›  — compact; tap the date to come back to today.
         Row(
           children: <Widget>[
             IconButton(
@@ -246,13 +233,32 @@ class _Header extends ConsumerWidget {
               icon: const Icon(Icons.chevron_left),
             ),
             Expanded(
-              child: GestureDetector(
+              child: InkWell(
                 onTap: date == today ? null : notifier.toToday,
-                child: Text(
-                  label(date, today),
-                  key: const ValueKey('eat.date'),
-                  style: textTheme.displaySmall,
-                  textAlign: TextAlign.center,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 44),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        EatFormat.dayLabel(date, today),
+                        key: const ValueKey('eat.date'),
+                        style: textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        date == today
+                            ? EatFormat.shortDate(date)
+                            : 'Tap to go back to today',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: FitColors.ink60,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -264,12 +270,14 @@ class _Header extends ConsumerWidget {
             ),
           ],
         ),
+        const Divider(color: FitColors.rule, height: 1),
       ],
     );
   }
 }
 
-/// Remaining macros as the hero (§31 Phase 8). The numbers are the server's.
+/// Remaining against the target as the hero (§31 Phase 8), then the macro
+/// strip. Every number is the server's; this only formats.
 class _Hero extends StatelessWidget {
   const _Hero({required this.day});
 
@@ -285,6 +293,7 @@ class _Hero extends StatelessWidget {
         t.proteinLow != t.proteinHigh ||
         t.carbLow != t.carbHigh ||
         t.fatLow != t.fatHigh;
+    final over = remaining?.kcal.state == RemainingState.over;
 
     return Column(
       key: const ValueKey('eat.hero'),
@@ -292,24 +301,26 @@ class _Hero extends StatelessWidget {
       children: <Widget>[
         if (remaining != null) ...<Widget>[
           Text(
-            EatFormat.heroKcal(remaining.kcal).value,
-            key: const ValueKey('eat.hero.value'),
-            style: textTheme.displayLarge?.copyWith(
-              color: remaining.kcal.state == RemainingState.over
-                  ? FitColors.oxide
-                  : null,
+            over ? 'OVER TARGET' : 'REMAINING',
+            style: textTheme.labelSmall,
+          ),
+          // Scales down to the width; a range never wraps onto two lines.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              EatFormat.heroKcal(remaining.kcal).value,
+              key: const ValueKey('eat.hero.value'),
+              maxLines: 1,
+              style: textTheme.displayMedium?.copyWith(
+                color: over ? FitColors.oxide : FitColors.ink,
+              ),
             ),
           ),
           Text(
             EatFormat.heroKcal(remaining.kcal).caption,
             key: const ValueKey('eat.hero.caption'),
             style: textTheme.bodyLarge,
-          ),
-          const SizedBox(height: FitSpacing.sm),
-          Text(
-            EatFormat.protein(remaining.protein),
-            key: const ValueKey('eat.protein'),
-            style: textTheme.titleMedium,
           ),
         ] else ...<Widget>[
           Text(
@@ -322,35 +333,41 @@ class _Hero extends StatelessWidget {
             style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
           ),
         ],
-        const SizedBox(height: FitSpacing.sm),
-        const Divider(color: FitColors.rule, height: 1),
+        const SizedBox(height: FitSpacing.md),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Expanded(
+              child: MacroCell(
+                label: 'Protein',
+                value: remaining == null
+                    ? EatFormat.grams(t.proteinLow, t.proteinHigh)
+                    : EatFormat.proteinShort(remaining.protein),
+                caption: targets == null ? null : 'of ${targets.proteinG} g',
+                valueKey: const ValueKey('eat.protein'),
+              ),
+            ),
+            Expanded(
+              child: MacroCell(
+                label: 'Carbs',
+                value: EatFormat.grams(t.carbLow, t.carbHigh),
+                caption: targets == null ? 'eaten' : 'of ${targets.carbG} g',
+              ),
+            ),
+            Expanded(
+              child: MacroCell(
+                label: 'Fat',
+                value: EatFormat.grams(t.fatLow, t.fatHigh),
+                caption: targets == null ? 'eaten' : 'of ${targets.fatG} g',
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: FitSpacing.sm),
         Text(
           'Eaten ${EatFormat.kcal(t.kcalLow, t.kcalHigh)} kcal',
           key: const ValueKey('eat.eaten'),
           style: textTheme.bodyLarge,
-        ),
-        Text(
-          EatFormat.consumedLine(
-            'Protein',
-            t.proteinLow,
-            t.proteinHigh,
-            targets?.proteinG,
-          ),
-          style: textTheme.bodyMedium,
-        ),
-        Text(
-          EatFormat.consumedLine(
-            'Carbohydrate',
-            t.carbLow,
-            t.carbHigh,
-            targets?.carbG,
-          ),
-          style: textTheme.bodyMedium,
-        ),
-        Text(
-          EatFormat.consumedLine('Fat', t.fatLow, t.fatHigh, targets?.fatG),
-          style: textTheme.bodyMedium,
         ),
         Text(
           EatFormat.fibre(t, targets),
@@ -375,16 +392,20 @@ class _Hero extends StatelessWidget {
 
 class _MealSection extends ConsumerWidget {
   const _MealSection({
+    required this.date,
     required this.slot,
     required this.logs,
     required this.pending,
     required this.deleting,
+    required this.loggable,
   });
 
+  final String date;
   final MealSlot slot;
   final List<FoodLog> logs;
   final List<PendingLog> pending;
   final Set<String> deleting;
+  final bool loggable;
 
   Future<void> _saveMeal(BuildContext context, WidgetRef ref) async {
     final name = await showDialog<String>(
@@ -423,32 +444,73 @@ class _MealSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     final canSave = logs.any((l) => !deleting.contains(l.clientLogId));
-    return Padding(
-      padding: const EdgeInsets.only(bottom: FitSpacing.md),
-      child: Column(
-        key: ValueKey('eat.slot.${slot.wire}'),
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          const Divider(color: FitColors.rule, height: 1),
-          Row(
-            children: <Widget>[
-              Expanded(
-                child:
-                    Text(slot.label.toUpperCase(), style: textTheme.labelSmall),
-              ),
-              if (canSave)
-                TextButton(
-                  key: ValueKey('eat.save.${slot.wire}'),
-                  onPressed: () => _saveMeal(context, ref),
-                  child: const Text('Save as meal'),
+    final empty = logs.isEmpty && pending.isEmpty;
+    return Column(
+      key: ValueKey('eat.slot.${slot.wire}'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        const Divider(color: FitColors.rule, height: 1),
+        Row(
+          children: <Widget>[
+            Icon(mealSlotIcon(slot), size: 20, color: FitColors.ink),
+            const SizedBox(width: FitSpacing.sm),
+            Expanded(
+              child: Text(
+                slot.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
-            ],
+              ),
+            ),
+            // Icon-only: stays one row at any text size.
+            if (canSave)
+              IconButton(
+                key: ValueKey('eat.save.${slot.wire}'),
+                tooltip: 'Save as meal',
+                onPressed: () => _saveMeal(context, ref),
+                icon: const Icon(
+                  Icons.bookmark_add_outlined,
+                  size: 20,
+                  color: FitColors.ink60,
+                ),
+              ),
+            if (loggable)
+              Flexible(
+                child: TextButton.icon(
+                  key: ValueKey('eat.add.${slot.wire}'),
+                  onPressed: () => context.push(
+                    Routes.foodLog,
+                    extra: LogTarget(date: date, slot: slot),
+                  ),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text(
+                    'Add',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        if (empty)
+          Padding(
+            padding: const EdgeInsets.only(
+              left: 28,
+              bottom: FitSpacing.sm,
+            ),
+            child: Text(
+              loggable ? 'Nothing yet — add food.' : 'Nothing logged.',
+              key: ValueKey('eat.slot.${slot.wire}.empty'),
+              style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+            ),
           ),
-          for (final log in logs)
-            _LogRow(log: log, deleting: deleting.contains(log.clientLogId)),
-          for (final p in pending) _PendingRow(pending: p),
-        ],
-      ),
+        for (final log in logs)
+          _LogEntry(log: log, deleting: deleting.contains(log.clientLogId)),
+        for (final p in pending) _PendingEntry(pending: p),
+        const SizedBox(height: FitSpacing.sm),
+      ],
     );
   }
 }
@@ -474,8 +536,84 @@ Future<bool> _confirmDelete(BuildContext context) async =>
     ) ??
     false;
 
-class _LogRow extends ConsumerWidget {
-  const _LogRow({required this.log, required this.deleting});
+/// One logged food, compact: name over portion; kcal over protein on the
+/// right. A range stays a range.
+class _ItemLine extends StatelessWidget {
+  const _ItemLine({
+    required this.name,
+    required this.portion,
+    required this.kcal,
+    required this.protein,
+    this.muted = false,
+    this.struck = false,
+  });
+
+  final String name;
+  final String portion;
+  final String kcal;
+  final String? protein;
+  final bool muted;
+  final bool struck;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final dim = textTheme.bodyMedium?.copyWith(color: FitColors.ink60);
+    final deco = struck ? TextDecoration.lineThrough : null;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: FitSpacing.xs),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  name,
+                  style: (muted ? dim : textTheme.bodyLarge)
+                      ?.copyWith(decoration: deco),
+                ),
+                Text(portion, style: dim?.copyWith(decoration: deco)),
+              ],
+            ),
+          ),
+          const SizedBox(width: FitSpacing.sm),
+          // The numbers take what the name leaves (up to two fifths) and
+          // scale down rather than overflow at large text sizes.
+          Flexible(
+            flex: 2,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: <Widget>[
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    kcal,
+                    maxLines: 1,
+                    style: (muted ? dim : textTheme.titleMedium)
+                        ?.copyWith(decoration: deco),
+                  ),
+                ),
+                if (protein != null)
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(protein!, maxLines: 1, style: dim),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LogEntry extends ConsumerWidget {
+  const _LogEntry({required this.log, required this.deleting});
 
   final FoodLog log;
   final bool deleting;
@@ -483,139 +621,108 @@ class _LogRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
-    final muted = textTheme.bodyMedium?.copyWith(color: FitColors.ink60);
-    return Padding(
+    return Row(
       key: ValueKey('log.${log.clientLogId}'),
-      padding: const EdgeInsets.symmetric(vertical: FitSpacing.xs),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                for (final item in log.items)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 2),
-                    child: Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            '${item.foodName} · ${EatFormat.portion(item)}',
-                            style: deleting
-                                ? muted?.copyWith(
-                                    decoration: TextDecoration.lineThrough,
-                                  )
-                                : textTheme.bodyLarge,
-                          ),
-                        ),
-                        Text(
-                          '${EatFormat.kcal(item.kcalLow, item.kcalHigh)} kcal',
-                          style: deleting ? muted : textTheme.titleMedium,
-                        ),
-                      ],
-                    ),
-                  ),
-                if (deleting)
-                  Text(
-                    'Deleting — totals update when FITOS confirms.',
-                    key: ValueKey('log.${log.clientLogId}.deleting'),
-                    style: muted,
-                  ),
-              ],
-            ),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const SizedBox(width: 28),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              for (final item in log.items)
+                _ItemLine(
+                  name: item.foodName,
+                  portion: EatFormat.portion(item),
+                  kcal: '${EatFormat.kcal(item.kcalLow, item.kcalHigh)} kcal',
+                  protein:
+                      '${EatFormat.grams(item.proteinLow, item.proteinHigh)} protein',
+                  muted: deleting,
+                  struck: deleting,
+                ),
+              if (deleting)
+                Text(
+                  'Deleting — totals update when FITOS confirms.',
+                  key: ValueKey('log.${log.clientLogId}.deleting'),
+                  style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+                ),
+            ],
           ),
-          if (!deleting)
-            IconButton(
-              key: ValueKey('log.${log.clientLogId}.delete'),
-              tooltip: 'Delete entry',
-              icon: const Icon(
-                Icons.delete_outline,
-                size: 20,
-                color: FitColors.ink60,
-              ),
-              onPressed: () async {
-                if (await _confirmDelete(context)) {
-                  await ref
-                      .read(nutritionLogRepositoryProvider)
-                      .delete(log.clientLogId);
-                }
-              },
-            ),
-        ],
-      ),
+        ),
+        if (!deleting)
+          IconButton(
+            key: ValueKey('log.${log.clientLogId}.delete'),
+            tooltip: 'Delete entry',
+            icon: const Icon(Icons.close, size: 18, color: FitColors.ink35),
+            onPressed: () async {
+              if (await _confirmDelete(context)) {
+                await ref
+                    .read(nutritionLogRepositoryProvider)
+                    .delete(log.clientLogId);
+              }
+            },
+          )
+        else
+          const SizedBox(width: 48),
+      ],
     );
   }
 }
 
-/// A log the server has not confirmed: its items with a PREVIEW (owner J10),
-/// clearly not counted in the totals above.
-class _PendingRow extends ConsumerWidget {
-  const _PendingRow({required this.pending});
+/// A log the server has not confirmed: a PREVIEW (owner J10), clearly not
+/// counted in the totals above.
+class _PendingEntry extends ConsumerWidget {
+  const _PendingEntry({required this.pending});
 
   final PendingLog pending;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
-    final muted = textTheme.bodyMedium?.copyWith(color: FitColors.ink60);
-    return Padding(
+    return Row(
       key: ValueKey('pending.${pending.clientLogId}'),
-      padding: const EdgeInsets.symmetric(vertical: FitSpacing.xs),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                for (final item in pending.preview.items)
-                  Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: Text(
-                          '${item.name} · ${item.portion}',
-                          style: textTheme.bodyLarge,
-                        ),
-                      ),
-                      Text(
-                        item.preview == null
-                            ? ''
-                            : '≈ ${EatFormat.kcal(item.preview!.kcalLow, item.preview!.kcalHigh)} kcal',
-                        style: muted,
-                      ),
-                    ],
-                  ),
-                Text(
-                  pending.parked
-                      ? 'Not synced: ${pending.error ?? 'FITOS refused it'}'
-                      : 'Not synced yet — not in the totals until FITOS has it.',
-                  key: ValueKey('pending.${pending.clientLogId}.state'),
-                  style: pending.parked
-                      ? textTheme.bodyMedium?.copyWith(color: FitColors.oxide)
-                      : muted,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const SizedBox(width: 28),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              for (final item in pending.preview.items)
+                _ItemLine(
+                  name: item.name,
+                  portion: item.portion,
+                  kcal: item.preview == null
+                      ? ''
+                      : '≈ ${EatFormat.kcal(item.preview!.kcalLow, item.preview!.kcalHigh)} kcal',
+                  protein: null,
+                  muted: true,
                 ),
-              ],
-            ),
+              Text(
+                pending.parked
+                    ? 'Not synced: ${pending.error ?? 'FITOS refused it'}'
+                    : 'Not synced yet — not in the totals until FITOS has it.',
+                key: ValueKey('pending.${pending.clientLogId}.state'),
+                style: textTheme.bodyMedium?.copyWith(
+                  color: pending.parked ? FitColors.oxide : FitColors.amber,
+                ),
+              ),
+            ],
           ),
-          IconButton(
-            key: ValueKey('pending.${pending.clientLogId}.delete'),
-            tooltip: 'Delete entry',
-            icon: const Icon(
-              Icons.delete_outline,
-              size: 20,
-              color: FitColors.ink60,
-            ),
-            onPressed: () async {
-              if (await _confirmDelete(context)) {
-                await ref
-                    .read(nutritionLogRepositoryProvider)
-                    .delete(pending.clientLogId);
-              }
-            },
-          ),
-        ],
-      ),
+        ),
+        IconButton(
+          key: ValueKey('pending.${pending.clientLogId}.delete'),
+          tooltip: 'Delete entry',
+          icon: const Icon(Icons.close, size: 18, color: FitColors.ink35),
+          onPressed: () async {
+            if (await _confirmDelete(context)) {
+              await ref
+                  .read(nutritionLogRepositoryProvider)
+                  .delete(pending.clientLogId);
+            }
+          },
+        ),
+      ],
     );
   }
 }
@@ -627,20 +734,18 @@ class _LogButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: const EdgeInsets.only(top: FitSpacing.sm),
-      child: FilledButton.icon(
-        key: const ValueKey('eat.log'),
-        onPressed: () => context.push(
-          Routes.foodLog,
-          extra: LogTarget(
-            date: date,
-            slot: MealSlot.forHour(ref.read(localHourProvider)),
-          ),
+    return FilledButton.icon(
+      key: const ValueKey('eat.log'),
+      style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+      onPressed: () => context.push(
+        Routes.foodLog,
+        extra: LogTarget(
+          date: date,
+          slot: MealSlot.forHour(ref.read(localHourProvider)),
         ),
-        icon: const Icon(Icons.add),
-        label: const Text('Log food'),
       ),
+      icon: const Icon(Icons.add),
+      label: const Text('Log food'),
     );
   }
 }
@@ -701,9 +806,9 @@ class _HeroSkeleton extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Container(width: 180, height: 48, color: FitColors.paper2),
+        Container(width: 80, height: 12, color: FitColors.paper2),
         const SizedBox(height: FitSpacing.sm),
-        Container(width: 220, height: 14, color: FitColors.paper2),
+        Container(width: 200, height: 48, color: FitColors.paper2),
         const SizedBox(height: FitSpacing.sm),
         Container(width: 160, height: 14, color: FitColors.paper2),
       ],
