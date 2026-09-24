@@ -36433,6 +36433,1043 @@
         }
       }
     },
+    "/today": {
+      "get": {
+        "summary": "TODAY: up to 4 ranked actions for your local day (Phase 11)",
+        "tags": [
+          "today"
+        ],
+        "description": "Decided on the server by the deterministic engine from your plan, logs, targets and body records, in your stored timezone. Each action carries a structured reason (code + values, the source of truth) and deterministic English. An action keeps its id while its content is unchanged; `rank` is the current rank. Actions dismissed today are omitted.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "date": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "generatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "engineVersion": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "actions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "deload",
+                              "injured-limitation",
+                              "start-workout",
+                              "eat-protein",
+                              "eat-meal",
+                              "progress-load",
+                              "muscle-neglected",
+                              "rest-day",
+                              "celebrate-pr",
+                              "log-weight"
+                            ]
+                          },
+                          "subjectKey": {
+                            "type": "string",
+                            "maxLength": 200
+                          },
+                          "rank": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 4
+                          },
+                          "priority": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 100
+                          },
+                          "basis": {
+                            "type": "string",
+                            "enum": [
+                              "logged",
+                              "calculated",
+                              "estimated"
+                            ]
+                          },
+                          "target": {
+                            "type": "string",
+                            "enum": [
+                              "train",
+                              "eat",
+                              "progress",
+                              "today"
+                            ]
+                          },
+                          "reason": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "code": {
+                                    "type": "string",
+                                    "enum": [
+                                      "deload-offered"
+                                    ]
+                                  },
+                                  "values": {
+                                    "type": "object",
+                                    "properties": {
+                                      "trigger": {
+                                        "type": "string",
+                                        "enum": [
+                                          "fatigue",
+                                          "mrv"
+                                        ],
+                                        "nullable": true
+                                      }
+                                    },
+                                    "required": [
+                                      "trigger"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "values"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "code": {
+                                    "type": "string",
+                                    "enum": [
+                                      "exercise-contraindicated"
+                                    ]
+                                  },
+                                  "values": {
+                                    "type": "object",
+                                    "properties": {
+                                      "exerciseId": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
+                                      "exerciseName": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 200
+                                      },
+                                      "bodyParts": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "minItems": 1
+                                      },
+                                      "alternativeId": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
+                                      "alternativeName": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 200
+                                      },
+                                      "affectedCount": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "exerciseId",
+                                      "exerciseName",
+                                      "bodyParts",
+                                      "alternativeId",
+                                      "alternativeName",
+                                      "affectedCount"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "values"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "code": {
+                                    "type": "string",
+                                    "enum": [
+                                      "session-scheduled"
+                                    ]
+                                  },
+                                  "values": {
+                                    "type": "object",
+                                    "properties": {
+                                      "sessionName": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 200
+                                      },
+                                      "exerciseCount": {
+                                        "type": "integer",
+                                        "minimum": 0
+                                      },
+                                      "minutes": {
+                                        "type": "integer",
+                                        "minimum": 0
+                                      }
+                                    },
+                                    "required": [
+                                      "sessionName",
+                                      "exerciseCount",
+                                      "minutes"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "values"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "code": {
+                                    "type": "string",
+                                    "enum": [
+                                      "protein-behind"
+                                    ]
+                                  },
+                                  "values": {
+                                    "type": "object",
+                                    "properties": {
+                                      "slot": {
+                                        "type": "string",
+                                        "enum": [
+                                          "breakfast",
+                                          "lunch",
+                                          "snacks",
+                                          "dinner"
+                                        ]
+                                      },
+                                      "proteinTarget": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      },
+                                      "proteinLow": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      },
+                                      "proteinHigh": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      },
+                                      "kcalLeftLow": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      },
+                                      "kcalLeftHigh": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      }
+                                    },
+                                    "required": [
+                                      "slot",
+                                      "proteinTarget",
+                                      "proteinLow",
+                                      "proteinHigh",
+                                      "kcalLeftLow",
+                                      "kcalLeftHigh"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "values"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "code": {
+                                    "type": "string",
+                                    "enum": [
+                                      "meal-remaining"
+                                    ]
+                                  },
+                                  "values": {
+                                    "type": "object",
+                                    "properties": {
+                                      "slot": {
+                                        "type": "string",
+                                        "enum": [
+                                          "breakfast",
+                                          "lunch",
+                                          "snacks",
+                                          "dinner"
+                                        ]
+                                      },
+                                      "kcalLeftLow": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      },
+                                      "kcalLeftHigh": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      },
+                                      "proteinLeftLow": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      },
+                                      "proteinLeftHigh": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      }
+                                    },
+                                    "required": [
+                                      "slot",
+                                      "kcalLeftLow",
+                                      "kcalLeftHigh",
+                                      "proteinLeftLow",
+                                      "proteinLeftHigh"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "values"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "code": {
+                                    "type": "string",
+                                    "enum": [
+                                      "load-increase-due"
+                                    ]
+                                  },
+                                  "values": {
+                                    "type": "object",
+                                    "properties": {
+                                      "exerciseId": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
+                                      "exerciseName": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 200
+                                      },
+                                      "weightKg": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "nullable": true
+                                      },
+                                      "repTarget": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "exerciseId",
+                                      "exerciseName",
+                                      "weightKg",
+                                      "repTarget"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "values"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "code": {
+                                    "type": "string",
+                                    "enum": [
+                                      "muscle-untrained"
+                                    ]
+                                  },
+                                  "values": {
+                                    "type": "object",
+                                    "properties": {
+                                      "muscle": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      "daysSince": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "nullable": true
+                                      }
+                                    },
+                                    "required": [
+                                      "muscle",
+                                      "daysSince"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "values"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "code": {
+                                    "type": "string",
+                                    "enum": [
+                                      "rest-day"
+                                    ]
+                                  },
+                                  "values": {
+                                    "type": "object",
+                                    "properties": {
+                                      "hasProgramme": {
+                                        "type": "boolean"
+                                      },
+                                      "nextSessionName": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 200,
+                                        "nullable": true
+                                      },
+                                      "nextSessionDate": {
+                                        "type": "string",
+                                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                                        "nullable": true
+                                      },
+                                      "kcalTarget": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "nullable": true
+                                      },
+                                      "proteinTarget": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "nullable": true
+                                      }
+                                    },
+                                    "required": [
+                                      "hasProgramme",
+                                      "nextSessionName",
+                                      "nextSessionDate",
+                                      "kcalTarget",
+                                      "proteinTarget"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "values"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "code": {
+                                    "type": "string",
+                                    "enum": [
+                                      "pr-today"
+                                    ]
+                                  },
+                                  "values": {
+                                    "type": "object",
+                                    "properties": {
+                                      "exerciseName": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 200
+                                      },
+                                      "prType": {
+                                        "type": "string",
+                                        "enum": [
+                                          "1rm_est",
+                                          "weight",
+                                          "reps",
+                                          "volume"
+                                        ]
+                                      },
+                                      "value": {
+                                        "type": "number"
+                                      },
+                                      "previous": {
+                                        "type": "number"
+                                      },
+                                      "count": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                      }
+                                    },
+                                    "required": [
+                                      "exerciseName",
+                                      "prType",
+                                      "value",
+                                      "previous",
+                                      "count"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "values"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "code": {
+                                    "type": "string",
+                                    "enum": [
+                                      "weigh-in-due"
+                                    ]
+                                  },
+                                  "values": {
+                                    "type": "object",
+                                    "properties": {
+                                      "daysSinceWeighIn": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "nullable": true
+                                      }
+                                    },
+                                    "required": [
+                                      "daysSinceWeighIn"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "values"
+                                ],
+                                "additionalProperties": false
+                              }
+                            ]
+                          },
+                          "headline": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "detail": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "subjectKey",
+                          "rank",
+                          "priority",
+                          "basis",
+                          "target",
+                          "reason",
+                          "headline",
+                          "detail"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 4
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "generatedAt",
+                    "engineVersion",
+                    "actions"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/today/actions/{id}/event": {
+      "post": {
+        "summary": "Record how you responded to a TODAY action: shown, opened, accepted, dismissed or completed",
+        "tags": [
+          "today"
+        ],
+        "description": "Idempotent per `clientEventId` (201 when stored, 200 on a replay). Each event is recorded once per action; a repeat returns 200 with the stored one. Impossible transitions, `completed` without evidence on record, and times outside the action's day (through 03:00 the next local day, delivered within 7 days) are 422. Another user's action is 404.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "clientEventId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "event": {
+                    "type": "string",
+                    "enum": [
+                      "shown",
+                      "opened",
+                      "accepted",
+                      "dismissed",
+                      "completed"
+                    ]
+                  },
+                  "occurredAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "clientEventId",
+                  "event",
+                  "occurredAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": true
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "recommendationId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "event": {
+                          "type": "string",
+                          "enum": [
+                            "shown",
+                            "opened",
+                            "accepted",
+                            "dismissed",
+                            "completed"
+                          ]
+                        },
+                        "clientEventId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "occurredAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "receivedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "recommendationId",
+                        "event",
+                        "clientEventId",
+                        "occurredAt",
+                        "receivedAt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "event"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "recommendationId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "event": {
+                          "type": "string",
+                          "enum": [
+                            "shown",
+                            "opened",
+                            "accepted",
+                            "dismissed",
+                            "completed"
+                          ]
+                        },
+                        "clientEventId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "occurredAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "receivedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "recommendationId",
+                        "event",
+                        "clientEventId",
+                        "occurredAt",
+                        "receivedAt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "event"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/ai/status": {
       "get": {
         "summary": "Whether FITOS AI is set up on this server, and what it never sees",
