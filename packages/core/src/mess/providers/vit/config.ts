@@ -79,3 +79,11 @@ export function endpointFor(hostelId: string, messId: string): MessItEndpoint | 
 export function descriptorFor(hostelId: string, messId: string): MessDescriptor | null {
   return VIT_DESCRIPTORS.find((d) => d.hostelId === hostelId && d.messId === messId) ?? null;
 }
+
+/**
+ * A mess's stable public code, e.g. `mens-veg` (Phase 9). Used by the API's
+ * `?mess=` parameter and stored on `messes.code`.
+ */
+export function messCode(hostelId: string, messId: string): string {
+  return `${hostelId}-${messId}`;
+}

@@ -12,9 +12,9 @@ import {
 const id = '0b1f6a8e-4d2c-4b8e-9d5f-1a2b3c4d5e6f';
 
 describe('vocabulary', () => {
-  it('meal slots are the mess slots; entry methods are the Phase 8 three (core equality is checked in the API suite)', () => {
+  it('meal slots are the mess slots; entry methods are the Phase 8 three plus Phase 9 mess (core equality is checked in the API suite)', () => {
     expect([...MEAL_SLOTS]).toEqual(['breakfast', 'lunch', 'snacks', 'dinner']);
-    expect([...ENTRY_METHODS]).toEqual(['search', 'quick-add', 'saved-meal']);
+    expect([...ENTRY_METHODS]).toEqual(['search', 'quick-add', 'saved-meal', 'mess']);
   });
 });
 

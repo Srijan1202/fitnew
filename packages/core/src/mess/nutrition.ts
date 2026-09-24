@@ -40,7 +40,7 @@ function has(name: string, terms: readonly string[]): boolean {
  * Ordered most-specific first. "Chicken Biryani" must match before "Biryani",
  * and "Paneer Butter Masala" before "Paneer".
  */
-const TABLE: readonly TableEntry[] = [
+const BASE_TABLE: readonly TableEntry[] = [
   // ---- animal protein -----------------------------------------------------
   { terms: ['chicken biryani', 'chicken dum biriyani', 'chicken biriyani', 'chicken hyderabadi biryani', 'chicken malliga biryani'], servingLabel: '1 plate', servingGrams: 300, kcal: [450, 650], protein: [22, 30], carb: [55, 75], fat: [14, 24], confidence: 'low' },
   { terms: ['butter chicken', 'chicken tikka masala', 'chicken rogan josh', 'chicken tikka lababdar'], servingLabel: '1 serving', servingGrams: 130, kcal: [270, 370], protein: [19, 26], carb: [5, 11], fat: [18, 27], confidence: 'medium' },
@@ -114,6 +114,61 @@ const TABLE: readonly TableEntry[] = [
   { terms: ['butter', 'jam', 'bread'], servingLabel: '1 serving', servingGrams: 40, kcal: [80, 150], protein: [1.5, 4], carb: [12, 22], fat: [1.5, 6], confidence: 'low' },
   { terms: ['corn flakes', 'chocos'], servingLabel: '1 bowl', servingGrams: 40, kcal: [140, 190], protein: [2.5, 4.5], carb: [30, 40], fat: [0.5, 2], confidence: 'medium' },
 ];
+
+/** The base entry that owns `term` — for spelling variants that share its estimate. */
+function entryWithTerm(term: string): Omit<TableEntry, 'terms'> {
+  const entry = BASE_TABLE.find((e) => e.terms.includes(term));
+  if (entry === undefined) throw new Error(`no base estimate owns "${term}"`);
+  const { terms: _terms, ...rest } = entry;
+  return rest;
+}
+
+/**
+ * Phase 9 (owner D9): entries for dishes the live menus actually served that
+ * matched nothing above — observed in the 2026-09-24 capture of all six
+ * endpoints (docs/phase-reports/phase-9-messit-capture-2026-09-24.md). No
+ * padding, no target count.
+ *
+ * APPENDED LAST ON PURPOSE. First match wins, and the Phase 7 food seed
+ * (apps/api/src/db/food-seed) reads this table through `estimateNutrition`;
+ * an entry placed earlier could capture one of its terms and change a frozen
+ * Phase 7 food. Terms here match nothing the base table already matches.
+ */
+const PHASE9_ADDITIONS: readonly TableEntry[] = [
+  // Spelling variants of dishes already estimated above — the same estimate, not a new one.
+  { terms: ['subzi', 'green veg subzi'], ...entryWithTerm('subji') }, // "Subzi" = sabji
+  { terms: ['jamoon', 'dry jamoon'], ...entryWithTerm('jamun') }, // "Dry Jamoon" = (dry) gulab jamun
+  { terms: ['mysorepaku', 'mysorepak', 'kova mysorepaku'], ...entryWithTerm('mysore pak') },
+  { terms: ['rasagulla', 'rasagolla'], ...entryWithTerm('rasgulla') },
+  { terms: ['badusha', 'badushah'], ...entryWithTerm('badhusa') },
+  // MessIT re-spelt "Chat" as "Chaat" in September; without this the dishes fell to the role fallback.
+  { terms: ['chaat', 'sweet corn chaat', 'aloo tikka chaat'], ...entryWithTerm('sweet corn chat') },
+  { terms: ['mint lemon', 'lemonade'], ...entryWithTerm('nimbu sarbat') }, // a sweetened lemon drink
+  { terms: ['pudding', 'pineapple pudding'], ...entryWithTerm('custard') }, // a milk-set dessert
+  // Salna: the thin Tamil gravy served with parotta — the generic vegetable-gravy estimate.
+  { terms: ['salna'], ...entryWithTerm('gravy') },
+  // New dishes, estimated from their make-up; low confidence, ranges wide.
+  // Idiyappam: steamed rice-flour noodles, ~45–50 g a piece, little or no fat.
+  { terms: ['idiyappam', 'idiappam', 'string hoppers'], servingLabel: '2 pieces', servingGrams: 100, kcal: [140, 200], protein: [2, 4], carb: [30, 42], fat: [0.3, 2.5], confidence: 'low' },
+  // Stew: the Kerala vegetable stew — potato and vegetables in coconut milk.
+  { terms: ['stew', 'veg stew'], servingLabel: '1 katori', servingGrams: 150, kcal: [110, 200], protein: [2, 4.5], carb: [9, 18], fat: [6, 14], confidence: 'low' },
+];
+
+const TABLE: readonly TableEntry[] = [...BASE_TABLE, ...PHASE9_ADDITIONS];
+
+/**
+ * Owner (Phase 9): mess-dish nutrition is never `high` confidence. The upstream
+ * publishes names only, so even the table's best-known dishes (rice, roti,
+ * idli, curd, eggs, banana) are an estimate of an unweighed mess portion —
+ * the same cap Phase 7 applies to the carried foods. Enforced here for every
+ * mess estimate that is stored or logged, and again by a database CHECK.
+ * The table's own labels stay unchanged (Phase 7 reads them).
+ */
+export type MessConfidence = Exclude<Confidence, 'high'>;
+
+export function capMessConfidence(confidence: Confidence): MessConfidence {
+  return confidence === 'high' ? 'medium' : confidence;
+}
 
 /**
  * Role-based fallback for a dish we cannot name-match. Always `low` confidence

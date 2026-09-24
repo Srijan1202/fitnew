@@ -9,6 +9,7 @@
 import { z } from 'zod';
 
 import { confidenceSchema, foodNutritionSchema, foodSchema, foodSourceSchema, nutritionBasisSchema } from './food.js';
+import { dishSlugSchema, messCodeSchema, messDishNutritionSchema } from './mess-common.js';
 import { isoDateSchema, nutritionTargetsSchema } from './profile.js';
 
 /** Mirrors packages/core `MEAL_SLOTS` (the mess vocabulary). */
@@ -16,8 +17,8 @@ export const MEAL_SLOTS = ['breakfast', 'lunch', 'snacks', 'dinner'] as const;
 export const mealSlotSchema = z.enum(MEAL_SLOTS);
 export type MealSlot = z.infer<typeof mealSlotSchema>;
 
-/** Mirrors packages/core `ENTRY_METHODS`. Phase 9 adds `mess`. */
-export const ENTRY_METHODS = ['search', 'quick-add', 'saved-meal'] as const;
+/** Mirrors packages/core `ENTRY_METHODS`. Phase 9 added `mess`. */
+export const ENTRY_METHODS = ['search', 'quick-add', 'saved-meal', 'mess'] as const;
 export const entryMethodSchema = z.enum(ENTRY_METHODS);
 export type EntryMethod = z.infer<typeof entryMethodSchema>;
 
@@ -65,6 +66,25 @@ export const quickAddSchema = z
   .strict();
 export type QuickAdd = z.infer<typeof quickAddSchema>;
 
+/**
+ * Phase 9: one dish from a mess menu at a portion of its serving. Exactly
+ * one of `servings` or `grams` (grams only when the serving has a weight).
+ * The numbers are the server's own estimate for the dish, taken at log time.
+ */
+export const logMessDishRequestSchema = z
+  .object({
+    dishSlug: dishSlugSchema,
+    servings: z.number().finite().min(SERVINGS_MIN).max(SERVINGS_MAX).optional(),
+    grams: z.number().finite().positive().max(GRAMS_MAX).optional(),
+  })
+  .strict()
+  .superRefine((r, ctx) => {
+    if ((r.servings === undefined) === (r.grams === undefined)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['servings'], message: 'give exactly one of servings or grams' });
+    }
+  });
+export type LogMessDishRequest = z.infer<typeof logMessDishRequestSchema>;
+
 const logBase = {
   /** Minted by the phone; the same id always means the same log (owner J12). */
   clientLogId: z.string().uuid(),
@@ -83,6 +103,17 @@ export const createLogRequestSchema = z.discriminatedUnion('entryMethod', [
     .strict(),
   z.object({ ...logBase, entryMethod: z.literal('quick-add'), quickAdd: quickAddSchema }).strict(),
   z.object({ ...logBase, entryMethod: z.literal('saved-meal'), savedMealId: z.string().uuid() }).strict(),
+  z
+    .object({
+      ...logBase,
+      entryMethod: z.literal('mess'),
+      /** The mess whose menu the dishes are on. */
+      mess: messCodeSchema,
+      /** The menu's date; each dish must be on that day's menu (published or inferred). */
+      menuDate: isoDateSchema,
+      items: z.array(logMessDishRequestSchema).min(1).max(20),
+    })
+    .strict(),
 ]);
 export type CreateLogRequest = z.infer<typeof createLogRequestSchema>;
 
@@ -96,8 +127,10 @@ export const nutritionDayParamsSchema = z.object({ date: isoDateSchema }).strict
 export const foodLogItemSchema = z.object({
   id: z.string().uuid(),
   position: z.number().int().nonnegative(),
-  /** The food it came from; null for quick add (and if a food were ever removed). */
+  /** The food it came from; null for quick add, a mess dish (and if a food were ever removed). */
   foodId: z.string().uuid().nullable(),
+  /** Phase 9: the mess dish it came from (provenance only; the numbers are the snapshot). */
+  messDishSlug: dishSlugSchema.nullable(),
   foodName: z.string().min(1),
   foodSource: foodSourceSchema,
   /** The row the portion was measured against; null for quick add. */
@@ -147,6 +180,8 @@ export const foodLogSchema = z.object({
   mealSlot: mealSlotSchema,
   entryMethod: entryMethodSchema,
   savedMealId: z.string().uuid().nullable(),
+  /** Phase 9: the mess a `mess` log came from. */
+  messCode: messCodeSchema.nullable(),
   items: z.array(foodLogItemSchema).min(1),
   totals: nutritionTotalsSchema,
 });
@@ -245,6 +280,19 @@ export const savedMealItemSchema = z.discriminatedUnion('kind', [
     carbG: amount,
     fatG: amount,
     fibreG: amount.nullable(),
+  }),
+  /**
+   * Phase 9 (owner D11): a mess dish keeps its identity and portion — logging
+   * the meal re-snapshots the dish's CURRENT estimate, as a range. Never turned
+   * into an exact quick add. `row` is that estimate now (preview only).
+   */
+  z.object({
+    kind: z.literal('mess'),
+    dishSlug: dishSlugSchema,
+    name: z.string().min(1),
+    servings: z.number().positive(),
+    /** Null when the dish no longer has an estimate. */
+    row: messDishNutritionSchema.nullable(),
   }),
 ]);
 export type SavedMealItem = z.infer<typeof savedMealItemSchema>;

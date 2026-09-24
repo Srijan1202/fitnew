@@ -40,7 +40,15 @@ function daysBetween(a: string, b: string): number {
   return Math.round(ms / 86_400_000);
 }
 
-/** Runtime shape check. Upstream is unversioned, so we validate rather than trust. */
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Runtime shape check. Upstream is unversioned, so we validate rather than
+ * trust — down to every entry (Phase 9, owner D23): a day's date must be
+ * yyyy-mm-dd, each entry's `type` an integer and its `menu` a string. One bad
+ * entry rejects the whole payload (fail safe: the previous good copy is kept).
+ * An unknown `type` VALUE is still accepted here and dropped at parse time.
+ */
 export function isMessItResponse(value: unknown): value is MessItResponse {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
@@ -49,7 +57,12 @@ export function isMessItResponse(value: unknown): value is MessItResponse {
   return v['menu'].every((day: unknown) => {
     if (typeof day !== 'object' || day === null) return false;
     const d = day as Record<string, unknown>;
-    return typeof d['date'] === 'string' && Array.isArray(d['menu']);
+    if (typeof d['date'] !== 'string' || !ISO_DATE.test(d['date']) || !Array.isArray(d['menu'])) return false;
+    return d['menu'].every((entry: unknown) => {
+      if (typeof entry !== 'object' || entry === null) return false;
+      const e = entry as Record<string, unknown>;
+      return typeof e['type'] === 'number' && Number.isInteger(e['type']) && typeof e['menu'] === 'string';
+    });
   });
 }
 

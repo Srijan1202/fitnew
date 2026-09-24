@@ -21,8 +21,8 @@ import { isExactNutrition, roundFoodNutrition, scaleFoodNutrition, type FoodNutr
 export const MEAL_SLOTS = ['breakfast', 'lunch', 'snacks', 'dinner'] as const;
 export type MealSlot = (typeof MEAL_SLOTS)[number];
 
-/** How a log was made. Phase 9 adds `mess`; Phase 14 an AI draft, confirmed. */
-export const ENTRY_METHODS = ['search', 'quick-add', 'saved-meal'] as const;
+/** How a log was made. Phase 9 added `mess`; Phase 14 an AI draft, confirmed. */
+export const ENTRY_METHODS = ['search', 'quick-add', 'saved-meal', 'mess'] as const;
 export type EntryMethod = (typeof ENTRY_METHODS)[number];
 
 /** Owner J19: a portion is 0.1–20 servings in 0.01 steps, or up to 5000 g. */

@@ -108,6 +108,14 @@ export const MIN_AGE_YEARS = 18;
 /** Phase 6.6: what the app calls the user. Trimmed, 1–40 characters. */
 export const displayNameSchema = z.string().trim().min(1).max(40);
 
+/** A mess in a provider's namespace (packages/core `MessRef`). */
+export const messRefSchema = z.object({
+  providerId: z.string().min(1).max(40),
+  hostelId: z.string().min(1).max(40),
+  messId: z.string().min(1).max(40),
+});
+export type MessRef = z.infer<typeof messRefSchema>;
+
 export const userProfileDetailSchema = z.object({
   /** Canonical display name (`users.display_name`); null until answered. */
   displayName: z.string().nullable(),
@@ -126,14 +134,10 @@ export const userProfileDetailSchema = z.object({
   locale: localeSchema,
   /** The next onboarding step, or 'complete'. */
   onboardingStage: z.string(),
+  /** Screen 6's answer; null before it is answered. */
+  isVitStudent: z.boolean().nullable(),
   /** Mess selection (§32 screen 6). Null when not a VIT student. */
-  mess: z
-    .object({
-      providerId: z.string(),
-      hostelId: z.string(),
-      messId: z.string(),
-    })
-    .nullable(),
+  mess: messRefSchema.nullable(),
 });
 export type UserProfileDetail = z.infer<typeof userProfileDetailSchema>;
 
@@ -208,8 +212,23 @@ export const patchProfileRequestSchema = z
     equipment: z.array(equipmentSchema).optional(),
     timezone: timeZoneSchema.optional(),
     locale: localeSchema.optional(),
+    /**
+     * Phase 9 (owner D13): change the VIT answer after onboarding. The mess
+     * must be one the server lists (GET /mess/providers/{slug}/messes);
+     * `isVitStudent: false` clears it. A VIT student must have a mess.
+     */
+    isVitStudent: z.boolean().optional(),
+    mess: messRefSchema.nullable().optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((p, ctx) => {
+    if (p.isVitStudent === true && p.mess === null) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['mess'], message: 'a VIT student must pick a mess' });
+    }
+    if (p.isVitStudent === false && p.mess !== undefined && p.mess !== null) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['mess'], message: 'only a VIT student has a mess' });
+    }
+  });
 export type PatchProfileRequest = z.infer<typeof patchProfileRequestSchema>;
 
 export const putGoalRequestSchema = z
