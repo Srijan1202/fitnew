@@ -49,7 +49,8 @@ function scripted(bodies: Record<string, string | null>, calls: string[] = []): 
 }
 const allFresh = (): Record<string, string> => Object.fromEntries(NAMES.map((n) => [n, fresh(n)]));
 
-describeIfDb('/v1/mess (real Postgres, scripted MessIT)', () => {
+// Mirror runs parse six 30-day payloads; a loaded CI runner can pass the 5 s default.
+describeIfDb('/v1/mess (real Postgres, scripted MessIT)', { timeout: 30_000 }, () => {
   const url = databaseUrl as string;
   let sql: postgres.Sql;
   let handle: DatabaseHandle;
@@ -63,6 +64,11 @@ describeIfDb('/v1/mess (real Postgres, scripted MessIT)', () => {
     await sql`delete from mess_menu_snapshots`;
     await sql`delete from mess_dish_nutrition`;
     await sql`update messes set last_attempt_at = null, last_success_at = null, last_changed_at = null, last_error = null, consecutive_failures = 0`;
+  };
+
+  const countOf = async (table: 'mess_menu_snapshots' | 'mess_dish_nutrition'): Promise<number> => {
+    const rows = await sql.unsafe<{ count: string }[]>(`select count(*)::text as count from ${table}`);
+    return Number(rows[0]?.count ?? 0);
   };
 
   beforeAll(async () => {
@@ -155,18 +161,16 @@ describeIfDb('/v1/mess (real Postgres, scripted MessIT)', () => {
     expect(first.messes.every((m) => m.dates === 30)).toBe(true);
     // Only the six configured URLs, nothing else, no user data in them.
     expect(calls.sort()).toEqual(VIT_ENDPOINTS.map((e) => e.url).sort());
-    const [{ count: snaps1 }] = await sql<{ count: string }[]>`select count(*)::text as count from mess_menu_snapshots`;
-    expect(Number(snaps1)).toBe(6);
-    const [{ count: dishes1 }] = await sql<{ count: string }[]>`select count(*)::text as count from mess_dish_nutrition`;
-    expect(Number(dishes1)).toBeGreaterThan(200);
-    expect(first.messes.reduce((s, m) => s + m.dishesAdded, 0)).toBe(Number(dishes1));
+    expect(await countOf('mess_menu_snapshots')).toBe(6);
+    const dishes1 = await countOf('mess_dish_nutrition');
+    expect(dishes1).toBeGreaterThan(200);
+    expect(first.messes.reduce((s, m) => s + m.dishesAdded, 0)).toBe(dishes1);
 
     const second = await runMirror(handle, { fetcher: scripted(allFresh()) });
     expect(second.messes.map((m) => m.outcome)).toEqual(Array(6).fill('unchanged'));
     // Enrichment is idempotent: nothing added, nothing overwritten.
     expect(second.messes.reduce((s, m) => s + m.dishesAdded, 0)).toBe(0);
-    const [{ count: snaps2 }] = await sql<{ count: string }[]>`select count(*)::text as count from mess_menu_snapshots`;
-    expect(Number(snaps2)).toBe(6);
+    expect(await countOf('mess_menu_snapshots')).toBe(6);
     const [row] = await sql<{ first_seen_at: Date; last_seen_at: Date }[]>`select first_seen_at, last_seen_at from mess_menu_snapshots limit 1`;
     expect(row!.last_seen_at.getTime()).toBeGreaterThanOrEqual(row!.first_seen_at.getTime());
   });
@@ -187,8 +191,7 @@ describeIfDb('/v1/mess (real Postgres, scripted MessIT)', () => {
     const report = await runMirror(handle, { fetcher: scripted(bodies) });
     const outcome = Object.fromEntries(report.messes.map((m) => [m.code, m.outcome]));
     expect(outcome).toMatchObject({ 'mens-veg': 'malformed', 'mens-nonveg': 'malformed', 'womens-nonveg': 'malformed', 'womens-veg': 'unchanged' });
-    const [{ count }] = await sql<{ count: string }[]>`select count(*)::text as count from mess_menu_snapshots`;
-    expect(Number(count)).toBe(6);
+    expect(await countOf('mess_menu_snapshots')).toBe(6);
     const u = await user();
     const m = await menu(u, '?date=2026-09-24');
     expect(m.resolution).toEqual({ kind: 'exact', date: '2026-09-24' });
