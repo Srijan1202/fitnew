@@ -106,7 +106,7 @@ class _FoodStepState extends State<FoodStep> {
           Text('ALLERGIES — LEAVE EMPTY IF NONE', style: textTheme.labelSmall),
           const SizedBox(height: FitSpacing.xs),
           for (final a in Allergen.values) ...<Widget>[
-            _AllergyRow(
+            AllergyRow(
               allergen: a,
               severity: _allergies[a],
               enabled: !_busy,
@@ -123,8 +123,9 @@ class _FoodStepState extends State<FoodStep> {
 
 /// One allergen: tap to toggle, and when selected a severity picker unfolds
 /// inline. Severity in amber wording, not colour — colour is for state (§6.2).
-class _AllergyRow extends StatelessWidget {
-  const _AllergyRow({
+class AllergyRow extends StatelessWidget {
+  const AllergyRow({
+    super.key,
     required this.allergen,
     required this.severity,
     required this.enabled,
@@ -175,25 +176,25 @@ class _AllergyRow extends StatelessWidget {
               left: FitSpacing.md + 3,
               bottom: FitSpacing.sm,
             ),
-            child: Row(
+            // Wraps: three chips do not fit a 360 dp row at larger text.
+            child: Wrap(
+              spacing: FitSpacing.sm,
+              runSpacing: FitSpacing.xs,
               children: <Widget>[
                 for (final s in AllergySeverity.values)
-                  Padding(
-                    padding: const EdgeInsets.only(right: FitSpacing.sm),
-                    child: ChoiceChip(
-                      label: Text(s.label),
-                      selected: s == severity,
-                      onSelected: enabled ? (_) => onSeverity(s) : null,
-                      selectedColor: FitColors.ink,
-                      labelStyle: textTheme.bodyMedium?.copyWith(
-                        color: s == severity ? FitColors.paper : FitColors.ink,
-                      ),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(FitRadius.small),
-                        side: BorderSide(color: FitColors.ink),
-                      ),
-                      showCheckmark: false,
+                  ChoiceChip(
+                    label: Text(s.label),
+                    selected: s == severity,
+                    onSelected: enabled ? (_) => onSeverity(s) : null,
+                    selectedColor: FitColors.ink,
+                    labelStyle: textTheme.bodyMedium?.copyWith(
+                      color: s == severity ? FitColors.paper : FitColors.ink,
                     ),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(FitRadius.small),
+                      side: BorderSide(color: FitColors.ink),
+                    ),
+                    showCheckmark: false,
                   ),
               ],
             ),

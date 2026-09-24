@@ -4,6 +4,7 @@ import '../../../core/errors/error_mapper.dart';
 import '../../../core/errors/failure.dart';
 import '../../../core/errors/result.dart';
 import '../domain/mess.dart';
+import '../domain/recommendation.dart';
 
 /// The Phase 9 mess endpoints. Envelope mapping only. The server serves its
 /// own mirror of MessIT; this never talks to MessIT, and sends nothing but
@@ -18,6 +19,13 @@ abstract class MessApi {
     String dishSlug,
     MessCorrectionRequest request,
   );
+
+  /// Phase 10: what to eat at one meal (today or tomorrow). Never cached.
+  Future<Result<MessRecommendation>> recommend({
+    required String date,
+    String? mess,
+    String? slot,
+  });
 
   static const vitProvider = 'vit-vellore';
 }
@@ -61,6 +69,24 @@ class DioMessApi implements MessApi {
           },
         ),
         MessMenu.fromJson,
+      );
+
+  @override
+  Future<Result<MessRecommendation>> recommend({
+    required String date,
+    String? mess,
+    String? slot,
+  }) =>
+      _guard(
+        () => _dio.get<Map<String, dynamic>>(
+          '/v1/mess/menu/recommend',
+          queryParameters: <String, String>{
+            'date': date,
+            if (mess != null) 'mess': mess,
+            if (slot != null) 'slot': slot,
+          },
+        ),
+        MessRecommendation.fromJson,
       );
 
   @override

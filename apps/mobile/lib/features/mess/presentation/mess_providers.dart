@@ -9,7 +9,10 @@ import '../../nutrition/presentation/controllers/food_log_providers.dart';
 import '../../workout/presentation/controllers/workout_providers.dart';
 import '../data/mess_api.dart';
 import '../data/mess_repository.dart';
+import '../../../core/errors/failure.dart';
+import '../../../core/errors/result.dart';
 import '../domain/mess.dart';
+import '../domain/recommendation.dart';
 
 final messApiProvider = Provider<MessApi>((ref) {
   return DioMessApi(ref.watch(dioProvider));
@@ -100,3 +103,60 @@ class MessBrowse extends Notifier<String?> {
 
 final messBrowseProvider =
     NotifierProvider<MessBrowse, String?>(MessBrowse.new);
+
+/* ---------------------------------------------------- Phase 10 -- */
+
+/// A recommendation request: today or tomorrow, a mess (null = mine), a
+/// meal (null = the server's default: the next one not logged).
+typedef RecommendKey = ({String date, String? code, String? slot});
+
+/// What the app has for a recommendation. Never a saved copy: offline or on
+/// any failure there is NO plate, only the reason (requirement 22).
+sealed class RecommendState {
+  const RecommendState();
+}
+
+class RecommendLoaded extends RecommendState {
+  const RecommendLoaded(this.recommendation);
+  final MessRecommendation recommendation;
+}
+
+class RecommendOffline extends RecommendState {
+  const RecommendOffline();
+}
+
+/// No mess configured (and none given).
+class RecommendNoMess extends RecommendState {
+  const RecommendNoMess();
+}
+
+class RecommendFailed extends RecommendState {
+  const RecommendFailed(this.failure);
+  final Failure failure;
+}
+
+/// Fetched fresh every time it is watched; refetched when a food log
+/// reaches the server (what remains changes). Not cached anywhere.
+final messRecommendProvider =
+    FutureProvider.autoDispose.family<RecommendState, RecommendKey>(
+  (ref, key) async {
+    requireSession(ref);
+    final sub = ref
+        .watch(nutritionLogRepositoryProvider)
+        .drained
+        .listen((_) => ref.invalidateSelf());
+    ref.onDispose(sub.cancel);
+    final r = await ref
+        .watch(messApiProvider)
+        .recommend(date: key.date, mess: key.code, slot: key.slot);
+    return switch (r) {
+      Ok(:final value) => RecommendLoaded(value),
+      Err(:final failure) => switch (failure) {
+          Offline() => const RecommendOffline(),
+          NotFound() when key.code == null => const RecommendNoMess(),
+          _ => RecommendFailed(failure),
+        },
+    };
+  },
+  retry: (_, __) => null,
+);

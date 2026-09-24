@@ -2,6 +2,8 @@ import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/features/mess/data/mess_api.dart';
 import 'package:fitos/features/mess/domain/mess.dart';
+import 'package:fitos/features/mess/domain/recommendation.dart';
+import 'package:fitos/features/profile/domain/entities/vocabulary.dart';
 import 'package:fitos/features/nutrition/domain/entities/food.dart';
 import 'package:fitos/features/nutrition/domain/entities/food_log.dart';
 
@@ -68,6 +70,181 @@ class FakeMessApi implements MessApi {
         status: 'pending',
         createdAt: '2026-09-24T07:30:00.000Z',
       ),
+    );
+  }
+
+  /// Phase 10: scripted recommendations by "date/slot" (slot 'default' when
+  /// none is asked); a missing one is built by [defaultRecommendation].
+  final Map<String, MessRecommendation> recommendations = {};
+  final List<String> recommendCalls = [];
+
+  @override
+  Future<Result<MessRecommendation>> recommend({
+    required String date,
+    String? mess,
+    String? slot,
+  }) async {
+    recommendCalls
+        .add('recommend ${mess ?? 'mine'} $date ${slot ?? 'default'}');
+    if (offline) return const Err(Offline());
+    final code = mess ?? mine;
+    if (code == null) return const Err(NotFound());
+    return Ok(
+      recommendations['$date/${slot ?? 'default'}'] ??
+          defaultRecommendation(
+            code,
+            date,
+            slot: slot == null ? MealSlot.lunch : MealSlot.fromWire(slot),
+          ),
+    );
+  }
+
+  static PlateItem plateItem(
+    String slug,
+    String name,
+    int servings,
+    FoodNutrition row,
+  ) =>
+      PlateItem(
+        dishSlug: slug,
+        name: name,
+        servings: servings,
+        servingLabel: row.servingLabel,
+        servingGrams: row.servingGrams,
+        macros: Macros(
+          kcalLow: row.kcalLow * servings,
+          kcalHigh: row.kcalHigh * servings,
+          proteinLow: row.proteinLow * servings,
+          proteinHigh: row.proteinHigh * servings,
+          carbLow: row.carbLow * servings,
+          carbHigh: row.carbHigh * servings,
+          fatLow: row.fatLow * servings,
+          fatHigh: row.fatHigh * servings,
+        ),
+        confidence: row.confidence.wire,
+      );
+
+  static Macros sum(List<PlateItem> items) => Macros(
+        kcalLow: items.fold(0, (s, i) => s + i.macros.kcalLow),
+        kcalHigh: items.fold(0, (s, i) => s + i.macros.kcalHigh),
+        proteinLow: items.fold(0, (s, i) => s + i.macros.proteinLow),
+        proteinHigh: items.fold(0, (s, i) => s + i.macros.proteinHigh),
+        carbLow: items.fold(0, (s, i) => s + i.macros.carbLow),
+        carbHigh: items.fold(0, (s, i) => s + i.macros.carbHigh),
+        fatLow: items.fold(0, (s, i) => s + i.macros.fatLow),
+        fatHigh: items.fold(0, (s, i) => s + i.macros.fatHigh),
+      );
+
+  /// A vegetarian lunch with two plates and one dish kept off for diet.
+  static MessRecommendation defaultRecommendation(
+    String code,
+    String date, {
+    MealSlot slot = MealSlot.lunch,
+    RecommendationStatus status = RecommendationStatus.ok,
+    bool loggable = true,
+    List<Allergen> allergies = const [],
+    Gap? proteinShortfall,
+    Gap? kcalShortfall,
+    String? basis = 'published',
+    bool slotAlreadyLogged = false,
+    MealTarget? target = const MealTarget(
+      share: 0.4667,
+      kcal: 900,
+      protein: 45,
+      carb: 110,
+      fat: 25,
+    ),
+  }) {
+    final plate1 = [
+      plateItem('phulka', 'Phulka', 3, phulka),
+      plateItem('dhal-makhani', 'Dhal Makhani', 1, dal),
+    ];
+    final plate2 = [plateItem('dhal-makhani', 'Dhal Makhani', 2, dal)];
+    return MessRecommendation(
+      status: status,
+      mess: messOf(code),
+      date: date,
+      today: '2026-09-24',
+      slot: slot,
+      slotAlreadyLogged: slotAlreadyLogged,
+      loggable: loggable,
+      resolution: ExactMenu(date),
+      basis: status == RecommendationStatus.ok ? basis : null,
+      diet: DietType.vegetarian,
+      allergies: allergies,
+      goal: 'muscle-gain',
+      target: target,
+      postWorkout: false,
+      plates: status != RecommendationStatus.ok
+          ? const []
+          : [
+              Plate(
+                rank: 1,
+                items: plate1,
+                totals: sum(plate1),
+                confidence: 'medium',
+                reasons: const [
+                  Reason(
+                    'protein-may-fall-short',
+                    {'target': 45, 'low': 14.5, 'high': 20.8},
+                  ),
+                  Reason('kcal-within', {'target': 900, 'high': 620}),
+                  Reason('goal-weighting', {'goal': 'muscle-gain'}),
+                  Reason('top-protein-dish', {'dishSlug': 'dhal-makhani'}),
+                ],
+              ),
+              Plate(
+                rank: 2,
+                items: plate2,
+                totals: sum(plate2),
+                confidence: 'medium',
+                reasons: const [
+                  Reason('goal-weighting', {'goal': 'muscle-gain'}),
+                ],
+              ),
+            ],
+      proteinShortfall: proteinShortfall,
+      kcalShortfall: kcalShortfall,
+      dishes: const [
+        DishOutcome(
+          dishSlug: 'phulka',
+          name: 'Phulka',
+          diet: DietClass.veg,
+          onPlate: true,
+          reasons: [
+            Reason('on-plate', {
+              'ranks': [1],
+            }),
+          ],
+          alternatives: [],
+        ),
+        DishOutcome(
+          dishSlug: 'scrambled-egg',
+          name: 'Scrambled Egg',
+          diet: DietClass.egg,
+          onPlate: false,
+          reasons: [
+            Reason('diet', {'dietClass': 'egg'}),
+          ],
+          alternatives: [
+            AlternativeOutcome(
+              name: 'Paneer Bhurji',
+              diet: DietClass.veg,
+              allergens: [(allergen: 'milk', status: 'contains')],
+            ),
+          ],
+        ),
+        DishOutcome(
+          dishSlug: 'groundnut-chutney',
+          name: 'Groundnut Chutney',
+          diet: DietClass.veg,
+          onPlate: false,
+          reasons: [
+            Reason('allergen', {'allergen': 'peanut', 'status': 'contains'}),
+          ],
+          alternatives: [],
+        ),
+      ],
     );
   }
 

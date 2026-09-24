@@ -6,6 +6,8 @@ import 'package:fitos/features/ai/domain/entities/ai.dart';
 import 'package:fitos/features/auth/domain/entities/user_profile.dart';
 import 'package:fitos/features/exercise/domain/entities/exercise.dart';
 import 'package:fitos/features/mess/domain/mess.dart';
+import 'package:fitos/features/mess/domain/recommendation.dart';
+import 'package:fitos/features/mess/presentation/widgets/recommend_words.dart';
 import 'package:fitos/features/nutrition/domain/entities/food.dart';
 import 'package:fitos/features/nutrition/domain/entities/food_log.dart';
 import 'package:fitos/features/onboarding/domain/entities/onboarding.dart';
@@ -1916,6 +1918,118 @@ void main() {
     test('the profile carries isVitStudent; PATCH accepts the mess', () {
       final patch = keysOf(schemaOf('/user/profile', 'patch', request: true));
       expect(patch.containsAll(['isVitStudent', 'mess']), isTrue);
+    });
+  });
+
+  group('mess recommendations (Phase 10)', () {
+    Map<String, dynamic> p(Map<String, dynamic> s, String k) =>
+        properties(s)[k] as Map<String, dynamic>;
+    Map<String, dynamic> items(Map<String, dynamic> s, String k) =>
+        p(s, k)['items'] as Map<String, dynamic>;
+
+    late Map<String, dynamic> rec;
+    setUpAll(() => rec = schemaOf('/mess/menu/recommend', 'get'));
+
+    final full = FakeMessApi.defaultRecommendation(
+      'mens-veg',
+      '2026-09-24',
+      allergies: const [Allergen.peanut],
+      proteinShortfall: const Gap(
+        target: 85,
+        gapLow: 45.3,
+        gapHigh: 60,
+        menuMax: 46,
+        menuCanMeet: false,
+      ),
+      kcalShortfall: const Gap(
+        target: 900,
+        gapLow: 100,
+        gapHigh: 200,
+        menuMax: 1000,
+        menuCanMeet: true,
+      ),
+    );
+
+    test('status, basis and reason-code vocabularies match the server', () {
+      expect(
+        RecommendationStatus.values.map((s) => s.wire).toList(),
+        enumOf(p(rec, 'status')),
+      );
+      expect(enumOf(p(rec, 'basis')), ['published', 'inferred']);
+      final reason = items(items(rec, 'plates'), 'reasons');
+      final codes = enumOf(p(reason, 'code'));
+      // Every code the server can send has words — never the raw code.
+      for (final code in codes) {
+        final r = Reason(code, const {'dishSlug': 'dal'});
+        final words = {
+          ReasonText.plate(r, const {'dal': 'Dal'}),
+          ReasonText.dish(r, DietType.vegetarian),
+        };
+        expect(words.any((w) => w != code), isTrue, reason: code);
+      }
+      expect(
+        Allergen.values.map((a) => a.wire).toSet(),
+        enumOf(p(reason, 'allergen')).toSet(),
+      );
+    });
+
+    test('response, plate, item, totals, target, gap, dish, alternative', () {
+      expect(full.toJson().keys.toSet(), keysOf(rec));
+      expect(
+        (full.toJson()['filters'] as Map<String, dynamic>).keys.toSet(),
+        keysOf(p(rec, 'filters')),
+      );
+      expect(full.target!.toJson().keys.toSet(), keysOf(p(rec, 'target')));
+      final plate = items(rec, 'plates');
+      expect(full.plates.first.toJson().keys.toSet(), keysOf(plate));
+      expect(
+        full.plates.first.items.first.toJson().keys.toSet(),
+        keysOf(items(plate, 'items')),
+      );
+      expect(
+        full.plates.first.totals.toJson().keys.toSet(),
+        keysOf(p(plate, 'totals')),
+      );
+      final shortfall = full.toJson()['shortfall'] as Map<String, dynamic>;
+      expect(shortfall.keys.toSet(), keysOf(p(rec, 'shortfall')));
+      expect(
+        full.proteinShortfall!.toJson().keys.toSet(),
+        keysOf(p(p(rec, 'shortfall'), 'protein')),
+      );
+      final dish = items(rec, 'dishes');
+      expect(full.dishes.first.toJson().keys.toSet(), keysOf(dish));
+      final alternative = items(dish, 'alternatives');
+      final withAlternative = full.dishes.firstWhere(
+        (d) => d.alternatives.isNotEmpty,
+        orElse: () => throw StateError('the fake needs a dish alternative'),
+      );
+      expect(
+        withAlternative.alternatives.first.toJson().keys.toSet(),
+        keysOf(alternative),
+      );
+      // Reasons only ever carry documented values.
+      final reasonKeys = keysOf(items(plate, 'reasons'));
+      for (final r in [
+        ...full.plates.expand((x) => x.reasons),
+        ...full.dishes.expand((d) => d.reasons),
+      ]) {
+        expect(reasonKeys.containsAll(r.toJson().keys), isTrue, reason: r.code);
+      }
+    });
+
+    test('the query sends only date, mess and slot', () {
+      final params = (doc['paths']['/mess/menu/recommend']['get']['parameters']
+              as List<dynamic>)
+          .map((e) => (e as Map<String, dynamic>)['name'])
+          .toSet();
+      expect(params, {'date', 'mess', 'slot'});
+    });
+
+    test('a recommendation round-trips through its own JSON', () {
+      final back = MessRecommendation.fromJson(
+        jsonDecode(jsonEncode(full.toJson())) as Map<String, dynamic>,
+      );
+      expect(jsonEncode(back.toJson()), jsonEncode(full.toJson()));
     });
   });
 

@@ -182,7 +182,14 @@ void main() {
       for (final slot in ['breakfast', 'lunch', 'snacks', 'dinner']) {
         expect(find.byKey(ValueKey('mess.meal.$slot')), findsOneWidget);
       }
-      expect(find.text('Phulka'), findsOneWidget);
+      // "Phulka" is also on the suggested plate above the menu (Phase 10).
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('mess.dish.phulka')),
+          matching: find.text('Phulka'),
+        ),
+        findsOneWidget,
+      );
       expect(
         find.descendant(
           of: find.byKey(const ValueKey('mess.dish.phulka')),

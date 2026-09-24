@@ -2,6 +2,7 @@ import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:fitos/features/profile/domain/entities/profile.dart';
+import 'package:fitos/features/profile/domain/entities/vocabulary.dart';
 
 import 'fake_onboarding_repository.dart';
 
@@ -74,6 +75,40 @@ class FakeProfileRepository implements ProfileRepository {
   @override
   Future<Result<GoalResponse>> putGoal(PutGoalRequest request) async =>
       nextGoal;
+
+  /// Phase 10: diet and allergies.
+  DietPreferences diet = const DietPreferences(
+    dietType: DietType.vegetarian,
+    allergies: <Allergy>[],
+    excludedDishIds: <String>[],
+    budgetTier: null,
+  );
+  final dietChanges = <Map<String, dynamic>>[];
+  Failure? failDiet;
+
+  @override
+  Future<Result<DietPreferences>> getDiet() async {
+    calls.add('getDiet');
+    return Ok(diet);
+  }
+
+  @override
+  Future<Result<DietPreferences>> putDiet(
+    DietType dietType,
+    List<Allergy> allergies,
+  ) async {
+    calls.add('putDiet');
+    dietChanges.add(<String, dynamic>{
+      'dietType': dietType.wire,
+      'allergies': [
+        for (final a in allergies) '${a.allergen.wire}:${a.severity.wire}',
+      ],
+    });
+    final f = failDiet;
+    if (f != null) return Err(f);
+    diet = diet.copyWith(dietType: dietType, allergies: allergies);
+    return Ok(diet);
+  }
 
   /// Phase 9: the mess saves; [failMess] makes the next one fail.
   final messChanges = <MessRef?>[];

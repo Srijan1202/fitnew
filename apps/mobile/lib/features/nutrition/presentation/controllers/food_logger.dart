@@ -152,6 +152,52 @@ class FoodLogger {
     );
   }
 
+  /// Phase 10: "Log this plate" — ONE mess log, one item per plate dish at
+  /// its whole servings, for today's menu. The previews are the plate's own
+  /// numbers (the server's snapshot of the stored estimate); the server takes
+  /// the snapshot again when the log arrives.
+  Future<void> logMessPlate({
+    required String messCode,
+    required String menuDate,
+    required List<
+            ({
+              String dishSlug,
+              String name,
+              int servings,
+              String servingLabel,
+              PreviewNutrition preview
+            })>
+        items,
+    required LogTarget target,
+  }) =>
+      _repo.log(
+        CreateLogRequest.mess(
+          clientLogId: _uuid.v4(),
+          loggedAt: loggedAtFor(target),
+          mealSlot: target.slot,
+          mess: messCode,
+          menuDate: menuDate,
+          messItems: [
+            for (final i in items)
+              LogMessDishRequest(
+                dishSlug: i.dishSlug,
+                servings: i.servings.toDouble(),
+              ),
+          ],
+        ),
+        localDate: target.date,
+        preview: PendingPreview(
+          items: [
+            for (final i in items)
+              PendingItem(
+                name: i.name,
+                portion: '${i.servings} × ${i.servingLabel}',
+                preview: i.preview,
+              ),
+          ],
+        ),
+      );
+
   Future<void> logQuickAdd(QuickAdd quickAdd, {required LogTarget target}) =>
       _repo.log(
         CreateLogRequest.quickAdd(

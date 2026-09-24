@@ -26,6 +26,17 @@ abstract class ProfileRepository {
     PersonalDetailsChange change,
   );
 
+  /// Phase 10: the diet and allergies every food suggestion obeys
+  /// (`GET /user/diet-preferences`).
+  Future<Result<DietPreferences>> getDiet();
+
+  /// Phase 10: replace them (`PUT /user/diet-preferences`). The allergy list
+  /// sent IS the list; exclusions and budget are left as they are.
+  Future<Result<DietPreferences>> putDiet(
+    DietType dietType,
+    List<Allergy> allergies,
+  );
+
   /// Phase 9 (owner D13): `PATCH /user/profile { isVitStudent, mess }`. The
   /// server accepts only a mess it lists; `isVitStudent: false` clears it.
   Future<Result<UserProfileDetail>> setMess(MessRef? mess);
@@ -81,6 +92,34 @@ class DioProfileRepository implements ProfileRepository {
           data: change.toJson(),
         ),
         UserProfileDetail.fromJson,
+      );
+
+  @override
+  Future<Result<DietPreferences>> getDiet() => _guard(
+        () => _dio.get<Map<String, dynamic>>('/v1/user/diet-preferences'),
+        DietPreferences.fromJson,
+      );
+
+  @override
+  Future<Result<DietPreferences>> putDiet(
+    DietType dietType,
+    List<Allergy> allergies,
+  ) =>
+      _guard(
+        () => _dio.put<Map<String, dynamic>>(
+          '/v1/user/diet-preferences',
+          data: <String, dynamic>{
+            'dietType': dietType.wire,
+            'allergies': [
+              for (final a in allergies)
+                <String, dynamic>{
+                  'allergen': a.allergen.wire,
+                  'severity': a.severity.wire,
+                },
+            ],
+          },
+        ),
+        DietPreferences.fromJson,
       );
 
   @override

@@ -10,6 +10,7 @@ import '../../features/auth/presentation/screens/splash_gate_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_browser_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_detail_screen.dart';
 import '../../features/mess/presentation/mess_screen.dart';
+import '../../features/profile/presentation/screens/food_preferences_screen.dart';
 import '../../features/nutrition/domain/entities/food.dart';
 import '../../features/nutrition/presentation/screens/custom_food_screen.dart';
 import '../../features/nutrition/presentation/screens/food_detail_screen.dart';
@@ -55,6 +56,9 @@ abstract final class Routes {
   static const String profile = '/profile';
   static const String goalEditor = '/profile/goal';
   static const String personalDetails = '/profile/details';
+
+  /// Phase 10: diet and allergies, the hard rules for food suggestions.
+  static const String profileFood = '/profile/food';
   static const String healthData = '/profile/health';
   static const String exercises = '/exercises';
   static String exerciseDetail(String id) => '/exercises/$id';
@@ -150,6 +154,11 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
             path: 'details',
             name: 'personal-details',
             builder: (context, state) => const PersonalDetailsScreen(),
+          ),
+          GoRoute(
+            path: 'food',
+            name: 'profile-food',
+            builder: (context, state) => const FoodPreferencesScreen(),
           ),
         ],
       ),

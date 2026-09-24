@@ -14,6 +14,7 @@ import '../../../workout/presentation/controllers/workout_providers.dart';
 import '../../data/profile_repository.dart';
 import '../../domain/entities/profile.dart';
 import '../widgets/mess_setting.dart';
+import 'food_preferences_screen.dart' show FoodSettingRow;
 import '../widgets/targets_display.dart';
 
 /// Profile: what the server holds about this user, the active goal with its
@@ -241,6 +242,9 @@ class _Facts extends StatelessWidget {
         ],
         // Phase 9 (owner D13): the mess by name, changeable here.
         MessSettingRow(mess: profile.mess),
+        const Divider(color: FitColors.rule, height: 1),
+        // Phase 10: diet and allergies — the hard rules for suggestions.
+        const FoodSettingRow(),
         const Divider(color: FitColors.rule, height: 1),
       ],
     );

@@ -13,6 +13,7 @@ import '../domain/mess.dart';
 import 'mess_providers.dart';
 import 'widgets/mess_sheets.dart';
 import 'widgets/mess_widgets.dart';
+import 'widgets/what_to_eat.dart';
 
 /// MESS (Phase 9, §31): a mess menu for a day, by meal.
 ///
@@ -163,6 +164,13 @@ class MessScreen extends ConsumerWidget {
     final menu = s.menu;
     return <Widget>[
       MenuStatus(state: s, now: DateTime.now()),
+      // Phase 10: what to eat at one meal, today or tomorrow.
+      WhatToEatSection(
+        date: menu.date,
+        code: ref.watch(messBrowseProvider),
+      ),
+      const SizedBox(height: FitSpacing.md),
+      Text('THE MENU', style: Theme.of(context).textTheme.labelSmall),
       for (final meal in menu.meals) ...<Widget>[
         MessMealHeader(
           meal: meal,

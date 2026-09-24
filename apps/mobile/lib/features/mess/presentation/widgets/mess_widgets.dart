@@ -257,7 +257,6 @@ class TodaysMessStrip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textTheme = Theme.of(context).textTheme;
     final state = ref.watch(messMenuProvider((date: today, code: null))).value;
     if (state is! MenuLoaded) return const SizedBox.shrink();
     final menu = state.menu;
@@ -271,6 +270,24 @@ class TodaysMessStrip extends ConsumerWidget {
     final line = meal == null
         ? 'No menu for today'
         : '${slot.label} · ${meal.dishes.where((d) => !d.isAmbient).length} dishes';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        _strip(context, menu, line, qualifier, state.fromCache),
+        // Phase 10: straight to today's suggestion.
+        const SuggestedPlateLink(),
+      ],
+    );
+  }
+
+  Widget _strip(
+    BuildContext context,
+    MessMenu menu,
+    String line,
+    String? qualifier,
+    bool fromCache,
+  ) {
+    final textTheme = Theme.of(context).textTheme;
     return InkWell(
       key: const ValueKey('eat.mess'),
       onTap: () => context.push(Routes.mess),
@@ -301,7 +318,7 @@ class TodaysMessStrip extends ConsumerWidget {
                       [
                         line,
                         if (qualifier != null) qualifier,
-                        if (state.fromCache) 'saved copy',
+                        if (fromCache) 'saved copy',
                       ].join(' · '),
                       key: const ValueKey('eat.mess.line'),
                       maxLines: 2,
@@ -349,6 +366,29 @@ class MessMealHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// EAT: a link from the mess strip to today's suggestion.
+class SuggestedPlateLink extends ConsumerWidget {
+  const SuggestedPlateLink({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        key: const ValueKey('eat.mess.suggest'),
+        style: TextButton.styleFrom(padding: EdgeInsets.zero),
+        onPressed: () {
+          ref.read(messDateProvider.notifier).toToday();
+          ref.read(messBrowseProvider.notifier).show(null);
+          context.push(Routes.mess);
+        },
+        icon: const Icon(Icons.restaurant_menu, size: 18),
+        label: const Text('Suggested plate'),
       ),
     );
   }
