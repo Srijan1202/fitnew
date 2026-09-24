@@ -1,5 +1,8 @@
-## PHASE 7 — Food database — IMPLEMENTED, AWAITING OWNER AUDIT
+## PHASE 7 — Food database — ACCEPTED AND FROZEN
 
+**Status:** **accepted and frozen** by the owner on 2026-09-24 after manual acceptance on the S24
+(see *Manual acceptance* below). No further Phase 7 code changes. `phase-7` is **not merged** into
+`main` (owner instruction).
 **Date** 2026-09-24 · **Branch** `phase-7` from the Phase 6.7 line at `3255b8f` · not merged
 **Commits** `b4a2e36` (core + contracts) · `ed09310` (seed builder, seed, manifest, CI seed checks) ·
 `b8a307c` (migration 0009, food seeding, nutrition API) · `6a349f0` (mobile Food Library) · plus this report
@@ -172,7 +175,14 @@ The owner then asked for all of Phase 7 in one go, with no gate stops; this repo
 - LAN alpha debug APK: `apps/mobile/tool/alpha.ps1` → `build/app/outputs/flutter-apk/app-debug.apk`
   (API `http://10.52.198.11:8080`, `/health` 200 at build time).
 
-### MANUAL CHECKS ON THE S24 (owner; not yet done)
+### MANUAL ACCEPTANCE — PASSED (owner, 2026-09-24)
+
+- **S24 checks:** all 10 below **passed**.
+- **20-food plausibility check:** **passed**.
+- **USDA attribution:** **verified**.
+- No manual acceptance failures remain.
+
+The checks as run:
 
 1. Install the LAN APK (`.\tool\alpha.ps1 -Install`), sign in, and open **Nutrition**. You
    should see "Food library", the search field, the intro and the USDA attribution, with no
