@@ -102,6 +102,9 @@ void main() {
         exerciseRepositoryProvider.overrideWithValue(FakeExerciseRepository()),
         profileRepositoryProvider.overrideWithValue(profile),
         trainingRepositoryProvider.overrideWithValue(FakeTrainingRepository()),
+        // Pinned: the engine rightly stops "eat protein" from 22:00, so a real
+        // clock made J16 fail between 22:00 and midnight (found 2026-09-24).
+        localHourProvider.overrideWithValue(12),
         ...workoutOverrides(db, api, foodLog: foodLog),
         ...healthOverrides(health),
       ],
