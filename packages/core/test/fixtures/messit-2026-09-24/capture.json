@@ -1,0 +1,73 @@
+{
+  "capturedAt": "2026-09-24T06:16:08Z",
+  "method": "GET, no auth, no cookies, no user data; User-Agent FITOS-capture/1.0",
+  "note": "Verbatim upstream bytes, unmodified. The 2026-09-07 fixtures in ../ are kept unchanged.",
+  "endpoints": [
+    {
+      "file": "hostel-1-mess-1.json",
+      "url": "https://messit.vinnovateit.com/menu-data/hostel-1-mess-1.json",
+      "status": 200,
+      "bytes": 21839,
+      "sha256": "0ef915be04bfee0a113931caea46c858ed1099901569ca4c6492aa1312cc820b",
+      "etag": "cb95aba6475e86bc5675e4902ae8aaed",
+      "days": 30,
+      "firstDate": "2026-09-01",
+      "lastDate": "2026-09-30"
+    },
+    {
+      "file": "hostel-1-mess-2.json",
+      "url": "https://messit.vinnovateit.com/menu-data/hostel-1-mess-2.json",
+      "status": 200,
+      "bytes": 19071,
+      "sha256": "d1dc9789bfec1fa5a75ae8f8428b1f2267cd618cf880fba178310b9ea0cdee29",
+      "etag": "e80050568bdb54c8206fb1224228ae65",
+      "days": 30,
+      "firstDate": "2026-09-01",
+      "lastDate": "2026-09-30"
+    },
+    {
+      "file": "hostel-1-mess-3.json",
+      "url": "https://messit.vinnovateit.com/menu-data/hostel-1-mess-3.json",
+      "status": 200,
+      "bytes": 19473,
+      "sha256": "869aef55fdbb685e1894583b09288c6950890d4389d60bc581e6d712f063f96c",
+      "etag": "addb2ecba117e32cbd8949a0424b6a32",
+      "days": 30,
+      "firstDate": "2026-09-01",
+      "lastDate": "2026-09-30"
+    },
+    {
+      "file": "hostel-2-mess-1.json",
+      "url": "https://messit.vinnovateit.com/menu-data/hostel-2-mess-1.json",
+      "status": 200,
+      "bytes": 22858,
+      "sha256": "8dde5b1c919d9cb2c25faa95c98c3709e587fb1379bb7c37030252de99e7d66f",
+      "etag": "0bc62285334ca7d0a31c12e53e194688",
+      "days": 30,
+      "firstDate": "2026-09-01",
+      "lastDate": "2026-09-30"
+    },
+    {
+      "file": "hostel-2-mess-2.json",
+      "url": "https://messit.vinnovateit.com/menu-data/hostel-2-mess-2.json",
+      "status": 200,
+      "bytes": 19436,
+      "sha256": "03915068565a3b85a9a01eb8a9052c18a9bb8e2d10cf86877cf4c70314b29426",
+      "etag": "7180d9367e379a6eaeb5d0dfc745f384",
+      "days": 30,
+      "firstDate": "2026-09-01",
+      "lastDate": "2026-09-30"
+    },
+    {
+      "file": "hostel-2-mess-3.json",
+      "url": "https://messit.vinnovateit.com/menu-data/hostel-2-mess-3.json",
+      "status": 200,
+      "bytes": 20212,
+      "sha256": "fffbcc40f9028102a0d080fcca3117bfa6ad88c7d76e8187f3150619f9a43e29",
+      "etag": "c8b2c00e727aadd9794ba5a0baf7257b",
+      "days": 30,
+      "firstDate": "2026-09-01",
+      "lastDate": "2026-09-30"
+    }
+  ]
+}

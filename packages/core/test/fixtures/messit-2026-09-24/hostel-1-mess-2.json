@@ -1,0 +1,636 @@
+{
+  "hostel": 1,
+  "mess": 2,
+  "menu": [
+    {
+      "date": "2026-09-01",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Poha Namkeen, Idly, Sambar, Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal Tadka, Bisibela Bath, Veg Jalfrezi, White Rice, Rasam, Curd, Green Gram Sprouts, Potato Chips, Gulab Jamun"
+        },
+        {
+          "type": 3,
+          "menu": "Veg. Cutlet (2 Nos), Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Mix Dhal, Methi Chapathi, Veg Fried Rice, White Rice, Sambar, Rasam, Loose Curd, Gobi Manchurian, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-02",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Pongal, Sambar, Chutney, Vada Pav, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal Makhani, Rasam, Curd, White Rice, Moore kulambu, Paneer Butter Masala, Raw Banana Fry, Rice Papad"
+        },
+        {
+          "type": 3,
+          "menu": "Brownie Cake, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Mix Dhal, Veg Shahi Kurma, Tomato Rice, White Rice, Sambar, Rasam, Loose Curd, Subzi, Papaya"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-03",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Poha Namkeen, Onion Uthappam, Sambar, Peanut Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal, Aloo Capsicum Masala, White Rice, Sambar, Rasam, Curd, Carrot Poriyal"
+        },
+        {
+          "type": 3,
+          "menu": "Pani Puri (5 Nos), Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Poori, Chenna Masala, White Rice, Sambar, Rasam, Chow Chow Kootu, Curd rice, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-04",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Gobi Paratha, Curd, Pickle, Kitchadi, Coconut Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal, Paneer Butter Masala, White Rice, Sambar, Rasam, Curd, Appalam, Jalebi"
+        },
+        {
+          "type": 3,
+          "menu": "Masala Vada, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Chapathi, Yellow Dhal, Sambar, Idly, Peanut Chutney, White Rice, Rasam, Subzi, Beetroot Poriyal, Loose Curd, Banana"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-05",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Masala Dosai, Sambar, Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Chapathi, Green gram dhal, Kadi Pakora, White Rice, Sambar, Rasam, Curd, Poriyal, Fryums"
+        },
+        {
+          "type": 3,
+          "menu": "Aloo Samosa, Rose Milk, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Dhal, Green Veg Sabzi, White Rice, Sambar, Rasam, Loose Curd, Poriyal, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-06",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Mix Veg Paratha, Curd, Pickle, Kitchadi, Sambar, Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal, White Rice, Rasam, Appalam, Chettinad Veg Biriyani, Paneer 65, Oil Brinjal, Onion Raitha, Ice Cream"
+        },
+        {
+          "type": 3,
+          "menu": "Veg Puff, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Chapathi, Dhal Punjabi, White Rice, Sambar, Rasam, Loose Curd, Peas Pulao, Mixed Veg gravy, Papaya"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-07",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Poori, Potato Masala, Semiya Kitchadi, Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Toor Dhal, Butter milk, Kadai Paneer, White Rice, Sambar, Rasam, wheel chips, Poriyal"
+        },
+        {
+          "type": 3,
+          "menu": "Aloo Tikka Chaat, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Roti, Bhindi Do Pyaza, Masala Uthappam, Tomato Chutney, Curd Rice, White Rice, Sambar, Rasam, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-08",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Kitchadi, Sambar, Chutney, Podi Idly, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Palak green gram dal, Bisibela Bath, White Rice, Rasam, Veg Kolhapuri, Potato Chips, Appalam"
+        },
+        {
+          "type": 3,
+          "menu": "Mysore Bonda, Chutney, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Chapathi, Dhal, Veg Rice, Gobi Manchurian, White Rice, Sambar, Rasam, Butter Milk, Watermelon, Poriyal"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-09",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Pav Bhaji, Pongal, Sambar, Chutney, Vada, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal, Poriyal, White Rice, Radish Sambar, Rasam, Curd, Rice Papad, Palak Paneer"
+        },
+        {
+          "type": 3,
+          "menu": "Raw Banana Bajji, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Dhal, Aloo capsicum masala, White Rice, Sambar, Rasam, Veg Pulao, Poriyal, Loose curd, Banana"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-10",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Set Dosa, Vada Curry, Groundnut Chutney, Poha Namkeen, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal Makhani, Bhindi Do Pyaza, White Rice, Kara Kulambu, Rasam, Curd, Keerai Kootu, Fryums"
+        },
+        {
+          "type": 3,
+          "menu": "Sweet corn chaat, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Poori, Chenna Masala, Jeera Rice, Poriyal, White Rice, Sambar, Rasam, Loose Curd, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-11",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Mixed Veg Paratha, Curd, Rava kitchadi, Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Rajma Dhal, White Rice, Mix Veg Gravy, Sambar, Rasam, Curd, Paneer 65, Rice Papad, Bread halwa"
+        },
+        {
+          "type": 3,
+          "menu": "Cake, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Dhal, Idly, Peanut Chutney, Dum Aloo, White Rice, Sambar, Rasam, Butter Milk, Banana"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-12",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Podi Dosa, Sambar, Vadai, Red chilli Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Masoor Dhal, Green Peas Masala, Dahi Vada, White Rice, Rasam, Curd, Vendakkai Kara Kulambu, Appalam"
+        },
+        {
+          "type": 3,
+          "menu": "Masala Peanuts, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Aloo Capsicum Masala, White Rice, Sambar, Rasam, Loose Curd, Dhal Fry, Mint Pulao, Papaya"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-13",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Methi Poori, Chickpea Masala, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Roti, Dhal Fry, White Rice, Brinjal Gravy, Rasam, Fryums, Onion Raitha, Vegetable Dum Biriyani, Paneer 65, Ice Cream"
+        },
+        {
+          "type": 3,
+          "menu": "Sandwich, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Dhal, Veg Jalfrezi, Kashmiri Pulao, White Rice, Sambar, Rasam, Loose Curd, Banana"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-14",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Aloo Paratha, Curd, Vermicelli upma, Coconut Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Urad Dhal, White Rice, Sambar, Rasam, Cabbage Poriyal, Curd, Rice Papad, Paneer Butter Masala"
+        },
+        {
+          "type": 3,
+          "menu": "White Channa Sundal, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Dhal Rajma, Podi Dosa, Curd Rice, Coriander Chutney, White Rice, Sambar, Rasam, Drumstick Aloo Masala, Watermelon"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-15",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Poha Namkeen, Idly, Sambar, Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal Tadka, Bisibela Bath, Veg Jalfrezi, White Rice, Rasam, Curd, Green Gram Sprouts, Potato Chips, Gulab Jamun"
+        },
+        {
+          "type": 3,
+          "menu": "Veg. Cutlet (2 Nos), Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Mix Dhal, Methi Chapathi, Veg Fried Rice, White Rice, Sambar, Rasam, Loose Curd, Gobi Manchurian, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-16",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Pongal, Sambar, Chutney, Vada Pav, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal Makhani, Rasam, Curd, White Rice, Moore kulambu, Paneer Butter Masala, Raw Banana Fry, Rice Papad"
+        },
+        {
+          "type": 3,
+          "menu": "Brownie Cake, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Mix Dhal, Veg Shahi Kurma, Tomato Rice, White Rice, Sambar, Rasam, Loose Curd, Subzi, Papaya"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-17",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Poha Namkeen, Onion Uthappam, Sambar, Peanut Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal, Aloo Capsicum Masala, White Rice, Sambar, Rasam, Curd, Carrot Poriyal"
+        },
+        {
+          "type": 3,
+          "menu": "Pani Puri (5 Nos), Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Poori, Chenna Masala, White Rice, Sambar, Rasam, Chow Chow Kootu, Curd rice, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-18",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Gobi Paratha, Curd, Pickle, Kitchadi, Coconut Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal, Paneer Butter Masala, White Rice, Sambar, Rasam, Curd, Appalam, Jalebi"
+        },
+        {
+          "type": 3,
+          "menu": "French Fries, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Chapathi, Yellow Dhal, Sambar, Idly, Peanut Chutney, White Rice, Rasam, Subzi, Beetroot Poriyal, Loose Curd, Banana"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-19",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Masala Dosai, Sambar, Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Chapathi, Green gram dhal, Vangi Bath, White Rice, Avarakkai sambar, Rasam, Cup Curd, Bhindi fry, Fryums"
+        },
+        {
+          "type": 3,
+          "menu": "Aloo Samosa, Rose Milk, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Dhal, Green Veg Sabzi, White Rice, Sambar, Rasam, Loose Curd, Poriyal, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-20",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Mix Veg Paratha, Curd, Pickle, Kitchadi, Sambar, Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal, White Rice, Rasam, Appalam, Chettinad Veg Biriyani, Paneer 65, Oil Brinjal, Onion Raitha, Ice Cream"
+        },
+        {
+          "type": 3,
+          "menu": "Veg Puff, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Chapathi, Dhal Punjabi, White Rice, Sambar, Rasam, Loose Curd, Peas Pulao, Mixed Veg gravy, Papaya"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-21",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Poori, Potato Masala, Semiya Kitchadi, Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Toor Dhal, Butter milk, Kadai Paneer, White Rice, Sambar, Rasam, wheel chips, Poriyal"
+        },
+        {
+          "type": 3,
+          "menu": "Aloo Tikka Chaat, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Roti, Bhindi Do Pyaza, Masala Uthappam, Tomato Chutney, Curd Rice, White Rice, Sambar, Rasam, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-22",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Kitchadi, Sambar, Chutney, Podi Idly, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Palak green gram dal, Bisibela Bath, White Rice, Rasam, Veg Kolhapuri, Potato Chips, Appalam"
+        },
+        {
+          "type": 3,
+          "menu": "Mysore Bonda, Chutney, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Chapathi, Dhal, Veg Rice, Gobi Manchurian, White Rice, Sambar, Rasam, Butter Milk, Watermelon, Poriyal"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-23",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Pav Bhaji, Pongal, Sambar, Chutney, Vada, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal, Poriyal, White Rice, Radish Sambar, Rasam, Curd, Rice Papad, Palak Paneer"
+        },
+        {
+          "type": 3,
+          "menu": "Raw Banana Bajji, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Dhal, Aloo capsicum masala, White Rice, Sambar, Rasam, Veg Pulao, Poriyal, Loose curd, Banana"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-24",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Set Dosa, Vada Curry, Groundnut Chutney, Poha Namkeen, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal Makhani, Bhindi Do Pyaza, White Rice, Kara Kulambu, Rasam, Curd, Keerai Kootu, Fryums"
+        },
+        {
+          "type": 3,
+          "menu": "Sweet corn chaat, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Poori, Chenna Masala, Jeera Rice, Poriyal, White Rice, Sambar, Rasam, Loose Curd, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-25",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Mixed Veg Paratha, Curd, Rava kitchadi, Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Rajma Dhal, White Rice, Mix Veg Gravy, Sambar, Rasam, Curd, Paneer 65, Rice Papad, Bread halwa"
+        },
+        {
+          "type": 3,
+          "menu": "Cake, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Dhal, Idly, Peanut Chutney, Dum Aloo, White Rice, Sambar, Rasam, Butter Milk, Banana"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-26",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Podi Dosa, Sambar, Vadai, Red chilli Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Chapathi, Masoor Dhal, Green Peas Masala, Dahi Vada, White Rice, Rasam, Curd, Vendakkai Kara Kulambu, Appalam"
+        },
+        {
+          "type": 3,
+          "menu": "Masala Peanuts, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Aloo Capsicum Masala, White Rice, Sambar, Rasam, Loose Curd, Dhal Fry, Mint Pulao, Papaya"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-27",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Methi Poori, Chickpea Masala, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Roti, Dhal Fry, White Rice, Brinjal Gravy, Rasam, Fryums, Onion Raitha, Vegetable Dum Biriyani, Paneer 65, Ice Cream"
+        },
+        {
+          "type": 3,
+          "menu": "Sandwich, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Dhal, Veg Jalfrezi, Kashmiri Pulao, White Rice, Sambar, Rasam, Loose Curd, Banana"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-28",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Aloo Paratha, Curd, Vermicelli upma, Coconut Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Urad Dhal, White Rice, Sambar, Rasam, Cabbage Poriyal, Curd, Rice Papad, Paneer Butter Masala"
+        },
+        {
+          "type": 3,
+          "menu": "White Channa Sundal, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Dhal Rajma, Podi Dosa, Curd Rice, Coriander Chutney, White Rice, Sambar, Rasam, Drumstick Aloo Masala, Watermelon"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-29",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Poha Namkeen, Idly, Sambar, Chutney, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal Tadka, Bisibela Bath, Veg Jalfrezi, White Rice, Rasam, Curd, Green Gram Sprouts, Potato Chips, Gulab Jamun"
+        },
+        {
+          "type": 3,
+          "menu": "Veg. Cutlet (2 Nos), Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Mix Dhal, Methi Chapathi, Veg Fried Rice, White Rice, Sambar, Rasam, Loose Curd, Gobi Manchurian, Seasonal Fruit"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-30",
+      "menu": [
+        {
+          "type": 1,
+          "menu": "Pongal, Sambar, Chutney, Vada Pav, Bread, Butter, Jam, Tea, Coffee, Milk"
+        },
+        {
+          "type": 2,
+          "menu": "Phulka, Dhal Makhani, Rasam, Curd, White Rice, Moore kulambu, Paneer Butter Masala, Raw Banana Fry, Rice Papad"
+        },
+        {
+          "type": 3,
+          "menu": "Brownie Cake, Tea, Coffee, Milk"
+        },
+        {
+          "type": 4,
+          "menu": "Phulka, Mix Dhal, Veg Shahi Kurma, Tomato Rice, White Rice, Sambar, Rasam, Loose Curd, Subzi, Papaya"
+        }
+      ]
+    }
+  ]
+}
