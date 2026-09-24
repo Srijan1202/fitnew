@@ -121,6 +121,7 @@ jobs:
           check 401 'http://localhost:8080/v1/nutrition/foods/search?q=rice'
           check 401 http://localhost:8080/v1/nutrition/today
           check 401 'http://localhost:8080/v1/mess/menu?date=2026-09-24'
+          check 401 'http://localhost:8080/v1/mess/menu/recommend?slot=lunch'
           docker rm -f api-smoke
 
       # Phase 6.7 (O5) — publish the image that was just smoke-tested.

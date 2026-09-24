@@ -1,7 +1,8 @@
 /**
  * /v1/mess — VIT mess menus (Phase 9, §31). HTTP and Zod only (§8.3).
  * Default-deny like every /v1 route. Menus come from the server's mirror,
- * never live from MessIT. No recommendation route (Phase 10).
+ * never live from MessIT. Phase 10 adds `/mess/menu/recommend`; there are no
+ * general (non-mess) recommendations.
  */
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
@@ -13,6 +14,8 @@ import {
   messCorrectionSchema,
   messMenuQuerySchema,
   messMenuSchema,
+  messRecommendQuerySchema,
+  messRecommendationSchema,
   messProvidersResponseSchema,
   messesResponseSchema,
   providerSlugParamsSchema,
@@ -23,6 +26,9 @@ import type { DatabaseHandle } from '../../db/client.js';
 import { userProfiles } from '../../db/schema.js';
 import { AppError } from '../../lib/errors.js';
 import { FoodLogRepository } from '../nutrition/log-repository.js';
+import { UserRepository } from '../user/repository.js';
+import { RecommendRepository } from './recommend-repository.js';
+import { MessRecommendService } from './recommend-service.js';
 import { MessRepository } from './repository.js';
 import { MessService } from './service.js';
 
@@ -54,6 +60,12 @@ export function messServiceFor(db: DatabaseHandle['db']): MessService {
 
 export async function messRoutes(app: FastifyInstance): Promise<void> {
   const service = messServiceFor(app.database.db);
+  const recommend = new MessRecommendService(
+    service,
+    new UserRepository(app.database.db),
+    new FoodLogRepository(app.database.db),
+    new RecommendRepository(app.database.db),
+  );
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const security = [{ bearerAuth: [] }];
   const errors = { 401: errorEnvelopeSchema, 404: errorEnvelopeSchema, 422: errorEnvelopeSchema };
@@ -106,6 +118,24 @@ export async function messRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request) => service.menu(requireUserId(request.userId), request.query),
+  );
+
+  typed.get(
+    '/mess/menu/recommend',
+    {
+      schema: {
+        summary: 'What should I eat at this meal? Up to 3 plates from the mess menu, filtered by YOUR diet and allergies (Phase 10)',
+        description:
+          'Today or tomorrow only (tomorrow is for planning: not loggable). Allergies are a hard filter — only dishes confirmed ' +
+          'free pass; severity never relaxes it. Every number is a range from the stored estimates; reasons are codes. ' +
+          'An unavailable menu gets no plates; an inferred one is labelled. Nothing is stored.',
+        tags: ['mess'],
+        security,
+        querystring: messRecommendQuerySchema,
+        response: { 200: messRecommendationSchema, ...errors },
+      },
+    },
+    async (request) => recommend.recommend(requireUserId(request.userId), request.query),
   );
 
   typed.post(

@@ -95,6 +95,19 @@ export class MessService {
     };
   }
 
+  /** The public description of one mess, with its freshness. */
+  async describe(mess: MessRow): Promise<Mess> {
+    const [provider, latest] = await Promise.all([this.repo.providerById(mess.providerId), this.repo.latestPublishedDates([mess.id])]);
+    if (provider === null) throw new AppError('INTERNAL', 'A mess without a provider.');
+    return this.messFrom(mess, provider.slug, latest.get(mess.id) ?? null);
+  }
+
+  /** The caller's configured mess, or null. */
+  async configuredMessRow(userId: string): Promise<MessRow | null> {
+    const ref = await this.configuredMess(userId);
+    return ref === null ? null : this.repo.messByRef(ref.providerId, ref.hostelId, ref.messId);
+  }
+
   async providers(): Promise<{ items: MessProviderInfo[] }> {
     return { items: (await this.repo.providers()).map(providerFrom) };
   }
