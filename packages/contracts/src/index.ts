@@ -10,3 +10,4 @@ export * from './food.js';
 export * from './nutrition-log.js';
 export * from './mess.js';
 export * from './mess-recommend.js';
+export * from './today.js';
