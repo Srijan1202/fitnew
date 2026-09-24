@@ -1,6 +1,6 @@
 # ADR-015 — Mess recommendations: fixed scoring, meal share, confirmed-free allergens and an honest shortfall
 
-**Status** ACCEPTED (design) — the owner approved the Phase 10 audit (D1–D25, with D12 clarified, D13 modified and D18 deferred) and then the implementation plan, with 29 locked decisions (2026-09-24). Phase 10 as a whole is accepted only after the S24 manual acceptance.
+**Status** ACCEPTED — the owner approved the Phase 10 audit (D1–D25, with D12 clarified, D13 modified and D18 deferred) and then the implementation plan, with 29 locked decisions (2026-09-24). Phase 10 was accepted on 2026-09-24 after the S24 manual acceptance passed 20/20. Amended by ADR-016 (see the Amendment below).
 **Date** 2026-09-24
 **Phase** 10
 **Affects** MASTER-SPEC §10.1 (`/mess/menu/recommend`; `/nutrition/recommendations` deferred), §14.5 (the leading-"Veg" rule, alternatives, confirmed-free allergens), §15.1 (formula, constants, meal share, roles; budget removed), §15.2 (shortfall), §26.2 (the six food personas), §31 Phase 10, §33 and §38 Phase 10. The spec is amended only where it would otherwise contradict what is built. This record holds the reasons.

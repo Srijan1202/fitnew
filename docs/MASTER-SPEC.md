@@ -1691,7 +1691,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 **Phase 9** — [x] mess tables · [x] provider wired · [x] **mirroring job** (job built and verified; its Cloud Scheduler trigger is deferred while GCP is paused — ADR-014) · [x] enrichment by slug · [x] mess picker · [x] MESS screen · [x] **resolution banner** · [x] correction submission · [x] all 6 endpoints tested · [x] 9 defects tested
 
-**Phase 10** — [ ] plate recommender wired · [ ] carb/fat/variety/budget/timing scoring (budget deferred: no price data — ADR-015) · [ ] thali UI · [ ] log-this-plate · [ ] **veg safety test** · [ ] allergy filter test · [ ] honest shortfall test
+**Phase 10** — [x] plate recommender wired (a meal, not a dish — ADR-016) · [x] carb/fat/variety/budget/timing scoring (budget deferred: no price data — ADR-015) · [x] thali UI · [x] log-this-plate · [x] **veg safety test** · [x] allergy filter test · [x] honest shortfall test
 
 **Phase 11** — [ ] `UserModel` assembled · [ ] TODAY engine wired · [ ] recommendation persistence · [ ] **event tracking** · [ ] TODAY screen · [ ] all persona fixtures snapshotted
 

@@ -1,4 +1,4 @@
-## PHASE 10 — Mess recommendations — CORRECTION PASS DONE; STAPLE BOUND AWAITS THE OWNER; S24 RUN NEXT
+## PHASE 10 — Mess recommendations — ACCEPTED
 
 **Date** 2026-09-24 · **Branch** `phase-10` from `main` at `08a085b` (the accepted Phase 9, fast-forwarded per D26) · not merged (owner instruction)
 
@@ -25,7 +25,37 @@
 
 **Decision record:** the owner approved the audit (D1–D25; D12 clarified, D13 modified, D18 deferred), then the [plan](../phase-plans/phase-10-plan.md) with 29 locked decisions. [ADR-015](../decisions/ADR-015-mess-recommendations.md).
 
-**Status:** the first S24 run found the recommender suggesting single dishes as meals (Watermelon Juice for breakfast, White Rice for lunch, Rasam for dinner). The owner stopped acceptance, approved the meal-composition design (C1–C6) and a data correction (Amendment B), and both are implemented. Every automated gate passes. **Not accepted:** the owner reviews this report, then a new S24 run follows. The §38 Phase 10 boxes stay unticked.
+**Status:** **ACCEPTED and FROZEN** by the owner on 2026-09-24, after the S24 manual acceptance passed **20/20** on the corrected APK (below). The §38 Phase 10 boxes are ticked. `phase-10` is **not merged** into `main` (owner instruction); `main` stays at the accepted Phase 9 commit `08a085b`.
+
+History: the first S24 run found the recommender suggesting single dishes as meals (Watermelon Juice for breakfast, White Rice for lunch, Rasam for dinner). The owner stopped acceptance and approved the meal-composition design (C1–C6) and a data correction (Amendment B). After reviewing that implementation, the owner required a correction pass (the ambient check). The corrected build then passed.
+
+### ACCEPTANCE AND CLOSEOUT (2026-09-24)
+
+- **S24 manual acceptance:** **20/20 PASS** (owner, Samsung Galaxy S24), covering checks 1–16 (decision 26) and 17–20 (Amendment A). See the table below.
+- **Accepted build:**
+  - APK: `apps/mobile/build/app/outputs/flutter-apk/app-debug.apk` (debug, LAN), built from `91ff5c8` for `http://172.16.205.86:8080`. The host was verified inside the APK (`kernel_blob.bin`, `network_security_config.xml`).
+  - API: the LAN container (`docker compose up --build -d api`, development), rebuilt from `91ff5c8`, with migration 0012 applied to the dev database.
+- **Code head of the accepted build:** `91ff5c8`. Every commit after it is documentation only (`c292579`, and this closeout commit).
+- **Automated results at the accepted code:**
+  - suites: core **747**, contracts **66**, API **394** (27 files), Flutter **534**;
+  - checks: `tsc`, ESLint, build, `dart analyze --fatal-infos`, custom_lint and format all clean;
+  - CI: **green on `91ff5c8`** (ci-core, ci-api, ci-mobile) and on the docs-only `c292579`.
+- **Final September sweep** (stored menus, dev database, 180 menus × 4 meals × 6 personas): 4,320 recommendations, 7,516 plates.
+  - **Zero** on every check: single-supporting meals, missing staples, soup/juice/fruit as the meal, drinks on plates, desserts or crisps at lunch or dinner, diet or allergy violations, non-meaningful alternatives, nondeterminism.
+  - Statuses: `ok` 3,834, `nothing-safe` 342, `no-meal` 144, `nothing-fits` 0.
+  - Performance: the slowest single recommendation took 7.3 ms. The CI latency test (every real September meal, median of 3, under 100 ms) passes.
+- **What Phase 10 delivered** (details in the sections below and in ADR-015 and ADR-016):
+  - mess-only recommendations (`GET /v1/mess/menu/recommend`);
+  - fixed, pinned scoring with F1;
+  - the meal-composition system: components, structure tiers as a constraint, no drinks on plates, no desserts or crisps at lunch or dinner, meaningful alternatives, `no-meal` / `nothing-fits`, and the meal-grade fallback;
+  - the confirmed-free allergy filter;
+  - the context-aware ambient classifier;
+  - the four Phase 9 estimate corrections (migration 0012, with provenance);
+  - the app's "What should I eat?", with Log this plate and the Profile → Food editor.
+- **The three-staple-serving constraint was NOT implemented.** It was proposed with evidence in the correction pass and did not receive an implementation decision before acceptance. The accepted build does not contain it. The rules in force are: at most 2 distinct `staple` dishes, and 1 `complete` dish counted separately, within the existing serving caps (rice-type 2, bread-type 3) and 8 servings per plate.
+  - Consequence: plates with 4 or more staple servings (up to 6) still occur, but only when a meal's target is at least 1.3× a normal meal (e.g. dinner with nothing logged). They never occur at normal-sized targets.
+  - The proposal (count a complete dish as a staple; at most 3 staple servings) is recorded under *Correction pass → 3* and listed as deferred.
+
 
 ### AMENDMENT A/B — after the first S24 run (2026-09-24)
 
@@ -309,32 +339,32 @@ A bound of 4 barely helps, because heavy plates cluster at exactly 4. **A bound 
 
 The PC's address depends on the network it joins. A first build targeted `172.16.205.86` (another Wi-Fi) and was replaced when the PC moved back to the hotspot. **Rebuild with `.\tool\alpha.ps1` whenever the address changes.**
 
-### S24 MANUAL ACCEPTANCE — PENDING (owner)
+### S24 MANUAL ACCEPTANCE — PASSED 20/20 (owner, Samsung Galaxy S24, 2026-09-24)
 
-Install the new APK. The PC and the phone must be on the same Wi-Fi, with the API container running. Then check (decision 26, plus 17–20 for Amendment A):
+The corrected APK (from `91ff5c8`, for `http://172.16.205.86:8080`) against the LAN API container. Checks 1–16 are decision 26; 17–20 are Amendment A:
 
 | # | Check | How | Result |
 |---|---|---|---|
-| 1 | Vegetarian dinner | Profile → Food: Vegetarian, no allergies. MESS → Dinner. Every plate dish and every alternative is veg; "Why not" lists meat/egg dishes as "not vegetarian". | pending |
-| 2 | Eggetarian dinner | Switch to Eggetarian. Egg dishes may appear; meat never. | pending |
-| 3 | Non-veg dinner | Switch to Non-vegetarian (non-veg mess). Plates may include meat; compare with 1–2 on the same dinner. | pending |
-| 4 | Allergy-restricted | Add milk (any severity). Plates contain only confirmed-free dishes (often white rice only, or "nothing safe"); the filter line says "no known milk ingredient"; the cross-contact note shows; changing severity changes nothing. | pending |
-| 5 | Protein-deficit | With a high protein target remaining, the top plate leads with protein and states its protein range against the target. | pending |
-| 6 | Snack | MESS → Snacks: a plate appears (fried, sweet or drink allowed at 1 serving). | pending |
-| 7 | Zero-calorie | Log enough to reach today's kcal target; the meal shows "target reached", no plate, and the protein still needed. | pending |
-| 8 | Shortfall | A meal whose best plate cannot reach the protein target (e.g. vegetarian dinner late in the day) shows "X–Y g protein below this meal's T g", with the menu's maximum. | pending |
-| 9 | Post-workout | Finish a workout, then open the next meal within 3 h: "After your workout: … carbs" appears among the reasons. | pending |
-| 10 | Variety | A dish logged from the mess yesterday or earlier shows "you had it on N of the last 3 days" and is not excluded. | pending |
-| 11 | Tomorrow planning | Next day on MESS: breakfast by default, a planning note, no log button. | pending |
-| 12 | Log this plate | Today: tap Log this plate. EAT shows one mess log with each dish at its servings and numbers equal to the plate; the meal's dishes show as logged on the menu. | pending |
-| 13 | Profile editing | Profile → Food: change diet and allergies, save; the suggestion refetches with the new filter line. | pending |
-| 14 | Offline | Airplane mode: MESS shows the saved menu and "Suggestions need a connection", with no plate. | pending |
-| 15 | No non-veg for vegetarian | Across meals and messes browsed while vegetarian, no non-veg or unknown dish appears on a plate. | pending |
-| 16 | No allergic dish | With allergies set, no plate dish contains, likely contains, or is unconfirmed for an allergen (check "Why not"). | pending |
-| 17 | A meal, not a dish (the first run's cases) | Same account, same day. Breakfast, lunch and dinner each show a staple with a protein, and a "Complete meal" (or "Meal · …") label. Never Watermelon Juice, White Rice alone, or Rasam alone. | pending |
-| 18 | Drinks, desserts, crisps | Juice and tea never appear on a plate; papad, appalam and desserts never appear at lunch or dinner. "Why not" says why, and they can still be logged from the menu. | pending |
-| 19 | Meaningful alternatives | Other plates change the staple or the protein (e.g. Phulka instead of Rice), never just add rasam or curd. | pending |
-| 20 | Limited menu, no-meal, nothing-fits | With a milk allergy at lunch: "Limited menu · no protein dish" plus the shortfall. A snack of only drinks says no meal can be made. With almost no calories left: "even the smallest (about X kcal) is more than you have left today (Y kcal)". | pending |
+| 1 | Vegetarian dinner | Profile → Food: Vegetarian, no allergies. MESS → Dinner. Every plate dish and every alternative is veg; "Why not" lists meat/egg dishes as "not vegetarian". | **PASS** |
+| 2 | Eggetarian dinner | Switch to Eggetarian. Egg dishes may appear; meat never. | **PASS** |
+| 3 | Non-veg dinner | Switch to Non-vegetarian (non-veg mess). Plates may include meat; compare with 1–2 on the same dinner. | **PASS** |
+| 4 | Allergy-restricted | Add milk (any severity). Plates contain only confirmed-free dishes (often white rice only, or "nothing safe"); the filter line says "no known milk ingredient"; the cross-contact note shows; changing severity changes nothing. | **PASS** |
+| 5 | Protein-deficit | With a high protein target remaining, the top plate leads with protein and states its protein range against the target. | **PASS** |
+| 6 | Snack | MESS → Snacks: a plate appears (fried, sweet or drink allowed at 1 serving). | **PASS** |
+| 7 | Zero-calorie | Log enough to reach today's kcal target; the meal shows "target reached", no plate, and the protein still needed. | **PASS** |
+| 8 | Shortfall | A meal whose best plate cannot reach the protein target (e.g. vegetarian dinner late in the day) shows "X–Y g protein below this meal's T g", with the menu's maximum. | **PASS** |
+| 9 | Post-workout | Finish a workout, then open the next meal within 3 h: "After your workout: … carbs" appears among the reasons. | **PASS** |
+| 10 | Variety | A dish logged from the mess yesterday or earlier shows "you had it on N of the last 3 days" and is not excluded. | **PASS** |
+| 11 | Tomorrow planning | Next day on MESS: breakfast by default, a planning note, no log button. | **PASS** |
+| 12 | Log this plate | Today: tap Log this plate. EAT shows one mess log with each dish at its servings and numbers equal to the plate; the meal's dishes show as logged on the menu. | **PASS** |
+| 13 | Profile editing | Profile → Food: change diet and allergies, save; the suggestion refetches with the new filter line. | **PASS** |
+| 14 | Offline | Airplane mode: MESS shows the saved menu and "Suggestions need a connection", with no plate. | **PASS** |
+| 15 | No non-veg for vegetarian | Across meals and messes browsed while vegetarian, no non-veg or unknown dish appears on a plate. | **PASS** |
+| 16 | No allergic dish | With allergies set, no plate dish contains, likely contains, or is unconfirmed for an allergen (check "Why not"). | **PASS** |
+| 17 | A meal, not a dish (the first run's cases) | Same account, same day. Breakfast, lunch and dinner each show a staple with a protein, and a "Complete meal" (or "Meal · …") label. Never Watermelon Juice, White Rice alone, or Rasam alone. | **PASS** |
+| 18 | Drinks, desserts, crisps | Juice and tea never appear on a plate; papad, appalam and desserts never appear at lunch or dinner. "Why not" says why, and they can still be logged from the menu. | **PASS** |
+| 19 | Meaningful alternatives | Other plates change the staple or the protein (e.g. Phulka instead of Rice), never just add rasam or curd. | **PASS** |
+| 20 | Limited menu, no-meal, nothing-fits | With a milk allergy at lunch: "Limited menu · no protein dish" plus the shortfall. A snack of only drinks says no meal can be made. With almost no calories left: "even the smallest (about X kcal) is more than you have left today (Y kcal)". | **PASS** |
 
 ### MASTER-SPEC AMENDMENTS (minimal; reasons in ADR-015)
 
@@ -346,7 +376,8 @@ Install the new APK. The PC and the phone must be on the same Wi-Fi, with the AP
 - **§26.2:** the six food personas land in Phase 10.
 - **§31 Phase 10:** mess-only; general recommendations and budget deferred.
 - **§33:** recommendations are never stored or shown offline.
-- **§38 Phase 10:** budget annotated as deferred; **boxes unticked** pending acceptance.
+- **§38 Phase 10:** budget annotated as deferred; **all boxes ticked at acceptance (2026-09-24).**
+- **Amendment A (ADR-016):** §15.1 (meal composition, F1, candidates, ceiling), §15.2 (limited menu, `no-meal`, `nothing-fits`) and §10.1 (statuses and structure).
 
 ### KNOWN LIMITATIONS
 
@@ -362,6 +393,8 @@ Install the new APK. The PC and the phone must be on the same Wi-Fi, with the AP
   - persistence and events (Phase 11);
   - AI wording;
   - Cloud Scheduler for the mirror (GCP paused; the local development timer still runs).
+- **Staple-heavy plates at oversized meal targets:** see Acceptance → the three-staple-serving constraint was not implemented; the evidence-backed proposal is deferred to the owner.
+- **Phase 7 food "Curd rice"** still carries curd values. The owner deferred it: the mess path is corrected by migration 0012, and Phase 7 stays frozen.
 - **Pre-existing:** the `automatic_sync_test.dart` teardown flake (since Phase 6.6); `apps/admin` lint needs an interactive setup.
 
 ### INTENTIONALLY NOT DONE
@@ -370,4 +403,6 @@ Install the new APK. The PC and the phone must be on the same Wi-Fi, with the AP
 - No GCP, billing, Cloud Run, Artifact Registry, Secret Manager, WIF or DNS changes.
 - No classification of the 305 Phase 7 foods.
 - No user-corrected precedence.
-- No migration.
+- No recommendation persistence and no migration for it. The only migration, 0012, corrects four stored estimates, with provenance.
+- No general (non-mess) recommendations and no budget.
+- No staple-serving bound (proposed, not approved before acceptance).

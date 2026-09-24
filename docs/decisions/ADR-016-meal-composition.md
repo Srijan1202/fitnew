@@ -1,6 +1,6 @@
 # ADR-016 — Meal composition: FITOS recommends a meal, not the nutritionally cheapest dish
 
-**Status** ACCEPTED (design) — owner decisions C1–C6 on the post-S24 audit (2026-09-24). Phase 10 is accepted only after a new S24 run.
+**Status** ACCEPTED — owner decisions C1–C6 on the post-S24 audit (2026-09-24). Implemented and accepted with Phase 10 on 2026-09-24 (S24 20/20).
 **Date** 2026-09-24
 **Phase** 10 (Amendments A and B to the [plan](../phase-plans/phase-10-plan.md), §20–§22)
 **Affects**
@@ -63,4 +63,10 @@ But `role` drives the Phase 9 estimator and the `/mess/menu` contract, which are
 - Juice, tea, desserts and crisps are never suggested for main meals. They remain loggable.
 - Persona snapshots change as a reviewed diff. A new persona, `fat-budget-spent`, freezes the S24 case.
 - The Phase 7 food "Curd rice" carries the same curd values; it is reported, not changed (Phase 7 is frozen).
-- **Found, not fixed (outside the approved scope):** Phase 9's ambient check matches `butter` and `sauce`, so "Paneer Butter Masala", "Butter Chicken Masala" and "Spring Roll With Sauce" are treated as ambient and never reach a plate. This is reported to the owner; the ambient rule belongs to accepted Phase 9.
+- **Ambient items (owner blocker, fixed before acceptance):** Phase 9's ambient check matched `butter`, `sauce`, `bread` or `milk` anywhere in a name, which hid real dishes ("Paneer Butter Masala", "Butter Chicken Masala", "Spring Roll With Sauce", "Bread Halwa", "Milk Peda").
+  - An item is now ambient only when it *is* the accompaniment: its name ends with an ambient term (the head noun), and a trailing "with …" is ignored.
+  - Genuine accompaniments (Bread, Butter, Jam, Pickle, Garlic Sauce, Tea, Coffee, Milk, Butter Milk) stay ambient.
+- **Not adopted before acceptance — staple-serving bound:**
+  - The rules in force are at most 2 distinct `staple` dishes, 1 `complete` dish counted separately, the serving caps (rice-type 2, bread-type 3) and 8 servings per plate.
+  - With these, plates with 4 or more staple servings occur only when a meal's target is at least 1.3× a normal meal.
+  - The evidence-backed proposal (count a complete dish as a staple; at most 3 staple servings) is recorded in the Phase 10 report and is deferred to the owner.
