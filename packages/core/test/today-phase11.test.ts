@@ -13,6 +13,7 @@ import {
   COMPLETION_EVIDENCE, TODAY_EVENTS, checkEventTiming, checkTransition, isCompletable, type TodayEvent,
 } from '../src/recommend/events.js';
 import { canonicalJson, sha256Hex } from '../src/recommend/hash.js';
+import { trainingFromPlan, type PlannedExerciseFacts } from '../src/recommend/model.js';
 import { BASE, IDS, PERSONAS, model } from './today-fixtures.js';
 
 const kinds = (m: UserModel): ActionKind[] => topActions(m).map((a) => a.kind);
@@ -465,5 +466,116 @@ describe('events (D7, P2, P4)', () => {
     // A late offline event: delivered 7 days later it is still accepted — as an event of its own day.
     expect(at('2026-09-24T04:00:00Z', '2026-10-01T04:00:00Z')).toEqual({ ok: true });
     expect(at('2026-09-24T04:00:00Z', '2026-10-01T04:00:01Z')).toEqual({ ok: false, code: 'delivered-too-late' });
+  });
+});
+
+/* ------------------------------------------------- owner Q1 and Q2 -- */
+
+describe('Q1: a ruled-out exercise never also produces a load increase (enforced in model assembly)', () => {
+  const plan = (over: Partial<PlannedExerciseFacts> & Pick<PlannedExerciseFacts, 'exerciseId' | 'exerciseName'>): PlannedExerciseFacts => ({
+    progression: null, ruledOutBy: [], swap: null, ...over,
+  });
+  const squatUp = { action: 'increase-load', weightKg: 100, repTarget: '5' };
+
+  it('trainingFromPlan drops ruled-out exercises from increaseLoad and lists them as swaps', () => {
+    const t = trainingFromPlan([
+      plan({ exerciseId: IDS.squat, exerciseName: 'Barbell Back Squat', progression: squatUp, ruledOutBy: ['knee'], swap: { exerciseId: IDS.legPress, exerciseName: 'Leg Press' } }),
+      plan({ exerciseId: IDS.bench, exerciseName: 'Barbell Bench Press', progression: { action: 'increase-load', weightKg: 62.5, repTarget: '6–8' } }),
+      plan({ exerciseId: IDS.rdl, exerciseName: 'Romanian Deadlift', progression: { action: 'hold', weightKg: 70, repTarget: '8–10' } }),
+    ]);
+    expect(t.increaseLoad).toEqual([{ exerciseId: IDS.bench, exerciseName: 'Barbell Bench Press', weightKg: 62.5, repTarget: '6–8' }]);
+    expect(t.limitationSwaps).toEqual([
+      { exerciseId: IDS.squat, exerciseName: 'Barbell Back Squat', bodyParts: ['knee'], alternativeId: IDS.legPress, alternativeName: 'Leg Press' },
+    ]);
+  });
+
+  it('regression: the same ruled-out exercise cannot generate both injured-limitation and progress-load', () => {
+    const only = trainingFromPlan([
+      plan({ exerciseId: IDS.squat, exerciseName: 'Barbell Back Squat', progression: squatUp, ruledOutBy: ['knee'], swap: { exerciseId: IDS.legPress, exerciseName: 'Leg Press' } }),
+    ]);
+    const actions = buildActions(model({ training: only }));
+    expect(actions.find((a) => a.kind === 'injured-limitation')?.subjectKey).toBe(`${IDS.squat}>${IDS.legPress}`);
+    expect(actions.some((a) => a.kind === 'progress-load')).toBe(false);
+  });
+
+  it('ruled out with no safer swap: neither action (it is still ruled out)', () => {
+    const noSwap = trainingFromPlan([plan({ exerciseId: IDS.squat, exerciseName: 'Barbell Back Squat', progression: squatUp, ruledOutBy: ['knee'] })]);
+    const kindsOut = buildActions(model({ training: noSwap })).map((a) => a.kind);
+    expect(kindsOut).not.toContain('injured-limitation');
+    expect(kindsOut).not.toContain('progress-load');
+  });
+
+  it('for every combination, no exercise is the subject of both', () => {
+    for (const ruledOut of [false, true]) {
+      for (const swap of [false, true]) {
+        for (const action of ['increase-load', 'hold', 'deload']) {
+          const t = trainingFromPlan([
+            plan({
+              exerciseId: IDS.squat, exerciseName: 'Squat', progression: { action, weightKg: 100, repTarget: '5' },
+              ruledOutBy: ruledOut ? ['knee'] : [], swap: swap ? { exerciseId: IDS.legPress, exerciseName: 'Leg Press' } : null,
+            }),
+          ]);
+          const all = buildActions(model({ training: t }));
+          const loadSubjects = all.filter((a) => a.kind === 'progress-load').map((a) => a.subjectKey);
+          const limitSubjects = all.filter((a) => a.kind === 'injured-limitation').map((a) => a.subjectKey.split('>')[0]);
+          expect(loadSubjects.filter((s) => limitSubjects.includes(s))).toEqual([]);
+          if (ruledOut) expect(loadSubjects).toEqual([]);
+        }
+      }
+    }
+  });
+});
+
+describe('Q2: the transition matrix — completed needs accepted; opened is never required', () => {
+  /** Replays `sequence`: every event before the last must record; returns the last one's result. */
+  const replay = (sequence: readonly TodayEvent[], kind: ActionKind = 'start-workout') => {
+    const recorded: TodayEvent[] = [];
+    for (const [i, e] of sequence.entries()) {
+      const result = checkTransition(kind, recorded, e);
+      if (i === sequence.length - 1) return result;
+      expect(result, `${sequence.slice(0, i + 1).join(' → ')}`).toEqual({ outcome: 'record' });
+      recorded.push(e);
+    }
+    throw new Error('empty sequence');
+  };
+  const ok = { outcome: 'record' };
+  const no = (code: string) => ({ outcome: 'reject', code });
+
+  it.each([
+    [['shown'], ok],
+    [['shown', 'accepted'], ok],
+    [['shown', 'accepted', 'completed'], ok],
+    [['shown', 'opened'], ok],
+    [['shown', 'opened', 'accepted'], ok],
+    [['shown', 'opened', 'accepted', 'completed'], ok],
+    [['shown', 'accepted', 'opened'], ok],
+    [['shown', 'dismissed'], ok],
+    [['shown', 'opened', 'dismissed'], ok],
+    [['shown', 'completed'], no('not-accepted')],
+    [['shown', 'opened', 'completed'], no('not-accepted')],
+    [['opened'], no('not-shown')],
+    [['accepted'], no('not-shown')],
+    [['completed'], no('not-shown')],
+    [['dismissed'], no('not-shown')],
+    [['shown', 'dismissed', 'completed'], no('after-dismissed')],
+    [['shown', 'dismissed', 'opened'], no('after-dismissed')],
+    [['shown', 'dismissed', 'accepted'], no('accepted-and-dismissed')],
+    [['shown', 'accepted', 'dismissed'], no('accepted-and-dismissed')],
+    [['shown', 'accepted', 'completed', 'dismissed'], no('accepted-and-dismissed')],
+  ] as [TodayEvent[], object][])('%j → %j', (sequence, expected) => {
+    expect(replay(sequence)).toEqual(expected);
+  });
+
+  it('informational actions stay non-completable, even after accepted', () => {
+    for (const k of ['rest-day', 'celebrate-pr', 'injured-limitation'] as const) {
+      expect(replay(['shown', 'accepted', 'completed'], k)).toEqual(no('not-completable'));
+      expect(replay(['shown', 'opened', 'accepted'], k)).toEqual(ok);
+      expect(replay(['shown', 'dismissed'], k)).toEqual(ok);
+    }
+  });
+
+  it('repeats are duplicates, not errors', () => {
+    expect(checkTransition('start-workout', ['shown', 'accepted', 'completed'], 'accepted')).toEqual({ outcome: 'duplicate' });
+    expect(checkTransition('start-workout', ['shown', 'opened'], 'opened')).toEqual({ outcome: 'duplicate' });
   });
 });

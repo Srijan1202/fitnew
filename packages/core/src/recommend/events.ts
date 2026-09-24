@@ -46,6 +46,7 @@ export function isCompletable(kind: ActionKind): boolean {
 export type TransitionRejection =
   | 'not-shown' // any event before `shown`
   | 'not-completable' // `completed` on an informational action (P4)
+  | 'not-accepted' // `completed` without the explicit primary action first (owner Q2)
   | 'accepted-and-dismissed' // the two exclude each other
   | 'after-dismissed' // opened / completed once dismissed
   | 'after-completed'; // dismissed once completed
@@ -70,6 +71,9 @@ export function checkTransition(kind: ActionKind, recorded: readonly TodayEvent[
   }
   if ((next === 'opened' || next === 'completed') && has('dismissed')) return { outcome: 'reject', code: 'after-dismissed' };
   if (next === 'dismissed' && has('completed')) return { outcome: 'reject', code: 'after-completed' };
+  // Owner Q2: the downstream flow starts from the primary action, so `completed`
+  // needs `accepted` first; `opened` is never required.
+  if (next === 'completed' && !has('accepted')) return { outcome: 'reject', code: 'not-accepted' };
   return { outcome: 'record' };
 }
 
