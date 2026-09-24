@@ -1,4 +1,4 @@
-## PHASE 8 — Nutrition logging — IMPLEMENTED, AWAITING S24 MANUAL ACCEPTANCE
+## PHASE 8 — Nutrition logging — ACCEPTED AND FROZEN
 
 **Date** 2026-09-24 · **Branch** `phase-8` from `phase-7` @ `389cd52` · not merged (owner instruction)
 **Commits**
@@ -6,13 +6,14 @@
 - `c802e76` — migration 0010 and the API
 - `1d76d32` — mobile: EAT, log sheet, offline sync
 - `9f736d3` — ADR-013 and the MASTER-SPEC amendments
-- plus this report
+- `43be39a` — UI remediation after the first S24 run
+- plus the report commits
 
 **Decision record:**
 - Phase 8 proposal approved by the owner, J1–J21 plus the J22 correction.
 - [ADR-013](../decisions/ADR-013-food-logging.md).
 
-**Status:** every automated check has passed locally. The S24 manual acceptance has **not been done**. Phase 8 is **not** claimed complete, and the §38 Phase 8 boxes stay unticked until the owner accepts it.
+**Status:** **accepted and frozen** by the owner on 2026-09-24 after the 17-step S24 manual acceptance passed **17/17** on the remediated build (`43be39a`). The seven §38 Phase 8 boxes are ticked. No further Phase 8 code changes. `phase-8` is **not merged** into `main` (owner instruction). Phase 9 branches from the accepted commit.
 
 ### What was built
 
@@ -222,7 +223,32 @@ On `9f736d3`, all three jobs passed:
 
 This report commit is documentation only.
 
-### S24 MANUAL ACCEPTANCE — NOT YET DONE (owner)
+### S24 MANUAL ACCEPTANCE — PASSED 17/17 (owner, 2026-09-24)
+
+Run by the owner on the Samsung S24 against the UI-remediated build (`43be39a`). Every step passed.
+
+| Step | Result |
+|---|---|
+| 1 | PASS |
+| 2 | PASS |
+| 3 | PASS |
+| 4 | PASS |
+| 5 | PASS |
+| 6 | PASS |
+| 7 | PASS |
+| 8 | PASS |
+| 9 | PASS |
+| 10 | PASS |
+| 11 | PASS |
+| 12 | PASS |
+| 13 | PASS |
+| 14 | PASS |
+| 15 | PASS |
+| 16 | PASS |
+| 17 | PASS |
+
+The steps:
+
 
 1. **A full real day using Search.** Log breakfast, lunch, snacks and dinner from Search, with the portion step. The logged numbers must equal the preview.
 2. **Recent food.** It appears with the last portion; logging it works.
@@ -258,7 +284,7 @@ This report commit is documentation only.
 - **Not changed:**
   - Phase 7 requirements and the ~500-food target: the 305 / gap 195 stays visible, and IFCT/INDB are still pending;
   - Phase 8 acceptance criteria;
-  - the §38 checkboxes.
+  - the §38 checkboxes (ticked only at acceptance, below).
 
 ### INTENTIONALLY NOT DONE
 
@@ -348,4 +374,13 @@ This report commit is documentation only.
 11. The previous day.
 12. After the keyboard is dismissed.
 
-Across all of them, confirm there is no overflow stripe anywhere. Phase 8 stays **not accepted** and the §38 boxes stay unticked until the 17-step acceptance passes.
+Across all of them, confirm there is no overflow stripe anywhere.
+
+**Outcome:** the owner confirmed Phase 8 works on the S24 after the remediation, and the 17-step acceptance above then passed on this build.
+
+### ACCEPTANCE AND FREEZE (2026-09-24)
+
+- **S24 manual acceptance:** 17/17 PASS (owner).
+- **§38 Phase 8:** all seven boxes ticked — log tables · daily rollup · timezone-correct boundaries (step 8) · snapshot macros (step 11) · EAT screen · saved meals (step 4) · quick add (step 3). Each is backed by the automated suites above and the owner's S24 run.
+- **Unchanged by acceptance:** the Phase 7 gap (305 foods, 195 short of ~500; IFCT/INDB pending) and the Phase 7 §38 boxes; no code change in this commit.
+- **Frozen:** no further Phase 8 code changes; `phase-8` is not merged into `main`.

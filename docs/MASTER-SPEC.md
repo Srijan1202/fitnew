@@ -1618,7 +1618,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 **Phase 7** — [ ] licensing confirmed · [ ] food tables with ranges · [ ] 500 foods seeded · [ ] trigram search · [ ] aliases · [ ] custom foods
 
-**Phase 8** — [ ] log tables · [ ] daily rollup · [ ] timezone-correct boundaries · [ ] snapshot macros · [ ] EAT screen · [ ] saved meals · [ ] quick add
+**Phase 8** — [x] log tables · [x] daily rollup · [x] timezone-correct boundaries · [x] snapshot macros · [x] EAT screen · [x] saved meals · [x] quick add
 
 **Phase 9** — [ ] mess tables · [ ] provider wired · [ ] **mirroring job** · [ ] enrichment by slug · [ ] mess picker · [ ] MESS screen · [ ] **resolution banner** · [ ] correction submission · [ ] all 6 endpoints tested · [ ] 9 defects tested
 
