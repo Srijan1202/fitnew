@@ -76,6 +76,11 @@ export interface MessDish {
   readonly role: DishRole;
   /** True when the source offered alternatives, e.g. "Coconut Rice / Tamarind Rice". */
   readonly alternatives: readonly string[];
+  /**
+   * Phase 10 (owner D3): each alternative's own diet class, in the same order,
+   * resolved exactly as the primary is (label, keywords, the mess's flag).
+   */
+  readonly alternativeDiets: readonly DietClass[];
   /** Ambient items present at every meal (bread, tea, jam) — deprioritised in UI. */
   readonly isAmbient: boolean;
   readonly nutrition: DishNutrition | null;

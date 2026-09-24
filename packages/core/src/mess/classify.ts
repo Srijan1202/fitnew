@@ -79,6 +79,10 @@ export function classifyDiet(name: string): DietClass {
   if (has(name, VEG_FALSE_POSITIVES)) return 'veg';
   if (has(name, MEAT_TERMS)) return 'nonveg';
   if (has(name, EGG_TERMS)) return 'egg';
+  // Phase 10 (owner D4): a name led by the word "Veg" / "Veg." ("Veg Puff",
+  // "Veg. Cutlet (2 Nos)") is vegetarian. Only after the meat and egg checks,
+  // so "Veg Egg Fried Rice" stays egg; a "Non Veg" label still wins (parse.ts).
+  if (/^\s*veg\b/i.test(name)) return 'veg';
   if (has(name, KNOWN_VEG_TERMS)) return 'veg';
   return 'unknown';
 }

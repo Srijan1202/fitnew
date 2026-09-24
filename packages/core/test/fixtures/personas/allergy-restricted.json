@@ -1,0 +1,256 @@
+{
+  "status": "ok",
+  "basis": "published",
+  "target": {
+    "share": 0.4667,
+    "kcal": 1120,
+    "protein": 65.3,
+    "carb": 135.3,
+    "fat": 32.7
+  },
+  "plates": [
+    {
+      "rank": 1,
+      "items": [
+        "white-rice x2"
+      ],
+      "macros": {
+        "kcalLow": 350,
+        "kcalHigh": 430,
+        "proteinLow": 6.4,
+        "proteinHigh": 9,
+        "carbLow": 76,
+        "carbHigh": 96,
+        "fatLow": 0.6,
+        "fatHigh": 2.4
+      },
+      "confidence": "medium",
+      "reasons": [
+        {
+          "code": "protein-short",
+          "target": 65.3,
+          "high": 9
+        },
+        {
+          "code": "kcal-within",
+          "target": 1120,
+          "high": 430
+        },
+        {
+          "code": "carb-within",
+          "target": 135.3,
+          "high": 96
+        },
+        {
+          "code": "fat-within",
+          "target": 32.7,
+          "high": 2.4
+        },
+        {
+          "code": "goal-weighting",
+          "goal": "muscle-gain"
+        },
+        {
+          "code": "top-protein-dish",
+          "dishSlug": "white-rice"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "items": [
+        "white-rice x1"
+      ],
+      "macros": {
+        "kcalLow": 175,
+        "kcalHigh": 215,
+        "proteinLow": 3.2,
+        "proteinHigh": 4.5,
+        "carbLow": 38,
+        "carbHigh": 48,
+        "fatLow": 0.3,
+        "fatHigh": 1.2
+      },
+      "confidence": "medium",
+      "reasons": [
+        {
+          "code": "protein-short",
+          "target": 65.3,
+          "high": 4.5
+        },
+        {
+          "code": "kcal-within",
+          "target": 1120,
+          "high": 215
+        },
+        {
+          "code": "carb-within",
+          "target": 135.3,
+          "high": 48
+        },
+        {
+          "code": "fat-within",
+          "target": 32.7,
+          "high": 1.2
+        },
+        {
+          "code": "goal-weighting",
+          "goal": "muscle-gain"
+        },
+        {
+          "code": "top-protein-dish",
+          "dishSlug": "white-rice"
+        }
+      ]
+    }
+  ],
+  "shortfall": {
+    "protein": {
+      "target": 65.3,
+      "gapLow": 56.3,
+      "gapHigh": 58.9,
+      "menuMax": 9,
+      "menuCanMeet": false
+    },
+    "kcal": {
+      "target": 1120,
+      "gapLow": 690,
+      "gapHigh": 770,
+      "menuMax": 430,
+      "menuCanMeet": false
+    }
+  },
+  "dishes": [
+    {
+      "dish": "phulka",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "allergen",
+          "allergen": "milk",
+          "status": "unknown"
+        }
+      ]
+    },
+    {
+      "dish": "dhal-makhani",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "allergen",
+          "allergen": "milk",
+          "status": "contains"
+        },
+        {
+          "code": "allergen",
+          "allergen": "peanut",
+          "status": "unknown"
+        }
+      ]
+    },
+    {
+      "dish": "bhindi-do-pyaza",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "allergen",
+          "allergen": "milk",
+          "status": "unknown"
+        },
+        {
+          "code": "allergen",
+          "allergen": "peanut",
+          "status": "unknown"
+        }
+      ]
+    },
+    {
+      "dish": "white-rice",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "on-plate",
+          "ranks": [
+            1,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "dish": "kara-kulambu",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "allergen",
+          "allergen": "milk",
+          "status": "unknown"
+        },
+        {
+          "code": "allergen",
+          "allergen": "peanut",
+          "status": "unknown"
+        }
+      ]
+    },
+    {
+      "dish": "rasam",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "allergen",
+          "allergen": "milk",
+          "status": "unknown"
+        },
+        {
+          "code": "allergen",
+          "allergen": "peanut",
+          "status": "unknown"
+        }
+      ]
+    },
+    {
+      "dish": "curd",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "allergen",
+          "allergen": "milk",
+          "status": "contains"
+        }
+      ]
+    },
+    {
+      "dish": "keerai-kootu",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "allergen",
+          "allergen": "milk",
+          "status": "unknown"
+        },
+        {
+          "code": "allergen",
+          "allergen": "peanut",
+          "status": "unknown"
+        }
+      ]
+    },
+    {
+      "dish": "fryums",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "allergen",
+          "allergen": "milk",
+          "status": "unknown"
+        },
+        {
+          "code": "allergen",
+          "allergen": "peanut",
+          "status": "likely"
+        }
+      ]
+    }
+  ]
+}

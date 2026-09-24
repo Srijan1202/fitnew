@@ -231,6 +231,12 @@ export function localDateOf(instant: Date, timeZone: string): string {
   return `${get('year')}-${get('month')}-${get('day')}`;
 }
 
+/** The local hour (0–23) of an instant in an IANA zone. */
+export function localHourOf(instant: Date, timeZone: string): number {
+  const h = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', hourCycle: 'h23' }).format(instant);
+  return Number(h) % 24;
+}
+
 /** Calendar arithmetic on yyyy-mm-dd, independent of any zone. */
 export function addDays(date: string, days: number): string {
   const [y, m, d] = date.split('-').map(Number) as [number, number, number];

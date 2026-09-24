@@ -1,0 +1,299 @@
+{
+  "status": "ok",
+  "basis": "published",
+  "target": {
+    "share": 1,
+    "kcal": 1100,
+    "protein": 85,
+    "carb": 120,
+    "fat": 30
+  },
+  "plates": [
+    {
+      "rank": 1,
+      "items": [
+        "tandoori-chicken x2",
+        "dhal x2",
+        "white-rice x1",
+        "banana x1"
+      ],
+      "macros": {
+        "kcalLow": 900,
+        "kcalHigh": 1300,
+        "proteinLow": 56.2,
+        "proteinHigh": 80,
+        "carbLow": 96,
+        "carbHigh": 139,
+        "fatLow": 26.5,
+        "fatHigh": 51.7
+      },
+      "confidence": "medium",
+      "reasons": [
+        {
+          "code": "protein-short",
+          "target": 85,
+          "high": 80
+        },
+        {
+          "code": "kcal-may-exceed",
+          "target": 1100,
+          "low": 900,
+          "high": 1300
+        },
+        {
+          "code": "carb-over",
+          "target": 120,
+          "low": 96,
+          "high": 139
+        },
+        {
+          "code": "fat-over",
+          "target": 30,
+          "low": 26.5,
+          "high": 51.7
+        },
+        {
+          "code": "goal-weighting",
+          "goal": "muscle-gain"
+        },
+        {
+          "code": "top-protein-dish",
+          "dishSlug": "tandoori-chicken"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "items": [
+        "tandoori-chicken x2",
+        "dhal x2",
+        "roti x1",
+        "white-rice x1"
+      ],
+      "macros": {
+        "kcalLow": 900,
+        "kcalHigh": 1305,
+        "proteinLow": 57.7,
+        "proteinHigh": 82.1,
+        "carbLow": 92,
+        "carbHigh": 134,
+        "fatLow": 27.1,
+        "fatHigh": 54.2
+      },
+      "confidence": "medium",
+      "reasons": [
+        {
+          "code": "protein-short",
+          "target": 85,
+          "high": 82.1
+        },
+        {
+          "code": "kcal-may-exceed",
+          "target": 1100,
+          "low": 900,
+          "high": 1305
+        },
+        {
+          "code": "carb-over",
+          "target": 120,
+          "low": 92,
+          "high": 134
+        },
+        {
+          "code": "fat-over",
+          "target": 30,
+          "low": 27.1,
+          "high": 54.2
+        },
+        {
+          "code": "goal-weighting",
+          "goal": "muscle-gain"
+        },
+        {
+          "code": "top-protein-dish",
+          "dishSlug": "tandoori-chicken"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "items": [
+        "tandoori-chicken x2",
+        "dhal x1",
+        "rasam x1",
+        "white-rice x2"
+      ],
+      "macros": {
+        "kcalLow": 900,
+        "kcalHigh": 1280,
+        "proteinLow": 53.4,
+        "proteinHigh": 76.5,
+        "carbLow": 102,
+        "carbHigh": 146,
+        "fatLow": 24.6,
+        "fatHigh": 47.9
+      },
+      "confidence": "medium",
+      "reasons": [
+        {
+          "code": "protein-short",
+          "target": 85,
+          "high": 76.5
+        },
+        {
+          "code": "kcal-may-exceed",
+          "target": 1100,
+          "low": 900,
+          "high": 1280
+        },
+        {
+          "code": "carb-over",
+          "target": 120,
+          "low": 102,
+          "high": 146
+        },
+        {
+          "code": "fat-over",
+          "target": 30,
+          "low": 24.6,
+          "high": 47.9
+        },
+        {
+          "code": "goal-weighting",
+          "goal": "muscle-gain"
+        },
+        {
+          "code": "top-protein-dish",
+          "dishSlug": "tandoori-chicken"
+        }
+      ]
+    }
+  ],
+  "shortfall": {
+    "protein": {
+      "target": 85,
+      "gapLow": 5,
+      "gapHigh": 28.8,
+      "menuMax": 95,
+      "menuCanMeet": true
+    },
+    "kcal": null
+  },
+  "dishes": [
+    {
+      "dish": "roti",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "on-plate",
+          "ranks": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "dish": "dhal",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "on-plate",
+          "ranks": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "dish": "urapadai",
+      "diet": "unknown",
+      "reasons": [
+        {
+          "code": "no-estimate"
+        }
+      ]
+    },
+    {
+      "dish": "chutney",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "not-a-plate-dish",
+          "role": "condiment"
+        }
+      ]
+    },
+    {
+      "dish": "white-rice",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "on-plate",
+          "ranks": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "dish": "sambar",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "not-chosen"
+        }
+      ]
+    },
+    {
+      "dish": "rasam",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "on-plate",
+          "ranks": [
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "dish": "butter-milk",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "ambient"
+        }
+      ]
+    },
+    {
+      "dish": "tandoori-chicken",
+      "diet": "nonveg",
+      "reasons": [
+        {
+          "code": "on-plate",
+          "ranks": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "dish": "banana",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "on-plate",
+          "ranks": [
+            1
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -144,6 +144,7 @@ export function parseMenuString(raw: string, options: ParseOptions): MessDish[] 
       diet,
       role,
       alternatives: alternatives.map(toDisplayName),
+      alternativeDiets: alternatives.map((a) => resolveDiet(a, label, options.messServesNonVeg)),
       isAmbient: isAmbient(primary),
       nutrition: null, // filled by the enrichment layer, never by the parser
     });

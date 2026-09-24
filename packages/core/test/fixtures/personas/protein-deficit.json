@@ -1,0 +1,290 @@
+{
+  "status": "ok",
+  "basis": "published",
+  "target": {
+    "share": 1,
+    "kcal": 900,
+    "protein": 120,
+    "carb": 60,
+    "fat": 22
+  },
+  "plates": [
+    {
+      "rank": 1,
+      "items": [
+        "loose-curd x2",
+        "chenna-masala x1",
+        "sambar x1",
+        "rasam x2"
+      ],
+      "macros": {
+        "kcalLow": 425,
+        "kcalHigh": 715,
+        "proteinLow": 20.5,
+        "proteinHigh": 36,
+        "carbLow": 50,
+        "carbHigh": 81,
+        "fatLow": 14,
+        "fatHigh": 30
+      },
+      "confidence": "medium",
+      "reasons": [
+        {
+          "code": "protein-short",
+          "target": 120,
+          "high": 36
+        },
+        {
+          "code": "kcal-within",
+          "target": 900,
+          "high": 715
+        },
+        {
+          "code": "carb-over",
+          "target": 60,
+          "low": 50,
+          "high": 81
+        },
+        {
+          "code": "fat-over",
+          "target": 22,
+          "low": 14,
+          "high": 30
+        },
+        {
+          "code": "goal-weighting",
+          "goal": "muscle-gain"
+        },
+        {
+          "code": "top-protein-dish",
+          "dishSlug": "loose-curd"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "items": [
+        "loose-curd x2",
+        "chenna-masala x1",
+        "sambar x1",
+        "rasam x1"
+      ],
+      "macros": {
+        "kcalLow": 395,
+        "kcalHigh": 650,
+        "proteinLow": 19.5,
+        "proteinHigh": 33.5,
+        "carbLow": 46,
+        "carbHigh": 72,
+        "fatLow": 13,
+        "fatHigh": 27.5
+      },
+      "confidence": "medium",
+      "reasons": [
+        {
+          "code": "protein-short",
+          "target": 120,
+          "high": 33.5
+        },
+        {
+          "code": "kcal-within",
+          "target": 900,
+          "high": 650
+        },
+        {
+          "code": "carb-over",
+          "target": 60,
+          "low": 46,
+          "high": 72
+        },
+        {
+          "code": "fat-over",
+          "target": 22,
+          "low": 13,
+          "high": 27.5
+        },
+        {
+          "code": "goal-weighting",
+          "goal": "muscle-gain"
+        },
+        {
+          "code": "top-protein-dish",
+          "dishSlug": "loose-curd"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "items": [
+        "loose-curd x2",
+        "chenna-masala x1",
+        "sambar x1",
+        "poriyal x1"
+      ],
+      "macros": {
+        "kcalLow": 420,
+        "kcalHigh": 700,
+        "proteinLow": 20,
+        "proteinHigh": 34,
+        "carbLow": 49,
+        "carbHigh": 76,
+        "fatLow": 14,
+        "fatHigh": 31
+      },
+      "confidence": "medium",
+      "reasons": [
+        {
+          "code": "protein-short",
+          "target": 120,
+          "high": 34
+        },
+        {
+          "code": "kcal-within",
+          "target": 900,
+          "high": 700
+        },
+        {
+          "code": "carb-over",
+          "target": 60,
+          "low": 49,
+          "high": 76
+        },
+        {
+          "code": "fat-over",
+          "target": 22,
+          "low": 14,
+          "high": 31
+        },
+        {
+          "code": "goal-weighting",
+          "goal": "muscle-gain"
+        },
+        {
+          "code": "top-protein-dish",
+          "dishSlug": "loose-curd"
+        }
+      ]
+    }
+  ],
+  "shortfall": {
+    "protein": {
+      "target": 120,
+      "gapLow": 84,
+      "gapHigh": 99.5,
+      "menuMax": 62,
+      "menuCanMeet": false
+    },
+    "kcal": {
+      "target": 900,
+      "gapLow": 185,
+      "gapHigh": 475,
+      "menuMax": 2010,
+      "menuCanMeet": true
+    }
+  },
+  "dishes": [
+    {
+      "dish": "poori",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "not-chosen"
+        }
+      ]
+    },
+    {
+      "dish": "chenna-masala",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "on-plate",
+          "ranks": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "dish": "jeera-rice",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "not-chosen"
+        }
+      ]
+    },
+    {
+      "dish": "poriyal",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "on-plate",
+          "ranks": [
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "dish": "white-rice",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "not-chosen"
+        }
+      ]
+    },
+    {
+      "dish": "sambar",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "on-plate",
+          "ranks": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "dish": "rasam",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "on-plate",
+          "ranks": [
+            1,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "dish": "loose-curd",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "on-plate",
+          "ranks": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "dish": "seasonal-fruit",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "not-chosen"
+        }
+      ]
+    }
+  ]
+}

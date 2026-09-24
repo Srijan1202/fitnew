@@ -110,7 +110,7 @@ for (const diet of ['non-vegetarian', 'vegetarian'] as const) {
     console.log(`     ${item.servings} × ${item.servingLabel.padEnd(14)} ${item.name}`);
   }
   console.log(`     ≈ ${formatEstimate(best.macros.kcalLow, best.macros.kcalHigh, ' kcal')} · ${formatEstimate(best.macros.proteinLow, best.macros.proteinHigh, ' g protein')}  (${best.confidence} confidence)`);
-  for (const reason of best.reasons) console.log(`     · ${reason}`);
+  for (const reason of best.reasons) console.log(`     · ${JSON.stringify(reason)}`);
   console.log('');
 }
 
