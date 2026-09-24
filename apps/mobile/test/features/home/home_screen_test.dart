@@ -17,6 +17,7 @@ import 'package:fitos/features/nutrition/presentation/controllers/food_log_provi
 import 'package:fitos/features/home/presentation/widgets/name_prompt.dart';
 import 'package:fitos/features/profile/domain/entities/profile.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
+import 'package:fitos/features/today/domain/today.dart';
 import 'package:fitos/features/training/presentation/controllers/program_controller.dart';
 import 'package:fitos/features/workout/domain/entities/workout.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,7 @@ import '../../support/fake_exercise_repository.dart';
 import '../../support/fake_food_log_api.dart';
 import '../../support/fake_health_provider.dart';
 import '../../support/fake_profile_repository.dart';
+import '../../support/fake_today_api.dart';
 import '../../support/fake_training_repository.dart';
 import '../../support/fake_workout_api.dart';
 import '../../support/workout_overrides.dart';
@@ -37,8 +39,10 @@ import '../../support/workout_overrides.dart';
 /// Phase 6.5 — the Home screen (Part J): every health state renders
 /// honestly (no Health Connect, not connected, partial, all), food says
 /// "Not logged yet", sleep and body say why when missing, the carousel
-/// follows the session (ready → in progress → done), and the Health Data
-/// screen shows grants per category.
+/// follows the session (the server's start card → resume on this phone),
+/// and the Health Data screen shows grants per category. Phase 11: the
+/// "what next" decisions are the server's TODAY plan (scripted here); the
+/// device keeps resume, sleep, steps and Health Connect (P6).
 void main() {
   late AppDatabase db;
   late FakeWorkoutApi api;
@@ -46,6 +50,15 @@ void main() {
   late FakeAuthRepository auth;
   late FakeProfileRepository profile;
   late FakeFoodLogApi foodLog;
+  late FakeTodayApi today;
+
+  /// The server's start card for the fake's training day (Legs).
+  final startLegs = FakeTodayApi.action(
+    TodayKind.startWorkout,
+    id: '00000000-0000-4000-8000-0000000000aa',
+    headline: 'Legs is ready',
+    detail: '2 movements · about 18 min.',
+  );
 
   setUp(() {
     db = AppDatabase.inMemory();
@@ -53,6 +66,13 @@ void main() {
     health = FakeHealthProvider();
     profile = FakeProfileRepository();
     foodLog = FakeFoodLogApi();
+    today = FakeTodayApi(date: '2026-09-21')
+      ..plan = TodayPlan(
+        date: '2026-09-21',
+        generatedAt: '2026-09-21T06:30:00.000Z',
+        engineVersion: 'today-1',
+        actions: [startLegs],
+      );
     auth = FakeAuthRepository()
       ..restoreResult = AuthState.signedIn(testProfile);
   });
@@ -105,12 +125,15 @@ void main() {
         // Pinned: the engine rightly stops "eat protein" from 22:00, so a real
         // clock made J16 fail between 22:00 and midnight (found 2026-09-24).
         localHourProvider.overrideWithValue(12),
-        ...workoutOverrides(db, api, foodLog: foodLog),
+        ...workoutOverrides(db, api, foodLog: foodLog, today: today),
         ...healthOverrides(health),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
     );
   }
+
+  ProviderContainer container(WidgetTester tester) =>
+      ProviderScope.containerOf(tester.element(find.byType(HomeScreen)));
 
   Text textOf(WidgetTester tester, String key) =>
       tester.widget<Text>(find.byKey(ValueKey(key)));
@@ -232,17 +255,20 @@ void main() {
     expect(find.byKey(const ValueKey('home.recovery.connect')), findsNothing);
     expect(find.byKey(const ValueKey('home.weight')), findsNothing);
     expect(
-      find.byKey(const ValueKey('home.more.connect-health')),
+      find.byKey(const ValueKey('home.suggestion.connect-health')),
       findsNothing,
     );
     // The workout is still there: Legs, ready.
     expect(textOf(tester, 'home.workout').data, 'Legs');
-    expect(find.byKey(const ValueKey('home.suggestion.start')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('home.suggestion.start-workout')),
+      findsOneWidget,
+    );
     expect(find.text('Training volume →'), findsOneWidget);
   });
 
   testWidgets(
-      'not connected: "Connect Health data" in the blocks, in recovery, and in More for you → opens Health Data',
+      'not connected: "Connect Health data" in the blocks, in recovery, and as a card (P6: by its band) → opens Health Data',
       (tester) async {
     health.connection_ = available;
     await tester.pumpWidget(app());
@@ -252,11 +278,20 @@ void main() {
       textOf(tester, 'home.recovery.empty').data,
       'Connect Health data to see recovery metrics.',
     );
-    await reveal(
-      tester,
-      find.byKey(const ValueKey('home.more.connect-health')),
+    // No "More for you" any more; the connect card sits in the carousel.
+    expect(find.text('More for you'), findsNothing);
+    final connect =
+        container(tester).read(homeNextMovesProvider).map((s) => s.id).toList();
+    expect(connect, ['start-workout', 'connect-health']);
+    await tester.fling(
+      find.byKey(const ValueKey('home.carousel')),
+      const Offset(-600, 0),
+      1500,
     );
-    await tester.tap(find.byKey(const ValueKey('home.more.connect-health')));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('home.suggestion.connect-health.action')),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(HealthDataScreen), findsOneWidget);
     expect(textOf(tester, 'health.status').data, 'Not connected');
@@ -366,17 +401,21 @@ void main() {
   });
 
   testWidgets(
-      'starting a workout moves the carousel to "in progress"; the Workout block follows',
+      'starting a workout from the server\'s start card: accepted, the session opens; back on Home "resume" replaces it',
       (tester) async {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
-    expect(textOf(tester, 'home.suggestion.start.title').data, 'Legs is ready');
     expect(
-      textOf(tester, 'home.suggestion.start.subtitle').data,
-      '2 movements · ~18 min',
+      textOf(tester, 'home.suggestion.start-workout.title').data,
+      'Legs is ready',
     );
-    await tester
-        .tap(find.byKey(const ValueKey('home.suggestion.start.action')));
+    expect(
+      textOf(tester, 'home.suggestion.start-workout.subtitle').data,
+      '2 movements · about 18 min.',
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('home.suggestion.start-workout.action')),
+    );
     await tester.pumpAndSettle();
     expect(find.textContaining('SESSION '), findsOneWidget);
     // Back on Home: the phone's active session drives the card.
@@ -388,11 +427,15 @@ void main() {
     );
     expect(textOf(tester, 'home.workout').data, 'Legs');
     expect(find.text('In progress · 0 sets'), findsOneWidget);
-    expect(find.byKey(const ValueKey('home.suggestion.start')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('home.suggestion.start-workout')),
+      findsNothing,
+    );
+    expect(today.sent, contains('${startLegs.id}:accepted'));
   });
 
   testWidgets(
-      'a completed workout: the "done" card with the summary, the Workout block says Completed',
+      'a completed workout: the Workout block says Completed; no "done" card any more (P6)',
       (tester) async {
     api.todayResponse = api.todayResponse
         .copyWith(completedSessionId: '00000000-0000-4000-8000-000000000042');
@@ -419,20 +462,18 @@ void main() {
         prs: [],
       ),
     );
+    // The server no longer suggests starting a session that is done.
+    today.plan = const TodayPlan(
+      date: '2026-09-21',
+      generatedAt: '2026-09-21T06:30:00.000Z',
+      engineVersion: 'today-1',
+      actions: [],
+    );
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
-    expect(textOf(tester, 'home.suggestion.done.title').data, 'Legs done');
-    expect(
-      textOf(tester, 'home.suggestion.done.subtitle').data,
-      '5 sets · 1800 kg moved',
-    );
     expect(find.text('Completed'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('home.suggestion.done.action')));
-    await tester.pumpAndSettle();
-    expect(
-      find.text('SUMMARY 00000000-0000-4000-8000-000000000042'),
-      findsOneWidget,
-    );
+    expect(find.byKey(const ValueKey('home.suggestion.done')), findsNothing);
+    expect(find.byKey(const ValueKey('home.carousel')), findsNothing);
   });
 
   testWidgets(
@@ -620,7 +661,7 @@ void main() {
     });
 
     testWidgets(
-        'J16: "protein low" fires only when even the HIGH end is under 75 % of the target',
+        'J16: Home carries the day as a range, high end for decisions — the eat decision itself is the server\'s now (Phase 11)',
         (tester) async {
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
@@ -632,9 +673,11 @@ void main() {
       final container =
           ProviderScope.containerOf(tester.element(find.byType(HomeScreen)));
       expect(container.read(homeNutritionProvider).proteinG, 75);
+      // No device "eat" rule remains (D2): the server's range-aware
+      // eat-protein (high end < 75 %) is covered by the core and API suites.
       expect(
         container.read(homeSuggestionsProvider).map((s) => s.id),
-        contains('eat-protein'),
+        isNot(anyOf(contains('eat-protein'), contains('eat-meal'))),
       );
     });
 

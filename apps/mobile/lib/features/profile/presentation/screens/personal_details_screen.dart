@@ -10,6 +10,7 @@ import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../../health/domain/entities/health.dart';
 import '../../../health/presentation/controllers/health_providers.dart';
 import '../../../onboarding/presentation/widgets/onboarding_step.dart';
+import '../../../today/presentation/today_providers.dart';
 import '../../data/profile_repository.dart';
 import '../../domain/entities/profile.dart';
 import '../../domain/entities/vocabulary.dart';
@@ -107,6 +108,13 @@ class _PersonalDetailsScreenState extends ConsumerState<PersonalDetailsScreen> {
       _failure = failure;
     });
     if (failure != null) return;
+    // Phase 11: a weight saved on the server is the evidence TODAY's
+    // "log weight" action waits for (and the plan follows it).
+    if (change.weightKg != null) {
+      ref
+          .read(weightSavedOnProvider.notifier)
+          .mark(ref.read(localTodayProvider));
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         key: const ValueKey('details.saved'),

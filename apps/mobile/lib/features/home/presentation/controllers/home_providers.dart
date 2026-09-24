@@ -8,6 +8,7 @@ import '../../../health/domain/entities/health.dart';
 import '../../../health/presentation/controllers/health_providers.dart';
 import '../../../nutrition/presentation/controllers/food_log_providers.dart';
 import '../../../profile/data/profile_repository.dart';
+import '../../../today/presentation/today_providers.dart';
 import '../../../training/presentation/controllers/program_controller.dart';
 import '../../../workout/domain/entities/workout.dart';
 import '../../../workout/presentation/controllers/workout_providers.dart';
@@ -145,16 +146,33 @@ final homeContextProvider = Provider<HomeContext>((ref) {
   );
 });
 
-/// The engine's ordered list for the current context.
+/// The device-only suggestions for the current context (resume, sleep,
+/// steps, Health Connect).
 final homeSuggestionsProvider = Provider<List<Suggestion>>((ref) {
   return const HomeSuggestionEngine().evaluate(ref.watch(homeContextProvider));
 });
 
-/// True while the first `/today` answer is still in flight (so Home shows
-/// a skeleton instead of an empty carousel).
+/// "Your next move" (Phase 11): the server's TODAY actions — live, or the
+/// cached plan for today while offline, labelled — merged with the device
+/// suggestions by band, at most four.
+final homeNextMovesProvider = Provider<List<Suggestion>>((ref) {
+  final view = ref.watch(todayPlanProvider).value;
+  final plan = view?.plan;
+  return HomeSuggestionEngine.merge(
+    plan == null ? const [] : ref.watch(visibleTodayActionsProvider),
+    ref.watch(homeSuggestionsProvider),
+    planDate: plan?.date ?? ref.watch(localTodayProvider),
+    cached: view?.source == TodayPlanSource.cached,
+  );
+});
+
+/// True while the first `/training/today` or `/today` answer is still in
+/// flight (so Home shows a skeleton instead of an empty carousel).
 final homeLoadingProvider = Provider<bool>((ref) {
   final today = ref.watch(todayProvider);
-  return today.isLoading && today.value == null;
+  final plan = ref.watch(todayPlanProvider);
+  return (today.isLoading && today.value == null) ||
+      (plan.isLoading && plan.value == null);
 });
 
 /// The server-side failure Home should say out loud (Phase 6.6 Gate 6):

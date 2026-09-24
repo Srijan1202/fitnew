@@ -6,6 +6,7 @@ import 'core/theme/app_theme.dart';
 import 'features/nutrition/presentation/controllers/food_log_providers.dart';
 import 'features/workout/presentation/controllers/workout_providers.dart';
 import 'features/health/presentation/controllers/health_providers.dart';
+import 'features/today/presentation/today_providers.dart';
 
 /// Root widget. Owns the theme; the router comes from Riverpod so the auth
 /// guard can read the same provider the screens do.
@@ -19,6 +20,10 @@ class FitOSApp extends ConsumerWidget {
     ref.watch(syncCoordinatorProvider);
     // …and the food-log queue, with its own engine (Phase 8).
     ref.watch(nutritionSyncCoordinatorProvider);
+    // …and TODAY's events, with a third, separate queue (Phase 11, D9);
+    // `completed` goes once the server holds the evidence.
+    ref.watch(todayCoordinatorProvider);
+    ref.watch(todayCompletionWatcherProvider);
     ref.watch(healthRefreshCoordinatorProvider);
 
     return MaterialApp.router(

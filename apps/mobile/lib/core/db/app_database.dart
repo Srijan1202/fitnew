@@ -140,6 +140,52 @@ class NutritionSyncQueue extends Table {
   TextColumn get createdAt => text()();
 }
 
+/// Phase 11: TODAY events the server has not confirmed yet, drained FIFO by
+/// the TodayEventSync — separate from the workout [SyncQueue] and the
+/// [NutritionSyncQueue] (D9). A row leaves when the server answers for good:
+/// stored or replayed (201 / 200), or refused in a way a retry cannot change
+/// (409, 422, 404), or after its retry budget.
+class TodayEventQueue extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// Minted once when the event happened; every retry reuses it.
+  TextColumn get clientEventId => text()();
+  TextColumn get recommendationId => text()();
+
+  /// `shown` | `opened` | `accepted` | `dismissed` | `completed`.
+  TextColumn get event => text()();
+
+  /// When it happened on this phone (UTC ISO) — sent as is, never "now".
+  TextColumn get occurredAt => text()();
+  IntColumn get attempts => integer().withDefault(const Constant(0))();
+  TextColumn get nextAttemptAt => text().nullable()();
+  TextColumn get lastError => text().nullable()();
+  TextColumn get createdAt => text()();
+}
+
+/// Phase 11: every TODAY event recorded on this phone, one per (action,
+/// event). It is what makes `shown` go once per action however often Home
+/// rebuilds, and what the phone's own state machine reads (a dismissed
+/// card stays hidden, `completed` waits for `accepted`). Kept after the
+/// queue row leaves; pruned after a week.
+class TodayEventLedger extends Table {
+  TextColumn get recommendationId => text()();
+  TextColumn get event => text()();
+  TextColumn get clientEventId => text()();
+  TextColumn get kind => text()();
+  TextColumn get subjectKey => text()();
+
+  /// The action's local date (the server's `generated_for`).
+  TextColumn get localDate => text()();
+  TextColumn get occurredAt => text()();
+
+  /// `queued` | `sent` | `rejected` | `failed`.
+  TextColumn get status => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {recommendationId, event};
+}
+
 @DriftDatabase(
   tables: [
     LocalSessions,
@@ -149,6 +195,8 @@ class NutritionSyncQueue extends Table {
     CachedJson,
     LocalFoodLogs,
     NutritionSyncQueue,
+    TodayEventQueue,
+    TodayEventLedger,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -164,13 +212,23 @@ class AppDatabase extends _$AppDatabase {
         }),
       );
 
-  factory AppDatabase.inMemory() => AppDatabase(NativeDatabase.memory());
+  /// Streams close synchronously here: Drift otherwise keeps a closed
+  /// query's cache for one zero-length timer, which a widget test sees as a
+  /// timer still pending after its tree is gone (Phase 11: Home now listens
+  /// to the TODAY ledger).
+  factory AppDatabase.inMemory() => AppDatabase(
+        DatabaseConnection(
+          NativeDatabase.memory(),
+          closeStreamsSynchronously: true,
+        ),
+      );
 
   /// 1 — Phase 5 (workout, sync queue, cache). 2 — Phase 8 (food logs and
-  /// their own queue). An upgrade only ADDS tables: a phone that still holds
-  /// an unsent workout keeps it.
+  /// their own queue). 3 — Phase 11 (TODAY events: queue and ledger). An
+  /// upgrade only ADDS tables: a phone that still holds an unsent workout or
+  /// food log keeps it.
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -179,6 +237,10 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) {
             await m.createTable(localFoodLogs);
             await m.createTable(nutritionSyncQueue);
+          }
+          if (from < 3) {
+            await m.createTable(todayEventQueue);
+            await m.createTable(todayEventLedger);
           }
         },
       );

@@ -1,14 +1,15 @@
 import '../../health/domain/entities/health.dart';
-import '../../workout/domain/entities/workout.dart';
+import '../../today/domain/today.dart';
 import 'home_context.dart';
 
-/// Phase 6.5 — "what should I do next?", deterministically. Twelve rules
-/// over [HomeContext], each with a fixed priority band taken from
-/// MASTER-SPEC §16.1 so the ordering matches the Phase 11 engine's
-/// intent; ties keep rule order. No LLM, no score shown to the user —
-/// the priority only orders. Every suggestion carries the reason it
-/// fired. Rules never fire on missing data: no steps → no movement card,
-/// no sleep → no recovery card, nothing logged → no food card.
+/// Phase 6.5, shrunk by Phase 11 (ADR-017, D2/D13): the rules that need data
+/// only this phone has — the session open here, Health Connect sleep and
+/// steps, the Health Connect connection. Every other "what next?" decision
+/// (deload, start, eat, progress, neglect, rest day, records, weigh-in,
+/// injured limitation) is the SERVER's TODAY plan; the old device copies of
+/// those, and the Home-only "done" and "volume" cards, are gone (P6).
+/// Deterministic, no LLM; the priority only orders and is never shown;
+/// rules never fire on missing data.
 class HomeSuggestionEngine {
   const HomeSuggestionEngine();
 
@@ -20,25 +21,17 @@ class HomeSuggestionEngine {
   static const moveAfterHour = 15;
   static const moveLateHour = 19;
 
-  /// The whole ordered list; the screen splits it into the carousel and
-  /// "More for you" with [carousel] / [more].
+  /// The most "next move" cards Home shows (§16.1).
+  static const maxCards = 4;
+
+  /// The device-only suggestions, ordered by band (ties keep rule order).
   List<Suggestion> evaluate(HomeContext c) {
     final out = <Suggestion>[
-      ...?_deload(c),
       ...?_resume(c),
-      ...?_start(c),
-      ...?_protein(c),
-      ...?_calories(c),
-      ...?_done(c),
-      ...?_neglect(c),
       ...?_recover(c),
-      ...?_restDay(c),
-      ...?_pr(c),
-      ...?_volume(c),
       ...?_move(c),
       ...?_connect(c),
     ];
-    // Stable: equal priorities keep the rule order above.
     final indexed = out.indexed.toList()
       ..sort((a, b) {
         final p = b.$2.priority.compareTo(a.$2.priority);
@@ -47,37 +40,40 @@ class HomeSuggestionEngine {
     return [for (final (_, s) in indexed) s];
   }
 
-  /// The top of the list that belongs in the carousel (at most four).
-  static List<Suggestion> carousel(List<Suggestion> all) =>
-      all.where((s) => s.surface == SuggestionSurface.primary).take(4).toList();
-
-  /// Everything else, for "More for you" (at most five).
-  static List<Suggestion> more(List<Suggestion> all) {
-    final shown = carousel(all).toSet();
-    return all.where((s) => !shown.contains(s)).take(5).toList();
+  /// "Your next move": the server's TODAY actions and the device-only
+  /// suggestions in one list by band — ties to the server's actions first
+  /// (in the server's rank order), then the device rules' order — capped at
+  /// four (plan §6). While a session is open on this phone the server's
+  /// "start" card gives way to "resume": the session it asks for is running.
+  static List<Suggestion> merge(
+    List<TodayAction> server,
+    List<Suggestion> device, {
+    required String planDate,
+    bool cached = false,
+  }) {
+    final sessionOpen =
+        device.any((s) => s.type == SuggestionType.resumeWorkout);
+    final fromServer = <Suggestion>[
+      for (final a in [...server]..sort((x, y) => x.rank.compareTo(y.rank)))
+        if (a.kind != null &&
+            !(sessionOpen && a.kind == TodayKind.startWorkout))
+          Suggestion.today(a, planDate: planDate, cached: cached),
+    ];
+    final all = [
+      for (final (i, s) in fromServer.indexed) (s, 0, i),
+      for (final (i, s) in device.indexed) (s, 1, i),
+    ]..sort((a, b) {
+        final p = b.$1.priority.compareTo(a.$1.priority);
+        if (p != 0) return p;
+        final side = a.$2.compareTo(b.$2);
+        return side != 0 ? side : a.$3.compareTo(b.$3);
+      });
+    return [for (final (s, _, _) in all) s].take(maxCards).toList();
   }
 
   /* --------------------------------------------------------- rules -- */
 
-  // 10. Deload offered → 95 (§16.1: never buried under a meal tip).
-  List<Suggestion>? _deload(HomeContext c) {
-    final d = c.today?.deload;
-    if (d == null || d.state != DeloadStatus.offered) return null;
-    return [
-      Suggestion(
-        id: 'deload',
-        type: SuggestionType.deload,
-        priority: 95,
-        title: 'Take a lighter week?',
-        subtitle: d.reason,
-        reason:
-            'A deload has been offered on your programme. It is never applied until you accept it.',
-        action: SuggestionAction.viewPlan,
-      ),
-    ];
-  }
-
-  // 1. Active workout → resume.
+  // Active workout on this phone → resume (92).
   List<Suggestion>? _resume(HomeContext c) {
     final s = c.activeSession;
     if (s == null) return null;
@@ -95,118 +91,7 @@ class HomeSuggestionEngine {
     ];
   }
 
-  // 2. Scheduled workout not started → start (§16.1 90).
-  List<Suggestion>? _start(HomeContext c) {
-    final t = c.today;
-    if (t == null || t.isRest || c.activeSession != null) return null;
-    if (t.completedSessionId != null || c.completedToday != null) return null;
-    final sets = t.exercises.fold<int>(0, (n, x) => n + x.targets.length);
-    final minutes = (sets * 3.5).round();
-    return [
-      Suggestion(
-        id: 'start',
-        type: SuggestionType.startWorkout,
-        priority: 90,
-        title: '${t.sessionName ?? 'Session'} is ready',
-        subtitle: '${t.exercises.length} movements · ~$minutes min',
-        reason: "Today's session on your programme has not been started.",
-        action: SuggestionAction.startWorkout,
-      ),
-    ];
-  }
-
-  // 4. Protein well below target with the day left → 88 (§16.1).
-  List<Suggestion>? _protein(HomeContext c) {
-    final n = c.nutrition;
-    final target = c.targets?.proteinG;
-    if (!n.logged || n.proteinG == null || target == null) return null;
-    if (c.hourOfDay >= 22) return null;
-    final left = target - n.proteinG!;
-    if (n.proteinG! >= target * 0.75) return null;
-    return [
-      Suggestion(
-        id: 'eat-protein',
-        type: SuggestionType.eatProtein,
-        priority: 88,
-        title: '$left g protein left today',
-        subtitle: 'Your next meal can close the gap',
-        reason:
-            'Protein logged is below 75% of your $target g target with the day still ahead.',
-        action: SuggestionAction.logFood,
-      ),
-    ];
-  }
-
-  // 5. Calories left with protein on track → 75 (§16.1 eat-meal; XOR protein).
-  List<Suggestion>? _calories(HomeContext c) {
-    final n = c.nutrition;
-    final t = c.targets;
-    if (!n.logged || n.kcal == null || t == null) return null;
-    if (c.hourOfDay >= 22) return null;
-    final proteinOk = n.proteinG != null && n.proteinG! >= t.proteinG * 0.75;
-    final left = t.kcal - n.kcal!;
-    if (!proteinOk || left <= 250) return null;
-    return [
-      Suggestion(
-        id: 'eat-meal',
-        type: SuggestionType.eatCalories,
-        priority: 75,
-        title: '$left kcal left today',
-        subtitle: 'Protein is on track — a normal meal fits',
-        reason:
-            'More than 250 kcal of your ${t.kcal} kcal target remain and protein is on track.',
-        action: SuggestionAction.logFood,
-      ),
-    ];
-  }
-
-  // 3. Workout completed → summary / recovery context.
-  List<Suggestion>? _done(HomeContext c) {
-    final s = c.completedToday;
-    final id = s?.id ?? c.today?.completedSessionId;
-    if (id == null || c.activeSession != null) return null;
-    final prs = s?.summary?.prs.length ?? 0;
-    return [
-      Suggestion(
-        id: 'done',
-        type: SuggestionType.workoutDone,
-        priority: 70,
-        title: '${s?.name ?? c.today?.sessionName ?? 'Session'} done',
-        subtitle: s?.summary == null
-            ? 'See the summary'
-            : '${s!.summary!.workingSets} sets · ${_kg(s.summary!.tonnageKg)} kg moved${prs > 0 ? ' · $prs record${prs == 1 ? '' : 's'}' : ''}',
-        reason: "Today's session is complete; the rest of the day is recovery.",
-        action: SuggestionAction.viewSummary,
-        metadata: {'sessionId': id},
-      ),
-    ];
-  }
-
-  // 9. Neglected muscles → 68 (§16.1 muscle-neglected).
-  List<Suggestion>? _neglect(HomeContext c) {
-    final n = c.today?.neglected ?? const [];
-    if (n.isEmpty) return null;
-    final first = n.first;
-    final names = n.map((m) => m.muscle.label).join(', ');
-    return [
-      Suggestion(
-        id: 'neglect',
-        type: SuggestionType.neglect,
-        priority: 68,
-        title: n.length == 1
-            ? '${first.muscle.label} has been waiting'
-            : '$names have been waiting',
-        subtitle: first.daysSince == null
-            ? 'No working set yet this block'
-            : '${first.daysSince} days since a working set',
-        reason:
-            'Muscles your programme owns have had no working set in six days.',
-        action: SuggestionAction.viewPlan,
-      ),
-    ];
-  }
-
-  // 7. Sleep available and meaningfully low → 65 (owner D5, advisory).
+  // Sleep available and meaningfully low → 65 (owner D5, advisory).
   List<Suggestion>? _recover(HomeContext c) {
     final sleep = c.health?.sleep;
     if (sleep == null || !sleep.isAvailable) return null;
@@ -227,78 +112,8 @@ class HomeSuggestionEngine {
     ];
   }
 
-  // §16.2: a rest day is never a shrug → 60.
-  List<Suggestion>? _restDay(HomeContext c) {
-    final t = c.today;
-    if (t == null || !t.isRest || c.activeSession != null) return null;
-    // §16.1: deload suppresses rest-day.
-    if (t.deload.state == DeloadStatus.offered) return null;
-    return [
-      Suggestion(
-        id: 'rest-day',
-        type: SuggestionType.restDay,
-        priority: 60,
-        title: 'Rest day',
-        subtitle: t.programId == null
-            ? 'No programme yet'
-            : 'Recovery is part of the programme',
-        reason: 'Nothing is scheduled today.',
-        action: SuggestionAction.viewPlan,
-      ),
-    ];
-  }
-
-  // 11. New PR today → 50 (§16.1 celebrate-pr).
-  List<Suggestion>? _pr(HomeContext c) {
-    final prs = c.completedToday?.summary?.prs ?? const <PersonalRecord>[];
-    if (prs.isEmpty) return null;
-    final best = prs.first;
-    return [
-      Suggestion(
-        id: 'pr',
-        type: SuggestionType.celebratePr,
-        priority: 50,
-        title: 'New record on ${best.exerciseName}',
-        subtitle: best.reason,
-        reason: '${prs.length} record${prs.length == 1 ? '' : 's'} set today.',
-        action: SuggestionAction.viewSummary,
-        metadata: {'sessionId': c.completedToday!.id},
-      ),
-    ];
-  }
-
-  // 12. Volume needs attention → 45.
-  List<Suggestion>? _volume(HomeContext c) {
-    final v = c.volume;
-    if (v == null || v.weeks.isEmpty) return null;
-    final week = v.weeks.last;
-    MuscleWeek? pick(LandmarkStatus s) {
-      for (final m in week.muscles) {
-        if (m.owned && m.status == s) return m;
-      }
-      return null;
-    }
-
-    final atMrv = pick(LandmarkStatus.atMrv);
-    if (atMrv != null) {
-      return [
-        Suggestion(
-          id: 'volume',
-          type: SuggestionType.volume,
-          priority: 45,
-          title: '${atMrv.muscle.label} is at its ceiling',
-          subtitle: '${_sets(atMrv.hardSets)} sets this week',
-          reason:
-              'A muscle your programme owns is at its maximum recoverable volume.',
-          action: SuggestionAction.viewVolume,
-          surface: SuggestionSurface.secondary,
-        ),
-      ];
-    }
-    return null;
-  }
-
-  // 6. Steps well below the goal late in the day → 40 (§16.1 add-steps).
+  // Steps well below the goal late in the day → 40 (device only: the
+  // server never sees steps).
   List<Suggestion>? _move(HomeContext c) {
     final steps = c.health?.steps;
     if (steps == null || !steps.isAvailable) return null;
@@ -322,7 +137,7 @@ class HomeSuggestionEngine {
     ];
   }
 
-  // 8. Health Connect available but not connected → 35.
+  // Health Connect available but not connected → 35 (P6: competes by band).
   List<Suggestion>? _connect(HomeContext c) {
     final conn = c.connection;
     if (conn == null || conn.sdk != HealthSdkStatus.available) return null;
@@ -337,7 +152,6 @@ class HomeSuggestionEngine {
         reason:
             'Health Connect is on this phone but FITOS has no permissions yet.',
         action: SuggestionAction.connectHealth,
-        surface: SuggestionSurface.secondary,
       ),
     ];
   }
@@ -346,10 +160,6 @@ class HomeSuggestionEngine {
 
   static String _hm(int minutes) =>
       '${minutes ~/ 60}h ${(minutes % 60).toString().padLeft(2, '0')}m';
-  static String _kg(double v) =>
-      v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
-  static String _sets(double v) =>
-      v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
   static String _group(int n) {
     final s = n.toString();
     final out = StringBuffer();
@@ -362,33 +172,20 @@ class HomeSuggestionEngine {
 }
 
 enum SuggestionType {
-  deload,
+  /// One of the server's TODAY actions (its kind is on [Suggestion.today]).
+  today,
   resumeWorkout,
-  startWorkout,
-  workoutDone,
-  eatProtein,
-  eatCalories,
-  neglect,
   recover,
-  restDay,
-  celebratePr,
-  volume,
   move,
   connectHealth,
 }
 
-/// Where a suggestion can sit: the carousel, or only "More for you".
-enum SuggestionSurface { primary, secondary }
-
 enum SuggestionAction {
+  /// The server action's own destination (by kind).
+  today,
   resumeWorkout,
-  startWorkout,
-  viewSummary,
-  viewPlan,
-  logFood,
   viewActivity,
   viewRecovery,
-  viewVolume,
   connectHealth,
 }
 
@@ -401,9 +198,31 @@ class Suggestion {
     required this.subtitle,
     required this.reason,
     required this.action,
-    this.surface = SuggestionSurface.primary,
     this.metadata = const {},
+    this.today,
+    this.planDate,
+    this.cached = false,
   });
+
+  /// A server TODAY action as a card: its kind is the id, its headline and
+  /// detail the words, its priority the band.
+  factory Suggestion.today(
+    TodayAction a, {
+    required String planDate,
+    bool cached = false,
+  }) =>
+      Suggestion(
+        id: a.kindWire,
+        type: SuggestionType.today,
+        priority: a.priority,
+        title: a.headline,
+        subtitle: a.detail,
+        reason: a.detail,
+        action: SuggestionAction.today,
+        today: a,
+        planDate: planDate,
+        cached: cached,
+      );
 
   final String id;
   final SuggestionType type;
@@ -416,8 +235,18 @@ class Suggestion {
   /// Why it fired — always present.
   final String reason;
   final SuggestionAction action;
-  final SuggestionSurface surface;
   final Map<String, String> metadata;
+
+  /// The server action this card draws; null for a device-only card.
+  final TodayAction? today;
+
+  /// The server plan's local date (events belong to it).
+  final String? planDate;
+
+  /// From the cached plan, shown while offline (D8 as amended): labelled so.
+  final bool cached;
+
+  bool get isServer => today != null;
 
   @override
   String toString() => 'Suggestion($id, $priority)';

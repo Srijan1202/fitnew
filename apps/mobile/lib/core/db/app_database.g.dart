@@ -3324,6 +3324,935 @@ class NutritionSyncQueueCompanion
   }
 }
 
+class $TodayEventQueueTable extends TodayEventQueue
+    with TableInfo<$TodayEventQueueTable, TodayEventQueueData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TodayEventQueueTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _clientEventIdMeta =
+      const VerificationMeta('clientEventId');
+  @override
+  late final GeneratedColumn<String> clientEventId = GeneratedColumn<String>(
+      'client_event_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _recommendationIdMeta =
+      const VerificationMeta('recommendationId');
+  @override
+  late final GeneratedColumn<String> recommendationId = GeneratedColumn<String>(
+      'recommendation_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _eventMeta = const VerificationMeta('event');
+  @override
+  late final GeneratedColumn<String> event = GeneratedColumn<String>(
+      'event', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _occurredAtMeta =
+      const VerificationMeta('occurredAt');
+  @override
+  late final GeneratedColumn<String> occurredAt = GeneratedColumn<String>(
+      'occurred_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _attemptsMeta =
+      const VerificationMeta('attempts');
+  @override
+  late final GeneratedColumn<int> attempts = GeneratedColumn<int>(
+      'attempts', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _nextAttemptAtMeta =
+      const VerificationMeta('nextAttemptAt');
+  @override
+  late final GeneratedColumn<String> nextAttemptAt = GeneratedColumn<String>(
+      'next_attempt_at', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _lastErrorMeta =
+      const VerificationMeta('lastError');
+  @override
+  late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
+      'last_error', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        clientEventId,
+        recommendationId,
+        event,
+        occurredAt,
+        attempts,
+        nextAttemptAt,
+        lastError,
+        createdAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'today_event_queue';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<TodayEventQueueData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('client_event_id')) {
+      context.handle(
+          _clientEventIdMeta,
+          clientEventId.isAcceptableOrUnknown(
+              data['client_event_id']!, _clientEventIdMeta));
+    } else if (isInserting) {
+      context.missing(_clientEventIdMeta);
+    }
+    if (data.containsKey('recommendation_id')) {
+      context.handle(
+          _recommendationIdMeta,
+          recommendationId.isAcceptableOrUnknown(
+              data['recommendation_id']!, _recommendationIdMeta));
+    } else if (isInserting) {
+      context.missing(_recommendationIdMeta);
+    }
+    if (data.containsKey('event')) {
+      context.handle(
+          _eventMeta, event.isAcceptableOrUnknown(data['event']!, _eventMeta));
+    } else if (isInserting) {
+      context.missing(_eventMeta);
+    }
+    if (data.containsKey('occurred_at')) {
+      context.handle(
+          _occurredAtMeta,
+          occurredAt.isAcceptableOrUnknown(
+              data['occurred_at']!, _occurredAtMeta));
+    } else if (isInserting) {
+      context.missing(_occurredAtMeta);
+    }
+    if (data.containsKey('attempts')) {
+      context.handle(_attemptsMeta,
+          attempts.isAcceptableOrUnknown(data['attempts']!, _attemptsMeta));
+    }
+    if (data.containsKey('next_attempt_at')) {
+      context.handle(
+          _nextAttemptAtMeta,
+          nextAttemptAt.isAcceptableOrUnknown(
+              data['next_attempt_at']!, _nextAttemptAtMeta));
+    }
+    if (data.containsKey('last_error')) {
+      context.handle(_lastErrorMeta,
+          lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TodayEventQueueData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TodayEventQueueData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      clientEventId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}client_event_id'])!,
+      recommendationId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}recommendation_id'])!,
+      event: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}event'])!,
+      occurredAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}occurred_at'])!,
+      attempts: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}attempts'])!,
+      nextAttemptAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}next_attempt_at']),
+      lastError: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}last_error']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $TodayEventQueueTable createAlias(String alias) {
+    return $TodayEventQueueTable(attachedDatabase, alias);
+  }
+}
+
+class TodayEventQueueData extends DataClass
+    implements Insertable<TodayEventQueueData> {
+  final int id;
+
+  /// Minted once when the event happened; every retry reuses it.
+  final String clientEventId;
+  final String recommendationId;
+
+  /// `shown` | `opened` | `accepted` | `dismissed` | `completed`.
+  final String event;
+
+  /// When it happened on this phone (UTC ISO) — sent as is, never "now".
+  final String occurredAt;
+  final int attempts;
+  final String? nextAttemptAt;
+  final String? lastError;
+  final String createdAt;
+  const TodayEventQueueData(
+      {required this.id,
+      required this.clientEventId,
+      required this.recommendationId,
+      required this.event,
+      required this.occurredAt,
+      required this.attempts,
+      this.nextAttemptAt,
+      this.lastError,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['client_event_id'] = Variable<String>(clientEventId);
+    map['recommendation_id'] = Variable<String>(recommendationId);
+    map['event'] = Variable<String>(event);
+    map['occurred_at'] = Variable<String>(occurredAt);
+    map['attempts'] = Variable<int>(attempts);
+    if (!nullToAbsent || nextAttemptAt != null) {
+      map['next_attempt_at'] = Variable<String>(nextAttemptAt);
+    }
+    if (!nullToAbsent || lastError != null) {
+      map['last_error'] = Variable<String>(lastError);
+    }
+    map['created_at'] = Variable<String>(createdAt);
+    return map;
+  }
+
+  TodayEventQueueCompanion toCompanion(bool nullToAbsent) {
+    return TodayEventQueueCompanion(
+      id: Value(id),
+      clientEventId: Value(clientEventId),
+      recommendationId: Value(recommendationId),
+      event: Value(event),
+      occurredAt: Value(occurredAt),
+      attempts: Value(attempts),
+      nextAttemptAt: nextAttemptAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextAttemptAt),
+      lastError: lastError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastError),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory TodayEventQueueData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TodayEventQueueData(
+      id: serializer.fromJson<int>(json['id']),
+      clientEventId: serializer.fromJson<String>(json['clientEventId']),
+      recommendationId: serializer.fromJson<String>(json['recommendationId']),
+      event: serializer.fromJson<String>(json['event']),
+      occurredAt: serializer.fromJson<String>(json['occurredAt']),
+      attempts: serializer.fromJson<int>(json['attempts']),
+      nextAttemptAt: serializer.fromJson<String?>(json['nextAttemptAt']),
+      lastError: serializer.fromJson<String?>(json['lastError']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'clientEventId': serializer.toJson<String>(clientEventId),
+      'recommendationId': serializer.toJson<String>(recommendationId),
+      'event': serializer.toJson<String>(event),
+      'occurredAt': serializer.toJson<String>(occurredAt),
+      'attempts': serializer.toJson<int>(attempts),
+      'nextAttemptAt': serializer.toJson<String?>(nextAttemptAt),
+      'lastError': serializer.toJson<String?>(lastError),
+      'createdAt': serializer.toJson<String>(createdAt),
+    };
+  }
+
+  TodayEventQueueData copyWith(
+          {int? id,
+          String? clientEventId,
+          String? recommendationId,
+          String? event,
+          String? occurredAt,
+          int? attempts,
+          Value<String?> nextAttemptAt = const Value.absent(),
+          Value<String?> lastError = const Value.absent(),
+          String? createdAt}) =>
+      TodayEventQueueData(
+        id: id ?? this.id,
+        clientEventId: clientEventId ?? this.clientEventId,
+        recommendationId: recommendationId ?? this.recommendationId,
+        event: event ?? this.event,
+        occurredAt: occurredAt ?? this.occurredAt,
+        attempts: attempts ?? this.attempts,
+        nextAttemptAt:
+            nextAttemptAt.present ? nextAttemptAt.value : this.nextAttemptAt,
+        lastError: lastError.present ? lastError.value : this.lastError,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  TodayEventQueueData copyWithCompanion(TodayEventQueueCompanion data) {
+    return TodayEventQueueData(
+      id: data.id.present ? data.id.value : this.id,
+      clientEventId: data.clientEventId.present
+          ? data.clientEventId.value
+          : this.clientEventId,
+      recommendationId: data.recommendationId.present
+          ? data.recommendationId.value
+          : this.recommendationId,
+      event: data.event.present ? data.event.value : this.event,
+      occurredAt:
+          data.occurredAt.present ? data.occurredAt.value : this.occurredAt,
+      attempts: data.attempts.present ? data.attempts.value : this.attempts,
+      nextAttemptAt: data.nextAttemptAt.present
+          ? data.nextAttemptAt.value
+          : this.nextAttemptAt,
+      lastError: data.lastError.present ? data.lastError.value : this.lastError,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodayEventQueueData(')
+          ..write('id: $id, ')
+          ..write('clientEventId: $clientEventId, ')
+          ..write('recommendationId: $recommendationId, ')
+          ..write('event: $event, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('attempts: $attempts, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('lastError: $lastError, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, clientEventId, recommendationId, event,
+      occurredAt, attempts, nextAttemptAt, lastError, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TodayEventQueueData &&
+          other.id == this.id &&
+          other.clientEventId == this.clientEventId &&
+          other.recommendationId == this.recommendationId &&
+          other.event == this.event &&
+          other.occurredAt == this.occurredAt &&
+          other.attempts == this.attempts &&
+          other.nextAttemptAt == this.nextAttemptAt &&
+          other.lastError == this.lastError &&
+          other.createdAt == this.createdAt);
+}
+
+class TodayEventQueueCompanion extends UpdateCompanion<TodayEventQueueData> {
+  final Value<int> id;
+  final Value<String> clientEventId;
+  final Value<String> recommendationId;
+  final Value<String> event;
+  final Value<String> occurredAt;
+  final Value<int> attempts;
+  final Value<String?> nextAttemptAt;
+  final Value<String?> lastError;
+  final Value<String> createdAt;
+  const TodayEventQueueCompanion({
+    this.id = const Value.absent(),
+    this.clientEventId = const Value.absent(),
+    this.recommendationId = const Value.absent(),
+    this.event = const Value.absent(),
+    this.occurredAt = const Value.absent(),
+    this.attempts = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  TodayEventQueueCompanion.insert({
+    this.id = const Value.absent(),
+    required String clientEventId,
+    required String recommendationId,
+    required String event,
+    required String occurredAt,
+    this.attempts = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.lastError = const Value.absent(),
+    required String createdAt,
+  })  : clientEventId = Value(clientEventId),
+        recommendationId = Value(recommendationId),
+        event = Value(event),
+        occurredAt = Value(occurredAt),
+        createdAt = Value(createdAt);
+  static Insertable<TodayEventQueueData> custom({
+    Expression<int>? id,
+    Expression<String>? clientEventId,
+    Expression<String>? recommendationId,
+    Expression<String>? event,
+    Expression<String>? occurredAt,
+    Expression<int>? attempts,
+    Expression<String>? nextAttemptAt,
+    Expression<String>? lastError,
+    Expression<String>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (clientEventId != null) 'client_event_id': clientEventId,
+      if (recommendationId != null) 'recommendation_id': recommendationId,
+      if (event != null) 'event': event,
+      if (occurredAt != null) 'occurred_at': occurredAt,
+      if (attempts != null) 'attempts': attempts,
+      if (nextAttemptAt != null) 'next_attempt_at': nextAttemptAt,
+      if (lastError != null) 'last_error': lastError,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  TodayEventQueueCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? clientEventId,
+      Value<String>? recommendationId,
+      Value<String>? event,
+      Value<String>? occurredAt,
+      Value<int>? attempts,
+      Value<String?>? nextAttemptAt,
+      Value<String?>? lastError,
+      Value<String>? createdAt}) {
+    return TodayEventQueueCompanion(
+      id: id ?? this.id,
+      clientEventId: clientEventId ?? this.clientEventId,
+      recommendationId: recommendationId ?? this.recommendationId,
+      event: event ?? this.event,
+      occurredAt: occurredAt ?? this.occurredAt,
+      attempts: attempts ?? this.attempts,
+      nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
+      lastError: lastError ?? this.lastError,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (clientEventId.present) {
+      map['client_event_id'] = Variable<String>(clientEventId.value);
+    }
+    if (recommendationId.present) {
+      map['recommendation_id'] = Variable<String>(recommendationId.value);
+    }
+    if (event.present) {
+      map['event'] = Variable<String>(event.value);
+    }
+    if (occurredAt.present) {
+      map['occurred_at'] = Variable<String>(occurredAt.value);
+    }
+    if (attempts.present) {
+      map['attempts'] = Variable<int>(attempts.value);
+    }
+    if (nextAttemptAt.present) {
+      map['next_attempt_at'] = Variable<String>(nextAttemptAt.value);
+    }
+    if (lastError.present) {
+      map['last_error'] = Variable<String>(lastError.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodayEventQueueCompanion(')
+          ..write('id: $id, ')
+          ..write('clientEventId: $clientEventId, ')
+          ..write('recommendationId: $recommendationId, ')
+          ..write('event: $event, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('attempts: $attempts, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('lastError: $lastError, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TodayEventLedgerTable extends TodayEventLedger
+    with TableInfo<$TodayEventLedgerTable, TodayEventLedgerData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TodayEventLedgerTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _recommendationIdMeta =
+      const VerificationMeta('recommendationId');
+  @override
+  late final GeneratedColumn<String> recommendationId = GeneratedColumn<String>(
+      'recommendation_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _eventMeta = const VerificationMeta('event');
+  @override
+  late final GeneratedColumn<String> event = GeneratedColumn<String>(
+      'event', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _clientEventIdMeta =
+      const VerificationMeta('clientEventId');
+  @override
+  late final GeneratedColumn<String> clientEventId = GeneratedColumn<String>(
+      'client_event_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+      'kind', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _subjectKeyMeta =
+      const VerificationMeta('subjectKey');
+  @override
+  late final GeneratedColumn<String> subjectKey = GeneratedColumn<String>(
+      'subject_key', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _localDateMeta =
+      const VerificationMeta('localDate');
+  @override
+  late final GeneratedColumn<String> localDate = GeneratedColumn<String>(
+      'local_date', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _occurredAtMeta =
+      const VerificationMeta('occurredAt');
+  @override
+  late final GeneratedColumn<String> occurredAt = GeneratedColumn<String>(
+      'occurred_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+      'status', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        recommendationId,
+        event,
+        clientEventId,
+        kind,
+        subjectKey,
+        localDate,
+        occurredAt,
+        status
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'today_event_ledger';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<TodayEventLedgerData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('recommendation_id')) {
+      context.handle(
+          _recommendationIdMeta,
+          recommendationId.isAcceptableOrUnknown(
+              data['recommendation_id']!, _recommendationIdMeta));
+    } else if (isInserting) {
+      context.missing(_recommendationIdMeta);
+    }
+    if (data.containsKey('event')) {
+      context.handle(
+          _eventMeta, event.isAcceptableOrUnknown(data['event']!, _eventMeta));
+    } else if (isInserting) {
+      context.missing(_eventMeta);
+    }
+    if (data.containsKey('client_event_id')) {
+      context.handle(
+          _clientEventIdMeta,
+          clientEventId.isAcceptableOrUnknown(
+              data['client_event_id']!, _clientEventIdMeta));
+    } else if (isInserting) {
+      context.missing(_clientEventIdMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+          _kindMeta, kind.isAcceptableOrUnknown(data['kind']!, _kindMeta));
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('subject_key')) {
+      context.handle(
+          _subjectKeyMeta,
+          subjectKey.isAcceptableOrUnknown(
+              data['subject_key']!, _subjectKeyMeta));
+    } else if (isInserting) {
+      context.missing(_subjectKeyMeta);
+    }
+    if (data.containsKey('local_date')) {
+      context.handle(_localDateMeta,
+          localDate.isAcceptableOrUnknown(data['local_date']!, _localDateMeta));
+    } else if (isInserting) {
+      context.missing(_localDateMeta);
+    }
+    if (data.containsKey('occurred_at')) {
+      context.handle(
+          _occurredAtMeta,
+          occurredAt.isAcceptableOrUnknown(
+              data['occurred_at']!, _occurredAtMeta));
+    } else if (isInserting) {
+      context.missing(_occurredAtMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(_statusMeta,
+          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {recommendationId, event};
+  @override
+  TodayEventLedgerData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TodayEventLedgerData(
+      recommendationId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}recommendation_id'])!,
+      event: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}event'])!,
+      clientEventId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}client_event_id'])!,
+      kind: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}kind'])!,
+      subjectKey: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}subject_key'])!,
+      localDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}local_date'])!,
+      occurredAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}occurred_at'])!,
+      status: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
+    );
+  }
+
+  @override
+  $TodayEventLedgerTable createAlias(String alias) {
+    return $TodayEventLedgerTable(attachedDatabase, alias);
+  }
+}
+
+class TodayEventLedgerData extends DataClass
+    implements Insertable<TodayEventLedgerData> {
+  final String recommendationId;
+  final String event;
+  final String clientEventId;
+  final String kind;
+  final String subjectKey;
+
+  /// The action's local date (the server's `generated_for`).
+  final String localDate;
+  final String occurredAt;
+
+  /// `queued` | `sent` | `rejected` | `failed`.
+  final String status;
+  const TodayEventLedgerData(
+      {required this.recommendationId,
+      required this.event,
+      required this.clientEventId,
+      required this.kind,
+      required this.subjectKey,
+      required this.localDate,
+      required this.occurredAt,
+      required this.status});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['recommendation_id'] = Variable<String>(recommendationId);
+    map['event'] = Variable<String>(event);
+    map['client_event_id'] = Variable<String>(clientEventId);
+    map['kind'] = Variable<String>(kind);
+    map['subject_key'] = Variable<String>(subjectKey);
+    map['local_date'] = Variable<String>(localDate);
+    map['occurred_at'] = Variable<String>(occurredAt);
+    map['status'] = Variable<String>(status);
+    return map;
+  }
+
+  TodayEventLedgerCompanion toCompanion(bool nullToAbsent) {
+    return TodayEventLedgerCompanion(
+      recommendationId: Value(recommendationId),
+      event: Value(event),
+      clientEventId: Value(clientEventId),
+      kind: Value(kind),
+      subjectKey: Value(subjectKey),
+      localDate: Value(localDate),
+      occurredAt: Value(occurredAt),
+      status: Value(status),
+    );
+  }
+
+  factory TodayEventLedgerData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TodayEventLedgerData(
+      recommendationId: serializer.fromJson<String>(json['recommendationId']),
+      event: serializer.fromJson<String>(json['event']),
+      clientEventId: serializer.fromJson<String>(json['clientEventId']),
+      kind: serializer.fromJson<String>(json['kind']),
+      subjectKey: serializer.fromJson<String>(json['subjectKey']),
+      localDate: serializer.fromJson<String>(json['localDate']),
+      occurredAt: serializer.fromJson<String>(json['occurredAt']),
+      status: serializer.fromJson<String>(json['status']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'recommendationId': serializer.toJson<String>(recommendationId),
+      'event': serializer.toJson<String>(event),
+      'clientEventId': serializer.toJson<String>(clientEventId),
+      'kind': serializer.toJson<String>(kind),
+      'subjectKey': serializer.toJson<String>(subjectKey),
+      'localDate': serializer.toJson<String>(localDate),
+      'occurredAt': serializer.toJson<String>(occurredAt),
+      'status': serializer.toJson<String>(status),
+    };
+  }
+
+  TodayEventLedgerData copyWith(
+          {String? recommendationId,
+          String? event,
+          String? clientEventId,
+          String? kind,
+          String? subjectKey,
+          String? localDate,
+          String? occurredAt,
+          String? status}) =>
+      TodayEventLedgerData(
+        recommendationId: recommendationId ?? this.recommendationId,
+        event: event ?? this.event,
+        clientEventId: clientEventId ?? this.clientEventId,
+        kind: kind ?? this.kind,
+        subjectKey: subjectKey ?? this.subjectKey,
+        localDate: localDate ?? this.localDate,
+        occurredAt: occurredAt ?? this.occurredAt,
+        status: status ?? this.status,
+      );
+  TodayEventLedgerData copyWithCompanion(TodayEventLedgerCompanion data) {
+    return TodayEventLedgerData(
+      recommendationId: data.recommendationId.present
+          ? data.recommendationId.value
+          : this.recommendationId,
+      event: data.event.present ? data.event.value : this.event,
+      clientEventId: data.clientEventId.present
+          ? data.clientEventId.value
+          : this.clientEventId,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      subjectKey:
+          data.subjectKey.present ? data.subjectKey.value : this.subjectKey,
+      localDate: data.localDate.present ? data.localDate.value : this.localDate,
+      occurredAt:
+          data.occurredAt.present ? data.occurredAt.value : this.occurredAt,
+      status: data.status.present ? data.status.value : this.status,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodayEventLedgerData(')
+          ..write('recommendationId: $recommendationId, ')
+          ..write('event: $event, ')
+          ..write('clientEventId: $clientEventId, ')
+          ..write('kind: $kind, ')
+          ..write('subjectKey: $subjectKey, ')
+          ..write('localDate: $localDate, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('status: $status')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(recommendationId, event, clientEventId, kind,
+      subjectKey, localDate, occurredAt, status);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TodayEventLedgerData &&
+          other.recommendationId == this.recommendationId &&
+          other.event == this.event &&
+          other.clientEventId == this.clientEventId &&
+          other.kind == this.kind &&
+          other.subjectKey == this.subjectKey &&
+          other.localDate == this.localDate &&
+          other.occurredAt == this.occurredAt &&
+          other.status == this.status);
+}
+
+class TodayEventLedgerCompanion extends UpdateCompanion<TodayEventLedgerData> {
+  final Value<String> recommendationId;
+  final Value<String> event;
+  final Value<String> clientEventId;
+  final Value<String> kind;
+  final Value<String> subjectKey;
+  final Value<String> localDate;
+  final Value<String> occurredAt;
+  final Value<String> status;
+  final Value<int> rowid;
+  const TodayEventLedgerCompanion({
+    this.recommendationId = const Value.absent(),
+    this.event = const Value.absent(),
+    this.clientEventId = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.subjectKey = const Value.absent(),
+    this.localDate = const Value.absent(),
+    this.occurredAt = const Value.absent(),
+    this.status = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TodayEventLedgerCompanion.insert({
+    required String recommendationId,
+    required String event,
+    required String clientEventId,
+    required String kind,
+    required String subjectKey,
+    required String localDate,
+    required String occurredAt,
+    required String status,
+    this.rowid = const Value.absent(),
+  })  : recommendationId = Value(recommendationId),
+        event = Value(event),
+        clientEventId = Value(clientEventId),
+        kind = Value(kind),
+        subjectKey = Value(subjectKey),
+        localDate = Value(localDate),
+        occurredAt = Value(occurredAt),
+        status = Value(status);
+  static Insertable<TodayEventLedgerData> custom({
+    Expression<String>? recommendationId,
+    Expression<String>? event,
+    Expression<String>? clientEventId,
+    Expression<String>? kind,
+    Expression<String>? subjectKey,
+    Expression<String>? localDate,
+    Expression<String>? occurredAt,
+    Expression<String>? status,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (recommendationId != null) 'recommendation_id': recommendationId,
+      if (event != null) 'event': event,
+      if (clientEventId != null) 'client_event_id': clientEventId,
+      if (kind != null) 'kind': kind,
+      if (subjectKey != null) 'subject_key': subjectKey,
+      if (localDate != null) 'local_date': localDate,
+      if (occurredAt != null) 'occurred_at': occurredAt,
+      if (status != null) 'status': status,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TodayEventLedgerCompanion copyWith(
+      {Value<String>? recommendationId,
+      Value<String>? event,
+      Value<String>? clientEventId,
+      Value<String>? kind,
+      Value<String>? subjectKey,
+      Value<String>? localDate,
+      Value<String>? occurredAt,
+      Value<String>? status,
+      Value<int>? rowid}) {
+    return TodayEventLedgerCompanion(
+      recommendationId: recommendationId ?? this.recommendationId,
+      event: event ?? this.event,
+      clientEventId: clientEventId ?? this.clientEventId,
+      kind: kind ?? this.kind,
+      subjectKey: subjectKey ?? this.subjectKey,
+      localDate: localDate ?? this.localDate,
+      occurredAt: occurredAt ?? this.occurredAt,
+      status: status ?? this.status,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (recommendationId.present) {
+      map['recommendation_id'] = Variable<String>(recommendationId.value);
+    }
+    if (event.present) {
+      map['event'] = Variable<String>(event.value);
+    }
+    if (clientEventId.present) {
+      map['client_event_id'] = Variable<String>(clientEventId.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (subjectKey.present) {
+      map['subject_key'] = Variable<String>(subjectKey.value);
+    }
+    if (localDate.present) {
+      map['local_date'] = Variable<String>(localDate.value);
+    }
+    if (occurredAt.present) {
+      map['occurred_at'] = Variable<String>(occurredAt.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodayEventLedgerCompanion(')
+          ..write('recommendationId: $recommendationId, ')
+          ..write('event: $event, ')
+          ..write('clientEventId: $clientEventId, ')
+          ..write('kind: $kind, ')
+          ..write('subjectKey: $subjectKey, ')
+          ..write('localDate: $localDate, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('status: $status, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3336,6 +4265,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $LocalFoodLogsTable localFoodLogs = $LocalFoodLogsTable(this);
   late final $NutritionSyncQueueTable nutritionSyncQueue =
       $NutritionSyncQueueTable(this);
+  late final $TodayEventQueueTable todayEventQueue =
+      $TodayEventQueueTable(this);
+  late final $TodayEventLedgerTable todayEventLedger =
+      $TodayEventLedgerTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3347,7 +4280,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         syncQueue,
         cachedJson,
         localFoodLogs,
-        nutritionSyncQueue
+        nutritionSyncQueue,
+        todayEventQueue,
+        todayEventLedger
       ];
 }
 
@@ -4966,6 +5901,462 @@ typedef $$NutritionSyncQueueTableProcessedTableManager = ProcessedTableManager<
     ),
     NutritionSyncQueueData,
     PrefetchHooks Function()>;
+typedef $$TodayEventQueueTableCreateCompanionBuilder = TodayEventQueueCompanion
+    Function({
+  Value<int> id,
+  required String clientEventId,
+  required String recommendationId,
+  required String event,
+  required String occurredAt,
+  Value<int> attempts,
+  Value<String?> nextAttemptAt,
+  Value<String?> lastError,
+  required String createdAt,
+});
+typedef $$TodayEventQueueTableUpdateCompanionBuilder = TodayEventQueueCompanion
+    Function({
+  Value<int> id,
+  Value<String> clientEventId,
+  Value<String> recommendationId,
+  Value<String> event,
+  Value<String> occurredAt,
+  Value<int> attempts,
+  Value<String?> nextAttemptAt,
+  Value<String?> lastError,
+  Value<String> createdAt,
+});
+
+class $$TodayEventQueueTableFilterComposer
+    extends Composer<_$AppDatabase, $TodayEventQueueTable> {
+  $$TodayEventQueueTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get clientEventId => $composableBuilder(
+      column: $table.clientEventId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get recommendationId => $composableBuilder(
+      column: $table.recommendationId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get event => $composableBuilder(
+      column: $table.event, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get attempts => $composableBuilder(
+      column: $table.attempts, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get nextAttemptAt => $composableBuilder(
+      column: $table.nextAttemptAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lastError => $composableBuilder(
+      column: $table.lastError, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$TodayEventQueueTableOrderingComposer
+    extends Composer<_$AppDatabase, $TodayEventQueueTable> {
+  $$TodayEventQueueTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get clientEventId => $composableBuilder(
+      column: $table.clientEventId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get recommendationId => $composableBuilder(
+      column: $table.recommendationId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get event => $composableBuilder(
+      column: $table.event, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get attempts => $composableBuilder(
+      column: $table.attempts, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get nextAttemptAt => $composableBuilder(
+      column: $table.nextAttemptAt,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lastError => $composableBuilder(
+      column: $table.lastError, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$TodayEventQueueTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TodayEventQueueTable> {
+  $$TodayEventQueueTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get clientEventId => $composableBuilder(
+      column: $table.clientEventId, builder: (column) => column);
+
+  GeneratedColumn<String> get recommendationId => $composableBuilder(
+      column: $table.recommendationId, builder: (column) => column);
+
+  GeneratedColumn<String> get event =>
+      $composableBuilder(column: $table.event, builder: (column) => column);
+
+  GeneratedColumn<String> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => column);
+
+  GeneratedColumn<int> get attempts =>
+      $composableBuilder(column: $table.attempts, builder: (column) => column);
+
+  GeneratedColumn<String> get nextAttemptAt => $composableBuilder(
+      column: $table.nextAttemptAt, builder: (column) => column);
+
+  GeneratedColumn<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$TodayEventQueueTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $TodayEventQueueTable,
+    TodayEventQueueData,
+    $$TodayEventQueueTableFilterComposer,
+    $$TodayEventQueueTableOrderingComposer,
+    $$TodayEventQueueTableAnnotationComposer,
+    $$TodayEventQueueTableCreateCompanionBuilder,
+    $$TodayEventQueueTableUpdateCompanionBuilder,
+    (
+      TodayEventQueueData,
+      BaseReferences<_$AppDatabase, $TodayEventQueueTable, TodayEventQueueData>
+    ),
+    TodayEventQueueData,
+    PrefetchHooks Function()> {
+  $$TodayEventQueueTableTableManager(
+      _$AppDatabase db, $TodayEventQueueTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TodayEventQueueTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TodayEventQueueTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TodayEventQueueTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> clientEventId = const Value.absent(),
+            Value<String> recommendationId = const Value.absent(),
+            Value<String> event = const Value.absent(),
+            Value<String> occurredAt = const Value.absent(),
+            Value<int> attempts = const Value.absent(),
+            Value<String?> nextAttemptAt = const Value.absent(),
+            Value<String?> lastError = const Value.absent(),
+            Value<String> createdAt = const Value.absent(),
+          }) =>
+              TodayEventQueueCompanion(
+            id: id,
+            clientEventId: clientEventId,
+            recommendationId: recommendationId,
+            event: event,
+            occurredAt: occurredAt,
+            attempts: attempts,
+            nextAttemptAt: nextAttemptAt,
+            lastError: lastError,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String clientEventId,
+            required String recommendationId,
+            required String event,
+            required String occurredAt,
+            Value<int> attempts = const Value.absent(),
+            Value<String?> nextAttemptAt = const Value.absent(),
+            Value<String?> lastError = const Value.absent(),
+            required String createdAt,
+          }) =>
+              TodayEventQueueCompanion.insert(
+            id: id,
+            clientEventId: clientEventId,
+            recommendationId: recommendationId,
+            event: event,
+            occurredAt: occurredAt,
+            attempts: attempts,
+            nextAttemptAt: nextAttemptAt,
+            lastError: lastError,
+            createdAt: createdAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$TodayEventQueueTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $TodayEventQueueTable,
+    TodayEventQueueData,
+    $$TodayEventQueueTableFilterComposer,
+    $$TodayEventQueueTableOrderingComposer,
+    $$TodayEventQueueTableAnnotationComposer,
+    $$TodayEventQueueTableCreateCompanionBuilder,
+    $$TodayEventQueueTableUpdateCompanionBuilder,
+    (
+      TodayEventQueueData,
+      BaseReferences<_$AppDatabase, $TodayEventQueueTable, TodayEventQueueData>
+    ),
+    TodayEventQueueData,
+    PrefetchHooks Function()>;
+typedef $$TodayEventLedgerTableCreateCompanionBuilder
+    = TodayEventLedgerCompanion Function({
+  required String recommendationId,
+  required String event,
+  required String clientEventId,
+  required String kind,
+  required String subjectKey,
+  required String localDate,
+  required String occurredAt,
+  required String status,
+  Value<int> rowid,
+});
+typedef $$TodayEventLedgerTableUpdateCompanionBuilder
+    = TodayEventLedgerCompanion Function({
+  Value<String> recommendationId,
+  Value<String> event,
+  Value<String> clientEventId,
+  Value<String> kind,
+  Value<String> subjectKey,
+  Value<String> localDate,
+  Value<String> occurredAt,
+  Value<String> status,
+  Value<int> rowid,
+});
+
+class $$TodayEventLedgerTableFilterComposer
+    extends Composer<_$AppDatabase, $TodayEventLedgerTable> {
+  $$TodayEventLedgerTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get recommendationId => $composableBuilder(
+      column: $table.recommendationId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get event => $composableBuilder(
+      column: $table.event, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get clientEventId => $composableBuilder(
+      column: $table.clientEventId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get kind => $composableBuilder(
+      column: $table.kind, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get subjectKey => $composableBuilder(
+      column: $table.subjectKey, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get localDate => $composableBuilder(
+      column: $table.localDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnFilters(column));
+}
+
+class $$TodayEventLedgerTableOrderingComposer
+    extends Composer<_$AppDatabase, $TodayEventLedgerTable> {
+  $$TodayEventLedgerTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get recommendationId => $composableBuilder(
+      column: $table.recommendationId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get event => $composableBuilder(
+      column: $table.event, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get clientEventId => $composableBuilder(
+      column: $table.clientEventId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+      column: $table.kind, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get subjectKey => $composableBuilder(
+      column: $table.subjectKey, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get localDate => $composableBuilder(
+      column: $table.localDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnOrderings(column));
+}
+
+class $$TodayEventLedgerTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TodayEventLedgerTable> {
+  $$TodayEventLedgerTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get recommendationId => $composableBuilder(
+      column: $table.recommendationId, builder: (column) => column);
+
+  GeneratedColumn<String> get event =>
+      $composableBuilder(column: $table.event, builder: (column) => column);
+
+  GeneratedColumn<String> get clientEventId => $composableBuilder(
+      column: $table.clientEventId, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get subjectKey => $composableBuilder(
+      column: $table.subjectKey, builder: (column) => column);
+
+  GeneratedColumn<String> get localDate =>
+      $composableBuilder(column: $table.localDate, builder: (column) => column);
+
+  GeneratedColumn<String> get occurredAt => $composableBuilder(
+      column: $table.occurredAt, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+}
+
+class $$TodayEventLedgerTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $TodayEventLedgerTable,
+    TodayEventLedgerData,
+    $$TodayEventLedgerTableFilterComposer,
+    $$TodayEventLedgerTableOrderingComposer,
+    $$TodayEventLedgerTableAnnotationComposer,
+    $$TodayEventLedgerTableCreateCompanionBuilder,
+    $$TodayEventLedgerTableUpdateCompanionBuilder,
+    (
+      TodayEventLedgerData,
+      BaseReferences<_$AppDatabase, $TodayEventLedgerTable,
+          TodayEventLedgerData>
+    ),
+    TodayEventLedgerData,
+    PrefetchHooks Function()> {
+  $$TodayEventLedgerTableTableManager(
+      _$AppDatabase db, $TodayEventLedgerTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TodayEventLedgerTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TodayEventLedgerTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TodayEventLedgerTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> recommendationId = const Value.absent(),
+            Value<String> event = const Value.absent(),
+            Value<String> clientEventId = const Value.absent(),
+            Value<String> kind = const Value.absent(),
+            Value<String> subjectKey = const Value.absent(),
+            Value<String> localDate = const Value.absent(),
+            Value<String> occurredAt = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              TodayEventLedgerCompanion(
+            recommendationId: recommendationId,
+            event: event,
+            clientEventId: clientEventId,
+            kind: kind,
+            subjectKey: subjectKey,
+            localDate: localDate,
+            occurredAt: occurredAt,
+            status: status,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String recommendationId,
+            required String event,
+            required String clientEventId,
+            required String kind,
+            required String subjectKey,
+            required String localDate,
+            required String occurredAt,
+            required String status,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              TodayEventLedgerCompanion.insert(
+            recommendationId: recommendationId,
+            event: event,
+            clientEventId: clientEventId,
+            kind: kind,
+            subjectKey: subjectKey,
+            localDate: localDate,
+            occurredAt: occurredAt,
+            status: status,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$TodayEventLedgerTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $TodayEventLedgerTable,
+    TodayEventLedgerData,
+    $$TodayEventLedgerTableFilterComposer,
+    $$TodayEventLedgerTableOrderingComposer,
+    $$TodayEventLedgerTableAnnotationComposer,
+    $$TodayEventLedgerTableCreateCompanionBuilder,
+    $$TodayEventLedgerTableUpdateCompanionBuilder,
+    (
+      TodayEventLedgerData,
+      BaseReferences<_$AppDatabase, $TodayEventLedgerTable,
+          TodayEventLedgerData>
+    ),
+    TodayEventLedgerData,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4984,4 +6375,8 @@ class $AppDatabaseManager {
       $$LocalFoodLogsTableTableManager(_db, _db.localFoodLogs);
   $$NutritionSyncQueueTableTableManager get nutritionSyncQueue =>
       $$NutritionSyncQueueTableTableManager(_db, _db.nutritionSyncQueue);
+  $$TodayEventQueueTableTableManager get todayEventQueue =>
+      $$TodayEventQueueTableTableManager(_db, _db.todayEventQueue);
+  $$TodayEventLedgerTableTableManager get todayEventLedger =>
+      $$TodayEventLedgerTableTableManager(_db, _db.todayEventLedger);
 }

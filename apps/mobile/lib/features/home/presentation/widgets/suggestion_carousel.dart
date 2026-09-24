@@ -1,60 +1,81 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/tokens.dart';
+import '../../../today/domain/today.dart';
+import '../../../today/presentation/today_words.dart';
 import '../../domain/home_suggestion_engine.dart';
 
-/// "Your next move": a horizontally swipeable row of the engine's top
-/// suggestions. One card is the width of the screen minus a peek of the
-/// next; hairline border, no shadow, the kind as an eyebrow, the title
-/// in the display face, one line of context, one action. Dots below
-/// when there is more than one.
+/// "Your next move": a horizontally swipeable row of at most four cards —
+/// the server's TODAY actions and the device-only suggestions, by band.
+/// One card is the width of the screen minus a peek of the next; hairline
+/// border, no shadow, the kind as an eyebrow, the headline in the display
+/// face, one line of context, the primary action — and, on a server card,
+/// "Not today". Tapping a server card opens its "why". Dots below when
+/// there is more than one.
 class SuggestionCarousel extends StatefulWidget {
   const SuggestionCarousel({
     required this.suggestions,
     required this.onAction,
+    this.onOpen,
+    this.onDismiss,
+    this.onShown,
+    this.recorded = const {},
+    this.messConfigured = false,
     super.key,
   });
 
   final List<Suggestion> suggestions;
   final ValueChanged<Suggestion> onAction;
 
-  static String eyebrow(SuggestionType t) => switch (t) {
-        SuggestionType.deload => 'DELOAD',
-        SuggestionType.resumeWorkout ||
-        SuggestionType.startWorkout ||
-        SuggestionType.workoutDone ||
-        SuggestionType.neglect ||
-        SuggestionType.restDay =>
-          'TRAIN',
-        SuggestionType.eatProtein || SuggestionType.eatCalories => 'EAT',
-        SuggestionType.recover => 'RECOVER',
-        SuggestionType.celebratePr => 'RECORD',
-        SuggestionType.volume => 'VOLUME',
-        SuggestionType.move => 'MOVE',
-        SuggestionType.connectHealth => 'HEALTH',
-      };
+  /// A server card tapped (→ `opened` and its "why" sheet).
+  final ValueChanged<Suggestion>? onOpen;
 
-  static String actionLabel(SuggestionAction a) => switch (a) {
-        SuggestionAction.resumeWorkout => 'Resume workout',
-        SuggestionAction.startWorkout => 'Start workout',
-        SuggestionAction.viewSummary => 'See the summary',
-        SuggestionAction.viewPlan => 'Open your plan',
-        SuggestionAction.logFood => 'Log food',
-        SuggestionAction.viewActivity => 'View activity',
-        SuggestionAction.viewRecovery => 'View recovery',
-        SuggestionAction.viewVolume => 'Training volume',
-        SuggestionAction.connectHealth => 'Connect Health data',
-      };
+  /// "Not today" on a server card (→ `dismissed`).
+  final ValueChanged<Suggestion>? onDismiss;
+
+  /// A server card actually on screen (→ `shown`, once per action).
+  final ValueChanged<Suggestion>? onShown;
+
+  /// Events already recorded on this phone, by server action id.
+  final Map<String, Set<TodayEventName>> recorded;
+
+  /// Whether the user has a mess (eat actions then open MESS).
+  final bool messConfigured;
+
+  static String eyebrow(Suggestion s) {
+    final kind = s.today?.kind;
+    if (kind != null) {
+      return s.cached
+          ? '${TodayWords.eyebrow(kind)} · OFFLINE'
+          : TodayWords.eyebrow(kind);
+    }
+    return switch (s.type) {
+      SuggestionType.resumeWorkout => 'TRAIN',
+      SuggestionType.recover => 'RECOVER',
+      SuggestionType.move => 'MOVE',
+      SuggestionType.connectHealth => 'HEALTH',
+      SuggestionType.today => '',
+    };
+  }
+
+  static String actionLabel(Suggestion s, {bool messConfigured = false}) {
+    final a = s.today;
+    if (a != null) return TodayWords.primary(a, messConfigured: messConfigured);
+    return switch (s.action) {
+      SuggestionAction.resumeWorkout => 'Resume workout',
+      SuggestionAction.viewActivity => 'View activity',
+      SuggestionAction.viewRecovery => 'View recovery',
+      SuggestionAction.connectHealth => 'Connect Health data',
+      SuggestionAction.today => '',
+    };
+  }
 
   /// Semantic colour only where it carries meaning (§6.2).
-  static Color eyebrowColor(SuggestionType t) => switch (t) {
-        SuggestionType.deload => FitColors.amber,
-        SuggestionType.recover => FitColors.amber,
-        SuggestionType.celebratePr ||
-        SuggestionType.workoutDone =>
-          FitColors.pine,
-        _ => FitColors.ink60,
-      };
+  static Color eyebrowColor(Suggestion s) {
+    final kind = s.today?.kind;
+    if (kind != null) return TodayWords.eyebrowColor(kind);
+    return s.type == SuggestionType.recover ? FitColors.amber : FitColors.ink60;
+  }
 
   @override
   State<SuggestionCarousel> createState() => _SuggestionCarouselState();
@@ -64,26 +85,47 @@ class _SuggestionCarouselState extends State<SuggestionCarousel> {
   final _controller = PageController(viewportFraction: 0.9);
   int _page = 0;
 
+  /// Reported this lifetime; the ledger dedups across rebuilds and restarts.
+  final _reported = <String>{};
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
+  void _reportVisible() {
+    final n = widget.suggestions.length;
+    if (n == 0 || widget.onShown == null) return;
+    final s = widget.suggestions[_page.clamp(0, n - 1)];
+    final id = s.today?.id;
+    if (id == null || _reported.contains(id)) return;
+    _reported.add(id);
+    widget.onShown!(s);
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final n = widget.suggestions.length;
+    if (_page >= n && n > 0) _page = n - 1;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _reportVisible();
+    });
+    // Room for two buttons and larger text (§6.8: text scales to 200 %).
+    final scale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 2.0);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         SizedBox(
-          height: 196,
+          height: 212 * scale,
           child: PageView.builder(
             controller: _controller,
             padEnds: false,
             itemCount: n,
-            onPageChanged: (i) => setState(() => _page = i),
+            onPageChanged: (i) {
+              setState(() => _page = i);
+            },
             itemBuilder: (context, i) {
               final s = widget.suggestions[i];
               return Padding(
@@ -94,7 +136,17 @@ class _SuggestionCarouselState extends State<SuggestionCarousel> {
                 child: _Card(
                   key: ValueKey('home.suggestion.${s.id}'),
                   suggestion: s,
+                  messConfigured: widget.messConfigured,
+                  recorded: s.today == null
+                      ? const {}
+                      : widget.recorded[s.today!.id] ?? const {},
                   onAction: () => widget.onAction(s),
+                  onOpen: s.isServer && widget.onOpen != null
+                      ? () => widget.onOpen!(s)
+                      : null,
+                  onDismiss: s.isServer && widget.onDismiss != null
+                      ? () => widget.onDismiss!(s)
+                      : null,
                   textTheme: textTheme,
                 ),
               );
@@ -133,31 +185,39 @@ class _SuggestionCarouselState extends State<SuggestionCarousel> {
 class _Card extends StatelessWidget {
   const _Card({
     required this.suggestion,
+    required this.messConfigured,
+    required this.recorded,
     required this.onAction,
+    required this.onOpen,
+    required this.onDismiss,
     required this.textTheme,
     super.key,
   });
 
   final Suggestion suggestion;
+  final bool messConfigured;
+  final Set<TodayEventName> recorded;
   final VoidCallback onAction;
+  final VoidCallback? onOpen;
+  final VoidCallback? onDismiss;
   final TextTheme textTheme;
 
   @override
   Widget build(BuildContext context) {
     final s = suggestion;
-    return Container(
+    // Once accepted, "Not today" is no longer a choice (P2).
+    final canDismiss =
+        onDismiss != null && !recorded.contains(TodayEventName.accepted);
+    final body = Padding(
       padding: const EdgeInsets.all(FitSpacing.md),
-      decoration: const BoxDecoration(
-        border: Border.fromBorderSide(BorderSide(color: FitColors.rule)),
-        borderRadius: BorderRadius.all(FitRadius.medium),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            SuggestionCarousel.eyebrow(s.type),
+            SuggestionCarousel.eyebrow(s),
+            key: ValueKey('home.suggestion.${s.id}.eyebrow'),
             style: textTheme.labelSmall?.copyWith(
-              color: SuggestionCarousel.eyebrowColor(s.type),
+              color: SuggestionCarousel.eyebrowColor(s),
             ),
           ),
           const SizedBox(height: FitSpacing.xs),
@@ -169,84 +229,56 @@ class _Card extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: FitSpacing.xs),
-          Text(
-            s.subtitle,
-            key: ValueKey('home.suggestion.${s.id}.subtitle'),
-            style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+          Flexible(
+            child: Text(
+              s.subtitle,
+              key: ValueKey('home.suggestion.${s.id}.subtitle'),
+              style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           const Spacer(),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: FilledButton(
-              key: ValueKey('home.suggestion.${s.id}.action'),
-              onPressed: onAction,
-              child: Text(SuggestionCarousel.actionLabel(s.action)),
-            ),
+          Wrap(
+            spacing: FitSpacing.sm,
+            runSpacing: FitSpacing.xs,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: <Widget>[
+              FilledButton(
+                key: ValueKey('home.suggestion.${s.id}.action'),
+                onPressed: onAction,
+                child: Text(
+                  SuggestionCarousel.actionLabel(
+                    s,
+                    messConfigured: messConfigured,
+                  ),
+                ),
+              ),
+              if (canDismiss)
+                TextButton(
+                  key: ValueKey('home.suggestion.${s.id}.dismiss'),
+                  onPressed: onDismiss,
+                  child: const Text('Not today'),
+                ),
+            ],
           ),
         ],
       ),
     );
-  }
-}
-
-/// "More for you": the rest of the engine's list as plain rows.
-class MoreForYou extends StatelessWidget {
-  const MoreForYou({
-    required this.suggestions,
-    required this.onAction,
-    super.key,
-  });
-
-  final List<Suggestion> suggestions;
-  final ValueChanged<Suggestion> onAction;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Column(
-      children: <Widget>[
-        for (final s in suggestions) ...<Widget>[
-          const Divider(color: FitColors.rule, height: 1),
-          InkWell(
-            key: ValueKey('home.more.${s.id}'),
-            onTap: () => onAction(s),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: FitSpacing.screen,
-                vertical: FitSpacing.md,
-              ),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(s.title, style: textTheme.titleMedium),
-                        const SizedBox(height: 2),
-                        Text(
-                          s.subtitle,
-                          style: textTheme.bodyMedium
-                              ?.copyWith(color: FitColors.ink60),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right,
-                    size: 20,
-                    color: FitColors.ink60,
-                  ),
-                ],
-              ),
+    return Material(
+      color: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        side: BorderSide(color: FitColors.rule),
+        borderRadius: BorderRadius.all(FitRadius.medium),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: onOpen == null
+          ? body
+          : InkWell(
+              key: ValueKey('home.suggestion.${s.id}.open'),
+              onTap: onOpen,
+              child: body,
             ),
-          ),
-        ],
-        const Divider(color: FitColors.rule, height: 1),
-      ],
     );
   }
 }

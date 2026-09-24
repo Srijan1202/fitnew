@@ -15,6 +15,8 @@ import 'package:fitos/features/profile/domain/entities/profile.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart'
     show PersonalDetailsChange;
 import 'package:fitos/features/profile/domain/entities/vocabulary.dart';
+import 'package:fitos/features/today/domain/today.dart';
+import 'package:fitos/features/today/presentation/today_words.dart';
 import 'package:fitos/features/training/domain/entities/program.dart';
 import 'package:fitos/features/workout/data/workout_api.dart';
 import 'package:fitos/features/workout/domain/entities/workout.dart';
@@ -26,6 +28,7 @@ import '../support/fake_food_repository.dart';
 import '../support/fake_mess_api.dart';
 import '../support/fake_training_repository.dart';
 import '../support/fake_onboarding_repository.dart';
+import '../support/fake_today_api.dart';
 import '../support/fake_workout_api.dart';
 
 /// ADR-004: the Dart DTOs are hand-written, so this test is what stops them
@@ -2040,6 +2043,136 @@ void main() {
 
     test('a recommendation round-trips through its own JSON', () {
       final back = MessRecommendation.fromJson(
+        jsonDecode(jsonEncode(full.toJson())) as Map<String, dynamic>,
+      );
+      expect(jsonEncode(back.toJson()), jsonEncode(full.toJson()));
+    });
+  });
+
+  group('TODAY (Phase 11)', () {
+    Map<String, dynamic> p(Map<String, dynamic> s, String k) =>
+        properties(s)[k] as Map<String, dynamic>;
+
+    late Map<String, dynamic> plan;
+    late Map<String, dynamic> action;
+    late List<Map<String, dynamic>> reasons;
+    setUpAll(() {
+      plan = schemaOf('/today', 'get');
+      action = p(plan, 'actions')['items'] as Map<String, dynamic>;
+      reasons = (p(action, 'reason')['anyOf'] as List<dynamic>)
+          .cast<Map<String, dynamic>>();
+    });
+
+    /// A value of the documented type (enough to exercise the words).
+    Object? sample(String name, Map<String, dynamic> s) => switch (s['type']) {
+          'boolean' => true,
+          'number' || 'integer' => 2,
+          'array' => ['knee'],
+          _ when (s['pattern'] as String?)?.contains(r'\d{4}') ?? false =>
+            '2026-09-26',
+          _ when s['enum'] != null => (s['enum'] as List<dynamic>).first,
+          _ => '$name value',
+        };
+
+    TodayReason sampleReason(Map<String, dynamic> variant) {
+      final code = (p(variant, 'code')['enum'] as List<dynamic>?)?.first ??
+          p(variant, 'code')['const'];
+      final values = p(variant, 'values');
+      return TodayReason(code as String, {
+        for (final e in properties(values).entries)
+          e.key: sample(e.key, e.value as Map<String, dynamic>),
+      });
+    }
+
+    test('kinds, bases, targets and events are exactly the server\'s', () {
+      expect(
+        TodayKind.values.map((k) => k.wire).toList(),
+        enumOf(p(action, 'kind')),
+      );
+      expect(
+        ActionBasis.values.map((b) => b.wire).toList(),
+        enumOf(p(action, 'basis')),
+      );
+      expect(
+        ActionTarget.values.map((t) => t.wire).toList(),
+        enumOf(p(action, 'target')),
+      );
+      final request =
+          schemaOf('/today/actions/{id}/event', 'post', request: true);
+      expect(
+        TodayEventName.values.map((e) => e.wire).toList(),
+        enumOf(p(request, 'event')),
+      );
+    });
+
+    test('the plan and an action have exactly the documented properties', () {
+      final a = FakeTodayApi.action(TodayKind.startWorkout);
+      final full = TodayPlan(
+        date: '2026-09-24',
+        generatedAt: '2026-09-24T06:30:00.000Z',
+        engineVersion: 'today-1',
+        actions: [a],
+      );
+      expect(full.toJson().keys.toSet(), keysOf(plan));
+      expect(a.toJson().keys.toSet(), keysOf(action));
+      expect(a.reason.toJson().keys.toSet(), {'code', 'values'});
+    });
+
+    test('every reason code the server can send is worded from its values', () {
+      expect(reasons, hasLength(10));
+      for (final variant in reasons) {
+        final r = sampleReason(variant);
+        expect(TodayWords.facts(r), isNotEmpty, reason: r.code);
+      }
+    });
+
+    test(
+        'the event request sends exactly clientEventId, event, occurredAt; the stored event reads back',
+        () {
+      final request =
+          schemaOf('/today/actions/{id}/event', 'post', request: true);
+      const body = TodayEventRequest(
+        clientEventId: '11111111-1111-4111-8111-111111111111',
+        event: TodayEventName.shown,
+        occurredAt: '2026-09-24T06:30:00.000Z',
+      );
+      expect(body.toJson().keys.toSet(), keysOf(request));
+      final response = schemaOf('/today/actions/{id}/event', 'post');
+      final record = TodayEventRecord.fromJson({
+        'event': {
+          'id': 'e',
+          'recommendationId': 'r',
+          'event': 'shown',
+          'clientEventId': body.clientEventId,
+          'occurredAt': body.occurredAt,
+          'receivedAt': body.occurredAt,
+        },
+      });
+      expect(keysOf(response), {'event'});
+      expect(record.toJson().keys.toSet(), keysOf(p(response, 'event')));
+    });
+
+    test('a plan round-trips through its own JSON (the offline cache)', () {
+      final full = TodayPlan(
+        date: '2026-09-24',
+        generatedAt: '2026-09-24T06:30:00.000Z',
+        engineVersion: 'today-1',
+        actions: [
+          FakeTodayApi.action(
+            TodayKind.eatProtein,
+            subjectKey: 'lunch',
+            reason: const TodayReason('protein-behind', {
+              'slot': 'lunch',
+              'proteinTarget': 106,
+              'proteinLow': 0,
+              'proteinHigh': 8,
+              'kcalLeftLow': 2100,
+              'kcalLeftHigh': 2276,
+            }),
+          ),
+        ],
+      );
+      final back = TodayPlan.fromJson(
         jsonDecode(jsonEncode(full.toJson())) as Map<String, dynamic>,
       );
       expect(jsonEncode(back.toJson()), jsonEncode(full.toJson()));

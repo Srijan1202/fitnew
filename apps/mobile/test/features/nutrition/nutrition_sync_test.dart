@@ -388,7 +388,8 @@ void main() {
           );
       expect(await v2.select(v2.nutritionSyncQueue).get(), hasLength(1));
       final version = await v2.customSelect('PRAGMA user_version').getSingle();
-      expect(version.data.values.single, 2);
+      // Upgraded to the current schema (2 in Phase 8; later phases add tables).
+      expect(version.data.values.single, v2.schemaVersion);
     });
 
     test('sign-out clears the food-log tables too', () async {
