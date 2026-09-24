@@ -34656,6 +34656,7 @@
                         "menu-unavailable",
                         "meal-not-served",
                         "nothing-safe",
+                        "no-meal",
                         "nothing-fits"
                       ]
                     },
@@ -34924,6 +34925,10 @@
                         "fat": {
                           "type": "number",
                           "minimum": 0
+                        },
+                        "dayRemainingKcal": {
+                          "type": "number",
+                          "minimum": 0
                         }
                       },
                       "required": [
@@ -34931,7 +34936,8 @@
                         "kcal",
                         "protein",
                         "carb",
-                        "fat"
+                        "fat",
+                        "dayRemainingKcal"
                       ],
                       "additionalProperties": false,
                       "nullable": true
@@ -35016,6 +35022,25 @@
                                     "medium",
                                     "low"
                                   ]
+                                },
+                                "component": {
+                                  "type": "string",
+                                  "enum": [
+                                    "staple",
+                                    "complete",
+                                    "protein",
+                                    "pulse-gravy",
+                                    "dairy",
+                                    "veg",
+                                    "soup",
+                                    "fruit",
+                                    "snack",
+                                    "dessert",
+                                    "crisp",
+                                    "beverage",
+                                    "condiment",
+                                    "other"
+                                  ]
                                 }
                               },
                               "required": [
@@ -35032,7 +35057,8 @@
                                 "carbHigh",
                                 "fatLow",
                                 "fatHigh",
-                                "confidence"
+                                "confidence",
+                                "component"
                               ],
                               "additionalProperties": false
                             },
@@ -35093,6 +35119,39 @@
                               "low"
                             ]
                           },
+                          "structure": {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "complete-meal",
+                                  "meal",
+                                  "meal-weak-protein",
+                                  "limited",
+                                  "limited-no-staple",
+                                  "snack"
+                                ]
+                              },
+                              "missing": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "staple",
+                                    "protein",
+                                    "strong-protein",
+                                    "vegetable"
+                                  ]
+                                }
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "missing"
+                            ],
+                            "additionalProperties": false
+                          },
                           "reasons": {
                             "type": "array",
                             "items": {
@@ -35112,6 +35171,12 @@
                                     "fat-within",
                                     "fat-over",
                                     "goal-weighting",
+                                    "meal-structure",
+                                    "staple-anchor",
+                                    "protein-anchor",
+                                    "vegetable-component",
+                                    "supporting-side",
+                                    "limited-menu",
                                     "top-protein-dish",
                                     "post-workout-carbs",
                                     "repeat",
@@ -35124,7 +35189,7 @@
                                     "allergen-alternative",
                                     "no-estimate",
                                     "ambient",
-                                    "not-a-plate-dish",
+                                    "not-a-meal-component",
                                     "disliked",
                                     "not-top-candidate",
                                     "not-chosen"
@@ -35207,17 +35272,51 @@
                                     "unknown"
                                   ]
                                 },
-                                "role": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "complete-meal",
+                                    "meal",
+                                    "meal-weak-protein",
+                                    "limited",
+                                    "limited-no-staple",
+                                    "snack"
+                                  ]
+                                },
+                                "strength": {
+                                  "type": "string",
+                                  "enum": [
+                                    "strong",
+                                    "weak"
+                                  ]
+                                },
+                                "missing": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "staple",
+                                      "protein",
+                                      "strong-protein",
+                                      "vegetable"
+                                    ]
+                                  },
+                                  "minItems": 1
+                                },
+                                "component": {
                                   "type": "string",
                                   "enum": [
                                     "staple",
+                                    "complete",
                                     "protein",
-                                    "legume",
-                                    "vegetable",
+                                    "pulse-gravy",
                                     "dairy",
+                                    "veg",
+                                    "soup",
                                     "fruit",
-                                    "sweet",
-                                    "fried",
+                                    "snack",
+                                    "dessert",
+                                    "crisp",
                                     "beverage",
                                     "condiment",
                                     "other"
@@ -35236,6 +35335,7 @@
                           "items",
                           "totals",
                           "confidence",
+                          "structure",
                           "reasons"
                         ],
                         "additionalProperties": false
@@ -35364,6 +35464,12 @@
                                     "fat-within",
                                     "fat-over",
                                     "goal-weighting",
+                                    "meal-structure",
+                                    "staple-anchor",
+                                    "protein-anchor",
+                                    "vegetable-component",
+                                    "supporting-side",
+                                    "limited-menu",
                                     "top-protein-dish",
                                     "post-workout-carbs",
                                     "repeat",
@@ -35376,7 +35482,7 @@
                                     "allergen-alternative",
                                     "no-estimate",
                                     "ambient",
-                                    "not-a-plate-dish",
+                                    "not-a-meal-component",
                                     "disliked",
                                     "not-top-candidate",
                                     "not-chosen"
@@ -35459,17 +35565,51 @@
                                     "unknown"
                                   ]
                                 },
-                                "role": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "complete-meal",
+                                    "meal",
+                                    "meal-weak-protein",
+                                    "limited",
+                                    "limited-no-staple",
+                                    "snack"
+                                  ]
+                                },
+                                "strength": {
+                                  "type": "string",
+                                  "enum": [
+                                    "strong",
+                                    "weak"
+                                  ]
+                                },
+                                "missing": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "enum": [
+                                      "staple",
+                                      "protein",
+                                      "strong-protein",
+                                      "vegetable"
+                                    ]
+                                  },
+                                  "minItems": 1
+                                },
+                                "component": {
                                   "type": "string",
                                   "enum": [
                                     "staple",
+                                    "complete",
                                     "protein",
-                                    "legume",
-                                    "vegetable",
+                                    "pulse-gravy",
                                     "dairy",
+                                    "veg",
+                                    "soup",
                                     "fruit",
-                                    "sweet",
-                                    "fried",
+                                    "snack",
+                                    "dessert",
+                                    "crisp",
                                     "beverage",
                                     "condiment",
                                     "other"
@@ -35558,6 +35698,11 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "smallestMealKcal": {
+                      "type": "number",
+                      "minimum": 0,
+                      "nullable": true
                     }
                   },
                   "required": [
@@ -35576,7 +35721,8 @@
                     "postWorkout",
                     "plates",
                     "shortfall",
-                    "dishes"
+                    "dishes",
+                    "smallestMealKcal"
                   ],
                   "additionalProperties": false
                 }

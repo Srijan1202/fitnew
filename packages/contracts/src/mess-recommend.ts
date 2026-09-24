@@ -1,6 +1,7 @@
 /**
- * Mess recommendations (Phase 10, ADR-015): "what should I eat" at one meal
- * of a mess. Computed on request from the server's mirror and the caller's
+ * Mess recommendations (Phase 10, ADR-015 and ADR-016): "what should I eat"
+ * at one meal of a mess — always a meal (a staple, a protein, a vegetable
+ * when the menu allows), never the nutritionally cheapest dish. Computed on request from the server's mirror and the caller's
  * own diet, allergies, goal, targets and logs; never stored.
  *
  * Every number is a range from the stored mess estimates (the same numbers a
@@ -10,7 +11,7 @@
 import { z } from 'zod';
 
 import { dishSlugSchema, messCodeSchema, messConfidenceSchema } from './mess-common.js';
-import { dietClassSchema, dishRoleSchema, menuResolutionSchema, messSchema } from './mess.js';
+import { dietClassSchema, menuResolutionSchema, messSchema } from './mess.js';
 import { mealSlotSchema } from './nutrition-log.js';
 import { allergenSchema, dietTypeSchema, goalTypeSchema, isoDateSchema } from './profile.js';
 
@@ -33,13 +34,29 @@ export const RECOMMENDATION_STATUSES = [
   'menu-unavailable',
   'meal-not-served',
   'nothing-safe',
+  /** ADR-016: dishes pass your filters, but no structurally valid meal can be made from them. */
+  'no-meal',
+  /** ADR-016: a valid meal exists, but even the smallest goes over everything left today. */
   'nothing-fits',
 ] as const;
+
+/** ADR-016: what part of a meal a dish is. */
+export const MEAL_COMPONENTS = [
+  'staple', 'complete', 'protein', 'pulse-gravy', 'dairy', 'veg', 'soup', 'fruit',
+  'snack', 'dessert', 'crisp', 'beverage', 'condiment', 'other',
+] as const;
+export const mealComponentSchema = z.enum(MEAL_COMPONENTS);
+
+/** ADR-016: the meal a plate makes. */
+export const STRUCTURE_KINDS = ['complete-meal', 'meal', 'meal-weak-protein', 'limited', 'limited-no-staple', 'snack'] as const;
+export const structureKindSchema = z.enum(STRUCTURE_KINDS);
+export const MISSING_PARTS = ['staple', 'protein', 'strong-protein', 'vegetable'] as const;
+export const missingPartSchema = z.enum(MISSING_PARTS);
 
 export const ALLERGEN_STATUSES = ['contains', 'likely', 'free', 'unknown'] as const;
 export const allergenStatusSchema = z.enum(ALLERGEN_STATUSES);
 
-/** Every reason code (ADR-015 §13). Plate reasons, then dish reasons. */
+/** Every reason code (ADR-015 §13, ADR-016). Plate reasons, then dish reasons. */
 export const REASON_CODES = [
   'protein-covers',
   'protein-may-fall-short',
@@ -52,6 +69,12 @@ export const REASON_CODES = [
   'fat-within',
   'fat-over',
   'goal-weighting',
+  'meal-structure',
+  'staple-anchor',
+  'protein-anchor',
+  'vegetable-component',
+  'supporting-side',
+  'limited-menu',
   'top-protein-dish',
   'post-workout-carbs',
   'repeat',
@@ -64,7 +87,7 @@ export const REASON_CODES = [
   'allergen-alternative',
   'no-estimate',
   'ambient',
-  'not-a-plate-dish',
+  'not-a-meal-component',
   'disliked',
   'not-top-candidate',
   'not-chosen',
@@ -87,7 +110,10 @@ export const recommendationReasonSchema = z
     alternative: z.string().optional(),
     allergen: allergenSchema.optional(),
     status: allergenStatusSchema.exclude(['free']).optional(),
-    role: dishRoleSchema.optional(),
+    kind: structureKindSchema.optional(),
+    strength: z.enum(['strong', 'weak']).optional(),
+    missing: z.array(missingPartSchema).min(1).optional(),
+    component: mealComponentSchema.optional(),
   })
   .strict();
 export type RecommendationReason = z.infer<typeof recommendationReasonSchema>;
@@ -113,6 +139,8 @@ export const plateItemSchema = z.object({
   servingGrams: z.number().positive().nullable(),
   ...macroTotals,
   confidence: messConfidenceSchema,
+  /** What part of the meal this dish is. */
+  component: mealComponentSchema,
 });
 export type PlateItem = z.infer<typeof plateItemSchema>;
 
@@ -123,6 +151,8 @@ export const plateSchema = z.object({
   totals: z.object(macroTotals),
   /** The worst item's confidence. */
   confidence: messConfidenceSchema,
+  /** The meal this plate makes, and what it lacks for a complete meal. */
+  structure: z.object({ kind: structureKindSchema, missing: z.array(missingPartSchema) }),
   reasons: z.array(recommendationReasonSchema),
 });
 export type Plate = z.infer<typeof plateSchema>;
@@ -172,7 +202,15 @@ export const messRecommendationSchema = z.object({
   goal: goalTypeSchema,
   /** The meal's share of what the day still needs (null before targets exist). */
   target: z
-    .object({ share: z.number().min(0).max(1), kcal: amount, protein: amount, carb: amount, fat: amount })
+    .object({
+      share: z.number().min(0).max(1),
+      kcal: amount,
+      protein: amount,
+      carb: amount,
+      fat: amount,
+      /** Everything left today, conservatively (for `nothing-fits`). */
+      dayRemainingKcal: amount,
+    })
     .nullable(),
   postWorkout: z.boolean(),
   plates: z.array(plateSchema).max(3),
@@ -180,5 +218,7 @@ export const messRecommendationSchema = z.object({
   shortfall: z.object({ protein: recommendationGapSchema.nullable(), kcal: recommendationGapSchema.nullable() }).nullable(),
   /** Every dish at the meal, and why it is or is not on a plate. */
   dishes: z.array(dishOutcomeSchema),
+  /** `nothing-fits` only: the low-end kcal of the smallest valid meal on the menu. */
+  smallestMealKcal: amount.nullable(),
 });
 export type MessRecommendation = z.infer<typeof messRecommendationSchema>;

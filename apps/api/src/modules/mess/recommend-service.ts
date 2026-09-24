@@ -6,7 +6,8 @@
  * which meals are logged, the last 3 days' mess dishes, a workout completed
  * in the last 3 hours — and the menu with its STORED estimates (the same
  * numbers logging snapshots), then returns core's `recommendMeal` as it is.
- * Nothing is stored (Phase 11); nothing is rephrased (Phase 14).
+ * Plates are meals, never the cheapest dish (ADR-016). Nothing is stored
+ * (Phase 11); nothing is rephrased (Phase 14).
  */
 import { allergenStatus, type Allergen } from '@fitos/core/mess/allergens';
 import { capMessConfidence } from '@fitos/core/mess/nutrition';
@@ -165,10 +166,13 @@ export class MessRecommendService {
           servingGrams: i.servingGrams,
           ...i.macros,
           confidence: capMessConfidence(i.confidence),
+          component: i.component,
         })),
         totals: p.macros,
         confidence: capMessConfidence(p.confidence),
-        reasons: p.reasons as RecommendationReason[],
+        // ADR-016: the meal this plate makes (the tier stays internal).
+        structure: { kind: p.structure.kind, missing: [...p.structure.missing] },
+        reasons: p.reasons.map((x) => ({ ...x, ...('missing' in x ? { missing: [...x.missing] } : {}) })) as RecommendationReason[],
       })),
       shortfall: r.shortfall,
       dishes: r.dishes.map((o) => ({
@@ -182,6 +186,7 @@ export class MessRecommendService {
           return { name, diet: altDiet, allergens: allergies.map((a) => ({ allergen: a, status: allergenStatus(name, a, altDiet) })) };
         }),
       })),
+      smallestMealKcal: r.smallestMealKcal,
     };
   }
 }

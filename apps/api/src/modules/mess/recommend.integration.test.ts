@@ -287,7 +287,7 @@ describeIfDb('/v1/mess/menu/recommend (real Postgres)', { timeout: 30_000 }, () 
     await post(u, { clientLogId: randomUUID(), mealSlot: 'lunch', entryMethod: 'quick-add', quickAdd: { kcal: 2000, proteinG: 50, carbG: 250, fatG: 60 } });
     const r = await rec(u, `?date=${addDays(today(), 1)}`);
     expect(r).toMatchObject({ date: addDays(today(), 1), slot: 'breakfast', loggable: false, slotAlreadyLogged: false, postWorkout: false });
-    expect(r.target).toEqual({ share: 0.25, kcal: 600, protein: 35, carb: 72.5, fat: 17.5 });
+    expect(r.target).toEqual({ share: 0.25, kcal: 600, protein: 35, carb: 72.5, fat: 17.5, dayRemainingKcal: 2400 });
   });
 
   it('the default meal is the next one not logged today', async () => {
@@ -395,6 +395,65 @@ describeIfDb('/v1/mess/menu/recommend (real Postgres)', { timeout: 30_000 }, () 
     expect(gap).toBeTruthy();
     expect(gap!.gapLow).toBeCloseTo(r.target!.protein - top.totals.proteinHigh, 5);
     expect(gap!.gapHigh).toBeCloseTo(r.target!.protein - top.totals.proteinLow, 5);
+  });
+
+  // ------------------------------------------- ADR-016: a meal, not a dish --
+
+  it('every plate is a meal: structure and components on the wire; no drinks; no dessert or crisp at lunch or dinner', async () => {
+    const veg = await user({ diet: 'vegetarian' });
+    const nonveg = await user({ diet: 'non-vegetarian', goal: 'fat-loss' });
+    let plates = 0;
+    for (const u of [veg, nonveg]) {
+      for (const code of ['mens-veg', 'mens-nonveg', 'mens-special', 'womens-veg', 'womens-nonveg', 'womens-special']) {
+        for (const slot of ['breakfast', 'lunch', 'snacks', 'dinner'] as const) {
+          const r = await rec(u, `?mess=${code}&slot=${slot}`);
+          expect(['ok', 'no-meal', 'nothing-fits', 'nothing-safe', 'meal-not-served', 'menu-unavailable']).toContain(r.status);
+          for (const p of r.plates) {
+            plates += 1;
+            const c = p.items.map((i) => i.component);
+            expect(c).not.toContain('beverage');
+            if (slot === 'lunch' || slot === 'dinner') {
+              expect(c).not.toContain('dessert');
+              expect(c).not.toContain('crisp');
+            }
+            if (slot === 'snacks') {
+              expect(p.structure.kind).toBe('snack');
+            } else {
+              expect(c.some((x) => x === 'staple' || x === 'complete' || x === 'protein')).toBe(true);
+              expect(p.reasons).toContainEqual({ code: 'meal-structure', kind: p.structure.kind });
+            }
+          }
+          if (r.status === 'ok') expect(r.smallestMealKcal).toBeNull();
+          for (const d of r.dishes) {
+            for (const x of d.reasons) if (x.code === 'not-a-meal-component') expect(x.component).toBeTruthy();
+          }
+        }
+      }
+    }
+    expect(plates).toBeGreaterThan(40);
+  });
+
+  it('Amendment B: the mirror stores the corrected estimates; the recommender and a log use them', async () => {
+    const [papad] = await sql<{ serving_label: string; kcal_low: string; kcal_high: string; confidence: string }[]>`
+      select serving_label, kcal_low, kcal_high, confidence from mess_dish_nutrition where dish_slug = 'rice-papad'`;
+    expect(papad).toEqual({ serving_label: '1 small portion', kcal_low: '95.00', kcal_high: '155.00', confidence: 'low' });
+    const [curdRice] = await sql<{ kcal_low: string; kcal_high: string }[]>`select kcal_low, kcal_high from mess_dish_nutrition where dish_slug = 'curd-rice'`;
+    expect(curdRice).toEqual({ kcal_low: '180.00', kcal_high: '260.00' });
+
+    const u = await user({ diet: 'vegetarian' });
+    const tomorrow = addDays(today(), 1);
+    const r = await rec(u, `?date=${tomorrow}&slot=lunch`);
+    const outcome = r.dishes.find((d) => d.dishSlug === 'rice-papad')!;
+    expect(outcome.onPlate).toBe(false);
+    expect(outcome.reasons).toEqual([{ code: 'not-a-meal-component', component: 'crisp' }]); // owner C6
+    // Still loggable by hand, at the corrected estimate.
+    const logged = await post(u, {
+      clientLogId: randomUUID(), mealSlot: 'lunch', entryMethod: 'mess', mess: 'mens-veg', menuDate: tomorrow,
+      items: [{ dishSlug: 'rice-papad', servings: 1 }],
+    });
+    expect(logged.statusCode, logged.body).toBe(201);
+    const item = (logged.json() as CreateLogResponse).log.items[0]!;
+    expect([item.servingLabel, item.kcalLow, item.kcalHigh]).toEqual(['1 small portion', 95, 155]);
   });
 
   it('deterministic and fast: the same request twice is identical; p95 under 200 ms', async () => {

@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  MEAL_COMPONENTS,
   REASON_CODES,
+  RECOMMENDATION_STATUSES,
   messRecommendQuerySchema,
+  plateSchema,
   plateItemSchema,
   recommendationGapSchema,
   recommendationReasonSchema,
@@ -11,7 +14,7 @@ import {
 const item = {
   dishSlug: 'dal-tadka', name: 'Dal Tadka', servings: 2, servingLabel: '1 katori', servingGrams: 150,
   kcalLow: 240, kcalHigh: 370, proteinLow: 12, proteinHigh: 18, carbLow: 32, carbHigh: 46, fatLow: 6, fatHigh: 14,
-  confidence: 'medium',
+  confidence: 'medium', component: 'protein',
 };
 
 describe('mess recommendation contracts (Phase 10)', () => {
@@ -38,6 +41,23 @@ describe('mess recommendation contracts (Phase 10)', () => {
     expect(plateItemSchema.safeParse({ ...item, servings: 1.5 }).success).toBe(false);
     expect(plateItemSchema.safeParse({ ...item, servings: 4 }).success).toBe(false);
     expect(plateItemSchema.safeParse({ ...item, confidence: 'high' }).success).toBe(false);
+  });
+
+  it('ADR-016: a plate names its structure; items their component; no-meal is its own status', () => {
+    const plate = { rank: 1, items: [item], totals: { kcalLow: 240, kcalHigh: 370, proteinLow: 12, proteinHigh: 18, carbLow: 32, carbHigh: 46, fatLow: 6, fatHigh: 14 }, confidence: 'medium', reasons: [] };
+    expect(plateSchema.safeParse({ ...plate, structure: { kind: 'limited', missing: ['protein', 'vegetable'] } }).success).toBe(true);
+    expect(plateSchema.safeParse(plate).success).toBe(false);
+    expect(plateSchema.safeParse({ ...plate, structure: { kind: 'bag-of-dishes', missing: [] } }).success).toBe(false);
+    expect(plateItemSchema.safeParse({ ...item, component: 'garnish' }).success).toBe(false);
+    expect(recommendationReasonSchema.safeParse({ code: 'meal-structure', kind: 'complete-meal' }).success).toBe(true);
+    expect(recommendationReasonSchema.safeParse({ code: 'protein-anchor', dishSlug: 'dal-tadka', strength: 'weak' }).success).toBe(true);
+    expect(recommendationReasonSchema.safeParse({ code: 'limited-menu', missing: ['strong-protein'] }).success).toBe(true);
+    expect(recommendationReasonSchema.safeParse({ code: 'limited-menu', missing: [] }).success).toBe(false);
+    expect(recommendationReasonSchema.safeParse({ code: 'not-a-meal-component', component: 'beverage' }).success).toBe(true);
+    expect(REASON_CODES).not.toContain('not-a-plate-dish');
+    expect(RECOMMENDATION_STATUSES).toContain('no-meal');
+    expect(RECOMMENDATION_STATUSES).toContain('nothing-fits');
+    expect(MEAL_COMPONENTS).toContain('beverage');
   });
 
   it('a gap is non-negative with the menu maximum', () => {
