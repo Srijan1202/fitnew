@@ -6,16 +6,23 @@
     "kcal": 1100,
     "protein": 85,
     "carb": 120,
-    "fat": 30
+    "fat": 30,
+    "dayRemainingKcal": 1100
   },
   "plates": [
     {
       "rank": 1,
+      "structure": {
+        "kind": "meal",
+        "missing": [
+          "vegetable"
+        ]
+      },
       "items": [
-        "tandoori-chicken x2",
-        "dhal x2",
-        "white-rice x1",
-        "banana x1"
+        "white-rice x1 [staple]",
+        "tandoori-chicken x2 [protein]",
+        "dhal x2 [protein]",
+        "banana x1 [fruit]"
       ],
       "macros": {
         "kcalLow": 900,
@@ -57,6 +64,34 @@
           "goal": "muscle-gain"
         },
         {
+          "code": "meal-structure",
+          "kind": "meal"
+        },
+        {
+          "code": "staple-anchor",
+          "dishSlug": "white-rice"
+        },
+        {
+          "code": "protein-anchor",
+          "dishSlug": "tandoori-chicken",
+          "strength": "strong"
+        },
+        {
+          "code": "protein-anchor",
+          "dishSlug": "dhal",
+          "strength": "strong"
+        },
+        {
+          "code": "supporting-side",
+          "dishSlug": "banana"
+        },
+        {
+          "code": "limited-menu",
+          "missing": [
+            "vegetable"
+          ]
+        },
+        {
           "code": "top-protein-dish",
           "dishSlug": "tandoori-chicken"
         }
@@ -64,50 +99,83 @@
     },
     {
       "rank": 2,
+      "structure": {
+        "kind": "meal",
+        "missing": [
+          "vegetable"
+        ]
+      },
       "items": [
-        "tandoori-chicken x2",
-        "dhal x2",
-        "roti x1",
-        "white-rice x1"
+        "roti x1 [staple]",
+        "white-rice x2 [staple]",
+        "tandoori-chicken x2 [protein]",
+        "rasam x1 [soup]"
       ],
       "macros": {
-        "kcalLow": 900,
-        "kcalHigh": 1305,
-        "proteinLow": 57.7,
-        "proteinHigh": 82.1,
-        "carbLow": 92,
-        "carbHigh": 134,
-        "fatLow": 27.1,
-        "fatHigh": 54.2
+        "kcalLow": 865,
+        "kcalHigh": 1215,
+        "proteinLow": 49.9,
+        "proteinHigh": 71.1,
+        "carbLow": 102,
+        "carbHigh": 145,
+        "fatLow": 22.4,
+        "fatHigh": 43.9
       },
       "confidence": "medium",
       "reasons": [
         {
           "code": "protein-short",
           "target": 85,
-          "high": 82.1
+          "high": 71.1
         },
         {
           "code": "kcal-may-exceed",
           "target": 1100,
-          "low": 900,
-          "high": 1305
+          "low": 865,
+          "high": 1215
         },
         {
           "code": "carb-over",
           "target": 120,
-          "low": 92,
-          "high": 134
+          "low": 102,
+          "high": 145
         },
         {
           "code": "fat-over",
           "target": 30,
-          "low": 27.1,
-          "high": 54.2
+          "low": 22.4,
+          "high": 43.9
         },
         {
           "code": "goal-weighting",
           "goal": "muscle-gain"
+        },
+        {
+          "code": "meal-structure",
+          "kind": "meal"
+        },
+        {
+          "code": "staple-anchor",
+          "dishSlug": "roti"
+        },
+        {
+          "code": "staple-anchor",
+          "dishSlug": "white-rice"
+        },
+        {
+          "code": "protein-anchor",
+          "dishSlug": "tandoori-chicken",
+          "strength": "strong"
+        },
+        {
+          "code": "supporting-side",
+          "dishSlug": "rasam"
+        },
+        {
+          "code": "limited-menu",
+          "missing": [
+            "vegetable"
+          ]
         },
         {
           "code": "top-protein-dish",
@@ -117,50 +185,84 @@
     },
     {
       "rank": 3,
+      "structure": {
+        "kind": "meal",
+        "missing": [
+          "vegetable"
+        ]
+      },
       "items": [
-        "tandoori-chicken x2",
-        "dhal x1",
-        "rasam x1",
-        "white-rice x2"
+        "roti x2 [staple]",
+        "tandoori-chicken x2 [protein]",
+        "dhal x2 [protein]",
+        "banana x1 [fruit]"
       ],
       "macros": {
-        "kcalLow": 900,
-        "kcalHigh": 1280,
-        "proteinLow": 53.4,
-        "proteinHigh": 76.5,
-        "carbLow": 102,
-        "carbHigh": 146,
-        "fatLow": 24.6,
-        "fatHigh": 47.9
+        "kcalLow": 895,
+        "kcalHigh": 1325,
+        "proteinLow": 58,
+        "proteinHigh": 82.7,
+        "carbLow": 90,
+        "carbHigh": 135,
+        "fatLow": 27.8,
+        "fatHigh": 56.5
       },
       "confidence": "medium",
       "reasons": [
         {
           "code": "protein-short",
           "target": 85,
-          "high": 76.5
+          "high": 82.7
         },
         {
           "code": "kcal-may-exceed",
           "target": 1100,
-          "low": 900,
-          "high": 1280
+          "low": 895,
+          "high": 1325
         },
         {
           "code": "carb-over",
           "target": 120,
-          "low": 102,
-          "high": 146
+          "low": 90,
+          "high": 135
         },
         {
           "code": "fat-over",
           "target": 30,
-          "low": 24.6,
-          "high": 47.9
+          "low": 27.8,
+          "high": 56.5
         },
         {
           "code": "goal-weighting",
           "goal": "muscle-gain"
+        },
+        {
+          "code": "meal-structure",
+          "kind": "meal"
+        },
+        {
+          "code": "staple-anchor",
+          "dishSlug": "roti"
+        },
+        {
+          "code": "protein-anchor",
+          "dishSlug": "tandoori-chicken",
+          "strength": "strong"
+        },
+        {
+          "code": "protein-anchor",
+          "dishSlug": "dhal",
+          "strength": "strong"
+        },
+        {
+          "code": "supporting-side",
+          "dishSlug": "banana"
+        },
+        {
+          "code": "limited-menu",
+          "missing": [
+            "vegetable"
+          ]
         },
         {
           "code": "top-protein-dish",
@@ -179,6 +281,7 @@
     },
     "kcal": null
   },
+  "smallestMealKcal": null,
   "dishes": [
     {
       "dish": "roti",
@@ -187,7 +290,8 @@
         {
           "code": "on-plate",
           "ranks": [
-            2
+            2,
+            3
           ]
         }
       ]
@@ -200,7 +304,6 @@
           "code": "on-plate",
           "ranks": [
             1,
-            2,
             3
           ]
         }
@@ -220,8 +323,8 @@
       "diet": "veg",
       "reasons": [
         {
-          "code": "not-a-plate-dish",
-          "role": "condiment"
+          "code": "not-a-meal-component",
+          "component": "condiment"
         }
       ]
     },
@@ -233,8 +336,7 @@
           "code": "on-plate",
           "ranks": [
             1,
-            2,
-            3
+            2
           ]
         }
       ]
@@ -255,7 +357,7 @@
         {
           "code": "on-plate",
           "ranks": [
-            3
+            2
           ]
         }
       ]
@@ -290,7 +392,8 @@
         {
           "code": "on-plate",
           "ranks": [
-            1
+            1,
+            3
           ]
         }
       ]

@@ -1,14 +1,18 @@
 /**
- * A mess meal recommendation, end to end (Phase 10, ADR-015): the meal's
- * share of what the day still needs, the menu's state, the plates, the
- * honest shortfall, and why every dish is or is not on a plate.
+ * A mess meal recommendation, end to end (Phase 10, ADR-015 and ADR-016):
+ * the meal's share of what the day still needs, the menu's state, the plates
+ * (always a meal, never the cheapest dish), the honest shortfall, and why
+ * every dish is or is not on a plate.
  *
  * Pure and deterministic. The API gathers the inputs (the caller's own data
  * only) and returns this as it is; nothing here is stored.
  */
 import { defaultMealSlot } from '../nutrition/log.js';
 import type { Allergen } from './allergens.js';
-import { searchPlates, dishVerdicts, type DietPreference, type DishReason, type PlateGoal, type PlateReason, type PlateSuggestion } from './recommend.js';
+import {
+  UNSAFE_REASONS, dishVerdicts, searchPlates,
+  type DietPreference, type DishReason, type PlateGoal, type PlateReason, type PlateSuggestion,
+} from './recommend.js';
 import type { MealSlot, MessDay, MessDish } from './types.js';
 
 export const MEAL_ORDER: readonly MealSlot[] = ['breakfast', 'lunch', 'snacks', 'dinner'];
@@ -65,6 +69,8 @@ export interface MealTarget {
   readonly protein: number;
   readonly carb: number;
   readonly fat: number;
+  /** Everything left today, conservatively (the day target − the high end eaten). For `nothing-fits`. */
+  readonly dayRemainingKcal: number;
 }
 
 const round1 = (v: number): number => Math.round(v * 10) / 10;
@@ -81,6 +87,7 @@ export function mealTarget(targets: DayTargets, eaten: EatenRanges, share: numbe
     protein: round1(Math.max(0, targets.proteinG - eaten.proteinLow) * share),
     carb: round1(Math.max(0, targets.carbG - eaten.carbHigh) * share),
     fat: round1(Math.max(0, targets.fatG - eaten.fatHigh) * share),
+    dayRemainingKcal: Math.round(Math.max(0, targets.kcal - eaten.kcalHigh)),
   };
 }
 
@@ -110,6 +117,7 @@ export type RecommendationStatus =
   | 'menu-unavailable'
   | 'meal-not-served'
   | 'nothing-safe'
+  | 'no-meal'
   | 'nothing-fits';
 
 export interface Gap {
@@ -154,6 +162,8 @@ export interface MealRecommendation {
   readonly plates: readonly RankedPlate[];
   readonly shortfall: { readonly protein: Gap | null; readonly kcal: Gap | null } | null;
   readonly dishes: readonly DishOutcome[];
+  /** `nothing-fits` only: the low-end kcal of the smallest valid meal on the menu. */
+  readonly smallestMealKcal: number | null;
 }
 
 /**
@@ -182,6 +192,7 @@ export function recommendMeal(input: MealRecommendationInput): MealRecommendatio
     plates: [],
     shortfall: null,
     dishes,
+    smallestMealKcal: null,
   });
 
   if (r.kind === 'unavailable') return empty('menu-unavailable', null);
@@ -190,12 +201,17 @@ export function recommendMeal(input: MealRecommendationInput): MealRecommendatio
 
   const target = input.targets === null ? null : mealTarget(input.targets, input.eaten, mealShare(input.slot, input.loggedSlots));
 
+  // F1 (owner C2): a normal-sized meal is the day target × this meal's weight.
+  const weight = MEAL_WEIGHTS[input.slot];
   const request = {
     meal,
     remainingKcal: target?.kcal ?? 0,
     remainingProtein: target?.protein ?? 0,
     remainingCarb: target?.carb ?? 0,
     remainingFat: target?.fat ?? 0,
+    normalKcal: (input.targets?.kcal ?? 0) * weight,
+    normalCarb: (input.targets?.carbG ?? 0) * weight,
+    normalFat: (input.targets?.fatG ?? 0) * weight,
     diet: input.diet,
     goal: input.goal,
     excludedDishIds: input.excludedDishIds,
@@ -221,10 +237,18 @@ export function recommendMeal(input: MealRecommendationInput): MealRecommendatio
   // the protein still needed is reported in `target`.
   if (target.kcal <= 0) return empty('target-reached', target, filtered(new Map(), new Set()));
 
+  // Nothing passes the hard filters (diet, allergies) → nothing safe.
+  if (verdicts.every((v) => v.reasons.some((x) => UNSAFE_REASONS.has(x.code)))) {
+    return empty('nothing-safe', target, filtered(new Map(), new Set()));
+  }
   const search = searchPlates(request);
   const candidateIds = new Set(search.candidates.map((d) => d.id));
-  if (search.candidates.length === 0) return empty('nothing-safe', target, filtered(new Map(), candidateIds));
-  if (search.plates.length === 0) return empty('nothing-fits', target, filtered(new Map(), candidateIds));
+  // Safe dishes exist, but no structurally valid meal (owner C4).
+  if (search.plates.length === 0) return empty('no-meal', target, filtered(new Map(), candidateIds));
+  // A valid meal exists, but even the smallest goes over everything left today (owner C4 + decision 8).
+  if (search.smallestMealKcal !== null && search.smallestMealKcal > target.dayRemainingKcal) {
+    return { ...empty('nothing-fits', target, filtered(new Map(), candidateIds)), smallestMealKcal: search.smallestMealKcal };
+  }
 
   const inferred: PlateReason[] = r.kind === 'cycle-inferred' ? [{ code: 'inferred-menu', sourceDate: r.sourceDate }] : [];
   const plates: RankedPlate[] = search.plates.map((p, i) => ({ ...p, reasons: [...p.reasons, ...inferred], rank: i + 1 }));
@@ -242,5 +266,5 @@ export function recommendMeal(input: MealRecommendationInput): MealRecommendatio
     if (protein !== null || kcal !== null) shortfall = { protein, kcal };
   }
 
-  return { status: 'ok', basis, target, plates, shortfall, dishes: filtered(ranks, candidateIds) };
+  return { status: 'ok', basis, target, plates, shortfall, dishes: filtered(ranks, candidateIds), smallestMealKcal: null };
 }

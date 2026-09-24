@@ -113,14 +113,14 @@ describe('meal share and meal target (ADR-015 §4)', () => {
 
   it('kcal, carbs and fat from the LOW end of what remains; protein from the HIGH end', () => {
     const t = mealTarget(TARGETS, THREE_MEALS_EATEN, 1);
-    expect(t).toEqual({ share: 1, kcal: 2400 - 1300, protein: 140 - 55, carb: 290 - 170, fat: 70 - 40 });
+    expect(t).toEqual({ share: 1, kcal: 2400 - 1300, protein: 140 - 55, carb: 290 - 170, fat: 70 - 40, dayRemainingKcal: 1100 });
     const half = mealTarget(TARGETS, THREE_MEALS_EATEN, 0.5);
-    expect(half).toEqual({ share: 0.5, kcal: 550, protein: 42.5, carb: 60, fat: 15 });
+    expect(half).toEqual({ share: 0.5, kcal: 550, protein: 42.5, carb: 60, fat: 15, dayRemainingKcal: 1100 });
   });
 
   it('never negative', () => {
     const over = { ...THREE_MEALS_EATEN, kcalHigh: 2600, carbHigh: 400, fatHigh: 90, proteinLow: 200 };
-    expect(mealTarget(TARGETS, over, 1)).toEqual({ share: 1, kcal: 0, protein: 0, carb: 0, fat: 0 });
+    expect(mealTarget(TARGETS, over, 1)).toEqual({ share: 1, kcal: 0, protein: 0, carb: 0, fat: 0, dayRemainingKcal: 0 });
   });
 });
 
@@ -145,8 +145,10 @@ describe('scoring constants and terms are fixed (ADR-015 §9, owner D12)', () =>
     expect(SCORING).toMatchObject({
       proteinCap: 1.25, proteinPoints: 100, carbWeight: 40, carbWeightPostWorkout: 20, fatWeight: 50, carbReward: 20,
       shapeTargetItems: 4, shapePerItem: 4, shapeServingsFree: 7, shapePerServing: 6, varietyPerDay: 6, varietyMaxDays: 3,
-      maxCandidates: 9, maxServings: 8, kcalCeilingFactor: 1.5, kcalCeilingFloor: 400,
+      maxServings: 8, kcalCeilingFactor: 1.5, kcalCeilingFloor: 400,
     });
+    // ADR-016: candidates are chosen per meal component, not a global top 9.
+    expect(SCORING).not.toHaveProperty('maxCandidates');
   });
 
   it('goal weights; recomposition = fat-loss (owner R4)', () => {
@@ -476,7 +478,7 @@ describe('menu states and zero budget', () => {
     const rec = recommendMeal(input({ menu: MENS_VEG_LUNCH_DAY, slot: 'dinner', eaten, loggedSlots: ['breakfast', 'lunch', 'snacks'] }));
     expect(rec.status).toBe('target-reached');
     expect(rec.plates).toEqual([]);
-    expect(rec.target).toEqual({ share: 1, kcal: 0, protein: 40, carb: 120, fat: 30 });
+    expect(rec.target).toEqual({ share: 1, kcal: 0, protein: 40, carb: 120, fat: 30, dayRemainingKcal: 0 });
     expect(rec.shortfall).toBeNull();
   });
 
@@ -627,6 +629,14 @@ describe('personas (owner D25): frozen outputs, reviewed on any change', () => {
       eaten: { kcalLow: 1300, kcalHigh: 1500, proteinLow: 20, proteinHigh: 26, carbLow: 200, carbHigh: 230, fatLow: 40, fatHigh: 48 },
       loggedSlots: ['breakfast', 'lunch', 'snacks'],
     }),
+    // ADR-016: the first S24 run — fat budget spent at its high end, so the
+    // fat target is 0; the old scorer recommended Rasam alone for dinner.
+    'fat-budget-spent': input({
+      menu: dayOf(fresh('hostel-2-mess-1'), '2026-09-24', true), slot: 'dinner', diet: 'non-vegetarian', goal: 'fat-loss',
+      targets: { kcal: 1774, proteinG: 135, carbG: 198, fatG: 49 },
+      eaten: { kcalLow: 848, kcalHigh: 1213, proteinLow: 38.7, proteinHigh: 54.2, carbLow: 72, carbHigh: 104, fatLow: 39.2, fatHigh: 67.2 },
+      loggedSlots: ['breakfast', 'lunch', 'snacks'],
+    }),
   };
 
   /** The frozen shape: what a user would see, without the full dish objects. */
@@ -638,12 +648,14 @@ describe('personas (owner D25): frozen outputs, reviewed on any change', () => {
       target: r.target,
       plates: r.plates.map((p) => ({
         rank: p.rank,
-        items: p.items.map((it) => `${it.dishId} x${it.servings}`),
+        structure: { kind: p.structure.kind, missing: p.structure.missing },
+        items: p.items.map((it) => `${it.dishId} x${it.servings} [${it.component}]`),
         macros: p.macros,
         confidence: p.confidence,
         reasons: p.reasons,
       })),
       shortfall: r.shortfall,
+      smallestMealKcal: r.smallestMealKcal,
       dishes: r.dishes.map((o) => ({ dish: o.dish.id, diet: o.dish.diet, reasons: o.reasons })),
     };
   };

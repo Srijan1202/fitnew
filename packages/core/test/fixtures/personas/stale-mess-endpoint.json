@@ -6,56 +6,86 @@
     "kcal": 2400,
     "protein": 140,
     "carb": 290,
-    "fat": 70
+    "fat": 70,
+    "dayRemainingKcal": 2400
   },
   "plates": [
     {
       "rank": 1,
+      "structure": {
+        "kind": "complete-meal",
+        "missing": []
+      },
       "items": [
-        "dal x2",
-        "sambar x1",
-        "plain-dosa x3",
-        "white-rice x2"
+        "curd-rice x2 [staple]",
+        "plain-dosa x3 [staple]",
+        "dal x2 [protein]",
+        "bhindi-do-pyaza x1 [veg]"
       ],
       "macros": {
-        "kcalLow": 1125,
-        "kcalHigh": 1725,
-        "proteinLow": 30.9,
-        "proteinHigh": 51,
-        "carbLow": 195,
-        "carbHigh": 281,
-        "fatLow": 20.6,
-        "fatHigh": 51.4
+        "kcalLow": 1110,
+        "kcalHigh": 1830,
+        "proteinLow": 32.5,
+        "proteinHigh": 56,
+        "carbLow": 175,
+        "carbHigh": 264,
+        "fatLow": 28,
+        "fatHigh": 69
       },
       "confidence": "low",
       "reasons": [
         {
           "code": "protein-short",
           "target": 140,
-          "high": 51
+          "high": 56
         },
         {
           "code": "kcal-within",
           "target": 2400,
-          "high": 1725
+          "high": 1830
         },
         {
           "code": "carb-within",
           "target": 290,
-          "high": 281
+          "high": 264
         },
         {
           "code": "fat-within",
           "target": 70,
-          "high": 51.4
+          "high": 69
         },
         {
           "code": "goal-weighting",
           "goal": "muscle-gain"
         },
         {
+          "code": "meal-structure",
+          "kind": "complete-meal"
+        },
+        {
+          "code": "staple-anchor",
+          "dishSlug": "curd-rice"
+        },
+        {
+          "code": "staple-anchor",
+          "dishSlug": "plain-dosa"
+        },
+        {
+          "code": "protein-anchor",
+          "dishSlug": "dal",
+          "strength": "strong"
+        },
+        {
+          "code": "vegetable-component",
+          "dishSlug": "bhindi-do-pyaza"
+        },
+        {
           "code": "top-protein-dish",
           "dishSlug": "dal"
+        },
+        {
+          "code": "low-confidence-dish",
+          "dishSlug": "bhindi-do-pyaza"
         },
         {
           "code": "low-confidence-dish",
@@ -69,55 +99,80 @@
     },
     {
       "rank": 2,
+      "structure": {
+        "kind": "complete-meal",
+        "missing": []
+      },
       "items": [
-        "curd-rice x1",
-        "dal x2",
-        "plain-dosa x3",
-        "white-rice x2"
+        "methi-roti x2 [staple]",
+        "curd-rice x2 [staple]",
+        "dal x2 [protein]",
+        "bhindi-do-pyaza x1 [veg]"
       ],
       "macros": {
-        "kcalLow": 1105,
-        "kcalHigh": 1685,
-        "proteinLow": 31.4,
-        "proteinHigh": 52,
-        "carbLow": 188,
-        "carbHigh": 270,
-        "fatLow": 21.6,
-        "fatHigh": 51.9
+        "kcalLow": 830,
+        "kcalHigh": 1290,
+        "proteinLow": 28.5,
+        "proteinHigh": 45.2,
+        "carbLow": 132,
+        "carbHigh": 188,
+        "fatLow": 17.6,
+        "fatHigh": 45
       },
       "confidence": "low",
       "reasons": [
         {
           "code": "protein-short",
           "target": 140,
-          "high": 52
+          "high": 45.2
         },
         {
           "code": "kcal-within",
           "target": 2400,
-          "high": 1685
+          "high": 1290
         },
         {
           "code": "carb-within",
           "target": 290,
-          "high": 270
+          "high": 188
         },
         {
           "code": "fat-within",
           "target": 70,
-          "high": 51.9
+          "high": 45
         },
         {
           "code": "goal-weighting",
           "goal": "muscle-gain"
         },
         {
-          "code": "top-protein-dish",
+          "code": "meal-structure",
+          "kind": "complete-meal"
+        },
+        {
+          "code": "staple-anchor",
+          "dishSlug": "methi-roti"
+        },
+        {
+          "code": "staple-anchor",
           "dishSlug": "curd-rice"
         },
         {
+          "code": "protein-anchor",
+          "dishSlug": "dal",
+          "strength": "strong"
+        },
+        {
+          "code": "vegetable-component",
+          "dishSlug": "bhindi-do-pyaza"
+        },
+        {
+          "code": "top-protein-dish",
+          "dishSlug": "dal"
+        },
+        {
           "code": "low-confidence-dish",
-          "dishSlug": "plain-dosa"
+          "dishSlug": "bhindi-do-pyaza"
         },
         {
           "code": "inferred-menu",
@@ -127,51 +182,80 @@
     },
     {
       "rank": 3,
+      "structure": {
+        "kind": "complete-meal",
+        "missing": []
+      },
       "items": [
-        "dal x2",
-        "sambar x2",
-        "plain-dosa x3",
-        "white-rice x1"
+        "methi-roti x1 [staple]",
+        "plain-dosa x3 [staple]",
+        "dal x2 [protein]",
+        "bhindi-do-pyaza x1 [veg]"
       ],
       "macros": {
-        "kcalLow": 1035,
-        "kcalHigh": 1655,
-        "proteinLow": 31.2,
-        "proteinHigh": 52.5,
-        "carbLow": 169,
-        "carbHigh": 252,
-        "fatLow": 22.3,
-        "fatHigh": 55.2
+        "kcalLow": 835,
+        "kcalHigh": 1430,
+        "proteinLow": 25,
+        "proteinHigh": 43.6,
+        "carbLow": 131,
+        "carbHigh": 206,
+        "fatLow": 20.8,
+        "fatHigh": 56
       },
       "confidence": "low",
       "reasons": [
         {
           "code": "protein-short",
           "target": 140,
-          "high": 52.5
+          "high": 43.6
         },
         {
           "code": "kcal-within",
           "target": 2400,
-          "high": 1655
+          "high": 1430
         },
         {
           "code": "carb-within",
           "target": 290,
-          "high": 252
+          "high": 206
         },
         {
           "code": "fat-within",
           "target": 70,
-          "high": 55.2
+          "high": 56
         },
         {
           "code": "goal-weighting",
           "goal": "muscle-gain"
         },
         {
+          "code": "meal-structure",
+          "kind": "complete-meal"
+        },
+        {
+          "code": "staple-anchor",
+          "dishSlug": "methi-roti"
+        },
+        {
+          "code": "staple-anchor",
+          "dishSlug": "plain-dosa"
+        },
+        {
+          "code": "protein-anchor",
+          "dishSlug": "dal",
+          "strength": "strong"
+        },
+        {
+          "code": "vegetable-component",
+          "dishSlug": "bhindi-do-pyaza"
+        },
+        {
           "code": "top-protein-dish",
           "dishSlug": "dal"
+        },
+        {
+          "code": "low-confidence-dish",
+          "dishSlug": "bhindi-do-pyaza"
         },
         {
           "code": "low-confidence-dish",
@@ -187,26 +271,31 @@
   "shortfall": {
     "protein": {
       "target": 140,
-      "gapLow": 89,
-      "gapHigh": 109.1,
-      "menuMax": 56,
+      "gapLow": 84,
+      "gapHigh": 107.5,
+      "menuMax": 58,
       "menuCanMeet": false
     },
     "kcal": {
       "target": 2400,
-      "gapLow": 675,
-      "gapHigh": 1275,
-      "menuMax": 1740,
+      "gapLow": 570,
+      "gapHigh": 1290,
+      "menuMax": 1830,
       "menuCanMeet": false
     }
   },
+  "smallestMealKcal": null,
   "dishes": [
     {
       "dish": "methi-roti",
       "diet": "veg",
       "reasons": [
         {
-          "code": "not-chosen"
+          "code": "on-plate",
+          "ranks": [
+            2,
+            3
+          ]
         }
       ]
     },
@@ -232,7 +321,6 @@
           "code": "on-plate",
           "ranks": [
             1,
-            2,
             3
           ]
         }
@@ -243,11 +331,7 @@
       "diet": "veg",
       "reasons": [
         {
-          "code": "on-plate",
-          "ranks": [
-            1,
-            3
-          ]
+          "code": "not-chosen"
         }
       ]
     },
@@ -256,8 +340,8 @@
       "diet": "veg",
       "reasons": [
         {
-          "code": "not-a-plate-dish",
-          "role": "condiment"
+          "code": "not-a-meal-component",
+          "component": "condiment"
         }
       ]
     },
@@ -266,12 +350,7 @@
       "diet": "veg",
       "reasons": [
         {
-          "code": "on-plate",
-          "ranks": [
-            1,
-            2,
-            3
-          ]
+          "code": "not-top-candidate"
         }
       ]
     },
@@ -291,6 +370,7 @@
         {
           "code": "on-plate",
           "ranks": [
+            1,
             2
           ]
         }
@@ -301,7 +381,12 @@
       "diet": "veg",
       "reasons": [
         {
-          "code": "not-chosen"
+          "code": "on-plate",
+          "ranks": [
+            1,
+            2,
+            3
+          ]
         }
       ]
     },

@@ -6,13 +6,21 @@
     "kcal": 1120,
     "protein": 65.3,
     "carb": 135.3,
-    "fat": 32.7
+    "fat": 32.7,
+    "dayRemainingKcal": 2400
   },
   "plates": [
     {
       "rank": 1,
+      "structure": {
+        "kind": "limited",
+        "missing": [
+          "protein",
+          "vegetable"
+        ]
+      },
       "items": [
-        "white-rice x2"
+        "white-rice x2 [staple]"
       ],
       "macros": {
         "kcalLow": 350,
@@ -51,51 +59,19 @@
           "goal": "muscle-gain"
         },
         {
-          "code": "top-protein-dish",
+          "code": "meal-structure",
+          "kind": "limited"
+        },
+        {
+          "code": "staple-anchor",
           "dishSlug": "white-rice"
-        }
-      ]
-    },
-    {
-      "rank": 2,
-      "items": [
-        "white-rice x1"
-      ],
-      "macros": {
-        "kcalLow": 175,
-        "kcalHigh": 215,
-        "proteinLow": 3.2,
-        "proteinHigh": 4.5,
-        "carbLow": 38,
-        "carbHigh": 48,
-        "fatLow": 0.3,
-        "fatHigh": 1.2
-      },
-      "confidence": "medium",
-      "reasons": [
-        {
-          "code": "protein-short",
-          "target": 65.3,
-          "high": 4.5
         },
         {
-          "code": "kcal-within",
-          "target": 1120,
-          "high": 215
-        },
-        {
-          "code": "carb-within",
-          "target": 135.3,
-          "high": 48
-        },
-        {
-          "code": "fat-within",
-          "target": 32.7,
-          "high": 1.2
-        },
-        {
-          "code": "goal-weighting",
-          "goal": "muscle-gain"
+          "code": "limited-menu",
+          "missing": [
+            "protein",
+            "vegetable"
+          ]
         },
         {
           "code": "top-protein-dish",
@@ -120,6 +96,7 @@
       "menuCanMeet": false
     }
   },
+  "smallestMealKcal": null,
   "dishes": [
     {
       "dish": "phulka",
@@ -171,8 +148,7 @@
         {
           "code": "on-plate",
           "ranks": [
-            1,
-            2
+            1
           ]
         }
       ]

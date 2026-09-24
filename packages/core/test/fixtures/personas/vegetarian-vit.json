@@ -6,16 +6,23 @@
     "kcal": 1100,
     "protein": 85,
     "carb": 120,
-    "fat": 30
+    "fat": 30,
+    "dayRemainingKcal": 1100
   },
   "plates": [
     {
       "rank": 1,
+      "structure": {
+        "kind": "meal",
+        "missing": [
+          "vegetable"
+        ]
+      },
       "items": [
-        "dhal x2",
-        "sambar x2",
-        "rasam x1",
-        "roti x2"
+        "roti x2 [staple]",
+        "dhal x2 [protein]",
+        "sambar x2 [pulse-gravy]",
+        "rasam x1 [soup]"
       ],
       "macros": {
         "kcalLow": 610,
@@ -56,6 +63,34 @@
           "goal": "muscle-gain"
         },
         {
+          "code": "meal-structure",
+          "kind": "meal"
+        },
+        {
+          "code": "staple-anchor",
+          "dishSlug": "roti"
+        },
+        {
+          "code": "protein-anchor",
+          "dishSlug": "dhal",
+          "strength": "strong"
+        },
+        {
+          "code": "protein-anchor",
+          "dishSlug": "sambar",
+          "strength": "weak"
+        },
+        {
+          "code": "supporting-side",
+          "dishSlug": "rasam"
+        },
+        {
+          "code": "limited-menu",
+          "missing": [
+            "vegetable"
+          ]
+        },
+        {
           "code": "top-protein-dish",
           "dishSlug": "dhal"
         }
@@ -63,102 +98,83 @@
     },
     {
       "rank": 2,
+      "structure": {
+        "kind": "meal",
+        "missing": [
+          "vegetable"
+        ]
+      },
       "items": [
-        "dhal x2",
-        "sambar x2",
-        "roti x2",
-        "white-rice x1"
+        "white-rice x2 [staple]",
+        "dhal x2 [protein]",
+        "sambar x2 [pulse-gravy]",
+        "rasam x1 [soup]"
       ],
       "macros": {
-        "kcalLow": 755,
-        "kcalHigh": 1115,
-        "proteinLow": 27.2,
-        "proteinHigh": 41.7,
-        "carbLow": 126,
-        "carbHigh": 176,
-        "fatLow": 11.9,
-        "fatHigh": 31.2
+        "kcalLow": 790,
+        "kcalHigh": 1155,
+        "proteinLow": 26.4,
+        "proteinHigh": 41.5,
+        "carbLow": 136,
+        "carbHigh": 189,
+        "fatLow": 11.6,
+        "fatHigh": 28.9
       },
       "confidence": "medium",
       "reasons": [
         {
           "code": "protein-short",
           "target": 85,
-          "high": 41.7
+          "high": 41.5
         },
         {
           "code": "kcal-may-exceed",
           "target": 1100,
-          "low": 755,
-          "high": 1115
+          "low": 790,
+          "high": 1155
         },
         {
           "code": "carb-over",
           "target": 120,
-          "low": 126,
-          "high": 176
+          "low": 136,
+          "high": 189
         },
         {
-          "code": "fat-over",
+          "code": "fat-within",
           "target": 30,
-          "low": 11.9,
-          "high": 31.2
+          "high": 28.9
         },
         {
           "code": "goal-weighting",
           "goal": "muscle-gain"
         },
         {
-          "code": "top-protein-dish",
-          "dishSlug": "dhal"
-        }
-      ]
-    },
-    {
-      "rank": 3,
-      "items": [
-        "dhal x2",
-        "sambar x2",
-        "rasam x2",
-        "white-rice x1"
-      ],
-      "macros": {
-        "kcalLow": 645,
-        "kcalHigh": 1005,
-        "proteinLow": 24.2,
-        "proteinHigh": 39.5,
-        "carbLow": 102,
-        "carbHigh": 150,
-        "fatLow": 12.3,
-        "fatHigh": 30.2
-      },
-      "confidence": "medium",
-      "reasons": [
-        {
-          "code": "protein-short",
-          "target": 85,
-          "high": 39.5
+          "code": "meal-structure",
+          "kind": "meal"
         },
         {
-          "code": "kcal-within",
-          "target": 1100,
-          "high": 1005
+          "code": "staple-anchor",
+          "dishSlug": "white-rice"
         },
         {
-          "code": "carb-over",
-          "target": 120,
-          "low": 102,
-          "high": 150
+          "code": "protein-anchor",
+          "dishSlug": "dhal",
+          "strength": "strong"
         },
         {
-          "code": "fat-over",
-          "target": 30,
-          "low": 12.3,
-          "high": 30.2
+          "code": "protein-anchor",
+          "dishSlug": "sambar",
+          "strength": "weak"
         },
         {
-          "code": "goal-weighting",
-          "goal": "muscle-gain"
+          "code": "supporting-side",
+          "dishSlug": "rasam"
+        },
+        {
+          "code": "limited-menu",
+          "missing": [
+            "vegetable"
+          ]
         },
         {
           "code": "top-protein-dish",
@@ -183,6 +199,7 @@
       "menuCanMeet": true
     }
   },
+  "smallestMealKcal": null,
   "dishes": [
     {
       "dish": "roti",
@@ -191,8 +208,7 @@
         {
           "code": "on-plate",
           "ranks": [
-            1,
-            2
+            1
           ]
         }
       ]
@@ -205,8 +221,7 @@
           "code": "on-plate",
           "ranks": [
             1,
-            2,
-            3
+            2
           ]
         }
       ]
@@ -226,8 +241,8 @@
       "diet": "veg",
       "reasons": [
         {
-          "code": "not-a-plate-dish",
-          "role": "condiment"
+          "code": "not-a-meal-component",
+          "component": "condiment"
         }
       ]
     },
@@ -238,8 +253,7 @@
         {
           "code": "on-plate",
           "ranks": [
-            2,
-            3
+            2
           ]
         }
       ]
@@ -252,8 +266,7 @@
           "code": "on-plate",
           "ranks": [
             1,
-            2,
-            3
+            2
           ]
         }
       ]
@@ -266,7 +279,7 @@
           "code": "on-plate",
           "ranks": [
             1,
-            3
+            2
           ]
         }
       ]

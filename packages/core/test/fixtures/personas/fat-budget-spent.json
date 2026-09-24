@@ -3,11 +3,11 @@
   "basis": "published",
   "target": {
     "share": 1,
-    "kcal": 900,
-    "protein": 120,
-    "carb": 60,
-    "fat": 22,
-    "dayRemainingKcal": 900
+    "kcal": 561,
+    "protein": 96.3,
+    "carb": 94,
+    "fat": 0,
+    "dayRemainingKcal": 561
   },
   "plates": [
     {
@@ -18,47 +18,48 @@
       },
       "items": [
         "white-rice x1 [staple]",
-        "chenna-masala x2 [protein]",
-        "loose-curd x1 [dairy]",
-        "poriyal x1 [veg]"
+        "dhal x1 [protein]",
+        "brinjal-fry x1 [veg]",
+        "seasonal-fruit x1 [fruit]"
       ],
       "macros": {
-        "kcalLow": 595,
-        "kcalHigh": 895,
-        "proteinLow": 22.7,
-        "proteinHigh": 36.5,
-        "carbLow": 90,
-        "carbHigh": 125,
-        "fatLow": 13.3,
-        "fatHigh": 30.7
+        "kcalLow": 450,
+        "kcalHigh": 690,
+        "proteinLow": 12.2,
+        "proteinHigh": 20,
+        "carbLow": 76,
+        "carbHigh": 111,
+        "fatLow": 8.4,
+        "fatHigh": 20.8
       },
-      "confidence": "medium",
+      "confidence": "low",
       "reasons": [
         {
           "code": "protein-short",
-          "target": 120,
-          "high": 36.5
+          "target": 96.3,
+          "high": 20
         },
         {
-          "code": "kcal-within",
-          "target": 900,
-          "high": 895
+          "code": "kcal-may-exceed",
+          "target": 561,
+          "low": 450,
+          "high": 690
         },
         {
           "code": "carb-over",
-          "target": 60,
-          "low": 90,
-          "high": 125
+          "target": 94,
+          "low": 76,
+          "high": 111
         },
         {
           "code": "fat-over",
-          "target": 22,
-          "low": 13.3,
-          "high": 30.7
+          "target": 0,
+          "low": 8.4,
+          "high": 20.8
         },
         {
           "code": "goal-weighting",
-          "goal": "muscle-gain"
+          "goal": "fat-loss"
         },
         {
           "code": "meal-structure",
@@ -70,21 +71,24 @@
         },
         {
           "code": "protein-anchor",
-          "dishSlug": "chenna-masala",
+          "dishSlug": "dhal",
           "strength": "strong"
         },
         {
-          "code": "protein-anchor",
-          "dishSlug": "loose-curd",
-          "strength": "weak"
+          "code": "vegetable-component",
+          "dishSlug": "brinjal-fry"
         },
         {
-          "code": "vegetable-component",
-          "dishSlug": "poriyal"
+          "code": "supporting-side",
+          "dishSlug": "seasonal-fruit"
         },
         {
           "code": "top-protein-dish",
-          "dishSlug": "loose-curd"
+          "dishSlug": "dhal"
+        },
+        {
+          "code": "low-confidence-dish",
+          "dishSlug": "brinjal-fry"
         }
       ]
     },
@@ -95,48 +99,48 @@
         "missing": []
       },
       "items": [
-        "jeera-rice x1 [staple]",
-        "chenna-masala x1 [protein]",
-        "loose-curd x1 [dairy]",
-        "poriyal x1 [veg]"
+        "phulka x1 [staple]",
+        "dhal x1 [protein]",
+        "brinjal-fry x1 [veg]",
+        "seasonal-fruit x1 [fruit]"
       ],
       "macros": {
-        "kcalLow": 530,
-        "kcalHigh": 830,
-        "proteinLow": 17.5,
-        "proteinHigh": 30,
-        "carbLow": 77,
-        "carbHigh": 111,
-        "fatLow": 15,
-        "fatHigh": 33.5
+        "kcalLow": 360,
+        "kcalHigh": 595,
+        "proteinLow": 11.5,
+        "proteinHigh": 19.1,
+        "carbLow": 54,
+        "carbHigh": 85,
+        "fatLow": 8.9,
+        "fatHigh": 22.6
       },
       "confidence": "low",
       "reasons": [
         {
           "code": "protein-short",
-          "target": 120,
-          "high": 30
+          "target": 96.3,
+          "high": 19.1
         },
         {
-          "code": "kcal-within",
-          "target": 900,
-          "high": 830
+          "code": "kcal-may-exceed",
+          "target": 561,
+          "low": 360,
+          "high": 595
         },
         {
-          "code": "carb-over",
-          "target": 60,
-          "low": 77,
-          "high": 111
+          "code": "carb-within",
+          "target": 94,
+          "high": 85
         },
         {
           "code": "fat-over",
-          "target": 22,
-          "low": 15,
-          "high": 33.5
+          "target": 0,
+          "low": 8.9,
+          "high": 22.6
         },
         {
           "code": "goal-weighting",
-          "goal": "muscle-gain"
+          "goal": "fat-loss"
         },
         {
           "code": "meal-structure",
@@ -144,29 +148,28 @@
         },
         {
           "code": "staple-anchor",
-          "dishSlug": "jeera-rice"
+          "dishSlug": "phulka"
         },
         {
           "code": "protein-anchor",
-          "dishSlug": "chenna-masala",
+          "dishSlug": "dhal",
           "strength": "strong"
         },
         {
-          "code": "protein-anchor",
-          "dishSlug": "loose-curd",
-          "strength": "weak"
+          "code": "vegetable-component",
+          "dishSlug": "brinjal-fry"
         },
         {
-          "code": "vegetable-component",
-          "dishSlug": "poriyal"
+          "code": "supporting-side",
+          "dishSlug": "seasonal-fruit"
         },
         {
           "code": "top-protein-dish",
-          "dishSlug": "loose-curd"
+          "dishSlug": "dhal"
         },
         {
           "code": "low-confidence-dish",
-          "dishSlug": "jeera-rice"
+          "dishSlug": "brinjal-fry"
         }
       ]
     },
@@ -177,48 +180,47 @@
         "missing": []
       },
       "items": [
-        "poori x1 [staple]",
-        "chenna-masala x1 [protein]",
-        "poriyal x1 [veg]",
-        "rasam x1 [soup]"
+        "veg-chow-mein x1 [staple]",
+        "dhal x1 [protein]",
+        "brinjal-fry x1 [veg]"
       ],
       "macros": {
-        "kcalLow": 465,
-        "kcalHigh": 730,
-        "proteinLow": 13.5,
-        "proteinHigh": 23,
-        "carbLow": 59,
-        "carbHigh": 88,
-        "fatLow": 18,
-        "fatHigh": 35.5
+        "kcalLow": 380,
+        "kcalHigh": 685,
+        "proteinLow": 11.5,
+        "proteinHigh": 21,
+        "carbLow": 56,
+        "carbHigh": 93,
+        "fatLow": 10,
+        "fatHigh": 29
       },
       "confidence": "low",
       "reasons": [
         {
           "code": "protein-short",
-          "target": 120,
-          "high": 23
+          "target": 96.3,
+          "high": 21
         },
         {
-          "code": "kcal-within",
-          "target": 900,
-          "high": 730
+          "code": "kcal-may-exceed",
+          "target": 561,
+          "low": 380,
+          "high": 685
         },
         {
-          "code": "carb-over",
-          "target": 60,
-          "low": 59,
-          "high": 88
+          "code": "carb-within",
+          "target": 94,
+          "high": 93
         },
         {
           "code": "fat-over",
-          "target": 22,
-          "low": 18,
-          "high": 35.5
+          "target": 0,
+          "low": 10,
+          "high": 29
         },
         {
           "code": "goal-weighting",
-          "goal": "muscle-gain"
+          "goal": "fat-loss"
         },
         {
           "code": "meal-structure",
@@ -226,78 +228,46 @@
         },
         {
           "code": "staple-anchor",
-          "dishSlug": "poori"
+          "dishSlug": "veg-chow-mein"
         },
         {
           "code": "protein-anchor",
-          "dishSlug": "chenna-masala",
+          "dishSlug": "dhal",
           "strength": "strong"
         },
         {
           "code": "vegetable-component",
-          "dishSlug": "poriyal"
-        },
-        {
-          "code": "supporting-side",
-          "dishSlug": "rasam"
+          "dishSlug": "brinjal-fry"
         },
         {
           "code": "top-protein-dish",
-          "dishSlug": "chenna-masala"
+          "dishSlug": "dhal"
         },
         {
           "code": "low-confidence-dish",
-          "dishSlug": "poori"
+          "dishSlug": "brinjal-fry"
+        },
+        {
+          "code": "low-confidence-dish",
+          "dishSlug": "veg-chow-mein"
         }
       ]
     }
   ],
   "shortfall": {
     "protein": {
-      "target": 120,
-      "gapLow": 83.5,
-      "gapHigh": 97.3,
-      "menuMax": 65.5,
+      "target": 96.3,
+      "gapLow": 76.3,
+      "gapHigh": 84.1,
+      "menuMax": 54.5,
       "menuCanMeet": false
     },
-    "kcal": {
-      "target": 900,
-      "gapLow": 5,
-      "gapHigh": 305,
-      "menuMax": 2010,
-      "menuCanMeet": true
-    }
+    "kcal": null
   },
   "smallestMealKcal": null,
   "dishes": [
     {
-      "dish": "poori",
-      "diet": "veg",
-      "reasons": [
-        {
-          "code": "on-plate",
-          "ranks": [
-            3
-          ]
-        }
-      ]
-    },
-    {
-      "dish": "chenna-masala",
-      "diet": "veg",
-      "reasons": [
-        {
-          "code": "on-plate",
-          "ranks": [
-            1,
-            2,
-            3
-          ]
-        }
-      ]
-    },
-    {
-      "dish": "jeera-rice",
+      "dish": "phulka",
       "diet": "veg",
       "reasons": [
         {
@@ -309,7 +279,7 @@
       ]
     },
     {
-      "dish": "poriyal",
+      "dish": "dhal",
       "diet": "veg",
       "reasons": [
         {
@@ -319,6 +289,29 @@
             2,
             3
           ]
+        }
+      ]
+    },
+    {
+      "dish": "brinjal-fry",
+      "diet": "veg",
+      "reasons": [
+        {
+          "code": "on-plate",
+          "ranks": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "dish": "garlic-sauce",
+      "diet": "unknown",
+      "reasons": [
+        {
+          "code": "ambient"
         }
       ]
     },
@@ -348,10 +341,7 @@
       "diet": "veg",
       "reasons": [
         {
-          "code": "on-plate",
-          "ranks": [
-            3
-          ]
+          "code": "not-chosen"
         }
       ]
     },
@@ -360,11 +350,37 @@
       "diet": "veg",
       "reasons": [
         {
+          "code": "not-chosen"
+        }
+      ]
+    },
+    {
+      "dish": "veg-chow-mein",
+      "diet": "veg",
+      "reasons": [
+        {
           "code": "on-plate",
           "ranks": [
-            1,
-            2
+            3
           ]
+        }
+      ]
+    },
+    {
+      "dish": "egg-chow-mein",
+      "diet": "egg",
+      "reasons": [
+        {
+          "code": "not-chosen"
+        }
+      ]
+    },
+    {
+      "dish": "cream-of-veg-soup",
+      "diet": "unknown",
+      "reasons": [
+        {
+          "code": "not-top-candidate"
         }
       ]
     },
@@ -373,7 +389,11 @@
       "diet": "veg",
       "reasons": [
         {
-          "code": "not-chosen"
+          "code": "on-plate",
+          "ranks": [
+            1,
+            2
+          ]
         }
       ]
     }

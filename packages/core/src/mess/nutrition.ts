@@ -156,6 +156,44 @@ const PHASE9_ADDITIONS: readonly TableEntry[] = [
 
 const TABLE: readonly TableEntry[] = [...BASE_TABLE, ...PHASE9_ADDITIONS];
 
+/* ------------------------------------------- Phase 10 mess corrections -- */
+
+const WORSE: Readonly<Record<Confidence, number>> = { high: 0, medium: 1, low: 2 };
+
+/** Several table entries eaten together, as one serving (the parts' sums; the worst confidence). */
+function together(servingLabel: string, parts: readonly (readonly [Omit<TableEntry, 'terms'>, number])[]): Omit<TableEntry, 'terms'> {
+  const sum = (pick: (e: Omit<TableEntry, 'terms'>) => readonly [number, number]): [number, number] => [
+    parts.reduce((a, [e, n]) => a + pick(e)[0] * n, 0),
+    parts.reduce((a, [e, n]) => a + pick(e)[1] * n, 0),
+  ];
+  const grams = parts.every(([e]) => e.servingGrams !== null) ? parts.reduce((a, [e, n]) => a + (e.servingGrams ?? 0) * n, 0) : null;
+  const confidence = parts.map(([e]) => e.confidence).reduce((a, b) => (WORSE[b] > WORSE[a] ? b : a));
+  return {
+    servingLabel, servingGrams: grams,
+    kcal: sum((e) => e.kcal), protein: sum((e) => e.protein), carb: sum((e) => e.carb), fat: sum((e) => e.fat),
+    confidence,
+  };
+}
+
+/**
+ * Phase 10 Amendment B (owner, 2026-09-24; ADR-016): four mess dishes whose
+ * estimate was wrong because an earlier, shorter term won the table's first
+ * match ("curd" before "curd rice", "rice" before "rice papad", "chole"
+ * before "chole bhatura", "dahi" before "dahi vada"). Each correction is an
+ * existing table entry or a sum of existing entries — no new numbers.
+ *
+ * MESS PATH ONLY (`estimateMessDish` / `enrichDish`). `estimateNutrition`
+ * is deliberately unchanged: the frozen Phase 7 food seed reads it, and its
+ * "Curd rice" food keeps the old values until the owner decides otherwise.
+ * Existing stored rows are corrected by migration 0012, with provenance.
+ */
+export const MESS_ESTIMATE_CORRECTIONS: readonly TableEntry[] = [
+  { terms: ['curd rice'], ...entryWithTerm('curd rice') },
+  { terms: ['rice papad'], ...entryWithTerm('rice papad') },
+  { terms: ['chole bhatura'], ...together('1 plate (2 bhatura + chole)', [[entryWithTerm('chole'), 1], [entryWithTerm('bhatura'), 2]]) },
+  { terms: ['dahi vada'], ...together('2 pieces in curd', [[entryWithTerm('vada'), 2], [entryWithTerm('curd'), 1]]) },
+];
+
 /**
  * Owner (Phase 9): mess-dish nutrition is never `high` confidence. The upstream
  * publishes names only, so even the table's best-known dishes (rice, roti,
@@ -220,10 +258,26 @@ export function estimateNutrition(name: string, role: DishRole): DishNutrition |
   };
 }
 
-/** Attach estimates to parsed dishes. Pure; the parser stays nutrition-free. */
+/** A mess dish's estimate: the Phase 10 corrections first, then the table (ADR-016). */
+export function estimateMessDish(name: string, role: DishRole): DishNutrition | null {
+  for (const entry of MESS_ESTIMATE_CORRECTIONS) {
+    if (has(name, entry.terms)) {
+      return {
+        servingLabel: entry.servingLabel,
+        servingGrams: entry.servingGrams,
+        macros: toMacroRange(entry),
+        confidence: entry.confidence,
+        source: 'estimated-table',
+      };
+    }
+  }
+  return estimateNutrition(name, role);
+}
+
+/** Attach estimates to parsed mess dishes. Pure; the parser stays nutrition-free. */
 export function enrichDish(dish: MessDish): MessDish {
   if (dish.nutrition !== null) return dish;
-  return { ...dish, nutrition: estimateNutrition(dish.name, dish.role) };
+  return { ...dish, nutrition: estimateMessDish(dish.name, dish.role) };
 }
 
 /** Scale a range by a serving count. */
