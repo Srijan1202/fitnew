@@ -86,7 +86,7 @@ Persona C is the go-to-market wedge: geographically concentrated, underserved, a
 | Menu string parser | `mess/parse.ts` | **Preserve** | Hardened against 7 real defects; do not "simplify" |
 | Diet/role classifier | `mess/classify.ts` | **Preserve + extend** | Extend keyword lists only; keep fail-safe semantics |
 | Nutrition estimate table | `mess/nutrition.ts` | **Extend** | ~55 dishes now; grow to ~300 and add IFCT mapping (Phase 9). `AMENDED 2026-09-24 (Phase 9, ADR-014)`: Phase 9 adds only dishes seen on the live menus, appended after the base table; IFCT mapping waits on licensing |
-| Plate recommender | `mess/recommend.ts` | **Preserve + extend** | Add carb/fat/budget/variety terms (Phase 10) |
+| Plate recommender | `mess/recommend.ts` | **Preserve + extend** | Add carb/fat/budget/variety terms (Phase 10; budget deferred — ADR-015) |
 | VIT provider + config | `mess/providers/vit/` | **Preserve** | Add server-side mirroring (Phase 9) |
 | Targets (Mifflin-St Jeor) | `nutrition/targets.ts` | **Preserve** | Add recomposition + maintenance goals (Phase 2) |
 | Trend + adaptive TDEE | `nutrition/trend.ts` | **Preserve** | Complete |
@@ -478,12 +478,12 @@ Codes: `UNAUTHENTICATED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `VALIDATIO
 | GET | `/nutrition/foods/barcode/{code}` | Barcode lookup | |
 | POST | `/nutrition/foods` | Create custom food | |
 | POST | `/nutrition/parse` | **NL text → structured items** | Gemini; returns *unconfirmed* draft |
-| GET | `/nutrition/recommendations` | "What should I eat now" | `?slot&source=mess\|general` |
+| GET | `/nutrition/recommendations` | "What should I eat now" | `?slot&source=mess\|general` — **deferred** (Phase 10 is mess-only, ADR-015) |
 | GET | `/nutrition/targets` | Current + history | |
 | GET | `/mess/providers` | Available providers | |
 | GET | `/mess/providers/{slug}/messes` | The six messes | |
 | GET | `/mess/menu` | `?mess&date` → menu + **resolution** + mirror freshness (`mess` = a mess code; default: the user's mess) | Resolution always present |
-| GET | `/mess/menu/recommend` | Ranked plates for a meal | |
+| GET | `/mess/menu/recommend` | Ranked plates for a meal | `?date&mess&slot`: date = today or tomorrow (tomorrow is planning, not loggable; else 422); slot defaults to the next unlogged meal; 404 without a mess. `status` = ok / no-targets / target-reached / menu-unavailable / meal-not-served / nothing-safe / nothing-fits. Reason codes, no prose; nothing stored (Phase 10, ADR-015) |
 | POST | `/mess/dishes/{slug}/correction` | Report wrong nutrition | Queued for review (stored pending; changes nothing until reviewed) |
 | GET | `/today` | **Ranked actions** | The core endpoint |
 | POST | `/today/actions/{id}/event` | shown/accepted/dismissed/completed | Feeds `recommendation_events` |
@@ -717,6 +717,13 @@ Then a **positive vegetarian classifier** recognises ~90 dishes (rice, dal, curd
 
 **Allergies are a hard filter applied before scoring, never a penalty term.**
 
+`AMENDED 2026-09-24 (Phase 10, ADR-015)`:
+- **Leading "Veg":** after the meat and egg keyword checks, a name whose first word is "Veg" ("Veg Puff", "Veg. Cutlet") is `veg`. It never overrides a non-veg label or keyword.
+- **Alternatives:** each `/` alternative is classified on its own. A dish is recommended only if the primary **and every alternative** pass diet and allergies.
+- **Allergies:** a dish passes an allergen only when it is **confirmed free**, i.e. its normalised name is exactly on that allergen's `FREE` list (fish and shellfish: a veg or egg dish). `contains`, `likely` and `unknown` are all excluded, whatever the severity.
+- **Cooking fat:** the mess's cooking fat is unknown, so for peanut, sesame, soy, mustard and milk only dishes without added fat or tempering are free.
+- **What the app says:** "no known … ingredient", plus a cross-contact note. It never claims medical certainty.
+
 ### 14.6 Server-side mirroring
 
 `DECISION` — a Cloud Scheduler job fetches all six endpoints **twice daily** into `mess_menu_snapshots` (deduplicated by `payload_hash`). The app reads our mirror, never MessIT directly.
@@ -756,11 +763,42 @@ Protein leads because it is the macro mess-eating students most reliably under-h
 
 **Phase 10 additions:** carb/fat gap terms, variety penalty against the last 3 days, budget tier, meal-timing bias (carbs favoured post-workout).
 
+`AMENDED 2026-09-24 (Phase 10, ADR-015)` — the exact, fixed formula (constants pinned by tests; no silent tuning):
+
+**Roles.** Plates may also take fried, sweet, beverage and other dishes, 1 serving each, as the line above says (only ambient items and condiments are excluded).
+
+**Meal target.**
+- Meal weights: breakfast 0.25, lunch 0.35, snacks 0.10, dinner 0.30.
+- `share = weight(meal) ÷ Σ weight(meal + every later meal with no log)`.
+- `Tk`, `Tc` and `Tf` = the low end of what remains today × share; `Tp` = the high end of the protein remaining × share.
+- `Tk = 0` → no plate (`target-reached`); the remaining protein is still stated.
+
+**Score** (on range midpoints, never shown):
+```
+score = proteinScore + carbReward − kcalPenalty − carbPenalty − fatPenalty − shapePenalty − varietyPenalty
+proteinScore   = 100 × min(p / Tp, 1.25)
+kcalPenalty    = W_over × max(0, k − Tk)/Tk + W_under × max(0, Tk − k)/Tk
+                 W_over/W_under: muscle-gain 110/55 · fat-loss 180/35 · recomposition 180/35 · strength, general, maintenance 110/35
+carbPenalty    = (40, or 20 post-workout) × max(0, c − Tc)/Tc
+fatPenalty     = 50 × max(0, f − Tf)/Tf
+carbReward     = post-workout ? 20 × min(c / Tc, 1) : 0
+shapePenalty   = |itemCount − 4| × 4 + max(0, totalServings − 7) × 6
+varietyPenalty = Σ dishes 6 × days seen in the 3 days before the menu date (max 18 per dish; never an exclusion)
+```
+- Post-workout = a session completed within 3 h, today.
+- Search: 9 candidates, ≤ 8 servings, pruning at `max(1.5 × Tk, 400)` kcal, ties broken by plate key.
+- **Budget tier is removed:** there is no price data (§36: V2).
+
 **Confidence:** a plate is only as trustworthy as its worst dish — `worstConfidence()` returns the minimum.
 
 ### 15.2 If nothing fits
 
 Return the best available plate **and say it falls short**. Do not inflate estimates to appear successful. A verified real case: on one women's non-veg dinner, the vegetarian plate reaches only 25–40 g against a 58 g gap. The correct behaviour is to say so — and it exposes a genuine V1.5 feature (outside-the-mess protein suggestions).
+
+`AMENDED 2026-09-24 (Phase 10, ADR-015)`:
+- **When there is a shortfall:** for the top plate, separately for protein and kcal, exactly when the plate's **high** end is below the meal target `T`. There is no percentage threshold.
+- **How it is reported:** the gap as the range `[T − high, T − low]`, never inflated, with the most any searched plate reaches (`menuMax`) and whether any plate could meet `T` (`menuCanMeet`).
+- **What is not a shortfall:** a plate that may reach `T` (`low < T ≤ high`) carries a "may fall short" reason instead.
 
 ---
 
@@ -1037,6 +1075,8 @@ Build `test/fixtures/personas/` covering the full matrix. Each fixture is a froz
 `beginner-muscle-gain` · `intermediate-fat-loss` · `advanced-strength` · `recomposition` · `vegetarian-vit` · `eggetarian-vit` · `nonveg-vit` · `non-vit-home` · `rest-day` · `deload-due` · `protein-deficit` · `calorie-deficit` · `calorie-surplus` · `first-day-no-data` · `stale-mess-endpoint` · `allergy-restricted` · `injured-limitation` · `low-readiness`
 
 **Snapshot the full ranked output.** Any change to ranking must show up as a reviewed diff — this is how ordering regressions get caught.
+
+`AMENDED 2026-09-24 (Phase 10, ADR-015)`: the six food personas (`vegetarian-vit`, `eggetarian-vit`, `nonveg-vit`, `allergy-restricted`, `stale-mess-endpoint`, `protein-deficit`) land in Phase 10 as frozen mess-recommendation inputs with snapshotted plates (`packages/core/test/fixtures/personas/`). The rest stay in Phase 11 with the full `UserModel`.
 
 ### 26.3 Mess tests (extend the existing 37)
 
@@ -1326,6 +1366,7 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 **Tests:** **vegetarian never receives non-veg (real menu fixture)** · allergies hard-filtered · calorie budget respected per goal · **shortfall is reported honestly rather than inflated** · deterministic for identical input · performance <100ms.
 **Acceptance:** plates respect diet and allergies absolutely · every plate carries ranges, confidence and reasons · an impossible target produces an honest shortfall message.
 **Manual:** run all three diet types against the same real dinner; verify divergence is correct.
+`AMENDED 2026-09-24 (ADR-015)`: Phase 10 is mess-only. General (non-mess) recommendations, `GET /nutrition/recommendations` and budget scoring are **deferred** (no price data). The tests and acceptance are unchanged.
 
 ---
 
@@ -1464,7 +1505,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 **Must work offline:** active workout logging (the critical case — gyms have poor signal), viewing today's cached plan, viewing today's cached mess menu, viewing today's nutrition totals.
 
-**Requires network:** program generation, recommendations, food search, sync.
+**Requires network:** program generation, recommendations, food search, sync. Mess recommendations (Phase 10) are never stored: offline, the app shows the cached menu and "Suggestions need a connection", never an earlier suggestion (ADR-015).
 
 **Mechanism:** drift mirrors `workout_sessions`, `set_logs`, `food_logs`, plus a `sync_queue` table (`id`, `endpoint`, `payload`, `client_key`, `attempts`, `created_at`). Food logs (Phase 8) have their own `local_food_logs` + `nutrition_sync_queue` and engine, with the same policy (ADR-013). Mess menus (Phase 9) are kept in the `cached_json` table; mess dishes log through the Phase 8 queue (ADR-014).
 
@@ -1623,7 +1664,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 **Phase 9** — [x] mess tables · [x] provider wired · [x] **mirroring job** (job built and verified; its Cloud Scheduler trigger is deferred while GCP is paused — ADR-014) · [x] enrichment by slug · [x] mess picker · [x] MESS screen · [x] **resolution banner** · [x] correction submission · [x] all 6 endpoints tested · [x] 9 defects tested
 
-**Phase 10** — [ ] plate recommender wired · [ ] carb/fat/variety/budget/timing scoring · [ ] thali UI · [ ] log-this-plate · [ ] **veg safety test** · [ ] allergy filter test · [ ] honest shortfall test
+**Phase 10** — [ ] plate recommender wired · [ ] carb/fat/variety/budget/timing scoring (budget deferred: no price data — ADR-015) · [ ] thali UI · [ ] log-this-plate · [ ] **veg safety test** · [ ] allergy filter test · [ ] honest shortfall test
 
 **Phase 11** — [ ] `UserModel` assembled · [ ] TODAY engine wired · [ ] recommendation persistence · [ ] **event tracking** · [ ] TODAY screen · [ ] all persona fixtures snapshotted
 
