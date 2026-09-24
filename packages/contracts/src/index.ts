@@ -7,3 +7,4 @@ export * from './training.js';
 export * from './workout.js';
 export * from './ai.js';
 export * from './food.js';
+export * from './nutrition-log.js';

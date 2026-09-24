@@ -1,0 +1,26 @@
+{
+  "note": "Shared by packages/core (snapshotNutrition, resolvePortion) and apps/mobile (the display-only PortionPreview, owner J10). Both must produce exactly these numbers.",
+  "snapshots": [
+    { "name": "estimate x1.5 (dal tadka, 1 katori)", "row": { "kcalLow": 120, "kcalHigh": 185, "proteinLow": 6, "proteinHigh": 9, "carbLow": 16, "carbHigh": 23, "fatLow": 3, "fatHigh": 7.5, "fibreLow": null, "fibreHigh": null }, "servings": 1.5,
+      "expected": { "kcalLow": 180, "kcalHigh": 278, "proteinLow": 9, "proteinHigh": 13.5, "carbLow": 24, "carbHigh": 34.5, "fatLow": 4.5, "fatHigh": 11.3, "fibreLow": null, "fibreHigh": null } },
+    { "name": "estimate x0.37 rounds outward", "row": { "kcalLow": 120, "kcalHigh": 185, "proteinLow": 6, "proteinHigh": 9, "carbLow": 16, "carbHigh": 23, "fatLow": 3, "fatHigh": 7.5, "fibreLow": 1.2, "fibreHigh": 2.9 }, "servings": 0.37,
+      "expected": { "kcalLow": 44, "kcalHigh": 69, "proteinLow": 2.2, "proteinHigh": 3.4, "carbLow": 5.9, "carbHigh": 8.6, "fatLow": 1.1, "fatHigh": 2.8, "fibreLow": 0.4, "fibreHigh": 1.1 } },
+    { "name": "exact x0.21 rounds to nearest (honey per 100 g)", "row": { "kcalLow": 304, "kcalHigh": 304, "proteinLow": 0.3, "proteinHigh": 0.3, "carbLow": 82.4, "carbHigh": 82.4, "fatLow": 0, "fatHigh": 0, "fibreLow": 0.2, "fibreHigh": 0.2 }, "servings": 0.21,
+      "expected": { "kcalLow": 64, "kcalHigh": 64, "proteinLow": 0.1, "proteinHigh": 0.1, "carbLow": 17.3, "carbHigh": 17.3, "fatLow": 0, "fatHigh": 0, "fibreLow": 0, "fibreHigh": 0 } },
+    { "name": "exact x2.5 (milk per 100 g, fibre unknown)", "row": { "kcalLow": 60, "kcalHigh": 60, "proteinLow": 3.3, "proteinHigh": 3.3, "carbLow": 4.6, "carbHigh": 4.6, "fatLow": 3.2, "fatHigh": 3.2, "fibreLow": null, "fibreHigh": null }, "servings": 2.5,
+      "expected": { "kcalLow": 150, "kcalHigh": 150, "proteinLow": 8.3, "proteinHigh": 8.3, "carbLow": 11.5, "carbHigh": 11.5, "fatLow": 8, "fatHigh": 8, "fibreLow": null, "fibreHigh": null } },
+    { "name": "estimate x1/3 (grams 50 of a 150 g katori)", "row": { "kcalLow": 175, "kcalHigh": 215, "proteinLow": 3.2, "proteinHigh": 4.5, "carbLow": 38, "carbHigh": 47, "fatLow": 0.3, "fatHigh": 1.1, "fibreLow": null, "fibreHigh": null }, "servings": 0.3333333333333333,
+      "expected": { "kcalLow": 58, "kcalHigh": 72, "proteinLow": 1, "proteinHigh": 1.5, "carbLow": 12.6, "carbHigh": 15.7, "fatLow": 0.1, "fatHigh": 0.4, "fibreLow": null, "fibreHigh": null } }
+  ],
+  "portions": [
+    { "row": { "basis": "per_serving", "servingGrams": 150 }, "input": { "servings": 1.5 }, "expected": { "ok": true, "servings": 1.5, "grams": 225 } },
+    { "row": { "basis": "per_serving", "servingGrams": 150 }, "input": { "grams": 50 }, "expected": { "ok": true, "servings": 0.3333333333333333, "grams": 50 } },
+    { "row": { "basis": "per_100g", "servingGrams": 100 }, "input": { "grams": 250 }, "expected": { "ok": true, "servings": 2.5, "grams": 250 } },
+    { "row": { "basis": "per_serving", "servingGrams": null }, "input": { "servings": 2 }, "expected": { "ok": true, "servings": 2, "grams": null } },
+    { "row": { "basis": "per_serving", "servingGrams": null }, "input": { "grams": 40 }, "expected": { "ok": false } },
+    { "row": { "basis": "per_serving", "servingGrams": 150 }, "input": { "servings": 1.005 }, "expected": { "ok": false } },
+    { "row": { "basis": "per_serving", "servingGrams": 150 }, "input": { "servings": 0.09 }, "expected": { "ok": false } },
+    { "row": { "basis": "per_serving", "servingGrams": 150 }, "input": { "servings": 20.01 }, "expected": { "ok": false } },
+    { "row": { "basis": "per_100g", "servingGrams": 100 }, "input": { "grams": 5000.5 }, "expected": { "ok": false } }
+  ]
+}
