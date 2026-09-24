@@ -12,7 +12,10 @@ import '../../features/exercise/presentation/screens/exercise_detail_screen.dart
 import '../../features/nutrition/domain/entities/food.dart';
 import '../../features/nutrition/presentation/screens/custom_food_screen.dart';
 import '../../features/nutrition/presentation/screens/food_detail_screen.dart';
+import '../../features/nutrition/presentation/controllers/food_logger.dart';
+import '../../features/nutrition/presentation/screens/eat_screen.dart';
 import '../../features/nutrition/presentation/screens/food_library_screen.dart';
+import '../../features/nutrition/presentation/screens/log_food_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_flow_screen.dart';
 import '../../features/placeholders/presentation/screens/coming_soon_screen.dart';
 import '../../features/profile/presentation/screens/goal_editor_screen.dart';
@@ -65,7 +68,10 @@ abstract final class Routes {
   static const String nutrition = '/nutrition';
   static const String market = '/market';
 
-  // Food library (Phase 7; root navigator, the bar is hidden).
+  // Food library (Phase 7) and logging (Phase 8); root navigator, the bar
+  // is hidden. `/nutrition` itself is EAT.
+  static const String foodLibrary = '/nutrition/library';
+  static const String foodLog = '/nutrition/log';
   static const String foodNew = '/nutrition/foods/new';
   static String foodDetail(String id) => '/nutrition/foods/$id';
 
@@ -286,8 +292,24 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
               GoRoute(
                 path: Routes.nutrition,
                 name: 'nutrition',
-                builder: (context, state) => const FoodLibraryScreen(),
+                builder: (context, state) => const EatScreen(),
                 routes: <RouteBase>[
+                  GoRoute(
+                    path: 'library',
+                    name: 'food-library',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const FoodLibraryScreen(),
+                  ),
+                  GoRoute(
+                    path: 'log',
+                    name: 'food-log',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => LogFoodScreen(
+                      target: state.extra is LogTarget
+                          ? state.extra! as LogTarget
+                          : null,
+                    ),
+                  ),
                   GoRoute(
                     path: 'foods/new',
                     name: 'food-new',
@@ -299,9 +321,14 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
                     path: 'foods/:id',
                     name: 'food-detail',
                     parentNavigatorKey: rootNavigatorKey,
-                    builder: (context, state) => FoodDetailScreen(
-                      food: state.extra is Food ? state.extra! as Food : null,
-                    ),
+                    builder: (context, state) => switch (state.extra) {
+                      final FoodDetailArgs a => FoodDetailScreen(
+                          food: a.food,
+                          justCreated: a.justCreated,
+                        ),
+                      final Food f => FoodDetailScreen(food: f),
+                      _ => const FoodDetailScreen(food: null),
+                    },
                   ),
                 ],
               ),

@@ -327,15 +327,30 @@ class TodayMetrics extends StatelessWidget {
       kcalMuted = true;
     }
 
-    // Food — Phase 8 fills it; never a zero.
+    // Food — the server's day (Phase 8), as a range when it holds estimates;
+    // never a zero for "not logged".
     final t = c.targets;
-    final foodValue = c.nutrition.logged
-        ? '${HomeSections.group(c.nutrition.kcal ?? 0)} / ${HomeSections.group(t?.kcal ?? 0)} kcal'
-        : 'Not logged yet';
+    final n = c.nutrition;
+    String span(int? low, int? high, {bool group = false}) {
+      String f(int v) => group ? HomeSections.group(v) : '$v';
+      final hi = high ?? 0;
+      final lo = low ?? hi;
+      return lo == hi ? f(hi) : '${f(lo)}–${f(hi)}';
+    }
+
+    final kcalEaten = span(n.kcalLow, n.kcal, group: true);
+    final proteinEaten = span(n.proteinLow, n.proteinG);
+    final foodValue = !n.logged
+        ? 'Not logged yet'
+        : t == null
+            ? '$kcalEaten kcal'
+            : '$kcalEaten / ${HomeSections.group(t.kcal)} kcal';
     final foodLine = t == null
-        ? 'No targets yet'
-        : c.nutrition.logged
-            ? '${c.nutrition.proteinG ?? 0} / ${t.proteinG} g protein'
+        ? (n.logged
+            ? '$proteinEaten g protein · no targets yet'
+            : 'No targets yet')
+        : n.logged
+            ? '$proteinEaten / ${t.proteinG} g protein'
             : 'Target ${HomeSections.group(t.kcal)} kcal · ${t.proteinG} g protein';
 
     // Workout.

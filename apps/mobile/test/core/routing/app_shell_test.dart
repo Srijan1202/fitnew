@@ -191,9 +191,9 @@ void main() {
       expect(selected('Home'), isFalse);
 
       await go('Nutrition');
-      // Phase 7: the food library, not a placeholder.
-      expect(find.text('Food library'), findsOneWidget);
-      expect(find.byKey(const ValueKey('food.intro')), findsOneWidget);
+      // Phase 8: EAT — the day's food against the target.
+      expect(find.byKey(const ValueKey('eat.list')), findsOneWidget);
+      expect(find.byKey(const ValueKey('eat.library')), findsOneWidget);
       expect(selected('Nutrition'), isTrue);
 
       await go('Market');

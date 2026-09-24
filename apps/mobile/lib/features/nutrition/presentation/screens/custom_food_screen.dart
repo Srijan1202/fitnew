@@ -11,6 +11,7 @@ import '../../../../shared/widgets/toggle_wrap.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../domain/entities/food.dart';
 import '../controllers/food_providers.dart';
+import 'food_detail_screen.dart';
 
 /// Add a food from its label (Phase 7). The numbers are the user's, stored
 /// exactly as typed and marked as theirs: private, unverified. Checks mirror
@@ -140,7 +141,10 @@ class _CustomFoodScreenState extends ConsumerState<CustomFoodScreen> {
     switch (result) {
       case Ok(:final value):
         ref.invalidate(foodSearchProvider);
-        context.pushReplacement(Routes.foodDetail(value.id), extra: value);
+        context.pushReplacement(
+          Routes.foodDetail(value.id),
+          extra: FoodDetailArgs(food: value, justCreated: true),
+        );
       case Err(:final failure):
         setState(() {
           _saving = false;

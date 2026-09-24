@@ -19,7 +19,7 @@ import '../controllers/ai_providers.dart';
 class AiChatScreen extends ConsumerStatefulWidget {
   const AiChatScreen({super.key});
 
-  /// Only prompts the current build can answer (no Phase 8 food logging).
+  /// Only prompts the assistant can answer (the food log is not shared with it).
   static const starterPrompts = <String>[
     'What should I do today?',
     "Explain today's workout",

@@ -8,7 +8,12 @@ import 'package:fitos/features/auth/presentation/controllers/auth_providers.dart
 import 'package:fitos/features/exercise/presentation/controllers/exercise_providers.dart';
 import 'package:fitos/features/health/domain/entities/health.dart';
 import 'package:fitos/features/health/presentation/screens/health_data_screen.dart';
+import 'package:fitos/features/health/presentation/controllers/health_providers.dart';
+import 'package:fitos/features/home/presentation/controllers/home_providers.dart';
 import 'package:fitos/features/home/presentation/screens/home_screen.dart';
+import 'package:fitos/features/nutrition/domain/entities/food.dart';
+import 'package:fitos/features/nutrition/domain/entities/food_log.dart';
+import 'package:fitos/features/nutrition/presentation/controllers/food_log_providers.dart';
 import 'package:fitos/features/home/presentation/widgets/name_prompt.dart';
 import 'package:fitos/features/profile/domain/entities/profile.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
@@ -22,6 +27,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/fake_auth_repository.dart';
 import '../../support/fake_exercise_repository.dart';
+import '../../support/fake_food_log_api.dart';
 import '../../support/fake_health_provider.dart';
 import '../../support/fake_profile_repository.dart';
 import '../../support/fake_training_repository.dart';
@@ -39,12 +45,14 @@ void main() {
   late FakeHealthProvider health;
   late FakeAuthRepository auth;
   late FakeProfileRepository profile;
+  late FakeFoodLogApi foodLog;
 
   setUp(() {
     db = AppDatabase.inMemory();
     api = FakeWorkoutApi();
     health = FakeHealthProvider();
     profile = FakeProfileRepository();
+    foodLog = FakeFoodLogApi();
     auth = FakeAuthRepository()
       ..restoreResult = AuthState.signedIn(testProfile);
   });
@@ -94,7 +102,7 @@ void main() {
         exerciseRepositoryProvider.overrideWithValue(FakeExerciseRepository()),
         profileRepositoryProvider.overrideWithValue(profile),
         trainingRepositoryProvider.overrideWithValue(FakeTrainingRepository()),
-        ...workoutOverrides(db, api),
+        ...workoutOverrides(db, api, foodLog: foodLog),
         ...healthOverrides(health),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
@@ -537,5 +545,116 @@ void main() {
     expect(profile.calls, isNot(contains(startsWith('setDisplayName'))));
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getBool(NamePrompt.dismissedKey), isTrue);
+  });
+  group('Phase 8 — Home food from the server day (agrees with EAT)', () {
+    FoodLog logOf(
+      String date, {
+      required List<double> kcal,
+      required List<double> protein,
+    }) =>
+        FoodLog(
+          id: 'server-1',
+          clientLogId: '11111111-1111-4111-8111-111111111111',
+          loggedAt: '${date}T07:30:00.000Z',
+          localDate: date,
+          mealSlot: MealSlot.lunch,
+          entryMethod: EntryMethod.search,
+          savedMealId: null,
+          items: [
+            FoodLogItem(
+              id: 'i',
+              position: 0,
+              foodId: 'f',
+              foodName: 'Thali',
+              foodSource: FoodSource.estimated,
+              basis: NutritionBasis.perServing,
+              servingLabel: '1 plate',
+              servingGrams: null,
+              servings: 1,
+              grams: null,
+              kcalLow: kcal[0],
+              kcalHigh: kcal[1],
+              proteinLow: protein[0],
+              proteinHigh: protein[1],
+              carbLow: 100,
+              carbHigh: 120,
+              fatLow: 30,
+              fatHigh: 40,
+              fibreLow: null,
+              fibreHigh: null,
+              confidence: NutritionConfidence.medium,
+            ),
+          ],
+          totals: FakeFoodLogApi.totalsOf(const []),
+        );
+
+    Future<void> seed(
+      WidgetTester tester,
+      FoodLog Function(String today) make,
+    ) async {
+      final container =
+          ProviderScope.containerOf(tester.element(find.byType(HomeScreen)));
+      final today = container.read(localTodayProvider);
+      final log = make(today);
+      foodLog.logs[log.clientLogId] = log;
+      container.invalidate(nutritionDayRefreshProvider(today));
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+    }
+
+    testWidgets(
+        'the Food tile shows the server day as a range against the target — the numbers EAT shows',
+        (tester) async {
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      await seed(
+        tester,
+        (d) => logOf(d, kcal: [1210, 1480], protein: [60, 75]),
+      );
+      expect(textOf(tester, 'home.food').data, '1,210–1,480 / 2,276 kcal');
+      expect(find.text('60–75 / 106 g protein'), findsOneWidget);
+    });
+
+    testWidgets(
+        'J16: "protein low" fires only when even the HIGH end is under 75 % of the target',
+        (tester) async {
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      // 106 g target → 75 % is 79.5 g. High end 75 g: under even at best → suggest.
+      await seed(
+        tester,
+        (d) => logOf(d, kcal: [1210, 1480], protein: [60, 75]),
+      );
+      final container =
+          ProviderScope.containerOf(tester.element(find.byType(HomeScreen)));
+      expect(container.read(homeNutritionProvider).proteinG, 75);
+      expect(
+        container.read(homeSuggestionsProvider).map((s) => s.id),
+        contains('eat-protein'),
+      );
+    });
+
+    testWidgets(
+        'J16: a range whose high end reaches 75 % does not claim protein is low',
+        (tester) async {
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      await seed(
+        tester,
+        (d) => logOf(d, kcal: [1210, 1480], protein: [60, 90]),
+      );
+      final container =
+          ProviderScope.containerOf(tester.element(find.byType(HomeScreen)));
+      final n = container.read(homeNutritionProvider);
+      expect(
+        [n.proteinLow, n.proteinG, n.kcalLow, n.kcal],
+        [60, 90, 1210, 1480],
+      );
+      expect(
+        container.read(homeSuggestionsProvider).map((s) => s.id),
+        isNot(contains('eat-protein')),
+      );
+    });
   });
 }

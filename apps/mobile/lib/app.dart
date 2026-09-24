@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/routing/router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/nutrition/presentation/controllers/food_log_providers.dart';
 import 'features/workout/presentation/controllers/workout_providers.dart';
 import 'features/health/presentation/controllers/health_providers.dart';
 
@@ -16,6 +17,8 @@ class FitOSApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     // Keeps the offline queue draining for the signed-in user (§33).
     ref.watch(syncCoordinatorProvider);
+    // …and the food-log queue, with its own engine (Phase 8).
+    ref.watch(nutritionSyncCoordinatorProvider);
     ref.watch(healthRefreshCoordinatorProvider);
 
     return MaterialApp.router(

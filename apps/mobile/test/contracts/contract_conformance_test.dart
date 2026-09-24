@@ -6,6 +6,7 @@ import 'package:fitos/features/ai/domain/entities/ai.dart';
 import 'package:fitos/features/auth/domain/entities/user_profile.dart';
 import 'package:fitos/features/exercise/domain/entities/exercise.dart';
 import 'package:fitos/features/nutrition/domain/entities/food.dart';
+import 'package:fitos/features/nutrition/domain/entities/food_log.dart';
 import 'package:fitos/features/onboarding/domain/entities/onboarding.dart';
 import 'package:fitos/features/profile/domain/entities/profile.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart'
@@ -1423,6 +1424,258 @@ void main() {
       );
       expect(hit.food, dalTadka);
       expect(hit.match, FoodMatchKind.alias);
+    });
+  });
+
+  group('food logging (Phase 8)', () {
+    late Map<String, dynamic> day;
+    late Map<String, dynamic> totals;
+    late Map<String, dynamic> log;
+    late Map<String, dynamic> item;
+    late Map<String, dynamic> remaining;
+    late Map<String, dynamic> range;
+    late List<Map<String, dynamic>> createVariants;
+    late Map<String, dynamic> recent;
+    late Map<String, dynamic> savedMeal;
+    late List<Map<String, dynamic>> savedItemVariants;
+
+    Map<String, dynamic> p(Map<String, dynamic> s, String k) =>
+        properties(s)[k] as Map<String, dynamic>;
+
+    setUpAll(() {
+      day = schemaOf('/nutrition/today', 'get');
+      totals = p(day, 'totals');
+      log = p(day, 'logs')['items'] as Map<String, dynamic>;
+      item = p(log, 'items')['items'] as Map<String, dynamic>;
+      remaining = p(day, 'remaining');
+      range = p(remaining, 'kcal');
+      createVariants =
+          (schemaOf('/nutrition/logs', 'post', request: true)['anyOf']
+                  as List<dynamic>)
+              .cast<Map<String, dynamic>>();
+      recent = p(schemaOf('/nutrition/foods/recent', 'get'), 'items')['items']
+          as Map<String, dynamic>;
+      savedMeal = p(schemaOf('/nutrition/saved-meals', 'get'), 'items')['items']
+          as Map<String, dynamic>;
+      savedItemVariants = ((p(savedMeal, 'items')['items']
+              as Map<String, dynamic>)['anyOf'] as List<dynamic>)
+          .cast<Map<String, dynamic>>();
+    });
+
+    const item0 = FoodLogItem(
+      id: 'i',
+      position: 0,
+      foodId: null,
+      foodName: 'Quick add',
+      foodSource: FoodSource.user,
+      basis: null,
+      servingLabel: null,
+      servingGrams: null,
+      servings: 1,
+      grams: null,
+      kcalLow: 250,
+      kcalHigh: 250,
+      proteinLow: 10,
+      proteinHigh: 10,
+      carbLow: 30,
+      carbHigh: 30,
+      fatLow: 9,
+      fatHigh: 9,
+      fibreLow: null,
+      fibreHigh: null,
+      confidence: NutritionConfidence.medium,
+    );
+    const totals0 = NutritionTotals(
+      kcalLow: 250,
+      kcalHigh: 250,
+      proteinLow: 10,
+      proteinHigh: 10,
+      carbLow: 30,
+      carbHigh: 30,
+      fatLow: 9,
+      fatHigh: 9,
+      fibreKnownLow: 0,
+      fibreKnownHigh: 0,
+      fibreUnknownItems: 1,
+      itemCount: 1,
+    );
+    const log0 = FoodLog(
+      id: 'l',
+      clientLogId: 'c',
+      loggedAt: '2026-09-24T07:30:00.000Z',
+      localDate: '2026-09-24',
+      mealSlot: MealSlot.lunch,
+      entryMethod: EntryMethod.quickAdd,
+      savedMealId: null,
+      items: [item0],
+      totals: totals0,
+    );
+    const range0 = RemainingRange(
+      target: 2400,
+      low: 2150,
+      high: 2150,
+      state: RemainingState.under,
+    );
+    const day0 = NutritionDay(
+      date: '2026-09-24',
+      today: '2026-09-24',
+      timezone: 'Asia/Kolkata',
+      targets: null,
+      totals: totals0,
+      remaining: NutritionRemaining(
+        kcal: range0,
+        protein: range0,
+        carb: range0,
+        fat: range0,
+      ),
+      logs: [log0],
+    );
+
+    test('MealSlot, EntryMethod, RemainingState', () {
+      expect(
+        MealSlot.values.map((v) => v.wire).toList(),
+        enumOf(p(log, 'mealSlot')),
+      );
+      expect(
+        EntryMethod.values.map((v) => v.wire).toList(),
+        enumOf(p(log, 'entryMethod')),
+      );
+      expect(
+        RemainingState.values.map((v) => v.wire).toList(),
+        enumOf(p(range, 'state')),
+      );
+    });
+
+    test('NutritionDay, NutritionTotals, FoodLog, FoodLogItem, remaining', () {
+      expect(day0.toJson().keys.toSet(), keysOf(day));
+      expect(keysOf(schemaOf('/nutrition/day/{date}', 'get')), keysOf(day));
+      expect(totals0.toJson().keys.toSet(), keysOf(totals));
+      expect(log0.toJson().keys.toSet(), keysOf(log));
+      expect(item0.toJson().keys.toSet(), keysOf(item));
+      expect(day0.remaining!.toJson().keys.toSet(), keysOf(remaining));
+      expect(range0.toJson().keys.toSet(), keysOf(range));
+    });
+
+    test('CreateLogResponse, DeleteLogResponse, RecentFood, SavedMeal', () {
+      expect(
+        const CreateLogResponse(log: log0, day: day0).toJson().keys.toSet(),
+        keysOf(schemaOf('/nutrition/logs', 'post')),
+      );
+      expect(
+        const DeleteLogResponse(day: day0).toJson().keys.toSet(),
+        keysOf(schemaOf('/nutrition/logs/{clientLogId}', 'delete')),
+      );
+      expect(
+        const RecentFood(
+          food: honey,
+          lastLoggedAt: '2026-09-24T07:30:00.000Z',
+          lastBasis: NutritionBasis.perServing,
+          lastServingLabel: '1 tbsp',
+          lastServings: 2,
+        ).toJson().keys.toSet(),
+        keysOf(recent),
+      );
+      final meal = SavedMeal(
+        id: 'm',
+        clientMealId: 'c',
+        name: 'Dinner',
+        createdAt: '2026-09-24T07:30:00.000Z',
+        items: [
+          SavedFoodItem(
+            foodId: 'f',
+            foodName: 'Dal',
+            basis: NutritionBasis.perServing,
+            servingLabel: '1 katori',
+            servings: 1,
+            grams: 150,
+            row: honey.nutrition.first,
+          ),
+          const SavedQuickAddItem(
+            quickAddName: 'Curd',
+            kcal: 60,
+            proteinG: 3,
+            carbG: 4,
+            fatG: 3,
+            fibreG: null,
+          ),
+        ],
+      );
+      expect(meal.toJson().keys.toSet(), keysOf(savedMeal));
+      expect(
+        keysOf(schemaOf('/nutrition/saved-meals', 'post')),
+        keysOf(savedMeal),
+      );
+      expect(meal.items[0].toJson().keys.toSet(), keysOf(savedItemVariants[0]));
+      expect(meal.items[1].toJson().keys.toSet(), keysOf(savedItemVariants[1]));
+      // The hand-written union parses what it sends.
+      Object? wire(Object? v) => jsonDecode(jsonEncode(v));
+      final back =
+          SavedMeal.fromJson(wire(meal.toJson()) as Map<String, dynamic>);
+      expect(back.items[0], isA<SavedFoodItem>());
+      expect(back.items[1], isA<SavedQuickAddItem>());
+      expect(
+        NutritionDay.fromJson(wire(day0.toJson()) as Map<String, dynamic>),
+        day0,
+      );
+    });
+
+    test('each CreateLogRequest variant sends exactly its accepted properties',
+        () {
+      final search = const CreateLogRequest.search(
+        clientLogId: '0b1f6a8e-4d2c-4b8e-9d5f-1a2b3c4d5e6f',
+        loggedAt: '2026-09-24T07:30:00.000Z',
+        mealSlot: MealSlot.lunch,
+        items: [
+          LogFoodItemRequest(
+            foodId: '0b1f6a8e-4d2c-4b8e-9d5f-1a2b3c4d5e6f',
+            basis: NutritionBasis.perServing,
+            servingLabel: '1 katori',
+            servings: 1.5,
+          ),
+        ],
+      ).toJson();
+      final quick = const CreateLogRequest.quickAdd(
+        clientLogId: '0b1f6a8e-4d2c-4b8e-9d5f-1a2b3c4d5e6f',
+        loggedAt: '2026-09-24T07:30:00.000Z',
+        mealSlot: MealSlot.snacks,
+        quickAdd: QuickAdd(
+          name: 'Samosa',
+          kcal: 260,
+          proteinG: 4,
+          carbG: 28,
+          fatG: 15,
+          fibreG: 2,
+        ),
+      ).toJson();
+      final saved = const CreateLogRequest.savedMeal(
+        clientLogId: '0b1f6a8e-4d2c-4b8e-9d5f-1a2b3c4d5e6f',
+        loggedAt: '2026-09-24T07:30:00.000Z',
+        mealSlot: MealSlot.dinner,
+        savedMealId: '0b1f6a8e-4d2c-4b8e-9d5f-1a2b3c4d5e6f',
+      ).toJson();
+      Map<String, dynamic> variant(String method) => createVariants.firstWhere(
+            (v) => enumOf(p(v, 'entryMethod')).single == method,
+          );
+      expect(search.keys.toSet(), keysOf(variant('search')));
+      expect(quick.keys.toSet(), keysOf(variant('quick-add')));
+      expect(saved.keys.toSet(), keysOf(variant('saved-meal')));
+      final itemSchema =
+          p(variant('search'), 'items')['items'] as Map<String, dynamic>;
+      final itemJson =
+          (search['items'] as List<dynamic>).first as Map<String, dynamic>;
+      expect(keysOf(itemSchema).containsAll(itemJson.keys), isTrue);
+      expect(
+        (quick['quickAdd'] as Map<String, dynamic>).keys.toSet(),
+        keysOf(p(variant('quick-add'), 'quickAdd')),
+      );
+      expect(
+        const CreateSavedMealRequest(
+          clientMealId: 'c',
+          name: 'n',
+          fromClientLogIds: ['a'],
+        ).toJson().keys.toSet(),
+        keysOf(schemaOf('/nutrition/saved-meals', 'post', request: true)),
+      );
     });
   });
 

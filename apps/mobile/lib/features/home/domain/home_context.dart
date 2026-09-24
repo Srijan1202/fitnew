@@ -66,20 +66,38 @@ class HomeContext {
   bool get healthConnected => connection?.isConnected ?? false;
 }
 
-/// Food logged today. Phase 8 fills it; until then it is `notLogged`.
+/// Food logged today, from the server's day (Phase 8) — the same numbers
+/// the EAT screen shows. `notLogged` when nothing is logged or the day has
+/// not been loaded; never a zero standing in for "unknown".
+///
+/// Owner J16 — a day with estimates is a range, and the existing
+/// suggestions compare ONE number, so they get the conservative end: the
+/// HIGH end of what was eaten ([kcal], [proteinG]). "Protein below 75 %"
+/// then fires only when even the most the user may have eaten is below it,
+/// and "kcal left" never counts on the low end. The low ends are for display.
 class NutritionContext {
   const NutritionContext({
     required this.logged,
     this.kcal,
     this.proteinG,
+    this.kcalLow,
+    this.proteinLow,
     this.mealsRemaining,
   });
 
   static const notLogged = NutritionContext(logged: false);
 
   final bool logged;
+
+  /// High end of kcal eaten (the suggestion engine's number).
   final int? kcal;
+
+  /// High end of protein eaten (the suggestion engine's number).
   final int? proteinG;
+
+  /// Low ends, for showing the range.
+  final int? kcalLow;
+  final int? proteinLow;
   final int? mealsRemaining;
 }
 

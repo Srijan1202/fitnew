@@ -16,8 +16,9 @@ import '../../support/fake_food_repository.dart';
 
 /// Phase 7 food library against a scripted server: search, results with
 /// their provenance, a detail that keeps ranges as ranges and unknown fibre
-/// unknown, USDA attribution, and a retry-safe custom-food form. No screen
-/// offers to log anything — that is Phase 8.
+/// unknown, USDA attribution, and a retry-safe custom-food form. Phase 8
+/// adds "Log this food" on the detail ("Log it now" after creating one); the
+/// library's search and intro still never pretend to log.
 void main() {
   late FakeFoodRepository repo;
 
@@ -39,7 +40,13 @@ void main() {
             GoRoute(
               path: 'foods/:id',
               builder: (_, s) => FoodDetailScreen(
-                food: s.extra is Food ? s.extra! as Food : null,
+                food: switch (s.extra) {
+                  final FoodDetailArgs a => a.food,
+                  final Food f => f,
+                  _ => null,
+                },
+                justCreated: s.extra is FoodDetailArgs &&
+                    (s.extra! as FoodDetailArgs).justCreated,
               ),
             ),
           ],
@@ -203,7 +210,8 @@ void main() {
       // Not USDA data: no USDA credit on this one.
       expect(find.byKey(const ValueKey('usda.attribution')), findsNothing);
       expect(find.text('Verified · Medium confidence'), findsNothing);
-      expectNoLoggingControls(tester);
+      // Phase 8: a food can be logged from its detail.
+      expect(find.text('Log this food'), findsOneWidget);
     });
 
     testWidgets(
@@ -227,7 +235,7 @@ void main() {
       expect(find.byKey(const ValueKey('fibre.unknown')), findsNothing);
       expect(find.textContaining('FDC 169640'), findsOneWidget);
       expect(find.byKey(const ValueKey('usda.attribution')), findsOneWidget);
-      expectNoLoggingControls(tester);
+      expect(find.text('Log this food'), findsOneWidget);
     });
 
     testWidgets('an estimate composed from USDA ingredients credits USDA too',
@@ -335,6 +343,9 @@ void main() {
       expect(find.byType(FoodDetailScreen), findsOneWidget);
       expect(find.text('Protein Lassi'), findsOneWidget);
       expect(find.text('YOURS'), findsOneWidget);
+      // Phase 8 (owner item 27): straight from saving, "Log it now".
+      expect(find.text('Saved to your foods.'), findsOneWidget);
+      expect(find.text('Log it now'), findsOneWidget);
     });
 
     testWidgets(

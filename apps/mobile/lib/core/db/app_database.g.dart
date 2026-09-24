@@ -2445,6 +2445,885 @@ class CachedJsonCompanion extends UpdateCompanion<CachedJsonData> {
   }
 }
 
+class $LocalFoodLogsTable extends LocalFoodLogs
+    with TableInfo<$LocalFoodLogsTable, LocalFoodLog> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalFoodLogsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _clientLogIdMeta =
+      const VerificationMeta('clientLogId');
+  @override
+  late final GeneratedColumn<String> clientLogId = GeneratedColumn<String>(
+      'client_log_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _localDateMeta =
+      const VerificationMeta('localDate');
+  @override
+  late final GeneratedColumn<String> localDate = GeneratedColumn<String>(
+      'local_date', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _mealSlotMeta =
+      const VerificationMeta('mealSlot');
+  @override
+  late final GeneratedColumn<String> mealSlot = GeneratedColumn<String>(
+      'meal_slot', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _loggedAtMeta =
+      const VerificationMeta('loggedAt');
+  @override
+  late final GeneratedColumn<String> loggedAt = GeneratedColumn<String>(
+      'logged_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _requestJsonMeta =
+      const VerificationMeta('requestJson');
+  @override
+  late final GeneratedColumn<String> requestJson = GeneratedColumn<String>(
+      'request_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _previewJsonMeta =
+      const VerificationMeta('previewJson');
+  @override
+  late final GeneratedColumn<String> previewJson = GeneratedColumn<String>(
+      'preview_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        clientLogId,
+        localDate,
+        mealSlot,
+        loggedAt,
+        requestJson,
+        previewJson,
+        createdAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_food_logs';
+  @override
+  VerificationContext validateIntegrity(Insertable<LocalFoodLog> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('client_log_id')) {
+      context.handle(
+          _clientLogIdMeta,
+          clientLogId.isAcceptableOrUnknown(
+              data['client_log_id']!, _clientLogIdMeta));
+    } else if (isInserting) {
+      context.missing(_clientLogIdMeta);
+    }
+    if (data.containsKey('local_date')) {
+      context.handle(_localDateMeta,
+          localDate.isAcceptableOrUnknown(data['local_date']!, _localDateMeta));
+    } else if (isInserting) {
+      context.missing(_localDateMeta);
+    }
+    if (data.containsKey('meal_slot')) {
+      context.handle(_mealSlotMeta,
+          mealSlot.isAcceptableOrUnknown(data['meal_slot']!, _mealSlotMeta));
+    } else if (isInserting) {
+      context.missing(_mealSlotMeta);
+    }
+    if (data.containsKey('logged_at')) {
+      context.handle(_loggedAtMeta,
+          loggedAt.isAcceptableOrUnknown(data['logged_at']!, _loggedAtMeta));
+    } else if (isInserting) {
+      context.missing(_loggedAtMeta);
+    }
+    if (data.containsKey('request_json')) {
+      context.handle(
+          _requestJsonMeta,
+          requestJson.isAcceptableOrUnknown(
+              data['request_json']!, _requestJsonMeta));
+    } else if (isInserting) {
+      context.missing(_requestJsonMeta);
+    }
+    if (data.containsKey('preview_json')) {
+      context.handle(
+          _previewJsonMeta,
+          previewJson.isAcceptableOrUnknown(
+              data['preview_json']!, _previewJsonMeta));
+    } else if (isInserting) {
+      context.missing(_previewJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {clientLogId};
+  @override
+  LocalFoodLog map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalFoodLog(
+      clientLogId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}client_log_id'])!,
+      localDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}local_date'])!,
+      mealSlot: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}meal_slot'])!,
+      loggedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}logged_at'])!,
+      requestJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}request_json'])!,
+      previewJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}preview_json'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $LocalFoodLogsTable createAlias(String alias) {
+    return $LocalFoodLogsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalFoodLog extends DataClass implements Insertable<LocalFoodLog> {
+  final String clientLogId;
+
+  /// The day it is shown on until synced (the user's zone); the server decides.
+  final String localDate;
+  final String mealSlot;
+  final String loggedAt;
+
+  /// The `POST /nutrition/logs` body, sent as is.
+  final String requestJson;
+  final String previewJson;
+  final String createdAt;
+  const LocalFoodLog(
+      {required this.clientLogId,
+      required this.localDate,
+      required this.mealSlot,
+      required this.loggedAt,
+      required this.requestJson,
+      required this.previewJson,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['client_log_id'] = Variable<String>(clientLogId);
+    map['local_date'] = Variable<String>(localDate);
+    map['meal_slot'] = Variable<String>(mealSlot);
+    map['logged_at'] = Variable<String>(loggedAt);
+    map['request_json'] = Variable<String>(requestJson);
+    map['preview_json'] = Variable<String>(previewJson);
+    map['created_at'] = Variable<String>(createdAt);
+    return map;
+  }
+
+  LocalFoodLogsCompanion toCompanion(bool nullToAbsent) {
+    return LocalFoodLogsCompanion(
+      clientLogId: Value(clientLogId),
+      localDate: Value(localDate),
+      mealSlot: Value(mealSlot),
+      loggedAt: Value(loggedAt),
+      requestJson: Value(requestJson),
+      previewJson: Value(previewJson),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory LocalFoodLog.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalFoodLog(
+      clientLogId: serializer.fromJson<String>(json['clientLogId']),
+      localDate: serializer.fromJson<String>(json['localDate']),
+      mealSlot: serializer.fromJson<String>(json['mealSlot']),
+      loggedAt: serializer.fromJson<String>(json['loggedAt']),
+      requestJson: serializer.fromJson<String>(json['requestJson']),
+      previewJson: serializer.fromJson<String>(json['previewJson']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'clientLogId': serializer.toJson<String>(clientLogId),
+      'localDate': serializer.toJson<String>(localDate),
+      'mealSlot': serializer.toJson<String>(mealSlot),
+      'loggedAt': serializer.toJson<String>(loggedAt),
+      'requestJson': serializer.toJson<String>(requestJson),
+      'previewJson': serializer.toJson<String>(previewJson),
+      'createdAt': serializer.toJson<String>(createdAt),
+    };
+  }
+
+  LocalFoodLog copyWith(
+          {String? clientLogId,
+          String? localDate,
+          String? mealSlot,
+          String? loggedAt,
+          String? requestJson,
+          String? previewJson,
+          String? createdAt}) =>
+      LocalFoodLog(
+        clientLogId: clientLogId ?? this.clientLogId,
+        localDate: localDate ?? this.localDate,
+        mealSlot: mealSlot ?? this.mealSlot,
+        loggedAt: loggedAt ?? this.loggedAt,
+        requestJson: requestJson ?? this.requestJson,
+        previewJson: previewJson ?? this.previewJson,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  LocalFoodLog copyWithCompanion(LocalFoodLogsCompanion data) {
+    return LocalFoodLog(
+      clientLogId:
+          data.clientLogId.present ? data.clientLogId.value : this.clientLogId,
+      localDate: data.localDate.present ? data.localDate.value : this.localDate,
+      mealSlot: data.mealSlot.present ? data.mealSlot.value : this.mealSlot,
+      loggedAt: data.loggedAt.present ? data.loggedAt.value : this.loggedAt,
+      requestJson:
+          data.requestJson.present ? data.requestJson.value : this.requestJson,
+      previewJson:
+          data.previewJson.present ? data.previewJson.value : this.previewJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalFoodLog(')
+          ..write('clientLogId: $clientLogId, ')
+          ..write('localDate: $localDate, ')
+          ..write('mealSlot: $mealSlot, ')
+          ..write('loggedAt: $loggedAt, ')
+          ..write('requestJson: $requestJson, ')
+          ..write('previewJson: $previewJson, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(clientLogId, localDate, mealSlot, loggedAt,
+      requestJson, previewJson, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalFoodLog &&
+          other.clientLogId == this.clientLogId &&
+          other.localDate == this.localDate &&
+          other.mealSlot == this.mealSlot &&
+          other.loggedAt == this.loggedAt &&
+          other.requestJson == this.requestJson &&
+          other.previewJson == this.previewJson &&
+          other.createdAt == this.createdAt);
+}
+
+class LocalFoodLogsCompanion extends UpdateCompanion<LocalFoodLog> {
+  final Value<String> clientLogId;
+  final Value<String> localDate;
+  final Value<String> mealSlot;
+  final Value<String> loggedAt;
+  final Value<String> requestJson;
+  final Value<String> previewJson;
+  final Value<String> createdAt;
+  final Value<int> rowid;
+  const LocalFoodLogsCompanion({
+    this.clientLogId = const Value.absent(),
+    this.localDate = const Value.absent(),
+    this.mealSlot = const Value.absent(),
+    this.loggedAt = const Value.absent(),
+    this.requestJson = const Value.absent(),
+    this.previewJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalFoodLogsCompanion.insert({
+    required String clientLogId,
+    required String localDate,
+    required String mealSlot,
+    required String loggedAt,
+    required String requestJson,
+    required String previewJson,
+    required String createdAt,
+    this.rowid = const Value.absent(),
+  })  : clientLogId = Value(clientLogId),
+        localDate = Value(localDate),
+        mealSlot = Value(mealSlot),
+        loggedAt = Value(loggedAt),
+        requestJson = Value(requestJson),
+        previewJson = Value(previewJson),
+        createdAt = Value(createdAt);
+  static Insertable<LocalFoodLog> custom({
+    Expression<String>? clientLogId,
+    Expression<String>? localDate,
+    Expression<String>? mealSlot,
+    Expression<String>? loggedAt,
+    Expression<String>? requestJson,
+    Expression<String>? previewJson,
+    Expression<String>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (clientLogId != null) 'client_log_id': clientLogId,
+      if (localDate != null) 'local_date': localDate,
+      if (mealSlot != null) 'meal_slot': mealSlot,
+      if (loggedAt != null) 'logged_at': loggedAt,
+      if (requestJson != null) 'request_json': requestJson,
+      if (previewJson != null) 'preview_json': previewJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalFoodLogsCompanion copyWith(
+      {Value<String>? clientLogId,
+      Value<String>? localDate,
+      Value<String>? mealSlot,
+      Value<String>? loggedAt,
+      Value<String>? requestJson,
+      Value<String>? previewJson,
+      Value<String>? createdAt,
+      Value<int>? rowid}) {
+    return LocalFoodLogsCompanion(
+      clientLogId: clientLogId ?? this.clientLogId,
+      localDate: localDate ?? this.localDate,
+      mealSlot: mealSlot ?? this.mealSlot,
+      loggedAt: loggedAt ?? this.loggedAt,
+      requestJson: requestJson ?? this.requestJson,
+      previewJson: previewJson ?? this.previewJson,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (clientLogId.present) {
+      map['client_log_id'] = Variable<String>(clientLogId.value);
+    }
+    if (localDate.present) {
+      map['local_date'] = Variable<String>(localDate.value);
+    }
+    if (mealSlot.present) {
+      map['meal_slot'] = Variable<String>(mealSlot.value);
+    }
+    if (loggedAt.present) {
+      map['logged_at'] = Variable<String>(loggedAt.value);
+    }
+    if (requestJson.present) {
+      map['request_json'] = Variable<String>(requestJson.value);
+    }
+    if (previewJson.present) {
+      map['preview_json'] = Variable<String>(previewJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalFoodLogsCompanion(')
+          ..write('clientLogId: $clientLogId, ')
+          ..write('localDate: $localDate, ')
+          ..write('mealSlot: $mealSlot, ')
+          ..write('loggedAt: $loggedAt, ')
+          ..write('requestJson: $requestJson, ')
+          ..write('previewJson: $previewJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $NutritionSyncQueueTable extends NutritionSyncQueue
+    with TableInfo<$NutritionSyncQueueTable, NutritionSyncQueueData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $NutritionSyncQueueTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+      'kind', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _clientLogIdMeta =
+      const VerificationMeta('clientLogId');
+  @override
+  late final GeneratedColumn<String> clientLogId = GeneratedColumn<String>(
+      'client_log_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _payloadJsonMeta =
+      const VerificationMeta('payloadJson');
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+      'payload_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _attemptsMeta =
+      const VerificationMeta('attempts');
+  @override
+  late final GeneratedColumn<int> attempts = GeneratedColumn<int>(
+      'attempts', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _nextAttemptAtMeta =
+      const VerificationMeta('nextAttemptAt');
+  @override
+  late final GeneratedColumn<String> nextAttemptAt = GeneratedColumn<String>(
+      'next_attempt_at', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _lastErrorMeta =
+      const VerificationMeta('lastError');
+  @override
+  late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
+      'last_error', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _parkedMeta = const VerificationMeta('parked');
+  @override
+  late final GeneratedColumn<bool> parked = GeneratedColumn<bool>(
+      'parked', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("parked" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        kind,
+        clientLogId,
+        payloadJson,
+        attempts,
+        nextAttemptAt,
+        lastError,
+        parked,
+        createdAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'nutrition_sync_queue';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<NutritionSyncQueueData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+          _kindMeta, kind.isAcceptableOrUnknown(data['kind']!, _kindMeta));
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('client_log_id')) {
+      context.handle(
+          _clientLogIdMeta,
+          clientLogId.isAcceptableOrUnknown(
+              data['client_log_id']!, _clientLogIdMeta));
+    } else if (isInserting) {
+      context.missing(_clientLogIdMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+          _payloadJsonMeta,
+          payloadJson.isAcceptableOrUnknown(
+              data['payload_json']!, _payloadJsonMeta));
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    if (data.containsKey('attempts')) {
+      context.handle(_attemptsMeta,
+          attempts.isAcceptableOrUnknown(data['attempts']!, _attemptsMeta));
+    }
+    if (data.containsKey('next_attempt_at')) {
+      context.handle(
+          _nextAttemptAtMeta,
+          nextAttemptAt.isAcceptableOrUnknown(
+              data['next_attempt_at']!, _nextAttemptAtMeta));
+    }
+    if (data.containsKey('last_error')) {
+      context.handle(_lastErrorMeta,
+          lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta));
+    }
+    if (data.containsKey('parked')) {
+      context.handle(_parkedMeta,
+          parked.isAcceptableOrUnknown(data['parked']!, _parkedMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  NutritionSyncQueueData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return NutritionSyncQueueData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      kind: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}kind'])!,
+      clientLogId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}client_log_id'])!,
+      payloadJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}payload_json'])!,
+      attempts: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}attempts'])!,
+      nextAttemptAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}next_attempt_at']),
+      lastError: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}last_error']),
+      parked: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}parked'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $NutritionSyncQueueTable createAlias(String alias) {
+    return $NutritionSyncQueueTable(attachedDatabase, alias);
+  }
+}
+
+class NutritionSyncQueueData extends DataClass
+    implements Insertable<NutritionSyncQueueData> {
+  final int id;
+
+  /// `create` | `delete`.
+  final String kind;
+  final String clientLogId;
+  final String payloadJson;
+  final int attempts;
+  final String? nextAttemptAt;
+  final String? lastError;
+  final bool parked;
+  final String createdAt;
+  const NutritionSyncQueueData(
+      {required this.id,
+      required this.kind,
+      required this.clientLogId,
+      required this.payloadJson,
+      required this.attempts,
+      this.nextAttemptAt,
+      this.lastError,
+      required this.parked,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['kind'] = Variable<String>(kind);
+    map['client_log_id'] = Variable<String>(clientLogId);
+    map['payload_json'] = Variable<String>(payloadJson);
+    map['attempts'] = Variable<int>(attempts);
+    if (!nullToAbsent || nextAttemptAt != null) {
+      map['next_attempt_at'] = Variable<String>(nextAttemptAt);
+    }
+    if (!nullToAbsent || lastError != null) {
+      map['last_error'] = Variable<String>(lastError);
+    }
+    map['parked'] = Variable<bool>(parked);
+    map['created_at'] = Variable<String>(createdAt);
+    return map;
+  }
+
+  NutritionSyncQueueCompanion toCompanion(bool nullToAbsent) {
+    return NutritionSyncQueueCompanion(
+      id: Value(id),
+      kind: Value(kind),
+      clientLogId: Value(clientLogId),
+      payloadJson: Value(payloadJson),
+      attempts: Value(attempts),
+      nextAttemptAt: nextAttemptAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextAttemptAt),
+      lastError: lastError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastError),
+      parked: Value(parked),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory NutritionSyncQueueData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return NutritionSyncQueueData(
+      id: serializer.fromJson<int>(json['id']),
+      kind: serializer.fromJson<String>(json['kind']),
+      clientLogId: serializer.fromJson<String>(json['clientLogId']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+      attempts: serializer.fromJson<int>(json['attempts']),
+      nextAttemptAt: serializer.fromJson<String?>(json['nextAttemptAt']),
+      lastError: serializer.fromJson<String?>(json['lastError']),
+      parked: serializer.fromJson<bool>(json['parked']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'kind': serializer.toJson<String>(kind),
+      'clientLogId': serializer.toJson<String>(clientLogId),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+      'attempts': serializer.toJson<int>(attempts),
+      'nextAttemptAt': serializer.toJson<String?>(nextAttemptAt),
+      'lastError': serializer.toJson<String?>(lastError),
+      'parked': serializer.toJson<bool>(parked),
+      'createdAt': serializer.toJson<String>(createdAt),
+    };
+  }
+
+  NutritionSyncQueueData copyWith(
+          {int? id,
+          String? kind,
+          String? clientLogId,
+          String? payloadJson,
+          int? attempts,
+          Value<String?> nextAttemptAt = const Value.absent(),
+          Value<String?> lastError = const Value.absent(),
+          bool? parked,
+          String? createdAt}) =>
+      NutritionSyncQueueData(
+        id: id ?? this.id,
+        kind: kind ?? this.kind,
+        clientLogId: clientLogId ?? this.clientLogId,
+        payloadJson: payloadJson ?? this.payloadJson,
+        attempts: attempts ?? this.attempts,
+        nextAttemptAt:
+            nextAttemptAt.present ? nextAttemptAt.value : this.nextAttemptAt,
+        lastError: lastError.present ? lastError.value : this.lastError,
+        parked: parked ?? this.parked,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  NutritionSyncQueueData copyWithCompanion(NutritionSyncQueueCompanion data) {
+    return NutritionSyncQueueData(
+      id: data.id.present ? data.id.value : this.id,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      clientLogId:
+          data.clientLogId.present ? data.clientLogId.value : this.clientLogId,
+      payloadJson:
+          data.payloadJson.present ? data.payloadJson.value : this.payloadJson,
+      attempts: data.attempts.present ? data.attempts.value : this.attempts,
+      nextAttemptAt: data.nextAttemptAt.present
+          ? data.nextAttemptAt.value
+          : this.nextAttemptAt,
+      lastError: data.lastError.present ? data.lastError.value : this.lastError,
+      parked: data.parked.present ? data.parked.value : this.parked,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NutritionSyncQueueData(')
+          ..write('id: $id, ')
+          ..write('kind: $kind, ')
+          ..write('clientLogId: $clientLogId, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('attempts: $attempts, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('lastError: $lastError, ')
+          ..write('parked: $parked, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, kind, clientLogId, payloadJson, attempts,
+      nextAttemptAt, lastError, parked, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NutritionSyncQueueData &&
+          other.id == this.id &&
+          other.kind == this.kind &&
+          other.clientLogId == this.clientLogId &&
+          other.payloadJson == this.payloadJson &&
+          other.attempts == this.attempts &&
+          other.nextAttemptAt == this.nextAttemptAt &&
+          other.lastError == this.lastError &&
+          other.parked == this.parked &&
+          other.createdAt == this.createdAt);
+}
+
+class NutritionSyncQueueCompanion
+    extends UpdateCompanion<NutritionSyncQueueData> {
+  final Value<int> id;
+  final Value<String> kind;
+  final Value<String> clientLogId;
+  final Value<String> payloadJson;
+  final Value<int> attempts;
+  final Value<String?> nextAttemptAt;
+  final Value<String?> lastError;
+  final Value<bool> parked;
+  final Value<String> createdAt;
+  const NutritionSyncQueueCompanion({
+    this.id = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.clientLogId = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.attempts = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.parked = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  NutritionSyncQueueCompanion.insert({
+    this.id = const Value.absent(),
+    required String kind,
+    required String clientLogId,
+    required String payloadJson,
+    this.attempts = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.parked = const Value.absent(),
+    required String createdAt,
+  })  : kind = Value(kind),
+        clientLogId = Value(clientLogId),
+        payloadJson = Value(payloadJson),
+        createdAt = Value(createdAt);
+  static Insertable<NutritionSyncQueueData> custom({
+    Expression<int>? id,
+    Expression<String>? kind,
+    Expression<String>? clientLogId,
+    Expression<String>? payloadJson,
+    Expression<int>? attempts,
+    Expression<String>? nextAttemptAt,
+    Expression<String>? lastError,
+    Expression<bool>? parked,
+    Expression<String>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (kind != null) 'kind': kind,
+      if (clientLogId != null) 'client_log_id': clientLogId,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (attempts != null) 'attempts': attempts,
+      if (nextAttemptAt != null) 'next_attempt_at': nextAttemptAt,
+      if (lastError != null) 'last_error': lastError,
+      if (parked != null) 'parked': parked,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  NutritionSyncQueueCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? kind,
+      Value<String>? clientLogId,
+      Value<String>? payloadJson,
+      Value<int>? attempts,
+      Value<String?>? nextAttemptAt,
+      Value<String?>? lastError,
+      Value<bool>? parked,
+      Value<String>? createdAt}) {
+    return NutritionSyncQueueCompanion(
+      id: id ?? this.id,
+      kind: kind ?? this.kind,
+      clientLogId: clientLogId ?? this.clientLogId,
+      payloadJson: payloadJson ?? this.payloadJson,
+      attempts: attempts ?? this.attempts,
+      nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
+      lastError: lastError ?? this.lastError,
+      parked: parked ?? this.parked,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (clientLogId.present) {
+      map['client_log_id'] = Variable<String>(clientLogId.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (attempts.present) {
+      map['attempts'] = Variable<int>(attempts.value);
+    }
+    if (nextAttemptAt.present) {
+      map['next_attempt_at'] = Variable<String>(nextAttemptAt.value);
+    }
+    if (lastError.present) {
+      map['last_error'] = Variable<String>(lastError.value);
+    }
+    if (parked.present) {
+      map['parked'] = Variable<bool>(parked.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NutritionSyncQueueCompanion(')
+          ..write('id: $id, ')
+          ..write('kind: $kind, ')
+          ..write('clientLogId: $clientLogId, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('attempts: $attempts, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('lastError: $lastError, ')
+          ..write('parked: $parked, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2454,6 +3333,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $LocalSetLogsTable localSetLogs = $LocalSetLogsTable(this);
   late final $SyncQueueTable syncQueue = $SyncQueueTable(this);
   late final $CachedJsonTable cachedJson = $CachedJsonTable(this);
+  late final $LocalFoodLogsTable localFoodLogs = $LocalFoodLogsTable(this);
+  late final $NutritionSyncQueueTable nutritionSyncQueue =
+      $NutritionSyncQueueTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2463,7 +3345,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         localSessionExercises,
         localSetLogs,
         syncQueue,
-        cachedJson
+        cachedJson,
+        localFoodLogs,
+        nutritionSyncQueue
       ];
 }
 
@@ -3647,6 +4531,441 @@ typedef $$CachedJsonTableProcessedTableManager = ProcessedTableManager<
     ),
     CachedJsonData,
     PrefetchHooks Function()>;
+typedef $$LocalFoodLogsTableCreateCompanionBuilder = LocalFoodLogsCompanion
+    Function({
+  required String clientLogId,
+  required String localDate,
+  required String mealSlot,
+  required String loggedAt,
+  required String requestJson,
+  required String previewJson,
+  required String createdAt,
+  Value<int> rowid,
+});
+typedef $$LocalFoodLogsTableUpdateCompanionBuilder = LocalFoodLogsCompanion
+    Function({
+  Value<String> clientLogId,
+  Value<String> localDate,
+  Value<String> mealSlot,
+  Value<String> loggedAt,
+  Value<String> requestJson,
+  Value<String> previewJson,
+  Value<String> createdAt,
+  Value<int> rowid,
+});
+
+class $$LocalFoodLogsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalFoodLogsTable> {
+  $$LocalFoodLogsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get clientLogId => $composableBuilder(
+      column: $table.clientLogId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get localDate => $composableBuilder(
+      column: $table.localDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get mealSlot => $composableBuilder(
+      column: $table.mealSlot, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get loggedAt => $composableBuilder(
+      column: $table.loggedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get requestJson => $composableBuilder(
+      column: $table.requestJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get previewJson => $composableBuilder(
+      column: $table.previewJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$LocalFoodLogsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalFoodLogsTable> {
+  $$LocalFoodLogsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get clientLogId => $composableBuilder(
+      column: $table.clientLogId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get localDate => $composableBuilder(
+      column: $table.localDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get mealSlot => $composableBuilder(
+      column: $table.mealSlot, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get loggedAt => $composableBuilder(
+      column: $table.loggedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get requestJson => $composableBuilder(
+      column: $table.requestJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get previewJson => $composableBuilder(
+      column: $table.previewJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$LocalFoodLogsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalFoodLogsTable> {
+  $$LocalFoodLogsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get clientLogId => $composableBuilder(
+      column: $table.clientLogId, builder: (column) => column);
+
+  GeneratedColumn<String> get localDate =>
+      $composableBuilder(column: $table.localDate, builder: (column) => column);
+
+  GeneratedColumn<String> get mealSlot =>
+      $composableBuilder(column: $table.mealSlot, builder: (column) => column);
+
+  GeneratedColumn<String> get loggedAt =>
+      $composableBuilder(column: $table.loggedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get requestJson => $composableBuilder(
+      column: $table.requestJson, builder: (column) => column);
+
+  GeneratedColumn<String> get previewJson => $composableBuilder(
+      column: $table.previewJson, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$LocalFoodLogsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $LocalFoodLogsTable,
+    LocalFoodLog,
+    $$LocalFoodLogsTableFilterComposer,
+    $$LocalFoodLogsTableOrderingComposer,
+    $$LocalFoodLogsTableAnnotationComposer,
+    $$LocalFoodLogsTableCreateCompanionBuilder,
+    $$LocalFoodLogsTableUpdateCompanionBuilder,
+    (
+      LocalFoodLog,
+      BaseReferences<_$AppDatabase, $LocalFoodLogsTable, LocalFoodLog>
+    ),
+    LocalFoodLog,
+    PrefetchHooks Function()> {
+  $$LocalFoodLogsTableTableManager(_$AppDatabase db, $LocalFoodLogsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalFoodLogsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalFoodLogsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalFoodLogsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> clientLogId = const Value.absent(),
+            Value<String> localDate = const Value.absent(),
+            Value<String> mealSlot = const Value.absent(),
+            Value<String> loggedAt = const Value.absent(),
+            Value<String> requestJson = const Value.absent(),
+            Value<String> previewJson = const Value.absent(),
+            Value<String> createdAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              LocalFoodLogsCompanion(
+            clientLogId: clientLogId,
+            localDate: localDate,
+            mealSlot: mealSlot,
+            loggedAt: loggedAt,
+            requestJson: requestJson,
+            previewJson: previewJson,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String clientLogId,
+            required String localDate,
+            required String mealSlot,
+            required String loggedAt,
+            required String requestJson,
+            required String previewJson,
+            required String createdAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              LocalFoodLogsCompanion.insert(
+            clientLogId: clientLogId,
+            localDate: localDate,
+            mealSlot: mealSlot,
+            loggedAt: loggedAt,
+            requestJson: requestJson,
+            previewJson: previewJson,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$LocalFoodLogsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $LocalFoodLogsTable,
+    LocalFoodLog,
+    $$LocalFoodLogsTableFilterComposer,
+    $$LocalFoodLogsTableOrderingComposer,
+    $$LocalFoodLogsTableAnnotationComposer,
+    $$LocalFoodLogsTableCreateCompanionBuilder,
+    $$LocalFoodLogsTableUpdateCompanionBuilder,
+    (
+      LocalFoodLog,
+      BaseReferences<_$AppDatabase, $LocalFoodLogsTable, LocalFoodLog>
+    ),
+    LocalFoodLog,
+    PrefetchHooks Function()>;
+typedef $$NutritionSyncQueueTableCreateCompanionBuilder
+    = NutritionSyncQueueCompanion Function({
+  Value<int> id,
+  required String kind,
+  required String clientLogId,
+  required String payloadJson,
+  Value<int> attempts,
+  Value<String?> nextAttemptAt,
+  Value<String?> lastError,
+  Value<bool> parked,
+  required String createdAt,
+});
+typedef $$NutritionSyncQueueTableUpdateCompanionBuilder
+    = NutritionSyncQueueCompanion Function({
+  Value<int> id,
+  Value<String> kind,
+  Value<String> clientLogId,
+  Value<String> payloadJson,
+  Value<int> attempts,
+  Value<String?> nextAttemptAt,
+  Value<String?> lastError,
+  Value<bool> parked,
+  Value<String> createdAt,
+});
+
+class $$NutritionSyncQueueTableFilterComposer
+    extends Composer<_$AppDatabase, $NutritionSyncQueueTable> {
+  $$NutritionSyncQueueTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get kind => $composableBuilder(
+      column: $table.kind, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get clientLogId => $composableBuilder(
+      column: $table.clientLogId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get attempts => $composableBuilder(
+      column: $table.attempts, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get nextAttemptAt => $composableBuilder(
+      column: $table.nextAttemptAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lastError => $composableBuilder(
+      column: $table.lastError, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get parked => $composableBuilder(
+      column: $table.parked, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$NutritionSyncQueueTableOrderingComposer
+    extends Composer<_$AppDatabase, $NutritionSyncQueueTable> {
+  $$NutritionSyncQueueTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+      column: $table.kind, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get clientLogId => $composableBuilder(
+      column: $table.clientLogId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get attempts => $composableBuilder(
+      column: $table.attempts, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get nextAttemptAt => $composableBuilder(
+      column: $table.nextAttemptAt,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lastError => $composableBuilder(
+      column: $table.lastError, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get parked => $composableBuilder(
+      column: $table.parked, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$NutritionSyncQueueTableAnnotationComposer
+    extends Composer<_$AppDatabase, $NutritionSyncQueueTable> {
+  $$NutritionSyncQueueTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get clientLogId => $composableBuilder(
+      column: $table.clientLogId, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => column);
+
+  GeneratedColumn<int> get attempts =>
+      $composableBuilder(column: $table.attempts, builder: (column) => column);
+
+  GeneratedColumn<String> get nextAttemptAt => $composableBuilder(
+      column: $table.nextAttemptAt, builder: (column) => column);
+
+  GeneratedColumn<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => column);
+
+  GeneratedColumn<bool> get parked =>
+      $composableBuilder(column: $table.parked, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$NutritionSyncQueueTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $NutritionSyncQueueTable,
+    NutritionSyncQueueData,
+    $$NutritionSyncQueueTableFilterComposer,
+    $$NutritionSyncQueueTableOrderingComposer,
+    $$NutritionSyncQueueTableAnnotationComposer,
+    $$NutritionSyncQueueTableCreateCompanionBuilder,
+    $$NutritionSyncQueueTableUpdateCompanionBuilder,
+    (
+      NutritionSyncQueueData,
+      BaseReferences<_$AppDatabase, $NutritionSyncQueueTable,
+          NutritionSyncQueueData>
+    ),
+    NutritionSyncQueueData,
+    PrefetchHooks Function()> {
+  $$NutritionSyncQueueTableTableManager(
+      _$AppDatabase db, $NutritionSyncQueueTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$NutritionSyncQueueTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$NutritionSyncQueueTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$NutritionSyncQueueTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> kind = const Value.absent(),
+            Value<String> clientLogId = const Value.absent(),
+            Value<String> payloadJson = const Value.absent(),
+            Value<int> attempts = const Value.absent(),
+            Value<String?> nextAttemptAt = const Value.absent(),
+            Value<String?> lastError = const Value.absent(),
+            Value<bool> parked = const Value.absent(),
+            Value<String> createdAt = const Value.absent(),
+          }) =>
+              NutritionSyncQueueCompanion(
+            id: id,
+            kind: kind,
+            clientLogId: clientLogId,
+            payloadJson: payloadJson,
+            attempts: attempts,
+            nextAttemptAt: nextAttemptAt,
+            lastError: lastError,
+            parked: parked,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String kind,
+            required String clientLogId,
+            required String payloadJson,
+            Value<int> attempts = const Value.absent(),
+            Value<String?> nextAttemptAt = const Value.absent(),
+            Value<String?> lastError = const Value.absent(),
+            Value<bool> parked = const Value.absent(),
+            required String createdAt,
+          }) =>
+              NutritionSyncQueueCompanion.insert(
+            id: id,
+            kind: kind,
+            clientLogId: clientLogId,
+            payloadJson: payloadJson,
+            attempts: attempts,
+            nextAttemptAt: nextAttemptAt,
+            lastError: lastError,
+            parked: parked,
+            createdAt: createdAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$NutritionSyncQueueTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $NutritionSyncQueueTable,
+    NutritionSyncQueueData,
+    $$NutritionSyncQueueTableFilterComposer,
+    $$NutritionSyncQueueTableOrderingComposer,
+    $$NutritionSyncQueueTableAnnotationComposer,
+    $$NutritionSyncQueueTableCreateCompanionBuilder,
+    $$NutritionSyncQueueTableUpdateCompanionBuilder,
+    (
+      NutritionSyncQueueData,
+      BaseReferences<_$AppDatabase, $NutritionSyncQueueTable,
+          NutritionSyncQueueData>
+    ),
+    NutritionSyncQueueData,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3661,4 +4980,8 @@ class $AppDatabaseManager {
       $$SyncQueueTableTableManager(_db, _db.syncQueue);
   $$CachedJsonTableTableManager get cachedJson =>
       $$CachedJsonTableTableManager(_db, _db.cachedJson);
+  $$LocalFoodLogsTableTableManager get localFoodLogs =>
+      $$LocalFoodLogsTableTableManager(_db, _db.localFoodLogs);
+  $$NutritionSyncQueueTableTableManager get nutritionSyncQueue =>
+      $$NutritionSyncQueueTableTableManager(_db, _db.nutritionSyncQueue);
 }

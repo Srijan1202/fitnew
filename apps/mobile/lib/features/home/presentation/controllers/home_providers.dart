@@ -6,6 +6,7 @@ import '../../../auth/domain/entities/auth_state.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../health/domain/entities/health.dart';
 import '../../../health/presentation/controllers/health_providers.dart';
+import '../../../nutrition/presentation/controllers/food_log_providers.dart';
 import '../../../profile/data/profile_repository.dart';
 import '../../../training/presentation/controllers/program_controller.dart';
 import '../../../workout/domain/entities/workout.dart';
@@ -101,6 +102,30 @@ final askForNameProvider = Provider<bool>((ref) {
   return !ref.watch(namePromptDismissedProvider);
 });
 
+/// Today's food from the server's day (Phase 8) — the same cached day the
+/// EAT screen shows, so the two always agree. Owner J16: the suggestion
+/// engine gets the conservative high ends (see [NutritionContext]).
+final homeNutritionProvider = Provider<NutritionContext>((ref) {
+  if (ref.watch(sessionUserIdProvider) == null) {
+    return NutritionContext.notLogged;
+  }
+  final today = ref.watch(localTodayProvider);
+  // Keeps today's day fetched (and refetched after the queue delivers).
+  ref.watch(nutritionDayRefreshProvider(today));
+  final server = ref.watch(nutritionDayViewProvider(today)).value?.server;
+  if (server == null || server.totals.itemCount == 0) {
+    return NutritionContext.notLogged;
+  }
+  final t = server.totals;
+  return NutritionContext(
+    logged: true,
+    kcal: t.kcalHigh.round(),
+    proteinG: t.proteinHigh.round(),
+    kcalLow: t.kcalLow.round(),
+    proteinLow: t.proteinLow.round(),
+  );
+});
+
 final homeContextProvider = Provider<HomeContext>((ref) {
   final profile = ref.watch(profileControllerProvider).value;
   return HomeContext(
@@ -111,8 +136,7 @@ final homeContextProvider = Provider<HomeContext>((ref) {
     activeSession: ref.watch(activeSessionProvider).value,
     completedToday: ref.watch(completedTodayProvider).value,
     targets: profile?.goal.targets,
-    // Phase 8 fills this; until then it is honestly not logged.
-    nutrition: NutritionContext.notLogged,
+    nutrition: ref.watch(homeNutritionProvider),
     health: ref.watch(healthSnapshotProvider).value,
     connection: ref.watch(healthConnectionProvider).value,
     stepGoal: ref.watch(stepGoalProvider),

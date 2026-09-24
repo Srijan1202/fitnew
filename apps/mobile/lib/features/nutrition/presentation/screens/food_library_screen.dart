@@ -12,10 +12,9 @@ import '../../domain/entities/food.dart';
 import '../controllers/food_providers.dart';
 import '../widgets/food_widgets.dart';
 
-/// The Nutrition tab (Phase 7): a food library to look things up in. Search,
-/// read what a food contains and where the numbers come from, add your own
-/// from a label. Nothing here logs a meal or counts toward a target — that
-/// is Phase 8, and a control that pretends otherwise is not shown (§6).
+/// The food library (Phase 7; opened from EAT since Phase 8): search, read
+/// what a food contains and where the numbers come from, add your own from a
+/// label. Logging happens from a food's detail and from EAT's log sheet.
 class FoodLibraryScreen extends ConsumerStatefulWidget {
   const FoodLibraryScreen({super.key});
 
@@ -232,9 +231,12 @@ class _Results extends StatelessWidget {
 /// One result: name (wraps to two lines), "brand · energy · serving", the
 /// source badge, an arrow. Tapping opens the food.
 class FoodRow extends StatelessWidget {
-  const FoodRow({required this.result, super.key});
+  const FoodRow({required this.result, this.onTap, super.key});
 
   final FoodSearchResult result;
+
+  /// Phase 8: the log sheet picks the food instead of opening it.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -248,7 +250,8 @@ class FoodRow extends StatelessWidget {
     ].join(' · ');
     return InkWell(
       key: ValueKey('food.${food.slug}'),
-      onTap: () => context.push(Routes.foodDetail(food.id), extra: food),
+      onTap:
+          onTap ?? () => context.push(Routes.foodDetail(food.id), extra: food),
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 56),
         child: Padding(

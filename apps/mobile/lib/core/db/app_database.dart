@@ -7,8 +7,9 @@ import 'package:path_provider/path_provider.dart';
 
 part 'app_database.g.dart';
 
-/// The local database (§33): the workout that is happening right now, and
-/// the queue of everything the server has not confirmed yet.
+/// The local database (§33): the workout that is happening right now, food
+/// logged on this phone (Phase 8), and the queues of everything the server
+/// has not confirmed yet.
 ///
 /// Write locally first, render from here, sync later. Every row a client
 /// creates carries the client id the server treats as its idempotency key,
@@ -102,6 +103,43 @@ class CachedJson extends Table {
   Set<Column<Object>> get primaryKey => {key};
 }
 
+/// Phase 8: a food log made on this phone that the server has not confirmed
+/// yet. The row goes when the server's answer lands (the server's day, in
+/// [CachedJson], then holds the log). `previewJson` is the display-only
+/// preview (owner J10) — shown as "not synced yet", never in a total.
+class LocalFoodLogs extends Table {
+  TextColumn get clientLogId => text()();
+
+  /// The day it is shown on until synced (the user's zone); the server decides.
+  TextColumn get localDate => text()();
+  TextColumn get mealSlot => text()();
+  TextColumn get loggedAt => text()();
+
+  /// The `POST /nutrition/logs` body, sent as is.
+  TextColumn get requestJson => text()();
+  TextColumn get previewJson => text()();
+  TextColumn get createdAt => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {clientLogId};
+}
+
+/// Phase 8: food-log mutations the server has not confirmed, drained FIFO by
+/// the NutritionSyncEngine — separate from the workout [SyncQueue].
+class NutritionSyncQueue extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// `create` | `delete`.
+  TextColumn get kind => text()();
+  TextColumn get clientLogId => text()();
+  TextColumn get payloadJson => text()();
+  IntColumn get attempts => integer().withDefault(const Constant(0))();
+  TextColumn get nextAttemptAt => text().nullable()();
+  TextColumn get lastError => text().nullable()();
+  BoolColumn get parked => boolean().withDefault(const Constant(false))();
+  TextColumn get createdAt => text()();
+}
+
 @DriftDatabase(
   tables: [
     LocalSessions,
@@ -109,6 +147,8 @@ class CachedJson extends Table {
     LocalSetLogs,
     SyncQueue,
     CachedJson,
+    LocalFoodLogs,
+    NutritionSyncQueue,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -126,8 +166,22 @@ class AppDatabase extends _$AppDatabase {
 
   factory AppDatabase.inMemory() => AppDatabase(NativeDatabase.memory());
 
+  /// 1 — Phase 5 (workout, sync queue, cache). 2 — Phase 8 (food logs and
+  /// their own queue). An upgrade only ADDS tables: a phone that still holds
+  /// an unsent workout keeps it.
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.createTable(localFoodLogs);
+            await m.createTable(nutritionSyncQueue);
+          }
+        },
+      );
 
   /// Everything, on sign-out: the next user starts from nothing.
   Future<void> clearAll() => transaction(() async {
