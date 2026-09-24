@@ -1,4 +1,4 @@
-## PHASE 10 — Mess recommendations — AMENDMENT A/B IMPLEMENTED, AWAITING OWNER REVIEW AND A NEW S24 RUN
+## PHASE 10 — Mess recommendations — CORRECTION PASS DONE; STAPLE BOUND AWAITS THE OWNER; S24 RUN NEXT
 
 **Date** 2026-09-24 · **Branch** `phase-10` from `main` at `08a085b` (the accepted Phase 9, fast-forwarded per D26) · not merged (owner instruction)
 
@@ -17,6 +17,10 @@
   - `94a5b15` — mobile: structure label, statuses, wording, conformance
   - `f4ca077` — `nothing-fits` exactly as C4 defines it: fall back through meal-grade tiers only
   - plus the docs commit (ADR-015 amendment, MASTER-SPEC) and this report update
+- **Correction pass after the owner's review:**
+  - `bfec183` — the ambient check is context-aware (blocker 1)
+  - `91ff5c8` — the Home test pins its hour (a pre-existing test fault that surfaced)
+  - plus this report update
 - plus this report
 
 **Decision record:** the owner approved the audit (D1–D25; D12 clarified, D13 modified, D18 deferred), then the [plan](../phase-plans/phase-10-plan.md) with 29 locked decisions. [ADR-015](../decisions/ADR-015-mess-recommendations.md).
@@ -73,9 +77,9 @@
 - **Slowest single recommendation:** 6.0 ms.
 - **The same checks run in CI** as a core test over the September capture, plus a latency test on every real meal (each median-of-3 under 100 ms).
 
-**Found and reported, not fixed** (outside the approved scope):
-1. **Phase 9's ambient rule** matches `butter` and `sauce`. So "Paneer Butter Masala", "Butter Chicken Masala" and "Spring Roll With Sauce" count as ambient and never reach a plate. On 8 snack menus that leaves a non-vegetarian `no-meal`. Fixing it touches accepted Phase 9 classification, so it needs the owner's decision.
-2. **The frozen Phase 7 food "Curd rice"** carries the same curd values as the old mess row (65–105 kcal). It is not changed, because Phase 7 is frozen.
+**Found and reported** (the owner decided afterwards):
+1. **Phase 9's ambient rule** matched `butter` and `sauce` anywhere in a name. **Fixed in the correction pass (below).**
+2. **The frozen Phase 7 food "Curd rice"** (owner: stays deferred; not a Phase 10 blocker) carries the same curd values as the old mess row (65–105 kcal). It is not changed, because Phase 7 is frozen.
 3. **The first persona sweep showed** that with a whole day left (dinner with nothing logged), a plate can hold two staples with five servings (Curd Rice ×2 + Plain Dosa ×3 + Dal ×2 + Bhindi). This is within the caps and scoring; it is noted for review.
 
 
@@ -83,6 +87,92 @@ No contradiction with the locked decisions or the plan came up during implementa
 - "dinner: 19:00" means dinner from 19:00;
 - the "drink" role is the core's `beverage` role;
 - the carb, fat and goal reasons got their own codes.
+
+### CORRECTION PASS — after the owner's review of the implementation report (2026-09-24)
+
+**1. Ambient detection is context-aware (blocker, fixed in `bfec183`).**
+- **The fault:** Phase 9's `isAmbient` matched `butter`, `sauce`, `bread` or `milk` anywhere in a name, which hid real dishes.
+- **The rule now:** an item is ambient only when it **is** the accompaniment. Its name must **end** with an ambient term (the head noun), and a trailing "with …" clause is ignored, because it names what comes alongside.
+- **No vocabulary was removed.** The effect is computed on read (menus are parsed on read), so no data changes.
+
+| September dish | Before | Now |
+|---|---|---|
+| Paneer Butter Masala, Butter Chicken Masala | ambient (never on a plate) | a dish (protein) |
+| Spring Roll With Sauce | ambient | a dish (snack) |
+| Bread Halwa, Milk Peda | ambient | a dish (dessert) |
+| Bread, Butter, Jam, Pickle, Garlic Sauce, Tea, Coffee, Milk, Butter Milk, Rose Milk, Chocos | ambient | ambient (unchanged) |
+
+- **Regression tests:**
+  - the classification table: the five dishes above; Butter Naan is not ambient; Garlic Sauce, Pickle, Mango Pickle, Butter, Bread, Jam, Butter Milk, Tea, Masala Tea, Coffee, Milk, Cold Milk, Rose Milk, Chocos and Corn Flakes are;
+  - Paneer Butter Masala and Butter Chicken Masala reach plates, while Pickle, Garlic Sauce, Bread, Butter and Jam stay ambient in the same menus;
+  - the real men's special snack of 9 Sep (Spring Roll With Sauce) is a snack again, not `no-meal`.
+
+**2. Full September sweep rerun** (stored menus, dev database, after the fix): 4,320 recommendations, 7,516 plates.
+- **Every check is still 0:**
+  - a single supporting item as a meal;
+  - a missing staple when one exists;
+  - soup, juice or fruit as the top meal;
+  - a drink on a plate;
+  - a dessert or crisp at lunch or dinner;
+  - diet or allergy violations;
+  - look-alike alternatives;
+  - different results on repeat.
+- **Statuses:** `ok` 3,834, `nothing-safe` 342, `no-meal` 144, `nothing-fits` 0.
+  - The 22 former `no-meal` snacks from the ambient fault now get a snack.
+  - The 144 left are one menu shape: Brownie Cake (diet unknown in a non-veg mess, so excluded for vegetarian and eggetarian users) with only drinks. That is correct.
+- **Slowest single recommendation:** 7.3 ms. The CI latency test (every real September meal, median of 3, under 100 ms) passes.
+
+**3. Staple-heavy plates: analysis and proposal (no rule changed).**
+
+Scope: all 6,760 breakfast, lunch and dinner plates of the sweep (snacks excluded).
+
+| Measure | Result |
+|---|---|
+| Staple servings per plate (staple + complete dishes) | 1: 2,883 · 2: 1,878 · 3: 755 · 4: 979 · 5: 241 · **6: 24** |
+| Total servings per plate | at most 8 (the existing cap); 7 servings on 2,474 plates |
+| Plates with ≥ 4 staple servings | **1,244 (18.4%)**, of which 470 are top plates |
+| Three staple-type dishes on one plate | **76**. A complete dish (e.g. Egg Fried Rice) is not counted toward "at most 2 distinct staples" |
+
+**By meal-target size.** Tk is the meal's kcal target; a normal meal is the day target × the meal weight.
+
+| Tk vs a normal meal | Plates | Staple servings seen | Three staple-type dishes |
+|---|---|---|---|
+| < 1.3× | 2,546 | max **3** (1: 2,166 · 2: 360 · 3: 20) | 0 |
+| 1.3–2× | 2,178 | max 5 (≥ 4 on 167) | 14 |
+| ≥ 2× | 2,036 | max 6 (≥ 4 on 1,077) | 62 |
+
+- **Worst examples:** men's non-veg dinner, 1, 8, 15 and 22 Sep, with a target of 2,400 kcal against a normal dinner of 720. The plate is Methi Chapathi ×3 + White Rice ×2 + Egg Fried Rice + Gobi Manchurian, about 1,210 kcal and six staple servings.
+- **The optimizer is buying score with staples.** On the 470 heavy top plates, cutting each staple back to one serving would lose 16.2 points on average: 8.7 from staple protein and 10.3 of kcal under-penalty avoided. The shape and carb terms barely push back.
+- **The cause** is an oversized meal target. When earlier meals are unlogged or past (e.g. dinner with nothing logged), one meal is asked to carry most of the day (ADR-015 meal share), and staples are the cheapest way to fill it. At normal-sized targets it never happens.
+
+**Proposed constraint (smallest found; not implemented, awaiting the owner):**
+1. **Count a complete dish as a staple for "at most 2 distinct staples".** The dish already contains a staple.
+2. **Allow at most 3 staple servings per plate**, with a complete dish counting as 1 serving.
+   - The bound is taken from the data: no plate at a normal-sized target ever used more than 3.
+   - Still allowed: Rice ×1 + Chapathi ×2 + protein + vegetable; Chapathi ×3 + protein + vegetable; Rice ×2 + Phulka ×1 + protein + vegetable.
+
+**Simulated on the same sweep** (scratch copy of core; nothing committed):
+
+| | Now | (1) only | (1) + ≤ 4 | **(1) + ≤ 3** |
+|---|---|---|---|---|
+| plates with ≥ 4 staple servings | 1,244 | 1,206 | 1,199 | **0** |
+| max staple servings | 6 | 5 | 4 | **3** |
+| recommendations changed at normal-sized targets (1,440) | — | — | — | **0** |
+| top plates changed (1.3–2× / ≥ 2×) | — | — | — | 58 / 412 |
+| avg top-plate protein, ≥ 2× targets | 35.1 g | 35.0 g | 34.5 g | 34.3 g |
+| protein shortfalls; complete-meal tops; single-supporting; no-staple tops | unchanged | unchanged | unchanged | **unchanged** |
+
+A bound of 4 barely helps, because heavy plates cluster at exactly 4. **A bound of 3 removes every heavy plate, changes nothing at normal targets, and costs under 1 g of protein on average where it applies.**
+
+- **Example,** men's veg dinner, 1 Sep:
+  - now: Veg Fried Rice ×2 + White Rice ×2 + Mix Dhal ×2 + Gobi Manchurian;
+  - with the proposal: Veg Fried Rice ×2 + Mix Dhal ×2 + Sambar ×2 + Gobi Manchurian.
+- **An alternative that treats the cause** would cap the meal target itself (e.g. at 2× a normal meal). That changes the locked meal share (ADR-015 D5), so it is noted, not proposed.
+
+**4. A pre-existing test fault surfaced (fixed in `91ff5c8`, test only).**
+- The Home engine deliberately stops "eat protein" from 22:00.
+- A Phase 8 Home test (J16) never pinned the hour, so it failed on a real clock between 22:00 and midnight (seen at 22:23).
+- The test harness now pins the hour to 12. No app code changed.
 
 ### What was built
 
@@ -151,7 +241,7 @@ No contradiction with the locked decisions or the plan came up during implementa
 
 | Suite | Result | New in Phase 10 |
 |---|---|---|
-| core | **724 passed** (12 files; 646 before Amendment A) | 104: slot boundaries; meal share and target; default meal; every constant and goal weight pinned, plus each score term; **diet safety across every real menu**; allergen status table; **allergy hard filter across real menus** (every plate dish confirmed free, severity irrelevant); alternatives; the "Veg" prefix; snack plates; menu states and zero budget; shortfall (exists only when high < T, never inflated, `menuCanMeet`); deterministic, < 100 ms, coded reasons; variety; post-workout; the six personas snapshotted |
+| core | **747 passed** (12 files; 724 before the correction pass, 646 before Amendment A) | 104: slot boundaries; meal share and target; default meal; every constant and goal weight pinned, plus each score term; **diet safety across every real menu**; allergen status table; **allergy hard filter across real menus** (every plate dish confirmed free, severity irrelevant); alternatives; the "Veg" prefix; snack plates; menu states and zero budget; shortfall (exists only when high < T, never inflated, `menuCanMeet`); deterministic, < 100 ms, coded reasons; variety; post-workout; the six personas snapshotted |
 | contracts | **66 passed** (10 files) | 4: query strictness, statuses and codes, reasons carry no text, the response shape |
 | API | **394 passed** (27 files; incl. migration 0012 up/down, meals-not-dishes on every mess and meal, the corrected estimates) | 18 recommend integration tests (real Postgres, date-shifted capture) |
 | Flutter | **534 passed** (structure label, `no-meal`, `nothing-fits` numbers, drink under "Why not", conformance for the new shapes) | 34: 30 in `recommend_test.dart` and 4 conformance tests |
@@ -200,6 +290,8 @@ No contradiction with the locked decisions or the plan came up during implementa
   - `dart format --set-exit-if-changed`: 0 changed;
   - the full suite also ran locally this phase.
 
+**CI on `91ff5c8` (correction-pass head; all green):** ci-core ✓, ci-api ✓, ci-mobile ✓.
+
 **CI on `92164ee` (Amendment A/B head; all green):** ci-core ✓, ci-api ✓ (including migration 0012 up and down), ci-mobile ✓. Before the amendment, CI was also all green on `18fa3ad`:
 - **ci-core ✓**
 - **ci-api ✓:** typecheck, lint, tests, build, the image migrates, seeds and boots, and the smoke check including the new route's 401.
@@ -207,8 +299,13 @@ No contradiction with the locked decisions or the plan came up during implementa
 
 ### BUILDS
 
-- **LAN API container:** `docker compose up --build -d api` (development), rebuilt from `phase-10` at `92164ee`. Migration 0012 was applied to the dev database with `pnpm --filter @fitos/api db:migrate`, because the container does not migrate itself. `GET /v1/mess/menu/recommend` answers 401 without a session.
-- **LAN APK:** `apps/mobile/build/app/outputs/flutter-apk/app-debug.apk` (debug, `.\tool\alpha.ps1`), built from `phase-10` at `92164ee` (Amendment A/B). It targets `http://10.52.198.11:8080` (the PC on the S24 hotspot), and `/health` returned 200 at build time. The owner installs it by hand; no phone was connected over adb.
+- **LAN API container:** `docker compose up --build -d api` (development), rebuilt from `phase-10` at `91ff5c8` (earlier at `92164ee`). Migration 0012 was applied to the dev database with `pnpm --filter @fitos/api db:migrate`, because the container does not migrate itself. `GET /v1/mess/menu/recommend` answers 401 without a session.
+- **LAN APK (correction pass):** `apps/mobile/build/app/outputs/flutter-apk/app-debug.apk`, built from `91ff5c8` with `.\tool\alpha.ps1 -ApiHostOverride 172.16.205.86 -SkipHealthCheck` (owner: the PC's LAN address is 172.16.205.86).
+  - **Host verified inside the APK:** `http://172.16.205.86:8080` is in `kernel_blob.bin` (the Dart API base URL) and in `res/xml/network_security_config.xml` (the cleartext allowlist). The old address 10.52.198.11 appears in no file.
+  - **Not verified at that address:** when this was built (22:29 IST) the PC was on the S24 hotspot at 10.52.198.11, so `/health` at 172.16.205.86 could not be reached. The script's health check was skipped for that reason.
+  - **Verified on the running container** (rebuilt from `91ff5c8`): `/health` returns 200 on localhost and on 10.52.198.11; `GET /v1/mess/menu/recommend` returns 401 without a session.
+  - Before installing, put the PC on the network where it is 172.16.205.86 and check `http://172.16.205.86:8080/health` returns 200.
+- Superseded: the APK built from `92164ee` targeted 10.52.198.11.
 
 The PC's address depends on the network it joins. A first build targeted `172.16.205.86` (another Wi-Fi) and was replaced when the PC moved back to the hotspot. **Rebuild with `.\tool\alpha.ps1` whenever the address changes.**
 
