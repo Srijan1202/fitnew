@@ -10,6 +10,8 @@ import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/hairline_section.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
+import '../../../progress/domain/progress.dart';
+import '../../../progress/presentation/progress_providers.dart';
 import '../../../workout/presentation/controllers/workout_providers.dart';
 import '../../data/profile_repository.dart';
 import '../../domain/entities/profile.dart';
@@ -196,20 +198,28 @@ final _outlined = OutlinedButton.styleFrom(
   ),
 );
 
-class _Facts extends StatelessWidget {
+class _Facts extends ConsumerWidget {
   const _Facts({required this.profile});
 
   final UserProfileDetail profile;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
+    // Phase 12, §13.2: the trend weight is the headline; the latest raw
+    // reading is shown small beneath it (never the other way round).
+    final trend = ref
+        .watch(progressSummaryProvider(ProgressWindow.d30))
+        .value
+        ?.summary
+        ?.weight
+        .currentTrendKg;
     final rows = <(String, String)>[
       if (profile.sex != null) ('Sex', profile.sex!.label),
       if (profile.birthDate != null) ('Born', profile.birthDate!),
       if (profile.heightCm != null) ('Height', '${profile.heightCm} cm'),
-      if (profile.latestWeightKg != null)
-        ('Weight', '${profile.latestWeightKg} kg'),
+      // Rendered below as the trend headline with the raw reading small.
+      if (trend != null || profile.latestWeightKg != null) ('Weight', ''),
       if (profile.experienceLevel != null)
         ('Experience', profile.experienceLevel!.label),
       if (profile.trainingDaysPerWeek != null)
@@ -224,22 +234,61 @@ class _Facts extends StatelessWidget {
     ];
     return Column(
       children: <Widget>[
-        for (final (label, value) in rows) ...<Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                SizedBox(
-                  width: 120,
-                  child: Text(label, style: textTheme.bodyMedium),
-                ),
-                Expanded(child: Text(value, style: textTheme.bodyLarge)),
-              ],
+        for (final (label, value) in rows)
+          if (label == 'Weight') ...<Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  SizedBox(
+                    width: 120,
+                    child: Text('Weight', style: textTheme.bodyMedium),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          trend == null
+                              ? 'Trend after your next readings'
+                              : '${trend.toStringAsFixed(1)} kg trend',
+                          key: const ValueKey('profile.weight.trend'),
+                          style: trend == null
+                              ? textTheme.bodyMedium
+                                  ?.copyWith(color: FitColors.ink60)
+                              : textTheme.bodyLarge,
+                        ),
+                        if (profile.latestWeightKg != null)
+                          Text(
+                            'Latest reading ${profile.latestWeightKg} kg',
+                            key: const ValueKey('profile.weight.raw'),
+                            style: textTheme.bodySmall
+                                ?.copyWith(color: FitColors.ink35),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const Divider(color: FitColors.rule, height: 1),
-        ],
+            const Divider(color: FitColors.rule, height: 1),
+          ] else ...<Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  SizedBox(
+                    width: 120,
+                    child: Text(label, style: textTheme.bodyMedium),
+                  ),
+                  Expanded(child: Text(value, style: textTheme.bodyLarge)),
+                ],
+              ),
+            ),
+            const Divider(color: FitColors.rule, height: 1),
+          ],
         // Phase 9 (owner D13): the mess by name, changeable here.
         MessSettingRow(mess: profile.mess),
         const Divider(color: FitColors.rule, height: 1),

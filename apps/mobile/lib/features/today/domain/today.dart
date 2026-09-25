@@ -15,6 +15,9 @@ enum TodayKind {
   progressLoad('progress-load'),
   muscleNeglected('muscle-neglected'),
   restDay('rest-day'),
+
+  /// Phase 12: the §13.2 calorie-target adjustment (advisory; accepting applies it).
+  calorieAdjust('calorie-adjust'),
   celebratePr('celebrate-pr'),
   logWeight('log-weight');
 

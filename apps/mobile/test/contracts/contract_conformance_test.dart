@@ -15,6 +15,7 @@ import 'package:fitos/features/profile/domain/entities/profile.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart'
     show PersonalDetailsChange;
 import 'package:fitos/features/profile/domain/entities/vocabulary.dart';
+import 'package:fitos/features/progress/domain/progress.dart';
 import 'package:fitos/features/today/domain/today.dart';
 import 'package:fitos/features/today/presentation/today_words.dart';
 import 'package:fitos/features/training/domain/entities/program.dart';
@@ -2119,7 +2120,7 @@ void main() {
     });
 
     test('every reason code the server can send is worded from its values', () {
-      expect(reasons, hasLength(10));
+      expect(reasons, hasLength(11)); // Phase 12 adds calorie-target-off-trend
       for (final variant in reasons) {
         final r = sampleReason(variant);
         expect(TodayWords.facts(r), isNotEmpty, reason: r.code);
@@ -2173,6 +2174,154 @@ void main() {
         ],
       );
       final back = TodayPlan.fromJson(
+        jsonDecode(jsonEncode(full.toJson())) as Map<String, dynamic>,
+      );
+      expect(jsonEncode(back.toJson()), jsonEncode(full.toJson()));
+    });
+  });
+
+  group('Progress (Phase 12)', () {
+    Map<String, dynamic> p(Map<String, dynamic> s, String k) =>
+        properties(s)[k] as Map<String, dynamic>;
+    Map<String, dynamic> items(Map<String, dynamic> s, String k) =>
+        p(s, k)['items'] as Map<String, dynamic>;
+
+    late Map<String, dynamic> sum;
+    setUpAll(() => sum = schemaOf('/progress/summary', 'get'));
+
+    const full = ProgressSummary(
+      window: ProgressWindow.d30,
+      today: '2026-09-24',
+      from: '2026-08-26',
+      weight: WeightProgress(
+        points: [WeightPoint(date: '2026-09-24', rawKg: 75.4, trendKg: 75.1)],
+        currentTrendKg: 75.1,
+        weeklyChangeKg: -0.3,
+        daysOfData: 14,
+        isReliable: true,
+        windowChangeKg: -0.5,
+        windowChangeDays: 13,
+      ),
+      measurements: [
+        SiteProgress(
+          site: MeasurementSite.waist,
+          latestDate: '2026-09-24',
+          latestCm: 84.5,
+          changeCm: -1.5,
+          changeDays: 20,
+        ),
+      ],
+      prs: [
+        PrRecord(
+          id: '11111111-1111-4111-8111-111111111111',
+          exerciseId: '22222222-2222-4222-8222-222222222222',
+          exerciseName: 'Bench',
+          prType: 'weight',
+          value: 85,
+          previous: 80,
+          reason: 'r',
+          achievedOn: '2026-09-20',
+        ),
+      ],
+      bestLifts: [
+        BestLift(
+          exerciseId: '22222222-2222-4222-8222-222222222222',
+          exerciseName: 'Bench',
+          estimated1RmKg: 93.5,
+          weightKg: 85,
+          reps: 3,
+          date: '2026-09-20',
+        ),
+      ],
+      adherence: Adherence(
+        protein: AdherenceCount(met: 2, of: 4, percent: 50),
+        calories: AdherenceCount(met: 2, of: 4, percent: 50),
+        loggedDays: 4,
+        daysWithoutTarget: 0,
+      ),
+      consistency: Consistency(
+        weeks: [
+          WeekConsistency(isoWeek: '2026-W39', completed: 2, planned: 2),
+        ],
+        completed: 2,
+        planned: 2,
+        percent: 100,
+      ),
+    );
+
+    test('windows and measurement sites are exactly the server\'s', () {
+      expect(
+        ProgressWindow.values.map((w) => w.wire).toList(),
+        enumOf(
+          ((doc['paths']['/progress/summary']['get']['parameters']
+                      as List<dynamic>)
+                  .cast<Map<String, dynamic>>()
+                  .firstWhere((q) => q['name'] == 'window')['schema'])
+              as Map<String, dynamic>,
+        ),
+      );
+      expect(
+        MeasurementSite.values.map((s) => s.wire).toList(),
+        enumOf(p(items(sum, 'measurements'), 'site')),
+      );
+    });
+
+    test(
+        'the summary and every nested shape have exactly the documented properties',
+        () {
+      final j = full.toJson();
+      expect(j.keys.toSet(), keysOf(sum));
+      expect((j['weight'] as Map).keys.toSet(), keysOf(p(sum, 'weight')));
+      expect(
+        full.weight.points.first.toJson().keys.toSet(),
+        keysOf(items(p(sum, 'weight'), 'points')),
+      );
+      expect(
+        full.measurements.first.toJson().keys.toSet(),
+        keysOf(items(sum, 'measurements')),
+      );
+      expect(full.prs.first.toJson().keys.toSet(), keysOf(items(sum, 'prs')));
+      expect(
+        full.bestLifts.first.toJson().keys.toSet(),
+        keysOf(items(sum, 'bestLifts')),
+      );
+      expect(full.adherence.toJson().keys.toSet(), keysOf(p(sum, 'adherence')));
+      expect(
+        full.adherence.protein.toJson().keys.toSet(),
+        keysOf(p(p(sum, 'adherence'), 'protein')),
+      );
+      expect(
+        full.consistency.toJson().keys.toSet(),
+        keysOf(p(sum, 'consistency')),
+      );
+      expect(
+        full.consistency.weeks.first.toJson().keys.toSet(),
+        keysOf(items(p(sum, 'consistency'), 'weeks')),
+      );
+    });
+
+    test('the two writes send exactly weightKg/date and site/valueCm/date', () {
+      final w = schemaOf('/progress/weight', 'post', request: true);
+      expect(
+        const LogWeightRequest(weightKg: 70, date: '2026-09-24')
+            .toJson()
+            .keys
+            .toSet(),
+        keysOf(w),
+      );
+      final m = schemaOf('/progress/measurement', 'post', request: true);
+      expect(
+        const LogMeasurementRequest(
+          site: MeasurementSite.hip,
+          valueCm: 98,
+          date: '2026-09-24',
+        ).toJson().keys.toSet(),
+        keysOf(m),
+      );
+    });
+
+    test('a summary round-trips through its own JSON (the offline cache)', () {
+      final back = ProgressSummary.fromJson(
         jsonDecode(jsonEncode(full.toJson())) as Map<String, dynamic>,
       );
       expect(jsonEncode(back.toJson()), jsonEncode(full.toJson()));

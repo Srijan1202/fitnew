@@ -522,8 +522,10 @@ class BodySection extends StatelessWidget {
         );
     return _Grid(
       blocks: <Widget>[
+        // Phase 12 (§13.2): a Health Connect reading is raw device data — the
+        // FITOS trend lives on Progress; this block is labelled as the raw one.
         block(
-          'Weight',
+          'Weight · raw (device)',
           h.weight,
           (v) => '${HomeSections.kg(v)} kg',
           'home.weight',

@@ -8,6 +8,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../../health/domain/entities/health.dart';
 import '../../../health/presentation/controllers/health_providers.dart';
 import '../../../nutrition/domain/entities/food_log.dart';
+import '../../../nutrition/presentation/controllers/food_log_providers.dart';
 import '../../../nutrition/presentation/controllers/food_logger.dart';
 import '../../../profile/data/profile_repository.dart';
 import '../../../today/domain/today.dart';
@@ -124,6 +125,15 @@ class HomeScreen extends ConsumerWidget {
             .push(id == null ? Routes.history : Routes.historyDetail(id));
       case TodayKind.logWeight:
         await context.push(Routes.personalDetails);
+      case TodayKind.calorieAdjust:
+        // Accepting applies it on the server (a new target row). Deliver the
+        // event now, then show the targets where they live.
+        await ref.read(todayRepositoryProvider).drain();
+        ref
+          ..invalidate(profileControllerProvider)
+          ..invalidate(nutritionDayRefreshProvider(planDate));
+        if (!context.mounted) return;
+        context.go(Routes.nutrition);
     }
   }
 

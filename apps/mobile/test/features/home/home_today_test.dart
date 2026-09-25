@@ -348,6 +348,59 @@ void main() {
     });
   }
 
+  testToday(
+      'Phase 12 calorie-adjust: the card says the change; accepting sends it now and opens EAT; completed once the server holds the new target',
+      (tester) async {
+    final adjust = FakeTodayApi.action(
+      TodayKind.calorieAdjust,
+      id: 'a-adjust',
+      target: ActionTarget.eat,
+      headline: 'Move your target to 2146 kcal',
+      detail:
+          'Your trend weight is rising about 0.70 kg a week, off pace for your goal.',
+      reason: const TodayReason('calorie-target-off-trend', {
+        'currentKcal': 2276,
+        'newKcal': 2146,
+        'deltaKcal': -130,
+        'weeklyChangeKg': 0.7,
+      }),
+    );
+    today.plan = plan([adjust]);
+    await tester.pumpWidget(app());
+    await settle(tester);
+    expect(
+      textOf(tester, 'home.suggestion.calorie-adjust.eyebrow'),
+      'EAT · TARGET',
+    );
+    expect(find.text('Use 2146 kcal'), findsOneWidget);
+    await tester.tap(key('home.suggestion.calorie-adjust.open'));
+    await settle(tester);
+    expect(textOf(tester, 'today.why.fact.Current target'), '2276 kcal');
+    expect(textOf(tester, 'today.why.fact.Suggested'), '2146 kcal');
+    expect(textOf(tester, 'today.why.fact.Trend'), '+0.70 kg a week');
+    // The server applies it when the accepted event arrives: a new target row.
+    profile.nextGoal = Ok(
+      GoalResponse(
+        goal: (profile.nextGoal as Ok<GoalResponse>).value.goal,
+        targets: (profile.nextGoal as Ok<GoalResponse>).value.targets!.copyWith(
+              kcal: 2146,
+              reason: 'calorie-adjust',
+              effectiveFrom: date,
+            ),
+      ),
+    );
+    await tester.tap(key('today.why.primary'));
+    await settle(tester);
+    expect(find.text('EAT'), findsOneWidget);
+    expect(
+      today.sent,
+      containsAllInOrder(
+        ['a-adjust:shown', 'a-adjust:opened', 'a-adjust:accepted'],
+      ),
+    );
+    expect(today.sent.where((e) => e == 'a-adjust:completed'), hasLength(1));
+  });
+
   testToday('with a mess configured, an eat action opens MESS', (tester) async {
     profile.nextProfile = Ok(
       (profile.nextProfile as Ok<UserProfileDetail>).value.copyWith(

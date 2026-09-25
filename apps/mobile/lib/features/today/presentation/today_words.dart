@@ -17,6 +17,7 @@ abstract final class TodayWords {
           'TRAIN',
         TodayKind.eatProtein || TodayKind.eatMeal => 'EAT',
         TodayKind.restDay => 'REST DAY',
+        TodayKind.calorieAdjust => 'EAT · TARGET',
         TodayKind.celebratePr => 'RECORD',
         TodayKind.logWeight => 'BODY',
       };
@@ -39,6 +40,8 @@ abstract final class TodayWords {
             : 'Log ${MealSlot.fromWire(a.subjectKey).label.toLowerCase()}',
         TodayKind.progressLoad => "Open today's session",
         TodayKind.muscleNeglected || TodayKind.restDay => 'Open your plan',
+        TodayKind.calorieAdjust =>
+          'Use ${_num(a.reason.values['newKcal'] as num)} kcal',
         TodayKind.celebratePr => 'See the record',
         TodayKind.logWeight => 'Log weight',
       };
@@ -153,6 +156,15 @@ abstract final class TodayWords {
               '${_num(n('kcalTarget'))} kcal · ${_num(n('proteinTarget'))} g protein',
             ),
           if (v['hasProgramme'] == false) ('Programme', 'None yet'),
+        ],
+      'calorie-target-off-trend' => [
+          ('Current target', '${_num(n('currentKcal'))} kcal'),
+          ('Suggested', '${_num(n('newKcal'))} kcal'),
+          (
+            'Trend',
+            '${n('weeklyChangeKg') > 0 ? '+' : n('weeklyChangeKg') < 0 ? '−' : ''}${n('weeklyChangeKg').abs().toStringAsFixed(2)} kg a week',
+          ),
+          ('Change', 'Only if you accept; your earlier targets are kept'),
         ],
       'pr-today' => [
           ('Lift', s('exerciseName')),

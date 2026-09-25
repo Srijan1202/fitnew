@@ -165,7 +165,7 @@ void main() {
         (tester) async {
       await tester.pumpWidget(app(initial: '/'));
       await tester.pumpAndSettle();
-      for (final label in ['Home', 'Training', 'AI', 'Nutrition', 'Market']) {
+      for (final label in ['Home', 'Training', 'AI', 'Nutrition', 'Progress']) {
         expect(find.byKey(ValueKey('nav.$label')), findsOneWidget);
       }
 
@@ -196,12 +196,12 @@ void main() {
       expect(find.byKey(const ValueKey('eat.library')), findsOneWidget);
       expect(selected('Nutrition'), isTrue);
 
-      await go('Market');
-      expect(
-        find.text('Supplements and gear from campus vendors will live here.'),
-        findsOneWidget,
-      );
-      expect(selected('Market'), isTrue);
+      // Phase 12: Progress & Recovery replaced the Market placeholder.
+      await go('Progress');
+      expect(find.byKey(const ValueKey('progress.title')), findsOneWidget);
+      expect(find.text('Progress & Recovery'), findsOneWidget);
+      expect(find.textContaining('Supplements and gear'), findsNothing);
+      expect(selected('Progress'), isTrue);
 
       await go('Training');
       expect(find.byType(WorkoutWeekScreen), findsOneWidget);
@@ -278,7 +278,7 @@ void main() {
       expect(screen.width - rect.right, FitBottomBar.sideMargin);
       expect(screen.height - rect.bottom, FitBottomBar.bottomMargin);
       // Every item is a full-height touch target.
-      for (final label in ['Home', 'Training', 'AI', 'Nutrition', 'Market']) {
+      for (final label in ['Home', 'Training', 'AI', 'Nutrition', 'Progress']) {
         expect(
           tester.getSize(find.byKey(ValueKey('nav.$label'))).height,
           FitBottomBar.contentHeight,

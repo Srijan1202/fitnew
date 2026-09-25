@@ -11,6 +11,7 @@ import '../../auth/presentation/controllers/auth_providers.dart';
 import '../../health/presentation/controllers/health_providers.dart';
 import '../../home/presentation/controllers/home_providers.dart';
 import '../../nutrition/presentation/controllers/food_log_providers.dart';
+import '../../profile/data/profile_repository.dart';
 import '../../workout/domain/entities/workout.dart';
 import '../../workout/presentation/controllers/workout_providers.dart';
 import '../data/today_api.dart';
@@ -176,6 +177,7 @@ final todayCompletionEvidenceProvider = Provider<CompletionEvidence>((ref) {
   final training = ref.watch(todayProvider).value;
   final session = ref.watch(completedTodayProvider).value;
   final food = ref.watch(nutritionDayViewProvider(date)).value?.server;
+  final targets = ref.watch(profileControllerProvider).value?.goal.targets;
   final onDay = training != null && training.date == date;
   return CompletionEvidence(
     date: date,
@@ -195,6 +197,9 @@ final todayCompletionEvidenceProvider = Provider<CompletionEvidence>((ref) {
     },
     weighed: ref.watch(weightSavedOnProvider) == date,
     deloadActive: onDay && training.deload.state == DeloadStatus.active,
+    targetAdjusted: targets != null &&
+        targets.reason == 'calorie-adjust' &&
+        targets.effectiveFrom == date,
   );
 });
 

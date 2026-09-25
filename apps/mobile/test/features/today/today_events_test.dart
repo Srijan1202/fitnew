@@ -457,6 +457,31 @@ void main() {
     });
 
     test(
+        'Phase 12: calorie-adjust completes only on its own evidence (the new target row), after accept',
+        () {
+      final ledger = [
+        e('c', TodayKind.calorieAdjust, TodayEventName.accepted),
+      ];
+      expect(due(ledger, const CompletionEvidence(date: date)), isEmpty);
+      expect(
+        due(ledger, const CompletionEvidence(date: date, weighed: true)),
+        isEmpty,
+      );
+      expect(
+        due(ledger, const CompletionEvidence(date: date, targetAdjusted: true)),
+        ['c'],
+      );
+      expect(
+        due(
+          [e('c', TodayKind.calorieAdjust, TodayEventName.shown)],
+          const CompletionEvidence(date: date, targetAdjusted: true),
+        ),
+        isEmpty,
+      );
+      expect(TodayKind.calorieAdjust.completable, isTrue);
+    });
+
+    test(
         'not without accepted, not twice, not after dismissed, not for informational kinds, not for another day',
         () {
       const all = CompletionEvidence(

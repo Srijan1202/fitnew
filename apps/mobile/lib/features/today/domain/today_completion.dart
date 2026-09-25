@@ -15,6 +15,7 @@ class CompletionEvidence {
     this.loggedSlots = const {},
     this.weighed = false,
     this.deloadActive = false,
+    this.targetAdjusted = false,
   });
 
   /// The local date these facts are for.
@@ -35,6 +36,10 @@ class CompletionEvidence {
 
   /// The offered deload week was activated (Phase 6 accept).
   final bool deloadActive;
+
+  /// Phase 12: the server holds a target row a calorie-adjust acceptance
+  /// created, effective on [date].
+  final bool targetAdjusted;
 }
 
 /// The actions accepted on this phone for [CompletionEvidence.date], not yet
@@ -81,6 +86,7 @@ List<ActionRef> dueCompletions(
         evidence.loggedSlots.contains(subject),
       TodayKind.logWeight => evidence.weighed,
       TodayKind.deload => evidence.deloadActive,
+      TodayKind.calorieAdjust => evidence.targetAdjusted,
       TodayKind.injuredLimitation ||
       TodayKind.restDay ||
       TodayKind.celebratePr =>

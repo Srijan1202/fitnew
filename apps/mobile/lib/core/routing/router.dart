@@ -10,6 +10,7 @@ import '../../features/auth/presentation/screens/splash_gate_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_browser_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_detail_screen.dart';
 import '../../features/mess/presentation/mess_screen.dart';
+import '../../features/progress/presentation/progress_screen.dart';
 import '../../features/profile/presentation/screens/food_preferences_screen.dart';
 import '../../features/nutrition/domain/entities/food.dart';
 import '../../features/nutrition/presentation/screens/custom_food_screen.dart';
@@ -19,7 +20,6 @@ import '../../features/nutrition/presentation/screens/eat_screen.dart';
 import '../../features/nutrition/presentation/screens/food_library_screen.dart';
 import '../../features/nutrition/presentation/screens/log_food_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_flow_screen.dart';
-import '../../features/placeholders/presentation/screens/coming_soon_screen.dart';
 import '../../features/profile/presentation/screens/goal_editor_screen.dart';
 import '../../features/profile/presentation/screens/personal_details_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -43,7 +43,7 @@ import 'guards.dart';
 /// Application routes.
 ///
 /// Signed-in life happens inside the app shell (five tabs, bottom bar):
-/// TODAY, TRAINING, AI, NUTRITION, MARKET. Anything deeper than a tab root
+/// TODAY, TRAINING, AI, NUTRITION, PROGRESS. Anything deeper than a tab root
 /// — the programme editors, the picker, the library, profile — is pushed on
 /// the root navigator above the shell, which hides the bar and gives
 /// Android back one obvious answer: pop it.
@@ -71,7 +71,9 @@ abstract final class Routes {
   static const String plan = '/plan';
   static const String chat = '/chat';
   static const String nutrition = '/nutrition';
-  static const String market = '/market';
+
+  /// Phase 12: Progress & Recovery (the tab that was Market).
+  static const String progress = '/progress';
 
   // Food library (Phase 7) and logging (Phase 8); root navigator, the bar
   // is hidden. `/nutrition` itself is EAT.
@@ -356,10 +358,9 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
-                path: Routes.market,
-                name: 'market',
-                builder: (context, state) =>
-                    const MarketplacePlaceholderScreen(),
+                path: Routes.progress,
+                name: 'progress',
+                builder: (context, state) => const ProgressScreen(),
               ),
             ],
           ),

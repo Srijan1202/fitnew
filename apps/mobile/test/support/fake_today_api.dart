@@ -99,6 +99,7 @@ class FakeTodayApi implements TodayApi {
     TodayKind.progressLoad: 72,
     TodayKind.muscleNeglected: 68,
     TodayKind.restDay: 60,
+    TodayKind.calorieAdjust: 55,
     TodayKind.celebratePr: 50,
     TodayKind.logWeight: 45,
   };
@@ -112,6 +113,7 @@ class FakeTodayApi implements TodayApi {
     TodayKind.progressLoad: 'load-increase-due',
     TodayKind.muscleNeglected: 'muscle-untrained',
     TodayKind.restDay: 'rest-day',
+    TodayKind.calorieAdjust: 'calorie-target-off-trend',
     TodayKind.celebratePr: 'pr-today',
     TodayKind.logWeight: 'weigh-in-due',
   };
