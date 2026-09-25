@@ -26,7 +26,8 @@
       "nextSession": {
         "name": "Legs — Quads / Glutes",
         "date": "2026-09-25"
-      }
+      },
+      "accessories": []
     },
     "nutrition": {
       "targets": {
@@ -46,12 +47,17 @@
       "weighedToday": true,
       "daysSinceWeighIn": 0
     },
+    "recovery": {
+      "readiness": null,
+      "band": null,
+      "lowDays": 0
+    },
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-2",
+    "engineVersion": "today-3",
     "localDate": "2026-09-24",
-    "inputDigest": "e9d1a029883969a90f52d36de36ac53733f98b7b8acbb6408b34e1e489c8159f",
+    "inputDigest": "428b038ac6058bbca7dbf0f7230634ebbe6e263d06691467766c9868a8baa2fb",
     "actions": [
       {
         "kind": "deload",
@@ -67,9 +73,9 @@
         },
         "headline": "Take a lighter week",
         "detail": "Your recent sessions show fatigue building. A lighter week is offered; nothing changes until you accept it.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 1,
-        "contentHash": "a5168d4a6a7099f09ee94d682d0347dd7e823185c7c7b82201938d4255ec9008"
+        "contentHash": "e99e02299535d882e779e72d7e0ea36b9077a4a54bfed1eaae63cf58df3c2b4a"
       },
       {
         "kind": "start-workout",
@@ -87,9 +93,9 @@
         },
         "headline": "Heavy Lower",
         "detail": "5 exercises · about 56 minutes.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 2,
-        "contentHash": "3da05c2bb1d5501749a8b71129150edd936cf7ac87f9b9df69dcf0c7b640ed83"
+        "contentHash": "abc88d6b20007e589caf0cd69fe6963a620c52334e23566c2a662cf1da16056c"
       },
       {
         "kind": "eat-protein",
@@ -110,9 +116,9 @@
         },
         "headline": "160 g protein to go",
         "detail": "Protein logged today is under three quarters of your 160 g target. Make breakfast count — about 3000 kcal are left.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 3,
-        "contentHash": "70c6a5718cee856afed5dca0c441d1698edc0694afc4028367b7d863625bf4a8"
+        "contentHash": "9136f76c98b3ebb01b5959966e9270885e5f97717edc1be89029001010ad7ef3"
       },
       {
         "kind": "muscle-neglected",
@@ -129,9 +135,9 @@
         },
         "headline": "Hamstrings is behind",
         "detail": "No working set for hamstrings in 7 days.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 4,
-        "contentHash": "73125d5d172a8e65f20d63bcd5d703920869f00283de29614be67c703d7d458d"
+        "contentHash": "9ee2897acc729865fb02ee270b9784d23dc6919e6563930d3032f33a7b4fd6a7"
       }
     ]
   }

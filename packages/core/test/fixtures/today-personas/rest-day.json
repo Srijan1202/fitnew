@@ -21,7 +21,8 @@
       "nextSession": {
         "name": "Push A",
         "date": "2026-09-25"
-      }
+      },
+      "accessories": []
     },
     "nutrition": {
       "targets": {
@@ -44,12 +45,17 @@
       "weighedToday": false,
       "daysSinceWeighIn": 4
     },
+    "recovery": {
+      "readiness": null,
+      "band": null,
+      "lowDays": 0
+    },
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-2",
+    "engineVersion": "today-3",
     "localDate": "2026-09-24",
-    "inputDigest": "9f86b333a163ce10dd2b87c5b5d3ac8fc935dffdd2852460ba4de51b0667c9d0",
+    "inputDigest": "fba995829eba89840cb605e64a737e1a93aa6318c4e44d077dfb047c727d9a17",
     "actions": [
       {
         "kind": "eat-meal",
@@ -69,9 +75,9 @@
         },
         "headline": "Snacks",
         "detail": "About 1050–1300 kcal and 15–30 g protein left today. Protein is on track.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 1,
-        "contentHash": "6628c20a75919bafe17081f254cc77ced5ba4546e448913a743786aae80ee9b8"
+        "contentHash": "2cc8098358eaeff636739589982cc2b0ca6f6b5d8182762fcf0b545523bda273"
       },
       {
         "kind": "rest-day",
@@ -86,14 +92,15 @@
             "nextSessionName": "Push A",
             "nextSessionDate": "2026-09-25",
             "kcalTarget": 2800,
-            "proteinTarget": 140
+            "proteinTarget": 140,
+            "readiness": null
           }
         },
         "headline": "Recovery day",
         "detail": "Next: Push A on 2026-09-25. Eat to about 2800 kcal and 140 g protein. A walk helps recovery without adding fatigue.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 2,
-        "contentHash": "c9c93817f0ee9b3e2c361d39dc586380137f4ee7d6dfdb752ff0956fd140047e"
+        "contentHash": "97d7b3f8d1e71e3d3f84d4d8ca18fd8606b910f47be3174f208718818a0e2289"
       },
       {
         "kind": "log-weight",
@@ -109,9 +116,9 @@
         },
         "headline": "Log your weight",
         "detail": "Last reading 4 days ago. The trend needs regular readings; single numbers do not matter.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 3,
-        "contentHash": "77dedc111ee99ab955f6e913937744570c56deb8c89b71e700f1612d833f7b74"
+        "contentHash": "542877eed79a861c138652772a6102f895d577719a86e745048b9e52cd0f3094"
       }
     ]
   }

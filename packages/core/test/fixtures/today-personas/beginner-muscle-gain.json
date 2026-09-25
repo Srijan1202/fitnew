@@ -21,7 +21,8 @@
       "nextSession": {
         "name": "Legs — Quads / Glutes",
         "date": "2026-09-25"
-      }
+      },
+      "accessories": []
     },
     "nutrition": {
       "targets": {
@@ -43,12 +44,17 @@
       "weighedToday": false,
       "daysSinceWeighIn": 3
     },
+    "recovery": {
+      "readiness": null,
+      "band": null,
+      "lowDays": 0
+    },
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-2",
+    "engineVersion": "today-3",
     "localDate": "2026-09-24",
-    "inputDigest": "ecc7555c0d125f7e2a04cea28d20660f3b7f06a92f8a74a5d97bf3d4d07f8ae1",
+    "inputDigest": "58bbe5216d2f0142a9a2547c382fbd80df24e6aa1359b935b83f25ad48743fda",
     "actions": [
       {
         "kind": "start-workout",
@@ -66,9 +72,9 @@
         },
         "headline": "Full Body A",
         "detail": "6 exercises · about 63 minutes.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 1,
-        "contentHash": "8512fcc3e651ba1541c75f3ff2df3908fe7d0c52f8bd23ff2caf48d697db68f2"
+        "contentHash": "bb386593cbd46aaa507f730e616059abbf6f264aa6ba3dbcce01b8183eedfda2"
       },
       {
         "kind": "eat-protein",
@@ -89,9 +95,9 @@
         },
         "headline": "104–112 g protein to go",
         "detail": "Protein logged today is under three quarters of your 130 g target. Make lunch count — about 2000–2150 kcal are left.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 2,
-        "contentHash": "bfef558413f59b1d13ec933125f2531800034ddebfbb1bbbfffe961af898b830"
+        "contentHash": "d185aca5ce234bfd5e58fd6a4b7c265156b39cd9e1c9b6c7af11e5a6a28d2224"
       },
       {
         "kind": "log-weight",
@@ -107,9 +113,9 @@
         },
         "headline": "Log your weight",
         "detail": "Last reading 3 days ago. The trend needs regular readings; single numbers do not matter.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 3,
-        "contentHash": "c1e5724bf94ec63d0c20703e06058985cac54e6657967f07194c2803f4290fec"
+        "contentHash": "0a0935efbc9ce1b26b1d46812d16c7873078da5872a9bb1538269d544aaf8d2e"
       }
     ]
   }

@@ -5,7 +5,8 @@
  */
 import type { Goal } from '../nutrition/targets.js';
 import { recommendCalorieAdjustment, summariseTrend, type WeightEntry } from '../nutrition/trend.js';
-import type { CalorieAdjustmentFact, TrainingState } from './engine.js';
+import type { Readiness } from '../recovery/readiness.js';
+import type { CalorieAdjustmentFact, RecoveryState, TrainingState } from './engine.js';
 
 /** One planned exercise of today's session, as the API knows it (`/training/today`). */
 export interface PlannedExerciseFacts {
@@ -20,10 +21,12 @@ export interface PlannedExerciseFacts {
   readonly ruledOutBy: readonly string[];
   /** The library's safer swap when it is ruled out (`substitution.alternative`), else null. */
   readonly swap: { readonly exerciseId: string; readonly exerciseName: string } | null;
+  /** Phase 13: a compound (lead) movement; the rest are accessories (§18). */
+  readonly compound: boolean;
 }
 
 /**
- * Today's load increases and limitation swaps, in plan order.
+ * Today's load increases, limitation swaps and (Phase 13) accessories, in plan order.
  *
  * Owner Q1: an exercise ruled out by an active limitation never produces a
  * load increase — it is left out of `increaseLoad` here, before the engine
@@ -32,7 +35,7 @@ export interface PlannedExerciseFacts {
  */
 export function trainingFromPlan(
   exercises: readonly PlannedExerciseFacts[],
-): Pick<TrainingState, 'increaseLoad' | 'limitationSwaps'> {
+): Pick<TrainingState, 'increaseLoad' | 'limitationSwaps' | 'accessories'> {
   const ruledOut = (e: PlannedExerciseFacts): boolean => e.ruledOutBy.length > 0;
   return {
     increaseLoad: exercises
@@ -45,7 +48,14 @@ export function trainingFromPlan(
       alternativeId: e.swap?.exerciseId ?? null,
       alternativeName: e.swap?.exerciseName ?? null,
     })),
+    // A ruled-out exercise is not trained as planned, so it is not an accessory to trim.
+    accessories: [...new Set(exercises.filter((e) => !ruledOut(e) && !e.compound).map((e) => e.exerciseName))],
   };
+}
+
+/** Phase 13: the engine's recovery state from today's readiness (null without a check-in). */
+export function recoveryState(readiness: Readiness | null, lowDays: number): RecoveryState {
+  return { readiness: readiness?.score ?? null, band: readiness?.band ?? null, lowDays };
 }
 
 /** The goals the §13.2 policy has a target rate for; the rest hold weight (rate 0). */

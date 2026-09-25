@@ -21,7 +21,8 @@
       "nextSession": {
         "name": "Lower A",
         "date": "2026-09-25"
-      }
+      },
+      "accessories": []
     },
     "nutrition": {
       "targets": {
@@ -43,12 +44,17 @@
       "weighedToday": false,
       "daysSinceWeighIn": 1
     },
+    "recovery": {
+      "readiness": null,
+      "band": null,
+      "lowDays": 0
+    },
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-2",
+    "engineVersion": "today-3",
     "localDate": "2026-09-24",
-    "inputDigest": "3d61c2e13ed8519ecd67473682a8cfa3e0e129eec1ff7520c082f1cfc82afa46",
+    "inputDigest": "6c4974e9373a6fb6d0206f083c7229e9800a843ff4c3350ed4b675c4e89ed62e",
     "actions": [
       {
         "kind": "eat-protein",
@@ -69,9 +75,9 @@
         },
         "headline": "100–106 g protein to go",
         "detail": "Protein logged today is under three quarters of your 120 g target. Make lunch count — about 1780–1900 kcal are left.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 1,
-        "contentHash": "a057805b6b0b519f3ff45ffc95e862716c4930c27bbaad3d9cda35e676500b71"
+        "contentHash": "5595ab65599a283feda6c5445dfb9426e936d1977ef6f2405a4d51b4915e4dc9"
       },
       {
         "kind": "rest-day",
@@ -86,14 +92,15 @@
             "nextSessionName": "Lower A",
             "nextSessionDate": "2026-09-25",
             "kcalTarget": 2300,
-            "proteinTarget": 120
+            "proteinTarget": 120,
+            "readiness": null
           }
         },
         "headline": "Recovery day",
         "detail": "Next: Lower A on 2026-09-25. Eat to about 2300 kcal and 120 g protein. A walk helps recovery without adding fatigue.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 2,
-        "contentHash": "ced8100eaf3e44f40658d41bc7d5eda1e1d528595645b97db7f99057d9b1f1b8"
+        "contentHash": "c36562dae715c3d690352f5f48cd04c39a0f566ea89e0bbd39badb655d13f138"
       }
     ]
   }

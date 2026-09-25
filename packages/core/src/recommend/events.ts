@@ -32,6 +32,8 @@ export const COMPLETION_EVIDENCE: Readonly<Record<ActionKind, CompletionEvidence
   deload: 'deload-accepted',
   'injured-limitation': null,
   'start-workout': 'session-completed',
+  // Phase 13: advice about today's session — accepted or dismissed, never "done" (P4).
+  'low-readiness': null,
   'eat-protein': 'food-logged-in-slot',
   'eat-meal': 'food-logged-in-slot',
   'progress-load': 'session-with-exercise',

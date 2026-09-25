@@ -35,19 +35,19 @@ const EVERYTHING = model({
 /* -------------------------------------------------------- vocabulary -- */
 
 describe('the approved vocabulary, bands and codes (D5, P1)', () => {
-  it('the server kinds in tie-break order; nothing deferred leaks in (Phase 12 adds calorie-adjust at its band)', () => {
+  it('the server kinds in tie-break order; nothing deferred leaks in (Phase 12 adds calorie-adjust, Phase 13 low-readiness, each at its band)', () => {
     expect([...ACTION_KINDS]).toEqual([
-      'deload', 'injured-limitation', 'start-workout', 'eat-protein', 'eat-meal',
+      'deload', 'injured-limitation', 'start-workout', 'low-readiness', 'eat-protein', 'eat-meal',
       'progress-load', 'muscle-neglected', 'rest-day', 'calorie-adjust', 'celebrate-pr', 'log-weight',
     ]);
-    for (const deferred of ['hydrate', 'add-steps', 'low-readiness', 'resume', 'workout-done', 'volume-ceiling']) {
+    for (const deferred of ['hydrate', 'add-steps', 'resume', 'workout-done', 'volume-ceiling']) {
       expect(ACTION_KINDS as readonly string[]).not.toContain(deferred);
     }
   });
 
   it('§16.1 bands, injured-limitation at 91 between deload and start-workout', () => {
     expect(PRIORITIES).toEqual({
-      deload: 95, 'injured-limitation': 91, 'start-workout': 90, 'eat-protein': { dinner: 88, other: 80 }, 'eat-meal': 75,
+      deload: 95, 'injured-limitation': 91, 'start-workout': 90, 'low-readiness': 89, 'eat-protein': { dinner: 88, other: 80 }, 'eat-meal': 75,
       'progress-load': 72, 'muscle-neglected': 68, 'rest-day': 60, 'calorie-adjust': 55, 'celebrate-pr': 50, 'log-weight': 45,
     });
     expect(PRIORITIES.deload).toBeGreaterThan(PRIORITIES['injured-limitation']);
@@ -72,7 +72,7 @@ describe('the approved vocabulary, bands and codes (D5, P1)', () => {
 
   it('reason codes, one per kind', () => {
     expect([...REASON_CODES]).toEqual([
-      'deload-offered', 'exercise-contraindicated', 'session-scheduled', 'protein-behind', 'meal-remaining',
+      'deload-offered', 'exercise-contraindicated', 'session-scheduled', 'readiness-low', 'protein-behind', 'meal-remaining',
       'load-increase-due', 'muscle-untrained', 'rest-day', 'calorie-target-off-trend', 'pr-today', 'weigh-in-due',
     ]);
   });
@@ -182,7 +182,7 @@ describe('reason codes and structured values', () => {
     expect(r('progress-load')).toEqual({ code: 'load-increase-due', values: { exerciseId: IDS.bench, exerciseName: 'Barbell Bench Press', weightKg: 62.5, repTarget: '6–8' } });
     expect(r('muscle-neglected')).toEqual({ code: 'muscle-untrained', values: { muscle: 'hamstrings', daysSince: 7 } });
     expect(r('rest-day', model({ training: { sessionName: null } }))).toEqual({
-      code: 'rest-day', values: { hasProgramme: true, nextSessionName: 'Legs — Quads / Glutes', nextSessionDate: '2026-09-25', kcalTarget: 2400, proteinTarget: 150 },
+      code: 'rest-day', values: { hasProgramme: true, nextSessionName: 'Legs — Quads / Glutes', nextSessionDate: '2026-09-25', kcalTarget: 2400, proteinTarget: 150, readiness: null },
     });
     expect(r('celebrate-pr')).toEqual({ code: 'pr-today', values: { exerciseName: 'Deadlift', prType: 'weight', value: 140, previous: 135, count: 1 } });
     expect(r('log-weight')).toEqual({ code: 'weigh-in-due', values: { daysSinceWeighIn: 5 } });
@@ -205,6 +205,7 @@ describe('reason codes and structured values', () => {
       'deload-offered': { trigger: 'mrv' },
       'exercise-contraindicated': { exerciseName: 'A', bodyParts: ['lower-back', 'knee'], alternativeName: 'B', affectedCount: 3 },
       'session-scheduled': { sessionName: 'S', exerciseCount: 1, minutes: 4 },
+      'readiness-low': { readiness: 40, band: 'reduce', accessories: ['Curl'], lowDays: 0 },
       'protein-behind': { slot: 'dinner', proteinTarget: 100, proteinLow: 10, proteinHigh: 20, kcalLeftLow: 1, kcalLeftHigh: 2 },
       'meal-remaining': { slot: 'snacks', kcalLeftLow: 300, kcalLeftHigh: 400, proteinLeftLow: 0, proteinLeftHigh: 5 },
       'load-increase-due': { exerciseName: 'E', weightKg: null, repTarget: '8' },
@@ -369,9 +370,9 @@ describe('identity: content hash, rank, engine version, input digest (D4, D16, P
   it('engine version and input digest', () => {
     const result = todayActions(BASE);
     expect(result.engineVersion).toBe(ENGINE_VERSION);
-    // Phase 12 bumped the version for calorie-adjust (ADR-018).
-    expect(ENGINE_VERSION).toBe('today-2');
-    expect(result.actions.every((a) => a.engineVersion === 'today-2')).toBe(true);
+    // Phase 12 bumped the version for calorie-adjust (ADR-018), Phase 13 for low-readiness (ADR-019).
+    expect(ENGINE_VERSION).toBe('today-3');
+    expect(result.actions.every((a) => a.engineVersion === 'today-3')).toBe(true);
     expect(result.inputDigest).toBe(sha256Hex(canonicalJson(BASE)));
     expect(result.inputDigest).toBe(inputDigestOf(model({})));
     expect(inputDigestOf(model({ hourOfDay: 14 }))).not.toBe(result.inputDigest);
@@ -387,11 +388,11 @@ describe('identity: content hash, rank, engine version, input digest (D4, D16, P
 
 /* ------------------------------------------------------ the personas -- */
 
-describe('the 11 Phase 11 personas (D11): frozen models, snapshotted ranked output', () => {
-  it('there are exactly the approved eleven; low-readiness is not faked', () => {
+describe('the TODAY personas (D11): frozen models, snapshotted ranked output', () => {
+  it('exactly the approved twelve: the Phase 11 eleven and low-readiness (Phase 13)', () => {
     expect(Object.keys(PERSONAS).sort()).toEqual([
       'advanced-strength', 'beginner-muscle-gain', 'calorie-deficit', 'calorie-surplus', 'deload-due',
-      'first-day-no-data', 'injured-limitation', 'intermediate-fat-loss', 'non-vit-home', 'recomposition', 'rest-day',
+      'first-day-no-data', 'injured-limitation', 'intermediate-fat-loss', 'low-readiness', 'non-vit-home', 'recomposition', 'rest-day',
     ]);
   });
 
@@ -415,6 +416,7 @@ describe('the 11 Phase 11 personas (D11): frozen models, snapshotted ranked outp
       'calorie-surplus': ['log-weight'],
       'first-day-no-data': ['eat-protein', 'rest-day'],
       'injured-limitation': ['injured-limitation', 'start-workout', 'eat-meal', 'progress-load'],
+      'low-readiness': ['deload', 'start-workout', 'low-readiness', 'eat-protein'],
     });
   });
 });
@@ -431,6 +433,7 @@ describe('events (D7, P2, P4)', () => {
       deload: 'deload-accepted', 'injured-limitation': null, 'start-workout': 'session-completed',
       'eat-protein': 'food-logged-in-slot', 'eat-meal': 'food-logged-in-slot', 'progress-load': 'session-with-exercise',
       'muscle-neglected': 'session-with-muscle', 'rest-day': null, 'calorie-adjust': 'target-adjusted', // Phase 12
+      'low-readiness': null, // Phase 13: advice, never "done"
       'celebrate-pr': null, 'log-weight': 'weight-logged',
     });
     for (const k of ['rest-day', 'celebrate-pr', 'injured-limitation'] as const) {
@@ -476,7 +479,7 @@ describe('events (D7, P2, P4)', () => {
 
 describe('Q1: a ruled-out exercise never also produces a load increase (enforced in model assembly)', () => {
   const plan = (over: Partial<PlannedExerciseFacts> & Pick<PlannedExerciseFacts, 'exerciseId' | 'exerciseName'>): PlannedExerciseFacts => ({
-    progression: null, ruledOutBy: [], swap: null, ...over,
+    progression: null, ruledOutBy: [], swap: null, compound: true, ...over,
   });
   const squatUp = { action: 'increase-load', weightKg: 100, repTarget: '5' };
 

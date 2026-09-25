@@ -18,7 +18,8 @@
       "limitationSwaps": [],
       "neglected": [],
       "prsToday": [],
-      "nextSession": null
+      "nextSession": null,
+      "accessories": []
     },
     "nutrition": {
       "targets": {
@@ -38,12 +39,17 @@
       "weighedToday": true,
       "daysSinceWeighIn": 0
     },
+    "recovery": {
+      "readiness": null,
+      "band": null,
+      "lowDays": 0
+    },
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-2",
+    "engineVersion": "today-3",
     "localDate": "2026-09-24",
-    "inputDigest": "9c00f5ae11d86214d2c3e4b3ed9174c89f6ca9dd3f4a37a8cf1dbb71f1427ce4",
+    "inputDigest": "7739807b795ba5c6f8f66def1b3f27c5d35dddf0dd7ac38980adab4c3eedf614",
     "actions": [
       {
         "kind": "eat-protein",
@@ -64,9 +70,9 @@
         },
         "headline": "110 g protein to go",
         "detail": "Protein logged today is under three quarters of your 110 g target. Make breakfast count — about 2200 kcal are left.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 1,
-        "contentHash": "c6df4f4a6491961c91934e013547ceb12009ba06eef2e5f55a388d637a7324f3"
+        "contentHash": "daed8dba792394b3d4e956ab8203e8d4b94c6bc74273c4c6cc62d031bbfcd70d"
       },
       {
         "kind": "rest-day",
@@ -81,14 +87,15 @@
             "nextSessionName": null,
             "nextSessionDate": null,
             "kcalTarget": 2200,
-            "proteinTarget": 110
+            "proteinTarget": 110,
+            "readiness": null
           }
         },
         "headline": "No session today",
         "detail": "Set up a programme and FITOS will plan your sessions. A walk is a good start.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 2,
-        "contentHash": "47e674abb8b3880ebd5d6661271743ca3fdd5e56d850bfa34cf7573fcafb31cd"
+        "contentHash": "1671425240e96bc089cd2a3b5875d57d01fa9ac21c5ad8e207178bdf772821de"
       }
     ]
   }

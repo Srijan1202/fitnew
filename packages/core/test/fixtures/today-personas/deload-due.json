@@ -21,7 +21,8 @@
       "nextSession": {
         "name": "Legs — Quads / Glutes",
         "date": "2026-09-25"
-      }
+      },
+      "accessories": []
     },
     "nutrition": {
       "targets": {
@@ -41,12 +42,17 @@
       "weighedToday": true,
       "daysSinceWeighIn": 0
     },
+    "recovery": {
+      "readiness": null,
+      "band": null,
+      "lowDays": 0
+    },
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-2",
+    "engineVersion": "today-3",
     "localDate": "2026-09-24",
-    "inputDigest": "972ab3ac16e3ab6dc083dce11912259e58c255e19b9c582f63bf4a24e7600e3e",
+    "inputDigest": "afac073f13c32eae3628af3bc79f8e8553a63594fb7b8f9bc28e9d696d1be6ef",
     "actions": [
       {
         "kind": "deload",
@@ -62,9 +68,9 @@
         },
         "headline": "Take a lighter week",
         "detail": "Your weekly volume has reached what you can recover from. A lighter week is offered; nothing changes until you accept it.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 1,
-        "contentHash": "5a2f1a78eb6803208495787257159423b0a7cbceb0ec3981f3e6cf4a02fac0b8"
+        "contentHash": "925dceaedaa960cd9e4ef70c41b8e0dc0f65e62c44dfdac42e66f75957fbd744"
       },
       {
         "kind": "eat-protein",
@@ -85,9 +91,9 @@
         },
         "headline": "140 g protein to go",
         "detail": "Protein logged today is under three quarters of your 140 g target. Make breakfast count — about 2500 kcal are left.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 2,
-        "contentHash": "2c4e5bd44000d6e0c44c3f533d5d1d6076c2b8aef6eb43bced43876b93eab817"
+        "contentHash": "ac65aa8d58e20614418bb3960fa0a6822055ac728ea55e5cbc95f39cd05b0138"
       }
     ]
   }

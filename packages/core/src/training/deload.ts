@@ -6,6 +6,9 @@
  *            two lead (compound) lifts within the last seven days, or
  *   mrv      the programme is in mesocycle week ≥ 6 and any muscle is at or
  *            above its MRV this week.
+ *   readiness (Phase 13, §18, ADR-019) readiness has been under 35 for three
+ *            local days running — checked after the two above, which keep
+ *            their Phase 6 behaviour.
  *
  * Accepted, the next seven days' sessions seed with sets × 0.6 (minimum 1),
  * load × 0.9 rounded to 0.5 kg, RIR + 2 capped at 5; afterwards the
@@ -15,6 +18,7 @@
 import { MUSCLE_GROUPS, VOLUME_LANDMARKS, type MuscleGroup } from './generator.js';
 import type { PlannedSetTarget } from './prefill.js';
 import type { MuscleVolume } from './volume.js';
+import { LOW_READINESS_ESCALATION_DAYS } from '../recovery/readiness.js';
 
 export const DELOAD_DAYS = 7;
 export const DELOAD_SNOOZE_DAYS = 7;
@@ -24,7 +28,7 @@ export const DELOAD_SET_FACTOR = 0.6;
 export const DELOAD_LOAD_FACTOR = 0.9;
 export const DELOAD_RIR_BONUS = 2;
 
-export type DeloadTrigger = 'fatigue' | 'mrv';
+export type DeloadTrigger = 'fatigue' | 'mrv' | 'readiness';
 
 export interface DeloadOffer {
   readonly offer: boolean;
@@ -43,6 +47,8 @@ export interface DeloadInput {
   /** A deload week already running. */
   readonly active: boolean;
   readonly today: string;
+  /** Phase 13: local days running with readiness under 35 (`lowReadinessRun`); 0 when unknown. */
+  readonly lowReadinessDays?: number;
 }
 
 export function shouldOfferDeload(input: DeloadInput): DeloadOffer {
@@ -68,6 +74,14 @@ export function shouldOfferDeload(input: DeloadInput): DeloadOffer {
         reason: `Week ${input.mesocycleWeek} of this block and ${atMrv.join(', ')} ${atMrv.length === 1 ? 'is' : 'are'} at the most volume you can recover from (MRV). A lighter week now lets the next block start fresh.`,
       };
     }
+  }
+  const low = input.lowReadinessDays ?? 0;
+  if (low >= LOW_READINESS_ESCALATION_DAYS) {
+    return {
+      offer: true,
+      trigger: 'readiness',
+      reason: `Your readiness has been under 35 for ${low} days running: sleep, soreness and energy say recovery is behind. One lighter week lets it catch up.`,
+    };
   }
   return { offer: false, trigger: null, reason: 'No fatigue signal on your lead lifts and no muscle at MRV.' };
 }

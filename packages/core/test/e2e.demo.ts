@@ -137,6 +137,7 @@ const actions = topActions({
     neglected: [{ muscle: 'quads', daysSince: 7 }],
     prsToday: [],
     nextSession: { name: 'Legs', date: '2026-09-25' },
+    accessories: [],
   },
   nutrition: {
     targets: { kcal: targets.kcal, proteinG: targets.proteinG },
@@ -145,6 +146,7 @@ const actions = topActions({
     adjustment: null,
   },
   body: { weighedToday: true, daysSinceWeighIn: 0 },
+  recovery: { readiness: null, band: null, lowDays: 0 },
   dismissedToday: [],
 });
 

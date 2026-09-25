@@ -21,7 +21,8 @@
       "nextSession": {
         "name": "Legs — Quads / Glutes",
         "date": "2026-09-25"
-      }
+      },
+      "accessories": []
     },
     "nutrition": {
       "targets": {
@@ -44,12 +45,17 @@
       "weighedToday": true,
       "daysSinceWeighIn": 0
     },
+    "recovery": {
+      "readiness": null,
+      "band": null,
+      "lowDays": 0
+    },
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-2",
+    "engineVersion": "today-3",
     "localDate": "2026-09-24",
-    "inputDigest": "29b43042ab01c05cfb1190faec9eb91c0a16bfcfd2cb9f2f743474a40d640598",
+    "inputDigest": "0ab0fe15d287c07369afa836ada21279a56a91d82d8bbc8fb7d47aa57438c9a7",
     "actions": [
       {
         "kind": "eat-protein",
@@ -70,9 +76,9 @@
         },
         "headline": "62–80 g protein to go",
         "detail": "Protein logged today is under three quarters of your 140 g target. Make dinner count — about 850–1100 kcal are left.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 1,
-        "contentHash": "24373346b544aadcab086291ba305fc1535c422fcbc9d5e02161045b79d99379"
+        "contentHash": "c82932a6837f907c0d64bdabc5e99a061b2b1cd467100ab4938e44b5526b9206"
       }
     ]
   }

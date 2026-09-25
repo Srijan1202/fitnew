@@ -58,7 +58,7 @@ function topSet(session: SessionLog): SetLog | null {
   return best;
 }
 
-function workingWeight(session: SessionLog): number | null {
+export function workingWeight(session: SessionLog): number | null {
   const weights = session.sets.map((s) => s.weightKg).filter((w) => w > 0);
   if (weights.length === 0) return null;
   return Math.max(...weights);
@@ -74,7 +74,7 @@ function clearedTopOfRange(session: SessionLog, target: ExerciseTarget): boolean
 }
 
 /** Total reps at the top working weight — the comparison metric across sessions. */
-function workingReps(session: SessionLog): number {
+export function workingReps(session: SessionLog): number {
   const working = workingWeight(session);
   if (working === null) return 0;
   return session.sets.filter((s) => s.weightKg === working).reduce((sum, s) => sum + s.reps, 0);
@@ -84,7 +84,7 @@ function workingReps(session: SessionLog): number {
  * RIR drift: the same load feeling harder over time. Two consecutive sessions
  * where mean RIR fell while reps did not improve is our fatigue trigger.
  */
-function meanRir(session: SessionLog): number | null {
+export function meanRir(session: SessionLog): number | null {
   const values = session.sets.map((s) => s.rir).filter((r): r is number => r !== null);
   if (values.length === 0) return null;
   return values.reduce((a, b) => a + b, 0) / values.length;

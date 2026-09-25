@@ -13,24 +13,28 @@
  *
  * The server owns only the rules it has authoritative data for (D2, D5).
  * Resume, sleep, steps and the Health Connect prompt stay on the phone
- * (ADR-008/009); `calorie-adjust` (Phase 12), `hydrate` (no data),
- * `add-steps` (device-only) and readiness (Phase 13) are not built here.
+ * (ADR-008/009); `hydrate` (no data) and `add-steps` (device-only) are not
+ * built here. `calorie-adjust` arrived in Phase 12 (ADR-018) and
+ * `low-readiness` in Phase 13 (ADR-019): both only suggest — nothing in the
+ * plan or the targets changes unless the user accepts.
  */
 
 import { localDateOf, localHourOf } from '../nutrition/log.js';
 import type { Goal } from '../nutrition/targets.js';
 import { defaultRecommendationSlot } from '../mess/recommendation.js';
 import type { MealSlot } from '../mess/types.js';
+import type { ReadinessBand } from '../recovery/readiness.js';
 import { canonicalJson, sha256Hex } from './hash.js';
 
 /** Bump when rules, wording or hashing change; stored with every action row. */
-export const ENGINE_VERSION = 'today-2';
+export const ENGINE_VERSION = 'today-3';
 
 /** The approved server action vocabulary (D5 + P1), in tie-break order. */
 export const ACTION_KINDS = [
   'deload',
   'injured-limitation',
   'start-workout',
+  'low-readiness',
   'eat-protein',
   'eat-meal',
   'progress-load',
@@ -47,6 +51,8 @@ export const PRIORITIES = {
   deload: 95,
   'injured-limitation': 91,
   'start-workout': 90,
+  // Phase 13 (§18; ADR-019 D9): beside the session it is about, advisory only.
+  'low-readiness': 89,
   'eat-protein': { dinner: 88, other: 80 },
   'eat-meal': 75,
   'progress-load': 72,
@@ -75,6 +81,7 @@ export const REASON_CODES = [
   'deload-offered',
   'exercise-contraindicated',
   'session-scheduled',
+  'readiness-low',
   'protein-behind',
   'meal-remaining',
   'load-increase-due',
@@ -117,7 +124,7 @@ export interface Action {
 /* -------------------------------------------------------------- model -- */
 
 export type DeloadState = 'none' | 'offered' | 'active';
-export type DeloadTrigger = 'fatigue' | 'mrv';
+export type DeloadTrigger = 'fatigue' | 'mrv' | 'readiness';
 export type PrType = '1rm_est' | 'weight' | 'reps' | 'volume';
 
 export interface TrainingState {
@@ -162,6 +169,11 @@ export interface TrainingState {
   }[];
   /** The next scheduled session after today, for the rest-day action (§16.2). */
   readonly nextSession: { readonly name: string; readonly date: string } | null;
+  /**
+   * Phase 13: today's accessory (non-compound) exercises that are not ruled
+   * out, in plan order — what "one fewer set on accessories" is about.
+   */
+  readonly accessories: readonly string[];
 }
 
 export interface NutritionState {
@@ -192,6 +204,14 @@ export interface CalorieAdjustmentFact {
   readonly weeklyChangeKg: number;
 }
 
+/** Phase 13 (§18): today's readiness from the check-in; nulls when there is none. */
+export interface RecoveryState {
+  readonly readiness: number | null;
+  readonly band: ReadinessBand | null;
+  /** Local days running with readiness under 35 (`lowReadinessRun`). */
+  readonly lowDays: number;
+}
+
 export interface BodyState {
   readonly weighedToday: boolean;
   /** Days since the latest weight reading; null when there is none. */
@@ -208,6 +228,7 @@ export interface UserModel {
   readonly training: TrainingState;
   readonly nutrition: NutritionState;
   readonly body: BodyState;
+  readonly recovery: RecoveryState;
   /** (kind, subject) the user dismissed today: hidden for the rest of the local day (D7). */
   readonly dismissedToday: readonly { readonly kind: ActionKind; readonly subjectKey: string }[];
 }
@@ -258,7 +279,9 @@ export function wordReason(reason: ActionReason): { headline: string; detail: st
         detail:
           v['trigger'] === 'mrv'
             ? 'Your weekly volume has reached what you can recover from. A lighter week is offered; nothing changes until you accept it.'
-            : 'Your recent sessions show fatigue building. A lighter week is offered; nothing changes until you accept it.',
+            : v['trigger'] === 'readiness'
+              ? 'Your readiness has been under 35 for three days or more. A lighter week is offered; nothing changes until you accept it.'
+              : 'Your recent sessions show fatigue building. A lighter week is offered; nothing changes until you accept it.',
       };
     case 'exercise-contraindicated': {
       const more = n('affectedCount') - 1;
@@ -275,6 +298,21 @@ export function wordReason(reason: ActionReason): { headline: string; detail: st
         headline: s('sessionName'),
         detail: `${plural(n('exerciseCount'), 'exercise')} · about ${n('minutes')} minutes.`,
       };
+    case 'readiness-low': {
+      if (v['band'] === 'reduce') {
+        return {
+          headline: `Readiness ${n('readiness')}: one fewer set on accessories`,
+          detail: `Consider one fewer set on ${list(v['accessories'] as readonly string[])} today. Your main lifts stay as planned. Nothing changes unless you choose to.`,
+        };
+      }
+      const low = n('lowDays');
+      return {
+        headline: `Readiness ${n('readiness')}: consider resting`,
+        detail:
+          (low >= 2 ? `Readiness has been under 35 for ${plural(low, 'day')} running. ` : 'Your check-in points to low recovery today. ') +
+          'Resting is reasonable; the session stays planned if you feel ready. Nothing changes unless you choose to.',
+      };
+    }
     case 'protein-behind': {
       const target = n('proteinTarget');
       const leftLow = Math.max(0, r1(target - n('proteinHigh')));
@@ -317,6 +355,8 @@ export function wordReason(reason: ActionReason): { headline: string; detail: st
       if (v['kcalTarget'] !== null && v['proteinTarget'] !== null) {
         parts.push(`Eat to about ${num(n('kcalTarget'))} kcal and ${num(n('proteinTarget'))} g protein.`);
       }
+      // §16.2: a rest day carries recovery status (Phase 13).
+      if (v['readiness'] !== null && v['readiness'] !== undefined) parts.push(`Readiness today: ${n('readiness')}.`);
       parts.push('A walk helps recovery without adding fatigue.');
       return { headline: 'Recovery day', detail: parts.join(' ') };
     }
@@ -417,6 +457,23 @@ function candidates(m: UserModel): Candidate[] {
     });
   }
 
+  // 89 — §18: low readiness on a training day. Advisory: it names what to go
+  // easier on; the plan is never changed (ADR-019 D9).
+  const rec = m.recovery;
+  if (trainingDay && rec.readiness !== null && (rec.band === 'rest' || (rec.band === 'reduce' && t.accessories.length > 0))) {
+    out.push({
+      kind: 'low-readiness',
+      subjectKey: rec.band === 'rest' ? 'rest' : 'fewer-sets',
+      priority: PRIORITIES['low-readiness'],
+      basis: 'calculated',
+      target: 'train',
+      reason: {
+        code: 'readiness-low',
+        values: { readiness: rec.readiness, band: rec.band, accessories: rec.band === 'rest' ? [] : [...t.accessories], lowDays: rec.lowDays },
+      },
+    });
+  }
+
   // 88/80 and 75 — food, on the Phase 8 ranges; eat-protein XOR eat-meal; nothing from 22:00 (P7).
   const targets = m.nutrition.targets;
   const slot = nextMealSlot(m.hourOfDay, m.nutrition.loggedSlots);
@@ -483,6 +540,7 @@ function candidates(m: UserModel): Candidate[] {
           nextSessionDate: t.nextSession?.date ?? null,
           kcalTarget: targets === null ? null : Math.round(targets.kcal),
           proteinTarget: targets === null ? null : r1(targets.proteinG),
+          readiness: m.recovery.readiness,
         },
       },
     });

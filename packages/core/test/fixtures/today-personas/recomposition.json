@@ -41,7 +41,8 @@
       "nextSession": {
         "name": "Legs — Quads / Glutes",
         "date": "2026-09-25"
-      }
+      },
+      "accessories": []
     },
     "nutrition": {
       "targets": {
@@ -65,12 +66,17 @@
       "weighedToday": true,
       "daysSinceWeighIn": 0
     },
+    "recovery": {
+      "readiness": null,
+      "band": null,
+      "lowDays": 0
+    },
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-2",
+    "engineVersion": "today-3",
     "localDate": "2026-09-24",
-    "inputDigest": "90849abbdb8dbedb4d537346c9f22395ce6c70e9d616bdadc7886c64f77878eb",
+    "inputDigest": "6c1c154b810ab9b10cb2f7d361296ec126859a3534ee94f706393abf917725b5",
     "actions": [
       {
         "kind": "eat-protein",
@@ -91,9 +97,9 @@
         },
         "headline": "42–60 g protein to go",
         "detail": "Protein logged today is under three quarters of your 160 g target. Make dinner count — about 400–700 kcal are left.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 1,
-        "contentHash": "03044865ea0e8c4668874819015cd10565855d3e9be0c886635c22e6923032e1"
+        "contentHash": "c0a2b3a0e18229b4dcc559f371d63890c84c6aa3de693181b2ccaa41d96a164a"
       },
       {
         "kind": "muscle-neglected",
@@ -110,9 +116,9 @@
         },
         "headline": "Calves is behind",
         "detail": "No working set for calves yet this block.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 2,
-        "contentHash": "d4d67cf0eeb615d974e59af646b0d4f13c183ea3b2bedb7d8fc620c09a1abc96"
+        "contentHash": "18a638cdf84e6fd1d7b0539301c39e3fc4f8305d1434bdd9b6fefc97d13eadc7"
       },
       {
         "kind": "celebrate-pr",
@@ -132,9 +138,9 @@
         },
         "headline": "New record on Barbell Bench Press",
         "detail": "80 kg, up from 77.5 kg. 1 more record today.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 3,
-        "contentHash": "ab1bcec5febb2841f505b93d80dbaddcd3414415a8007e7eb62d0df138da2ee3"
+        "contentHash": "8f217066acdf11639b643189ca69e5a699be20ec829aefa8be9da63831625291"
       }
     ]
   }

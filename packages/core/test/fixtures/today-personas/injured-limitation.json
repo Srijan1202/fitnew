@@ -47,7 +47,8 @@
       "nextSession": {
         "name": "Legs — Quads / Glutes",
         "date": "2026-09-25"
-      }
+      },
+      "accessories": []
     },
     "nutrition": {
       "targets": {
@@ -70,12 +71,17 @@
       "weighedToday": true,
       "daysSinceWeighIn": 0
     },
+    "recovery": {
+      "readiness": null,
+      "band": null,
+      "lowDays": 0
+    },
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-2",
+    "engineVersion": "today-3",
     "localDate": "2026-09-24",
-    "inputDigest": "288a0070c0b0d6e78de170e234711b65474e7f880b0966a89881c3f8342cd2d7",
+    "inputDigest": "1b3b663f8ac9f25db0d23fefbd9c69bc7d584f206a9479787909ee3c59f7303a",
     "actions": [
       {
         "kind": "injured-limitation",
@@ -98,9 +104,9 @@
         },
         "headline": "Swap Barbell Back Squat for Leg Press",
         "detail": "Barbell Back Squat is ruled out by your knee limitation. Leg Press is the safer swap for today.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 1,
-        "contentHash": "bf115ffbb78f53cfa8a0470fa9d3bc8929f5ab6af121bc9be26900f1b3fd5c56"
+        "contentHash": "9ba42065785dc505f6521f7864ad6140f3f67ea2290339fae79fae653e552af3"
       },
       {
         "kind": "start-workout",
@@ -118,9 +124,9 @@
         },
         "headline": "Lower A",
         "detail": "6 exercises · about 70 minutes.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 2,
-        "contentHash": "b68c67da411ccc875abad0428c377c38b89d4181b21e2c952eb290dee9792d9b"
+        "contentHash": "10ae776b6a55c250eb878b3eac5f06e497139de43e22e9ca50e850e584794085"
       },
       {
         "kind": "eat-meal",
@@ -140,9 +146,9 @@
         },
         "headline": "Snacks",
         "detail": "About 1250–1500 kcal and 28–45 g protein left today. Protein is on track.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 3,
-        "contentHash": "187cc93250838ad61f5b16b4f1571e3e3d4231234c9e8b1a2d87d1060c557b96"
+        "contentHash": "d4fc1a5835f79750cf0452763d2df3f5ea2a82e1fec037aed5e455288082e189"
       },
       {
         "kind": "progress-load",
@@ -161,9 +167,9 @@
         },
         "headline": "Load goes up today",
         "detail": "Romanian Deadlift: 70 kg for 8–10.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 4,
-        "contentHash": "b22956b5562975e5637616cf985f9765f9bdcba9d1bb27d8e83a1e19ce772feb"
+        "contentHash": "31791f3bbdc31ca8c0e5bb58ff92becc8919d44b03f99993105ec93a55617732"
       }
     ]
   }

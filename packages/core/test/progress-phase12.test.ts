@@ -229,8 +229,8 @@ describe('Phase 12 — calorie-adjust (TODAY band 55, today-2)', () => {
     expect(calorieAdjustmentFrom({ goal: 'maintenance', weights: steady, targetKcal: 2200, daysSinceLastAdjustment: null })).toBeNull();
   });
 
-  it('the engine ranks it at 55 (between rest-day and celebrate-pr), advisory and completable; version today-2', () => {
-    expect(ENGINE_VERSION).toBe('today-2');
+  it('the engine ranks it at 55 (between rest-day and celebrate-pr), advisory and completable; version today-2 (today-3 since Phase 13)', () => {
+    expect(ENGINE_VERSION).toBe('today-3');
     expect(PRIORITIES['calorie-adjust']).toBe(55);
     const adj = { currentKcal: 2200, newKcal: 2070, deltaKcal: -130, weeklyChangeKg: 0.7 };
     const all = buildActions(model({ nutrition: { adjustment: adj } as never }));

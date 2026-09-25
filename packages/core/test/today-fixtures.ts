@@ -1,7 +1,7 @@
 /**
  * Phase 11 TODAY fixtures: a base `UserModel`, a section-wise override
- * helper, and the 11 approved personas (MASTER-SPEC §26.2, owner D11) as
- * frozen user models. `low-readiness` waits for Phase 13 and is not faked.
+ * helper, and the approved personas (MASTER-SPEC §26.2, owner D11) as
+ * frozen user models — 11 from Phase 11 and `low-readiness` from Phase 13.
  */
 import type { UserModel } from '../src/recommend/engine.js';
 
@@ -27,6 +27,7 @@ export const BASE: UserModel = {
     neglected: [],
     prsToday: [],
     nextSession: { name: 'Legs — Quads / Glutes', date: '2026-09-25' },
+    accessories: [],
   },
   nutrition: {
     targets: { kcal: 2400, proteinG: 150 },
@@ -35,6 +36,7 @@ export const BASE: UserModel = {
     adjustment: null,
   },
   body: { weighedToday: true, daysSinceWeighIn: 0 },
+  recovery: { readiness: null, band: null, lowDays: 0 },
   dismissedToday: [],
 };
 
@@ -46,6 +48,7 @@ export function model(over: Over = {}, base: UserModel = BASE): UserModel {
     training: { ...base.training, ...(over.training ?? {}) },
     nutrition: { ...base.nutrition, ...(over.nutrition ?? {}) },
     body: { ...base.body, ...(over.body ?? {}) },
+    recovery: { ...base.recovery, ...(over.recovery ?? {}) },
   } as UserModel;
 }
 
@@ -168,5 +171,19 @@ export const PERSONAS: Readonly<Record<string, UserModel>> = {
       increaseLoad: [{ exerciseId: ID.rdl, exerciseName: 'Romanian Deadlift', weightKg: 70, repTarget: '8–10' }],
     },
     nutrition: { targets: { kcal: 2700, proteinG: 140 }, eaten: { kcalLow: 1200, kcalHigh: 1450, proteinLow: 95, proteinHigh: 112 }, loggedSlots: ['breakfast', 'lunch'] },
+  }),
+  // Phase 13 (§26.2): a third poor check-in running on a training day — the
+  // deload check is offered (trigger readiness) and resting is suggested;
+  // nothing in the plan changes on its own.
+  'low-readiness': model({
+    goal: 'muscle-gain',
+    hourOfDay: 8,
+    training: {
+      sessionName: 'Push A', exerciseCount: 6, plannedSetCount: 18,
+      deload: { state: 'offered', trigger: 'readiness' },
+      accessories: ['Cable Lateral Raise', 'Triceps Pushdown'],
+    },
+    nutrition: { targets: { kcal: 2600, proteinG: 140 }, eaten: { kcalLow: 0, kcalHigh: 0, proteinLow: 0, proteinHigh: 0 }, loggedSlots: [] },
+    recovery: { readiness: 28, band: 'rest', lowDays: 3 },
   }),
 };

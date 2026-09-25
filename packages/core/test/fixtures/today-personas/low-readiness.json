@@ -1,0 +1,144 @@
+{
+  "model": {
+    "localDate": "2026-09-24",
+    "hourOfDay": 8,
+    "goal": "muscle-gain",
+    "training": {
+      "hasProgramme": true,
+      "sessionName": "Push A",
+      "exerciseCount": 6,
+      "plannedSetCount": 18,
+      "completedToday": false,
+      "activeSessionOpen": false,
+      "deload": {
+        "state": "offered",
+        "trigger": "readiness"
+      },
+      "increaseLoad": [],
+      "limitationSwaps": [],
+      "neglected": [],
+      "prsToday": [],
+      "nextSession": {
+        "name": "Legs — Quads / Glutes",
+        "date": "2026-09-25"
+      },
+      "accessories": [
+        "Cable Lateral Raise",
+        "Triceps Pushdown"
+      ]
+    },
+    "nutrition": {
+      "targets": {
+        "kcal": 2600,
+        "proteinG": 140
+      },
+      "eaten": {
+        "kcalLow": 0,
+        "kcalHigh": 0,
+        "proteinLow": 0,
+        "proteinHigh": 0
+      },
+      "loggedSlots": [],
+      "adjustment": null
+    },
+    "body": {
+      "weighedToday": true,
+      "daysSinceWeighIn": 0
+    },
+    "recovery": {
+      "readiness": 28,
+      "band": "rest",
+      "lowDays": 3
+    },
+    "dismissedToday": []
+  },
+  "today": {
+    "engineVersion": "today-3",
+    "localDate": "2026-09-24",
+    "inputDigest": "f9e21daa211b77a47e39566f6058607d566956b74d1c75daf1c5b46d774eac20",
+    "actions": [
+      {
+        "kind": "deload",
+        "subjectKey": "",
+        "priority": 95,
+        "basis": "calculated",
+        "target": "train",
+        "reason": {
+          "code": "deload-offered",
+          "values": {
+            "trigger": "readiness"
+          }
+        },
+        "headline": "Take a lighter week",
+        "detail": "Your readiness has been under 35 for three days or more. A lighter week is offered; nothing changes until you accept it.",
+        "engineVersion": "today-3",
+        "rank": 1,
+        "contentHash": "83264e4b02112110336d506567f9e15adadfdce99ca16c9ddd620e22b85085ab"
+      },
+      {
+        "kind": "start-workout",
+        "subjectKey": "",
+        "priority": 90,
+        "basis": "calculated",
+        "target": "train",
+        "reason": {
+          "code": "session-scheduled",
+          "values": {
+            "sessionName": "Push A",
+            "exerciseCount": 6,
+            "minutes": 63
+          }
+        },
+        "headline": "Push A",
+        "detail": "6 exercises · about 63 minutes.",
+        "engineVersion": "today-3",
+        "rank": 2,
+        "contentHash": "da8c9fa1ebc6a40b82c27d58e0b3897f632d7a3b8ff680efdbdf802a8811431c"
+      },
+      {
+        "kind": "low-readiness",
+        "subjectKey": "rest",
+        "priority": 89,
+        "basis": "calculated",
+        "target": "train",
+        "reason": {
+          "code": "readiness-low",
+          "values": {
+            "readiness": 28,
+            "band": "rest",
+            "accessories": [],
+            "lowDays": 3
+          }
+        },
+        "headline": "Readiness 28: consider resting",
+        "detail": "Readiness has been under 35 for 3 days running. Resting is reasonable; the session stays planned if you feel ready. Nothing changes unless you choose to.",
+        "engineVersion": "today-3",
+        "rank": 3,
+        "contentHash": "a667593a7e577517f66cb70819b1f5d0d16f74db4f2d2bfaa3b015ec832085b4"
+      },
+      {
+        "kind": "eat-protein",
+        "subjectKey": "breakfast",
+        "priority": 80,
+        "basis": "calculated",
+        "target": "eat",
+        "reason": {
+          "code": "protein-behind",
+          "values": {
+            "slot": "breakfast",
+            "proteinTarget": 140,
+            "proteinLow": 0,
+            "proteinHigh": 0,
+            "kcalLeftLow": 2600,
+            "kcalLeftHigh": 2600
+          }
+        },
+        "headline": "140 g protein to go",
+        "detail": "Protein logged today is under three quarters of your 140 g target. Make breakfast count — about 2600 kcal are left.",
+        "engineVersion": "today-3",
+        "rank": 4,
+        "contentHash": "26058b4f2fc803b4070abbfcae6fe0f67a9d6783aa373cf4d9682450781a0930"
+      }
+    ]
+  }
+}

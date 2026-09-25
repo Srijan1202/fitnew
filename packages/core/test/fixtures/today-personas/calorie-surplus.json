@@ -21,7 +21,8 @@
       "nextSession": {
         "name": "Legs — Quads / Glutes",
         "date": "2026-09-25"
-      }
+      },
+      "accessories": []
     },
     "nutrition": {
       "targets": {
@@ -45,12 +46,17 @@
       "weighedToday": false,
       "daysSinceWeighIn": 2
     },
+    "recovery": {
+      "readiness": null,
+      "band": null,
+      "lowDays": 0
+    },
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-2",
+    "engineVersion": "today-3",
     "localDate": "2026-09-24",
-    "inputDigest": "c2af3e6f9e90f9a6d670b88fb898b3123773710451445c75465a718f3d0c9977",
+    "inputDigest": "8534c6ed058be3fea4e2d1eb93e68d12fd176e5bf45ce1d89c7eb51373dd3b36",
     "actions": [
       {
         "kind": "log-weight",
@@ -66,9 +72,9 @@
         },
         "headline": "Log your weight",
         "detail": "Last reading 2 days ago. The trend needs regular readings; single numbers do not matter.",
-        "engineVersion": "today-2",
+        "engineVersion": "today-3",
         "rank": 1,
-        "contentHash": "4fa2d32fbe080159b64362b7a988acd6825bce4ad6917c219fa9e1e1e307afb8"
+        "contentHash": "63295f21906d39ac8073f92cb63fd9f7832263a0dd68f633bf3489d70dfeeddd"
       }
     ]
   }
