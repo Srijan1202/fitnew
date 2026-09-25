@@ -35,12 +35,12 @@ const EVERYTHING = model({
 /* -------------------------------------------------------- vocabulary -- */
 
 describe('the approved vocabulary, bands and codes (D5, P1)', () => {
-  it('ten server kinds in tie-break order; nothing deferred leaks in', () => {
+  it('the server kinds in tie-break order; nothing deferred leaks in (Phase 12 adds calorie-adjust at its band)', () => {
     expect([...ACTION_KINDS]).toEqual([
       'deload', 'injured-limitation', 'start-workout', 'eat-protein', 'eat-meal',
-      'progress-load', 'muscle-neglected', 'rest-day', 'celebrate-pr', 'log-weight',
+      'progress-load', 'muscle-neglected', 'rest-day', 'calorie-adjust', 'celebrate-pr', 'log-weight',
     ]);
-    for (const deferred of ['calorie-adjust', 'hydrate', 'add-steps', 'low-readiness', 'resume', 'workout-done', 'volume-ceiling']) {
+    for (const deferred of ['hydrate', 'add-steps', 'low-readiness', 'resume', 'workout-done', 'volume-ceiling']) {
       expect(ACTION_KINDS as readonly string[]).not.toContain(deferred);
     }
   });
@@ -48,7 +48,7 @@ describe('the approved vocabulary, bands and codes (D5, P1)', () => {
   it('§16.1 bands, injured-limitation at 91 between deload and start-workout', () => {
     expect(PRIORITIES).toEqual({
       deload: 95, 'injured-limitation': 91, 'start-workout': 90, 'eat-protein': { dinner: 88, other: 80 }, 'eat-meal': 75,
-      'progress-load': 72, 'muscle-neglected': 68, 'rest-day': 60, 'celebrate-pr': 50, 'log-weight': 45,
+      'progress-load': 72, 'muscle-neglected': 68, 'rest-day': 60, 'calorie-adjust': 55, 'celebrate-pr': 50, 'log-weight': 45,
     });
     expect(PRIORITIES.deload).toBeGreaterThan(PRIORITIES['injured-limitation']);
     expect(PRIORITIES['injured-limitation']).toBeGreaterThan(PRIORITIES['start-workout']);
@@ -73,7 +73,7 @@ describe('the approved vocabulary, bands and codes (D5, P1)', () => {
   it('reason codes, one per kind', () => {
     expect([...REASON_CODES]).toEqual([
       'deload-offered', 'exercise-contraindicated', 'session-scheduled', 'protein-behind', 'meal-remaining',
-      'load-increase-due', 'muscle-untrained', 'rest-day', 'pr-today', 'weigh-in-due',
+      'load-increase-due', 'muscle-untrained', 'rest-day', 'calorie-target-off-trend', 'pr-today', 'weigh-in-due',
     ]);
   });
 
@@ -210,6 +210,7 @@ describe('reason codes and structured values', () => {
       'load-increase-due': { exerciseName: 'E', weightKg: null, repTarget: '8' },
       'muscle-untrained': { muscle: 'quads', daysSince: null },
       'rest-day': { hasProgramme: false, nextSessionName: null, nextSessionDate: null, kcalTarget: null, proteinTarget: null },
+      'calorie-target-off-trend': { currentKcal: 2400, newKcal: 2270, deltaKcal: -130, weeklyChangeKg: 0.25 },
       'pr-today': { exerciseName: 'E', prType: '1rm_est', value: 100, previous: 95, count: 2 },
       'weigh-in-due': { daysSinceWeighIn: null },
     } as const;
@@ -368,8 +369,9 @@ describe('identity: content hash, rank, engine version, input digest (D4, D16, P
   it('engine version and input digest', () => {
     const result = todayActions(BASE);
     expect(result.engineVersion).toBe(ENGINE_VERSION);
-    expect(ENGINE_VERSION).toBe('today-1');
-    expect(result.actions.every((a) => a.engineVersion === 'today-1')).toBe(true);
+    // Phase 12 bumped the version for calorie-adjust (ADR-018).
+    expect(ENGINE_VERSION).toBe('today-2');
+    expect(result.actions.every((a) => a.engineVersion === 'today-2')).toBe(true);
     expect(result.inputDigest).toBe(sha256Hex(canonicalJson(BASE)));
     expect(result.inputDigest).toBe(inputDigestOf(model({})));
     expect(inputDigestOf(model({ hourOfDay: 14 }))).not.toBe(result.inputDigest);
@@ -428,7 +430,8 @@ describe('events (D7, P2, P4)', () => {
     expect(COMPLETION_EVIDENCE).toEqual({
       deload: 'deload-accepted', 'injured-limitation': null, 'start-workout': 'session-completed',
       'eat-protein': 'food-logged-in-slot', 'eat-meal': 'food-logged-in-slot', 'progress-load': 'session-with-exercise',
-      'muscle-neglected': 'session-with-muscle', 'rest-day': null, 'celebrate-pr': null, 'log-weight': 'weight-logged',
+      'muscle-neglected': 'session-with-muscle', 'rest-day': null, 'calorie-adjust': 'target-adjusted', // Phase 12
+      'celebrate-pr': null, 'log-weight': 'weight-logged',
     });
     for (const k of ['rest-day', 'celebrate-pr', 'injured-limitation'] as const) {
       expect(isCompletable(k)).toBe(false);

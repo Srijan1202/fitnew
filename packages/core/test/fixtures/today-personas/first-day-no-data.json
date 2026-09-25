@@ -31,7 +31,8 @@
         "proteinLow": 0,
         "proteinHigh": 0
       },
-      "loggedSlots": []
+      "loggedSlots": [],
+      "adjustment": null
     },
     "body": {
       "weighedToday": true,
@@ -40,9 +41,9 @@
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-1",
+    "engineVersion": "today-2",
     "localDate": "2026-09-24",
-    "inputDigest": "d315582337eeba9d1f322f531774331019b0a0fd38e5bf898b9d6c03f0fc1b55",
+    "inputDigest": "9c00f5ae11d86214d2c3e4b3ed9174c89f6ca9dd3f4a37a8cf1dbb71f1427ce4",
     "actions": [
       {
         "kind": "eat-protein",
@@ -63,9 +64,9 @@
         },
         "headline": "110 g protein to go",
         "detail": "Protein logged today is under three quarters of your 110 g target. Make breakfast count — about 2200 kcal are left.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 1,
-        "contentHash": "b24974f9ea230b6706f2b1e64fa389e17216347aeb0540649c2d09e90d1756f3"
+        "contentHash": "c6df4f4a6491961c91934e013547ceb12009ba06eef2e5f55a388d637a7324f3"
       },
       {
         "kind": "rest-day",
@@ -85,9 +86,9 @@
         },
         "headline": "No session today",
         "detail": "Set up a programme and FITOS will plan your sessions. A walk is a good start.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 2,
-        "contentHash": "8e624658cd7313c67259ed2e23a8479044f7742197b87ec4b76bc3a2beb455f4"
+        "contentHash": "47e674abb8b3880ebd5d6661271743ca3fdd5e56d850bfa34cf7573fcafb31cd"
       }
     ]
   }

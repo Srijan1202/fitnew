@@ -3,7 +3,9 @@
  * ADR-017). The API gathers the facts from its own data and calls these, so
  * the rules are pure, tested once, and never re-implemented per caller.
  */
-import type { TrainingState } from './engine.js';
+import type { Goal } from '../nutrition/targets.js';
+import { recommendCalorieAdjustment, summariseTrend, type WeightEntry } from '../nutrition/trend.js';
+import type { CalorieAdjustmentFact, TrainingState } from './engine.js';
 
 /** One planned exercise of today's session, as the API knows it (`/training/today`). */
 export interface PlannedExerciseFacts {
@@ -43,5 +45,45 @@ export function trainingFromPlan(
       alternativeId: e.swap?.exerciseId ?? null,
       alternativeName: e.swap?.exerciseName ?? null,
     })),
+  };
+}
+
+/** The goals the §13.2 policy has a target rate for; the rest hold weight (rate 0). */
+function policyGoal(goal: Goal): 'muscle-gain' | 'fat-loss' | 'strength' | 'general' {
+  return goal === 'muscle-gain' || goal === 'fat-loss' || goal === 'strength' ? goal : 'general';
+}
+
+/**
+ * Phase 12: whether the §13.2 adjustment policy fires today, as the engine's
+ * `calorie-adjust` fact. It reuses the existing deterministic pieces
+ * unchanged — `summariseTrend` (EWMA, the 10-day reliability gate) and
+ * `recommendCalorieAdjustment` (at most once per 7 days, only beyond
+ * tolerance, a step capped at ±150 kcal). Null when there are no targets,
+ * the trend is not yet reliable, or the policy does not fire.
+ *
+ * `daysSinceLastAdjustment` counts from the last target row this policy
+ * created (null when it never has).
+ */
+export function calorieAdjustmentFrom(params: {
+  readonly goal: Goal;
+  readonly weights: readonly WeightEntry[];
+  readonly targetKcal: number | null;
+  readonly daysSinceLastAdjustment: number | null;
+}): CalorieAdjustmentFact | null {
+  if (params.targetKcal === null) return null;
+  const trend = summariseTrend(params.weights);
+  if (!trend.isReliable || trend.weeklyChangeKg === null || trend.currentTrendKg === null) return null;
+  const decision = recommendCalorieAdjustment({
+    goal: policyGoal(params.goal),
+    weeklyChangeKg: trend.weeklyChangeKg,
+    daysSinceLastAdjustment: params.daysSinceLastAdjustment ?? Number.MAX_SAFE_INTEGER,
+    bodyweightKg: trend.currentTrendKg,
+  });
+  if (!decision.shouldAdjust) return null;
+  return {
+    currentKcal: params.targetKcal,
+    newKcal: params.targetKcal + decision.deltaKcal,
+    deltaKcal: decision.deltaKcal,
+    weeklyChangeKg: trend.weeklyChangeKg,
   };
 }

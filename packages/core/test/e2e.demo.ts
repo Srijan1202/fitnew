@@ -142,6 +142,7 @@ const actions = topActions({
     targets: { kcal: targets.kcal, proteinG: targets.proteinG },
     eaten: { kcalLow: consumed.kcal, kcalHigh: consumed.kcal, proteinLow: consumed.protein, proteinHigh: consumed.protein },
     loggedSlots: ['breakfast', 'lunch', 'snacks'],
+    adjustment: null,
   },
   body: { weighedToday: true, daysSinceWeighIn: 0 },
   dismissedToday: [],

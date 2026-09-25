@@ -24,7 +24,9 @@ export type CompletionEvidence =
   | 'session-with-exercise'
   | 'session-with-muscle'
   | 'food-logged-in-slot'
-  | 'weight-logged';
+  | 'weight-logged'
+  /** Phase 12: the target row this action's acceptance created. */
+  | 'target-adjusted';
 
 export const COMPLETION_EVIDENCE: Readonly<Record<ActionKind, CompletionEvidence | null>> = {
   deload: 'deload-accepted',
@@ -35,6 +37,7 @@ export const COMPLETION_EVIDENCE: Readonly<Record<ActionKind, CompletionEvidence
   'progress-load': 'session-with-exercise',
   'muscle-neglected': 'session-with-muscle',
   'rest-day': null,
+  'calorie-adjust': 'target-adjusted',
   'celebrate-pr': null,
   'log-weight': 'weight-logged',
 };

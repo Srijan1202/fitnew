@@ -34,7 +34,8 @@
         "proteinLow": 0,
         "proteinHigh": 0
       },
-      "loggedSlots": []
+      "loggedSlots": [],
+      "adjustment": null
     },
     "body": {
       "weighedToday": true,
@@ -43,9 +44,9 @@
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-1",
+    "engineVersion": "today-2",
     "localDate": "2026-09-24",
-    "inputDigest": "87870ccd8f6d17b8a001fb54a15b8d1f2246e61e08a979a9934d614b4a1aaba4",
+    "inputDigest": "972ab3ac16e3ab6dc083dce11912259e58c255e19b9c582f63bf4a24e7600e3e",
     "actions": [
       {
         "kind": "deload",
@@ -61,9 +62,9 @@
         },
         "headline": "Take a lighter week",
         "detail": "Your weekly volume has reached what you can recover from. A lighter week is offered; nothing changes until you accept it.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 1,
-        "contentHash": "2506f4f0b46383841195058b7fb6f3f0575397cdaf5f41ce1c0be388f5fa3c2a"
+        "contentHash": "5a2f1a78eb6803208495787257159423b0a7cbceb0ec3981f3e6cf4a02fac0b8"
       },
       {
         "kind": "eat-protein",
@@ -84,9 +85,9 @@
         },
         "headline": "140 g protein to go",
         "detail": "Protein logged today is under three quarters of your 140 g target. Make breakfast count — about 2500 kcal are left.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 2,
-        "contentHash": "6d05e0be617d2fbd8f996d07eb27ec3658b8b9b331e7b8c5a6745053d5d68af5"
+        "contentHash": "2c4e5bd44000d6e0c44c3f533d5d1d6076c2b8aef6eb43bced43876b93eab817"
       }
     ]
   }

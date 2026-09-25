@@ -24,7 +24,7 @@ import type { MealSlot } from '../mess/types.js';
 import { canonicalJson, sha256Hex } from './hash.js';
 
 /** Bump when rules, wording or hashing change; stored with every action row. */
-export const ENGINE_VERSION = 'today-1';
+export const ENGINE_VERSION = 'today-2';
 
 /** The approved server action vocabulary (D5 + P1), in tie-break order. */
 export const ACTION_KINDS = [
@@ -36,6 +36,7 @@ export const ACTION_KINDS = [
   'progress-load',
   'muscle-neglected',
   'rest-day',
+  'calorie-adjust',
   'celebrate-pr',
   'log-weight',
 ] as const;
@@ -51,6 +52,8 @@ export const PRIORITIES = {
   'progress-load': 72,
   'muscle-neglected': 68,
   'rest-day': 60,
+  // Phase 12 (the Phase 11 amendment's deferral; §16.1 band).
+  'calorie-adjust': 55,
   'celebrate-pr': 50,
   'log-weight': 45,
 } as const;
@@ -77,6 +80,7 @@ export const REASON_CODES = [
   'load-increase-due',
   'muscle-untrained',
   'rest-day',
+  'calorie-target-off-trend',
   'pr-today',
   'weigh-in-due',
 ] as const;
@@ -171,6 +175,21 @@ export interface NutritionState {
   };
   /** Meals with at least one log today. */
   readonly loggedSlots: readonly MealSlot[];
+  /**
+   * Phase 12: the §13.2 adjustment policy's decision, when it fired
+   * (`calorieAdjustmentFrom` in model.ts); null otherwise.
+   */
+  readonly adjustment: CalorieAdjustmentFact | null;
+}
+
+/** A calorie-target change the §13.2 policy proposes (advisory; the user accepts it). */
+export interface CalorieAdjustmentFact {
+  readonly currentKcal: number;
+  readonly newKcal: number;
+  /** newKcal − currentKcal; ±150 at most, a multiple of 10. */
+  readonly deltaKcal: number;
+  /** The trend's weekly change (kg/week) the decision was made from. */
+  readonly weeklyChangeKg: number;
 }
 
 export interface BodyState {
@@ -300,6 +319,18 @@ export function wordReason(reason: ActionReason): { headline: string; detail: st
       }
       parts.push('A walk helps recovery without adding fatigue.');
       return { headline: 'Recovery day', detail: parts.join(' ') };
+    }
+    case 'calorie-target-off-trend': {
+      const delta = n('deltaKcal');
+      const weekly = n('weeklyChangeKg');
+      const moving = weekly === 0 ? 'holding steady' : `${weekly > 0 ? 'rising' : 'falling'} about ${Math.abs(weekly).toFixed(2)} kg a week`;
+      return {
+        headline: `Move your target to ${num(n('newKcal'))} kcal`,
+        detail:
+          `Your trend weight is ${moving}, off pace for your goal. ` +
+          `Moving the target ${delta > 0 ? 'up' : 'down'} by ${num(Math.abs(delta))} kcal (from ${num(n('currentKcal'))}) keeps it on track. ` +
+          'Nothing changes unless you accept.',
+      };
     }
     case 'pr-today': {
       const more = n('count') - 1;
@@ -453,6 +484,19 @@ function candidates(m: UserModel): Candidate[] {
           kcalTarget: targets === null ? null : Math.round(targets.kcal),
           proteinTarget: targets === null ? null : r1(targets.proteinG),
         },
+      },
+    });
+  }
+
+  // 55 — the §13.2 adjustment policy fired (Phase 12). Advisory: accepting it
+  // creates a new target row; nothing changes otherwise.
+  const adj = m.nutrition.adjustment;
+  if (adj !== null) {
+    out.push({
+      kind: 'calorie-adjust', subjectKey: '', priority: PRIORITIES['calorie-adjust'], basis: 'calculated', target: 'eat',
+      reason: {
+        code: 'calorie-target-off-trend',
+        values: { currentKcal: adj.currentKcal, newKcal: adj.newKcal, deltaKcal: adj.deltaKcal, weeklyChangeKg: adj.weeklyChangeKg },
       },
     });
   }

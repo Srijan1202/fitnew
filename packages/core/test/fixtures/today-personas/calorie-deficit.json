@@ -37,7 +37,8 @@
       "loggedSlots": [
         "breakfast",
         "lunch"
-      ]
+      ],
+      "adjustment": null
     },
     "body": {
       "weighedToday": true,
@@ -46,9 +47,9 @@
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-1",
+    "engineVersion": "today-2",
     "localDate": "2026-09-24",
-    "inputDigest": "c74907bc99ef239d0dad8a9caac989beff9a2265667c49e9d1d951f3672c7898",
+    "inputDigest": "29b43042ab01c05cfb1190faec9eb91c0a16bfcfd2cb9f2f743474a40d640598",
     "actions": [
       {
         "kind": "eat-protein",
@@ -69,9 +70,9 @@
         },
         "headline": "62–80 g protein to go",
         "detail": "Protein logged today is under three quarters of your 140 g target. Make dinner count — about 850–1100 kcal are left.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 1,
-        "contentHash": "37969f3a45990ca977755c5d7f7496e50b42e49664e3fc01cfb8657a2083d0ab"
+        "contentHash": "24373346b544aadcab086291ba305fc1535c422fcbc9d5e02161045b79d99379"
       }
     ]
   }

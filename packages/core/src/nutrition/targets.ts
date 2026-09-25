@@ -155,6 +155,24 @@ export function computeTargets(input: TargetInput): MacroTargets {
 }
 
 /** Macros consumed so far today, against target. Used all over the TODAY screen. */
+/**
+ * Phase 12 (calorie-adjust): the targets after an accepted adjustment to
+ * `kcal`, by the same §13.1 rules `computeTargets` uses — protein unchanged,
+ * the fat floor `max(0.8 g/kg, 22 % kcal)`, carbs take the remainder, fibre
+ * 14 g per 1000 kcal. `weightKg` is the trend weight the decision used.
+ */
+export function adjustTargets(
+  current: Pick<MacroTargets, 'proteinG'>,
+  kcal: number,
+  weightKg: number,
+): Pick<MacroTargets, 'kcal' | 'proteinG' | 'fatG' | 'carbG' | 'fiberG'> {
+  const proteinG = current.proteinG;
+  const fatG = Math.round(Math.max(weightKg * 0.8, (kcal * 0.22) / 9));
+  const carbG = Math.max(0, Math.round((kcal - proteinG * 4 - fatG * 9) / 4));
+  const fiberG = Math.round((kcal / 1000) * 14);
+  return { kcal, proteinG, fatG, carbG, fiberG };
+}
+
 export interface DailyProgress {
   readonly kcalConsumed: number;
   readonly proteinConsumed: number;

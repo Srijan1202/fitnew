@@ -37,7 +37,8 @@
       "loggedSlots": [
         "breakfast",
         "lunch"
-      ]
+      ],
+      "adjustment": null
     },
     "body": {
       "weighedToday": false,
@@ -46,9 +47,9 @@
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-1",
+    "engineVersion": "today-2",
     "localDate": "2026-09-24",
-    "inputDigest": "b522bbf54c821bc879f60d39a41bd0d86d511d0d7e7d6ff7fa3e605565252988",
+    "inputDigest": "9f86b333a163ce10dd2b87c5b5d3ac8fc935dffdd2852460ba4de51b0667c9d0",
     "actions": [
       {
         "kind": "eat-meal",
@@ -68,9 +69,9 @@
         },
         "headline": "Snacks",
         "detail": "About 1050–1300 kcal and 15–30 g protein left today. Protein is on track.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 1,
-        "contentHash": "e204acaf38469d8ab672361f3c5c96bd044b15b611a25097f2b177deafd5ffd5"
+        "contentHash": "6628c20a75919bafe17081f254cc77ced5ba4546e448913a743786aae80ee9b8"
       },
       {
         "kind": "rest-day",
@@ -90,9 +91,9 @@
         },
         "headline": "Recovery day",
         "detail": "Next: Push A on 2026-09-25. Eat to about 2800 kcal and 140 g protein. A walk helps recovery without adding fatigue.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 2,
-        "contentHash": "e90b59390ca9784b0158813dcd47a3c8c0abb191a43862bc6dee3327bee32d7f"
+        "contentHash": "c9c93817f0ee9b3e2c361d39dc586380137f4ee7d6dfdb752ff0956fd140047e"
       },
       {
         "kind": "log-weight",
@@ -108,9 +109,9 @@
         },
         "headline": "Log your weight",
         "detail": "Last reading 4 days ago. The trend needs regular readings; single numbers do not matter.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 3,
-        "contentHash": "cfd45645bec0ea169a435c37c85a51dc26f81c11fd6fcf4cfe3e25ca685da463"
+        "contentHash": "77dedc111ee99ab955f6e913937744570c56deb8c89b71e700f1612d833f7b74"
       }
     ]
   }

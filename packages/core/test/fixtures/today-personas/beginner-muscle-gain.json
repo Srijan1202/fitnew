@@ -36,7 +36,8 @@
       },
       "loggedSlots": [
         "breakfast"
-      ]
+      ],
+      "adjustment": null
     },
     "body": {
       "weighedToday": false,
@@ -45,9 +46,9 @@
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-1",
+    "engineVersion": "today-2",
     "localDate": "2026-09-24",
-    "inputDigest": "48f6fbcf7b1ad4438ce0fafd10d2862d1cd3560269ac5d481ef303f225470e99",
+    "inputDigest": "ecc7555c0d125f7e2a04cea28d20660f3b7f06a92f8a74a5d97bf3d4d07f8ae1",
     "actions": [
       {
         "kind": "start-workout",
@@ -65,9 +66,9 @@
         },
         "headline": "Full Body A",
         "detail": "6 exercises · about 63 minutes.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 1,
-        "contentHash": "70448c5649a94f6c4ef9cc32d734bfcf8084847d7f7e178dad8e5479f1b53cf2"
+        "contentHash": "8512fcc3e651ba1541c75f3ff2df3908fe7d0c52f8bd23ff2caf48d697db68f2"
       },
       {
         "kind": "eat-protein",
@@ -88,9 +89,9 @@
         },
         "headline": "104–112 g protein to go",
         "detail": "Protein logged today is under three quarters of your 130 g target. Make lunch count — about 2000–2150 kcal are left.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 2,
-        "contentHash": "e898e6f4cd3e3757f67104116d488d3cd064e205bae10a5ec3eb642373426a20"
+        "contentHash": "bfef558413f59b1d13ec933125f2531800034ddebfbb1bbbfffe961af898b830"
       },
       {
         "kind": "log-weight",
@@ -106,9 +107,9 @@
         },
         "headline": "Log your weight",
         "detail": "Last reading 3 days ago. The trend needs regular readings; single numbers do not matter.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 3,
-        "contentHash": "f9f92e9608659ab56c73023ae2fa1f73bc1f187aa74c453c1ad1cb082eaf4344"
+        "contentHash": "c1e5724bf94ec63d0c20703e06058985cac54e6657967f07194c2803f4290fec"
       }
     ]
   }

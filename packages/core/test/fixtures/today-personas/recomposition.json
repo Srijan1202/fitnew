@@ -58,7 +58,8 @@
         "breakfast",
         "lunch",
         "snacks"
-      ]
+      ],
+      "adjustment": null
     },
     "body": {
       "weighedToday": true,
@@ -67,9 +68,9 @@
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-1",
+    "engineVersion": "today-2",
     "localDate": "2026-09-24",
-    "inputDigest": "8ab0c225e84306105bb4482f9cfa36eca6a90c8f15187ffba160cc1e6434791b",
+    "inputDigest": "90849abbdb8dbedb4d537346c9f22395ce6c70e9d616bdadc7886c64f77878eb",
     "actions": [
       {
         "kind": "eat-protein",
@@ -90,9 +91,9 @@
         },
         "headline": "42–60 g protein to go",
         "detail": "Protein logged today is under three quarters of your 160 g target. Make dinner count — about 400–700 kcal are left.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 1,
-        "contentHash": "ec937533c36864f7476b3792f0703cd8dad545f6ad37a5ada8bfa997dcda6be9"
+        "contentHash": "03044865ea0e8c4668874819015cd10565855d3e9be0c886635c22e6923032e1"
       },
       {
         "kind": "muscle-neglected",
@@ -109,9 +110,9 @@
         },
         "headline": "Calves is behind",
         "detail": "No working set for calves yet this block.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 2,
-        "contentHash": "6a380cca23606f22ea5cc1707a11a47294e268af8bbdff0926099e93f221cdc5"
+        "contentHash": "d4d67cf0eeb615d974e59af646b0d4f13c183ea3b2bedb7d8fc620c09a1abc96"
       },
       {
         "kind": "celebrate-pr",
@@ -131,9 +132,9 @@
         },
         "headline": "New record on Barbell Bench Press",
         "detail": "80 kg, up from 77.5 kg. 1 more record today.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 3,
-        "contentHash": "5fa8989292014f41fd392cfd2da7992f4c7d409b141bf56ff71c72e92c720b13"
+        "contentHash": "ab1bcec5febb2841f505b93d80dbaddcd3414415a8007e7eb62d0df138da2ee3"
       }
     ]
   }

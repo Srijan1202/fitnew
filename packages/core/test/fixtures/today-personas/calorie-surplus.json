@@ -38,7 +38,8 @@
         "breakfast",
         "lunch",
         "snacks"
-      ]
+      ],
+      "adjustment": null
     },
     "body": {
       "weighedToday": false,
@@ -47,9 +48,9 @@
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-1",
+    "engineVersion": "today-2",
     "localDate": "2026-09-24",
-    "inputDigest": "62a040ad2f82f84203a3b15c1ac288bb12d92a78d3ae4fa23986c6b4c70e4217",
+    "inputDigest": "c2af3e6f9e90f9a6d670b88fb898b3123773710451445c75465a718f3d0c9977",
     "actions": [
       {
         "kind": "log-weight",
@@ -65,9 +66,9 @@
         },
         "headline": "Log your weight",
         "detail": "Last reading 2 days ago. The trend needs regular readings; single numbers do not matter.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 1,
-        "contentHash": "3e39fc06a8b881ac8fbcdbcc3ddfb92f2887221c741bac76991eaabd836f3429"
+        "contentHash": "4fa2d32fbe080159b64362b7a988acd6825bce4ad6917c219fa9e1e1e307afb8"
       }
     ]
   }

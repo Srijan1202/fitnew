@@ -36,7 +36,8 @@
       },
       "loggedSlots": [
         "breakfast"
-      ]
+      ],
+      "adjustment": null
     },
     "body": {
       "weighedToday": false,
@@ -45,9 +46,9 @@
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-1",
+    "engineVersion": "today-2",
     "localDate": "2026-09-24",
-    "inputDigest": "58aa4fb3fa54b6bc5d9d4a6c073379eca9403ae1f5c5992a564cc58946bc19b3",
+    "inputDigest": "3d61c2e13ed8519ecd67473682a8cfa3e0e129eec1ff7520c082f1cfc82afa46",
     "actions": [
       {
         "kind": "eat-protein",
@@ -68,9 +69,9 @@
         },
         "headline": "100–106 g protein to go",
         "detail": "Protein logged today is under three quarters of your 120 g target. Make lunch count — about 1780–1900 kcal are left.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 1,
-        "contentHash": "1bb6e35517655edc8b2900d1b72c25eb24429a675fb1b580b9be41fe42e84281"
+        "contentHash": "a057805b6b0b519f3ff45ffc95e862716c4930c27bbaad3d9cda35e676500b71"
       },
       {
         "kind": "rest-day",
@@ -90,9 +91,9 @@
         },
         "headline": "Recovery day",
         "detail": "Next: Lower A on 2026-09-25. Eat to about 2300 kcal and 120 g protein. A walk helps recovery without adding fatigue.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 2,
-        "contentHash": "0368ee242f142a8f748079ad9f3c3f5f3e450865167ca1c5f46e9f4f14ced2ea"
+        "contentHash": "ced8100eaf3e44f40658d41bc7d5eda1e1d528595645b97db7f99057d9b1f1b8"
       }
     ]
   }

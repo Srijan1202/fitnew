@@ -32,6 +32,7 @@ export const BASE: UserModel = {
     targets: { kcal: 2400, proteinG: 150 },
     eaten: { kcalLow: 650, kcalHigh: 820, proteinLow: 30, proteinHigh: 42 },
     loggedSlots: ['breakfast'],
+    adjustment: null,
   },
   body: { weighedToday: true, daysSinceWeighIn: 0 },
   dismissedToday: [],

@@ -45,7 +45,8 @@
         "breakfast",
         "lunch",
         "snacks"
-      ]
+      ],
+      "adjustment": null
     },
     "body": {
       "weighedToday": true,
@@ -54,9 +55,9 @@
     "dismissedToday": []
   },
   "today": {
-    "engineVersion": "today-1",
+    "engineVersion": "today-2",
     "localDate": "2026-09-24",
-    "inputDigest": "88bd7bf2a0434ee623cf237d1f4b4d5a2fb420242392bf27f9e4dd152b688aa5",
+    "inputDigest": "b2f396f0229e27a5a2149291e8b283023ecc73f5dc94a50d760710e080c0baef",
     "actions": [
       {
         "kind": "start-workout",
@@ -74,9 +75,9 @@
         },
         "headline": "Upper B",
         "detail": "7 exercises · about 74 minutes.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 1,
-        "contentHash": "b323c87a3e62e1702659eb9b12361f852486132449d9b1f241e549df3f89555a"
+        "contentHash": "e1dc61cbdea4b86f67c12c648827241aeb4a73e72101d5db895d111a7253a710"
       },
       {
         "kind": "eat-meal",
@@ -96,9 +97,9 @@
         },
         "headline": "Dinner",
         "detail": "About 550–800 kcal and 20–35 g protein left today. Protein is on track.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 2,
-        "contentHash": "f1e7312d0fe0ac3fedc0cf2cc6b812770a20a0d1335a1075f092ef6d67c12963"
+        "contentHash": "b54977dd4d4fb07eae5aae38846ccb51a5d2166a66c90942961e9eab9077ef16"
       },
       {
         "kind": "progress-load",
@@ -117,9 +118,9 @@
         },
         "headline": "Load goes up today",
         "detail": "Barbell Bench Press: 62.5 kg for 6–8.",
-        "engineVersion": "today-1",
+        "engineVersion": "today-2",
         "rank": 3,
-        "contentHash": "c855ad6d21202362a279ff5ac195bec207ce8d9870faf060c1429b3fa3fb2a2a"
+        "contentHash": "72675e612d8cba0279548cf9c0c20e8e0f86329d0d57e1842977a733c9fce9d2"
       }
     ]
   }
