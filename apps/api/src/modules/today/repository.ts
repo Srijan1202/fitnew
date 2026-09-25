@@ -13,6 +13,7 @@ import {
   exercisePrs,
   exercises,
   foodLogs,
+  nutritionTargets,
   recommendationEvents,
   recommendations,
   sessionExercises,
@@ -22,6 +23,7 @@ import {
 } from '../../db/schema.js';
 
 type Db = DatabaseHandle['db'];
+type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 
 export interface NewRecommendation {
   readonly generatedFor: string;
@@ -81,6 +83,44 @@ export class TodayRepository {
       .where(and(eq(exercisePrs.userId, userId), gte(exercisePrs.achievedAt, since)))
       .orderBy(asc(exercisePrs.achievedAt), asc(exercisePrs.id));
     return rows.map((r) => ({ ...r, value: Number(r.value), previous: Number(r.previous) }));
+  }
+
+  /** Every live weight reading, oldest first (the trend input; Phase 12). */
+  async weights(userId: string): Promise<{ date: string; kg: number }[]> {
+    const rows = await this.db
+      .select({ date: bodyMetrics.measuredOn, kg: bodyMetrics.weightKg })
+      .from(bodyMetrics)
+      .where(and(eq(bodyMetrics.userId, userId), isNull(bodyMetrics.deletedAt)))
+      .orderBy(asc(bodyMetrics.measuredOn));
+    return rows.map((r) => ({ date: r.date, kg: Number(r.kg) }));
+  }
+
+  /** The effective date of the last target row the calorie-adjust policy created, or null (Phase 12). */
+  async lastAdjustmentOn(userId: string): Promise<string | null> {
+    const [row] = await this.db
+      .select({ on: nutritionTargets.effectiveFrom })
+      .from(nutritionTargets)
+      .where(and(eq(nutritionTargets.userId, userId), eq(nutritionTargets.reason, 'calorie-adjust')))
+      .orderBy(sql`${nutritionTargets.effectiveFrom} desc`)
+      .limit(1);
+    return row?.on ?? null;
+  }
+
+  /** Whether a calorie-adjust target row was created within [from, to] (its completion evidence). */
+  async adjustedBetween(userId: string, from: Date, to: Date): Promise<boolean> {
+    const [row] = await this.db
+      .select({ id: nutritionTargets.id })
+      .from(nutritionTargets)
+      .where(
+        and(
+          eq(nutritionTargets.userId, userId),
+          eq(nutritionTargets.reason, 'calorie-adjust'),
+          gte(nutritionTargets.createdAt, from),
+          lte(nutritionTargets.createdAt, to),
+        ),
+      )
+      .limit(1);
+    return row !== undefined;
   }
 
   /** The latest live weight reading's date, or null. */
@@ -171,16 +211,29 @@ export class TodayRepository {
    */
   async withEvents<T>(
     recommendationId: string,
-    fn: (recorded: readonly RecommendationEventRow[], insert: (row: NewRecommendationEvent) => Promise<RecommendationEventRow | null>) => Promise<T>,
+    fn: (
+      recorded: readonly RecommendationEventRow[],
+      insert: (row: NewRecommendationEvent) => Promise<RecommendationEventRow | null>,
+      tx: Tx,
+    ) => Promise<T>,
   ): Promise<T> {
     return this.db.transaction(async (tx) => {
       await tx.select({ id: recommendations.id }).from(recommendations).where(eq(recommendations.id, recommendationId)).for('update');
       const recorded = await tx.select().from(recommendationEvents).where(eq(recommendationEvents.recommendationId, recommendationId));
-      return fn(recorded, async (row) => {
-        const [inserted] = await tx.insert(recommendationEvents).values(row).onConflictDoNothing().returning();
-        return inserted ?? null;
-      });
+      return fn(
+        recorded,
+        async (row) => {
+          const [inserted] = await tx.insert(recommendationEvents).values(row).onConflictDoNothing().returning();
+          return inserted ?? null;
+        },
+        tx,
+      );
     });
+  }
+
+  /** Phase 12: a new target row, in the event's transaction (history only; past rows never change). */
+  async insertTargetRow(tx: Tx, row: typeof nutritionTargets.$inferInsert): Promise<void> {
+    await tx.insert(nutritionTargets).values(row);
   }
 
   /* --------------------------------------------- completion evidence -- */

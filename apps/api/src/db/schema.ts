@@ -34,3 +34,4 @@ export * from './schema/food.js';
 export * from './schema/mess.js';
 export * from './schema/food-log.js';
 export * from './schema/today.js';
+export * from './schema/progress.js';

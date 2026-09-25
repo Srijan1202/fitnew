@@ -36485,6 +36485,7 @@
                               "progress-load",
                               "muscle-neglected",
                               "rest-day",
+                              "calorie-adjust",
                               "celebrate-pr",
                               "log-weight"
                             ]
@@ -36892,6 +36893,50 @@
                                       "nextSessionDate",
                                       "kcalTarget",
                                       "proteinTarget"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "values"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "code": {
+                                    "type": "string",
+                                    "enum": [
+                                      "calorie-target-off-trend"
+                                    ]
+                                  },
+                                  "values": {
+                                    "type": "object",
+                                    "properties": {
+                                      "currentKcal": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      },
+                                      "newKcal": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      },
+                                      "deltaKcal": {
+                                        "type": "integer",
+                                        "minimum": -150,
+                                        "maximum": 150
+                                      },
+                                      "weeklyChangeKg": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    "required": [
+                                      "currentKcal",
+                                      "newKcal",
+                                      "deltaKcal",
+                                      "weeklyChangeKg"
                                     ],
                                     "additionalProperties": false
                                   }
@@ -37403,6 +37448,1060 @@
             }
           },
           "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/progress/summary": {
+      "get": {
+        "summary": "Progress over 30 or 90 days: trend weight, measurements, records, adherence, consistency (Phase 12)",
+        "tags": [
+          "progress"
+        ],
+        "description": "Computed on read from your own records in your stored timezone; nothing derived is stored. The trend weight is the headline (EWMA); the weekly rate is null before 10 days of data; every change covers at least 7 days — there is no day-over-day figure. Adherence counts only days with a log.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "30d",
+                "90d"
+              ],
+              "default": "30d"
+            },
+            "in": "query",
+            "name": "window",
+            "required": false
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "window": {
+                      "type": "string",
+                      "enum": [
+                        "30d",
+                        "90d"
+                      ]
+                    },
+                    "today": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "from": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "weight": {
+                      "type": "object",
+                      "properties": {
+                        "points": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "date": {
+                                "type": "string",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                              },
+                              "rawKg": {
+                                "type": "number"
+                              },
+                              "trendKg": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "date",
+                              "rawKg",
+                              "trendKg"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "currentTrendKg": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "weeklyChangeKg": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "daysOfData": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "isReliable": {
+                          "type": "boolean"
+                        },
+                        "windowChangeKg": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "windowChangeDays": {
+                          "type": "integer",
+                          "minimum": 7,
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "points",
+                        "currentTrendKg",
+                        "weeklyChangeKg",
+                        "daysOfData",
+                        "isReliable",
+                        "windowChangeKg",
+                        "windowChangeDays"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "measurements": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "site": {
+                            "type": "string",
+                            "enum": [
+                              "waist",
+                              "chest",
+                              "arm",
+                              "thigh",
+                              "hip"
+                            ]
+                          },
+                          "latest": {
+                            "type": "object",
+                            "properties": {
+                              "date": {
+                                "type": "string",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                              },
+                              "valueCm": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "date",
+                              "valueCm"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "changeCm": {
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "changeDays": {
+                            "type": "integer",
+                            "minimum": 7,
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "site",
+                          "latest",
+                          "changeCm",
+                          "changeDays"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "prs": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "exerciseId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "exerciseName": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "prType": {
+                            "type": "string",
+                            "enum": [
+                              "1rm_est",
+                              "weight",
+                              "reps",
+                              "volume"
+                            ]
+                          },
+                          "value": {
+                            "type": "number"
+                          },
+                          "previous": {
+                            "type": "number"
+                          },
+                          "reason": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "achievedOn": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "exerciseId",
+                          "exerciseName",
+                          "prType",
+                          "value",
+                          "previous",
+                          "reason",
+                          "achievedOn"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "bestLifts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "exerciseId": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "exerciseName": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "estimated1RmKg": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "weightKg": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "reps": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "date": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                          }
+                        },
+                        "required": [
+                          "exerciseId",
+                          "exerciseName",
+                          "estimated1RmKg",
+                          "weightKg",
+                          "reps",
+                          "date"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "adherence": {
+                      "type": "object",
+                      "properties": {
+                        "protein": {
+                          "type": "object",
+                          "properties": {
+                            "met": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "of": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "percent": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "nullable": true
+                            }
+                          },
+                          "required": [
+                            "met",
+                            "of",
+                            "percent"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "calories": {
+                          "type": "object",
+                          "properties": {
+                            "met": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "of": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "percent": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "nullable": true
+                            }
+                          },
+                          "required": [
+                            "met",
+                            "of",
+                            "percent"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "loggedDays": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "daysWithoutTarget": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "protein",
+                        "calories",
+                        "loggedDays",
+                        "daysWithoutTarget"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "consistency": {
+                      "type": "object",
+                      "properties": {
+                        "weeks": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "isoWeek": {
+                                "type": "string",
+                                "pattern": "^\\d{4}-W\\d{2}$"
+                              },
+                              "completed": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "planned": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "isoWeek",
+                              "completed",
+                              "planned"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "completed": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "planned": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "nullable": true
+                        },
+                        "percent": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "weeks",
+                        "completed",
+                        "planned",
+                        "percent"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "window",
+                    "today",
+                    "from",
+                    "weight",
+                    "measurements",
+                    "prs",
+                    "bestLifts",
+                    "adherence",
+                    "consistency"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/progress/weight": {
+      "post": {
+        "summary": "Log a weight for a local day (upsert on date; up to 30 days back, never ahead)",
+        "tags": [
+          "progress"
+        ],
+        "description": "201 for a new day, 200 when it replaces that day's reading. Never recalculates the nutrition targets.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "weightKg": {
+                    "type": "number",
+                    "minimum": 30,
+                    "maximum": 300
+                  },
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "weightKg"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "weight": {
+                      "type": "object",
+                      "properties": {
+                        "date": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        "weightKg": {
+                          "type": "number"
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "onboarding",
+                            "manual",
+                            "health-sync"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "weightKg",
+                        "source"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "weight"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "weight": {
+                      "type": "object",
+                      "properties": {
+                        "date": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        "weightKg": {
+                          "type": "number"
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "onboarding",
+                            "manual",
+                            "health-sync"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "weightKg",
+                        "source"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "weight"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/progress/measurement": {
+      "post": {
+        "summary": "Log a tape measurement for a local day and site (upsert; up to 30 days back, never ahead)",
+        "tags": [
+          "progress"
+        ],
+        "description": "201 for a new day and site, 200 when it replaces that reading.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "site": {
+                    "type": "string",
+                    "enum": [
+                      "waist",
+                      "chest",
+                      "arm",
+                      "thigh",
+                      "hip"
+                    ]
+                  },
+                  "valueCm": {
+                    "type": "number",
+                    "minimum": 10,
+                    "maximum": 250
+                  },
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "site",
+                  "valueCm"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "measurement": {
+                      "type": "object",
+                      "properties": {
+                        "date": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        "site": {
+                          "type": "string",
+                          "enum": [
+                            "waist",
+                            "chest",
+                            "arm",
+                            "thigh",
+                            "hip"
+                          ]
+                        },
+                        "valueCm": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "site",
+                        "valueCm"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "measurement"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "measurement": {
+                      "type": "object",
+                      "properties": {
+                        "date": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        "site": {
+                          "type": "string",
+                          "enum": [
+                            "waist",
+                            "chest",
+                            "arm",
+                            "thigh",
+                            "hip"
+                          ]
+                        },
+                        "valueCm": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "site",
+                        "valueCm"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "measurement"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
             "description": "Default Response",
             "content": {
               "application/json": {

@@ -20,6 +20,7 @@ export const TODAY_ACTION_KINDS = [
   'progress-load',
   'muscle-neglected',
   'rest-day',
+  'calorie-adjust', // Phase 12
   'celebrate-pr',
   'log-weight',
 ] as const;
@@ -35,6 +36,7 @@ export const TODAY_REASON_CODES = [
   'load-increase-due',
   'muscle-untrained',
   'rest-day',
+  'calorie-target-off-trend', // Phase 12
   'pr-today',
   'weigh-in-due',
 ] as const;
@@ -99,6 +101,18 @@ export const todayReasonSchema = z.discriminatedUnion('code', [
         nextSessionDate: isoDateSchema.nullable(),
         kcalTarget: amount.nullable(),
         proteinTarget: amount.nullable(),
+      })
+      .strict(),
+  }).strict(),
+  z.object({
+    code: z.literal('calorie-target-off-trend'),
+    values: z
+      .object({
+        currentKcal: amount,
+        newKcal: amount,
+        /** ±150 at most, a multiple of 10 (§13.2). */
+        deltaKcal: z.number().int().min(-150).max(150),
+        weeklyChangeKg: z.number().finite(),
       })
       .strict(),
   }).strict(),

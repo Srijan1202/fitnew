@@ -29,6 +29,7 @@ export const todayActionKindEnum = pgEnum('today_action_kind', [
   'progress-load',
   'muscle-neglected',
   'rest-day',
+  'calorie-adjust', // Phase 12 (migration 0015)
   'celebrate-pr',
   'log-weight',
 ]);

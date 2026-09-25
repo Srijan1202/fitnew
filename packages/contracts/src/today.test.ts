@@ -19,11 +19,11 @@ const action = {
 };
 
 describe('TODAY contracts (Phase 11)', () => {
-  it('vocabularies: ten kinds, ten codes, five events', () => {
-    expect(TODAY_ACTION_KINDS).toHaveLength(10);
-    expect(TODAY_REASON_CODES).toHaveLength(10);
+  it('vocabularies: eleven kinds and codes (Phase 12 adds calorie-adjust), five events', () => {
+    expect(TODAY_ACTION_KINDS).toHaveLength(11);
+    expect(TODAY_REASON_CODES).toHaveLength(11);
     expect([...TODAY_EVENTS]).toEqual(['shown', 'opened', 'accepted', 'dismissed', 'completed']);
-    for (const deferred of ['calorie-adjust', 'hydrate', 'add-steps', 'low-readiness']) {
+    for (const deferred of ['hydrate', 'add-steps', 'low-readiness']) {
       expect(TODAY_ACTION_KINDS as readonly string[]).not.toContain(deferred);
     }
   });

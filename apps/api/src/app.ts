@@ -31,6 +31,7 @@ import { workoutRoutes } from './modules/workout/routes.js';
 import { nutritionRoutes } from './modules/nutrition/routes.js';
 import { foodLogRoutes } from './modules/nutrition/log-routes.js';
 import { messRoutes } from './modules/mess/routes.js';
+import { progressRoutes } from './modules/progress/routes.js';
 import { todayRoutes } from './modules/today/routes.js';
 import { userRoutes } from './modules/user/routes.js';
 import { users } from './db/schema.js';
@@ -152,6 +153,7 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
       await v1.register(foodLogRoutes);
       await v1.register(messRoutes);
       await v1.register(todayRoutes);
+      await v1.register(progressRoutes);
       await v1.register(aiRoutes);
     },
     { prefix: PROTECTED_PREFIX },

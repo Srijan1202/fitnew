@@ -197,7 +197,7 @@ describeIfDb('/v1/today (real Postgres, real seed)', { timeout: 60_000 }, () => 
     const u = await bare(tz);
     const t = await today(u);
     expect(t.date).toBe(localDateOf(new Date(), tz));
-    expect(t.engineVersion).toBe('today-1');
+    expect(t.engineVersion).toBe('today-2'); // Phase 12 (calorie-adjust)
     expect(kinds(t)).toEqual(['rest-day', 'log-weight']);
     expect(find(t, 'rest-day')!.reason).toEqual({
       code: 'rest-day', values: { hasProgramme: false, nextSessionName: null, nextSessionDate: null, kcalTarget: null, proteinTarget: null },
@@ -727,6 +727,76 @@ describeIfDb('/v1/today (real Postgres, real seed)', { timeout: 60_000 }, () => 
     expect(issue(after)).toBe('no-evidence');
     const [n] = await sql<{ n: number }[]>`select count(*)::int as n from deload_activations where user_id = ${u.id}`;
     expect(n!.n).toBe(2); // both activations are on record; neither is this action's evidence
+  });
+
+  /* ---------------------------------------- calorie-adjust (Phase 12) -- */
+
+  /** A fat-loss user whose trend is rising ~0.7 kg/week over 21 days, with a target: the §13.2 policy fires. */
+  async function offPace(tz: string): Promise<U> {
+    const u = await bare(tz);
+    await sql`insert into user_goals (user_id, goal_type) values (${u.id}, 'fat-loss')`;
+    await targets(u, 2200, 140);
+    const t = localDateOf(new Date(), tz);
+    for (let i = 20; i >= 0; i--) {
+      await sql`insert into body_metrics (user_id, measured_on, weight_kg, source) values (${u.id}, ${addDays(t, -i)}, ${70 + (20 - i) * 0.1}, 'manual')`;
+    }
+    return u;
+  }
+  const targetRows = (u: U) =>
+    sql<{ kcal: number; protein_g: number; reason: string; effective_from: string }[]>`
+      select kcal, protein_g, reason, effective_from from nutrition_targets where user_id = ${u.id} order by created_at, id`;
+
+  it('calorie-adjust: only when the policy fires; accepting writes a NEW target row (the old one untouched); completed needs it', async () => {
+    await settleClock();
+    const u = await offPace(zoneAt(12));
+    const t = await today(u);
+    const adj = find(t, 'calorie-adjust')!;
+    expect(adj).toMatchObject({ priority: 55, basis: 'calculated', target: 'eat', subjectKey: '', reason: { code: 'calorie-target-off-trend' } });
+    const v = adj.reason.values as { currentKcal: number; newKcal: number; deltaKcal: number };
+    expect(v.currentKcal).toBe(2200);
+    expect(v.deltaKcal).toBeLessThan(0);
+    expect(Math.abs(v.deltaKcal)).toBeLessThanOrEqual(150);
+    expect(v.newKcal).toBe(2200 + v.deltaKcal);
+    expect(adj.headline).toBe(`Move your target to ${v.newKcal} kcal`);
+    // A user whose trend is on pace, or too short, never sees it.
+    expect(find(await today(await bare(zoneAt(12))), 'calorie-adjust')).toBeUndefined();
+
+    expect((await ev(u, adj.id, 'shown')).statusCode).toBe(201);
+    // Not applied by being shown or opened.
+    expect(await targetRows(u)).toHaveLength(1);
+    const early = await ev(u, adj.id, 'completed');
+    expect(issue(early)).toBe('not-accepted');
+    expect((await ev(u, adj.id, 'accepted')).statusCode).toBe(201);
+    const rows = await targetRows(u);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toMatchObject({ kcal: 2200, protein_g: 140, reason: 'onboarding' });
+    expect(rows[1]).toMatchObject({ kcal: v.newKcal, protein_g: 140, reason: 'calorie-adjust', effective_from: t.date });
+    expect((await ev(u, adj.id, 'completed')).statusCode).toBe(201);
+    // Applied once: a replayed or repeated accept writes nothing more; the next plan has no adjustment (7-day limit).
+    expect((await ev(u, adj.id, 'accepted')).statusCode).toBe(200);
+    expect(await targetRows(u)).toHaveLength(2);
+    expect(find(await today(u), 'calorie-adjust')).toBeUndefined();
+  });
+
+  it('calorie-adjust: dismissing changes nothing; a suggestion made stale by a target change is refused (409) and writes nothing', async () => {
+    await settleClock();
+    const u = await offPace(zoneAt(12));
+    const adj = find(await today(u), 'calorie-adjust')!;
+    expect((await ev(u, adj.id, 'shown')).statusCode).toBe(201);
+    expect((await ev(u, adj.id, 'dismissed')).statusCode).toBe(201);
+    expect(await targetRows(u)).toHaveLength(1);
+    expect(find(await today(u), 'calorie-adjust')).toBeUndefined(); // dismissed for the day
+
+    const v = await offPace(zoneAt(12));
+    const stale = find(await today(v), 'calorie-adjust')!;
+    expect((await ev(v, stale.id, 'shown')).statusCode).toBe(201);
+    await sql`update nutrition_targets set kcal = 2300 where user_id = ${v.id}`; // the target moved meanwhile
+    const r = await ev(v, stale.id, 'accepted');
+    expect(r.statusCode).toBe(409);
+    expect((r.json() as { error: { details: { issue: string }[] } }).error.details[0]!.issue).toBe('target-changed');
+    expect(await targetRows(v)).toHaveLength(1);
+    const [events] = await sql<{ n: number }[]>`select count(*)::int as n from recommendation_events where recommendation_id = ${stale.id} and event = 'accepted'`;
+    expect(events!.n).toBe(0);
   });
 
   /* ------------------------------------------------------- performance -- */

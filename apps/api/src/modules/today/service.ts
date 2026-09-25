@@ -10,11 +10,12 @@
  */
 import type { TodayActionsResponse, TodayEventRecord, TodayEventRequest, TodayReason } from '@fitos/contracts';
 import { addDays, localDateOf } from '@fitos/core/nutrition/log';
-import type { Goal } from '@fitos/core/nutrition/targets';
+import { adjustTargets, type Goal } from '@fitos/core/nutrition/targets';
+import { summariseTrend } from '@fitos/core/nutrition/trend';
 import type { MealSlot } from '@fitos/core/mess/types';
 import { todayActions, todayClock, type PrType, type TrainingState, type UserModel } from '@fitos/core/recommend/engine';
 import { CLOCK_SKEW_MS, COMPLETION_EVIDENCE, checkEventTiming, checkTransition, type TodayEvent } from '@fitos/core/recommend/events';
-import { trainingFromPlan, type PlannedExerciseFacts } from '@fitos/core/recommend/model';
+import { calorieAdjustmentFrom, trainingFromPlan, type PlannedExerciseFacts } from '@fitos/core/recommend/model';
 
 import type { RecommendationEventRow, RecommendationRow } from '../../db/schema.js';
 import { AppError } from '../../lib/errors.js';
@@ -61,7 +62,7 @@ export class TodayService {
     const timeZone = await this.logs.timezoneOf(userId);
     const { localDate, hourOfDay } = todayClock(now, timeZone);
 
-    const [day, inputs, program, targets, totals, loggedSlots, lastWeighIn, prs, dismissed] = await Promise.all([
+    const [day, inputs, program, targets, totals, loggedSlots, lastWeighIn, prs, dismissed, weights, lastAdjustment] = await Promise.all([
       this.workout.today(userId),
       this.training.profileInputs(userId),
       this.training.activeProgram(userId),
@@ -72,6 +73,8 @@ export class TodayService {
       // Two days back covers every zone; the local day is kept below.
       this.repo.prsSince(userId, new Date(now.getTime() - 48 * 3_600_000)),
       this.repo.dismissedOn(userId, localDate),
+      this.repo.weights(userId),
+      this.repo.lastAdjustmentOn(userId),
     ]);
 
     // Owner Q1: the facts go through core's `trainingFromPlan`, which keeps a
@@ -134,6 +137,13 @@ export class TodayService {
                 proteinHigh: Number(totals.proteinHigh),
               },
         loggedSlots: loggedSlots as MealSlot[],
+        // Phase 12: the §13.2 policy, decided by core from the trend (never a single reading).
+        adjustment: calorieAdjustmentFrom({
+          goal: (inputs.goal?.goalType ?? 'general') as Goal,
+          weights: weights.filter((w) => w.date <= localDate),
+          targetKcal: targets === null ? null : targets.kcal,
+          daysSinceLastAdjustment: lastAdjustment === null ? null : daysBetween(lastAdjustment, localDate),
+        }),
       },
       body: {
         weighedToday: lastWeighIn === localDate,
@@ -228,6 +238,11 @@ export class TodayService {
         return this.repo.foodLoggedIn(userId, day, rec.subjectKey);
       case 'weight-logged':
         return this.repo.weighedOn(userId, day);
+      case 'target-adjusted':
+        // Phase 12: the target row this action's acceptance created (it is
+        // written with the accepted event, so it lies between the action and
+        // the completion).
+        return this.repo.adjustedBetween(userId, rec.createdAt, new Date(completedAt.getTime() + CLOCK_SKEW_MS));
       case 'deload-accepted': {
         // "Deload accepted": THIS action was accepted, then the offer was activated,
         // then `completed` was reported. Activation is Phase 6's
@@ -247,6 +262,46 @@ export class TodayService {
       case null:
         return false;
     }
+  }
+
+  /**
+   * Phase 12: the target row an accepted calorie-adjust action creates, from
+   * the action's own values and the §13.1 rules (`adjustTargets`). If the
+   * target has changed since the action was made, nothing is applied (409):
+   * the suggestion no longer describes the user's target.
+   */
+  private async adjustmentRow(
+    userId: string,
+    rec: RecommendationRow,
+    timeZone: string,
+    at: Date,
+  ): Promise<Parameters<TodayRepository['insertTargetRow']>[1]> {
+    const values = (rec.payload as { reason: { values: { currentKcal: number; newKcal: number; deltaKcal: number } } }).reason.values;
+    const today = localDateOf(at, timeZone);
+    const current = await this.logs.targetsOn(userId, today);
+    if (current === null || current.kcal !== values.currentKcal) {
+      throw new AppError('CONFLICT', 'Your calorie target has changed since this suggestion.', [{ path: 'event', issue: 'target-changed' }]);
+    }
+    const trend = summariseTrend(await this.repo.weights(userId));
+    const weightKg = trend.currentTrendKg ?? 0;
+    const next = adjustTargets({ proteinG: current.proteinG }, values.newKcal, weightKg);
+    const sign = values.deltaKcal > 0 ? '+' : '−';
+    return {
+      userId,
+      effectiveFrom: today,
+      kcal: next.kcal,
+      proteinG: next.proteinG,
+      carbG: next.carbG,
+      fatG: next.fatG,
+      fiberG: next.fiberG,
+      bmr: current.bmr,
+      tdeeEstimate: current.tdeeEstimate,
+      rationale: [
+        ...current.rationale,
+        `Adjusted ${sign}${Math.abs(values.deltaKcal)} kcal on ${today}: the weight trend was off pace for your goal, and you accepted the change.`,
+      ],
+      reason: 'calorie-adjust',
+    };
   }
 
   /**
@@ -292,7 +347,7 @@ export class TodayService {
       throw new AppError('VALIDATION_FAILED', 'This event is outside its action’s window.', [{ path: 'occurredAt', issue: timing.code }]);
     }
 
-    const outcome = await this.repo.withEvents(rec.id, async (recorded, insert) => {
+    const outcome = await this.repo.withEvents(rec.id, async (recorded, insert, tx) => {
       const transition = checkTransition(rec.kind, recorded.map((r) => r.event), event);
       if (transition.outcome === 'duplicate') {
         return { created: false, row: recorded.find((r) => r.event === event)! };
@@ -303,7 +358,12 @@ export class TodayService {
       if (event === 'completed' && !(await this.completionProven(userId, rec, recorded, occurredAt, timeZone))) {
         throw new AppError('VALIDATION_FAILED', 'Nothing on record completes this action yet.', [{ path: 'event', issue: 'no-evidence' }]);
       }
+      // Phase 12: accepting a calorie-adjust action applies it — a NEW target
+      // row (history; the current row never changes). Checked before the
+      // event is stored, written only once it is.
+      const adjustment = event === 'accepted' && rec.kind === 'calorie-adjust' ? await this.adjustmentRow(userId, rec, timeZone, receivedAt) : null;
       const row = await insert({ recommendationId: rec.id, userId, event, clientEventId: body.clientEventId, occurredAt, receivedAt });
+      if (row !== null && adjustment !== null) await this.repo.insertTargetRow(tx, adjustment);
       return row === null ? null : { created: true, row };
     });
     if (outcome !== null) return { created: outcome.created, event: eventRecord(outcome.row) };

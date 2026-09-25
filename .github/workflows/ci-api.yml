@@ -96,6 +96,8 @@ jobs:
           job node apps/api/dist/db/migrate.js up
           job node apps/api/dist/db/migrate.js up   # a re-run is a no-op
           job node apps/api/dist/db/seed.js
+          # Phase 12 (§9.4): every derived cache rebuilds from its source rows on the seeded database.
+          job node apps/api/dist/db/rebuild-derived.js
           # A hosted server must refuse development fallbacks (no salt, no TRUST_PROXY).
           if timeout 60 docker run --rm --network host -e DATABASE_URL="$DATABASE_URL"                -e FIREBASE_PROJECT_ID=ci-smoke fitos-api:ci > /tmp/refused.log 2>&1; then
             echo "booted in production without CONSENT_IP_SALT / TRUST_PROXY"; exit 1

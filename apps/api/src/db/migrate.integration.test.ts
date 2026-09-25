@@ -70,7 +70,7 @@ describeIfDb('migrations (real Postgres)', () => {
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
   const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
   const PHASE6_TABLES = ['muscle_volume_weekly', 'exercise_rejections'];
-  const TOTAL_MIGRATIONS = 15;
+  const TOTAL_MIGRATIONS = 16;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -476,8 +476,66 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from mess_providers where id = ${prov!.id}`;
   });
 
+  it('0015: body_measurements (one per user, day and site; checks; cascade), the PR window index, and calorie-adjust in today_action_kind; down rebuilds the enum (Phase 12)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0015_progress');
+    expect(await tableExists(client, 'body_measurements')).toBe(false);
+    expect(await enumLabels(client, 'today_action_kind')).not.toContain('calorie-adjust');
+    await migrateUp(connectionString);
+    expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
+
+    expect(await enumLabels(client, 'measurement_site')).toEqual(['waist', 'chest', 'arm', 'thigh', 'hip']);
+    // The new kind sits at its band, so contracts, core and the database agree on order.
+    expect(await enumLabels(client, 'today_action_kind')).toEqual([
+      'deload', 'injured-limitation', 'start-workout', 'eat-protein', 'eat-meal', 'progress-load', 'muscle-neglected',
+      'rest-day', 'calorie-adjust', 'celebrate-pr', 'log-weight',
+    ]);
+    const idx = await client`select 1 from pg_indexes where indexname = 'exercise_prs_user_achieved_idx'`;
+    expect(idx.length).toBe(1);
+
+    await client`insert into users (firebase_uid) values ('mig-progress')`;
+    const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-progress'`;
+    const put = (date: string, site: string, cm: number) =>
+      client.unsafe(`insert into body_measurements (user_id, measured_on, site, value_cm) values ('${u!.id}', '${date}', '${site}', ${cm})`);
+    await put('2026-09-24', 'waist', 84.5);
+    await put('2026-09-24', 'hip', 98);
+    await expect(put('2026-09-24', 'waist', 84)).rejects.toThrow(/body_measurements_user_day_site/);
+    await expect(put('2026-09-24', 'neck', 40)).rejects.toThrow(/invalid input value for enum measurement_site/);
+    await expect(put('2026-09-25', 'arm', 5)).rejects.toThrow(/body_measurements_value/);
+    await expect(put('24-09-2026', 'arm', 35)).rejects.toThrow(/body_measurements_date/);
+    // A calorie-adjust recommendation is storable.
+    const H = 'd'.repeat(64);
+    await client.unsafe(
+      `insert into recommendations (user_id, generated_for, kind, subject_key, rank, priority, basis, target, payload, engine_version, input_digest, headline, detail, content_hash)
+       values ('${u!.id}', '2026-09-24', 'calorie-adjust', '', 1, 55, 'calculated', 'eat', '{}'::jsonb, 'today-2', '${H}', 'h', 'd', '${H}')`,
+    );
+    const keep = await client.unsafe(
+      `insert into recommendations (user_id, generated_for, kind, subject_key, rank, priority, basis, target, payload, engine_version, input_digest, headline, detail, content_hash)
+       values ('${u!.id}', '2026-09-24', 'log-weight', '', 2, 45, 'calculated', 'progress', '{}'::jsonb, 'today-2', '${H}', 'h', 'd', '${H}') returning id`,
+    );
+
+    // Down with data: the table and type go; the enum is rebuilt without the value; other rows keep their kind.
+    expect(await rollbackLastMigration(connectionString)).toBe('0015_progress');
+    expect(await tableExists(client, 'body_measurements')).toBe(false);
+    expect(await enumLabels(client, 'measurement_site')).toEqual([]);
+    expect(await enumLabels(client, 'today_action_kind')).toEqual([
+      'deload', 'injured-limitation', 'start-workout', 'eat-protein', 'eat-meal', 'progress-load', 'muscle-neglected',
+      'rest-day', 'celebrate-pr', 'log-weight',
+    ]);
+    const left = await client<{ kind: string }[]>`select kind::text as kind from recommendations where user_id = ${u!.id}`;
+    expect(left).toEqual([{ kind: 'log-weight' }]);
+    expect((keep as unknown as { id: string }[])[0]!.id).toBeDefined();
+    await migrateUp(connectionString);
+    expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
+
+    // Deleting the user takes the measurements.
+    await client.unsafe(`insert into body_measurements (user_id, measured_on, site, value_cm) values ('${u!.id}', '2026-09-20', 'arm', 35)`);
+    await client`delete from users where id = ${u!.id}`;
+    expect((await client`select 1 from body_measurements where user_id = ${u!.id}`).length).toBe(0);
+  });
+
   it('0014: every deload activation is kept by a trigger on programs (Phase 6 code untouched); backfill; down drops it (Phase 11)', async () => {
     // Down, then a deload week already running when 0014 applies: the backfill records it.
+    expect(await rollbackLastMigration(connectionString)).toBe('0015_progress');
     expect(await rollbackLastMigration(connectionString)).toBe('0014_deload_activations');
     expect(await tableExists(client, 'deload_activations')).toBe(false);
     await client`insert into users (firebase_uid) values ('mig-deload')`;
@@ -510,6 +568,7 @@ describeIfDb('migrations (real Postgres)', () => {
     expect((await client`select 1 from deload_activations where program_id = ${q!.id}`).length).toBe(0);
 
     // Down removes the trigger, its function and the table; programs keeps working as in Phase 6.
+    expect(await rollbackLastMigration(connectionString)).toBe('0015_progress');
     expect(await rollbackLastMigration(connectionString)).toBe('0014_deload_activations');
     expect(await tableExists(client, 'deload_activations')).toBe(false);
     const fns = await client`select 1 from pg_proc where proname = 'record_deload_activation'`;
@@ -521,6 +580,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0013: TODAY recommendations and events — identity, checks, event rules, cascades; down drops them (Phase 11, ADR-017)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0015_progress');
     expect(await rollbackLastMigration(connectionString)).toBe('0014_deload_activations');
     expect(await rollbackLastMigration(connectionString)).toBe('0013_today');
     expect(await tableExists(client, 'recommendations')).toBe(false);
@@ -529,8 +589,9 @@ describeIfDb('migrations (real Postgres)', () => {
     await migrateUp(connectionString);
     expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
 
+    // After a full up; 0015 (Phase 12) adds 'calorie-adjust' at its band.
     expect(await enumLabels(client, 'today_action_kind')).toEqual([
-      'deload', 'injured-limitation', 'start-workout', 'eat-protein', 'eat-meal', 'progress-load', 'muscle-neglected', 'rest-day', 'celebrate-pr', 'log-weight',
+      'deload', 'injured-limitation', 'start-workout', 'eat-protein', 'eat-meal', 'progress-load', 'muscle-neglected', 'rest-day', 'calorie-adjust', 'celebrate-pr', 'log-weight',
     ]);
     expect(await enumLabels(client, 'action_basis')).toEqual(['logged', 'calculated', 'estimated']);
     expect(await enumLabels(client, 'action_target')).toEqual(['train', 'eat', 'progress', 'today']);
@@ -602,6 +663,7 @@ describeIfDb('migrations (real Postgres)', () => {
       `insert into recommendations (user_id, generated_for, kind, subject_key, rank, priority, basis, target, payload, engine_version, input_digest, headline, detail, content_hash)
        values ('${d!.id}', '2026-09-24', 'log-weight', '', 1, 45, 'calculated', 'progress', '{}'::jsonb, 'today-1', '${H}', 'h', 'd', '${H}')`,
     );
+    expect(await rollbackLastMigration(connectionString)).toBe('0015_progress');
     expect(await rollbackLastMigration(connectionString)).toBe('0014_deload_activations');
     expect(await rollbackLastMigration(connectionString)).toBe('0013_today');
     expect(await tableExists(client, 'recommendations')).toBe(false);
@@ -611,6 +673,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0012: four Phase 9 estimates corrected with provenance, only where still wrong; down restores them (Phase 10 Amendment B)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0015_progress');
     expect(await rollbackLastMigration(connectionString)).toBe('0014_deload_activations');
     expect(await rollbackLastMigration(connectionString)).toBe('0013_today');
     expect(await rollbackLastMigration(connectionString)).toBe('0012_mess_estimate_corrections');
@@ -647,6 +710,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await expect(client`insert into mess_dish_nutrition_revisions (dish_slug, reason, previous, current) values ('curd-rice', ' ', '{}', '{}')`).rejects.toThrow(/revisions_reason/);
 
     // Down puts the recorded previous values back and drops the provenance table.
+    expect(await rollbackLastMigration(connectionString)).toBe('0015_progress');
     expect(await rollbackLastMigration(connectionString)).toBe('0014_deload_activations');
     expect(await rollbackLastMigration(connectionString)).toBe('0013_today');
     expect(await rollbackLastMigration(connectionString)).toBe('0012_mess_estimate_corrections');
@@ -712,7 +776,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'uid-dup'`;
   });
 
-  it('down removes 0014 (deload activations), 0013 (TODAY), 0012 (restoring the corrected estimates), 0011 (rebuilding food_entry_method; mess logs and meals go, the day cache is rebuilt), 0010, 0009, 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+  it('down removes 0015 (progress), 0014 (deload activations), 0013 (TODAY), 0012 (restoring the corrected estimates), 0011 (rebuilding food_entry_method; mess logs and meals go, the day cache is rebuilt), 0010, 0009, 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
     // Data that only 0011 can hold, next to data 0010 keeps.
     await client`insert into users (firebase_uid) values ('mig-down')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-down'`;
@@ -731,6 +795,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Mess lunch', '[{"kind":"mess","dishSlug":"dal","name":"Dal","servings":1}]'::jsonb)`;
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Plain', '[{"kind":"quick-add","name":"X","kcal":1,"proteinG":0,"carbG":0,"fatG":0,"fibreG":null}]'::jsonb)`;
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0015_progress');
     expect(await rollbackLastMigration(connectionString)).toBe('0014_deload_activations');
     expect(await rollbackLastMigration(connectionString)).toBe('0013_today');
     expect(await tableExists(client, 'recommendations')).toBe(false);

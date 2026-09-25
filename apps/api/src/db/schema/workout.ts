@@ -150,6 +150,8 @@ export const exercisePrs = pgTable(
   },
   (t) => [
     index('exercise_prs_user_exercise_idx').on(t.userId, t.exerciseId, t.achievedAt),
+    // Phase 12: the Progress summary lists a window's records across all lifts.
+    index('exercise_prs_user_achieved_idx').on(t.userId, t.achievedAt),
     uniqueIndex('exercise_prs_set_type').on(t.setLogId, t.prType),
   ],
 );
