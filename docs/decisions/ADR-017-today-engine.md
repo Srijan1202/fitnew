@@ -1,7 +1,7 @@
 # ADR-017 — TODAY: one server engine over the full UserModel, immutable persisted actions, product events, and a bounded device remainder
 
-**Status** PROPOSED — owner decisions D1–D19 approved 2026-09-24; plan points P1–P7 approved; the core, API and API-correction gates approved. Becomes ACCEPTED with Phase 11's acceptance (S24 manual checks pending). See the amendments at the end.
-**Date** 2026-09-24
+**Status** ACCEPTED — owner decisions D1–D19 approved 2026-09-24; plan points P1–P7, and the core, API and API-correction gates approved. Phase 11 was accepted on 2026-09-25 after the S24 manual acceptance passed 13/13. The implementation accepted is the one described here together with the "Amendments during implementation" at the end, which take precedence where they differ from the decisions above (notably Decision 7's offline wording; see Amendment 6).
+**Date** 2026-09-24 (accepted 2026-09-25)
 **Phase** 11
 **Affects**
 - MASTER-SPEC: §16 (the TODAY engine and the device split), §9.2 (`recommendations`, `recommendation_events`), §10.1 (`/today`), §26.2 (personas), §31 Phase 11, §38 (on acceptance only).

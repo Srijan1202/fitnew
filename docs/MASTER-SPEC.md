@@ -1706,7 +1706,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 **Phase 10** — [x] plate recommender wired (a meal, not a dish — ADR-016) · [x] carb/fat/variety/budget/timing scoring (budget deferred: no price data — ADR-015) · [x] thali UI · [x] log-this-plate · [x] **veg safety test** · [x] allergy filter test · [x] honest shortfall test
 
-**Phase 11** — [ ] `UserModel` assembled · [ ] TODAY engine wired · [ ] recommendation persistence · [ ] **event tracking** · [ ] TODAY screen · [ ] all persona fixtures snapshotted
+**Phase 11** — [x] `UserModel` assembled · [x] TODAY engine wired · [x] recommendation persistence · [x] **event tracking** · [x] TODAY screen · [x] all persona fixtures snapshotted (the 11 TODAY personas; `low-readiness` waits for Phase 13 — ADR-017)
 
 **Phase 12** — [ ] body tables · [ ] trend on read · [ ] measurements · [ ] photo signed URLs · [ ] PROGRESS screen · [ ] **no "since yesterday" anywhere** · [ ] rebuild-derived script
 

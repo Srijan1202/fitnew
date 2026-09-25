@@ -1,8 +1,37 @@
-## PHASE 11 — TODAY — IMPLEMENTATION COMPLETE, S24 ACCEPTANCE PENDING
+## PHASE 11 — TODAY — ACCEPTED AND FROZEN
 
-**Date** 2026-09-25 · **Branch** `phase-11` from `main` at `2067b89` (the accepted Phase 10, fast-forwarded per D19) · **not merged**
+**Date** 2026-09-25 · **Branch** `phase-11` from `main` at `2067b89` (the accepted Phase 10, fast-forwarded per D19) · **not merged** (merge only on the owner's instruction)
 
-**Status:** every implementation gate the owner approved is complete, and every automated gate passes locally. **The S24 manual acceptance has NOT been performed:** no device was attached to this PC over adb during the implementation session, and the checks need a person with the phone. So Phase 11 is **not accepted**, the §38 Phase 11 boxes are **not ticked**, and `phase-11` is **not frozen**. The APK and the LAN API are built and ready for the checklist below.
+**Status:** **ACCEPTED AND FROZEN** by the owner on 2026-09-25, after the S24 manual acceptance passed **13/13**. The §38 Phase 11 boxes are ticked. `phase-11` is **not merged** into `main`; `main` stays at the accepted Phase 10 commit `2067b89`.
+
+History: the report was first written (at `c2eedd8`) before the S24 run, while no device was attached to this PC. The owner then ran the 13 checks on the S24 against the LAN API and the Phase 11 APK, and reported all passing. The network changed during the run (the PC's address moved), which was handled on the owner's side without any code change. No defect was found, so nothing changed after `c2eedd8`.
+
+### ACCEPTANCE AND CLOSEOUT (2026-09-25)
+
+- **S24 manual acceptance:** **13/13 PASS** (owner, Samsung Galaxy S24), covering the 13 scenarios in the table below.
+- **Accepted implementation:**
+  - Code head: **`1b6e402`** (the mobile commit; everything before it in the list below is the rest of Phase 11).
+  - `c2eedd8` and the closeout commit are documentation only.
+- **Accepted build:**
+  - The Phase 11 debug APK and the LAN API container, both from `phase-11`, with migrations 0013 and 0014 applied to the dev database. The owner verified both during the manual run.
+  - The APK compiles in the API address of the network it is used on. `.\tool\alpha.ps1` rebuilds it for the current address; the code is the same.
+- **Automated results at the accepted code** (all passing, local):
+  - suites: core **823**, contracts **71**, API **421** (28 files), Flutter **581**;
+  - TypeScript typecheck, ESLint (api, contracts), API build;
+  - `dart analyze --fatal-infos`, custom_lint, `dart format`;
+  - the final gates were re-run before the closeout commit (below).
+- **Final gates (closeout, 2026-09-25):** all passed with no source change.
+  - TypeScript: typecheck, ESLint and the API build pass; core 823, contracts 71, API 421.
+  - Dart: `dart analyze --fatal-infos`, custom_lint and `dart format` pass.
+  - Flutter: **581/581**, on the second full run.
+- **The first full Flutter run failed one test**, a known pre-existing flake (not a Phase 11 defect):
+  - The test is `automatic_sync_test.dart` › "a session this phone does not know (an orphan) still parks and surfaces" (Phase 6.6).
+  - It ends as soon as an entry parks, while the workout SyncEngine may still be mid-drain; its tearDown then closes the database under it ("This database has already been closed").
+  - Measured under the same load, running the two builds alternately, 12 runs each: accepted Phase 10 `2067b89` failed 2 in 12; `phase-11` failed 1 in 12.
+  - Reverting Phase 11's only test-database change did not change the rate.
+  - It was not fixed here: the closeout adds no code change to accepted work. The fix (the test's tearDown should wait for the engine) is for a later, owner-approved change.
+- **GitHub CI:** not independently verified from this PC (no `gh` CLI).
+- **Frozen:** no further Phase 11 code. Any later change is a new phase or an explicit owner-approved amendment.
 
 **Commits**
 - `a91456d` — plan and ADR-017 (owner D1–D19; P1–P7 for review; no code)
@@ -14,7 +43,8 @@
 - `96aa3de` — API corrections: exact `clientEventId` replay vs 409 collision, the deterministic event order, deload evidence
 - `67e4846` — delayed deload evidence: migration 0014 `deload_activations` (trigger on `programs`)
 - `1b6e402` — mobile: TODAY on Home, the separate event queue, tests
-- plus the docs commit with this report and the ADR-017 amendments
+- `c2eedd8` — this report (pre-acceptance) and the ADR-017 amendments
+- plus the closeout commit: this report finalised, ADR-017 accepted, MASTER-SPEC §38 Phase 11 ticked
 
 **Decision record:** [plan](../phase-plans/phase-11-plan.md) (D1–D19), [ADR-017](../decisions/ADR-017-today-engine.md) with its "Amendments during implementation" (P1–P7, Q1, Q2, the event order, 0014, D8 as amended, the queue as built).
 
@@ -113,7 +143,7 @@
   - the v2→v3 upgrade keeping queued workout and food work;
   - 360×640 and S24 (412×915) at 100 % and 200 % text.
 
-**Performance:** `GET /v1/today` p50 60–90 ms, p95 88–145 ms across runs (40 requests each) for a training user with history, targets and logs (limit 300 ms).
+**Performance:** `GET /v1/today` p50 60–176 ms, p95 88–234 ms across runs (40 requests each; the highest in the final closeout run, on a busy PC) for a training user with history, targets and logs (limit 300 ms).
 
 **GitHub CI:** **not independently verified** — the `gh` CLI is not installed on this PC, so the workflow results for `phase-11` could not be read here.
 
@@ -127,9 +157,9 @@
   - 10.52.198.11 is the PC on the S24 hotspot. If the PC is on another network, rebuild with the current address.
 - **Install:** `adb install -r apps/mobile/build/app/outputs/flutter-apk/app-debug.apk` (or `.\tool\alpha.ps1 -ApiHostOverride <address> -Install`).
 
-### S24 MANUAL ACCEPTANCE — NOT YET RUN
+### S24 MANUAL ACCEPTANCE — PASSED 13/13 (owner, Samsung Galaxy S24, 2026-09-25)
 
-Each check needs the owner on the S24. Record PASS/FAIL per line. If one fails, it gets fixed with a regression test, the APK is rebuilt and the check is rerun.
+Run by the owner on the S24 against the LAN API and the Phase 11 APK. The steps and setup notes below are the ones the checks were run from.
 
 **Setup notes (dev database):**
 - **Limitations** have no editor in the app yet. For check 2, add one on a body part that contraindicates a lift on today's session, e.g.:
@@ -147,26 +177,26 @@ Each check needs the owner on the S24. Record PASS/FAIL per line. If one fails, 
 
 | # | Scenario | What to check | Result |
 |---|---|---|---|
-| 1 | Training day | TODAY loads; the start card shows; tap it (why sheet) → Start workout → the session opens → finish it; the server records shown, opened, accepted, completed | pending |
-| 2 | Injured limitation | With the limitation set: a "TRAIN · LIMITATION" card names the lift and its swap; no progress-load card for that lift; open / See the swap → Training | pending |
-| 3 | Progress load | After a session at the top of the range: the progress card names the lift and the next load; open → Training; complete a session containing it → completed | pending |
-| 4 | Nutrition | Protein and meal cards follow the ranges; none from 22:00 local; the card opens MESS (or Log food); logging that meal → completed | pending |
-| 5 | Rest day | The rest-day card (next session, targets); accept or Not today; never completed | pending |
-| 6 | Deload | Where practical: the deload card; accept → activate the week in Training → completed; delayed path per the API suite | pending |
-| 7 | PR | After a record today: the RECORD card; opens the summary; informational (never completed) | pending |
-| 8 | Weight | The log-weight card → Personal details → save a weight → completed; the card leaves | pending |
-| 9 | Event persistence | Close and reopen: no second `shown`, no duplicate events (check `recommendation_events`) | pending |
-| 10 | Offline | Airplane mode: today's cached plan with the Offline line; tap Not today (queued); kill and reopen; network back → it uploads once | pending |
-| 11 | Dismissal | Not today → the card goes and does not come back that local day, even after refresh | pending |
-| 12 | Cap | Never more than four cards | pending |
-| 13 | Server/device split | No done, volume or "More for you"; no forbidden kinds; sleep, steps and Health Connect cards still appear when their data says so | pending |
+| 1 | Training day | TODAY loads; the start card shows; tap it (why sheet) → Start workout → the session opens → finish it; the server records shown, opened, accepted, completed | **PASS** |
+| 2 | Injured limitation | With the limitation set: a "TRAIN · LIMITATION" card names the lift and its swap; no progress-load card for that lift; open / See the swap → Training | **PASS** |
+| 3 | Progress load | After a session at the top of the range: the progress card names the lift and the next load; open → Training; complete a session containing it → completed | **PASS** |
+| 4 | Nutrition | Protein and meal cards follow the ranges; none from 22:00 local; the card opens MESS (or Log food); logging that meal → completed | **PASS** |
+| 5 | Rest day | The rest-day card (next session, targets); accept or Not today; never completed | **PASS** |
+| 6 | Deload | Where practical: the deload card; accept → activate the week in Training → completed; delayed path per the API suite | **PASS** |
+| 7 | PR | After a record today: the RECORD card; opens the summary; informational (never completed) | **PASS** |
+| 8 | Weight | The log-weight card → Personal details → save a weight → completed; the card leaves | **PASS** |
+| 9 | Event persistence | Close and reopen: no second `shown`, no duplicate events (check `recommendation_events`) | **PASS** |
+| 10 | Offline | Airplane mode: today's cached plan with the Offline line; tap Not today (queued); kill and reopen; network back → it uploads once | **PASS** |
+| 11 | Dismissal | Not today → the card goes and does not come back that local day, even after refresh | **PASS** |
+| 12 | Cap | Never more than four cards | **PASS** |
+| 13 | Server/device split | No done, volume or "More for you"; no forbidden kinds; sleep, steps and Health Connect cards still appear when their data says so | **PASS** |
 
 A useful query while checking:
 ```
 docker exec fitos-postgres psql -U fitos -d fitos -c "select r.kind, e.event, e.occurred_at, e.received_at from recommendation_events e join recommendations r on r.id = e.recommendation_id order by e.received_at desc limit 20"
 ```
 
-### DEVIATIONS AND OPEN POINTS
+### ACCEPTED DEVIATIONS
 
 1. **`after-completed` is unreachable** since Q2. Core checks `accepted-and-dismissed` first, and a completed action is always accepted. It is still a 422; core is unchanged.
 2. **"Materially different" `occurredAt` means any different instant** (the same instant in another offset is an exact replay).
@@ -177,3 +207,17 @@ docker exec fitos-postgres psql -U fitos -d fitos -c "select r.kind, e.event, e.
 7. **Limitations have no editor in the app** (a pre-existing gap, not Phase 11 scope); S24 check 2 needs the SQL fixture above.
 8. **Tests changed for P6:** the Phase 6.5 Home engine tests for the rules the server now owns were replaced by a test that they no longer fire on the device, plus merge tests. The Phase 6.5 Home screen tests now drive the server start card. The Phase 8 drift-upgrade test checks the current schema version instead of the literal 2.
 9. **The in-memory test database closes Drift streams synchronously** (a test-only factory), so widget tests that mount Home with the ledger stream do not leave a pending timer.
+
+### DEFERRED / OUT OF SCOPE (unchanged by Phase 11)
+
+- **Phase 12:** body tables, trends, `calorie-adjust`.
+- **Phase 13:** readiness / recovery (`low-readiness`, and its persona).
+- **Phase 14:** TODAY in the AI context and AI wording (D14). No LLM chooses or words an action.
+- **Phase 15:** notifications.
+- **Deferred decisions and gaps:**
+  - D18 "don't suggest this" (per-kind opt-out);
+  - budget (no price data);
+  - saving or bookmarking mess plates (ADR-015);
+  - Firebase Analytics (D15: events are product records, not analytics);
+  - a limitations editor in the app (a pre-existing gap; limitations come from existing data).
+- **Not built as kinds (as decided):** `hydrate`, server-side `add-steps`, `resume` as a server kind, `workout-done`, `volume-ceiling`.
