@@ -347,7 +347,7 @@ Everything else in your preferred stack is kept: Cloud Run, Firebase Auth, FCM, 
 |---|---|---|
 | `body_metrics` | `id`, `user_id`, `measured_on date`, `weight_kg`, `source` | UNIQUE `(user_id, measured_on)`. Trend is **derived, never stored**. |
 | `body_measurements` | `id`, `user_id`, `measured_on`, `site`, `value_cm` | waist/chest/arm/thigh/hip |
-| `progress_photos` | `id`, `user_id`, `taken_on`, `storage_path`, `pose` | Path only. Bytes in Cloud Storage. |
+| `progress_photos` | `id`, `user_id`, `taken_on`, `storage_path`, `pose` | Path only. Bytes in Cloud Storage. `AMENDED 2026-09-25 (Phase 12, ADR-018, owner D3)`: **deferred** — needs the private Cloud Storage bucket and signed URLs; not built in Phase 12 |
 
 **Training**
 
@@ -418,7 +418,7 @@ CREATE UNIQUE INDEX one_active_goal ON user_goals (user_id) WHERE ended_at IS NU
 
 `DECISION` — these are **caches** and must be rebuildable by a script from source rows: `muscle_volume_weekly`, `daily_nutrition`, `exercise_prs`. (Phase 9: mess menus are not cached in tables; they are parsed from `mess_menu_snapshots` on read — ADR-014.) Trend weight is **never stored** — it is computed from `body_metrics` on read, so changing the smoothing constant doesn't require a backfill.
 
-Ship `scripts/rebuild-derived.ts` in Phase 12 and run it in CI against seed data.
+Ship `scripts/rebuild-derived.ts` in Phase 12 and run it in CI against seed data. `AMENDED 2026-09-25 (Phase 12, ADR-018, owner D15)`: it lives at `apps/api/src/db/rebuild-derived.ts` (`pnpm --filter @fitos/api db:rebuild-derived`) beside the other database scripts, because `scripts/` is not a workspace package; CI runs it on the seeded image.
 
 ---
 
@@ -844,7 +844,7 @@ Return the best available plate **and say it falls short**. Do not inflate estim
 | 72 | `progress-load` | Load increase due today |
 | 68 | `muscle-neglected` | Muscle untrained 6+ days |
 | 60 | `rest-day` | No session scheduled |
-| 55 | `calorie-adjust` | Adjustment policy fired |
+| 55 | `calorie-adjust` | Adjustment policy fired (`AMENDED 2026-09-25`, Phase 12, ADR-018: delivered in engine `today-2`; advisory — accepting creates a new `nutrition_targets` row, dismissing changes nothing) |
 | 50 | `celebrate-pr` | PR set today |
 | 45 | `log-weight` | No weigh-in for 2+ days |
 | 40 | `add-steps` | <4000 steps, non-training day |
@@ -1433,6 +1433,12 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 **Tests:** EWMA against known series · **no weekly rate before 10 days** · adherence maths · derived rebuild reproduces cached values exactly.
 **Acceptance:** trend is the headline everywhere · **no "since yesterday" figure exists anywhere in the UI** · photos private and never AI-processed.
 **Manual:** enter 30 days of noisy weights; confirm the trend is smooth and the copy explains fluctuation.
+`AMENDED 2026-09-25 (Phase 12 plan, ADR-018; owner D1–D15)`:
+- **UI:** the PROGRESS screen is the fifth tab, **Progress** (`/progress`, header "Progress & Recovery"), replacing the Market placeholder. Its Recovery part is information only: the phone's Health Connect sleep and resting heart rate (no score); recovery logging and readiness stay Phase 13.
+- **Photos:** deferred (private bucket + signed URLs); `POST /progress/photo` and `progress_photos` are not built.
+- **Also in Phase 12:** `calorie-adjust` (the Phase 11 deferral), engine `today-2`.
+- **Summary windows:** 30 and 90 days. **Weight entry** (`POST /progress/weight`): up to 30 days back, never ahead, one per local day; it never recalculates the targets.
+- **Adherence:** over logged days only, against the target in effect that day (protein high end ≥ target; kcal range overlapping ±10 %). **Consistency:** completed sessions per ISO week against the programme's planned days.
 
 ---
 
