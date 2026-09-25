@@ -7,6 +7,7 @@ import 'package:fitos/features/health/domain/entities/health.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:fitos/features/profile/presentation/screens/personal_details_screen.dart';
 import 'package:fitos/features/profile/presentation/screens/profile_screen.dart';
+import 'package:fitos/features/progress/domain/progress.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,6 +15,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../support/fake_health_provider.dart';
 import '../../support/fake_profile_repository.dart';
+import '../../support/fake_progress_api.dart';
 import '../../support/fake_workout_api.dart';
 import '../../support/workout_overrides.dart';
 
@@ -292,5 +294,88 @@ void main() {
     await tester.tap(link);
     await tester.pumpAndSettle();
     expect(find.text('Personal details'), findsOneWidget);
+  });
+
+  group(
+      'Phase 12 (§13.2): Profile shows the trend weight, the raw reading small',
+      () {
+    Future<void> openProfile(
+      WidgetTester tester,
+      FakeProgressApi progress,
+    ) async {
+      phone(tester);
+      final router = GoRouter(
+        initialLocation: Routes.profile,
+        routes: [
+          GoRoute(
+            path: Routes.profile,
+            builder: (_, __) => const ProfileScreen(),
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sessionUserIdProvider.overrideWithValue('user-1'),
+            profileRepositoryProvider.overrideWithValue(profile),
+            ...workoutOverrides(db, FakeWorkoutApi(), progress: progress),
+            ...healthOverrides(health),
+          ],
+          child:
+              MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    String text(WidgetTester tester, String key) =>
+        tester.widget<Text>(find.byKey(ValueKey(key))).data!;
+
+    testWidgets(
+        'the trend is the headline; the latest reading sits beneath, smaller',
+        (tester) async {
+      final progress = FakeProgressApi();
+      final empty = FakeProgressApi.empty(progress.today);
+      progress.summaries[ProgressWindow.d30] = ProgressSummary(
+        window: empty.window,
+        today: empty.today,
+        from: empty.from,
+        weight: const WeightProgress(
+          points: [WeightPoint(date: '2026-09-21', rawKg: 58, trendKg: 57.6)],
+          currentTrendKg: 57.6,
+          weeklyChangeKg: null,
+          daysOfData: 4,
+          isReliable: false,
+          windowChangeKg: null,
+          windowChangeDays: null,
+        ),
+        measurements: empty.measurements,
+        prs: empty.prs,
+        bestLifts: empty.bestLifts,
+        adherence: empty.adherence,
+        consistency: empty.consistency,
+      );
+      await openProfile(tester, progress);
+      expect(text(tester, 'profile.weight.trend'), '57.6 kg trend');
+      expect(text(tester, 'profile.weight.raw'), contains('Latest reading 58'));
+      final trend =
+          tester.getRect(find.byKey(const ValueKey('profile.weight.trend')));
+      final raw =
+          tester.getRect(find.byKey(const ValueKey('profile.weight.raw')));
+      expect(raw.top, greaterThanOrEqualTo(trend.bottom), reason: 'raw below');
+      expect(raw.height, lessThan(trend.height), reason: 'raw smaller');
+    });
+
+    testWidgets(
+        'without a trend yet it says so; the raw reading is never promoted',
+        (tester) async {
+      await openProfile(tester, FakeProgressApi());
+      expect(
+        text(tester, 'profile.weight.trend'),
+        'Trend after your next readings',
+      );
+      expect(text(tester, 'profile.weight.raw'), contains('Latest reading 58'));
+      expect(find.textContaining('58 kg trend'), findsNothing);
+    });
   });
 }
