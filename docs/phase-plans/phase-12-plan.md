@@ -1,6 +1,6 @@
 # Phase 12 — Progress & Recovery: implementation plan
 
-**Status** Approved by the owner (audit + decisions D1–D15, 2026-09-25) and implemented in one pass on `phase-12` from `2b7ece9`. Acceptance pending the S24 manual checks.
+**Status** Approved by the owner (audit + decisions D1–D15, 2026-09-25) and implemented in one pass on `phase-12` from `2b7ece9`. Accepted and frozen on 2026-09-25 (S24 manual checks passed); the UI polish is deferred.
 **Decision record** [ADR-018](../decisions/ADR-018-progress.md).
 
 ## 1. Scope

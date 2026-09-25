@@ -1,6 +1,6 @@
 # ADR-018 — Progress & Recovery: read-time progress over the user's own records, calorie-adjust as an advisory TODAY action, device-only recovery context
 
-**Status** PROPOSED — the owner approved the Phase 12 audit and its decisions (2026-09-25). Becomes ACCEPTED with Phase 12's acceptance (S24 manual checks pending).
+**Status** ACCEPTED — 2026-09-25, with Phase 12's acceptance (S24 manual checks passed). The screen's visual polish is deferred to a separate pass after Phase 13.
 **Date** 2026-09-25
 **Phase** 12
 **Affects**

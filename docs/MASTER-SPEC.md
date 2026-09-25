@@ -1714,7 +1714,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 **Phase 11** — [x] `UserModel` assembled · [x] TODAY engine wired · [x] recommendation persistence · [x] **event tracking** · [x] TODAY screen · [x] all persona fixtures snapshotted (the 11 TODAY personas; `low-readiness` waits for Phase 13 — ADR-017)
 
-**Phase 12** — [ ] body tables · [ ] trend on read · [ ] measurements · [ ] photo signed URLs · [ ] PROGRESS screen · [ ] **no "since yesterday" anywhere** · [ ] rebuild-derived script
+**Phase 12** — [x] body tables · [x] trend on read · [x] measurements · [ ] photo signed URLs (deferred — ADR-018 D3) · [x] PROGRESS screen (visual polish deferred) · [x] **no "since yesterday" anywhere** · [x] rebuild-derived script
 
 **Phase 13** — [ ] recovery table · [ ] readiness score · [ ] `UserModel` extended · [ ] recovery card · [ ] advisory-only test
 

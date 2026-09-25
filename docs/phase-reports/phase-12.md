@@ -1,12 +1,19 @@
-## PHASE 12 — PROGRESS & RECOVERY — IMPLEMENTATION COMPLETE, S24 ACCEPTANCE PENDING
+## PHASE 12 — PROGRESS & RECOVERY — ACCEPTED AND FROZEN
 
-**Date** 2026-09-25 · **Branch** `phase-12` from `main` at `2b7ece9` (the accepted Phase 11) · **not merged** (merge only after acceptance and the owner's explicit approval)
+**Date** 2026-09-25 · **Branch** `phase-12` from `main` at `2b7ece9` (the accepted Phase 11) · **not merged** (merge only on the owner's explicit instruction)
 
-**Status:** **implementation complete; NOT accepted, NOT frozen.**
-- Every automated gate passes locally.
-- The LAN API and the APK are built.
-- The 17-item S24 manual acceptance has **not** been run: no device was attached to this PC.
-- §38 Phase 12 is not ticked, and ADR-018 stays PROPOSED until the owner reports the S24 result.
+**Status:** **ACCEPTED AND FROZEN** by the owner on 2026-09-25: functionality accepted, all automated tests passed, S24 manual testing passed. The §38 Phase 12 boxes are ticked (photos stay deferred, D3) and ADR-018 is ACCEPTED. `phase-12` is **not merged**; `main` stays at `2b7ece9`.
+
+History: this report was first written (at `78992db`) before the S24 run. The owner then ran the manual checks on the S24 against the LAN API and the Phase 12 APK (rebuilt for the PC's current address, same code) and reported them passing. No defect was found, so no code changed after `c76d439`.
+
+### ACCEPTANCE AND CLOSEOUT (2026-09-25)
+
+- **S24 manual acceptance:** **PASS** (owner, Samsung Galaxy S24) — items 1–16 below; item 17 (photos) not applicable.
+- **Accepted implementation:** code head **`c76d439`**; `95d99c2` adds two tests; `78992db` and the closeout commit are documentation only.
+- **Automated results at the accepted code:** core **842**, contracts **75**, API **438** (30 files), Flutter **607**; typecheck, ESLint (api, contracts), API build, `dart analyze --fatal-infos`, custom_lint, `dart format`.
+- **Known debt, deferred (owner, 2026-09-25):** the Progress & Recovery screen works but is **visually poor**. **Phase 12 Progress & Recovery UI requires a later visual redesign/polish pass.** It is not part of Phase 13; it is a separate cleanup effort after Phase 13 is accepted and frozen.
+- **GitHub CI:** not independently verified from this PC (no `gh` CLI).
+- **Frozen:** no further Phase 12 code. Later changes are a new phase or an explicit owner-approved amendment.
 
 **Commits**
 - `7a8be3e` — core: `progress/summary.ts` (window maths on read), TODAY `today-2` with `calorie-adjust` at band 55, `calorieAdjustmentFrom`, `adjustTargets`, evidence `target-adjusted`; Phase 11 vocabulary tests and persona snapshots updated for the new kind and version only
@@ -135,33 +142,33 @@
 - **Install:** `adb install -r apps/mobile/build/app/outputs/flutter-apk/app-debug.apk` (or `.\tool\alpha.ps1 -ApiHostOverride <address> -Install`).
 - **Existing data:** the dev database keeps its users. Engine `today-2` changes every TODAY content hash once, so the first GET after the upgrade stores new action rows; old rows are kept.
 
-### S24 MANUAL ACCEPTANCE — PENDING (17 items)
+### S24 MANUAL ACCEPTANCE — PASSED (owner, Samsung Galaxy S24, 2026-09-25)
 
 | # | Check | Result |
 |---|---|---|
-| 1 | Progress replaces Market; back navigation works | pending |
-| 2 | 30 days of noisy weights produce a smooth trend | pending |
-| 3 | Raw points are visually de-emphasised | pending |
-| 4 | The fluctuation explanation appears | pending |
-| 5 | The weekly rate stays hidden before the 10-day gate | pending |
-| 6 | Weight save and correction upsert correctly | pending |
-| 7 | TODAY log-weight completion still works | pending |
-| 8 | Measurements save; ≥ 7-day changes display correctly | pending |
-| 9 | PR history and estimated 1RM appear | pending |
-| 10 | The heatmap matches Volume | pending |
-| 11 | Adherence and consistency match hand calculations | pending |
-| 12 | Health Connect sleep / resting heart rate are device-only; no readiness score | pending |
-| 13 | The offline cached summary is labelled; writes fail clearly | pending |
-| 14 | No forbidden "since yesterday" UI remains | pending |
-| 15 | TODAY, MESS, food logging and workout sync regressions pass | pending |
-| 16 | Calorie-adjust: accepting creates the new target; dismissing changes nothing | pending |
+| 1 | Progress replaces Market; back navigation works | PASS |
+| 2 | 30 days of noisy weights produce a smooth trend | PASS |
+| 3 | Raw points are visually de-emphasised | PASS |
+| 4 | The fluctuation explanation appears | PASS |
+| 5 | The weekly rate stays hidden before the 10-day gate | PASS |
+| 6 | Weight save and correction upsert correctly | PASS |
+| 7 | TODAY log-weight completion still works | PASS |
+| 8 | Measurements save; ≥ 7-day changes display correctly | PASS |
+| 9 | PR history and estimated 1RM appear | PASS |
+| 10 | The heatmap matches Volume | PASS |
+| 11 | Adherence and consistency match hand calculations | PASS |
+| 12 | Health Connect sleep / resting heart rate are device-only; no readiness score | PASS |
+| 13 | The offline cached summary is labelled; writes fail clearly | PASS |
+| 14 | No forbidden "since yesterday" UI remains | PASS |
+| 15 | TODAY, MESS, food logging and workout sync regressions pass | PASS |
+| 16 | Calorie-adjust: accepting creates the new target; dismissing changes nothing | PASS |
 | 17 | Photos | not applicable (deferred, D3) |
 
 **Notes for the run:**
 - **Item 2:** the entry sheet allows 30 days back. Add a reading for each past day, or use a user who already has a history.
 - **Item 16:** needs a reliable trend (≥ 10 days) that is off pace for the goal, and no `calorie-adjust` target in the last 7 days. Otherwise the card correctly does not appear.
 
-### ACCEPTED-PENDING DEVIATIONS AND NOTES
+### ACCEPTED DEVIATIONS AND NOTES
 
 - **Photos deferred (D3):** they need a private Cloud Storage bucket and signed URLs, a GCP change outside this phase. MASTER-SPEC §9.2 and §31 are amended.
 - **`rebuild-derived` location (D15):** `apps/api/src/db/`, not `scripts/`, which is not a workspace package. MASTER-SPEC §9.4 is amended.
@@ -169,6 +176,8 @@
 - **Phase 6.6 flake (D14):** `automatic_sync_test.dart` "orphan still parks" fails intermittently on the accepted baseline as well. It is recorded in the Phase 11 report and not fixed here; it did not fail in the Phase 12 runs.
 
 ### DEFERRED / OUT OF SCOPE
+
+- **The Progress & Recovery UI polish** (visual redesign; owner, at acceptance) — after Phase 13.
 
 - Phase 13 recovery: logging, the readiness score, `recovery_logs`, `/recovery/*`, TODAY recovery fields, `low-readiness`.
 - Photos; AI/Gemini; notifications; export/delete; badges, streaks, a social feed; medical diagnosis; WHOOP/Oura; a limitations editor; a chart library.
