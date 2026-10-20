@@ -12,7 +12,7 @@ import {
   jsonSchemaTransform,
 } from 'fastify-type-provider-zod';
 
-import { isHostedEnvironment, parseTrustProxy, type Env } from './lib/env.js';
+import { fastifyTrustProxy, isHostedEnvironment, parseTrustProxy, type Env } from './lib/env.js';
 import type { DatabaseHandle } from './db/client.js';
 import { loggerOptions } from './lib/logger.js';
 import { FirebaseTokenVerifier, type TokenVerifier } from './lib/token-verifier.js';
@@ -61,7 +61,7 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
     // without trusting it the rate limiter would see one proxy IP for every
     // user. How far to trust it is TRUST_PROXY (Phase 6.7): a hop count when
     // hosted, because the first entry is whatever the client sent.
-    trustProxy: parseTrustProxy(env.TRUST_PROXY),
+    trustProxy: fastifyTrustProxy(parseTrustProxy(env.TRUST_PROXY)),
     disableRequestLogging: false,
   });
 
@@ -102,11 +102,16 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
     await app.register(swaggerUi, { routePrefix: '/docs' });
   }
 
-  // §10: default 120 req/min/user. /auth/session tightens this to 10/min/IP on
-  // its own routes; AI routes tighten further in Phase 14.
+  // §10: default 120 req/min PER USER. Counted after authentication (the
+  // preHandler hook), keyed by the verified user — so a hostel's shared NAT
+  // address is not one bucket for everyone — and by IP when there is no user
+  // (public routes). Unverifiable tokens are refused (401) before they count.
+  // /auth/session keeps 10/min/IP on its own routes; AI 20/min/user.
   await app.register(rateLimit, {
-    max: 120,
+    max: env.RATE_LIMIT_PER_MINUTE,
     timeWindow: '1 minute',
+    hook: 'preHandler',
+    keyGenerator: (request) => (request.userId !== null ? `user:${request.userId}` : `ip:${request.ip}`),
   });
 
   await app.register(

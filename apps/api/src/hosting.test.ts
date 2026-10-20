@@ -115,6 +115,41 @@ describe('TRUST_PROXY', () => {
   });
 });
 
+describe('rate limit: 120/min per user, not per shared address (audit 2026-10-20)', () => {
+  async function twoUsers(): Promise<FastifyInstance> {
+    const verifier = new FakeTokenVerifier();
+    verifier.accept('tok-a', { uid: 'uid-a', email: 'a@vit.ac.in' });
+    verifier.accept('tok-b', { uid: 'uid-b', email: 'b@vit.ac.in' });
+    const target = await buildApp(testEnv(), {
+      database: stubDatabase('ok'),
+      tokenVerifier: verifier,
+      resolveUserId: async (uid) => `user-${uid}`,
+    });
+    target.get('/v1/__who', async (request) => ({ user: request.userId }));
+    return target;
+  }
+  const hostel = { 'x-forwarded-for': '10.20.30.40' };
+
+  it('two users behind one hostel address each get their own 120', async () => {
+    app = await twoUsers();
+    const hit = (token: string) => app!.inject({ method: 'GET', url: '/v1/__who', headers: { ...hostel, authorization: `Bearer ${token}` } });
+    for (let i = 0; i < 120; i += 1) expect((await hit('tok-a')).statusCode).toBe(200);
+    expect((await hit('tok-a')).statusCode).toBe(429);
+    const b = await hit('tok-b');
+    expect(b.statusCode).toBe(200);
+    expect(b.json()).toEqual({ user: 'user-uid-b' });
+  });
+
+  it('junk tokens are refused before they count, and cannot open fresh buckets', async () => {
+    app = await twoUsers();
+    for (let i = 0; i < 5; i += 1) {
+      const r = await app.inject({ method: 'GET', url: '/v1/__who', headers: { ...hostel, authorization: `Bearer junk-${i}` } });
+      expect(r.statusCode).toBe(401);
+      expect(r.headers['x-ratelimit-limit']).toBeUndefined();
+    }
+  });
+});
+
 describe('database unavailable → 503 UPSTREAM_UNAVAILABLE', () => {
   it('a protected route whose user lookup cannot reach Postgres answers 503, not 500', async () => {
     const verifier = new FakeTokenVerifier();

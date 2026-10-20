@@ -47,3 +47,21 @@ export function isDatabaseUnavailable(error: unknown): boolean {
   }
   return false;
 }
+
+/**
+ * A Postgres unique_violation (23505) and the constraint it names, wherever
+ * it sits in the wrapper chain — drizzle-orm 0.44+ wraps driver errors in a
+ * `DrizzleQueryError` whose `cause` is the PostgresError (audit 2026-10-20).
+ */
+export function uniqueViolationOf(error: unknown): { constraint: string } | null {
+  let current: unknown = error;
+  for (let depth = 0; depth < 5 && current !== null && typeof current === 'object'; depth += 1) {
+    const e = current as { code?: unknown; constraint_name?: unknown; constraint?: unknown; cause?: unknown };
+    if (e.code === '23505') {
+      const name = typeof e.constraint_name === 'string' ? e.constraint_name : typeof e.constraint === 'string' ? e.constraint : 'unknown';
+      return { constraint: name };
+    }
+    current = e.cause;
+  }
+  return null;
+}

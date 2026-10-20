@@ -11,6 +11,7 @@ import { and, asc, desc, eq, gte, inArray, isNull, lt, sql } from 'drizzle-orm';
 import type { Equipment, MuscleGroup, SessionStatus, SetType } from '@fitos/contracts';
 
 import type { DatabaseHandle } from '../../db/client.js';
+import { uniqueViolationOf } from '../../db/errors.js';
 import {
   exerciseAlternatives,
   exercisePrs,
@@ -94,11 +95,8 @@ export class UniqueViolation extends Error {
 }
 
 function asUnique(error: unknown): UniqueViolation | null {
-  const e = error as { code?: string; constraint_name?: string; constraint?: string } | null;
-  if (e !== null && typeof e === 'object' && e.code === '23505') {
-    return new UniqueViolation(e.constraint_name ?? e.constraint ?? 'unknown');
-  }
-  return null;
+  const u = uniqueViolationOf(error);
+  return u === null ? null : new UniqueViolation(u.constraint);
 }
 
 export class WorkoutRepository {

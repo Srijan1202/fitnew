@@ -22,6 +22,7 @@ export function testEnv(overrides: Partial<Env> = {}): Env {
     GEMINI_MODEL: 'gemini-3.6-flash',
     AI_TIMEOUT_MS: 5000,
     AI_MAX_OUTPUT_TOKENS: 512,
+    RATE_LIMIT_PER_MINUTE: 120,
     ...overrides,
   };
 }
@@ -53,9 +54,9 @@ export async function buildStubApp(dbBehaviour: 'ok' | 'down' = 'ok'): Promise<T
 }
 
 /** App on the real DATABASE_URL — for route integration tests. */
-export async function buildDbApp(connectionString: string): Promise<TestApp> {
+export async function buildDbApp(connectionString: string, overrides: Partial<Env> = {}): Promise<TestApp> {
   const verifier = new FakeTokenVerifier();
-  const app = await buildApp(testEnv({ DATABASE_URL: connectionString }), {
+  const app = await buildApp(testEnv({ ...overrides, DATABASE_URL: connectionString }), {
     database: createDatabase(connectionString),
     tokenVerifier: verifier,
   });

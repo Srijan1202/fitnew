@@ -7,7 +7,7 @@
  * valid Firebase ID token to exchange it for an app session, and to sign out.
  * That is the §11 flow — Firebase authenticates, we authorise.
  */
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 
@@ -19,7 +19,13 @@ import { createSessionRequestSchema, createSessionResponseSchema } from './schem
 import { AuthService } from './service.js';
 
 /** §10: /auth/session is 10/min/IP — stricter than the 120/min default. */
-const AUTH_RATE_LIMIT = { max: 10, timeWindow: '1 minute' } as const;
+/** 10/min per IP, counted before authentication (as since Phase 1), whatever the global key. */
+const AUTH_RATE_LIMIT = {
+  max: 10,
+  timeWindow: '1 minute',
+  hook: 'onRequest',
+  keyGenerator: (request: FastifyRequest): string => `ip:${request.ip}`,
+} as const;
 
 export async function authRoutes(app: FastifyInstance): Promise<void> {
   const service = new AuthService(new UsersRepository(app.database.db));

@@ -25,6 +25,15 @@ function trustProxyEntryValid(entry: string): boolean {
   return TRUST_PROXY_KEYWORDS.has(entry) || /^[0-9a-fA-F:.]+(\/\d{1,3})?$/.test(entry);
 }
 
+/**
+ * What Fastify takes. Its types (5.12) no longer list a hop count, so a count
+ * becomes the function proxy-addr builds from one: trust the first `n` hops
+ * from the server side (the same behaviour as the number).
+ */
+export function fastifyTrustProxy(t: TrustProxy): boolean | string[] | ((address: string, hop: number) => boolean) {
+  return typeof t === 'number' ? (_address: string, hop: number) => hop < t : t;
+}
+
 export function parseTrustProxy(raw: string | undefined): TrustProxy {
   if (raw === undefined) return true;
   const value = raw.trim();
@@ -50,6 +59,8 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'staging', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(8080),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+  // §10: requests per minute per user (per IP without one). 120 unless set.
+  RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(120),
   DATABASE_URL: z.string().url('DATABASE_URL must be a valid postgres connection string'),
 
   // Phase 1 — Firebase Admin. The project id is required; credentials are

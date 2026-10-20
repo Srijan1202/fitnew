@@ -23,6 +23,7 @@ const env: Env = {
   GEMINI_MODEL: 'gemini-3.6-flash',
   AI_TIMEOUT_MS: 5000,
   AI_MAX_OUTPUT_TOKENS: 512,
+  RATE_LIMIT_PER_MINUTE: 120,
 };
 
 const out = fileURLToPath(new URL('../../../../packages/contracts/openapi.json', import.meta.url));

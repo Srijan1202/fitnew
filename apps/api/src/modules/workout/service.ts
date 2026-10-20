@@ -36,6 +36,7 @@ import type {
   WorkoutSession,
 } from '@fitos/contracts';
 
+import { uniqueViolationOf } from '../../db/errors.js';
 import { AppError } from '../../lib/errors.js';
 import type { PlannedExerciseJoined, ProgramBundle, TrainingRepository } from '../training/repository.js';
 import type { LowReadinessSource } from '../recovery/readiness.js';
@@ -328,8 +329,7 @@ export class WorkoutService {
     try {
       await this.repo.insertSets(rows);
     } catch (error) {
-      const e = error as { code?: string; constraint_name?: string };
-      if (e?.code === '23505' && e.constraint_name === 'set_logs_live_position') {
+      if (uniqueViolationOf(error)?.constraint === 'set_logs_live_position') {
         throw new AppError('CONFLICT', 'A set already exists at that position; correct it instead of logging it twice.', [
           { path: 'sets', issue: 'position taken' },
         ]);

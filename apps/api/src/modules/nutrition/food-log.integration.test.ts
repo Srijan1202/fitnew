@@ -56,7 +56,9 @@ describeIfDb('/v1/nutrition logging (real Postgres, real food seed)', () => {
     await migrateUp(url);
     await seedFoods(url);
     sql = postgres(url, { max: 1 });
-    ({ app, verifier } = await buildDbApp(url));
+    // The latency test drives ~365 requests as ONE user within a minute — over
+    // the §10 per-user limit by design, so this app's limit is raised.
+    ({ app, verifier } = await buildDbApp(url, { RATE_LIMIT_PER_MINUTE: 1000 }));
     const rows = await sql<{ slug: string; id: string }[]>`select slug, id from foods where owner_user_id is null`;
     for (const r of rows) foodId.set(r.slug, r.id);
   });

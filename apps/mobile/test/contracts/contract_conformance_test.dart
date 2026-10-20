@@ -2066,7 +2066,16 @@ void main() {
     });
 
     /// A value of the documented type (enough to exercise the words).
-    Object? sample(String name, Map<String, dynamic> s) => switch (s['type']) {
+    // OpenAPI 3.1 writes a nullable as `type: [x, "null"]`; sample the non-null type.
+    Object? typeOf(Map<String, dynamic> s) => switch (s['type']) {
+          final List<dynamic> types => types.firstWhere(
+              (t) => t != 'null',
+              orElse: () => null,
+            ),
+          final other => other,
+        };
+
+    Object? sample(String name, Map<String, dynamic> s) => switch (typeOf(s)) {
           'boolean' => true,
           'number' || 'integer' => 2,
           'array' => ['knee'],

@@ -6,7 +6,7 @@
  * so a user-reported failure can be found in Cloud Logging.
  */
 import fp from 'fastify-plugin';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyError, FastifyInstance } from 'fastify';
 import { ZodError } from 'zod';
 import {
   hasZodFastifySchemaValidationErrors,
@@ -40,7 +40,7 @@ export default fp(
         .send(envelope('NOT_FOUND', `Route ${request.method} ${request.url} does not exist.`, request.id));
     });
 
-    app.setErrorHandler((error, request, reply) => {
+    app.setErrorHandler<FastifyError>((error, request, reply) => {
       if (error instanceof AppError) {
         request.log.warn({ code: error.code }, error.message);
         void reply.status(error.statusCode).send(
