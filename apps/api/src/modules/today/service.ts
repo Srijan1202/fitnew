@@ -15,11 +15,13 @@ import { summariseTrend } from '@fitos/core/nutrition/trend';
 import type { MealSlot } from '@fitos/core/mess/types';
 import { todayActions, todayClock, type PrType, type TrainingState, type UserModel } from '@fitos/core/recommend/engine';
 import { CLOCK_SKEW_MS, COMPLETION_EVIDENCE, checkEventTiming, checkTransition, type TodayEvent } from '@fitos/core/recommend/events';
-import { calorieAdjustmentFrom, trainingFromPlan, type PlannedExerciseFacts } from '@fitos/core/recommend/model';
+import { calorieAdjustmentFrom, recoveryState, trainingFromPlan, type PlannedExerciseFacts } from '@fitos/core/recommend/model';
+import { COMPOUND, type CatalogueExercise } from '@fitos/core/training/generator';
 
 import type { RecommendationEventRow, RecommendationRow } from '../../db/schema.js';
 import { AppError } from '../../lib/errors.js';
 import type { RecommendRepository } from '../mess/recommend-repository.js';
+import type { ReadinessAssembler } from '../recovery/readiness.js';
 import type { FoodLogRepository } from '../nutrition/log-repository.js';
 import type { TrainingRepository } from '../training/repository.js';
 import { isoDayOfWeek, type WorkoutService } from '../workout/service.js';
@@ -54,6 +56,8 @@ export class TodayService {
     private readonly training: TrainingRepository,
     private readonly logs: FoodLogRepository,
     private readonly slots: RecommendRepository,
+    /** Phase 13: today's readiness and the low run (§18). */
+    private readonly readiness: ReadinessAssembler,
     private readonly now: () => Date = () => new Date(),
   ) {}
 
@@ -62,7 +66,7 @@ export class TodayService {
     const timeZone = await this.logs.timezoneOf(userId);
     const { localDate, hourOfDay } = todayClock(now, timeZone);
 
-    const [day, inputs, program, targets, totals, loggedSlots, lastWeighIn, prs, dismissed, weights, lastAdjustment] = await Promise.all([
+    const [day, inputs, program, targets, totals, loggedSlots, lastWeighIn, prs, dismissed, weights, lastAdjustment, recovery] = await Promise.all([
       this.workout.today(userId),
       this.training.profileInputs(userId),
       this.training.activeProgram(userId),
@@ -75,6 +79,7 @@ export class TodayService {
       this.repo.dismissedOn(userId, localDate),
       this.repo.weights(userId),
       this.repo.lastAdjustmentOn(userId),
+      this.readiness.assess(userId, localDate, timeZone),
     ]);
 
     // Owner Q1: the facts go through core's `trainingFromPlan`, which keeps a
@@ -90,6 +95,7 @@ export class TodayService {
         progression: x.recommendation === null ? null : { action: x.recommendation.action, weightKg: x.recommendation.weightKg, repTarget: x.recommendation.repTarget },
         ruledOutBy: [...new Set((contraindications.get(x.exerciseId) ?? []).filter((p) => active.has(p)))],
         swap: alternative === null ? null : { exerciseId: alternative.exerciseId, exerciseName: alternative.name },
+        compound: COMPOUND.has(x.movementPattern as CatalogueExercise['movementPattern']),
       };
     });
 
@@ -149,6 +155,8 @@ export class TodayService {
         weighedToday: lastWeighIn === localDate,
         daysSinceWeighIn: lastWeighIn === null ? null : Math.max(0, daysBetween(lastWeighIn, localDate)),
       },
+      // Phase 13: readiness from today's check-in, computed on read (§18); advice only.
+      recovery: recoveryState(recovery.readiness, recovery.lowDays),
       dismissedToday: dismissed,
     };
     return { model, timeZone, trainingDate: day.date };

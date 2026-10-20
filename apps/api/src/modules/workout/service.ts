@@ -38,6 +38,7 @@ import type {
 
 import { AppError } from '../../lib/errors.js';
 import type { PlannedExerciseJoined, ProgramBundle, TrainingRepository } from '../training/repository.js';
+import type { LowReadinessSource } from '../recovery/readiness.js';
 import { ProgressionAssembler } from './progression.js';
 import {
   UniqueViolation,
@@ -102,8 +103,10 @@ export class WorkoutService {
   constructor(
     private readonly repo: WorkoutRepository,
     private readonly training: TrainingRepository,
+    /** Phase 13: the same low-readiness escalation everywhere the deload state is read. */
+    readiness: LowReadinessSource,
   ) {
-    this.progression = new ProgressionAssembler(repo, training);
+    this.progression = new ProgressionAssembler(repo, training, readiness);
   }
 
   /**
@@ -524,7 +527,7 @@ export class WorkoutService {
     // Phase 6: deload state, neglect, substitutions.
     const volumeSets = await this.progression.volumeSets(userId, date, tz);
     const leadPrior = program === null ? prior : await this.repo.priorWork(userId, [...new Set(program.exercises.map((x) => x.exerciseId))]);
-    const deload = await this.progression.deloadState(program, leadPrior, volumeSets, date, tz);
+    const deload = await this.progression.deloadState(userId, program, leadPrior, volumeSets, date, tz);
     const owned = ProgressionAssembler.owned(program);
     const { profile, limitations } = await this.training.profileInputs(userId);
     const substitutions = await this.progression.substitutions(
@@ -617,7 +620,7 @@ export class WorkoutService {
     const tz = await this.repo.userTimezone(userId);
     const today = localDate(new Date(), tz);
     const prior = await this.repo.priorWork(userId, [...new Set(program.exercises.map((x) => x.exerciseId))]);
-    const state = await this.progression.deloadState(program, prior, await this.progression.volumeSets(userId, today, tz), today, tz);
+    const state = await this.progression.deloadState(userId, program, prior, await this.progression.volumeSets(userId, today, tz), today, tz);
     if (state.state === 'active') return state;
     if (state.state !== 'offered') {
       throw new AppError('CONFLICT', 'No deload is on offer.', [{ path: 'deload', issue: state.state }]);

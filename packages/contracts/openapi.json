@@ -13213,7 +13213,8 @@
                           "type": "string",
                           "enum": [
                             "fatigue",
-                            "mrv"
+                            "mrv",
+                            "readiness"
                           ],
                           "nullable": true
                         },
@@ -23264,7 +23265,8 @@
                           "type": "string",
                           "enum": [
                             "fatigue",
-                            "mrv"
+                            "mrv",
+                            "readiness"
                           ],
                           "nullable": true
                         },
@@ -24055,7 +24057,8 @@
                       "type": "string",
                       "enum": [
                         "fatigue",
-                        "mrv"
+                        "mrv",
+                        "readiness"
                       ],
                       "nullable": true
                     },
@@ -24374,7 +24377,8 @@
                       "type": "string",
                       "enum": [
                         "fatigue",
-                        "mrv"
+                        "mrv",
+                        "readiness"
                       ],
                       "nullable": true
                     },
@@ -36480,6 +36484,7 @@
                               "deload",
                               "injured-limitation",
                               "start-workout",
+                              "low-readiness",
                               "eat-protein",
                               "eat-meal",
                               "progress-load",
@@ -36539,7 +36544,8 @@
                                         "type": "string",
                                         "enum": [
                                           "fatigue",
-                                          "mrv"
+                                          "mrv",
+                                          "readiness"
                                         ],
                                         "nullable": true
                                       }
@@ -36646,6 +36652,58 @@
                                       "sessionName",
                                       "exerciseCount",
                                       "minutes"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "values"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "code": {
+                                    "type": "string",
+                                    "enum": [
+                                      "readiness-low"
+                                    ]
+                                  },
+                                  "values": {
+                                    "type": "object",
+                                    "properties": {
+                                      "readiness": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 54
+                                      },
+                                      "band": {
+                                        "type": "string",
+                                        "enum": [
+                                          "reduce",
+                                          "rest"
+                                        ]
+                                      },
+                                      "accessories": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 200
+                                        }
+                                      },
+                                      "lowDays": {
+                                        "type": "integer",
+                                        "minimum": 0
+                                      }
+                                    },
+                                    "required": [
+                                      "readiness",
+                                      "band",
+                                      "accessories",
+                                      "lowDays"
                                     ],
                                     "additionalProperties": false
                                   }
@@ -36885,6 +36943,12 @@
                                         "type": "number",
                                         "minimum": 0,
                                         "nullable": true
+                                      },
+                                      "readiness": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 100,
+                                        "nullable": true
                                       }
                                     },
                                     "required": [
@@ -36892,7 +36956,8 @@
                                       "nextSessionName",
                                       "nextSessionDate",
                                       "kcalTarget",
-                                      "proteinTarget"
+                                      "proteinTarget",
+                                      "readiness"
                                     ],
                                     "additionalProperties": false
                                   }
@@ -38495,6 +38560,632 @@
                   },
                   "required": [
                     "measurement"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recovery/today": {
+      "get": {
+        "summary": "Today's check-in and readiness (Phase 13)",
+        "tags": [
+          "recovery"
+        ],
+        "description": "Readiness (0–100) is computed on read from your check-ins, your training and your food logs, in your stored timezone (§18); it is null until today's check-in exists, and a component without its input adds nothing. Advice only: nothing changes your plan.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "date": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "log": {
+                      "type": "object",
+                      "properties": {
+                        "date": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        "sleepHours": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "sleepQuality": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5,
+                          "nullable": true
+                        },
+                        "soreness": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5,
+                          "nullable": true
+                        },
+                        "energy": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5,
+                          "nullable": true
+                        },
+                        "stress": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5,
+                          "nullable": true
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "manual"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "sleepHours",
+                        "sleepQuality",
+                        "soreness",
+                        "energy",
+                        "stress",
+                        "source"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    },
+                    "readiness": {
+                      "type": "object",
+                      "properties": {
+                        "score": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "band": {
+                          "type": "string",
+                          "enum": [
+                            "ready",
+                            "advisory",
+                            "reduce",
+                            "rest"
+                          ]
+                        },
+                        "advice": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "components": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string",
+                                "enum": [
+                                  "sleep",
+                                  "soreness",
+                                  "energy",
+                                  "performance",
+                                  "adherence"
+                                ]
+                              },
+                              "penalty": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "max": {
+                                "type": "integer",
+                                "minimum": 1
+                              },
+                              "available": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "penalty",
+                              "max",
+                              "available"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "minItems": 5,
+                          "maxItems": 5
+                        },
+                        "lowDays": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "score",
+                        "band",
+                        "advice",
+                        "components",
+                        "lowDays"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "log",
+                    "readiness"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recovery/log": {
+      "post": {
+        "summary": "Check in: sleep, soreness, energy, stress (upsert on date; up to 7 days back, never ahead)",
+        "tags": [
+          "recovery"
+        ],
+        "description": "201 for a new day, 200 when it replaces that day's check-in (the values sent replace the day's). Every value is optional but at least one is required.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "sleepHours": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 24,
+                    "nullable": true
+                  },
+                  "sleepQuality": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "nullable": true
+                  },
+                  "soreness": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "nullable": true
+                  },
+                  "energy": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "nullable": true
+                  },
+                  "stress": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "nullable": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "log": {
+                      "type": "object",
+                      "properties": {
+                        "date": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        "sleepHours": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "sleepQuality": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5,
+                          "nullable": true
+                        },
+                        "soreness": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5,
+                          "nullable": true
+                        },
+                        "energy": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5,
+                          "nullable": true
+                        },
+                        "stress": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5,
+                          "nullable": true
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "manual"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "sleepHours",
+                        "sleepQuality",
+                        "soreness",
+                        "energy",
+                        "stress",
+                        "source"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "log"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "log": {
+                      "type": "object",
+                      "properties": {
+                        "date": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        "sleepHours": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "sleepQuality": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5,
+                          "nullable": true
+                        },
+                        "soreness": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5,
+                          "nullable": true
+                        },
+                        "energy": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5,
+                          "nullable": true
+                        },
+                        "stress": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5,
+                          "nullable": true
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "manual"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "sleepHours",
+                        "sleepQuality",
+                        "soreness",
+                        "energy",
+                        "stress",
+                        "source"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "log"
                   ],
                   "additionalProperties": false
                 }

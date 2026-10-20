@@ -16,6 +16,7 @@ import { TrainingRepository } from '../training/repository.js';
 import { TrainingService } from '../training/service.js';
 import { UserRepository } from '../user/repository.js';
 import { messServiceFor } from '../mess/routes.js';
+import { ReadinessAssembler } from '../recovery/readiness.js';
 import { UserService } from '../user/service.js';
 import { WorkoutRepository } from '../workout/repository.js';
 import { WorkoutService } from '../workout/service.js';
@@ -50,7 +51,7 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
   const services = {
     user: new UserService(new UserRepository(db), async (ref) => (await messServiceFor(db).messForRef(ref)) !== null),
     training: new TrainingService(new TrainingRepository(db)),
-    workout: new WorkoutService(new WorkoutRepository(db), new TrainingRepository(db)),
+    workout: new WorkoutService(new WorkoutRepository(db), new TrainingRepository(db), ReadinessAssembler.forDb(db)),
     exercise: new ExerciseService(new ExerciseRepository(db)),
   };
   const service = new AiService(app.ai, {

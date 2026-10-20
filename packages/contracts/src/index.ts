@@ -12,3 +12,4 @@ export * from './mess.js';
 export * from './mess-recommend.js';
 export * from './today.js';
 export * from './progress.js';
+export * from './recovery.js';

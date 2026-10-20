@@ -29,6 +29,7 @@ import {
 } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
+import { ReadinessAssembler } from '../recovery/readiness.js';
 import { TrainingRepository } from '../training/repository.js';
 import { WorkoutRepository } from './repository.js';
 import { WorkoutService } from './service.js';
@@ -39,7 +40,11 @@ function requireUserId(userId: string | null): string {
 }
 
 export async function workoutRoutes(app: FastifyInstance): Promise<void> {
-  const service = new WorkoutService(new WorkoutRepository(app.database.db), new TrainingRepository(app.database.db));
+  const service = new WorkoutService(
+    new WorkoutRepository(app.database.db),
+    new TrainingRepository(app.database.db),
+    ReadinessAssembler.forDb(app.database.db),
+  );
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const errors = {
     401: errorEnvelopeSchema,

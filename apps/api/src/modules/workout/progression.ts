@@ -20,6 +20,7 @@ import type {
   VolumeResponse,
 } from '@fitos/contracts';
 
+import type { LowReadinessSource } from '../recovery/readiness.js';
 import type { PlannedExerciseJoined, ProgramBundle, TrainingRepository } from '../training/repository.js';
 import { toCatalogueExercise } from '../training/service.js';
 import type { PriorWork, WorkoutRepository } from './repository.js';
@@ -42,6 +43,8 @@ export class ProgressionAssembler {
   constructor(
     private readonly repo: WorkoutRepository,
     private readonly training: TrainingRepository,
+    /** Phase 13: the low-readiness run for the `readiness` trigger (null: never escalates — the rebuild scripts). */
+    private readonly readiness: LowReadinessSource | null = null,
   ) {}
 
   /* -------------------------------------------------------- history -- */
@@ -95,9 +98,12 @@ export class ProgressionAssembler {
 
   /**
    * The deload offer / active state for the programme today. Fatigue is
-   * counted on lead (compound) lifts whose recommendation is `deload`.
+   * counted on lead (compound) lifts whose recommendation is `deload`;
+   * Phase 13 adds readiness under 35 three days running (§18), read only
+   * when a new offer could still be made (not active, not snoozed).
    */
   async deloadState(
+    userId: string,
     program: ProgramBundle | null,
     prior: readonly PriorWork[],
     volumeSets: readonly VolumeSet[],
@@ -120,6 +126,8 @@ export class ProgressionAssembler {
       const rec = ProgressionAssembler.recommendation(ProgressionAssembler.toSessionLogs(prior, x.exerciseId, tz, window), x);
       if (rec.action === 'deload') fatigued.push({ exerciseId: x.exerciseId, name: x.name });
     }
+    const snoozed = program.program.deloadSnoozedUntil !== null && today < program.program.deloadSnoozedUntil;
+    const lowReadinessDays = this.readiness === null || snoozed ? 0 : await this.readiness.lowDays(userId, today, tz, { program, prior });
     const offer = shouldOfferDeload({
       mesocycleWeek: program.program.mesocycleWeek,
       thisWeek: weeklyVolume(volumeSets, isoWeekKey(today)),
@@ -127,6 +135,7 @@ export class ProgressionAssembler {
       snoozedUntil: program.program.deloadSnoozedUntil,
       active: false,
       today,
+      lowReadinessDays,
     });
     return { state: offer.offer ? 'offered' : 'none', trigger: offer.trigger, reason: offer.reason, endsOn: null };
   }
@@ -208,7 +217,7 @@ export class ProgressionAssembler {
       owned,
       neglected: this.neglected(sets, owned, today),
       mesocycleWeek: program?.program.mesocycleWeek ?? null,
-      deload: await this.deloadState(program, prior, sets, today, tz),
+      deload: await this.deloadState(userId, program, prior, sets, today, tz),
     };
   }
 

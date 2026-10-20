@@ -15,6 +15,7 @@ import {
 
 import { AppError } from '../../lib/errors.js';
 import { RecommendRepository } from '../mess/recommend-repository.js';
+import { ReadinessAssembler } from '../recovery/readiness.js';
 import { FoodLogRepository } from '../nutrition/log-repository.js';
 import { TrainingRepository } from '../training/repository.js';
 import { WorkoutRepository } from '../workout/repository.js';
@@ -30,12 +31,14 @@ function requireUserId(userId: string | null): string {
 export async function todayRoutes(app: FastifyInstance): Promise<void> {
   const db = app.database.db;
   const training = new TrainingRepository(db);
+  const readiness = ReadinessAssembler.forDb(db);
   const service = new TodayService(
     new TodayRepository(db),
-    new WorkoutService(new WorkoutRepository(db), training),
+    new WorkoutService(new WorkoutRepository(db), training, readiness),
     training,
     new FoodLogRepository(db),
     new RecommendRepository(db),
+    readiness,
   );
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const security = [{ bearerAuth: [] }];

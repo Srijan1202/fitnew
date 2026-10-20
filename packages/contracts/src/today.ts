@@ -10,11 +10,13 @@
 import { z } from 'zod';
 
 import { isoDateSchema } from './profile.js';
+import { DELOAD_TRIGGERS } from './workout.js';
 
 export const TODAY_ACTION_KINDS = [
   'deload',
   'injured-limitation',
   'start-workout',
+  'low-readiness', // Phase 13
   'eat-protein',
   'eat-meal',
   'progress-load',
@@ -31,6 +33,7 @@ export const TODAY_REASON_CODES = [
   'deload-offered',
   'exercise-contraindicated',
   'session-scheduled',
+  'readiness-low', // Phase 13
   'protein-behind',
   'meal-remaining',
   'load-increase-due',
@@ -54,7 +57,7 @@ const name = z.string().min(1).max(200);
 
 /** One schema per reason code: exactly the values the engine emits, nothing else. */
 export const todayReasonSchema = z.discriminatedUnion('code', [
-  z.object({ code: z.literal('deload-offered'), values: z.object({ trigger: z.enum(['fatigue', 'mrv']).nullable() }).strict() }).strict(),
+  z.object({ code: z.literal('deload-offered'), values: z.object({ trigger: z.enum(DELOAD_TRIGGERS).nullable() }).strict() }).strict(),
   z.object({
     code: z.literal('exercise-contraindicated'),
     values: z
@@ -71,6 +74,19 @@ export const todayReasonSchema = z.discriminatedUnion('code', [
   z.object({
     code: z.literal('session-scheduled'),
     values: z.object({ sessionName: name, exerciseCount: z.number().int().min(0), minutes: z.number().int().min(0) }).strict(),
+  }).strict(),
+  z.object({
+    code: z.literal('readiness-low'),
+    values: z
+      .object({
+        readiness: z.number().int().min(0).max(54),
+        band: z.enum(['reduce', 'rest']),
+        /** Band reduce: today's accessory lifts to go easier on; empty for rest. */
+        accessories: z.array(name),
+        /** Local days running with readiness under 35. */
+        lowDays: z.number().int().min(0),
+      })
+      .strict(),
   }).strict(),
   z.object({
     code: z.literal('protein-behind'),
@@ -101,6 +117,8 @@ export const todayReasonSchema = z.discriminatedUnion('code', [
         nextSessionDate: isoDateSchema.nullable(),
         kcalTarget: amount.nullable(),
         proteinTarget: amount.nullable(),
+        /** Phase 13 (§16.2): today's readiness, when there is a check-in. */
+        readiness: z.number().int().min(0).max(100).nullable(),
       })
       .strict(),
   }).strict(),

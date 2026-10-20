@@ -140,9 +140,11 @@ export const substitutionSchema = z.object({
 export type Substitution = z.infer<typeof substitutionSchema>;
 
 export const DELOAD_STATES = ['none', 'offered', 'active'] as const;
+/** Phase 6's two, and Phase 13's `readiness` (under 35 three days running; §18, ADR-019). */
+export const DELOAD_TRIGGERS = ['fatigue', 'mrv', 'readiness'] as const;
 export const deloadStateSchema = z.object({
   state: z.enum(DELOAD_STATES),
-  trigger: z.enum(['fatigue', 'mrv']).nullable(),
+  trigger: z.enum(DELOAD_TRIGGERS).nullable(),
   reason: z.string().min(1),
   /** Active: the local date the lighter week ends (exclusive). */
   endsOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),

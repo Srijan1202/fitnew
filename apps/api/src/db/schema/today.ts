@@ -24,6 +24,7 @@ export const todayActionKindEnum = pgEnum('today_action_kind', [
   'deload',
   'injured-limitation',
   'start-workout',
+  'low-readiness', // Phase 13 (migration 0016)
   'eat-protein',
   'eat-meal',
   'progress-load',

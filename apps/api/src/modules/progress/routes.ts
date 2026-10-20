@@ -1,8 +1,8 @@
 /**
  * /v1/progress — the PROGRESS summary and the two readings the spec names
  * (Phase 12, MASTER-SPEC §10.1, §17; ADR-018). HTTP and Zod only (§8.3).
- * Default-deny like every /v1 route. Photos are deferred (owner D3); there is
- * no /recovery route (Phase 13).
+ * Default-deny like every /v1 route. Photos are deferred (owner D3); recovery
+ * has its own module (Phase 13).
  */
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
