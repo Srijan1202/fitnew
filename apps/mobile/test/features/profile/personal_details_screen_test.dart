@@ -1,3 +1,4 @@
+import 'package:fitos/core/config/device_time_zone.dart';
 import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/routing/router.dart';
@@ -257,6 +258,74 @@ void main() {
     await tester.tap(link);
     await tester.pumpAndSettle();
     expect(find.text('GOAL EDITOR'), findsOneWidget);
+  });
+
+  group('the phone\'s time zone (audit 2026-10-20)', () {
+    Future<void> openWithPhoneZone(WidgetTester tester, String? zone) async {
+      phone(tester);
+      final router = GoRouter(
+        initialLocation: Routes.profile,
+        routes: [
+          GoRoute(
+            path: Routes.profile,
+            builder: (_, __) => const ProfileScreen(),
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sessionUserIdProvider.overrideWithValue('user-1'),
+            profileRepositoryProvider.overrideWithValue(profile),
+            deviceTimeZoneProvider.overrideWithValue(zone),
+            ...workoutOverrides(db, FakeWorkoutApi()),
+            ...healthOverrides(health),
+          ],
+          child:
+              MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets(
+        'in another zone: said plainly, changed only when asked — one PATCH with the zone',
+        (tester) async {
+      await openWithPhoneZone(tester, 'Europe/London');
+      expect(
+        tester
+            .widget<Text>(
+              find.byKey(const ValueKey('profile.timezone.differs')),
+            )
+            .data,
+        'This phone is set to Europe/London. Your days run on Asia/Kolkata.',
+      );
+      expect(profile.personalChanges, isEmpty);
+      final use = find.byKey(const ValueKey('profile.timezone.usePhone'));
+      await tester.ensureVisible(use);
+      await tester.tap(use);
+      await tester.pumpAndSettle();
+      expect(profile.personalChanges, [
+        {'timezone': 'Europe/London'},
+      ]);
+      expect(
+        find.byKey(const ValueKey('profile.timezone.differs')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('same zone, or unknown: nothing is offered', (tester) async {
+      await openWithPhoneZone(tester, 'Asia/Kolkata');
+      expect(
+        find.byKey(const ValueKey('profile.timezone.usePhone')),
+        findsNothing,
+      );
+      await openWithPhoneZone(tester, null);
+      expect(
+        find.byKey(const ValueKey('profile.timezone.usePhone')),
+        findsNothing,
+      );
+    });
   });
 
   testWidgets('Profile links to the editor', (tester) async {

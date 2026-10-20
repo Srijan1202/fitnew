@@ -156,6 +156,7 @@ class PersonalDetailsChange {
     this.heightCm,
     this.weightKg,
     this.activityLevel,
+    this.timezone,
   });
 
   final String? displayName;
@@ -164,12 +165,16 @@ class PersonalDetailsChange {
   final double? weightKg;
   final ActivityLevel? activityLevel;
 
+  /// IANA zone; it moves the day boundaries, not the targets.
+  final String? timezone;
+
   bool get isEmpty =>
       displayName == null &&
       sex == null &&
       heightCm == null &&
       weightKg == null &&
-      activityLevel == null;
+      activityLevel == null &&
+      timezone == null;
 
   /// Height, weight, sex or activity feed the targets formula.
   bool get touchesTargets =>
@@ -184,6 +189,7 @@ class PersonalDetailsChange {
         if (heightCm != null) 'heightCm': heightCm,
         if (weightKg != null) 'weightKg': weightKg,
         if (activityLevel != null) 'activityLevel': activityLevel!.wire,
+        if (timezone != null) 'timezone': timezone,
       };
 }
 

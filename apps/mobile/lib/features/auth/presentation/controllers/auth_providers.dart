@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/config/device_time_zone.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../../data/auth_repository_impl.dart';
@@ -39,15 +40,13 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
     credentials: ref.watch(credentialSourceProvider),
     session: ref.watch(sessionRemoteDataSourceProvider),
     store: ref.watch(sessionStoreProvider),
-    // TIME ZONE IS DELIBERATELY NOT SENT IN PHASE 1.
-    // `DateTime.now().timeZoneName` on Android returns an abbreviation ("IST"),
-    // not the IANA name the server requires (§9.1), so sending it would 422
-    // on every sign-in. Dart cannot produce "Asia/Kolkata" without a platform
-    // channel. The server therefore applies its default, Asia/Kolkata, which
-    // is correct for every V1 user (VIT Vellore).
-    // TODO(Phase 2): add flutter_timezone for detection and let the profile
-    // screen set it explicitly.
-    timeZoneName: () => null,
+    // The phone's IANA zone from the `fitos/device` channel (audit
+    // 2026-10-20). `DateTime.now().timeZoneName` is only an abbreviation
+    // ("IST") the server would reject; when the zone cannot be read (or has
+    // the wrong shape) nothing is sent and the server keeps Asia/Kolkata.
+    // The server stores it at the first sign-in only; afterwards Profile
+    // offers the phone's zone when it differs.
+    timeZoneName: () => ref.read(deviceTimeZoneProvider),
     localeTag: deviceLocaleTag,
   );
 });

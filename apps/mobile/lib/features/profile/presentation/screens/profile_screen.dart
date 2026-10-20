@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/config/device_time_zone.dart';
 import '../../../../core/config/env.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/routing/router.dart';
@@ -103,6 +104,7 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: FitSpacing.sm),
                       _Facts(profile: view.profile),
+                      _PhoneTimeZone(stored: view.profile.timezone),
                       const SizedBox(height: FitSpacing.md),
                       OutlinedButton(
                         key: const ValueKey('profile.personalDetails'),
@@ -296,6 +298,68 @@ class _Facts extends ConsumerWidget {
         const FoodSettingRow(),
         const Divider(color: FitColors.rule, height: 1),
       ],
+    );
+  }
+}
+
+/// The day boundaries follow the stored time zone (§9.1). When this phone is
+/// in another zone, offer it — never change it silently (audit 2026-10-20).
+class _PhoneTimeZone extends ConsumerStatefulWidget {
+  const _PhoneTimeZone({required this.stored});
+
+  final String stored;
+
+  @override
+  ConsumerState<_PhoneTimeZone> createState() => _PhoneTimeZoneState();
+}
+
+class _PhoneTimeZoneState extends ConsumerState<_PhoneTimeZone> {
+  bool _saving = false;
+  String? _error;
+
+  Future<void> _use(String zone) async {
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    final failure = await ref
+        .read(profileControllerProvider.notifier)
+        .savePersonalDetails(PersonalDetailsChange(timezone: zone));
+    if (!mounted) return;
+    setState(() {
+      _saving = false;
+      _error = failure?.message;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final phone = ref.watch(deviceTimeZoneProvider);
+    if (phone == null || phone == widget.stored) return const SizedBox.shrink();
+    final textTheme = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: FitSpacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            'This phone is set to $phone. Your days run on ${widget.stored}.',
+            key: const ValueKey('profile.timezone.differs'),
+            style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+          ),
+          TextButton(
+            key: const ValueKey('profile.timezone.usePhone'),
+            onPressed: _saving ? null : () => _use(phone),
+            child: Text(_saving ? 'Saving…' : "Use this phone's time zone"),
+          ),
+          if (_error != null)
+            Text(
+              _error!,
+              key: const ValueKey('profile.timezone.error'),
+              style: textTheme.bodyMedium?.copyWith(color: FitColors.oxide),
+            ),
+        ],
+      ),
     );
   }
 }

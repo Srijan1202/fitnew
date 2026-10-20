@@ -45,6 +45,13 @@ class MainActivity : FlutterFragmentActivity() {
         healthConnect = channel
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, HealthConnectChannel.NAME)
             .setMethodCallHandler(channel)
+        // The phone's IANA time zone for the server's day boundaries (§9.1);
+        // Dart alone only knows an abbreviation such as "IST".
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fitos/device")
+            .setMethodCallHandler { call, result ->
+                if (call.method == "timeZone") result.success(java.util.TimeZone.getDefault().id)
+                else result.notImplemented()
+            }
     }
 
     override fun onDestroy() {

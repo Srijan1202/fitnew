@@ -60,6 +60,7 @@ class FakeProfileRepository implements ProfileRepository {
           heightCm: change.heightCm ?? p.value.heightCm,
           latestWeightKg: change.weightKg ?? p.value.latestWeightKg,
           activityLevel: change.activityLevel ?? p.value.activityLevel,
+          timezone: change.timezone ?? p.value.timezone,
         ),
       );
     }

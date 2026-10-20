@@ -117,8 +117,22 @@ void main() {
         testProfile.toJson(),
       );
       expect(session.lastRequest?.locale, 'en-IN');
-      // Phase 1 sends no time zone (see auth_providers.dart).
+      // An unknown phone zone sends none; the server keeps its default.
       expect(session.lastRequest?.timezone, isNull);
+    });
+
+    test(
+        'the phone\'s IANA zone, when known, goes with the session (the server stores it at first sign-in)',
+        () async {
+      final withZone = AuthRepositoryImpl(
+        credentials: creds,
+        session: session,
+        store: store,
+        timeZoneName: () => 'Europe/London',
+        localeTag: () => 'en-IN',
+      );
+      await withZone.signInWithEmail(email: 'a', password: 'b');
+      expect(session.lastRequest?.timezone, 'Europe/London');
     });
 
     test('a Firebase credential failure never reaches the server', () async {
