@@ -41,6 +41,17 @@
 - **§30:** no Dart implementation of server-owned rules.
 - **CI on the Phase 13 head:** green on all three workflows.
 
-## Verification of the fixes
+## Verification of the fixes (local, all passing)
 
-See the commit messages on `phase-13-audit-fixes` and the gate results in the final report: core, contracts, API, Flutter; typecheck, ESLint (root), builds, `dart analyze --fatal-infos`, custom_lint, `dart format`; GitHub CI on the branch.
+| Suite | Before | After |
+|---|---|---|
+| Core | 874 | 874 |
+| Contracts | 79 | 79 |
+| API | 455 | **460** (+ per-user rate limit ×2, unique-violation unwrapping ×3) |
+| Flutter | 627 | **634** (+ time-zone channel ×4, sign-in ×1, Profile ×2) |
+
+- **Static checks and builds:** root typecheck and ESLint (now including admin), every package build (admin included), `dart analyze --fatal-infos`, custom_lint and `dart format` are clean.
+- **Dependencies:** `pnpm audit --prod` reports no known vulnerabilities.
+- **Docker image:** the API image builds, and the upgraded modules load on Node 22.
+- **Flake:** the Phase 6.6 orphan test passed 12 consecutive runs.
+- **Backup:** written, then restored into a scratch database with every row count matching.
