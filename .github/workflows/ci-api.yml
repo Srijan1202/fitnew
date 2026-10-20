@@ -14,7 +14,7 @@ concurrency:
 jobs:
   api:
     name: apps/api
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     # id-token: the Workload Identity token for the image push (Phase 6.7);
@@ -46,13 +46,13 @@ jobs:
       DATABASE_URL: postgres://fitos:fitos@localhost:5432/fitos
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: pnpm/action-setup@v4
         with:
           version: 9.15.4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
@@ -80,6 +80,14 @@ jobs:
 
       - name: Build
         run: pnpm --filter @fitos/api build
+
+      # The Dart client is checked against packages/contracts/openapi.json; a
+      # route change that was not exported would pass every test here and
+      # break the phone silently (audit 2026-10-20).
+      - name: OpenAPI document is current
+        run: |
+          pnpm --filter @fitos/api openapi:export
+          git diff --exit-code -- packages/contracts/openapi.json
 
       - name: Docker build
         run: docker build -f docker/Dockerfile.api -t fitos-api:ci .

@@ -18,20 +18,23 @@ defaults:
 jobs:
   mobile:
     name: apps/mobile
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
+      # Pinned to the version the suite is run with locally, so CI and the
+      # developer machine analyse and test with the same SDK (audit 2026-10-20).
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.47.2
           cache: true
 
       - name: Resolve dependencies
