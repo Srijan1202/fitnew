@@ -316,6 +316,12 @@ class SyncEngine {
     unawaited(drain());
   }
 
+  /// Completes when no drain is running (now, or when the running one ends).
+  /// Read-only: never starts a drain. For an orderly shutdown — e.g. a test
+  /// closing the database — so nothing is still writing to it (audit
+  /// 2026-10-20: the Phase 6.6 "orphan still parks" teardown race).
+  Future<void> get idle => _draining ? _done!.future : Future<void>.value();
+
   Future<void> drain() {
     if (_draining) {
       _again = true;

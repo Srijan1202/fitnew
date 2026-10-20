@@ -44,6 +44,9 @@ void main() {
   });
   tearDown(() async {
     engine.dispose();
+    // A test may end the moment an entry parks while the engine is still
+    // mid-drain; closing the database under it was the Phase 6.6 flake.
+    await engine.idle;
     await db.close();
   });
 
