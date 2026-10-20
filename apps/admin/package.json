@@ -8,10 +8,10 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "echo \"@fitos/admin: no tests until Phase 16\" && exit 0",
-    "lint": "next lint"
+    "lint": "eslint src"
   },
   "dependencies": {
-    "next": "15.1.6",
+    "next": "15.5.28",
     "react": "19.0.0",
     "react-dom": "19.0.0"
   },
@@ -19,6 +19,9 @@
     "@types/node": "22.10.7",
     "@types/react": "19.0.7",
     "@types/react-dom": "19.0.3",
-    "typescript": "5.6.3"
+    "typescript": "5.6.3",
+    "eslint": "9.18.0",
+    "eslint-config-next": "15.5.28",
+    "@eslint/eslintrc": "3.3.1"
   }
 }
