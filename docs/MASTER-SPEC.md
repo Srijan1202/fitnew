@@ -396,7 +396,7 @@ Everything else in your preferred stack is kept: Cloud Run, Firebase Auth, FCM, 
 |---|---|---|
 | `recommendations` | `id`, `user_id`, `generated_for date`, `kind`, `headline`, `detail`, `target`, `priority`, `basis`, `payload jsonb` | `AMENDED 2026-09-24 (Phase 11, ADR-017)`: also `subject_key`, `rank` (at first generation), `engine_version`, `input_digest`, `content_hash`, `created_at`. **Immutable**; UNIQUE `(user_id, generated_for, kind, subject_key, content_hash)`, so the same content reuses its id. Never stores the whole `UserModel`. Kept indefinitely; cascades on user deletion |
 | `recommendation_events` | `id`, `recommendation_id`, `event` (`shown`/`opened`/`accepted`/`dismissed`/`completed`), `occurred_at` | Measures whether the engine actually helps. `AMENDED 2026-09-24 (Phase 11, ADR-017)`: also `user_id`, `client_event_id` (UNIQUE per user: idempotency) and `received_at`. Each event at most once per recommendation. Product records, not analytics |
-| `recovery_logs` | `id`, `user_id`, `logged_on date`, `sleep_hours`, `sleep_quality`, `soreness`, `energy`, `stress`, `source` | UNIQUE `(user_id, logged_on)` |
+| `recovery_logs` | `id`, `user_id`, `logged_on date`, `sleep_hours`, `sleep_quality`, `soreness`, `energy`, `stress`, `source` | UNIQUE `(user_id, logged_on)`. `AMENDED 2026-09-25 (Phase 13, ADR-019)`: every value optional, at least one present; `source` is `manual` only (Health Connect never leaves the phone); hard delete. |
 | `health_samples` | `id`, `user_id`, `sample_type`, `value`, `unit`, `recorded_at`, `source` | Health Connect / HealthKit (V2) |
 | `notifications` | `id`, `user_id`, `kind`, `scheduled_for`, `sent_at`, `opened_at` | |
 | `audit_logs` | `id`, `actor_user_id`, `action`, `entity`, `entity_id`, `metadata jsonb`, `occurred_at` | Admin actions + data export/delete |
@@ -839,6 +839,7 @@ Return the best available plate **and say it falls short**. Do not inflate estim
 |---|---|---|
 | 95 | `deload` | Fatigue detected — **never buried under a meal tip** |
 | 90 | `start-workout` | Training day, not completed |
+| 89 | `low-readiness` | `AMENDED 2026-09-25 (Phase 13, ADR-019)`: readiness < 55 on a training day not yet done — one fewer set on accessories (35–54) or consider resting (< 35); informational, dismissible, never completed; the plan never changes |
 | 88/80 | `eat-protein` | Protein < 75% of target with a meal remaining (88 at dinner) |
 | 75 | `eat-meal` | Meal remaining, >250 kcal left, protein on track |
 | 72 | `progress-load` | Load increase due today |
@@ -904,6 +905,16 @@ readiness = 100
 | < 35 | Suggest a rest day; if it persists 3 days, escalate to deload check |
 
 `DECISION` — recovery **never silently changes the plan**. It surfaces a recommendation the user accepts or declines. Silent modification destroys trust in the programme.
+
+`AMENDED 2026-09-25 (Phase 13, ADR-019)` — the formula as built (computed on read, integers):
+- **Penalties:**
+  - sleep debt = 10 × the mean nightly shortfall below 7.5 h over the check-ins of the last 7 local days;
+  - soreness = 5 × (soreness − 1);
+  - energy = 5 × (5 − energy);
+  - performance drop = 25 × the share of the Phase 6 signals (rep decline, RIR drift) across lifts trained in the last 7 days with three sessions at the same load;
+  - adherence gap = 10 × the share of missed protein/calorie marks (the §17 / Phase 12 rules) over logged days in the 7 days before.
+- **Only available inputs:** readiness exists only for a day with a check-in; a missing input adds nothing and is reported as not available. Sleep quality and stress are logged but have no term in the formula.
+- **Escalation:** readiness < 35 on 3 consecutive local days adds the deload trigger `readiness` to the existing Phase 6 **offer** (accept/decline/snooze unchanged).
 
 **Phase 6.5 (shipped as context, not recovery science):** Health Connect on Android, read-only, on-device — steps, distance, active/total calories, exercise sessions, sleep, resting HR, weight, body fat, BMR — shown on Home with explicit availability and freshness; sleep < 6 h yields an advisory line, never a score (ADR-008, ADR-009). HRV is not read. **V2:** HealthKit as a second provider. `UNVERIFIED` — HRV field availability differs across Android OEMs; treat as directional, never clinical.
 
@@ -1452,6 +1463,11 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 **Tests:** readiness at each band boundary · **low readiness never silently mutates the plan** · missing recovery data degrades gracefully.
 **Acceptance:** readiness computed only from available inputs · recommendations are advisory and dismissible.
 **Manual:** log poor recovery three days running; verify escalation to a deload check.
+`AMENDED 2026-09-25 (Phase 13 plan, ADR-019)`:
+- **TODAY:** engine `today-3`; `low-readiness` at band 89 (informational); the rest-day action carries readiness (§16.2); the `low-readiness` persona (12 personas now).
+- **APIs:** `POST /recovery/log` is dated up to 7 days back, never ahead, and replaces the day's check-in; `/recovery/health-sync` stays V2.
+- **UI:** the recovery card and readiness display live in the Recovery section of Progress & Recovery (ADR-018 D1). The card is online only; the last view is cached and labelled. No new sync queue.
+- **Not in Phase 13:** recovery in the AI context (Phase 14); the Phase 12 Progress & Recovery visual polish (a separate pass after Phase 13).
 
 ---
 
