@@ -200,7 +200,7 @@ describeIfDb('/v1/today (real Postgres, real seed)', { timeout: 60_000 }, () => 
     expect(t.engineVersion).toBe('today-3'); // Phase 12 (calorie-adjust), Phase 13 (low-readiness)
     expect(kinds(t)).toEqual(['rest-day', 'log-weight']);
     expect(find(t, 'rest-day')!.reason).toEqual({
-      code: 'rest-day', values: { hasProgramme: false, nextSessionName: null, nextSessionDate: null, kcalTarget: null, proteinTarget: null },
+      code: 'rest-day', values: { hasProgramme: false, nextSessionName: null, nextSessionDate: null, kcalTarget: null, proteinTarget: null, readiness: null }, // Phase 13: no check-in, no readiness (§16.2)
     });
     expect(find(t, 'log-weight')).toMatchObject({ subjectKey: '', basis: 'calculated', target: 'progress', reason: { code: 'weigh-in-due', values: { daysSinceWeighIn: null } } });
   });

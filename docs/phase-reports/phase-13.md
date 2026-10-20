@@ -12,6 +12,7 @@
 - `b65290b` — contracts, migration 0016, the Recovery API, the escalation wired into the deload state, TODAY assembly, OpenAPI
 - `0408da7` — mobile: the check-in card and readiness display, TODAY `lowReadiness`, the deload trigger
 - plus the documentation commit: ADR-019, MASTER-SPEC amendments, this report
+- a test commit: the Phase 11 API test's rest-day reason pin gains `readiness: null` (§16.2); no app change
 
 **Implementation head:** `0408da7`.
 
