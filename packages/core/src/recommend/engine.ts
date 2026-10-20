@@ -344,10 +344,12 @@ export function wordReason(reason: ActionReason): { headline: string; detail: st
             : `No working set for ${label(s('muscle'))} in ${plural(n('daysSince'), 'day')}.`,
       };
     case 'rest-day': {
+      // §16.2: a rest day carries recovery status (Phase 13), with or without a programme.
+      const readiness = v['readiness'] !== null && v['readiness'] !== undefined ? ` Readiness today: ${n('readiness')}.` : '';
       if (v['hasProgramme'] !== true) {
         return {
           headline: 'No session today',
-          detail: 'Set up a programme and FITOS will plan your sessions. A walk is a good start.',
+          detail: `Set up a programme and FITOS will plan your sessions. A walk is a good start.${readiness}`,
         };
       }
       const parts: string[] = [];
@@ -355,10 +357,8 @@ export function wordReason(reason: ActionReason): { headline: string; detail: st
       if (v['kcalTarget'] !== null && v['proteinTarget'] !== null) {
         parts.push(`Eat to about ${num(n('kcalTarget'))} kcal and ${num(n('proteinTarget'))} g protein.`);
       }
-      // §16.2: a rest day carries recovery status (Phase 13).
-      if (v['readiness'] !== null && v['readiness'] !== undefined) parts.push(`Readiness today: ${n('readiness')}.`);
       parts.push('A walk helps recovery without adding fatigue.');
-      return { headline: 'Recovery day', detail: parts.join(' ') };
+      return { headline: 'Recovery day', detail: parts.join(' ') + readiness };
     }
     case 'calorie-target-off-trend': {
       const delta = n('deltaKcal');

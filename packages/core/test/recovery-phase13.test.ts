@@ -302,6 +302,9 @@ describe('TODAY low-readiness (band 89): advice only, dismissible, never complet
     expect(rest(82).reason.values['readiness']).toBe(82);
     expect(rest(82).detail).toContain('Readiness today: 82.');
     expect(rest(null).detail).not.toContain('Readiness');
+    // Regression (found by the API suite): without a programme the rest day carries it too.
+    const none = buildActions(model({ training: { hasProgramme: false, sessionName: null }, recovery: { readiness: 90, band: 'ready', lowDays: 0 } })).find((a) => a.kind === 'rest-day')!;
+    expect(none.detail).toBe('Set up a programme and FITOS will plan your sessions. A walk is a good start. Readiness today: 90.');
   });
 
   it('the deload offer words name the readiness trigger', () => {
