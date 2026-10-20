@@ -498,6 +498,23 @@ Codes: `UNAUTHENTICATED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `VALIDATIO
 | GET | `/meta/config` | Feature flags, min app version | Unauthenticated |
 | GET | `/health` | Liveness + DB ping | Unauthenticated |
 
+`AMENDED 2026-10-20 (audit)` — built and in the OpenAPI document, not listed above:
+
+| Method | Path | Purpose | Phase |
+|---|---|---|---|
+| GET | `/livez` | Process-only liveness (startup probe) | 6.7 |
+| GET | `/training/templates`, `/training/templates/{slug}` | Programme templates | 4 |
+| POST | `/training/program/from-template/{slug}` | Programme from a template | 4 |
+| PATCH | `/training/program` | Rename / edit the programme | 4 |
+| GET | `/training/sessions/{id}` | One session | 5 |
+| DELETE | `/training/sessions/{id}/sets/{setId}` | Remove a logged set | 5 |
+| POST, PATCH | `/training/sessions/{id}/exercises`, `…/{exerciseId}` | Add, reorder, superset, replace, remove | 5 |
+| POST | `/training/sessions/{id}/abandon` | Abandon an active session | 5 |
+| GET | `/training/progression/{exerciseId}` | One lift's last three sessions and its recommendation | 6 |
+| POST | `/training/deload/accept`, `/training/deload/decline` | The deload offer (never applied without accept) | 6 |
+
+Still unbuilt with no owning phase: `/exercises/{id}/history` (only the last three sessions, via `/training/progression/{id}`), `/nutrition/targets` (current + history), `/meta/config` (flags, minimum app version — needed before beta).
+
 **Rate limits:** default 120 req/min/user. `/nutrition/parse` and any AI route: 20/hour/user. `/auth/session`: 10/min/IP.
 
 ---
@@ -1702,25 +1719,27 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 ## 38. Master Implementation Checklist
 
-**Phase 0** — [ ] pnpm monorepo · [ ] `packages/core` moved, 82 tests green · [ ] `apps/api` scaffolded · [ ] `apps/mobile` scaffolded · [ ] `apps/admin` scaffolded · [ ] docker-compose Postgres · [ ] shared tsconfig/eslint · [ ] 3 CI workflows green · [ ] Neon dev/staging/prod · [ ] Firebase projects · [ ] Cloud Run region verified · [ ] ADR-001 written
+`AMENDED 2026-10-20 (audit)`: the boxes of Phases 0–7 and 6.5/6.6 were reconciled with their accepted phase reports and the code; items that are genuinely open stay unticked with the reason beside them.
 
-**Phase 1** — [ ] Firebase Auth configured · [ ] admin SDK plugin · [ ] `users` migration · [ ] `/auth/session` · [ ] Flutter sign-in/up · [ ] secure token storage · [ ] refresh interceptor · [ ] route guards · [ ] 401/403 tests
+**Phase 0** — [x] pnpm monorepo · [x] `packages/core` moved, 82 tests green · [x] `apps/api` scaffolded · [x] `apps/mobile` scaffolded · [x] `apps/admin` scaffolded · [x] docker-compose Postgres · [x] shared tsconfig/eslint · [x] 3 CI workflows green · [ ] Neon dev/staging/prod (not created — Phase 6.7 paused) · [ ] Firebase projects (only the dev project exists) · [ ] Cloud Run region verified (Phase 6.7 paused before deploy) · [x] ADR-001 written
 
-**Phase 2** — [ ] profile/goal/diet/allergy/limitation tables · [ ] consent records · [ ] onboarding state machine · [ ] 7 onboarding screens · [ ] targets wired · [ ] recomposition + maintenance goals · [ ] 18+ gate · [ ] protein ≤2.2 test
+**Phase 1** — [x] Firebase Auth configured · [x] admin SDK plugin · [x] `users` migration · [x] `/auth/session` · [x] Flutter sign-in/up · [x] secure token storage · [x] refresh interceptor · [x] route guards · [x] 401/403 tests
 
-**Phase 3** — [ ] exercise tables · [ ] 120+ exercises seeded · [ ] muscles/alternatives/contraindications · [ ] search API · [ ] browser UI · [ ] seed integrity tests
+**Phase 2** — [x] profile/goal/diet/allergy/limitation tables · [x] consent records · [x] onboarding state machine · [x] 7 onboarding screens · [x] targets wired · [x] recomposition + maintenance goals · [x] 18+ gate · [x] protein ≤2.2 test
 
-**Phase 4** — [ ] **generator built** · [ ] split table · [ ] equipment filter · [ ] limitation exclusion · [ ] MEV volume · [ ] duration fitting · [ ] custom builder · [ ] all combinations tested
+**Phase 3** — [x] exercise tables · [x] 120+ exercises seeded · [x] muscles/alternatives/contraindications · [x] search API · [x] browser UI · [x] seed integrity tests
 
-**Phase 5** — [ ] session tables · [ ] idempotent set logging · [ ] drift schema · [ ] sync queue · [ ] optimistic UI · [ ] rest timer · [ ] supersets/drop sets · [ ] **offline test passes** · [ ] <3s logging verified
+**Phase 4** — [x] **generator built** · [x] split table · [x] equipment filter · [x] limitation exclusion · [x] MEV volume · [x] duration fitting · [x] custom builder · [x] all combinations tested
 
-**Phase 6** — [ ] progression wired · [ ] **volume engine built** · [ ] landmarks · [ ] neglect detection · [ ] deload trigger · [ ] PR detection · [ ] heatmap UI
+**Phase 5** — [x] session tables · [x] idempotent set logging · [x] drift schema · [x] sync queue · [x] optimistic UI · [x] rest timer · [x] supersets/drop sets · [x] **offline test passes** · [ ] <3s logging verified (never measured and recorded)
 
-**Phase 6.5** — [x] Health Connect channel + provider abstraction · [x] availability model · [x] permission flow by category · [x] foreground refresh + honest cache · [x] suggestion engine · [x] Home redesign · [x] floating bar · [x] Health Data screen · [ ] **manual acceptance (27 points) on a device**
+**Phase 6** — [x] progression wired · [x] **volume engine built** · [x] landmarks · [x] neglect detection · [x] deload trigger · [x] PR detection · [x] heatmap UI
 
-**Phase 6.6** — [x] display name end to end · [x] branding · [x] Gemini provider seam + config + `/ai/status` · [x] context assembler · [x] 13 allowlisted tools · [x] capped chat loop + `/ai/chat` · [x] Flutter AI screen · [x] live Gemini smoke · [x] AI programme generation via the deterministic generator (extraction → `propose_program` → preview, never stored → user confirms → ordinary route) · [x] alpha config (LAN, flavour, defines) · [x] release-like APK · [ ] **S24 manual checklist (incl. Phase 6.5's 27 points, §B-K)**
+**Phase 6.5** — [x] Health Connect channel + provider abstraction · [x] availability model · [x] permission flow by category · [x] foreground refresh + honest cache · [x] suggestion engine · [x] Home redesign · [x] floating bar · [x] Health Data screen · [x] **manual acceptance (27 points) on a device** (folded into the Phase 6.6 S24 run, owner-accepted 2026-09-23)
 
-**Phase 7** — [ ] licensing confirmed · [ ] food tables with ranges · [ ] 500 foods seeded · [ ] trigram search · [ ] aliases · [ ] custom foods
+**Phase 6.6** — [x] display name end to end · [x] branding · [x] Gemini provider seam + config + `/ai/status` · [x] context assembler · [x] 13 allowlisted tools · [x] capped chat loop + `/ai/chat` · [x] Flutter AI screen · [x] live Gemini smoke · [x] AI programme generation via the deterministic generator (extraction → `propose_program` → preview, never stored → user confirms → ordinary route) · [x] alpha config (LAN, flavour, defines) · [x] release-like APK · [x] **S24 manual checklist (incl. Phase 6.5's 27 points, §B-K)** (owner-accepted 2026-09-23 at `7f2b7c3`)
+
+**Phase 7** — [ ] licensing confirmed (open — Phase 7 report) · [x] food tables with ranges · [ ] 500 foods seeded (305 seeded, gap 195 — Phase 7 report) · [x] trigram search · [x] aliases · [x] custom foods
 
 **Phase 8** — [x] log tables · [x] daily rollup · [x] timezone-correct boundaries · [x] snapshot macros · [x] EAT screen · [x] saved meals · [x] quick add
 

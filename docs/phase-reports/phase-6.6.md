@@ -1,6 +1,8 @@
 ## PHASE 6.6 — Closed alpha + FITOS AI + product polish — IN PROGRESS
 
-**Status: NOT complete — closed-alpha acceptance pending the owner's S24 rows (Gate 8).**
+**Status: ACCEPTED** by the owner on 2026-09-23 at `7f2b7c3` (S24 checklist passed, incl. Phase 6.5's 27 points); frozen. `UPDATED 2026-10-20 (audit)` — the line below is the original status, kept as history.
+
+~~**Status: NOT complete — closed-alpha acceptance pending the owner's S24 rows (Gate 8).**~~
 Gates 1–5 verified; Gate 6 verified on the S24 (Health Connect **Connect** passes — KI-1); Gate 7
 S24 findings KI-6 … KI-10 fixed in code, the latest build already exercised on the S24 without
 a single 4xx; Gate 8 audit found **no code blocker**. Nothing merged to `main`.

@@ -1,4 +1,6 @@
-## PHASE 6.5 — Health Connect + Home/TODAY redesign — IMPLEMENTED, AWAITING MANUAL ACCEPTANCE
+## PHASE 6.5 — Health Connect + Home/TODAY redesign — ACCEPTED (with Phase 6.6)
+
+> `UPDATED 2026-10-20 (audit)`: the 27-point manual acceptance was folded into the Phase 6.6 S24 checklist (§B–K), which the owner accepted on 2026-09-23 at `7f2b7c3`. The status text below is the original, kept as history.
 
 **Status: NOT complete.** Implementation is present, automated tests pass, the APK builds with the Health Connect channel compiled, but the 27-point manual acceptance (Part K) has **not** been performed — it needs a device with Health Connect and a data source, signed in with the owner's Firebase build. See "Manual acceptance" below for exactly what to do.
 
