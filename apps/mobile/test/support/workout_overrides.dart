@@ -2,6 +2,7 @@ import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/features/mess/presentation/mess_providers.dart';
 import 'package:fitos/features/nutrition/presentation/controllers/food_log_providers.dart';
 import 'package:fitos/features/progress/presentation/progress_providers.dart';
+import 'package:fitos/features/recovery/presentation/recovery_providers.dart';
 import 'package:fitos/features/today/presentation/today_providers.dart';
 import 'package:fitos/features/workout/presentation/controllers/rest_timer.dart';
 import 'package:fitos/features/workout/presentation/controllers/workout_providers.dart';
@@ -11,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'fake_food_log_api.dart';
 import 'fake_mess_api.dart';
 import 'fake_progress_api.dart';
+import 'fake_recovery_api.dart';
 import 'fake_today_api.dart';
 import 'fake_workout_api.dart';
 
@@ -24,6 +26,7 @@ List<Override> workoutOverrides(
   FakeMessApi? mess,
   FakeTodayApi? today,
   FakeProgressApi? progress,
+  FakeRecoveryApi? recovery,
 }) {
   SharedPreferences.setMockInitialValues(const {});
   return [
@@ -43,5 +46,7 @@ List<Override> workoutOverrides(
     todayApiProvider.overrideWithValue(today ?? FakeTodayApi()),
     // Phase 12: Progress from a scripted server; an empty history unless a test says.
     progressApiProvider.overrideWithValue(progress ?? FakeProgressApi()),
+    // Phase 13: Recovery from a scripted server; nothing checked in unless a test says.
+    recoveryApiProvider.overrideWithValue(recovery ?? FakeRecoveryApi()),
   ];
 }

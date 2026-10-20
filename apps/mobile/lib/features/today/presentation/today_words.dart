@@ -11,6 +11,7 @@ abstract final class TodayWords {
   static String eyebrow(TodayKind k) => switch (k) {
         TodayKind.deload => 'DELOAD',
         TodayKind.injuredLimitation => 'TRAIN · LIMITATION',
+        TodayKind.lowReadiness => 'TRAIN · RECOVERY',
         TodayKind.startWorkout ||
         TodayKind.progressLoad ||
         TodayKind.muscleNeglected =>
@@ -24,7 +25,10 @@ abstract final class TodayWords {
 
   /// Semantic colour only where it carries meaning (§6.2).
   static Color eyebrowColor(TodayKind k) => switch (k) {
-        TodayKind.deload || TodayKind.injuredLimitation => FitColors.amber,
+        TodayKind.deload ||
+        TodayKind.injuredLimitation ||
+        TodayKind.lowReadiness =>
+          FitColors.amber,
         TodayKind.celebratePr => FitColors.pine,
         _ => FitColors.ink60,
       };
@@ -35,6 +39,9 @@ abstract final class TodayWords {
         TodayKind.deload => 'Review the lighter week',
         TodayKind.injuredLimitation => 'See the swap',
         TodayKind.startWorkout => 'Start workout',
+        TodayKind.lowReadiness => a.reason.values['band'] == 'rest'
+            ? 'Open your plan'
+            : "Open today's session",
         TodayKind.eatProtein || TodayKind.eatMeal => messConfigured
             ? 'What to eat'
             : 'Log ${MealSlot.fromWire(a.subjectKey).label.toLowerCase()}',
@@ -90,9 +97,11 @@ abstract final class TodayWords {
       'deload-offered' => [
           (
             'Signal',
-            v['trigger'] == 'mrv'
-                ? 'A muscle is at the most volume you can recover from'
-                : 'Reps falling at the same load on your main lifts',
+            switch (v['trigger']) {
+              'mrv' => 'A muscle is at the most volume you can recover from',
+              'readiness' => 'Readiness under 35 for three days or more',
+              _ => 'Reps falling at the same load on your main lifts',
+            },
           ),
         ],
       'exercise-contraindicated' => [
@@ -104,6 +113,23 @@ abstract final class TodayWords {
           ('Swap', s('alternativeName')),
           if (n('affectedCount') > 1)
             ('Lifts affected today', _num(n('affectedCount'))),
+        ],
+      'readiness-low' => [
+          ('Readiness', '${_num(n('readiness'))} of 100'),
+          (
+            'Suggestion',
+            v['band'] == 'rest'
+                ? 'Consider resting today'
+                : 'One fewer set on accessories',
+          ),
+          if ((v['accessories'] as List).isNotEmpty)
+            (
+              'Accessories',
+              _list([for (final a in v['accessories'] as List) '$a'])
+            ),
+          if (n('lowDays') >= 2)
+            ('Under 35', '${_num(n('lowDays'))} days running'),
+          ('Your plan', 'Unchanged unless you choose to'),
         ],
       'session-scheduled' => [
           ('Session', s('sessionName')),
@@ -156,6 +182,8 @@ abstract final class TodayWords {
               '${_num(n('kcalTarget'))} kcal · ${_num(n('proteinTarget'))} g protein',
             ),
           if (v['hasProgramme'] == false) ('Programme', 'None yet'),
+          if (v['readiness'] != null)
+            ('Readiness', '${_num(n('readiness'))} of 100'),
         ],
       'calorie-target-off-trend' => [
           ('Current target', '${_num(n('currentKcal'))} kcal'),

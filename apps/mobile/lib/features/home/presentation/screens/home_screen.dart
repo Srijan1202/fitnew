@@ -101,6 +101,7 @@ class HomeScreen extends ConsumerWidget {
         await context.push(Routes.session(session.clientSessionId));
       case TodayKind.deload:
       case TodayKind.injuredLimitation:
+      case TodayKind.lowReadiness:
       case TodayKind.progressLoad:
       case TodayKind.muscleNeglected:
       case TodayKind.restDay:

@@ -457,6 +457,28 @@ void main() {
     });
 
     test(
+        'Phase 13: low-readiness is advice — accepted, never completed, whatever the day holds',
+        () {
+      final ledger = [
+        e(
+          'r',
+          TodayKind.lowReadiness,
+          TodayEventName.accepted,
+          subject: 'rest',
+        ),
+      ];
+      const everything = CompletionEvidence(
+        date: date,
+        sessionCompleted: true,
+        weighed: true,
+        deloadActive: true,
+        targetAdjusted: true,
+      );
+      expect(due(ledger, everything), isEmpty);
+      expect(TodayKind.lowReadiness.completable, isFalse);
+    });
+
+    test(
         'Phase 12: calorie-adjust completes only on its own evidence (the new target row), after accept',
         () {
       final ledger = [

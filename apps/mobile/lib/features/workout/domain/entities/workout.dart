@@ -231,7 +231,11 @@ enum DeloadTrigger {
   @JsonValue('fatigue')
   fatigue('fatigue'),
   @JsonValue('mrv')
-  mrv('mrv');
+  mrv('mrv'),
+
+  /// Phase 13: readiness under 35 three days running (§18).
+  @JsonValue('readiness')
+  readiness('readiness');
 
   const DeloadTrigger(this.wire);
   final String wire;

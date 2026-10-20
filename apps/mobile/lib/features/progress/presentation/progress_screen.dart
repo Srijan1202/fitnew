@@ -9,6 +9,8 @@ import '../../health/presentation/controllers/health_providers.dart';
 import '../../home/domain/home_suggestion_engine.dart';
 import '../../home/presentation/controllers/home_providers.dart';
 import '../../home/presentation/widgets/home_sections.dart';
+import '../../recovery/presentation/recovery_panel.dart';
+import '../../recovery/presentation/recovery_providers.dart';
 import '../../workout/domain/entities/workout.dart';
 import '../../workout/presentation/controllers/workout_providers.dart';
 import '../../workout/presentation/screens/volume_screen.dart';
@@ -57,6 +59,7 @@ class ProgressScreen extends ConsumerWidget {
   Future<void> _refresh(WidgetRef ref) async {
     ref
       ..invalidate(progressSummaryProvider)
+      ..invalidate(recoveryTodayProvider)
       ..invalidate(volumeProvider);
     await ref.read(healthSnapshotProvider.notifier).refreshAll();
   }
@@ -612,9 +615,9 @@ class _ConsistencySection extends StatelessWidget {
 
 /* -------------------------------------------------------------- recovery -- */
 
-/// Phase 12 recovery is information only (owner D1): the phone's Health
-/// Connect sleep and resting heart rate — never sent to the server, no
-/// score, no readiness (Phase 13).
+/// Recovery: Phase 13's check-in and the server's readiness (ADR-019) above
+/// Phase 12's Health Connect context — the phone's sleep and resting heart
+/// rate, never sent to the server and never part of readiness (owner D1).
 class _RecoverySection extends ConsumerWidget {
   const _RecoverySection();
 
@@ -629,6 +632,8 @@ class _RecoverySection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
+        const RecoveryPanel(),
+        const SizedBox(height: FitSpacing.md),
         RecoverySection(context: c),
         if (short)
           _Pad(
@@ -646,8 +651,8 @@ class _RecoverySection extends ConsumerWidget {
             padding: const EdgeInsets.only(top: FitSpacing.sm),
             child: Text(
               c.health?.fromCache ?? false
-                  ? 'Health Connect did not answer just now; the last reading kept on this phone is shown. No score.'
-                  : 'From Health Connect on this phone; it stays here. Information only — no score.',
+                  ? 'Health Connect did not answer just now; the last reading kept on this phone is shown. Not part of readiness.'
+                  : 'From Health Connect on this phone; it stays here. Information only — not part of readiness.',
               key: const ValueKey('progress.recovery.note'),
               style: textTheme.bodySmall?.copyWith(color: FitColors.ink35),
             ),

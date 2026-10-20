@@ -89,7 +89,8 @@ List<ActionRef> dueCompletions(
       TodayKind.calorieAdjust => evidence.targetAdjusted,
       TodayKind.injuredLimitation ||
       TodayKind.restDay ||
-      TodayKind.celebratePr =>
+      TodayKind.celebratePr ||
+      TodayKind.lowReadiness =>
         false,
     };
     if (proven) {

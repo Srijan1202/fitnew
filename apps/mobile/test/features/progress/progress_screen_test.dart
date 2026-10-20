@@ -471,7 +471,7 @@ void main() {
   });
 
   testWidgets(
-      'recovery: device-only context, the connect state, the sleep advisory — never a score',
+      'recovery: device-only context, the connect state — Health Connect is never part of readiness (Phase 13)',
       (tester) async {
     await tester.pumpWidget(app());
     await settle(tester);
@@ -480,12 +480,13 @@ void main() {
       textOf(tester, 'home.recovery.empty'),
       'Recovery metrics need Health Connect, which is not on this phone.',
     );
-    expect(textOf(tester, 'progress.recovery.note'), contains('no score'));
     expect(
-      allText(tester)
-          .any((t) => RegExp('readiness', caseSensitive: false).hasMatch(t)),
-      isFalse,
+      textOf(tester, 'progress.recovery.note'),
+      contains('not part of readiness'),
     );
+    // Phase 13: a score exists only from the server, after a check-in — none here.
+    expect(key('recovery.readiness'), findsNothing);
+    expect(key('recovery.checkIn'), findsOneWidget);
   });
 
   testWidgets(

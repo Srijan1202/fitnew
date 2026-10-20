@@ -211,6 +211,7 @@ const _$DeloadStatusEnumMap = {
 const _$DeloadTriggerEnumMap = {
   DeloadTrigger.fatigue: 'fatigue',
   DeloadTrigger.mrv: 'mrv',
+  DeloadTrigger.readiness: 'readiness',
 };
 
 _NeglectedMuscle _$NeglectedMuscleFromJson(Map<String, dynamic> json) =>

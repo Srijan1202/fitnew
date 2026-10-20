@@ -332,6 +332,7 @@ void main() {
     ('injured-limitation', TodayKind.injuredLimitation, 'PLAN'),
     ('progress-load', TodayKind.progressLoad, 'PLAN'),
     ('muscle-neglected', TodayKind.muscleNeglected, 'PLAN'),
+    ('low-readiness', TodayKind.lowReadiness, 'PLAN'), // Phase 13
     ('log-weight', TodayKind.logWeight, 'DETAILS'),
     ('celebrate-pr', TodayKind.celebratePr, 'HISTORY'),
   ]) {

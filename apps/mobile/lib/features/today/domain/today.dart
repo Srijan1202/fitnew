@@ -5,11 +5,14 @@
 /// conformance test keeps them in step with the OpenAPI document.
 library;
 
-/// The ten server-owned kinds, in the engine's order (§16.1).
+/// The server-owned kinds, in the engine's order (§16.1).
 enum TodayKind {
   deload('deload'),
   injuredLimitation('injured-limitation'),
   startWorkout('start-workout'),
+
+  /// Phase 13: readiness under 55 on a training day (§18; advice only, never completed).
+  lowReadiness('low-readiness'),
   eatProtein('eat-protein'),
   eatMeal('eat-meal'),
   progressLoad('progress-load'),
@@ -35,7 +38,8 @@ enum TodayKind {
   bool get completable => switch (this) {
         TodayKind.restDay ||
         TodayKind.celebratePr ||
-        TodayKind.injuredLimitation =>
+        TodayKind.injuredLimitation ||
+        TodayKind.lowReadiness =>
           false,
         _ => true,
       };

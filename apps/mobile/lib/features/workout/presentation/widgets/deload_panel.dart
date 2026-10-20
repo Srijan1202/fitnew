@@ -100,9 +100,12 @@ class _DeloadPanelState extends ConsumerState<DeloadPanel> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                d.trigger == DeloadTrigger.mrv
-                    ? 'DELOAD OFFERED · VOLUME AT THE CEILING'
-                    : 'DELOAD OFFERED · FATIGUE ON YOUR LEAD LIFTS',
+                switch (d.trigger) {
+                  DeloadTrigger.mrv => 'DELOAD OFFERED · VOLUME AT THE CEILING',
+                  DeloadTrigger.readiness =>
+                    'DELOAD OFFERED · LOW READINESS THREE DAYS RUNNING',
+                  _ => 'DELOAD OFFERED · FATIGUE ON YOUR LEAD LIFTS',
+                },
                 style: textTheme.labelSmall?.copyWith(color: FitColors.amber),
               ),
               const SizedBox(height: FitSpacing.xs),

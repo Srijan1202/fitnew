@@ -16,6 +16,7 @@ import 'package:fitos/features/profile/data/profile_repository.dart'
     show PersonalDetailsChange;
 import 'package:fitos/features/profile/domain/entities/vocabulary.dart';
 import 'package:fitos/features/progress/domain/progress.dart';
+import 'package:fitos/features/recovery/domain/recovery.dart';
 import 'package:fitos/features/today/domain/today.dart';
 import 'package:fitos/features/today/presentation/today_words.dart';
 import 'package:fitos/features/training/domain/entities/program.dart';
@@ -2120,7 +2121,12 @@ void main() {
     });
 
     test('every reason code the server can send is worded from its values', () {
-      expect(reasons, hasLength(11)); // Phase 12 adds calorie-target-off-trend
+      expect(
+        reasons,
+        hasLength(
+          12,
+        ),
+      ); // Phase 12 calorie-target-off-trend, Phase 13 readiness-low
       for (final variant in reasons) {
         final r = sampleReason(variant);
         expect(TodayWords.facts(r), isNotEmpty, reason: r.code);
@@ -2177,6 +2183,99 @@ void main() {
         jsonDecode(jsonEncode(full.toJson())) as Map<String, dynamic>,
       );
       expect(jsonEncode(back.toJson()), jsonEncode(full.toJson()));
+    });
+  });
+
+  group('Recovery (Phase 13)', () {
+    Map<String, dynamic> p(Map<String, dynamic> s, String k) =>
+        properties(s)[k] as Map<String, dynamic>;
+
+    late Map<String, dynamic> today;
+    setUpAll(() => today = schemaOf('/recovery/today', 'get'));
+
+    const full = RecoveryToday(
+      date: '2026-09-24',
+      log: RecoveryLog(
+        date: '2026-09-24',
+        sleepHours: 6.5,
+        sleepQuality: 3,
+        soreness: 2,
+        energy: 4,
+        stress: 1,
+      ),
+      readiness: Readiness(
+        score: 71,
+        band: ReadinessBand.advisory,
+        advice: 'A little under par.',
+        components: [
+          ReadinessComponent(
+            key: ReadinessComponentKey.sleep,
+            penalty: 10,
+            max: 25,
+            available: true,
+          ),
+        ],
+        lowDays: 0,
+      ),
+    );
+
+    test('bands, components and the source are exactly the server\'s', () {
+      final r = p(today, 'readiness');
+      expect(
+        ReadinessBand.values.map((b) => b.wire).toList(),
+        enumOf(p(r, 'band')),
+      );
+      expect(
+        ReadinessComponentKey.values.map((k) => k.wire).toList(),
+        enumOf(p(p(r, 'components')['items'] as Map<String, dynamic>, 'key')),
+      );
+      expect(enumOf(p(p(today, 'log'), 'source')), ['manual']);
+    });
+
+    test('today, the log and readiness have exactly the documented properties',
+        () {
+      final j = full.toJson();
+      expect(j.keys.toSet(), keysOf(today));
+      expect(full.log!.toJson().keys.toSet(), keysOf(p(today, 'log')));
+      expect(
+        full.readiness!.toJson().keys.toSet(),
+        keysOf(p(today, 'readiness')),
+      );
+      expect(
+        full.readiness!.components.first.toJson().keys.toSet(),
+        keysOf(
+          p(p(today, 'readiness'), 'components')['items']
+              as Map<String, dynamic>,
+        ),
+      );
+      // Every RecoveryScale names a real check-in question.
+      for (final s in RecoveryScale.values) {
+        expect(keysOf(p(today, 'log')), contains(s.wire));
+      }
+    });
+
+    test('the check-in sends exactly the documented questions (and the date)',
+        () {
+      final req = schemaOf('/recovery/log', 'post', request: true);
+      expect(
+        const LogRecoveryRequest(date: '2026-09-24', soreness: 2)
+            .toJson()
+            .keys
+            .toSet(),
+        keysOf(req),
+      );
+    });
+
+    test('today round-trips through its own JSON (the offline cache)', () {
+      final back = RecoveryToday.fromJson(
+        jsonDecode(jsonEncode(full.toJson())) as Map<String, dynamic>,
+      );
+      expect(jsonEncode(back.toJson()), jsonEncode(full.toJson()));
+      const empty = RecoveryToday(date: '2026-09-24');
+      expect(
+        RecoveryToday.fromJson(empty.toJson()).toJson(),
+        empty.toJson(),
+      );
     });
   });
 
