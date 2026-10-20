@@ -27,6 +27,8 @@
 | 17 | Low | Flutter packages pinned behind latest; `sqlite3_flutter_libs` marked end-of-life; Kotlin Gradle Plugin warning from firebase plugins | **Not changed** — major upgrades need their own pass with device testing |
 | 18 | Low | Phase 12 Progress & Recovery visual polish | **Deferred** by the owner until after Phase 13 |
 
+Everything left open is tracked in the [backlog](../BACKLOG.md).
+
 ## What was confirmed solid
 
 - **Secrets:** none in the working tree or anywhere in the 175 commits of history; `.gitignore` covers env files, keys and keystores.

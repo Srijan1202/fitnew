@@ -1,0 +1,42 @@
+# Backlog — improvements parked for later
+
+**Started** 2026-10-20 from the [full audit](audits/2026-10-20-full-audit.md) (owner: "keep the rest in the log, we will come back to it").
+**Rule:** nothing here is scheduled. Each item is picked up only when the owner says so; anything that changes accepted behaviour gets its own plan first.
+
+## Waiting on an owner decision
+
+| # | Item | Why it waits | Notes |
+|---|---|---|---|
+| O1 | **Hosting (Phase 6.7)** | GCP billing prepayment; no GCP/Cloud Run/DNS changes without approval | Until then the app works only on the PC's Wi-Fi, and every IP change needs an APK rebuild (`.\tool\alpha.ps1 -ApiHostOverride <ip>`) |
+| O2 | **§18 readiness cap** | Spec consequence | The check-in alone bottoms out at 35 (the reduce band), so rest and escalation need a training or nutrition penalty. Options: count 35 as rest, change the caps, or keep §18 as written |
+| O3 | **Merges into `main`** | Explicit approval only | Unmerged: `phase-12` (accepted), `phase-13` (S24 pending), `phase-13-audit-fixes` (needs one S24 pass first) |
+| O4 | **Phase 12 Progress & Recovery UI polish** | Owner: after Phase 13 is accepted | A separate visual pass; not to be mixed into feature work |
+| O5 | **Nightly backup schedule** | Changes the PC's Task Scheduler | `schtasks /Create /TN "FITOS backup" /SC DAILY /ST 23:30 /TR "powershell -NoProfile -ExecutionPolicy Bypass -File \"D:\dev\fit new\scripts\backup-local.ps1\""` |
+| O6 | **S24 pass on `phase-13-audit-fixes`** | Device needed | Sign in, the Profile time-zone offer, a workout and food logging (the API dependency upgrades and the time zone change) |
+
+## Engineering (no decision needed, not yet scheduled)
+
+| # | Item | Size | Notes |
+|---|---|---|---|
+| E1 | `/meta/config` (feature flags, minimum app version) | S | §10.1, no owning phase; **needed before beta** |
+| E2 | `/nutrition/targets` (current + history) | S | §10.1, no owning phase; targets are currently read through `/user/goal` |
+| E3 | `/exercises/{id}/history` (full history of a lift) | S–M | §10.1; today only the last three sessions, via `/training/progression/{id}` |
+| E4 | §33 pre-caching: tomorrow's plan and the 200 most-used foods | M | Tomorrow's mess menu is already cached ahead |
+| E5 | Flutter dependency majors (go_router 14→18, firebase 6→7/4→5, riverpod 3.0→3.4, drift 2.29→2.35, flutter_secure_storage 9→11, connectivity_plus 6→7…) | L | Needs its own pass with device testing; `sqlite3_flutter_libs` is marked end-of-life (drift storage); the Kotlin Gradle Plugin warning comes from the firebase plugins |
+| E6 | `fastify-type-provider-zod` 4 → 7 and zod 3 → 4 | M | Majors; not security-driven |
+| E7 | Remove the pnpm `overrides` once upstream packages ship the patched transitive versions | S | Root `package.json` (`brace-expansion`, `fast-uri`, `postcss`, `source-map-js`) |
+| E8 | Defence in depth: scope id-keyed workout writes (`updateSet`, session exercise updates) by user in SQL | S | The service already checks ownership first (tested); natural fit for Phase 17 |
+| E9 | Workout `client_session_id` / `client_set_id` unique per user (food logs already are) | M | Migration + conflict handling; UUIDv4 makes collisions impractical, so low value |
+| E10 | Session summary tonnage computed on the phone (§30 edge, Phase 5) | S | Display only; could read a server figure instead |
+| E11 | Measure and record "< 3 s to log a set" (§38 Phase 5 box still open) | S | Device stopwatch run on the S24 |
+| E12 | Split the largest screens (log_food 1,011 lines, what_to_eat 851, eat 820, workout_week 729) | M | Maintainability only; behaviour-neutral refactor |
+| E13 | Food database gap: 305 of ~500 foods; licensing not confirmed (§38 Phase 7) | L | Needs licensed Indian data (Phase 7 report) |
+| E14 | §38 Phase 0 open boxes: Neon staging/prod, the extra Firebase projects, Cloud Run region verification | — | Follow O1 (hosting) |
+| E15 | Reading GitHub CI from this PC | S | The public API allows 60 calls an hour; installing `gh` (authenticated) would make CI checks reliable |
+| E16 | `tsx` "module.register() is deprecated" warning | S | Upgrade tsx when convenient |
+
+## Later phases (already in MASTER-SPEC, listed so nothing is lost)
+
+- **Phase 14 (AI features):** recovery is deliberately not in the AI context yet (ADR-019 D13).
+- **Phase 17 (security & privacy hardening):** data export and account deletion are a legal requirement before any public launch (DPDP, §23). Also consent flows, log redaction and secrets in Secret Manager.
+- **Phases 15, 16, 18–20:** notifications, admin, test hardening, beta and production.
