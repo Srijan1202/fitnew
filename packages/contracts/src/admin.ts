@@ -1,0 +1,231 @@
+/**
+ * Admin (Phase 16, MASTER-SPEC §20, §10.1; ADR-022). Every route is
+ * /v1/admin/* behind the Firebase custom claim `role: admin`, checked on the
+ * server for every request; every change writes `audit_logs`. The support
+ * lookup never shows body photos or raw food logs (§20).
+ */
+import { z } from 'zod';
+
+import { exerciseSeedSchema, movementPatternSchema, slugSchema } from './exercise.js';
+import { foodNutritionSchema, foodSourceSchema } from './food.js';
+import { equipmentSchema } from './profile.js';
+
+const iso = z.string().datetime({ offset: true });
+const isoOrNull = iso.nullable();
+
+export const adminMeSchema = z.object({ userId: z.string().uuid().nullable(), email: z.string().nullable(), isAdmin: z.literal(true) }).strict();
+
+/* ------------------------------------------------------ provider health -- */
+
+export const ENDPOINT_STATES = ['ok', 'stale', 'failing', 'never'] as const;
+
+export const endpointHealthSchema = z
+  .object({
+    code: z.string(),
+    label: z.string(),
+    sourceUrl: z.string(),
+    lastAttemptAt: isoOrNull,
+    lastSuccessAt: isoOrNull,
+    lastChangedAt: isoOrNull,
+    lastError: z.string().nullable(),
+    consecutiveFailures: z.number().int().nonnegative(),
+    state: z.enum(ENDPOINT_STATES),
+    hoursSinceSuccess: z.number().nullable(),
+  })
+  .strict();
+
+export const recommendationRateSchema = z
+  .object({
+    kind: z.string(),
+    shown: z.number().int(),
+    opened: z.number().int(),
+    accepted: z.number().int(),
+    dismissed: z.number().int(),
+    completed: z.number().int(),
+    acceptRate: z.number().nullable(),
+    dismissRate: z.number().nullable(),
+    completeRate: z.number().nullable(),
+  })
+  .strict();
+
+export const notificationRateSchema = z
+  .object({ kind: z.string(), sent: z.number().int(), opened: z.number().int(), cancelled: z.number().int(), openRate: z.number().nullable() })
+  .strict();
+
+export const adminOverviewQuerySchema = z.object({ days: z.coerce.number().int().min(1).max(90).default(30) }).strict();
+export const adminOverviewSchema = z
+  .object({
+    generatedAt: iso,
+    days: z.number().int(),
+    endpoints: z.array(endpointHealthSchema),
+    pendingCorrections: z.number().int(),
+    users: z.object({ total: z.number().int(), active7d: z.number().int() }).strict(),
+    recommendations: z.array(recommendationRateSchema),
+    notifications: z.array(notificationRateSchema),
+  })
+  .strict();
+
+/* ------------------------------------------------------ dish corrections -- */
+
+export const CORRECTION_STATUSES = ['pending', 'accepted', 'rejected'] as const;
+export const DIETS = ['veg', 'egg', 'nonveg'] as const;
+export const MACRO_FIELDS = ['kcal', 'protein', 'carb', 'fat'] as const;
+
+const dishEstimateSchema = z
+  .object({
+    name: z.string(),
+    servingLabel: z.string(),
+    kcalLow: z.number(),
+    kcalHigh: z.number(),
+    proteinLow: z.number(),
+    proteinHigh: z.number(),
+    carbLow: z.number(),
+    carbHigh: z.number(),
+    fatLow: z.number(),
+    fatHigh: z.number(),
+    confidence: z.string(),
+  })
+  .strict();
+
+export const correctionReportSchema = z
+  .object({
+    id: z.string().uuid(),
+    field: z.enum(['kcal', 'protein', 'carb', 'fat', 'diet', 'other']),
+    valueLow: z.number().nullable(),
+    valueHigh: z.number().nullable(),
+    dietValue: z.enum(DIETS).nullable(),
+    note: z.string().nullable(),
+    status: z.enum(CORRECTION_STATUSES),
+    createdAt: iso,
+    reviewedAt: isoOrNull,
+  })
+  .strict();
+
+/** One dish with its reports: the queue groups by slug, the unit a correction applies to. */
+export const correctionGroupSchema = z
+  .object({
+    dishSlug: slugSchema,
+    estimate: dishEstimateSchema.nullable(),
+    dietOverride: z.enum(DIETS).nullable(),
+    reports: z.array(correctionReportSchema),
+  })
+  .strict();
+
+export const correctionQueueQuerySchema = z.object({ status: z.enum(CORRECTION_STATUSES).default('pending') }).strict();
+export const correctionQueueSchema = z.object({ items: z.array(correctionGroupSchema) }).strict();
+
+/**
+ * Accept applies the report's own value (or the reviewer's adjusted one) to
+ * the dish, by slug, for every future menu; reject changes nothing.
+ * A free-text report ('other') can only be accepted as resolved.
+ */
+export const reviewCorrectionRequestSchema = z
+  .object({
+    decision: z.enum(['accept', 'reject']),
+    valueLow: z.number().nonnegative().optional(),
+    valueHigh: z.number().nonnegative().optional(),
+    diet: z.enum(DIETS).optional(),
+    note: z.string().trim().max(500).optional(),
+  })
+  .strict();
+
+export const editDishEstimateRequestSchema = z
+  .object({ field: z.enum(MACRO_FIELDS), low: z.number().nonnegative(), high: z.number().nonnegative(), reason: z.string().trim().min(3).max(500) })
+  .strict();
+export const dishDietRequestSchema = z.object({ diet: z.enum(DIETS).nullable(), reason: z.string().trim().min(3).max(500) }).strict();
+export const adminDishParamsSchema = z.object({ slug: slugSchema }).strict();
+
+/* ----------------------------------------------------------------- foods -- */
+
+export const adminFoodQuerySchema = z.object({ q: z.string().trim().max(80).default('') }).strict();
+export const adminFoodSummarySchema = z
+  .object({ id: z.string().uuid(), slug: z.string(), name: z.string(), source: foodSourceSchema, isVerified: z.boolean(), adminEditedAt: isoOrNull })
+  .strict();
+export const adminFoodListSchema = z.object({ items: z.array(adminFoodSummarySchema) }).strict();
+export const adminFoodSchema = adminFoodSummarySchema
+  .extend({ sourceRef: z.string().nullable(), aliases: z.array(z.string()), nutrition: z.array(foodNutritionSchema) })
+  .strict();
+/** A FITOS food corrected by hand: the seed leaves it alone from then on (ADR-022 D5). */
+export const editFoodRequestSchema = z
+  .object({
+    name: z.string().trim().min(1).max(160),
+    aliases: z.array(z.string().trim().min(1).max(80)).max(30),
+    isVerified: z.boolean(),
+    nutrition: z.array(foodNutritionSchema).min(1).max(12),
+    reason: z.string().trim().min(3).max(500),
+  })
+  .strict();
+
+/* ------------------------------------------------------------- exercises -- */
+
+export const adminExerciseQuerySchema = z.object({ q: z.string().trim().max(80).default(''), retired: z.coerce.boolean().default(false) }).strict();
+export const adminExerciseSummarySchema = z
+  .object({
+    id: z.string().uuid(),
+    slug: z.string(),
+    name: z.string(),
+    movementPattern: movementPatternSchema,
+    equipment: z.array(equipmentSchema),
+    retiredAt: isoOrNull,
+    adminEditedAt: isoOrNull,
+  })
+  .strict();
+export const adminExerciseListSchema = z.object({ items: z.array(adminExerciseSummarySchema) }).strict();
+/** The seed's shape without alternatives (kept as they are). */
+export const exerciseInputSchema = exerciseSeedSchema.omit({ alternatives: true });
+export type ExerciseInput = z.infer<typeof exerciseInputSchema>;
+export const adminExerciseSchema = exerciseInputSchema.extend({ id: z.string().uuid(), retiredAt: isoOrNull, adminEditedAt: isoOrNull }).strict();
+export const editExerciseRequestSchema = exerciseInputSchema.omit({ slug: true });
+
+/* ------------------------------------------------------------------ flags -- */
+
+export const flagKeySchema = z.string().regex(/^[a-z][a-z0-9-]{1,48}$/, 'lower-case words joined by hyphens');
+export const featureFlagSchema = z.object({ key: z.string(), enabled: z.boolean(), description: z.string(), updatedAt: iso }).strict();
+export const featureFlagListSchema = z.object({ items: z.array(featureFlagSchema) }).strict();
+export const putFlagRequestSchema = z.object({ enabled: z.boolean(), description: z.string().trim().max(300).optional() }).strict();
+export const flagParamsSchema = z.object({ key: flagKeySchema }).strict();
+/** GET /meta/config (§10.1): what the app may switch on, for any signed-in user. */
+export const metaConfigSchema = z.object({ flags: z.record(z.string(), z.boolean()) }).strict();
+
+/* ---------------------------------------------------------- support view -- */
+
+export const userLookupQuerySchema = z
+  .object({ email: z.string().trim().email().optional(), id: z.string().uuid().optional() })
+  .strict()
+  .refine((q) => (q.email === undefined) !== (q.id === undefined), { message: 'give exactly one of email or id' });
+
+/** Counts and dates only: no body photos, no food log contents, no weights (§20). */
+export const userSupportSchema = z
+  .object({
+    userId: z.string().uuid(),
+    email: z.string().nullable(),
+    displayName: z.string().nullable(),
+    createdAt: iso,
+    timezone: z.string(),
+    onboardingStage: z.string().nullable(),
+    goal: z.string().nullable(),
+    programme: z.object({ name: z.string(), splitType: z.string() }).strict().nullable(),
+    counts: z
+      .object({ sessions: z.number().int(), foodLogs: z.number().int(), weighIns: z.number().int(), checkIns: z.number().int(), aiCalls7d: z.number().int() })
+      .strict(),
+    lastActivity: z.object({ session: isoOrNull, foodLog: isoOrNull, weighIn: z.string().nullable(), checkIn: z.string().nullable() }).strict(),
+    notifications: z.object({ enabled: z.boolean(), tone: z.string() }).strict(),
+  })
+  .strict();
+
+/* ------------------------------------------------------------------ audit -- */
+
+export const auditQuerySchema = z.object({ limit: z.coerce.number().int().min(1).max(200).default(50), before: iso.optional() }).strict();
+export const auditEntrySchema = z
+  .object({
+    id: z.string().uuid(),
+    actorUserId: z.string().uuid().nullable(),
+    actorEmail: z.string().nullable(),
+    action: z.string(),
+    entity: z.string(),
+    entityId: z.string().nullable(),
+    metadata: z.record(z.string(), z.unknown()),
+    occurredAt: iso,
+  })
+  .strict();
+export const auditListSchema = z.object({ items: z.array(auditEntrySchema), next: isoOrNull }).strict();
