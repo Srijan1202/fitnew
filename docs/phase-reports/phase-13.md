@@ -1,10 +1,10 @@
-## PHASE 13 — RECOVERY — IMPLEMENTATION COMPLETE, S24 ACCEPTANCE PENDING
+## PHASE 13 — RECOVERY — ACCEPTED AND FROZEN
 
 **Date** 2026-09-25 · **Branch** `phase-13` from `952ea73` (the accepted, frozen Phase 12 closeout) · **not merged**
 
-**Status:** **implemented and tested; NOT accepted, NOT frozen.**
-- The S24 manual checks have not been run.
-- §38 Phase 13 is not ticked; ADR-019 is PROPOSED.
+**Status:** **ACCEPTED and FROZEN 2026-10-22** — the owner ran the S24 checks on the combined build (Phases 13–15) and reported them passed.
+- §38 Phase 13 ticked; ADR-019 ACCEPTED. Frozen at `phase-13` @ `6a93ed4` (the S24 fixes); later work builds on top.
+- Still open: the §18 readiness cap question (BACKLOG O2). Not merged into `main` (needs a separate approval).
 
 **Commits**
 - `2430b25` — core: `recovery/readiness.ts`, the deload `readiness` trigger, TODAY `today-3` with `low-readiness`, the persona, the Phase 13 plan

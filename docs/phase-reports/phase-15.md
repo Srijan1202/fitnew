@@ -1,10 +1,10 @@
-## PHASE 15 — NOTIFICATIONS — IMPLEMENTATION COMPLETE, S24 ACCEPTANCE PENDING
+## PHASE 15 — NOTIFICATIONS — ACCEPTED AND FROZEN
 
 **Date** 2026-10-21 · **Branch** `phase-15` from `926c48b` (Phase 14, itself not yet accepted) · **not merged**
 
-**Status:** **implemented and tested; NOT accepted, NOT frozen.**
-- The S24 manual checks (§7) have not been run.
-- §38 Phase 15 is not ticked; ADR-021 is PROPOSED.
+**Status:** **ACCEPTED and FROZEN 2026-10-22** — the owner ran the S24 checks (§7) on build `phase-15-s24-1` and reported them passed.
+- §38 Phase 15 ticked (server push deferred, BACKLOG O9); ADR-021 ACCEPTED. Frozen at `phase-15` @ `b2eca7c` (tag `phase-15-s24-1`).
+- Not merged into `main` (needs a separate approval).
 
 **Commits**
 - `b1d2e7f` — core `notify/`: time and habits, the copy bank with guardrails, the planner; tests

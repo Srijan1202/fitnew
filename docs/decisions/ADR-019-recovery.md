@@ -1,6 +1,6 @@
 # ADR-019 — Recovery: a daily check-in, readiness computed on read, advice that never changes the plan
 
-**Status** PROPOSED — written from the Phase 13 audit (2026-09-25) and implemented on `phase-13`. Becomes ACCEPTED with Phase 13's acceptance (S24 manual checks pending).
+**Status** ACCEPTED 2026-10-22 — Phase 13 passed the owner's S24 manual checks. (Was PROPOSED: written from the Phase 13 audit (2026-09-25) and implemented on `phase-13`. Becomes ACCEPTED with Phase 13's acceptance (S24 manual checks pending).)
 **Date** 2026-09-25
 **Phase** 13
 **Affects**

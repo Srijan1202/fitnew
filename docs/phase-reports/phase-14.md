@@ -1,10 +1,10 @@
-## PHASE 14 — AI FEATURES — IMPLEMENTATION COMPLETE, S24 ACCEPTANCE PENDING
+## PHASE 14 — AI FEATURES — ACCEPTED AND FROZEN
 
 **Date** 2026-10-21 · **Branch** `phase-14` from `0dd02ff` (`phase-13-audit-fixes` with `phase-13` merged in) · **not merged**
 
-**Status:** **implemented and tested; NOT accepted, NOT frozen.**
-- The S24 manual checks (§8) have not been run.
-- §38 Phase 14 is not ticked; ADR-020 is PROPOSED.
+**Status:** **ACCEPTED and FROZEN 2026-10-22** — the owner ran the S24 checks (§8) on the combined build and reported them passed.
+- §38 Phase 14 ticked, the paid tier marked deferred (BACKLOG O7); ADR-020 ACCEPTED. Frozen at `phase-14` @ `926c48b`.
+- Not merged into `main` (needs a separate approval).
 
 **Commits**
 - `84c16f7` — core: the `AiDraft` shape, the numeric check for explanations, the §19.2 bounds for estimates, `choosePortion`

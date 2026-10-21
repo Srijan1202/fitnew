@@ -1,6 +1,6 @@
 # ADR-021 — Notifications: planned on the server, scheduled on the phone, timed from habits, cheeky by owner decision
 
-**Status** PROPOSED — written from the Phase 15 audit (2026-10-21) and implemented on `phase-15`. Becomes ACCEPTED with Phase 15's acceptance (S24 manual checks pending).
+**Status** ACCEPTED 2026-10-22 — Phase 15 passed the owner's S24 manual checks. (Was PROPOSED: written from the Phase 15 audit (2026-10-21) and implemented on `phase-15`. Becomes ACCEPTED with Phase 15's acceptance (S24 manual checks pending).)
 **Date** 2026-10-21
 **Phase** 15
 **Affects**

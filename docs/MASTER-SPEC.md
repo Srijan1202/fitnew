@@ -1785,11 +1785,11 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 **Phase 12** — [x] body tables · [x] trend on read · [x] measurements · [ ] photo signed URLs (deferred — ADR-018 D3) · [x] PROGRESS screen (visual polish deferred) · [x] **no "since yesterday" anywhere** · [x] rebuild-derived script
 
-**Phase 13** — [ ] recovery table · [ ] readiness score · [ ] `UserModel` extended · [ ] recovery card · [ ] advisory-only test
+**Phase 13** — [x] recovery table · [x] readiness score · [x] `UserModel` extended · [x] recovery card · [x] advisory-only test (owner-accepted 2026-10-22 on the S24; §18 cap question still open, BACKLOG O2)
 
-**Phase 14** — [ ] paid Gemini tier · [ ] `AiDraft` contract · [ ] NL parsing · [ ] explanation validation · [ ] kill switch · [ ] token budget · [ ] confirmation required test
+**Phase 14** — [ ] paid Gemini tier (**deferred**: free tier for the alpha by owner decision, BACKLOG O7) · [x] `AiDraft` contract · [x] NL parsing · [x] explanation validation · [x] kill switch · [x] token budget · [x] confirmation required test (owner-accepted 2026-10-22 on the S24)
 
-**Phase 15** — [ ] FCM registration · [ ] scheduled notifications · [ ] local timers · [ ] preferences · [ ] ≤2/day enforced
+**Phase 15** — [x] FCM registration (no server push until hosting, BACKLOG O9) · [x] scheduled notifications (on the phone, ADR-021) · [x] local timers · [x] preferences · [x] ≤2/day enforced (owner-accepted 2026-10-22 on the S24)
 
 **Phase 16** — [ ] Next.js admin · [ ] correction queue · [ ] exercise CRUD · [ ] provider health · [ ] feature flags · [ ] audit logging · [ ] 403 test
 

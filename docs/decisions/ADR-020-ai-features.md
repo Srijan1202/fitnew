@@ -1,6 +1,6 @@
 # ADR-020 — AI features: meal drafts from words, checked explanations, a usage ledger and a kill switch
 
-**Status** PROPOSED — written from the Phase 14 audit (2026-10-21) and implemented on `phase-14`. Becomes ACCEPTED with Phase 14's acceptance (S24 manual checks pending).
+**Status** ACCEPTED 2026-10-22 — Phase 14 passed the owner's S24 manual checks. (Was PROPOSED: written from the Phase 14 audit (2026-10-21) and implemented on `phase-14`. Becomes ACCEPTED with Phase 14's acceptance (S24 manual checks pending).)
 **Date** 2026-10-21
 **Phase** 14
 **Affects**
