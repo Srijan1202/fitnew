@@ -165,7 +165,7 @@ void main() {
     await reveal(tester, key('recovery.checkIn'));
     expect(find.text('How are you today?'), findsOneWidget);
     expect(key('recovery.readiness'), findsNothing);
-    expect(textOf(tester, 'recovery.sleep.value'), '—');
+    expect(textOf(tester, 'recovery.sleep.value'), 'Not set');
     final save = key('recovery.save');
     expect(tester.widget<FilledButton>(save).onPressed, isNull);
 
@@ -367,7 +367,7 @@ void main() {
       textOf(tester, 'recovery.sleep.healthConnect'),
       'Health Connect: 6 h 40 min last night — on this phone, not sent.',
     );
-    expect(textOf(tester, 'recovery.sleep.value'), '—');
+    expect(textOf(tester, 'recovery.sleep.value'), 'Not set');
     await tap(tester, 'recovery.soreness.1');
     await tap(tester, 'recovery.save');
     await settle(tester);

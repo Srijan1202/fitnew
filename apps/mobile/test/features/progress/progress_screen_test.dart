@@ -219,14 +219,16 @@ void main() {
       textOf(tester, 'progress.weight.fluctuation'),
       ProgressScreen.fluctuation,
     );
+    // The redesigned order: weight, recovery, then the rest; records last.
     for (final label in [
       'WEIGHT',
-      'MEASUREMENTS',
-      'STRENGTH',
-      'TRAINING VOLUME',
-      'NUTRITION',
-      'TRAINING CONSISTENCY',
       'RECOVERY',
+      'BODY MEASUREMENTS',
+      'STRENGTH',
+      'TRAINING',
+      'WEEKLY VOLUME PER MUSCLE',
+      'NUTRITION',
+      'RECORDS',
     ]) {
       await reveal(tester, find.text(label));
     }
@@ -237,9 +239,49 @@ void main() {
     progress.summaries[ProgressWindow.d30] = rich(weekly: null, days: 6);
     await tester.pumpWidget(app());
     await settle(tester);
+    expect(textOf(tester, 'progress.weight.rate'), 'After 10 days of readings');
+    expect(find.text('6 so far'), findsOneWidget);
+  });
+
+  testWidgets(
+      'one reading: no squeezed chart and no "not yet" tiles — a panel says the line starts with the next reading',
+      (tester) async {
+    progress.summaries[ProgressWindow.d30] = rich(weekly: null, days: 1);
+    await tester.pumpWidget(app());
+    await settle(tester);
+    expect(textOf(tester, 'progress.weight.trend'), '74.1 kg');
+    expect(key('progress.weight.sparse'), findsOneWidget);
+    expect(key('progress.chart'), findsNothing);
+    expect(key('progress.weight.rate'), findsNothing);
+    expect(key('progress.weight.log'), findsOneWidget);
+  });
+
+  testWidgets('the chart: kg on the right, the window\'s dates below',
+      (tester) async {
+    progress.summaries[ProgressWindow.d30] = rich();
+    await tester.pumpWidget(app());
+    await settle(tester);
+    expect(key('progress.chart'), findsOneWidget);
     expect(
-      textOf(tester, 'progress.weight.rate'),
-      'After 10 days of readings (6 so far)',
+      find.descendant(
+        of: key('progress.chart.dates'),
+        matching: find.text('23 Aug'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: key('progress.chart.dates'),
+        matching: find.text('21 Sep'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: key('progress.chart.kg'),
+        matching: find.byType(Text),
+      ),
+      findsNWidgets(3),
     );
   });
 
@@ -268,29 +310,98 @@ void main() {
     await tester.pumpWidget(app());
     await settle(tester);
     await reveal(tester, key('progress.measurement.arm'));
+    expect(textOf(tester, 'progress.measurement.waist'), '84.5 cm');
     expect(
-      textOf(tester, 'progress.measurement.waist'),
-      '84.5 cm · −1.5 cm over 20 days',
+      textOf(tester, 'progress.measurement.waist.change'),
+      '−1.5 cm over 20 days',
     );
     expect(textOf(tester, 'progress.measurement.arm'), '35.5 cm');
+    expect(
+      textOf(tester, 'progress.measurement.arm.change'),
+      'Change shows after 7 days',
+    );
+    expect(
+      textOf(tester, 'progress.measurement.missing'),
+      'Not measured yet: chest, thigh, hip',
+    );
     await reveal(tester, key('progress.best.ex-bench'));
-    expect(
-      textOf(tester, 'progress.best.ex-bench'),
-      'Est. 1RM 93.5 kg (85.0 × 3)',
-    );
-    expect(find.text('85 kg beats your best of 80 kg.'), findsOneWidget);
-    await reveal(tester, key('progress.adherence.calories'));
-    expect(
-      textOf(tester, 'progress.adherence.protein'),
-      '2 of 4 logged days · 50%',
-    );
-    expect(
-      textOf(tester, 'progress.adherence.calories'),
-      '3 of 4 logged days · 75%',
-    );
+    expect(textOf(tester, 'progress.best.ex-bench'), '93.5 kg');
+    expect(find.text('From 85.0 kg × 3 · 19 Sep'), findsOneWidget);
     await reveal(tester, key('progress.consistency'));
-    expect(textOf(tester, 'progress.consistency'), '4 of 4 planned · 100%');
+    expect(textOf(tester, 'progress.consistency'), '4 / 4');
+    expect(
+      textOf(tester, 'progress.consistency.caption'),
+      'Planned sessions done · 100%',
+    );
     expect(textOf(tester, 'progress.consistency.2026-W38'), 'W38 3/3');
+    await reveal(tester, key('progress.adherence.calories'));
+    expect(textOf(tester, 'progress.adherence.protein'), '50%');
+    expect(
+      textOf(tester, 'progress.adherence.protein.days'),
+      '2 of 4 logged days',
+    );
+    expect(textOf(tester, 'progress.adherence.calories'), '75%');
+    expect(
+      textOf(tester, 'progress.adherence.calories.days'),
+      '3 of 4 logged days',
+    );
+  });
+
+  testWidgets(
+      'S24 regression: 24 sessions in a 4-session week fit on a 360 px screen — 4 squares and "+20", no overflow',
+      (tester) async {
+    tester.view
+      ..physicalSize = const Size(360 * 3, 640 * 3)
+      ..devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final base = rich();
+    progress.summaries[ProgressWindow.d30] = ProgressSummary(
+      window: base.window,
+      today: base.today,
+      from: base.from,
+      weight: base.weight,
+      measurements: base.measurements,
+      prs: base.prs,
+      bestLifts: base.bestLifts,
+      adherence: base.adherence,
+      consistency: const Consistency(
+        weeks: [
+          WeekConsistency(isoWeek: '2026-W39', completed: 24, planned: 4),
+          WeekConsistency(isoWeek: '2026-W40', completed: 0, planned: 5),
+          WeekConsistency(isoWeek: '2026-W41', completed: 0, planned: 5),
+          WeekConsistency(isoWeek: '2026-W42', completed: 0, planned: 5),
+          WeekConsistency(isoWeek: '2026-W43', completed: 0, planned: 3),
+        ],
+        completed: 24,
+        planned: 22,
+        percent: 109,
+      ),
+    );
+    await tester.pumpWidget(app());
+    await settle(tester);
+    await reveal(tester, key('progress.consistency.2026-W43'));
+    expect(tester.takeException(), isNull);
+    expect(textOf(tester, 'progress.consistency.2026-W39'), 'W39 24/4');
+    expect(textOf(tester, 'progress.consistency.2026-W39.extra'), '+20');
+    expect(key('progress.consistency.2026-W40.extra'), findsNothing);
+  });
+
+  testWidgets(
+      'records sit at the bottom, collapsed: counted, opened on a tap, closed again',
+      (tester) async {
+    progress.summaries[ProgressWindow.d30] = rich();
+    await tester.pumpWidget(app());
+    await settle(tester);
+    await reveal(tester, key('progress.records.toggle'));
+    expect(textOf(tester, 'progress.records.count'), '1 record this period');
+    expect(key('progress.pr.pr-1'), findsNothing);
+    await tester.tap(key('progress.records.toggle'));
+    await settle(tester);
+    expect(key('progress.pr.pr-1'), findsOneWidget);
+    expect(find.text('85 kg beats your best of 80 kg.'), findsOneWidget);
+    await tester.tap(key('progress.records.toggle'));
+    await settle(tester);
+    expect(key('progress.pr.pr-1'), findsNothing);
   });
 
   testWidgets('empty history: honest empty states, nothing invented',
@@ -301,16 +412,20 @@ void main() {
     expect(key('progress.weight.trend'), findsNothing);
     await reveal(tester, key('progress.measurements.empty'));
     await reveal(tester, key('progress.strength.empty'));
-    await reveal(tester, key('progress.adherence.protein'));
+    await reveal(tester, key('progress.consistency'));
+    expect(textOf(tester, 'progress.consistency'), '0');
     expect(
-      textOf(tester, 'progress.adherence.protein'),
+      textOf(tester, 'progress.consistency.caption'),
+      'Completed · no programme to compare',
+    );
+    await reveal(tester, key('progress.adherence.protein'));
+    expect(textOf(tester, 'progress.adherence.protein'), '—');
+    expect(
+      textOf(tester, 'progress.adherence.protein.days'),
       'No logged days with a target yet',
     );
-    await reveal(tester, key('progress.consistency'));
-    expect(
-      textOf(tester, 'progress.consistency'),
-      '0 completed · no programme to compare',
-    );
+    await reveal(tester, key('progress.records.count'));
+    expect(textOf(tester, 'progress.records.count'), 'No records this period');
   });
 
   testWidgets('loading shows a quiet bar; the window switch fetches 90 days',

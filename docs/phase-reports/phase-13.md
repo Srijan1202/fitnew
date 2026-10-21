@@ -159,6 +159,19 @@ on conflict do nothing;
 
 Today's poor check-in is then made on the phone. Remove the seeded rows afterwards if wanted.
 
+### 9a. S24 RUN — FINDINGS SO FAR (owner, 2026-10-21)
+
+- **Defect, fixed (`b0fb566`):** the check-in saved and changed correctly, but Home's Recovery blocks read only Health Connect, so a check-in's sleep still showed "No data yet".
+  - They now fall back to the check-in's sleep ("From your check-in") and show the readiness tile.
+  - Regression tests added.
+- **Redesign, done at the owner's request (`d46f944`):** the Progress & Recovery page was "ugly and cluttered", so the parked Phase 12 polish was picked up.
+  - **Layout:** sections in reading order with Records last and collapsed; metric tiles; a taller chart with axes; a panel instead of a squeezed line for one reading; measurements, strength, nutrition and consistency in their own blocks.
+  - **Unchanged:** the §17 rules hold, and so does the app's design system (§6; no card soup).
+  - **Still app-wide:** outlined buttons and chips elsewhere in the app keep Material's rounded default; this page squares its own.
+- **Gates after both:** Flutter 632/632, analyze, custom_lint and format are clean.
+  - The known Phase 6.6 sync-test flake still occurs on this branch; its fix is on `phase-13-audit-fixes`.
+- **New APK:** built for the then-current LAN address; the remaining checklist items continue on it.
+
 ### 10. KNOWN ISSUES, DEFERRED, OUT OF SCOPE
 
 - **Known:**

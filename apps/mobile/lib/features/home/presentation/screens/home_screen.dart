@@ -11,6 +11,7 @@ import '../../../nutrition/domain/entities/food_log.dart';
 import '../../../nutrition/presentation/controllers/food_log_providers.dart';
 import '../../../nutrition/presentation/controllers/food_logger.dart';
 import '../../../profile/data/profile_repository.dart';
+import '../../../recovery/presentation/recovery_providers.dart';
 import '../../../today/domain/today.dart';
 import '../../../today/presentation/today_providers.dart';
 import '../../../today/presentation/today_why_sheet.dart';
@@ -247,7 +248,10 @@ class HomeScreen extends ConsumerWidget {
                 TodayMetrics(context: c),
                 const SizedBox(height: FitSpacing.lg),
                 const SectionLabel('Recovery'),
-                RecoverySection(context: c),
+                RecoverySection(
+                  context: c,
+                  checkIn: ref.watch(recoveryTodayProvider).value?.today,
+                ),
                 if (_showBody(c)) ...<Widget>[
                   const SizedBox(height: FitSpacing.lg),
                   const SectionLabel('Body'),
