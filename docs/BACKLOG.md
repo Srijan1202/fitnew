@@ -14,6 +14,7 @@
 | O5 | **Nightly backup schedule** | Changes the PC's Task Scheduler | `schtasks /Create /TN "FITOS backup" /SC DAILY /ST 23:30 /TR "powershell -NoProfile -ExecutionPolicy Bypass -File \"D:\dev\fit new\scripts\backup-local.ps1\""` |
 | O6 | **S24 pass on `phase-13-audit-fixes`** | Device needed | Sign in, the Profile time-zone offer, a workout and food logging (the API dependency upgrades and the time zone change) |
 | O7 | **Gemini paid tier (or Vertex AI)** | Owner, 2026-10-21: free tier for the alpha | **Before beta or any user outside the alpha group.** §19.3's privacy rule is suspended only for the alpha (ADR-020 D1). The change is configuration: a paid key in `GEMINI_API_KEY`; `ai_usage` shows real token use for sizing |
+| O9 | **Server push (FCM)** | Needs the API hosted (O1) | Phase 15 registers tokens (`push_tokens`) but the phone schedules every reminder from the plan (ADR-021 D1/D2). Push would make reminders current even when the app has not synced |
 | O8 | **TODAY and recovery in the AI chat context** | §31 Phase 11/13 deferred them to Phase 14; not in Phase 14's task list | Would let the assistant answer "why rest today?" from readiness, but sends more health-adjacent data to the model (free tier, O7). ADR-020 "Not in Phase 14" |
 
 ## Engineering (no decision needed, not yet scheduled)
@@ -36,6 +37,7 @@
 | E14 | §38 Phase 0 open boxes: Neon staging/prod, the extra Firebase projects, Cloud Run region verification | — | Follow O1 (hosting) |
 | E15 | Reading GitHub CI from this PC | S | The public API allows 60 calls an hour; installing `gh` (authenticated) would make CI checks reliable |
 | E16 | `tsx` "module.register() is deprecated" warning | S | Upgrade tsx when convenient |
+| E17 | Name a high-protein dish from tonight's mess menu in the protein nudge | M | Phase 10 suggestions exist on the Eat tab; the planner would need that day's menu at plan time (ADR-021 "Not in Phase 15") |
 
 ## Later phases (already in MASTER-SPEC, listed so nothing is lost)
 

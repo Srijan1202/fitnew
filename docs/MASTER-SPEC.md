@@ -399,7 +399,8 @@ Everything else in your preferred stack is kept: Cloud Run, Firebase Auth, FCM, 
 | `recovery_logs` | `id`, `user_id`, `logged_on date`, `sleep_hours`, `sleep_quality`, `soreness`, `energy`, `stress`, `source` | UNIQUE `(user_id, logged_on)`. `AMENDED 2026-09-25 (Phase 13, ADR-019)`: every value optional, at least one present; `source` is `manual` only (Health Connect never leaves the phone); hard delete. |
 | `ai_usage` | `id`, `user_id`, `route` (`chat` \| `parse` \| `explain`), `model`, `input_tokens`, `output_tokens`, `outcome` (`ok` \| `discarded` \| `failed`), `created_at` | `ADDED 2026-10-21 (Phase 14, ADR-020 D3)`: one row per model call, never the prompt or the answer; the hourly limits and the daily token budget are counted from it; cascade from `users`. |
 | `health_samples` | `id`, `user_id`, `sample_type`, `value`, `unit`, `recorded_at`, `source` | Health Connect / HealthKit (V2) |
-| `notifications` | `id`, `user_id`, `kind`, `scheduled_for`, `sent_at`, `opened_at` | |
+| `notifications` | `id`, `user_id`, `kind`, `scheduled_for`, `sent_at`, `opened_at` | `AMENDED 2026-10-21 (Phase 15, ADR-021 D6)`: also `local_date`, `variant`, `title`, `body`, `status` (`planned` → `delivered` → `opened`, or `cancelled`), `cancelled_at`; UNIQUE `(user_id, kind, local_date)` — the plan's ledger; ids stable across re-plans. |
+| `push_tokens` | `id`, `user_id`, `token`, `platform` | `ADDED 2026-10-21 (Phase 15, ADR-021 D2)`: FCM registrations, UNIQUE token (moves to the last user signed in on the device); no server push until hosting. |
 | `audit_logs` | `id`, `actor_user_id`, `action`, `entity`, `entity_id`, `metadata jsonb`, `occurred_at` | Admin actions + data export/delete |
 
 ### 9.3 Critical indexes
@@ -496,7 +497,10 @@ Codes: `UNAUTHENTICATED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `VALIDATIO
 | GET | `/recovery/today` | Today's recovery state | |
 | POST | `/recovery/log` | Sleep, soreness, energy | Upsert on date |
 | POST | `/recovery/health-sync` | Bulk health samples | V2 |
-| POST | `/notifications/token` | Register FCM token | |
+| POST | `/notifications/token` | Register FCM token | Phase 15: 204; stored, no push yet |
+| GET/PATCH | `/notifications/settings` | On/off, tone, each kind, quiet hours | Phase 15 (ADR-021 D7) |
+| POST | `/notifications/plan` | The phone's outcome reports in; the next days' reminders out | Phase 15 (ADR-021 D1): the phone schedules them |
+| POST | `/notifications/preview` | One kind's words now, in the user's tone | Phase 15; nothing stored |
 | GET | `/meta/config` | Feature flags, min app version | Unauthenticated |
 | GET | `/health` | Liveness + DB ping | Unauthenticated |
 
@@ -1028,6 +1032,15 @@ FCM push + `flutter_local_notifications` for on-device timers.
 
 **Rules:** maximum 2 push notifications/day. Every one is individually toggleable. **No streak-shaming, no guilt, no "you missed…".** All notification copy is written by the deterministic engine, never by an LLM.
 
+`AMENDED 2026-10-21 (owner decision, Phase 15, ADR-021)`:
+- **Tone:** Cheeky, Duolingo-style, by default. Teasing, light guilt and streak pressure are allowed. Gentle is a setting, and is used on low-readiness days.
+- **Guardrails in every tone (tested):** nothing about the body (weight, size, shape, looks), no food guilt ("eat less"), no insults.
+- **Kinds:** the table above plus *missed session* (the next morning), *streak saver* (evening, nothing logged), *recovery check-in* (off by default) and *comeback* (day 2, 4, 7 without opening the app, the last saying reminders stop).
+- **Timing:** learned from the user's own records (the median local time), not fixed. *Weekly progress* is Sunday 16:00, so it fits beside the evening protein nudge.
+- **Cap and spacing:** 2 a day stays, at least 3 h apart, nothing in quiet hours (default 22:30–07:30).
+- **Back-off:** ignored 3 times → every other day; 6 → a week off.
+- **Delivery:** the server plans and the phone schedules (no Cloud Scheduler). Each reminder is cancelled on the phone the moment it is pointless.
+
 ---
 
 ## 22. Analytics
@@ -1524,6 +1537,12 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 **Tests:** ≤2 push/day enforced · preferences respected · no notification copy originates from an LLM.
 **Acceptance:** every notification individually toggleable; none use shame framing.
 **Manual:** verify delivery and timing on a real device.
+`AMENDED 2026-10-21 (Phase 15 plan, ADR-021)`:
+- **Tasks:** scheduled on the phone from a server plan (`/notifications/plan`), instead of Cloud Scheduler (no GCP changes; the API is not always on). FCM is registered but not used for sending until hosting.
+- **DB:** `notifications` as the plan's ledger, and `push_tokens` (migration 0018).
+- **APIs:** also `/notifications/settings`, `/notifications/plan`, `/notifications/preview`.
+- **UI:** Profile → Notifications: each kind, tone, quiet hours, what is coming up and why, a sample, the Android permission.
+- **Acceptance:** "none use shame framing" is amended by the owner's tone decision (§21). The guardrails above are what is tested.
 
 ---
 
