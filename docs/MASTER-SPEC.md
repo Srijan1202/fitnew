@@ -401,7 +401,9 @@ Everything else in your preferred stack is kept: Cloud Run, Firebase Auth, FCM, 
 | `health_samples` | `id`, `user_id`, `sample_type`, `value`, `unit`, `recorded_at`, `source` | Health Connect / HealthKit (V2) |
 | `notifications` | `id`, `user_id`, `kind`, `scheduled_for`, `sent_at`, `opened_at` | `AMENDED 2026-10-21 (Phase 15, ADR-021 D6)`: also `local_date`, `variant`, `title`, `body`, `status` (`planned` → `delivered` → `opened`, or `cancelled`), `cancelled_at`; UNIQUE `(user_id, kind, local_date)` — the plan's ledger; ids stable across re-plans. |
 | `push_tokens` | `id`, `user_id`, `token`, `platform` | `ADDED 2026-10-21 (Phase 15, ADR-021 D2)`: FCM registrations, UNIQUE token (moves to the last user signed in on the device); no server push until hosting. |
-| `audit_logs` | `id`, `actor_user_id`, `action`, `entity`, `entity_id`, `metadata jsonb`, `occurred_at` | Admin actions + data export/delete |
+| `audit_logs` | `id`, `actor_user_id`, `action`, `entity`, `entity_id`, `metadata jsonb`, `occurred_at` | Admin actions + data export/delete. `BUILT 2026-10-22 (Phase 16, ADR-022 D3)`: one row per admin change in the same transaction, and per support lookup; the actor is kept as `set null` on account deletion |
+| `feature_flags` | `key` PK, `enabled`, `description`, `updated_by`, `updated_at` | `ADDED 2026-10-22 (Phase 16, ADR-022 D8)`: global switches served by `/meta/config` (per-user flags stay in `user_preferences.feature_flags`) |
+| `mess_dish_overrides` | `dish_slug` PK, `diet`, `reason`, `updated_by`, `updated_at` | `ADDED 2026-10-22 (Phase 16, ADR-022 D4)`: a reviewed diet class by slug, applied to every served menu. `foods.admin_edited_at`, `exercises.admin_edited_at` and `exercises.retired_at` mark admin edits, which the seeds leave alone, and retired exercises |
 
 ### 9.3 Critical indexes
 
@@ -501,7 +503,8 @@ Codes: `UNAUTHENTICATED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `VALIDATIO
 | GET/PATCH | `/notifications/settings` | On/off, tone, each kind, quiet hours | Phase 15 (ADR-021 D7) |
 | POST | `/notifications/plan` | The phone's outcome reports in; the next days' reminders out | Phase 15 (ADR-021 D1): the phone schedules them |
 | POST | `/notifications/preview` | One kind's words now, in the user's tone | Phase 15; nothing stored |
-| GET | `/meta/config` | Feature flags, min app version | Unauthenticated |
+| GET | `/meta/config` | Feature flags, min app version | Unauthenticated. Phase 16: flags built; min app version not yet (BACKLOG E1) |
+| — | `/admin/*` | Overview, mess health and corrections, foods, exercises, flags, support lookup, audit | Phase 16 (ADR-022): admin claim at preValidation (401/403); every change audited |
 | GET | `/health` | Liveness + DB ping | Unauthenticated |
 
 `AMENDED 2026-10-20 (audit)` — built and in the OpenAPI document, not listed above:
@@ -519,7 +522,7 @@ Codes: `UNAUTHENTICATED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `VALIDATIO
 | GET | `/training/progression/{exerciseId}` | One lift's last three sessions and its recommendation | 6 |
 | POST | `/training/deload/accept`, `/training/deload/decline` | The deload offer (never applied without accept) | 6 |
 
-Still unbuilt with no owning phase: `/exercises/{id}/history` (only the last three sessions, via `/training/progression/{id}`), `/nutrition/targets` (current + history), `/meta/config` (flags, minimum app version — needed before beta).
+Still unbuilt with no owning phase: `/exercises/{id}/history` (only the last three sessions, via `/training/progression/{id}`), `/nutrition/targets` (current + history), the minimum app version in `/meta/config` (its flags were built in Phase 16 — needed before beta).
 
 **Rate limits:** default 120 req/min/user. `/nutrition/parse` and any AI route: 20/hour/user. `/auth/session`: 10/min/IP.
 
@@ -1015,6 +1018,13 @@ Shipped ahead of Phase 14 as an *explanation and Q&A* layer only; §19.1's left 
 Functions: mess menu review and correction queue · food database corrections · exercise CRUD · provider health dashboard (last successful sync per endpoint, staleness alerts) · user support lookup (**no body photos, no raw food logs**) · feature flags · recommendation acceptance-rate dashboard.
 
 Access: Firebase custom claim `role: admin`, enforced server-side on every request. **Every admin action writes to `audit_logs`.**
+
+`AMENDED 2026-10-22 (Phase 16, ADR-022)`:
+- **Where it runs:** on the owner's PC (http://localhost:3000), calling the API through a same-origin `/api` proxy. Vercel waits for hosting.
+- **Admin role:** granted by the owner with `admin-grant <email>` (run in the API container).
+- **Corrections:** accepted ones apply by dish slug to every future menu: estimates with a provenance row, diets through `mess_dish_overrides`. Logged meals keep their snapshot.
+- **Seeds:** foods and exercises edited in the panel are left alone by the seeds. Exercises are retired, never deleted.
+- **Support lookup:** counts and dates only, and audited.
 
 ---
 
@@ -1554,6 +1564,12 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 **Tests:** admin claim enforced server-side · non-admin receives 403 · every action audited.
 **Acceptance:** corrections apply to future menus by slug · provider health shows per-endpoint staleness.
 **Manual:** correct a dish; confirm it applies to the next occurrence.
+`AMENDED 2026-10-22 (Phase 16 plan, ADR-022)`:
+- **DB:** `audit_logs`, `feature_flags`, `mess_dish_overrides`, and the admin marks on foods and exercises (migration 0019).
+- **APIs:** `/admin/*` and the public `/meta/config` (flags only).
+- **UI:** the local panel (overview, mess queue, foods, exercises, flags, support, audit).
+- **Tests:** also that the seeds keep admin edits, retired exercises leave the library and the generator, and the support view never contains food log contents.
+- **Not in Phase 16:** Vercel; the app reading flags; the minimum app version.
 
 ---
 

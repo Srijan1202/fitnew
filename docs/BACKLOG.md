@@ -7,7 +7,7 @@
 
 | # | Item | Why it waits | Notes |
 |---|---|---|---|
-| O1 | **Hosting (Phase 6.7)** | GCP billing prepayment; no GCP/Cloud Run/DNS changes without approval | Until then the app works only on the PC's Wi-Fi, and every IP change needs an APK rebuild (`.\tool\alpha.ps1 -ApiHostOverride <ip>`) |
+| O1 | **Hosting (Phase 6.7)** | GCP billing prepayment; no GCP/Cloud Run/DNS changes without approval | Until then the app works only on the PC's Wi-Fi, and every IP change needs an APK rebuild (`.\tool\alpha.ps1 -ApiHostOverride <ip>`). The admin panel (Phase 16) is local too; §20 names Vercel for it |
 | O2 | **§18 readiness cap** | Spec consequence | The check-in alone bottoms out at 35 (the reduce band), so rest and escalation need a training or nutrition penalty. Options: count 35 as rest, change the caps, or keep §18 as written |
 | O3 | **Merges into `main`** | Explicit approval only | Unmerged, all accepted: `phase-12`, `phase-13`, `phase-13-audit-fixes`, `phase-14`, `phase-15` (2026-10-22). `phase-15` contains all of them, so one fast-forward of `main` to it would bring everything in |
 | O4 | **Phase 12 Progress & Recovery UI polish** | Owner: after Phase 13 is accepted | A separate visual pass; not to be mixed into feature work |
@@ -21,7 +21,9 @@
 
 | # | Item | Size | Notes |
 |---|---|---|---|
-| E1 | `/meta/config` (feature flags, minimum app version) | S | §10.1, no owning phase; **needed before beta** |
+| E1 | Minimum app version in `/meta/config` | S | Flags were built in Phase 16; the version gate is still missing — **needed before beta** |
+| E18 | The app reads `/meta/config` flags | S | Phase 16 serves them; nothing in the app switches on them yet |
+| E19 | Edit exercise alternatives in the admin panel | S | Phase 16 keeps them as seeded (ADR-022 D6) |
 | E2 | `/nutrition/targets` (current + history) | S | §10.1, no owning phase; targets are currently read through `/user/goal` |
 | E3 | `/exercises/{id}/history` (full history of a lift) | S–M | §10.1; today only the last three sessions, via `/training/progression/{id}` |
 | E4 | §33 pre-caching: tomorrow's plan and the 200 most-used foods | M | Tomorrow's mess menu is already cached ahead |
