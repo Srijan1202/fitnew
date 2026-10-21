@@ -6,6 +6,7 @@
  */
 import { isMirrorStale } from '@fitos/core/mess/freshness';
 import { capMessConfidence } from '@fitos/core/mess/nutrition';
+import { applyDietOverrides } from '@fitos/core/admin/admin';
 import { resolveDayFromSnapshots, type MenuSnapshot, type SnapshotDay } from '@fitos/core/mess/snapshots';
 import { localDateOf } from '@fitos/core/nutrition/log';
 import type {
@@ -130,7 +131,18 @@ export class MessService {
    * that publishes it; else the cycle from the latest; else the cycle over
    * the recent snapshots together; else unavailable.
    */
+  /**
+   * The day's menu as served: the stored snapshots resolved by core, then
+   * Phase 16's reviewed diet corrections applied by dish slug (§20).
+   */
   async resolveDay(mess: MessRow, date: string): Promise<SnapshotDay> {
+    const resolved = await this.resolveStoredDay(mess, date);
+    const slugs = resolved.day.meals.flatMap((m) => m.dishes.map((d) => d.id)).filter((id) => id !== '');
+    const overrides = await this.repo.dietOverrides(slugs);
+    return overrides.size === 0 ? resolved : { ...resolved, day: applyDietOverrides(resolved.day, overrides) };
+  }
+
+  private async resolveStoredDay(mess: MessRow, date: string): Promise<SnapshotDay> {
     const [exact, latest] = await Promise.all([this.repo.newestSnapshotPublishing(mess.id, date), this.repo.latestSnapshot(mess.id)]);
     const toCore = (s: { id: string; payload: MenuSnapshot['payload'] }): MenuSnapshot => ({ id: s.id, payload: s.payload });
     if (exact !== null) return resolveDayFromSnapshots([toCore(exact)], date, mess.servesNonVeg);

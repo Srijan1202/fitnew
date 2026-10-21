@@ -20,7 +20,8 @@
     "db:rebuild-derived": "tsx --env-file-if-exists=.env src/db/rebuild-derived.ts",
     "mess:mirror": "tsx --env-file-if-exists=.env src/jobs/mirror-mess.ts",
     "food-seed:build": "pnpm run deps:build && tsx src/scripts/build-food-seed.ts",
-    "openapi:export": "pnpm run deps:build && tsx src/scripts/export-openapi.ts"
+    "openapi:export": "pnpm run deps:build && tsx src/scripts/export-openapi.ts",
+    "admin:grant": "tsx --env-file-if-exists=.env src/scripts/admin-grant.ts"
   },
   "dependencies": {
     "@fastify/cors": "10.0.2",

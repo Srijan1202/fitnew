@@ -134,6 +134,13 @@
       "when": 1792582006337,
       "tag": "0018_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792598496178,
+      "tag": "0019_admin",
+      "breakpoints": true
     }
   ]
 }

@@ -7,7 +7,7 @@
  * release (the seed job), never on server boot.
  */
 import { readFileSync } from 'node:fs';
-import { inArray, sql } from 'drizzle-orm';
+import { and, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import type { FoodSeed } from '@fitos/contracts';
 
 import { createDatabase } from '../client.js';
@@ -27,10 +27,17 @@ export interface FoodSeedResult {
 const num = (v: number): string => String(v);
 const numOrNull = (v: number | null): string | null => (v === null ? null : String(v));
 
-export async function seedFoods(connectionString: string, entries: readonly FoodSeed[] = readFoodSeed()): Promise<FoodSeedResult> {
+export async function seedFoods(connectionString: string, all: readonly FoodSeed[] = readFoodSeed()): Promise<FoodSeedResult> {
   const { db, client } = createDatabase(connectionString);
   try {
     return await db.transaction(async (tx) => {
+      // Phase 16 (ADR-022 D5): a food corrected in the admin panel is the
+      // reviewer's from then on; the seed leaves it, its rows and aliases alone.
+      const locked = new Set(
+        (await tx.select({ slug: foods.slug }).from(foods).where(and(isNull(foods.ownerUserId), isNotNull(foods.adminEditedAt)))).map((r) => r.slug),
+      );
+      const entries = all.filter((f) => !locked.has(f.slug));
+      if (entries.length === 0) return { foods: 0, nutritionRows: 0, aliases: 0 };
       const upserted = await tx
         .insert(foods)
         .values(
@@ -56,7 +63,7 @@ export async function seedFoods(connectionString: string, entries: readonly Food
             updatedAt: sql`case when (${foods.name}, ${foods.brand}, ${foods.barcode}, ${foods.source}, ${foods.sourceRef}, ${foods.isVerified}) is distinct from (excluded.name, excluded.brand, excluded.barcode, excluded.source, excluded.source_ref, excluded.is_verified) then now() else ${foods.updatedAt} end`,
           },
           // A custom food never has a seed slug; this keeps it that way.
-          setWhere: sql`${foods.ownerUserId} IS NULL`,
+          setWhere: sql`${foods.ownerUserId} IS NULL AND ${foods.adminEditedAt} IS NULL`,
         })
         .returning({ id: foods.id, slug: foods.slug });
 

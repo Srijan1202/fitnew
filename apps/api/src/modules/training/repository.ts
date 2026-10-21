@@ -151,11 +151,15 @@ export class TrainingRepository {
         videoUrl: cols.videoUrl,
         createdAt: cols.createdAt,
         updatedAt: cols.updatedAt,
+        adminEditedAt: cols.adminEditedAt,
+        retiredAt: cols.retiredAt,
         primaryMuscles: musclesOf('primary'),
         secondaryMuscles: musclesOf('secondary'),
         contraindications: contraindicationsOf,
       })
       .from(exercises)
+      // Phase 16: a retired exercise goes into no new programme.
+      .where(isNull(exercises.retiredAt))
       .orderBy(asc(exercises.slug));
   }
 

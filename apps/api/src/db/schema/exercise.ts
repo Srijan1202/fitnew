@@ -45,6 +45,10 @@ export const exercises = pgTable(
     videoUrl: text('video_url'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    /** Phase 16 (ADR-022 D6): edited or created in the admin panel; the seed no longer overwrites it. */
+    adminEditedAt: timestamp('admin_edited_at', { withTimezone: true }),
+    /** Phase 16: retired — out of the browser and new programmes; history keeps it. */
+    retiredAt: timestamp('retired_at', { withTimezone: true }),
   },
   (t) => [
     // `?q=` searches name by trigram (pg_trgm is created at DB init / CI).

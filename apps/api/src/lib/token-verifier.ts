@@ -56,7 +56,7 @@ export interface FirebaseVerifierOptions {
   readonly credentialsPath?: string | undefined;
 }
 
-function firebaseApp(options: FirebaseVerifierOptions): App {
+export function firebaseApp(options: FirebaseVerifierOptions): App {
   const existing = getApps()[0];
   if (existing !== undefined) return existing;
 

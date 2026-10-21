@@ -14,7 +14,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { inArray, sql } from 'drizzle-orm';
+import { inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import {
   PRIMARY_CONTRIBUTION,
   SECONDARY_CONTRIBUTION,
@@ -49,11 +49,17 @@ export interface SeedResult {
 
 export async function seedExercises(
   connectionString: string,
-  entries: readonly ExerciseSeed[] = readExerciseSeed(),
+  all: readonly ExerciseSeed[] = readExerciseSeed(),
 ): Promise<SeedResult> {
   const { db, client } = createDatabase(connectionString);
   try {
     return await db.transaction(async (tx) => {
+      // Phase 16 (ADR-022 D6): an exercise edited or created in the admin
+      // panel is the reviewer's; the seed leaves it and its join rows alone
+      // (other exercises may still name it as an alternative).
+      const lockedRows = await tx.select({ id: exercises.id, slug: exercises.slug }).from(exercises).where(isNotNull(exercises.adminEditedAt));
+      const locked = new Set(lockedRows.map((r) => r.slug));
+      const entries = all.filter((e) => !locked.has(e.slug));
       // 1. Upsert every exercise by slug. `updated_at` moves only on a
       //    real change of the row's own columns.
       const upserted = await tx
@@ -73,6 +79,7 @@ export async function seedExercises(
         )
         .onConflictDoUpdate({
           target: exercises.slug,
+          setWhere: isNull(exercises.adminEditedAt),
           set: {
             name: sql`excluded.name`,
             movementPattern: sql`excluded.movement_pattern`,
@@ -87,8 +94,8 @@ export async function seedExercises(
         })
         .returning({ id: exercises.id, slug: exercises.slug });
 
-      const idBySlug = new Map(upserted.map((r) => [r.slug, r.id]));
-      const ids = [...idBySlug.values()];
+      const ids = upserted.map((r) => r.id);
+      const idBySlug = new Map([...lockedRows.map((r) => [r.slug, r.id] as const), ...upserted.map((r) => [r.slug, r.id] as const)]);
 
       // 2. Replace the join rows of every seeded exercise wholesale.
       await tx.delete(exerciseMuscles).where(inArray(exerciseMuscles.exerciseId, ids));

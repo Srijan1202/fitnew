@@ -56,7 +56,8 @@ export class ExerciseRepository {
   constructor(private readonly db: Db) {}
 
   private whereFor(f: ExerciseFilter): SQL | undefined {
-    const clauses: SQL[] = [];
+    // Phase 16: a retired exercise leaves the library (its detail still opens, for history).
+    const clauses: SQL[] = [sql`${exercises.retiredAt} is null`];
     if (f.q !== undefined) {
       // Trigram-indexed substring match on the name; slug catches hyphenated
       // spellings ("pull up" ~ "pull-up") without a second index.

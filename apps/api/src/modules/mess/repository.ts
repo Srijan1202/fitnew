@@ -11,6 +11,7 @@ import {
   foodLogItems,
   foodLogs,
   messDishCorrections,
+  messDishOverrides,
   messDishNutrition,
   messMenuSnapshots,
   messProviders,
@@ -240,5 +241,15 @@ export class MessRepository {
       .where(and(eq(foodLogs.userId, userId), eq(foodLogs.localDate, localDate), isNull(foodLogs.deletedAt), isNotNull(foodLogItems.messDishSlug)))
       .orderBy(asc(foodLogs.loggedAt), asc(foodLogItems.position));
     return rows.flatMap((r) => (r.dishSlug === null ? [] : [{ dishSlug: r.dishSlug, mealSlot: r.mealSlot, clientLogId: r.clientLogId }]));
+  }
+
+  /** Phase 16: reviewed diet classes by dish slug (ADR-022 D4). */
+  async dietOverrides(slugs: readonly string[]): Promise<Map<string, 'veg' | 'egg' | 'nonveg'>> {
+    if (slugs.length === 0) return new Map();
+    const rows = await this.db
+      .select({ slug: messDishOverrides.dishSlug, diet: messDishOverrides.diet })
+      .from(messDishOverrides)
+      .where(inArray(messDishOverrides.dishSlug, [...new Set(slugs)]));
+    return new Map(rows.map((r) => [r.slug, r.diet as 'veg' | 'egg' | 'nonveg']));
   }
 }

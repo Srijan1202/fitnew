@@ -48,6 +48,8 @@ export const foods = pgTable(
     clientFoodId: uuid('client_food_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    /** Phase 16 (ADR-022 D5): corrected in the admin panel; the seed no longer overwrites it. */
+    adminEditedAt: timestamp('admin_edited_at', { withTimezone: true }),
   },
   (t) => [
     index('foods_search_name_trgm_idx').using('gin', sql`${t.searchName} gin_trgm_ops`),
