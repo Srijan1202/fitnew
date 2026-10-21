@@ -184,7 +184,7 @@ export const featureFlagSchema = z.object({ key: z.string(), enabled: z.boolean(
 export const featureFlagListSchema = z.object({ items: z.array(featureFlagSchema) }).strict();
 export const putFlagRequestSchema = z.object({ enabled: z.boolean(), description: z.string().trim().max(300).optional() }).strict();
 export const flagParamsSchema = z.object({ key: flagKeySchema }).strict();
-/** GET /meta/config (§10.1): what the app may switch on, for any signed-in user. */
+/** GET /meta/config (§10.1, public): what the app may switch on. The minimum app version is not served yet (BACKLOG E1). */
 export const metaConfigSchema = z.object({ flags: z.record(z.string(), z.boolean()) }).strict();
 
 /* ---------------------------------------------------------- support view -- */
@@ -229,3 +229,16 @@ export const auditEntrySchema = z
   })
   .strict();
 export const auditListSchema = z.object({ items: z.array(auditEntrySchema), next: isoOrNull }).strict();
+
+export type AdminOverview = z.infer<typeof adminOverviewSchema>;
+export type EndpointHealth = z.infer<typeof endpointHealthSchema>;
+export type CorrectionGroup = z.infer<typeof correctionGroupSchema>;
+export type CorrectionReport = z.infer<typeof correctionReportSchema>;
+export type AdminFoodSummary = z.infer<typeof adminFoodSummarySchema>;
+export type AdminFood = z.infer<typeof adminFoodSchema>;
+export type AdminExerciseSummary = z.infer<typeof adminExerciseSummarySchema>;
+export type AdminExercise = z.infer<typeof adminExerciseSchema>;
+export type FeatureFlag = z.infer<typeof featureFlagSchema>;
+export type UserSupport = z.infer<typeof userSupportSchema>;
+export type AuditEntry = z.infer<typeof auditEntrySchema>;
+export type AuditList = z.infer<typeof auditListSchema>;

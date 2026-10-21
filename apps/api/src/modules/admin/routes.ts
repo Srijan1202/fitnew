@@ -2,7 +2,7 @@
  * /v1/admin/* — Phase 16 (MASTER-SPEC §20, §10.1; ADR-022). Every route runs
  * `requireAdmin` (the Firebase custom claim `role: admin`, on the server,
  * every request: 401 without a session, 403 without the claim). Every change
- * writes `audit_logs`. Also GET /meta/config, for any signed-in user.
+ * writes `audit_logs`. Also GET /meta/config, public (§10.1).
  */
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
@@ -57,12 +57,13 @@ export async function adminRoutes(app: FastifyInstance): Promise<void> {
   const admin = { preValidation: requireAdmin };
   const tags = ['admin'];
 
+  // §10.1: unauthenticated, so the app can read it before sign-in.
   typed.get('/meta/config', {
+    config: { public: true },
     schema: {
-      summary: 'What the app may switch on: the feature flags (any signed-in user)',
+      summary: 'What the app may switch on: the feature flags (public, §10.1)',
       tags: ['meta'],
-      security,
-      response: { 200: metaConfigSchema, 401: errorEnvelopeSchema },
+      response: { 200: metaConfigSchema },
     },
   }, async () => service.metaConfig());
 

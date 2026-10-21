@@ -41870,14 +41870,9 @@
     },
     "/meta/config": {
       "get": {
-        "summary": "What the app may switch on: the feature flags (any signed-in user)",
+        "summary": "What the app may switch on: the feature flags (public, §10.1)",
         "tags": [
           "meta"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
         ],
         "responses": {
           "200": {
@@ -41896,71 +41891,6 @@
                   },
                   "required": [
                     "flags"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string",
-                          "enum": [
-                            "UNAUTHENTICATED",
-                            "FORBIDDEN",
-                            "NOT_FOUND",
-                            "VALIDATION_FAILED",
-                            "CONFLICT",
-                            "RATE_LIMITED",
-                            "UPSTREAM_UNAVAILABLE",
-                            "INTERNAL"
-                          ]
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "path": {
-                                "type": "string"
-                              },
-                              "issue": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "path",
-                              "issue"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "code",
-                        "message",
-                        "requestId"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "required": [
-                    "error"
                   ],
                   "additionalProperties": false
                 }
