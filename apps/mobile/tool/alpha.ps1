@@ -126,6 +126,14 @@ try {
   if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   $apk = if ($Release) { 'build\app\outputs\flutter-apk\app-release.apk' } else { 'build\app\outputs\flutter-apk\app-debug.apk' }
   Write-Host "APK: $(Join-Path $mobile $apk)"
+  # Phase 17 (§24): no secret in the app binary. The public Firebase client
+  # key is allowed; a service account, a private key or the Gemini key is not.
+  Push-Location (Join-Path $mobile '..\..')
+  try {
+    & node scripts/check-secrets.mjs --apk (Join-Path $mobile $apk)
+    if ($LASTEXITCODE -ne 0) { Write-Error 'Secret found in the APK - do not distribute it.'; exit 1 }
+  }
+  finally { Pop-Location }
   if ($Install) {
     & adb install -r $apk
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

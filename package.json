@@ -16,7 +16,8 @@
     "dev:api": "pnpm --filter @fitos/api dev",
     "dev:admin": "pnpm --filter @fitos/admin dev",
     "db:up": "docker compose -f docker/docker-compose.yml up -d",
-    "db:down": "docker compose -f docker/docker-compose.yml down"
+    "db:down": "docker compose -f docker/docker-compose.yml down",
+    "check:secrets": "node scripts/check-secrets.mjs"
   },
   "devDependencies": {
     "typescript": "5.6.3"

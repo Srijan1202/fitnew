@@ -37,6 +37,10 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # §24 / Phase 17: no secret in the repository.
+      - name: Secret scan (tracked files)
+        run: node scripts/check-secrets.mjs
+
       - name: Typecheck (strict, noUncheckedIndexedAccess)
         run: pnpm --filter @fitos/core typecheck
 
