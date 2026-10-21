@@ -1078,6 +1078,13 @@ Firebase Analytics, privacy-conscious.
 6. Published privacy policy (also an Apple/Google store requirement).
 7. **Children:** `DECISION` — 18+ only, enforced at onboarding by birth date. DPDP children's-data obligations are disproportionate for this product.
 
+`AMENDED 2026-10-22 (Phase 17, ADR-023)`:
+1. **Consent per purpose.** Onboarding records the two required purposes (privacy policy, health data). **FITOS AI (`ai-processing`) is optional**, asked before its first use and revocable; the server refuses AI calls without it. A policy change asks for re-consent.
+3. **Erasure is immediate.** `DELETE /user` (typed DELETE) removes every owned row through the CASCADE foreign keys and the Firebase sign-in. No storage objects exist yet; any future file store must join this path. A test searches every column of every table afterwards.
+4. **Export.** It follows the same foreign keys, so it is complete by construction.
+5. The breach procedure is in `docs/legal/breach-procedure.md`.
+6. The policy is `docs/legal/privacy-policy.md` (v2026-10-22), and the app shows the same text.
+
 **Our commitments beyond the legal minimum:**
 - Body photos never leave the device except to our private Cloud Storage bucket, and are never sent to any AI provider.
 - Food photos are processed ephemerally; not retained after the draft is confirmed or discarded.
@@ -1097,11 +1104,11 @@ Firebase Analytics, privacy-conscious.
 | Input | Zod validation at every route boundary; reject unknown keys |
 | SQL | Drizzle parameterised queries only. No string-built SQL. |
 | Rate limiting | `@fastify/rate-limit`; stricter on auth and AI routes |
-| Secrets | **Google Secret Manager.** Never in the repo, never in the Flutter binary. |
+| Secrets | **Google Secret Manager.** Never in the repo, never in the Flutter binary. Phase 17: Secret Manager waits for hosting (O1). `scripts/check-secrets.mjs` scans tracked files in CI and every built APK (the public Firebase client key is allowed in the APK only) |
 | Mobile secrets | The app holds only the Firebase config (public by design). No API keys, no service accounts. The Gemini key is backend-only (§19.4). |
 | File upload | Signed URLs, 10 MB cap, content-type allowlist, magic-byte verification |
 | Storage | Private bucket; time-limited signed read URLs |
-| Logging | pino redaction on `email`, `token`, `authorization`, `weight`, `photo_path` |
+| Logging | pino redaction on `email`, `token`, `authorization`, `weight`, `photo_path`. Phase 17: also passwords, ID tokens and API keys, and sensitive query values masked in logged URLs; verified by a test reading real log output |
 | Dependencies | Dependabot + `npm audit` in CI |
 | Backups | Neon PITR (`UNVERIFIED` on the free plan) **plus** a nightly `pg_dump` to Cloud Storage — do not rely on free-tier backups |
 
@@ -1581,6 +1588,12 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 **Tests:** delete removes **every** row and storage object · export is complete and machine-readable · redaction verified in log output · rate limits enforced.
 **Acceptance:** account deletion leaves no residue (verified by direct query) · no secret in the repo or the app binary.
 **Manual:** delete a test account; query the database directly to confirm.
+`AMENDED 2026-10-22 (Phase 17 plan, ADR-023)`:
+- **APIs:** also `GET/POST /user/consents`. Export is limited to 3 an hour and deletion to 5 an hour, per user.
+- **DB:** migration 0020 (`consent_type` gains `ai-processing`).
+- **Consent:** FITOS AI is its own purpose (owner); `CURRENT_POLICY_VERSION` is `2026-10-22`.
+- **Delete:** immediate (owner); "storage objects": none exist yet.
+- **Deferred:** Secret Manager (with hosting, O1) and scheduling the nightly backup (owner, O5).
 
 ---
 

@@ -11,9 +11,10 @@
 | O2 | **§18 readiness cap** | Spec consequence | The check-in alone bottoms out at 35 (the reduce band), so rest and escalation need a training or nutrition penalty. Options: count 35 as rest, change the caps, or keep §18 as written |
 | O3 | **Merges into `main`** | Explicit approval only | Unmerged, all accepted: `phase-12`, `phase-13`, `phase-13-audit-fixes`, `phase-14`, `phase-15` (2026-10-22). `phase-15` contains all of them, so one fast-forward of `main` to it would bring everything in |
 | O4 | **Phase 12 Progress & Recovery UI polish** | Owner: after Phase 13 is accepted | A separate visual pass; not to be mixed into feature work |
-| O5 | **Nightly backup schedule** | Changes the PC's Task Scheduler | `schtasks /Create /TN "FITOS backup" /SC DAILY /ST 23:30 /TR "powershell -NoProfile -ExecutionPolicy Bypass -File \"D:\dev\fit new\scripts\backup-local.ps1\""` |
+| O5 | **Nightly backup schedule** (§24, Phase 17) | Changes the PC's Task Scheduler | `schtasks /Create /TN "FITOS backup" /SC DAILY /ST 23:30 /TR "powershell -NoProfile -ExecutionPolicy Bypass -File \"D:\dev\fit new\scripts\backup-local.ps1\""` |
 | O6 | ~~S24 pass on `phase-13-audit-fixes`~~ | Done 2026-10-22 | Covered by the combined Phase 13–15 build the owner passed |
 | O7 | **Gemini paid tier (or Vertex AI)** | Owner, 2026-10-21: free tier for the alpha | **Before beta or any user outside the alpha group.** §19.3's privacy rule is suspended only for the alpha (ADR-020 D1). The change is configuration: a paid key in `GEMINI_API_KEY`; `ai_usage` shows real token use for sizing |
+| O10 | **Before public launch: legal** | A human must confirm (§23 `UNVERIFIED`) | DPDP Rules obligations and deadlines for this operator; a published contact and grievance officer; the breach notification form to the Board (docs/legal/) |
 | O9 | **Server push (FCM)** | Needs the API hosted (O1) | Phase 15 registers tokens (`push_tokens`) but the phone schedules every reminder from the plan (ADR-021 D1/D2). Push would make reminders current even when the app has not synced |
 | O8 | **TODAY and recovery in the AI chat context** | §31 Phase 11/13 deferred them to Phase 14; not in Phase 14's task list | Would let the assistant answer "why rest today?" from readiness, but sends more health-adjacent data to the model (free tier, O7). ADR-020 "Not in Phase 14" |
 
