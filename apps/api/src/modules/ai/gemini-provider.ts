@@ -77,7 +77,8 @@ export class GeminiProvider implements AiProvider {
     const timer = setTimeout(() => controller.abort(), this.timeoutMs);
     let res: Response;
     try {
-      res = await this.fetchImpl(`${this.baseUrl}/models/${encodeURIComponent(this.model)}:generateContent`, {
+      const model = request.model ?? this.model;
+      res = await this.fetchImpl(`${this.baseUrl}/models/${encodeURIComponent(model)}:generateContent`, {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-goog-api-key': this.apiKey },
         body: JSON.stringify(body),

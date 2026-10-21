@@ -161,8 +161,8 @@ describe('GeminiProvider', () => {
 
 describe('AiService', () => {
   it('status: configured provider vs none; the excludes are stated', () => {
-    expect(new AiService(new FakeAiProvider()).status()).toEqual({ configured: true, provider: 'fake', model: 'fake-1', excludes: AI_EXCLUDES });
-    expect(new AiService(new NotConfiguredAiProvider()).status()).toEqual({ configured: false, provider: 'none', model: null, excludes: ['health-connect', 'food-log'] });
+    expect(new AiService(new FakeAiProvider()).status()).toEqual({ enabled: true, configured: true, provider: 'fake', model: 'fake-1', excludes: AI_EXCLUDES });
+    expect(new AiService(new NotConfiguredAiProvider()).status()).toEqual({ enabled: true, configured: false, provider: 'none', model: null, excludes: ['health-connect', 'food-log'] });
   });
 
   it.each([

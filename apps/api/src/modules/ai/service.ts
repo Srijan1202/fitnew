@@ -12,6 +12,7 @@ import { AppError } from '../../lib/errors.js';
 import type { FitosAiContext, UserContextAssembler } from './context-assembler.js';
 import { AiProviderError, type AiMessage, type AiProvider, type AiToolCall, type AiToolResult } from './provider.js';
 import { MAX_TOOL_ROUNDS, PROPOSE_PROGRAM, type ToolRegistry } from './tools.js';
+import type { AiBudget } from './usage.js';
 
 /** What the assistant never sees (owner B4; Phase 8 not built). */
 export const AI_EXCLUDES: AiStatusResponse['excludes'] = ['health-connect', 'food-log'];
@@ -24,17 +25,22 @@ export interface ChatDeps {
   readonly tools: ToolRegistry;
   /** Operator diagnostics: the failure kind and upstream status, never a body or a key. */
   readonly log?: { warn: (obj: Record<string, unknown>, msg: string) => void };
+  /** Phase 14: the kill switch, the hourly limit and the token ledger (§19.3). */
+  readonly budget?: AiBudget;
 }
 
 export class AiService {
   constructor(
     private readonly provider: AiProvider,
     private readonly deps?: ChatDeps,
+    /** Phase 14 kill switch, as configured (AI_ENABLED). */
+    private readonly enabled: boolean = true,
   ) {}
 
   status(): AiStatusResponse {
     const configured = this.provider.name !== 'none';
     return {
+      enabled: this.enabled,
       configured,
       provider: this.provider.name,
       model: configured ? this.provider.model : null,
@@ -46,6 +52,7 @@ export class AiService {
 
   async chat(userId: string, request: AiChatRequest): Promise<AiChatResponse> {
     if (this.deps === undefined) throw new Error('AiService.chat needs an assembler and a tool registry');
+    await this.deps.budget?.check(userId, 'chat');
     if (this.provider.name === 'none') throw AiService.toAppError(new AiProviderError('not_configured', 'no provider'));
 
     const context = await this.deps.assembler.assemble(userId);
@@ -67,6 +74,8 @@ export class AiService {
           tools: declarations,
           ...(toolResults !== undefined ? { toolResults } : {}),
         });
+        // §19.3: every model call's tokens are logged, one row per round.
+        await this.deps.budget?.record(userId, 'chat', this.provider.model, response.usage, 'ok');
 
         if (response.toolCalls.length === 0 || round === MAX_TOOL_ROUNDS) {
           const plain = AiService.plainText(response.text);
@@ -92,6 +101,7 @@ export class AiService {
     } catch (e) {
       if (e instanceof AiProviderError) {
         this.deps.log?.warn({ kind: e.kind, upstreamStatus: e.status ?? null, model: this.provider.model }, 'ai: provider failure');
+        await this.deps.budget?.record(userId, 'chat', this.provider.model, undefined, 'failed');
       }
       throw AiService.toAppError(e);
     }

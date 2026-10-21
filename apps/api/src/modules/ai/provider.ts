@@ -47,6 +47,8 @@ export interface AiRequest {
   readonly temperature?: number;
   /** Ask for a JSON object as the answer (structured extraction). */
   readonly jsonMode?: boolean;
+  /** Phase 14: this call's model (MODEL_FOOD_PARSE / MODEL_EXPLAIN); the provider's own otherwise. */
+  readonly model?: string;
 }
 
 export interface AiToolCall {

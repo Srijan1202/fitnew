@@ -140,7 +140,7 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
       }),
   });
 
-  await app.register(aiPlugin, options.aiProvider !== undefined ? { provider: options.aiProvider } : { env });
+  await app.register(aiPlugin, options.aiProvider !== undefined ? { provider: options.aiProvider, env } : { env });
 
   // /health is intentionally unversioned — probes should not have to track
   // an API version to know whether the service is alive.

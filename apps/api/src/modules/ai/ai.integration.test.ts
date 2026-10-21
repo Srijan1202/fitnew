@@ -236,7 +236,7 @@ describeIfDb('/v1/ai (real Postgres, scripted model)', () => {
   it('status is configured with the fake', async () => {
     const token = await onboarded('Golf');
     const r = await app.inject({ method: 'GET', url: '/v1/ai/status', headers: auth(token) });
-    expect(r.json()).toEqual({ configured: true, provider: 'fake', model: 'fake-1', excludes: ['health-connect', 'food-log'] });
+    expect(r.json()).toEqual({ enabled: true, configured: true, provider: 'fake', model: 'fake-1', excludes: ['health-connect', 'food-log'] });
   });
 
   it('Gate 5: a proposal is built for the real user by the deterministic generator, stored nowhere, and applied only through the ordinary route with the same request', async () => {

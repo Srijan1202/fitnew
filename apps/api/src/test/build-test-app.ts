@@ -23,6 +23,11 @@ export function testEnv(overrides: Partial<Env> = {}): Env {
     AI_TIMEOUT_MS: 5000,
     AI_MAX_OUTPUT_TOKENS: 512,
     RATE_LIMIT_PER_MINUTE: 120,
+    AI_ENABLED: true,
+    AI_PARSE_PER_HOUR: 20,
+    AI_EXPLAIN_PER_HOUR: 20,
+    AI_CHAT_PER_HOUR: 60,
+    AI_DAILY_TOKEN_BUDGET: 200_000,
     ...overrides,
   };
 }

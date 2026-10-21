@@ -93,6 +93,21 @@ const envSchema = z.object({
   // Gemini 3 spends part of this budget thinking; 2048 leaves room to answer.
   AI_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(64).max(8192).default(2048),
 
+  // Phase 14 (§19.3, ADR-020). The kill switch: false turns every AI route
+  // off (503) and the app hides AI entry points; nothing else changes.
+  AI_ENABLED: z
+    .preprocess((v) => (typeof v === 'string' ? !['false', '0', 'off', 'no'].includes(v.trim().toLowerCase()) : v), z.boolean())
+    .default(true),
+  // Per-purpose models; unset means GEMINI_MODEL. A model name is configuration, never code.
+  MODEL_FOOD_PARSE: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
+  MODEL_EXPLAIN: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
+  // Calls per user per hour, by purpose (§19.3: 20; chat 60 — owner D4), and
+  // the tokens a user may spend in 24 hours across all of them.
+  AI_PARSE_PER_HOUR: z.coerce.number().int().min(1).default(20),
+  AI_EXPLAIN_PER_HOUR: z.coerce.number().int().min(1).default(20),
+  AI_CHAT_PER_HOUR: z.coerce.number().int().min(1).default(60),
+  AI_DAILY_TOKEN_BUDGET: z.coerce.number().int().min(1000).default(200_000),
+
   // Phase 9 - the in-process MessIT mirror timer, in hours (0 = off). Unset:
   // 12 in development, off elsewhere (hosted, Cloud Scheduler is the trigger:
   // deferred while GCP work is paused). The job itself is dist/jobs/mirror-mess.js.

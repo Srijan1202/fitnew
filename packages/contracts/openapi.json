@@ -40573,6 +40573,9 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
                     "configured": {
                       "type": "boolean"
                     },
@@ -40597,6 +40600,7 @@
                     }
                   },
                   "required": [
+                    "enabled",
                     "configured",
                     "provider",
                     "model",
@@ -41042,6 +41046,1058 @@
             }
           },
           "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nutrition/parse": {
+      "post": {
+        "summary": "A meal in your words → a draft of foods and portions to confirm (Phase 14; nothing is stored)",
+        "tags": [
+          "nutrition",
+          "ai"
+        ],
+        "description": "Only the text is sent to the model. Each food is matched to the FITOS food database and a portion of its own rows, so the numbers are the database's; a food the database lacks is the model's estimate, kept only within §19.2's bounds. The answer is an AiDraft: requiresConfirmation is always true, and the app logs what the user confirms through POST /nutrition/logs. 503 when AI is switched off or not set up; 429 over the hourly limit.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "draft": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "phrase": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 120
+                                  },
+                                  "quantity": {
+                                    "type": "number",
+                                    "exclusiveMinimum": true,
+                                    "minimum": 0
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 30
+                                  },
+                                  "confidence": {
+                                    "type": "string",
+                                    "enum": [
+                                      "high",
+                                      "medium",
+                                      "low"
+                                    ]
+                                  },
+                                  "match": {
+                                    "type": [
+                                      "object",
+                                      "null"
+                                    ],
+                                    "properties": {
+                                      "foodId": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
+                                      "name": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      "matchKind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "exact",
+                                          "alias",
+                                          "prefix",
+                                          "fuzzy"
+                                        ]
+                                      },
+                                      "basis": {
+                                        "type": "string",
+                                        "enum": [
+                                          "per_100g",
+                                          "per_serving"
+                                        ]
+                                      },
+                                      "servingLabel": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 60
+                                      },
+                                      "servings": {
+                                        "type": "number",
+                                        "minimum": 0.1,
+                                        "maximum": 20
+                                      },
+                                      "row": {
+                                        "type": "object",
+                                        "properties": {
+                                          "basis": {
+                                            "type": "string",
+                                            "enum": [
+                                              "per_100g",
+                                              "per_serving"
+                                            ]
+                                          },
+                                          "servingLabel": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 60
+                                          },
+                                          "servingGrams": {
+                                            "type": [
+                                              "number",
+                                              "null"
+                                            ],
+                                            "exclusiveMinimum": true,
+                                            "minimum": 0,
+                                            "maximum": 5000
+                                          },
+                                          "kcalLow": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "kcalHigh": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "proteinLow": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "proteinHigh": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "carbLow": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "carbHigh": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "fatLow": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "fatHigh": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "fibreLow": {
+                                            "type": [
+                                              "number",
+                                              "null"
+                                            ],
+                                            "minimum": 0
+                                          },
+                                          "fibreHigh": {
+                                            "type": [
+                                              "number",
+                                              "null"
+                                            ],
+                                            "minimum": 0
+                                          },
+                                          "confidence": {
+                                            "type": "string",
+                                            "enum": [
+                                              "high",
+                                              "medium",
+                                              "low"
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "basis",
+                                          "servingLabel",
+                                          "servingGrams",
+                                          "kcalLow",
+                                          "kcalHigh",
+                                          "proteinLow",
+                                          "proteinHigh",
+                                          "carbLow",
+                                          "carbHigh",
+                                          "fatLow",
+                                          "fatHigh",
+                                          "fibreLow",
+                                          "fibreHigh",
+                                          "confidence"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "snapshot": {
+                                        "type": "object",
+                                        "properties": {
+                                          "kcalLow": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "kcalHigh": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "proteinLow": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "proteinHigh": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "carbLow": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "carbHigh": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "fatLow": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "fatHigh": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          }
+                                        },
+                                        "required": [
+                                          "kcalLow",
+                                          "kcalHigh",
+                                          "proteinLow",
+                                          "proteinHigh",
+                                          "carbLow",
+                                          "carbHigh",
+                                          "fatLow",
+                                          "fatHigh"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "required": [
+                                      "foodId",
+                                      "name",
+                                      "matchKind",
+                                      "basis",
+                                      "servingLabel",
+                                      "servings",
+                                      "row",
+                                      "snapshot"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "estimate": {
+                                    "type": [
+                                      "object",
+                                      "null"
+                                    ],
+                                    "properties": {
+                                      "name": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 60
+                                      },
+                                      "grams": {
+                                        "type": [
+                                          "number",
+                                          "null"
+                                        ],
+                                        "exclusiveMinimum": true,
+                                        "minimum": 0
+                                      },
+                                      "kcal": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      },
+                                      "proteinG": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      },
+                                      "carbG": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      },
+                                      "fatG": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      }
+                                    },
+                                    "required": [
+                                      "name",
+                                      "grams",
+                                      "kcal",
+                                      "proteinG",
+                                      "carbG",
+                                      "fatG"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "problem": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "phrase",
+                                  "quantity",
+                                  "unit",
+                                  "confidence",
+                                  "match",
+                                  "estimate",
+                                  "problem"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "maxItems": 12
+                            }
+                          },
+                          "required": [
+                            "items"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "confidence": {
+                          "type": "string",
+                          "enum": [
+                            "high",
+                            "medium",
+                            "low"
+                          ]
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "ai-draft"
+                          ]
+                        },
+                        "requiresConfirmation": {
+                          "type": "boolean",
+                          "enum": [
+                            true
+                          ]
+                        }
+                      },
+                      "required": [
+                        "data",
+                        "confidence",
+                        "source",
+                        "requiresConfirmation"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "model": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "draft",
+                    "model"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/explain": {
+      "post": {
+        "summary": "A TODAY action's reason in plainer words — or the engine's own when the rewording adds a number (Phase 14)",
+        "tags": [
+          "ai"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "actionId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "actionId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "ai",
+                        "engine"
+                      ]
+                    },
+                    "discarded": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "new-number",
+                        "empty",
+                        "too-long"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "text",
+                    "source",
+                    "discarded"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
             "description": "Default Response",
             "content": {
               "application/json": {
