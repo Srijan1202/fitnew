@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../health/domain/entities/health.dart';
+import '../../../recovery/domain/recovery.dart';
 import '../../domain/home_context.dart';
 import '../controllers/home_providers.dart';
 
@@ -417,9 +418,23 @@ class TodayMetrics extends StatelessWidget {
 
 /// Sleep · Resting heart rate, or one honest line.
 class RecoverySection extends StatelessWidget {
-  const RecoverySection({required this.context, super.key});
+  const RecoverySection({
+    required this.context,
+    this.checkIn,
+    this.showReadiness = true,
+    super.key,
+  });
 
   final HomeContext context;
+
+  /// Phase 13: today's check-in and readiness from FITOS (null when there is
+  /// none, or it has not loaded). The check-in's sleep stands in when Health
+  /// Connect has none — found on the S24: a logged sleep still read
+  /// "No data yet" here.
+  final RecoveryToday? checkIn;
+
+  /// False where readiness is already on screen (Progress & Recovery).
+  final bool showReadiness;
 
   @override
   Widget build(BuildContext buildContext) {
@@ -434,8 +449,20 @@ class RecoverySection extends StatelessWidget {
             m.availability == HealthAvailability.noData ||
             m.availability == HealthAvailability.temporarilyUnavailable);
     final anyGranted = readable(sleep) || readable(rhr);
-    if (!anyGranted) {
-      final unsupported = c.healthUnsupported;
+    final loggedSleep = checkIn?.log?.sleepHours;
+    final readiness = showReadiness ? checkIn?.readiness : null;
+    final unsupported = c.healthUnsupported;
+    final connect = TextButton(
+      key: const ValueKey('home.recovery.connect'),
+      onPressed: () => buildContext.push(Routes.healthData),
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: const Size(0, 36),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: const Text('Connect Health data →'),
+    );
+    if (!anyGranted && loggedSleep == null && readiness == null) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
         child: Column(
@@ -450,47 +477,75 @@ class RecoverySection extends StatelessWidget {
               key: const ValueKey('home.recovery.empty'),
               style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
             ),
-            if (!unsupported)
-              TextButton(
-                key: const ValueKey('home.recovery.connect'),
-                onPressed: () => buildContext.push(Routes.healthData),
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(0, 36),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: const Text('Connect Health data →'),
-              ),
+            if (!unsupported) connect,
           ],
         ),
       );
     }
-    final sl = sleep!;
-    final hr = rhr!;
-    return _Grid(
-      blocks: <Widget>[
-        _Block(
-          label: 'Sleep',
-          value: sl.isAvailable
-              ? HomeSections.hm(sl.value!)
-              : sl.availability.blockText,
-          line: 'Last night',
-          valueKey: const ValueKey('home.sleep'),
-          muted: !sl.isAvailable,
-          onTap: () => buildContext.push(Routes.healthData),
-        ),
+
+    // Sleep: the phone's reading first; the check-in's when there is none.
+    final _Block sleepBlock;
+    if (sleep != null && sleep.isAvailable) {
+      sleepBlock = _Block(
+        label: 'Sleep',
+        value: HomeSections.hm(sleep.value!),
+        line: 'Last night',
+        valueKey: const ValueKey('home.sleep'),
+        onTap: () => buildContext.push(Routes.healthData),
+      );
+    } else if (loggedSleep != null) {
+      sleepBlock = _Block(
+        label: 'Sleep',
+        value: HomeSections.hm(loggedSleep * 60),
+        line: 'From your check-in',
+        valueKey: const ValueKey('home.sleep'),
+        onTap: () => buildContext.go(Routes.progress),
+      );
+    } else {
+      sleepBlock = _Block(
+        label: 'Sleep',
+        value: sleep?.availability.blockText ?? 'Not logged',
+        line: sleep == null ? 'Add it in your check-in' : 'Last night',
+        valueKey: const ValueKey('home.sleep'),
+        muted: true,
+        onTap: () => sleep == null
+            ? buildContext.go(Routes.progress)
+            : buildContext.push(Routes.healthData),
+      );
+    }
+    final blocks = <Widget>[
+      sleepBlock,
+      if (readable(rhr))
         _Block(
           label: 'Resting HR',
-          value: hr.isAvailable
-              ? '${hr.value!.round()} bpm'
-              : hr.availability.blockText,
-          line: hr.isAvailable
-              ? HomeSections.recorded(hr.start, c.date)
+          value: rhr!.isAvailable
+              ? '${rhr.value!.round()} bpm'
+              : rhr.availability.blockText,
+          line: rhr.isAvailable
+              ? HomeSections.recorded(rhr.start, c.date)
               : 'Resting heart rate',
           valueKey: const ValueKey('home.rhr'),
-          muted: !hr.isAvailable,
+          muted: !rhr.isAvailable,
           onTap: () => buildContext.push(Routes.healthData),
         ),
+      if (readiness != null)
+        _Block(
+          label: 'Readiness',
+          value: '${readiness.score}',
+          line: readiness.band.label,
+          valueKey: const ValueKey('home.readiness'),
+          onTap: () => buildContext.go(Routes.progress),
+        ),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        _Grid(blocks: blocks),
+        if (!anyGranted && !unsupported)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
+            child: connect,
+          ),
       ],
     );
   }

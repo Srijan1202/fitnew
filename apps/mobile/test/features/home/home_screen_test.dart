@@ -2,6 +2,7 @@ import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
+import 'package:fitos/features/recovery/domain/recovery.dart';
 import 'package:fitos/features/auth/domain/entities/auth_state.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_providers.dart';
@@ -26,6 +27,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../support/fake_recovery_api.dart';
 import '../../support/fake_auth_repository.dart';
 import '../../support/fake_exercise_repository.dart';
 import '../../support/fake_food_log_api.dart';
@@ -47,6 +49,7 @@ void main() {
   late AppDatabase db;
   late FakeWorkoutApi api;
   late FakeHealthProvider health;
+  late FakeRecoveryApi recovery;
   late FakeAuthRepository auth;
   late FakeProfileRepository profile;
   late FakeFoodLogApi foodLog;
@@ -61,6 +64,7 @@ void main() {
   );
 
   setUp(() {
+    recovery = FakeRecoveryApi();
     db = AppDatabase.inMemory();
     api = FakeWorkoutApi();
     health = FakeHealthProvider();
@@ -125,7 +129,13 @@ void main() {
         // Pinned: the engine rightly stops "eat protein" from 22:00, so a real
         // clock made J16 fail between 22:00 and midnight (found 2026-09-24).
         localHourProvider.overrideWithValue(12),
-        ...workoutOverrides(db, api, foodLog: foodLog, today: today),
+        ...workoutOverrides(
+          db,
+          api,
+          foodLog: foodLog,
+          today: today,
+          recovery: recovery,
+        ),
         ...healthOverrides(health),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
@@ -398,6 +408,48 @@ void main() {
     expect(textOf(tester, 'home.sleep').data, 'No data yet');
     expect(textOf(tester, 'home.rhr').data, 'No data yet');
     expect(find.byKey(const ValueKey('home.suggestion.recover')), findsNothing);
+  });
+
+  testWidgets(
+      'Phase 13 S24 regression: Health Connect has no sleep but today\'s check-in does — Home shows the check-in\'s sleep, and readiness',
+      (tester) async {
+    health.connection_ = const HealthConnectionState(
+      sdk: HealthSdkStatus.available,
+      granted: {HealthMetricKind.sleep, HealthMetricKind.restingHeartRate},
+    );
+    health.snapshot_ =
+        snapshot({HealthMetricKind.sleep, HealthMetricKind.restingHeartRate});
+    recovery.current = const RecoveryToday(
+      date: '2026-09-21',
+      log: RecoveryLog(date: '2026-09-21', sleepHours: 7.5, soreness: 2),
+      readiness: Readiness(
+        score: 72,
+        band: ReadinessBand.advisory,
+        advice: 'A little under par.',
+        components: [],
+        lowDays: 0,
+      ),
+    );
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    expect(textOf(tester, 'home.sleep').data, '7h 30m');
+    expect(find.text('From your check-in'), findsOneWidget);
+    expect(textOf(tester, 'home.readiness').data, '72');
+    expect(textOf(tester, 'home.rhr').data, 'No data yet');
+  });
+
+  testWidgets(
+      'no Health Connect at all, but a check-in: its sleep and readiness show instead of only "connect"',
+      (tester) async {
+    recovery.current = const RecoveryToday(
+      date: '2026-09-21',
+      log: RecoveryLog(date: '2026-09-21', sleepHours: 6),
+    );
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('home.recovery.empty')), findsNothing);
+    expect(textOf(tester, 'home.sleep').data, '6h 00m');
+    expect(find.byKey(const ValueKey('home.readiness')), findsNothing);
   });
 
   testWidgets(
