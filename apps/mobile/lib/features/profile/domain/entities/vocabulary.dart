@@ -259,10 +259,24 @@ enum ConsentType {
   @JsonValue('privacy-policy')
   privacyPolicy('privacy-policy'),
   @JsonValue('health-data-processing')
-  healthDataProcessing('health-data-processing');
+  healthDataProcessing('health-data-processing'),
+
+  /// Phase 17: optional, asked before FITOS AI is first used; revocable.
+  @JsonValue('ai-processing')
+  aiProcessing('ai-processing');
 
   const ConsentType(this.wire);
   final String wire;
+
+  /// The purposes FITOS cannot run without (onboarding asks for these).
+  static const required = [privacyPolicy, healthDataProcessing];
+
+  static ConsentType? of(Object? wire) {
+    for (final t in values) {
+      if (t.wire == wire) return t;
+    }
+    return null;
+  }
 }
 
 /// Body parts a `user_limitations` row can name and an exercise can be

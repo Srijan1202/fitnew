@@ -73,6 +73,13 @@ final class Credential extends Failure {
   final String code;
 }
 
+/// Server said 403. Phase 17: `issue` 'ai-processing' means FITOS AI needs
+/// the user's consent first (the app asks, then retries).
+final class Forbidden extends Failure {
+  const Forbidden(super.message, {this.issue});
+  final String? issue;
+}
+
 /// Everything else. Logged in full; shown as a generic line.
 final class Unknown extends Failure {
   const Unknown([super.message = 'Something went wrong. Please try again.']);

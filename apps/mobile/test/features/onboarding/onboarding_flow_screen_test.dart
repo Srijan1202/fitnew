@@ -138,7 +138,8 @@ void main() {
     final sent = repo.answers.single as AboutAnswer;
     expect(sent.displayName, 'Srijan');
     expect(sent.consent.policyVersion, freshState.policyVersion);
-    expect(sent.consent.types, ConsentType.values);
+    // Phase 17: only the required purposes; FITOS AI is asked when first used.
+    expect(sent.consent.types, ConsentType.required);
   });
 
   testWidgets(

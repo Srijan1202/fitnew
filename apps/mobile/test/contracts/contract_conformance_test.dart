@@ -10,6 +10,8 @@ import 'package:fitos/features/mess/domain/mess.dart';
 import 'package:fitos/features/mess/domain/recommendation.dart';
 import 'package:fitos/features/notifications/data/notifications_api.dart';
 import 'package:fitos/features/notifications/domain/notifications.dart';
+import 'package:fitos/features/privacy/data/privacy_api.dart';
+import 'package:fitos/features/privacy/domain/privacy.dart';
 import 'package:fitos/features/mess/presentation/widgets/recommend_words.dart';
 import 'package:fitos/features/nutrition/domain/entities/food.dart';
 import 'package:fitos/features/nutrition/domain/entities/food_log.dart';
@@ -2438,6 +2440,61 @@ void main() {
         jsonDecode(jsonEncode(full.toJson())) as Map<String, dynamic>,
       );
       expect(jsonEncode(back.toJson()), jsonEncode(full.toJson()));
+    });
+  });
+
+  group('Privacy (Phase 17)', () {
+    Map<String, dynamic> prop(Map<String, dynamic> schema, String key) =>
+        properties(schema)[key] as Map<String, dynamic>;
+
+    test('consents: response and request shapes; every purpose', () {
+      final response = schemaOf('/user/consents', 'get');
+      final c = Consents(
+        currentPolicyVersion: 'v',
+        needsReconsent: false,
+        items: [
+          ConsentState(
+            type: 'ai-processing',
+            granted: true,
+            policyVersion: 'v',
+            at: DateTime.utc(2026, 10, 22),
+            required: false,
+          ),
+        ],
+      );
+      expect(c.toJson().keys.toSet(), keysOf(response));
+      final item = prop(response, 'items')['items'] as Map<String, dynamic>;
+      expect(c.items.single.toJson().keys.toSet(), keysOf(item));
+      expect(
+        ConsentType.values.map((t) => t.wire).toList(),
+        enumOf(prop(item, 'type')),
+      );
+      final request = schemaOf('/user/consents', 'post', request: true);
+      expect(
+        DioPrivacyApi.consentJson(ConsentType.aiProcessing, granted: true)
+            .keys
+            .toSet(),
+        keysOf(request),
+      );
+    });
+
+    test('export and delete', () {
+      expect(
+        keysOf(schemaOf('/user/export', 'post')),
+        {'format', 'version', 'exportedAt', 'userId', 'notes', 'tables'},
+      );
+      final paths = doc['paths'] as Map<String, dynamic>;
+      final del = (paths['/user'] as Map<String, dynamic>)['delete']
+          as Map<String, dynamic>;
+      final body = (((del['requestBody'] as Map<String, dynamic>)['content']
+              as Map<String, dynamic>)['application/json']
+          as Map<String, dynamic>)['schema'] as Map<String, dynamic>;
+      expect(keysOf(body), {'confirm'});
+      final ok = ((((del['responses'] as Map<String, dynamic>)['200']
+                  as Map<String, dynamic>)['content']
+              as Map<String, dynamic>)['application/json']
+          as Map<String, dynamic>)['schema'] as Map<String, dynamic>;
+      expect(keysOf(ok), {'deleted', 'signInRemoved'});
     });
   });
 

@@ -1,6 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fitos/features/ai/domain/entities/ai_draft.dart';
 import 'package:fitos/features/ai/presentation/controllers/ai_providers.dart';
+import 'package:fitos/features/privacy/presentation/privacy_providers.dart';
 import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/theme/app_theme.dart';
@@ -25,6 +26,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../support/ai_drafts.dart';
 import '../../support/fake_ai_api.dart';
+import '../../support/fake_privacy_api.dart';
 import '../../support/fake_food_log_api.dart';
 import '../../support/fake_mess_api.dart';
 import '../../support/fake_food_repository.dart';
@@ -86,9 +88,11 @@ void main() {
   late FakeFoodLogApi api;
   late FakeFoodRepository foods;
   late FakeAiApi ai;
+  late FakePrivacyApi privacy;
 
   setUp(() {
     ai = FakeAiApi.off();
+    privacy = FakePrivacyApi();
     db = AppDatabase.inMemory();
     api = FakeFoodLogApi(todayDate: today, targets: targets);
     api.snapshot[dalTadka.id] = serverSnapshot(dalTadka);
@@ -129,6 +133,7 @@ void main() {
         foodLogApiProvider.overrideWithValue(api),
         // Phase 9: no mess configured — the Phase 8 screens as they were.
         // Phase 14: FITOS AI off unless a test switches it on.
+        privacyApiProvider.overrideWithValue(privacy),
         aiApiProvider.overrideWithValue(ai),
         messApiProvider.overrideWithValue(FakeMessApi(mine: null)),
         foodRepositoryProvider.overrideWithValue(foods),
@@ -710,6 +715,37 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('describe.read')));
       await settle(tester);
     }
+
+    testWidgets(
+        'Phase 17: without FITOS AI consent, Read it asks first; Not now sends nothing; Allow records consent, then reads',
+        (tester) async {
+      tall(tester);
+      privacy.aiGranted = false;
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await openDescribe(tester);
+      await tester.enterText(
+        find.byKey(const ValueKey('describe.input')),
+        'two chapati',
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('describe.read')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('aiConsent.sheet')), findsOneWidget);
+      expect(find.textContaining("Google's Gemini"), findsWidgets);
+      await tester.tap(find.byKey(const ValueKey('aiConsent.notNow')));
+      await settle(tester);
+      expect(ai.parsed, isEmpty);
+      expect(privacy.calls.where((c) => c.startsWith('set')), isEmpty);
+
+      await tester.tap(find.byKey(const ValueKey('describe.read')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('aiConsent.allow')));
+      await settle(tester);
+      expect(privacy.calls, contains('set ai-processing true'));
+      expect(ai.parsed, ['two chapati']);
+      expect(find.byKey(const ValueKey('describe.item.0')), findsOneWidget);
+    });
 
     testWidgets('AI off on the server: no way in; the log sheet as before',
         (tester) async {

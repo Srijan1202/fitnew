@@ -298,6 +298,22 @@ class NotificationCoordinator extends Notifier<NotifyState> {
     return _scheduler.requestPermission();
   }
 
+  /// Phase 17: the account was deleted — nothing of it stays on the phone:
+  /// every scheduled reminder is cancelled and the stored plan forgotten.
+  Future<void> forgetAll() async {
+    for (final i in _stored.items) {
+      await _scheduler.cancel(i);
+    }
+    _stored = _Stored();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_key);
+    } on Object {
+      // Prefs are wiped wholesale by the caller as well.
+    }
+    state = const NotifyState();
+  }
+
   /// The settings screen's "Allow notifications".
   Future<bool> askPermission() async {
     final ok = await _scheduler.requestPermission();

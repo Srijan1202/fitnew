@@ -10,6 +10,7 @@ import '../../../training/presentation/controllers/program_controller.dart';
 import '../../../workout/presentation/controllers/workout_providers.dart';
 import '../../domain/entities/ai.dart';
 import '../controllers/ai_providers.dart';
+import '../../../privacy/presentation/privacy_providers.dart';
 
 /// Phase 6.6 — FITOS AI (Part 7). The conversation as a running editorial
 /// column: "YOU" and "FITOS AI" eyebrows, hairlines between turns, the
@@ -48,6 +49,8 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   Future<void> _send([String? text]) async {
     final message = (text ?? _input.text).trim();
     if (message.isEmpty) return;
+    // Phase 17: FITOS AI is its own consent (asked once, before first use).
+    if (!await ensureAiConsent(context, ref) || !mounted) return;
     _input.clear();
     await ref.read(aiChatProvider.notifier).send(message);
     _toBottom();

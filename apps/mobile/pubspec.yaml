@@ -69,6 +69,8 @@ dependencies:
   # Phase 15: FCM registration only (POST /notifications/token); the
   # reminders themselves are scheduled on the phone (ADR-021).
   firebase_messaging: 16.7.0
+  # Phase 17: hand the data export (a JSON file) to the system share sheet.
+  share_plus: 12.0.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,5 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fitos/features/ai/presentation/controllers/ai_providers.dart';
+import 'package:fitos/features/privacy/presentation/privacy_providers.dart';
 import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
@@ -22,6 +23,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../support/ai_drafts.dart';
 import '../../support/fake_ai_api.dart';
+import '../../support/fake_privacy_api.dart';
 import '../../support/fake_food_log_api.dart';
 import '../../support/fake_mess_api.dart';
 import '../../support/fake_food_repository.dart';
@@ -118,6 +120,7 @@ void main() {
         foodLogApiProvider.overrideWithValue(api),
         // Phase 9: no mess configured — the Phase 8 screens as they were.
         // Phase 14: FITOS AI off unless a test switches it on.
+        privacyApiProvider.overrideWithValue(FakePrivacyApi()),
         aiApiProvider.overrideWithValue(ai ?? FakeAiApi.off()),
         messApiProvider.overrideWithValue(FakeMessApi(mine: null)),
         foodRepositoryProvider.overrideWithValue(FakeFoodRepository()),

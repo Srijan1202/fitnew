@@ -5,6 +5,7 @@ import '../../../core/errors/failure.dart';
 import '../../../core/theme/tokens.dart';
 import '../../ai/domain/entities/ai_draft.dart';
 import '../../ai/presentation/controllers/ai_providers.dart';
+import '../../privacy/presentation/privacy_providers.dart';
 
 /// Phase 14 (ADR-020 D5): "Explain simply" under a TODAY action's reason.
 /// The server rewords the engine's reason; a rewording that brings in any
@@ -26,6 +27,8 @@ class _ExplainSimplyState extends ConsumerState<ExplainSimply> {
   Failure? _failure;
 
   Future<void> _ask() async {
+    // Phase 17: FITOS AI is its own consent (asked once, before first use).
+    if (!await ensureAiConsent(context, ref) || !mounted) return;
     setState(() {
       _loading = true;
       _failure = null;

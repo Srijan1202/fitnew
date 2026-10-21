@@ -109,7 +109,8 @@ class _AboutStepState extends State<AboutStep> {
         weightKg: double.parse(_weight.text.trim()),
         consent: ConsentGrant(
           policyVersion: widget.state.policyVersion,
-          types: ConsentType.values,
+          // Only the required purposes: FITOS AI is asked when first used.
+          types: ConsentType.required,
         ),
       ),
     );

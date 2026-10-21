@@ -12,6 +12,7 @@ import '../controllers/food_logger.dart';
 import '../widgets/eat_widgets.dart';
 import '../widgets/food_widgets.dart';
 import '../widgets/log_controls.dart';
+import '../../../privacy/presentation/privacy_providers.dart';
 
 /// Opens "Describe your meal" for a day and meal; true when something was
 /// logged (the caller closes the log sheet then).
@@ -88,6 +89,8 @@ class _DescribeMealScreenState extends ConsumerState<DescribeMealScreen> {
     final text = _text.text.trim();
     if (text.length < 2 || _reading) return;
     FocusScope.of(context).unfocus();
+    // Phase 17: FITOS AI is its own consent (asked once, before first use).
+    if (!await ensureAiConsent(context, ref) || !mounted) return;
     setState(() {
       _reading = true;
       _failure = null;

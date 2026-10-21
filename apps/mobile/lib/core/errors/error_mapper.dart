@@ -88,6 +88,9 @@ abstract final class ErrorMapper {
     if (code == 'UNAUTHENTICATED' || status == 401) {
       return Unauthenticated(message ?? 'Sign in to continue.');
     }
+    if (code == 'FORBIDDEN' || status == 403) {
+      return Forbidden(message ?? 'Not allowed.', issue: issue);
+    }
     if (code == 'VALIDATION_FAILED' || status == 422) {
       return Validation(message ?? 'Please check your details.', field: field);
     }

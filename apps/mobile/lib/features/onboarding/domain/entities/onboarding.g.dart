@@ -23,6 +23,7 @@ Map<String, dynamic> _$ConsentGrantToJson(_ConsentGrant instance) =>
 const _$ConsentTypeEnumMap = {
   ConsentType.privacyPolicy: 'privacy-policy',
   ConsentType.healthDataProcessing: 'health-data-processing',
+  ConsentType.aiProcessing: 'ai-processing',
 };
 
 GoalAnswer _$GoalAnswerFromJson(Map<String, dynamic> json) => GoalAnswer(

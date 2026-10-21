@@ -160,7 +160,8 @@ void main() {
         weightKg: 58,
         consent: ConsentGrant(
           policyVersion: '2026-09-21',
-          types: ConsentType.values,
+          // Phase 17: onboarding sends the required purposes only.
+          types: ConsentType.required,
         ),
       ),
     ) as Map<String, Object?>;
