@@ -12,6 +12,8 @@ part 'ai.g.dart';
 @freezed
 abstract class AiStatus with _$AiStatus {
   const factory AiStatus({
+    /// Phase 14 kill switch (`AI_ENABLED`): false hides every AI entry point.
+    @Default(true) bool enabled,
     required bool configured,
     required String provider,
     required String? model,

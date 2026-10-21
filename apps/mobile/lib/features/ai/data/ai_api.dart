@@ -4,12 +4,20 @@ import '../../../core/errors/error_mapper.dart';
 import '../../../core/errors/failure.dart';
 import '../../../core/errors/result.dart';
 import '../domain/entities/ai.dart';
+import '../domain/entities/ai_draft.dart';
 
 /// `/v1/ai/*` — FITOS AI lives on the server (owner B2); the phone asks and
 /// shows. No model key exists on the phone, by design.
 abstract class AiApi {
   Future<Result<AiStatus>> status();
   Future<Result<AiChatResponse>> chat(AiChatRequest request);
+
+  /// Phase 14: a meal in the user's words → a draft to confirm. Nothing is
+  /// logged by this call.
+  Future<Result<ParseFoodResponse>> parseFood(String text);
+
+  /// Phase 14: a TODAY action's reason in plainer words, or the engine's own.
+  Future<Result<ExplainResponse>> explain(String actionId);
 }
 
 class DioAiApi implements AiApi {
@@ -54,5 +62,25 @@ class DioAiApi implements AiApi {
           options: Options(receiveTimeout: const Duration(seconds: 60)),
         ),
         AiChatResponse.fromJson,
+      );
+
+  @override
+  Future<Result<ParseFoodResponse>> parseFood(String text) => _guard(
+        () => _dio.post<Map<String, dynamic>>(
+          '/v1/nutrition/parse',
+          data: {'text': text},
+          options: Options(receiveTimeout: const Duration(seconds: 30)),
+        ),
+        ParseFoodResponse.fromJson,
+      );
+
+  @override
+  Future<Result<ExplainResponse>> explain(String actionId) => _guard(
+        () => _dio.post<Map<String, dynamic>>(
+          '/v1/ai/explain',
+          data: {'actionId': actionId},
+          options: Options(receiveTimeout: const Duration(seconds: 30)),
+        ),
+        ExplainResponse.fromJson,
       );
 }

@@ -19,6 +19,23 @@ final aiStatusProvider = FutureProvider<AiStatus>(
   retry: (_, __) => null,
 );
 
+/// Phase 14: whether to offer AI features at all — switched on and set up
+/// on the server. Unknown (loading, offline, an error) counts as no, so an
+/// AI entry point never appears that cannot answer.
+final aiAvailableProvider = Provider<bool>((ref) {
+  final s = ref.watch(aiStatusProvider).value;
+  return s != null && s.enabled && s.configured;
+});
+
+/// A FITOS AI refusal in words: the server's own for its refusals (switched
+/// off, not set up, busy, the hourly limit, today's allowance); the phone's
+/// for no connection.
+String aiFailureText(Failure f) => switch (f) {
+      ServiceUnavailable() || RateLimited() => f.message,
+      Offline() => 'You are offline. Try again when you are connected.',
+      _ => 'FITOS AI could not answer just now. Try again later.',
+    };
+
 /// One line of the conversation as the screen shows it.
 class AiTurn {
   const AiTurn({

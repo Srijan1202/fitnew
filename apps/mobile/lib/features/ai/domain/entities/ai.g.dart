@@ -7,6 +7,7 @@ part of 'ai.dart';
 // **************************************************************************
 
 _AiStatus _$AiStatusFromJson(Map<String, dynamic> json) => _AiStatus(
+      enabled: json['enabled'] as bool? ?? true,
       configured: json['configured'] as bool,
       provider: json['provider'] as String,
       model: json['model'] as String?,
@@ -17,6 +18,7 @@ _AiStatus _$AiStatusFromJson(Map<String, dynamic> json) => _AiStatus(
     );
 
 Map<String, dynamic> _$AiStatusToJson(_AiStatus instance) => <String, dynamic>{
+      'enabled': instance.enabled,
       'configured': instance.configured,
       'provider': instance.provider,
       'model': instance.model,

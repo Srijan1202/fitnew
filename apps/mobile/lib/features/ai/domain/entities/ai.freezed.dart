@@ -14,6 +14,8 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$AiStatus {
+  /// Phase 14 kill switch (`AI_ENABLED`): false hides every AI entry point.
+  bool get enabled;
   bool get configured;
   String get provider;
   String? get model;
@@ -34,6 +36,7 @@ mixin _$AiStatus {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is AiStatus &&
+            (identical(other.enabled, enabled) || other.enabled == enabled) &&
             (identical(other.configured, configured) ||
                 other.configured == configured) &&
             (identical(other.provider, provider) ||
@@ -44,12 +47,12 @@ mixin _$AiStatus {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, configured, provider, model,
-      const DeepCollectionEquality().hash(excludes));
+  int get hashCode => Object.hash(runtimeType, enabled, configured, provider,
+      model, const DeepCollectionEquality().hash(excludes));
 
   @override
   String toString() {
-    return 'AiStatus(configured: $configured, provider: $provider, model: $model, excludes: $excludes)';
+    return 'AiStatus(enabled: $enabled, configured: $configured, provider: $provider, model: $model, excludes: $excludes)';
   }
 }
 
@@ -59,7 +62,11 @@ abstract mixin class $AiStatusCopyWith<$Res> {
       _$AiStatusCopyWithImpl;
   @useResult
   $Res call(
-      {bool configured, String provider, String? model, List<String> excludes});
+      {bool enabled,
+      bool configured,
+      String provider,
+      String? model,
+      List<String> excludes});
 }
 
 /// @nodoc
@@ -74,12 +81,17 @@ class _$AiStatusCopyWithImpl<$Res> implements $AiStatusCopyWith<$Res> {
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? enabled = null,
     Object? configured = null,
     Object? provider = null,
     Object? model = freezed,
     Object? excludes = null,
   }) {
     return _then(_self.copyWith(
+      enabled: null == enabled
+          ? _self.enabled
+          : enabled // ignore: cast_nullable_to_non_nullable
+              as bool,
       configured: null == configured
           ? _self.configured
           : configured // ignore: cast_nullable_to_non_nullable
@@ -193,16 +205,16 @@ extension AiStatusPatterns on AiStatus {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(bool configured, String provider, String? model,
-            List<String> excludes)?
+    TResult Function(bool enabled, bool configured, String provider,
+            String? model, List<String> excludes)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _AiStatus() when $default != null:
-        return $default(
-            _that.configured, _that.provider, _that.model, _that.excludes);
+        return $default(_that.enabled, _that.configured, _that.provider,
+            _that.model, _that.excludes);
       case _:
         return orElse();
     }
@@ -223,15 +235,15 @@ extension AiStatusPatterns on AiStatus {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(bool configured, String provider, String? model,
-            List<String> excludes)
+    TResult Function(bool enabled, bool configured, String provider,
+            String? model, List<String> excludes)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _AiStatus():
-        return $default(
-            _that.configured, _that.provider, _that.model, _that.excludes);
+        return $default(_that.enabled, _that.configured, _that.provider,
+            _that.model, _that.excludes);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -251,15 +263,15 @@ extension AiStatusPatterns on AiStatus {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(bool configured, String provider, String? model,
-            List<String> excludes)?
+    TResult? Function(bool enabled, bool configured, String provider,
+            String? model, List<String> excludes)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _AiStatus() when $default != null:
-        return $default(
-            _that.configured, _that.provider, _that.model, _that.excludes);
+        return $default(_that.enabled, _that.configured, _that.provider,
+            _that.model, _that.excludes);
       case _:
         return null;
     }
@@ -270,7 +282,8 @@ extension AiStatusPatterns on AiStatus {
 @JsonSerializable()
 class _AiStatus implements AiStatus {
   const _AiStatus(
-      {required this.configured,
+      {this.enabled = true,
+      required this.configured,
       required this.provider,
       required this.model,
       final List<String> excludes = const <String>[]})
@@ -278,6 +291,10 @@ class _AiStatus implements AiStatus {
   factory _AiStatus.fromJson(Map<String, dynamic> json) =>
       _$AiStatusFromJson(json);
 
+  /// Phase 14 kill switch (`AI_ENABLED`): false hides every AI entry point.
+  @override
+  @JsonKey()
+  final bool enabled;
   @override
   final bool configured;
   @override
@@ -313,6 +330,7 @@ class _AiStatus implements AiStatus {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _AiStatus &&
+            (identical(other.enabled, enabled) || other.enabled == enabled) &&
             (identical(other.configured, configured) ||
                 other.configured == configured) &&
             (identical(other.provider, provider) ||
@@ -323,12 +341,12 @@ class _AiStatus implements AiStatus {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, configured, provider, model,
-      const DeepCollectionEquality().hash(_excludes));
+  int get hashCode => Object.hash(runtimeType, enabled, configured, provider,
+      model, const DeepCollectionEquality().hash(_excludes));
 
   @override
   String toString() {
-    return 'AiStatus(configured: $configured, provider: $provider, model: $model, excludes: $excludes)';
+    return 'AiStatus(enabled: $enabled, configured: $configured, provider: $provider, model: $model, excludes: $excludes)';
   }
 }
 
@@ -340,7 +358,11 @@ abstract mixin class _$AiStatusCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {bool configured, String provider, String? model, List<String> excludes});
+      {bool enabled,
+      bool configured,
+      String provider,
+      String? model,
+      List<String> excludes});
 }
 
 /// @nodoc
@@ -355,12 +377,17 @@ class __$AiStatusCopyWithImpl<$Res> implements _$AiStatusCopyWith<$Res> {
   @override
   @pragma('vm:prefer-inline')
   $Res call({
+    Object? enabled = null,
     Object? configured = null,
     Object? provider = null,
     Object? model = freezed,
     Object? excludes = null,
   }) {
     return _then(_AiStatus(
+      enabled: null == enabled
+          ? _self.enabled
+          : enabled // ignore: cast_nullable_to_non_nullable
+              as bool,
       configured: null == configured
           ? _self.configured
           : configured // ignore: cast_nullable_to_non_nullable

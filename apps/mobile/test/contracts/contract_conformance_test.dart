@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:fitos/features/ai/data/ai_api.dart';
 import 'package:fitos/features/ai/domain/entities/ai.dart';
+import 'package:fitos/features/ai/domain/entities/ai_draft.dart';
 import 'package:fitos/features/auth/domain/entities/user_profile.dart';
 import 'package:fitos/features/exercise/domain/entities/exercise.dart';
 import 'package:fitos/features/mess/domain/mess.dart';
@@ -24,6 +25,7 @@ import 'package:fitos/features/workout/data/workout_api.dart';
 import 'package:fitos/features/workout/domain/entities/workout.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../support/ai_drafts.dart';
 import '../support/fake_auth_repository.dart';
 import '../support/fake_exercise_repository.dart';
 import '../support/fake_food_repository.dart';
@@ -2433,6 +2435,84 @@ void main() {
         jsonDecode(jsonEncode(full.toJson())) as Map<String, dynamic>,
       );
       expect(jsonEncode(back.toJson()), jsonEncode(full.toJson()));
+    });
+  });
+
+  group('FITOS AI drafts and explanations (Phase 14)', () {
+    Map<String, dynamic> prop(Map<String, dynamic> schema, String key) =>
+        properties(schema)[key] as Map<String, dynamic>;
+    Map<String, dynamic> itemsOf(Map<String, dynamic> schema) =>
+        schema['items'] as Map<String, dynamic>;
+
+    test('parse request and the AiDraft response, every nested shape', () {
+      expect(
+        keysOf(schemaOf('/nutrition/parse', 'post', request: true)),
+        {'text'},
+      );
+      final response = schemaOf('/nutrition/parse', 'post');
+      final answer = mealDraft();
+      final json = answer.toJson();
+      expect(json.keys.toSet(), keysOf(response));
+      final draft = prop(response, 'draft');
+      expect(answer.draft.toJson().keys.toSet(), keysOf(draft));
+      expect(enumOf(prop(draft, 'source')), [answer.draft.source]);
+      expect(prop(draft, 'requiresConfirmation')['enum'], [true]);
+      final item = itemsOf(prop(prop(draft, 'data'), 'items'));
+      for (final i in answer.draft.items) {
+        expect(i.toJson().keys.toSet(), keysOf(item));
+      }
+      expect(
+        AiConfidence.values.map((c) => c.wire).toList(),
+        enumOf(prop(item, 'confidence')),
+      );
+      final match = prop(item, 'match');
+      expect(chapatiMatch.toJson().keys.toSet(), keysOf(match));
+      expect(chapatiRow.toJson().keys.toSet(), keysOf(prop(match, 'row')));
+      expect(
+        chapatiMatch.snapshot.keys.toSet(),
+        keysOf(prop(match, 'snapshot')),
+      );
+      expect(
+        FoodMatchKind.values.map((k) => k.wire).toList(),
+        enumOf(prop(match, 'matchKind')),
+      );
+      expect(barEstimate.toJson().keys.toSet(), keysOf(prop(item, 'estimate')));
+    });
+
+    test('explain request and response; the source vocabulary', () {
+      expect(
+        keysOf(schemaOf('/ai/explain', 'post', request: true)),
+        {'actionId'},
+      );
+      final response = schemaOf('/ai/explain', 'post');
+      const answer = ExplainResponse(
+        text: 't',
+        source: ExplainSource.engine,
+        discarded: 'new-number',
+      );
+      expect(answer.toJson().keys.toSet(), keysOf(response));
+      expect(
+        ExplainSource.values.map((s) => s.wire).toList(),
+        enumOf(prop(response, 'source')),
+      );
+      expect(
+        enumOf(prop(response, 'discarded')),
+        containsAll(<String>['new-number', 'empty', 'too-long']),
+      );
+    });
+
+    test('drafts and explanations round-trip through their own JSON', () {
+      Map<String, dynamic> wire(Object? v) =>
+          jsonDecode(jsonEncode(v)) as Map<String, dynamic>;
+      final back = ParseFoodResponse.fromJson(wire(mealDraft().toJson()));
+      expect(back.toJson(), wire(mealDraft().toJson()));
+      expect(back.draft.requiresConfirmation, isTrue);
+      expect(
+        back.draft.items.map((i) => i.loggable),
+        [true, true, true, false],
+      );
+      const e = ExplainResponse(text: 't', source: ExplainSource.ai);
+      expect(ExplainResponse.fromJson(wire(e.toJson())).toJson(), e.toJson());
     });
   });
 
