@@ -13,6 +13,8 @@
 | O4 | **Phase 12 Progress & Recovery UI polish** | Owner: after Phase 13 is accepted | A separate visual pass; not to be mixed into feature work |
 | O5 | **Nightly backup schedule** | Changes the PC's Task Scheduler | `schtasks /Create /TN "FITOS backup" /SC DAILY /ST 23:30 /TR "powershell -NoProfile -ExecutionPolicy Bypass -File \"D:\dev\fit new\scripts\backup-local.ps1\""` |
 | O6 | **S24 pass on `phase-13-audit-fixes`** | Device needed | Sign in, the Profile time-zone offer, a workout and food logging (the API dependency upgrades and the time zone change) |
+| O7 | **Gemini paid tier (or Vertex AI)** | Owner, 2026-10-21: free tier for the alpha | **Before beta or any user outside the alpha group.** §19.3's privacy rule is suspended only for the alpha (ADR-020 D1). The change is configuration: a paid key in `GEMINI_API_KEY`; `ai_usage` shows real token use for sizing |
+| O8 | **TODAY and recovery in the AI chat context** | §31 Phase 11/13 deferred them to Phase 14; not in Phase 14's task list | Would let the assistant answer "why rest today?" from readiness, but sends more health-adjacent data to the model (free tier, O7). ADR-020 "Not in Phase 14" |
 
 ## Engineering (no decision needed, not yet scheduled)
 
@@ -37,6 +39,6 @@
 
 ## Later phases (already in MASTER-SPEC, listed so nothing is lost)
 
-- **Phase 14 (AI features):** recovery is deliberately not in the AI context yet (ADR-019 D13).
+- **Phase 14 (AI features):** built on `phase-14` (ADR-020); recovery and TODAY stay out of the chat context until O8 is decided.
 - **Phase 17 (security & privacy hardening):** data export and account deletion are a legal requirement before any public launch (DPDP, §23). Also consent flows, log redaction and secrets in Secret Manager.
 - **Phases 15, 16, 18–20:** notifications, admin, test hardening, beta and production.

@@ -397,6 +397,7 @@ Everything else in your preferred stack is kept: Cloud Run, Firebase Auth, FCM, 
 | `recommendations` | `id`, `user_id`, `generated_for date`, `kind`, `headline`, `detail`, `target`, `priority`, `basis`, `payload jsonb` | `AMENDED 2026-09-24 (Phase 11, ADR-017)`: also `subject_key`, `rank` (at first generation), `engine_version`, `input_digest`, `content_hash`, `created_at`. **Immutable**; UNIQUE `(user_id, generated_for, kind, subject_key, content_hash)`, so the same content reuses its id. Never stores the whole `UserModel`. Kept indefinitely; cascades on user deletion |
 | `recommendation_events` | `id`, `recommendation_id`, `event` (`shown`/`opened`/`accepted`/`dismissed`/`completed`), `occurred_at` | Measures whether the engine actually helps. `AMENDED 2026-09-24 (Phase 11, ADR-017)`: also `user_id`, `client_event_id` (UNIQUE per user: idempotency) and `received_at`. Each event at most once per recommendation. Product records, not analytics |
 | `recovery_logs` | `id`, `user_id`, `logged_on date`, `sleep_hours`, `sleep_quality`, `soreness`, `energy`, `stress`, `source` | UNIQUE `(user_id, logged_on)`. `AMENDED 2026-09-25 (Phase 13, ADR-019)`: every value optional, at least one present; `source` is `manual` only (Health Connect never leaves the phone); hard delete. |
+| `ai_usage` | `id`, `user_id`, `route` (`chat` \| `parse` \| `explain`), `model`, `input_tokens`, `output_tokens`, `outcome` (`ok` \| `discarded` \| `failed`), `created_at` | `ADDED 2026-10-21 (Phase 14, ADR-020 D3)`: one row per model call, never the prompt or the answer; the hourly limits and the daily token budget are counted from it; cascade from `users`. |
 | `health_samples` | `id`, `user_id`, `sample_type`, `value`, `unit`, `recorded_at`, `source` | Health Connect / HealthKit (V2) |
 | `notifications` | `id`, `user_id`, `kind`, `scheduled_for`, `sent_at`, `opened_at` | |
 | `audit_logs` | `id`, `actor_user_id`, `action`, `entity`, `entity_id`, `metadata jsonb`, `occurred_at` | Admin actions + data export/delete |
@@ -466,7 +467,8 @@ Codes: `UNAUTHENTICATED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `VALIDATIO
 | GET | `/training/sessions` | History | Paginated |
 | GET | `/training/volume` | Weekly per-muscle vs landmarks | |
 | GET | `/ai/status` | Whether FITOS AI is configured; provider, model, what it never sees | Phase 6.6 |
-| POST | `/ai/chat` | One assistant turn over the user's own FITOS data (§19.4) | Phase 6.6; 20/min/user; stateless |
+| POST | `/ai/chat` | One assistant turn over the user's own FITOS data (§19.4) | Phase 6.6; 20/min/user; stateless. Phase 14: 60 model calls/h/user, the daily token budget, the kill switch |
+| POST | `/ai/explain` | A TODAY action's reason in plainer words, numbers checked (§19.2) | Phase 14 (ADR-020 D5); by action id; the engine's words when a number is added; 20/h/user |
 | GET | `/nutrition/today` | Targets, consumed, remaining, logs | |
 | GET | `/nutrition/day/{date}` | Historical day | |
 | POST | `/nutrition/logs` | Log food (`clientLogId`) | Idempotent |
@@ -477,7 +479,7 @@ Codes: `UNAUTHENTICATED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `VALIDATIO
 | GET | `/nutrition/foods/search` | `?q&limit` | Trigram + alias |
 | GET | `/nutrition/foods/barcode/{code}` | Barcode lookup | |
 | POST | `/nutrition/foods` | Create custom food | |
-| POST | `/nutrition/parse` | **NL text → structured items** | Gemini; returns *unconfirmed* draft |
+| POST | `/nutrition/parse` | **NL text → structured items** | Gemini; returns *unconfirmed* draft. Phase 14 (ADR-020 D6): FITOS foods at their own rows, bounded estimates, never stored; 20/h/user |
 | GET | `/nutrition/recommendations` | "What should I eat now" | `?slot&source=mess\|general` — **deferred** (Phase 10 is mess-only, ADR-015) |
 | GET | `/nutrition/targets` | Current + history | |
 | GET | `/mess/providers` | Available providers | |
@@ -625,7 +627,7 @@ Priority order: `user-corrected` → `ifct`/`indb` → `usda` → `estimated`.
 | Saved meals | 8 | One tap |
 | Mess selection | 9 | Tap dishes from today's menu |
 | Barcode | V1.5 | `OPEN QUESTION` — Open Food Facts coverage for Indian products is unverified |
-| Natural language | V1.5 | Gemini → **draft** → user confirms |
+| Natural language | 14 | Gemini → **draft** → user confirms. `AMENDED 2026-10-21 (ADR-020 D2)`: built in Phase 14 per §31 ("Describe your meal") |
 | Photo | V2 | Gemini vision → wide ranges → user confirms |
 
 `DECISION` — AI-derived logs are **always drafts**. Nothing enters `food_log_items` without explicit user confirmation.
@@ -966,8 +968,8 @@ interface AiDraft<T> {
 ```
 
 Validation gates every AI output before it can reach the user:
-- Parsed foods must resolve to a `foods` row or become an explicit `estimated` custom food.
-- Any macro outside plausible bounds (>900 kcal/100g, protein >90 g/100g) is rejected.
+- Parsed foods must resolve to a `foods` row or become an explicit `estimated` custom food. `AMENDED 2026-10-21 (ADR-020 D6)`: an unmatched food is the model's estimate, labelled, logged on confirmation as a **named quick add** (the user's own entry) — never a `foods` row from model output.
+- Any macro outside plausible bounds (>900 kcal/100g, protein >90 g/100g) is rejected. Phase 14 also rejects carbohydrate or fat > 100 g/100g, a portion > 3,000 kcal or > 2,000 g, and kcal inconsistent with the macros.
 - Explanations are constrained to rephrasing supplied reason strings. If an explanation contains a number not present in the input payload, **discard it and show the raw engine reason.**
 
 ### 19.3 Provider
@@ -978,7 +980,14 @@ Validation gates every AI output before it can reach the user:
 
 > **Critical privacy constraint (`RESEARCH`):** free-tier Gemini prompts may be used to improve Google's products; paid tier and Vertex AI prompts are not. Because our prompts contain personal health-adjacent data, **all production AI calls must run on a paid tier.** The free tier is permitted for local development with synthetic data only. This is a hard rule, not a preference.
 
+> `AMENDED 2026-10-21 (owner decision, ADR-020 D1)`: **the alpha runs on the free tier.** The owner accepts that Google may use alpha prompts. **Before beta, or before anyone outside the alpha group uses FITOS AI, move to a paid tier or Vertex AI** (BACKLOG O7). Parse sends only the meal text; explain sends one TODAY action's own words and values; chat sends the §19.4 context.
+
 Cost control: `AI_ENABLED` kill switch; 20 requests/hour/user; strict output token caps; log every call's token count to `audit_logs`.
+`AMENDED 2026-10-21 (Phase 14, ADR-020 D3/D4/D8)`:
+- **Ledger:** token counts go to `ai_usage` (§9.2), not `audit_logs` (admin actions, Phase 16).
+- **Hourly limits per user** (settings): parse 20, explain 20, chat 60 model calls. **Budget:** 200,000 tokens per user per rolling 24 h across purposes. Both are counted from `ai_usage` and refused with 429 before any model call. The 20/min burst limit stays.
+- **Kill switch:** `AI_ENABLED=false` → chat, parse and explain answer 503 (`disabled`) without a model call; `/ai/status` says `enabled: false`; the app hides its AI entry points.
+- **Models:** `MODEL_FOOD_PARSE` and `MODEL_EXPLAIN`, falling back to `GEMINI_MODEL`.
 
 ### 19.4 FITOS AI assistant (Phase 6.6, ADR-010)
 
@@ -1497,6 +1506,12 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 **Tests:** every AI output requires confirmation · implausible macros rejected · **an explanation containing a number absent from the input is discarded** · kill switch disables all AI routes · rate limit enforced.
 **Acceptance:** **nothing AI-derived enters the database without user confirmation** · the app is fully functional with `AI_ENABLED=false`.
 **Manual:** parse 10 real meal descriptions; verify drafts are editable and confirmations accurate.
+`AMENDED 2026-10-21 (Phase 14 plan, ADR-020)`:
+- **Prereq:** the paid tier is deferred for the alpha (owner decision; §19.3, BACKLOG O7).
+- **APIs:** also `POST /ai/explain` (by TODAY action id); `/ai/status` gains `enabled`.
+- **DB:** `ai_usage` (migration 0017).
+- **UI:** "Describe your meal" on Log food → a draft sheet (FITOS foods with portion steppers, estimates labelled, problems shown, items can be left out) → Add logs through the ordinary queue. "Explain simply" in the TODAY why sheet. Both hidden while AI is off.
+- **Not in Phase 14:** TODAY and recovery in the chat context (BACKLOG O8, owner decision); photo (V2) and barcode (V1.5).
 
 ---
 
