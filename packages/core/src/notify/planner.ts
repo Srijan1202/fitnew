@@ -108,7 +108,7 @@ export const DEFAULT_MINUTES = {
   streak: 21 * 60,
   weighIn: 7 * 60 + 45,
   checkIn: 8 * 60 + 15,
-  recap: 19 * 60,
+  recap: 16 * 60,
   comeback: 12 * 60 + 30,
 } as const;
 
@@ -415,7 +415,7 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
         screen: 'progress',
         slot: null,
         cancelOn: [],
-        why: 'Sunday evening: the week in one screen.',
+        why: 'Sunday afternoon: the week in one screen.',
       });
     }
 

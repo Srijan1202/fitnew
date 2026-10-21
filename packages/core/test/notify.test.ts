@@ -264,13 +264,18 @@ describe('notify/planner', () => {
     expect(plan.every((p) => p.tone === 'gentle')).toBe(true);
   });
 
-  it('weekly recap on Sunday evening, with this week\'s numbers when planned on the day', () => {
+  it('weekly recap on Sunday afternoon (clear of the evening protein nudge), with this week\'s numbers when planned on the day', () => {
     const sunday = ist('2026-10-25', '10:00');
     const plan = planNotifications(facts({ now: sunday, programme: PPL, completedDates: ['2026-10-19', '2026-10-21'], settings: onlyKinds('weekly-recap') }));
     const recap = plan.find((p) => p.localDate === '2026-10-25')!;
-    expect(formatClock(minuteOfDay(recap.at, TZ))).toBe('19:00');
+    expect(formatClock(minuteOfDay(recap.at, TZ))).toBe('16:00');
     expect(recap.screen).toBe('progress');
     expect(recap.actions).toEqual([]);
+  });
+
+  it('found in the sample week: on Sunday the recap and the protein nudge both fit (3 h apart)', () => {
+    const plan = planNotifications(facts({ programme: PPL, proteinTargetG: 120 })).filter((p) => p.localDate === '2026-10-25');
+    expect(plan.map((p) => p.kind).sort()).toEqual(['protein-gap', 'weekly-recap']);
   });
 
   it('a kind already handled today (cancelled because done, or sent) is not planned again', () => {
