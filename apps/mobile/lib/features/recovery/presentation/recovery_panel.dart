@@ -180,9 +180,11 @@ class _RecoveryPanelState extends ConsumerState<RecoveryPanel> {
                 icon: const Icon(Icons.remove),
               ),
               Text(
-                _sleep == null ? '—' : _hours(_sleep!),
+                _sleep == null ? 'Not set' : _hours(_sleep!),
                 key: const ValueKey('recovery.sleep.value'),
-                style: textTheme.titleMedium,
+                style: _sleep == null
+                    ? textTheme.bodyMedium?.copyWith(color: FitColors.ink35)
+                    : textTheme.titleLarge,
               ),
               IconButton(
                 key: const ValueKey('recovery.sleep.more'),
@@ -214,6 +216,20 @@ class _RecoveryPanelState extends ConsumerState<RecoveryPanel> {
                       label: Text('$v'),
                       selected: _scales[s] == v,
                       showCheckmark: false,
+                      // §6.2: square corners; the chosen value is a solid ink block.
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(FitRadius.small),
+                      ),
+                      side: BorderSide(
+                        color: _scales[s] == v ? FitColors.ink : FitColors.rule,
+                      ),
+                      backgroundColor: FitColors.paper,
+                      selectedColor: FitColors.ink,
+                      labelStyle: TextStyle(
+                        color:
+                            _scales[s] == v ? FitColors.paper : FitColors.ink,
+                        fontWeight: FontWeight.w600,
+                      ),
                       onSelected: (on) =>
                           setState(() => _scales[s] = on ? v : null),
                     ),
@@ -378,15 +394,30 @@ class _ReadinessDisplay extends ConsumerWidget {
         const SizedBox(height: FitSpacing.sm),
         for (final c in r.components)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2),
+            padding: const EdgeInsets.symmetric(vertical: 3),
             child: Row(
               children: <Widget>[
-                Expanded(
+                SizedBox(
+                  width: 84,
                   child: Text(
                     c.key.label,
                     style:
                         textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
                   ),
+                ),
+                // How much of this part's share it took off (none when not available).
+                Expanded(
+                  child: c.available
+                      ? ClipRRect(
+                          borderRadius: const BorderRadius.all(FitRadius.small),
+                          child: LinearProgressIndicator(
+                            value: c.max == 0 ? 0 : c.penalty / c.max,
+                            minHeight: 6,
+                            color: FitColors.ink60,
+                            backgroundColor: FitColors.paper2,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                 ),
                 const SizedBox(width: FitSpacing.sm),
                 Flexible(

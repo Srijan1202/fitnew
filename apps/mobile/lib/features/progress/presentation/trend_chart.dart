@@ -23,19 +23,79 @@ class TrendChart extends StatelessWidget {
   final String to;
   final double height;
 
+  static String _date(String iso) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final d = DateTime.tryParse(iso);
+    return d == null ? iso : '${d.day} ${months[d.month - 1]}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final last = points.isEmpty ? null : points.last;
+    final textTheme = Theme.of(context).textTheme;
+    final axis = textTheme.bodySmall?.copyWith(color: FitColors.ink35);
+    // The kg range does not depend on the size: read it once for the labels.
+    final g = TrendGeometry.of(points, from, to, const Size(1, 1));
     return Semantics(
       label: last == null
           ? 'Weight trend: no readings in this window'
           : 'Weight trend chart, ${points.length} readings; trend ${last.trendKg.toStringAsFixed(1)} kg',
-      child: SizedBox(
-        height: height,
-        width: double.infinity,
-        child: CustomPaint(
-          key: const ValueKey('progress.chart'),
-          painter: TrendPainter(points: points, from: from, to: to),
+      child: ExcludeSemantics(
+        child: Column(
+          children: <Widget>[
+            SizedBox(
+              height: height,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Expanded(
+                    child: CustomPaint(
+                      key: const ValueKey('progress.chart'),
+                      painter: TrendPainter(points: points, from: from, to: to),
+                    ),
+                  ),
+                  if (points.isNotEmpty) ...<Widget>[
+                    const SizedBox(width: 6),
+                    Column(
+                      key: const ValueKey('progress.chart.kg'),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(g.maxKg.toStringAsFixed(1), style: axis),
+                        Text(
+                          ((g.maxKg + g.minKg) / 2).toStringAsFixed(1),
+                          style: axis,
+                        ),
+                        Text(g.minKg.toStringAsFixed(1), style: axis),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              key: const ValueKey('progress.chart.dates'),
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text(_date(from), style: axis),
+                Text(_date(to), style: axis),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -113,6 +173,16 @@ class TrendPainter extends CustomPainter {
     final rule = Paint()
       ..color = FitColors.rule
       ..strokeWidth = 1;
+    // Three faint guides (top, middle, bottom) matching the kg labels.
+    for (final f in const [0.0, 0.5]) {
+      canvas.drawLine(
+        Offset(0, size.height * f),
+        Offset(size.width, size.height * f),
+        Paint()
+          ..color = FitColors.rule.withValues(alpha: 0.5)
+          ..strokeWidth = 1,
+      );
+    }
     canvas.drawLine(
       Offset(0, size.height),
       Offset(size.width, size.height),
@@ -120,13 +190,11 @@ class TrendPainter extends CustomPainter {
     );
     final raw = Paint()
       ..color = rawColor
-      ..strokeWidth = rawStroke;
+      ..strokeWidth = rawStroke
+      ..style = PaintingStyle.stroke;
+    // Each raw reading is a hairline ring: visible, never louder than the trend.
     for (final o in g.raw) {
-      canvas.drawLine(
-        o.translate(0, -rawTick / 2),
-        o.translate(0, rawTick / 2),
-        raw,
-      );
+      canvas.drawCircle(o, rawTick / 2, raw);
     }
     if (g.trend.length == 1) {
       canvas.drawCircle(
@@ -149,6 +217,10 @@ class TrendPainter extends CustomPainter {
         ..strokeJoin = StrokeJoin.round
         ..strokeCap = StrokeCap.round,
     );
+    // Where the trend is now.
+    canvas
+      ..drawCircle(g.trend.last, 5, Paint()..color = FitColors.paper)
+      ..drawCircle(g.trend.last, 3.5, Paint()..color = trendColor);
   }
 
   @override
