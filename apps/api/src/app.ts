@@ -14,6 +14,7 @@ import {
 
 import { fastifyTrustProxy, isHostedEnvironment, parseTrustProxy, type Env } from './lib/env.js';
 import type { DatabaseHandle } from './db/client.js';
+import { FirebaseAccountDeleter, RecordingAccountDeleter, type AccountDeleter } from './lib/account-deleter.js';
 import { loggerOptions } from './lib/logger.js';
 import { FirebaseTokenVerifier, type TokenVerifier } from './lib/token-verifier.js';
 import aiPlugin from './plugins/ai.js';
@@ -35,6 +36,7 @@ import { progressRoutes } from './modules/progress/routes.js';
 import { recoveryRoutes } from './modules/recovery/routes.js';
 import { notificationRoutes } from './modules/notifications/routes.js';
 import { adminRoutes } from './modules/admin/routes.js';
+import { privacyRoutes } from './modules/privacy/routes.js';
 import { todayRoutes } from './modules/today/routes.js';
 import { userRoutes } from './modules/user/routes.js';
 import { users } from './db/schema.js';
@@ -54,11 +56,18 @@ export interface BuildAppOptions {
   readonly onRoute?: (route: RouteOptions) => void;
   /** Supplied by tests to script the language model (Phase 6.6). */
   readonly aiProvider?: AiProvider;
+  /** Phase 17: removes the Firebase account on deletion; tests record instead. */
+  readonly accountDeleter?: AccountDeleter;
+  /** Phase 17: where log lines go (the redaction test reads them). */
+  readonly logStream?: { write(line: string): void };
 }
 
 export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise<FastifyInstance> {
   const app = Fastify({
-    logger: loggerOptions(env.LOG_LEVEL, env.NODE_ENV === 'development'),
+    logger:
+      options.logStream !== undefined
+        ? { ...loggerOptions(env.LOG_LEVEL, false), stream: options.logStream }
+        : loggerOptions(env.LOG_LEVEL, env.NODE_ENV === 'development'),
     // Cloud Run terminates TLS and forwards the client IP in X-Forwarded-For;
     // without trusting it the rate limiter would see one proxy IP for every
     // user. How far to trust it is TRUST_PROXY (Phase 6.7): a hop count when
@@ -142,6 +151,14 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
       }),
   });
 
+  app.decorate(
+    'accountDeleter',
+    options.accountDeleter ??
+      (options.tokenVerifier !== undefined
+        ? new RecordingAccountDeleter()
+        : new FirebaseAccountDeleter({ projectId: env.FIREBASE_PROJECT_ID, credentialsPath: env.GOOGLE_APPLICATION_CREDENTIALS })),
+  );
+
   await app.register(aiPlugin, options.aiProvider !== undefined ? { provider: options.aiProvider, env } : { env });
 
   // /health is intentionally unversioned — probes should not have to track
@@ -165,6 +182,7 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
       await v1.register(recoveryRoutes);
       await v1.register(notificationRoutes);
       await v1.register(adminRoutes);
+      await v1.register(privacyRoutes, { ipSalt: env.CONSENT_IP_SALT });
       await v1.register(aiRoutes);
     },
     { prefix: PROTECTED_PREFIX },

@@ -42,21 +42,28 @@ export const REQUIRED_STEPS: readonly OnboardingStep[] = ['goal', 'about', 'expe
 
 /* ------------------------------------------------------------- consent -- */
 
-export const CONSENT_TYPES = ['privacy-policy', 'health-data-processing'] as const;
+/**
+ * §23: consent per purpose. Phase 17 (ADR-023 D1) adds `ai-processing`
+ * (FITOS AI sends the user's words or FITOS data to the model provider),
+ * optional and revocable; the first two are required to use FITOS at all.
+ */
+export const CONSENT_TYPES = ['privacy-policy', 'health-data-processing', 'ai-processing'] as const;
 export const consentTypeSchema = z.enum(CONSENT_TYPES);
 export type ConsentType = z.infer<typeof consentTypeSchema>;
+export const REQUIRED_CONSENT_TYPES = ['privacy-policy', 'health-data-processing'] as const satisfies readonly ConsentType[];
+export const OPTIONAL_CONSENT_TYPES = ['ai-processing'] as const satisfies readonly ConsentType[];
 
 /**
  * Bump this whenever the privacy policy text changes. Every consent row
  * records which version was agreed to (§23), so a policy change can be
  * re-consented rather than assumed.
  */
-export const CURRENT_POLICY_VERSION = '2026-09-21';
+export const CURRENT_POLICY_VERSION = '2026-10-22';
 
 export const consentGrantSchema = z
   .object({
     policyVersion: z.string().min(1),
-    /** Must include every type in CONSENT_TYPES; partial consent is refused. */
+    /** Must include every type in REQUIRED_CONSENT_TYPES; partial consent is refused. */
     types: z.array(consentTypeSchema).min(1),
   })
   .strict();

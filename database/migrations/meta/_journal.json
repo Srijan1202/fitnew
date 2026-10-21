@@ -141,6 +141,13 @@
       "when": 1792598496178,
       "tag": "0019_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792606583259,
+      "tag": "0020_ai_consent",
+      "breakpoints": true
     }
   ]
 }

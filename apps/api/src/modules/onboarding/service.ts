@@ -14,7 +14,7 @@
 import { createHash } from 'node:crypto';
 
 import {
-  CONSENT_TYPES,
+  REQUIRED_CONSENT_TYPES,
   CURRENT_POLICY_VERSION,
   MIN_AGE_YEARS,
   ONBOARDING_COMPLETE,
@@ -132,7 +132,7 @@ export class OnboardingService {
           ]);
         }
         const granted = new Set(answer.consent.types);
-        const notGranted = CONSENT_TYPES.filter((t) => !granted.has(t));
+        const notGranted = REQUIRED_CONSENT_TYPES.filter((t) => !granted.has(t));
         if (notGranted.length > 0) {
           throw new AppError('VALIDATION_FAILED', 'Consent is required to continue.', [
             { path: 'consent.types', issue: `missing: ${notGranted.join(', ')}` },
@@ -146,7 +146,8 @@ export class OnboardingService {
         // Consent first, then the data it covers.
         await this.repo.updateDisplayName(userId, answer.displayName);
         await this.repo.recordConsent(
-          CONSENT_TYPES.map((consentType) => ({
+          // The optional purposes (FITOS AI) are asked when first used, not here.
+          REQUIRED_CONSENT_TYPES.map((consentType) => ({
             userId,
             consentType,
             granted: true,

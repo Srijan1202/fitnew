@@ -42,6 +42,7 @@ import { ExplainService } from './explain.js';
 import { FoodParseService } from './parse.js';
 import { AiService } from './service.js';
 import { ToolRegistry } from './tools.js';
+import { PrivacyRepository } from '../privacy/repository.js';
 import { AiBudget, AiUsageRepository } from './usage.js';
 
 function requireUserId(userId: string | null): string {
@@ -74,7 +75,8 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
     workout: new WorkoutService(new WorkoutRepository(db), new TrainingRepository(db), ReadinessAssembler.forDb(db)),
     exercise: new ExerciseService(new ExerciseRepository(db)),
   };
-  const budget = new AiBudget(new AiUsageRepository(db), app.aiConfig);
+  const consents = new PrivacyRepository(db);
+  const budget = new AiBudget(new AiUsageRepository(db), app.aiConfig, undefined, (userId) => consents.hasConsent(userId, 'ai-processing'));
   const service = new AiService(
     app.ai,
     {

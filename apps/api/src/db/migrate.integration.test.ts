@@ -70,7 +70,7 @@ describeIfDb('migrations (real Postgres)', () => {
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
   const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
   const PHASE6_TABLES = ['muscle_volume_weekly', 'exercise_rejections'];
-  const TOTAL_MIGRATIONS = 20;
+  const TOTAL_MIGRATIONS = 21;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -476,7 +476,22 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from mess_providers where id = ${prov!.id}`;
   });
 
+  it('0020: consent_type gains ai-processing (Phase 17); down rebuilds the type without it and drops those records only', async () => {
+    expect(await enumLabels(client, 'consent_type')).toEqual(['privacy-policy', 'health-data-processing', 'ai-processing']);
+    await client`insert into users (firebase_uid) values ('mig-consent')`;
+    const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-consent'`;
+    await client`insert into consent_records (user_id, consent_type, granted, policy_version) values (${u!.id}, 'privacy-policy', true, 'v'), (${u!.id}, 'ai-processing', true, 'v')`;
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
+    expect(await enumLabels(client, 'consent_type')).toEqual(['privacy-policy', 'health-data-processing']);
+    const left = await client<{ consent_type: string }[]>`select consent_type::text from consent_records where user_id = ${u!.id}`;
+    expect(left.map((r) => r.consent_type)).toEqual(['privacy-policy']);
+    await migrateUp(connectionString);
+    expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
+    await client`delete from users where id = ${u!.id}`;
+  });
+
   it('0019: audit_logs, feature_flags, mess_dish_overrides and the admin marks on foods/exercises — Phase 16; down drops them', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
     expect(await rollbackLastMigration(connectionString)).toBe('0019_admin');
     for (const t of ['audit_logs', 'feature_flags', 'mess_dish_overrides']) expect(await tableExists(client, t), t).toBe(false);
     const gone = await client<{ column_name: string }[]>`
@@ -506,6 +521,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0018: notifications (one per user, kind and local date; status; cascade) and push_tokens (unique token, android) — Phase 15; down drops them', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
     expect(await rollbackLastMigration(connectionString)).toBe('0019_admin');
     expect(await rollbackLastMigration(connectionString)).toBe('0018_notifications');
     expect(await tableExists(client, 'notifications')).toBe(false);
@@ -539,6 +555,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0017: ai_usage (per user, route, model, tokens, outcome; tokens non-negative; cascade) — the §19.3 cost ledger; down drops it (Phase 14)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
     expect(await rollbackLastMigration(connectionString)).toBe('0019_admin');
     expect(await rollbackLastMigration(connectionString)).toBe('0018_notifications');
     expect(await rollbackLastMigration(connectionString)).toBe('0017_ai_usage');
@@ -561,6 +578,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await expect(client`insert into ai_usage (user_id, route, model, input_tokens, output_tokens, outcome) values (${u!.id}, 'parse', 'm', -1, 0, 'ok')`).rejects.toThrow(/ai_usage_tokens/);
     await expect(client.unsafe(`insert into ai_usage (user_id, route, model, outcome) values ('${u!.id}', 'photo', 'm', 'ok')`)).rejects.toThrow(/invalid input value for enum ai_route/);
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
     expect(await rollbackLastMigration(connectionString)).toBe('0019_admin');
     expect(await rollbackLastMigration(connectionString)).toBe('0018_notifications');
     expect(await rollbackLastMigration(connectionString)).toBe('0017_ai_usage');
@@ -572,6 +590,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0016: recovery_logs (one per user and local date; optional values, at least one; ranges; cascade; hard delete) and low-readiness in today_action_kind; down rebuilds the enum (Phase 13)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
     expect(await rollbackLastMigration(connectionString)).toBe('0019_admin');
     expect(await rollbackLastMigration(connectionString)).toBe('0018_notifications');
     expect(await rollbackLastMigration(connectionString)).toBe('0017_ai_usage');
@@ -617,6 +636,7 @@ describeIfDb('migrations (real Postgres)', () => {
     );
 
     // Down with data: the table and type go; the enum is rebuilt without the value; other rows keep their kind.
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
     expect(await rollbackLastMigration(connectionString)).toBe('0019_admin');
     expect(await rollbackLastMigration(connectionString)).toBe('0018_notifications');
     expect(await rollbackLastMigration(connectionString)).toBe('0017_ai_usage');
@@ -639,6 +659,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0015: body_measurements (one per user, day and site; checks; cascade), the PR window index, and calorie-adjust in today_action_kind; down rebuilds the enum (Phase 12)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
     expect(await rollbackLastMigration(connectionString)).toBe('0019_admin');
     expect(await rollbackLastMigration(connectionString)).toBe('0018_notifications');
     expect(await rollbackLastMigration(connectionString)).toBe('0017_ai_usage');
@@ -680,6 +701,7 @@ describeIfDb('migrations (real Postgres)', () => {
     );
 
     // Down with data: the table and type go; the enum is rebuilt without the value; other rows keep their kind.
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
     expect(await rollbackLastMigration(connectionString)).toBe('0019_admin');
     expect(await rollbackLastMigration(connectionString)).toBe('0018_notifications');
     expect(await rollbackLastMigration(connectionString)).toBe('0017_ai_usage');
@@ -705,6 +727,7 @@ describeIfDb('migrations (real Postgres)', () => {
 
   it('0014: every deload activation is kept by a trigger on programs (Phase 6 code untouched); backfill; down drops it (Phase 11)', async () => {
     // Down, then a deload week already running when 0014 applies: the backfill records it.
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
     expect(await rollbackLastMigration(connectionString)).toBe('0019_admin');
     expect(await rollbackLastMigration(connectionString)).toBe('0018_notifications');
     expect(await rollbackLastMigration(connectionString)).toBe('0017_ai_usage');
@@ -742,6 +765,7 @@ describeIfDb('migrations (real Postgres)', () => {
     expect((await client`select 1 from deload_activations where program_id = ${q!.id}`).length).toBe(0);
 
     // Down removes the trigger, its function and the table; programs keeps working as in Phase 6.
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
     expect(await rollbackLastMigration(connectionString)).toBe('0019_admin');
     expect(await rollbackLastMigration(connectionString)).toBe('0018_notifications');
     expect(await rollbackLastMigration(connectionString)).toBe('0017_ai_usage');
@@ -758,6 +782,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0013: TODAY recommendations and events — identity, checks, event rules, cascades; down drops them (Phase 11, ADR-017)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
     expect(await rollbackLastMigration(connectionString)).toBe('0019_admin');
     expect(await rollbackLastMigration(connectionString)).toBe('0018_notifications');
     expect(await rollbackLastMigration(connectionString)).toBe('0017_ai_usage');
@@ -845,6 +870,7 @@ describeIfDb('migrations (real Postgres)', () => {
       `insert into recommendations (user_id, generated_for, kind, subject_key, rank, priority, basis, target, payload, engine_version, input_digest, headline, detail, content_hash)
        values ('${d!.id}', '2026-09-24', 'log-weight', '', 1, 45, 'calculated', 'progress', '{}'::jsonb, 'today-1', '${H}', 'h', 'd', '${H}')`,
     );
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
     expect(await rollbackLastMigration(connectionString)).toBe('0019_admin');
     expect(await rollbackLastMigration(connectionString)).toBe('0018_notifications');
     expect(await rollbackLastMigration(connectionString)).toBe('0017_ai_usage');
@@ -859,6 +885,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0012: four Phase 9 estimates corrected with provenance, only where still wrong; down restores them (Phase 10 Amendment B)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
     expect(await rollbackLastMigration(connectionString)).toBe('0019_admin');
     expect(await rollbackLastMigration(connectionString)).toBe('0018_notifications');
     expect(await rollbackLastMigration(connectionString)).toBe('0017_ai_usage');
@@ -900,6 +927,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await expect(client`insert into mess_dish_nutrition_revisions (dish_slug, reason, previous, current) values ('curd-rice', ' ', '{}', '{}')`).rejects.toThrow(/revisions_reason/);
 
     // Down puts the recorded previous values back and drops the provenance table.
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
     expect(await rollbackLastMigration(connectionString)).toBe('0019_admin');
     expect(await rollbackLastMigration(connectionString)).toBe('0018_notifications');
     expect(await rollbackLastMigration(connectionString)).toBe('0017_ai_usage');
@@ -970,7 +998,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from users where firebase_uid = 'uid-dup'`;
   });
 
-  it('down removes 0019 (admin), 0018 (notifications), 0017 (ai usage), 0016 (recovery), 0015 (progress), 0014 (deload activations), 0013 (TODAY), 0012 (restoring the corrected estimates), 0011 (rebuilding food_entry_method; mess logs and meals go, the day cache is rebuilt), 0010, 0009, 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
+  it('down removes 0020 (ai consent), 0019 (admin), 0018 (notifications), 0017 (ai usage), 0016 (recovery), 0015 (progress), 0014 (deload activations), 0013 (TODAY), 0012 (restoring the corrected estimates), 0011 (rebuilding food_entry_method; mess logs and meals go, the day cache is rebuilt), 0010, 0009, 0008, 0007, 0006, 0005, then 0004 (rebuilding the enums), then Phase 4, 3, 2, one migration at a time', async () => {
     // Data that only 0011 can hold, next to data 0010 keeps.
     await client`insert into users (firebase_uid) values ('mig-down')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-down'`;
@@ -989,6 +1017,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Mess lunch', '[{"kind":"mess","dishSlug":"dal","name":"Dal","servings":1}]'::jsonb)`;
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Plain', '[{"kind":"quick-add","name":"X","kcal":1,"proteinG":0,"carbG":0,"fatG":0,"fibreG":null}]'::jsonb)`;
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
     expect(await rollbackLastMigration(connectionString)).toBe('0019_admin');
     expect(await rollbackLastMigration(connectionString)).toBe('0018_notifications');
     expect(await rollbackLastMigration(connectionString)).toBe('0017_ai_usage');

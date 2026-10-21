@@ -15,3 +15,4 @@ export * from './progress.js';
 export * from './recovery.js';
 export * from './notifications.js';
 export * from './admin.js';
+export * from './privacy.js';

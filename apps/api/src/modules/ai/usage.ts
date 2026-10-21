@@ -59,6 +59,8 @@ export class AiBudget {
     private readonly repo: AiUsageRepository,
     private readonly config: AiConfig,
     private readonly now: () => Date = () => new Date(),
+    /** Phase 17 (ADR-023 D1): the user's `ai-processing` consent; absent → not checked. */
+    private readonly consent?: (userId: string) => Promise<boolean>,
   ) {}
 
   /** The kill switch (§19.3): every AI route answers this when AI is off. */
@@ -73,6 +75,12 @@ export class AiBudget {
   /** Off, over this purpose's hourly limit, or over the daily token budget → refused before any model call. */
   async check(userId: string, route: AiRoute): Promise<void> {
     this.assertEnabled();
+    // §23.1: FITOS AI sends the user's words or data to the model provider — its own purpose.
+    if (this.consent !== undefined && !(await this.consent(userId))) {
+      throw new AppError('FORBIDDEN', "Allow FITOS AI first: what you ask is sent to Google's Gemini to answer it.", [
+        { path: 'consent', issue: 'ai-processing' },
+      ]);
+    }
     const now = this.now().getTime();
     const [calls, tokens] = await Promise.all([
       this.repo.callsSince(userId, route, new Date(now - HOUR_MS)),

@@ -59,6 +59,8 @@ describeIfDb('/v1/ai (real Postgres, scripted model)', () => {
     const token = `ai-tok-${n}`;
     verifier.accept(token, { uid: `ai-uid-${n}`, email: `ai${n}@vit.ac.in` });
     expect((await app.inject({ method: 'POST', url: '/v1/auth/session', headers: auth(token), payload: {} })).statusCode).toBe(200);
+    // Phase 17: FITOS AI is its own consent purpose.
+    expect((await app.inject({ method: 'POST', url: '/v1/user/consents', headers: auth(token), payload: { type: 'ai-processing', granted: true } })).statusCode).toBe(200);
     for (const body of [
       { step: 'goal', goalType: 'muscle-gain' },
       { step: 'about', displayName: name, sex: 'male', birthDate: '2004-06-01', heightCm: 175, weightKg: 70, consent },
