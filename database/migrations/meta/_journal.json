@@ -127,6 +127,13 @@
       "when": 1792576750367,
       "tag": "0017_ai_usage",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792582006337,
+      "tag": "0018_notifications",
+      "breakpoints": true
     }
   ]
 }

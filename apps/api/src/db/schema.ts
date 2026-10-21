@@ -37,3 +37,4 @@ export * from './schema/today.js';
 export * from './schema/progress.js';
 export * from './schema/recovery.js';
 export * from './schema/ai.js';
+export * from './schema/notifications.js';
