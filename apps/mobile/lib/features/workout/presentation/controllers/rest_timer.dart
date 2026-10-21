@@ -4,9 +4,9 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../../../../core/notifications/local_notifications.dart';
 import '../../domain/entities/workout.dart';
 
 /// Rest timer defaults (owner decision 8.4): 90 s after a compound, 60 s
@@ -56,7 +56,7 @@ class NoopRestNotifier implements RestNotifier {
 
 class LocalRestNotifier implements RestNotifier {
   LocalRestNotifier([FlutterLocalNotificationsPlugin? plugin])
-      : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+      : _plugin = plugin ?? FitNotifications.plugin;
 
   final FlutterLocalNotificationsPlugin _plugin;
   bool _ready = false;
@@ -64,12 +64,8 @@ class LocalRestNotifier implements RestNotifier {
 
   Future<void> _init() async {
     if (_ready) return;
-    tzdata.initializeTimeZones();
-    await _plugin.initialize(
-      const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-      ),
-    );
+    // Phase 15: one shared set-up, so reminder taps stay routed.
+    await FitNotifications.ensureInitialized();
     await _plugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()

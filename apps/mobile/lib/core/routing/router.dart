@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/notifications/presentation/notification_settings_screen.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
@@ -60,6 +61,9 @@ abstract final class Routes {
   /// Phase 10: diet and allergies, the hard rules for food suggestions.
   static const String profileFood = '/profile/food';
   static const String healthData = '/profile/health';
+
+  /// Phase 15: reminders — each kind, the tone, quiet hours.
+  static const String notifications = '/profile/notifications';
   static const String exercises = '/exercises';
   static String exerciseDetail(String id) => '/exercises/$id';
 
@@ -161,6 +165,11 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
             path: 'food',
             name: 'profile-food',
             builder: (context, state) => const FoodPreferencesScreen(),
+          ),
+          GoRoute(
+            path: 'notifications',
+            name: 'notifications',
+            builder: (context, state) => const NotificationSettingsScreen(),
           ),
         ],
       ),

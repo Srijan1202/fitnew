@@ -8,6 +8,8 @@ import 'package:fitos/features/auth/domain/entities/user_profile.dart';
 import 'package:fitos/features/exercise/domain/entities/exercise.dart';
 import 'package:fitos/features/mess/domain/mess.dart';
 import 'package:fitos/features/mess/domain/recommendation.dart';
+import 'package:fitos/features/notifications/data/notifications_api.dart';
+import 'package:fitos/features/notifications/domain/notifications.dart';
 import 'package:fitos/features/mess/presentation/widgets/recommend_words.dart';
 import 'package:fitos/features/nutrition/domain/entities/food.dart';
 import 'package:fitos/features/nutrition/domain/entities/food_log.dart';
@@ -27,6 +29,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../support/ai_drafts.dart';
 import '../support/fake_auth_repository.dart';
+import '../support/fake_notifications.dart';
 import '../support/fake_exercise_repository.dart';
 import '../support/fake_food_repository.dart';
 import '../support/fake_mess_api.dart';
@@ -2435,6 +2438,103 @@ void main() {
         jsonDecode(jsonEncode(full.toJson())) as Map<String, dynamic>,
       );
       expect(jsonEncode(back.toJson()), jsonEncode(full.toJson()));
+    });
+  });
+
+  group('Notifications (Phase 15)', () {
+    Map<String, dynamic> prop(Map<String, dynamic> schema, String key) =>
+        properties(schema)[key] as Map<String, dynamic>;
+
+    test('settings: every key, every kind, the tone vocabulary', () {
+      final schema = schemaOf('/notifications/settings', 'get');
+      final s = defaultNotifySettings();
+      expect(s.toJson().keys.toSet(), keysOf(schema));
+      expect(
+        NotifyKind.values.map((k) => k.wire).toSet(),
+        keysOf(prop(schema, 'kinds')),
+      );
+      expect(
+        NotifyTone.values.map((t) => t.wire).toList(),
+        enumOf(prop(schema, 'tone')),
+      );
+      // The PATCH accepts the same keys.
+      expect(
+        keysOf(schemaOf('/notifications/settings', 'patch', request: true)),
+        keysOf(schema),
+      );
+    });
+
+    test('the plan: request events and the response items, every nested shape',
+        () {
+      final request = schemaOf('/notifications/plan', 'post', request: true);
+      final event = NotifyEvent(
+        id: 'a1111111-1111-4111-8111-111111111111',
+        event: 'opened',
+        at: DateTime.utc(2026, 10, 19),
+      );
+      final body = DioNotificationsApi.planJson([event]);
+      expect(body.keys.toSet(), keysOf(request));
+      final eventSchema =
+          prop(request, 'events')['items'] as Map<String, dynamic>;
+      expect(event.toJson().keys.toSet(), keysOf(eventSchema));
+      expect(
+        enumOf(prop(eventSchema, 'event')),
+        ['delivered', 'opened', 'cancelled'],
+      );
+
+      final response = schemaOf('/notifications/plan', 'post');
+      final item = plannedItem(
+        'a1111111-1111-4111-8111-111111111111',
+        at: DateTime.utc(2026, 10, 19, 11, 30),
+        cancelOn: const [
+          CancelRule(
+            event: 'protein-reached',
+            localDate: '2026-10-19',
+            grams: 90,
+          ),
+        ],
+      );
+      final plan = NotifyPlan(
+        generatedAt: DateTime.utc(2026, 10, 19),
+        timeZone: 'Asia/Kolkata',
+        settings: defaultNotifySettings(),
+        items: [item],
+      );
+      expect(plan.toJson().keys.toSet(), keysOf(response));
+      final itemSchema =
+          prop(response, 'items')['items'] as Map<String, dynamic>;
+      expect(item.toJson().keys.toSet(), keysOf(itemSchema));
+      final rule =
+          prop(itemSchema, 'cancelOn')['items'] as Map<String, dynamic>;
+      expect(item.cancelOn.single.toJson().keys.toSet(), keysOf(rule));
+      expect(
+        NotifyKind.values.map((k) => k.wire).toList(),
+        enumOf(prop(itemSchema, 'kind')),
+      );
+      expect(
+        enumOf(prop(itemSchema, 'screen')),
+        ['today', 'plan', 'food-log', 'progress'],
+      );
+      // Round trip through the wire.
+      final back = NotifyPlan.fromJson(
+        jsonDecode(jsonEncode(plan.toJson())) as Map<String, dynamic>,
+      );
+      expect(back.toJson(), plan.toJson());
+    });
+
+    test('preview and token requests', () {
+      expect(
+        keysOf(schemaOf('/notifications/preview', 'post', request: true)),
+        {'kind'},
+      );
+      expect(
+        keysOf(schemaOf('/notifications/preview', 'post')),
+        {'title', 'body'},
+      );
+      expect(
+        keysOf(schemaOf('/notifications/token', 'post', request: true)),
+        {'token', 'platform'},
+      );
     });
   });
 

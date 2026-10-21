@@ -6,6 +6,7 @@ import 'core/theme/app_theme.dart';
 import 'features/nutrition/presentation/controllers/food_log_providers.dart';
 import 'features/workout/presentation/controllers/workout_providers.dart';
 import 'features/health/presentation/controllers/health_providers.dart';
+import 'features/notifications/presentation/notification_coordinator.dart';
 import 'features/today/presentation/today_providers.dart';
 
 /// Root widget. Owns the theme; the router comes from Riverpod so the auth
@@ -25,6 +26,8 @@ class FitOSApp extends ConsumerWidget {
     ref.watch(todayCoordinatorProvider);
     ref.watch(todayCompletionWatcherProvider);
     ref.watch(healthRefreshCoordinatorProvider);
+    // Phase 15: the reminder plan on the device, kept current.
+    ref.watch(notificationCoordinatorProvider);
 
     return MaterialApp.router(
       title: 'FITOS',

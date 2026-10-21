@@ -1,3 +1,4 @@
+import '../../../core/notifications/activity_signal.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -178,6 +179,12 @@ class NutritionLogRepository {
       );
     });
     _engine.kick();
+    // Phase 15: the streak saver for that day (and, once the server has
+    // the log, maybe the protein nudge) is pointless now.
+    ActivitySignal.report(
+      ActivityKind.foodLogged,
+      at: DateTime.tryParse(request.loggedAt),
+    );
   }
 
   /// Deletes a whole log (owner J9). One the server has never seen is simply

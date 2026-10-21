@@ -1,3 +1,4 @@
+import '../../../core/notifications/activity_signal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/errors/failure.dart';
@@ -128,6 +129,7 @@ class ProgressActions {
     switch (r) {
       case Ok(:final value):
         _afterSave(date: value.date, weight: true);
+        ActivitySignal.report(ActivityKind.weightLogged);
         return null;
       case Err(:final failure):
         return failure;

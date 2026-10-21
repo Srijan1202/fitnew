@@ -1,3 +1,4 @@
+import '../../../core/notifications/activity_signal.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -242,6 +243,8 @@ class LocalWorkoutRepository implements WorkoutRepository {
   Future<WorkoutSession> startSession({TodayResponse? day}) async {
     final clientSessionId = _uuid.v4();
     final startedAt = _stamp();
+    // Phase 15: today's workout reminder is pointless now.
+    ActivitySignal.report(ActivityKind.workoutStarted);
     final fromDay = day != null && !day.isRest && day.programDayId != null;
     final seeded = <SessionExercise>[
       if (fromDay)
@@ -710,8 +713,10 @@ class LocalWorkoutRepository implements WorkoutRepository {
   }
 
   @override
-  Future<void> complete(String clientSessionId, {String? notes}) =>
-      _finish(clientSessionId, SessionStatus.completed, notes: notes);
+  Future<void> complete(String clientSessionId, {String? notes}) async {
+    await _finish(clientSessionId, SessionStatus.completed, notes: notes);
+    ActivitySignal.report(ActivityKind.workoutCompleted);
+  }
 
   @override
   Future<Result<DeloadState>> acceptDeload() => _api.acceptDeload();

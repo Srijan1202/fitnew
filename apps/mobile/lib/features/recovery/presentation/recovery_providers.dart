@@ -1,3 +1,4 @@
+import '../../../core/notifications/activity_signal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/errors/failure.dart';
@@ -90,6 +91,7 @@ class RecoveryActions {
     final r = await _ref.read(recoveryRepositoryProvider).log(request);
     switch (r) {
       case Ok():
+        ActivitySignal.report(ActivityKind.checkinLogged);
         // Readiness moved: the display, TODAY's suggestions and the deload
         // state (Training) are all read again from the server.
         _ref

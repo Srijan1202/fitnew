@@ -66,6 +66,9 @@ dependencies:
   flutter_local_notifications: 19.4.0
   timezone: 0.10.1
   riverpod: 3.0.0
+  # Phase 15: FCM registration only (POST /notifications/token); the
+  # reminders themselves are scheduled on the phone (ADR-021).
+  firebase_messaging: 16.7.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
