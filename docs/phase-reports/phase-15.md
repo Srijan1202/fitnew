@@ -90,7 +90,7 @@ Printing this found one fault: the Sunday recap never fitted beside the evening 
 ### 7. S24 MANUAL CHECKLIST
 
 **Setup**
-- **APK:** `Downloads\fitos-phase15-f914faa-lan-172.16.205.231.apk` (`phase-15`, API host `http://172.16.205.231:8080`). It includes Phase 14.
+- **APK:** `Downloads\fitos-phase15-f914faa-lan-10.195.252.11.apk` (`phase-15`, API host `http://10.195.252.11:8080`; rebuilt after the LAN IP changed from 172.16.205.231). It includes Phase 14.
 - **API:** container rebuilt from `phase-15`, migration 0018 applied (19 migrations), `/health` 200.
 - **Backup** first: `C:\Users\Jirans\FitOS-backups\fitos-20261021-202532.dump`.
 
