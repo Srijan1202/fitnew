@@ -55,6 +55,15 @@ services:
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.6-flash}
       AI_TIMEOUT_MS: ${AI_TIMEOUT_MS:-25000}
       AI_MAX_OUTPUT_TOKENS: ${AI_MAX_OUTPUT_TOKENS:-2048}
+      # Phase 14 (ADR-020): the kill switch, a model per purpose (unset → the
+      # GEMINI_MODEL above), per-user hourly limits and the daily token budget.
+      AI_ENABLED: ${AI_ENABLED:-true}
+      MODEL_FOOD_PARSE: ${MODEL_FOOD_PARSE:-}
+      MODEL_EXPLAIN: ${MODEL_EXPLAIN:-}
+      AI_PARSE_PER_HOUR: ${AI_PARSE_PER_HOUR:-20}
+      AI_EXPLAIN_PER_HOUR: ${AI_EXPLAIN_PER_HOUR:-20}
+      AI_CHAT_PER_HOUR: ${AI_CHAT_PER_HOUR:-60}
+      AI_DAILY_TOKEN_BUDGET: ${AI_DAILY_TOKEN_BUDGET:-200000}
     volumes:
       # The service-account key never enters the image (.dockerignore); it is
       # mounted read-only at runtime from the gitignored .secrets/ directory.
