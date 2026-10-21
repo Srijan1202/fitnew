@@ -348,6 +348,45 @@ void main() {
   });
 
   testWidgets(
+      'S24 regression: 24 sessions in a 4-session week fit on a 360 px screen — 4 squares and "+20", no overflow',
+      (tester) async {
+    tester.view
+      ..physicalSize = const Size(360 * 3, 640 * 3)
+      ..devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final base = rich();
+    progress.summaries[ProgressWindow.d30] = ProgressSummary(
+      window: base.window,
+      today: base.today,
+      from: base.from,
+      weight: base.weight,
+      measurements: base.measurements,
+      prs: base.prs,
+      bestLifts: base.bestLifts,
+      adherence: base.adherence,
+      consistency: const Consistency(
+        weeks: [
+          WeekConsistency(isoWeek: '2026-W39', completed: 24, planned: 4),
+          WeekConsistency(isoWeek: '2026-W40', completed: 0, planned: 5),
+          WeekConsistency(isoWeek: '2026-W41', completed: 0, planned: 5),
+          WeekConsistency(isoWeek: '2026-W42', completed: 0, planned: 5),
+          WeekConsistency(isoWeek: '2026-W43', completed: 0, planned: 3),
+        ],
+        completed: 24,
+        planned: 22,
+        percent: 109,
+      ),
+    );
+    await tester.pumpWidget(app());
+    await settle(tester);
+    await reveal(tester, key('progress.consistency.2026-W43'));
+    expect(tester.takeException(), isNull);
+    expect(textOf(tester, 'progress.consistency.2026-W39'), 'W39 24/4');
+    expect(textOf(tester, 'progress.consistency.2026-W39.extra'), '+20');
+    expect(key('progress.consistency.2026-W40.extra'), findsNothing);
+  });
+
+  testWidgets(
       'records sit at the bottom, collapsed: counted, opened on a tap, closed again',
       (tester) async {
     progress.summaries[ProgressWindow.d30] = rich();

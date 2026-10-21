@@ -990,49 +990,67 @@ class _ConsistencySection extends StatelessWidget {
 }
 
 /// One ISO week: a square per planned session — filled when done (no red
-/// for a missed one, §17 rule 4) — and any extra session as another square.
+/// for a missed one, §17 rule 4). At most [maxSquares] squares; sessions
+/// beyond them are a "+N" (found on the S24: 24 sessions in a 4-session week
+/// drew 24 squares and overflowed the row).
 class _WeekDots extends StatelessWidget {
   const _WeekDots({required this.week});
 
   final WeekConsistency week;
 
+  static const maxSquares = 7;
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final total = week.completed > week.planned ? week.completed : week.planned;
+    final squares =
+        (week.planned > 0 ? week.planned : week.completed).clamp(0, maxSquares);
+    final filled = week.completed.clamp(0, squares);
+    final extra = week.completed - filled;
     return Semantics(
       label:
           'Week ${week.isoWeek.substring(6)}: ${week.completed} of ${week.planned} sessions',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              for (var i = 0; i < total; i++)
-                Container(
-                  width: 12,
-                  height: 12,
-                  margin: const EdgeInsets.only(right: 3),
-                  decoration: BoxDecoration(
-                    color: i < week.completed ? FitColors.ink : null,
-                    border: Border.all(
-                      color:
-                          i < week.completed ? FitColors.ink : FitColors.rule,
+      child: ExcludeSemantics(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                for (var i = 0; i < squares; i++)
+                  Container(
+                    width: 12,
+                    height: 12,
+                    margin: const EdgeInsets.only(right: 3),
+                    decoration: BoxDecoration(
+                      color: i < filled ? FitColors.ink : null,
+                      border: Border.all(
+                        color: i < filled ? FitColors.ink : FitColors.rule,
+                      ),
+                      borderRadius: const BorderRadius.all(FitRadius.small),
                     ),
-                    borderRadius: const BorderRadius.all(FitRadius.small),
                   ),
-                ),
-              if (total == 0) Text('—', style: textTheme.bodySmall),
-            ],
-          ),
-          const SizedBox(height: 3),
-          Text(
-            '${week.isoWeek.substring(5)} ${week.completed}/${week.planned}',
-            key: ValueKey('progress.consistency.${week.isoWeek}'),
-            style: textTheme.bodySmall?.copyWith(color: FitColors.ink60),
-          ),
-        ],
+                if (extra > 0)
+                  Text(
+                    '+$extra',
+                    key: ValueKey('progress.consistency.${week.isoWeek}.extra'),
+                    style: textTheme.bodySmall?.copyWith(
+                      color: FitColors.ink,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                if (squares == 0 && extra == 0)
+                  Text('—', style: textTheme.bodySmall),
+              ],
+            ),
+            const SizedBox(height: 3),
+            Text(
+              '${week.isoWeek.substring(5)} ${week.completed}/${week.planned}',
+              key: ValueKey('progress.consistency.${week.isoWeek}'),
+              style: textTheme.bodySmall?.copyWith(color: FitColors.ink60),
+            ),
+          ],
+        ),
       ),
     );
   }
