@@ -1,0 +1,46 @@
+# Phase 16 — the admin panel (Next.js, §20). Its logic is the API's (covered
+# by ci-api's integration tests); here: it types against the contracts,
+# lints, and builds.
+name: ci-admin
+
+on:
+  push:
+    branches: [main, 'phase-*']
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-admin-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  admin:
+    name: apps/admin
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Contracts (the panel's types)
+        run: pnpm --filter @fitos/contracts build
+
+      - name: Typecheck and lint
+        run: |
+          pnpm --filter @fitos/admin typecheck
+          pnpm --filter @fitos/admin lint
+
+      - name: Build
+        run: pnpm --filter @fitos/admin build
