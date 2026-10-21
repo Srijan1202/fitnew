@@ -188,6 +188,20 @@ describeIfDb('Phase 14 AI features (real Postgres, real food seed, scripted mode
     expect(await usage(u)).toEqual([{ route: 'parse', model: 'fake-1', input_tokens: 300, output_tokens: 120, outcome: 'ok' }]);
   });
 
+  it('parse: found in the live smoke — a fuzzy-only hit is not a FITOS food (an estimate instead); a count meets a counting serving', async () => {
+    const u = await user();
+    main.ai.script = [
+      answer([
+        item({ phrase: '2 slices of brown bread', name: 'brown bread', quantity: 2, unit: 'slice', grams: 60, kcal: 150, proteinG: 6, carbG: 26, fatG: 2 }),
+        item({ phrase: '2 boiled eggs', name: 'boiled eggs', quantity: 2, unit: 'piece', grams: 100 }),
+      ]),
+    ];
+    const items = parseFoodResponseSchema.parse((await parse(u, '2 boiled eggs and 2 slices of brown bread')).json()).draft.data.items;
+    expect(items[0]!.match).toBeNull();
+    expect(items[0]!.estimate).toMatchObject({ name: 'brown bread', kcal: 150 });
+    expect(items[1]!.match).toMatchObject({ servingLabel: '2 eggs', servings: 1 });
+  });
+
   it('parse → confirm: the matched items log through POST /nutrition/logs as a search entry, the estimate as a quick add', async () => {
     const u = await user();
     main.ai.script = [

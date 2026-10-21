@@ -50,6 +50,17 @@ function gramsPer(row: DraftRow): number | null {
   return row.basis === 'per_100g' ? 100 : row.servingGrams;
 }
 
+/** Words that measure an amount; any other noun in a label counts the food itself ("2 eggs", "1 samosa"). */
+const MEASURES = new Set([
+  'g', 'ml', 'katori', 'bowl', 'cup', 'glass', 'plate', 'tbsp', 'tsp', 'serving', 'scoop', 'ladle', 'packet', 'pack', 'bottle', 'can',
+]);
+
+/** "2 eggs" and "1 samosa" count the food; "1 katori" and "100 g" measure it. */
+function isCountLabel(label: string): boolean {
+  const m = /^\s*\d+(?:\.\d+)?\s*([a-z]+)/.exec(label.toLowerCase());
+  return m !== null && !MEASURES.has(normaliseUnit(m[1]!).replace(/s$/, ''));
+}
+
 /** "2 pieces (80 g)" → 2; "1 katori" → 1; no leading number → 1. */
 function labelCount(label: string): number {
   const m = /^\s*(\d+(?:\.\d+)?)/.exec(label);
@@ -61,6 +72,7 @@ function labelCount(label: string): number {
  * The row and servings for what was asked:
  *   1. grams or ml → the weighed row (per 100 g first), by weight;
  *   2. a unit the food has a serving for ("katori", "piece", "glass") → that serving;
+ *   2b. a count ("2 pieces") and a serving that counts the food ("2 eggs") → by count;
  *   3. the model's weight guess → a weighed row (not exact);
  *   4. the first serving row, quantity as servings (not exact);
  *   5. only a per-100 g row and no weight → 100 g (not exact).
@@ -83,6 +95,13 @@ export function choosePortion(rows: readonly DraftRow[], asked: PortionAsked): C
   );
   if (unit.length > 0 && unit !== 'g' && unit !== 'ml' && wordMatch >= 0) {
     return { row: wordMatch, servings: clampServings(asked.quantity / labelCount(rows[wordMatch]!.servingLabel)), exact: true };
+  }
+
+  if (unit === 'piece') {
+    const counted = rows.findIndex((r) => r.basis === 'per_serving' && isCountLabel(r.servingLabel));
+    if (counted >= 0) {
+      return { row: counted, servings: clampServings(asked.quantity / labelCount(rows[counted]!.servingLabel)), exact: true };
+    }
   }
 
   if (asked.grams !== null && Number.isFinite(asked.grams) && asked.grams > 0 && weighed.length > 0) {

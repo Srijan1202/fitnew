@@ -23,6 +23,8 @@ export interface GeminiProviderOptions {
   /** Overridable for tests; defaults to the public endpoint. */
   readonly baseUrl?: string;
   readonly fetchImpl?: typeof fetch;
+  /** The pause before the one retry on a 5xx (tests pass 0). */
+  readonly retryDelayMs?: number;
 }
 
 /* --------------------------------------------------------- wire shapes -- */
@@ -59,6 +61,7 @@ export class GeminiProvider implements AiProvider {
   private readonly maxOutputTokens: number;
   private readonly baseUrl: string;
   private readonly fetchImpl: typeof fetch;
+  private readonly retryDelayMs: number;
 
   constructor(opts: GeminiProviderOptions) {
     if (opts.apiKey.trim().length === 0) throw new Error('GeminiProvider needs an API key');
@@ -69,9 +72,25 @@ export class GeminiProvider implements AiProvider {
     this.maxOutputTokens = opts.maxOutputTokens;
     this.baseUrl = opts.baseUrl ?? 'https://generativelanguage.googleapis.com/v1beta';
     this.fetchImpl = opts.fetchImpl ?? fetch;
+    this.retryDelayMs = opts.retryDelayMs ?? 1000;
   }
 
+  /**
+   * Phase 14: one retry, after a short pause, when the model host answers
+   * 5xx ("overloaded" — common on the free tier, seen in the live smoke).
+   * Never for 429 (the quota), a bad key, a timeout or a malformed answer.
+   */
   async generate(request: AiRequest): Promise<AiResponse> {
+    try {
+      return await this.once(request);
+    } catch (e) {
+      if (!(e instanceof AiProviderError) || e.kind !== 'unavailable' || e.status === undefined || e.status < 500) throw e;
+      await new Promise((r) => setTimeout(r, this.retryDelayMs));
+      return this.once(request);
+    }
+  }
+
+  private async once(request: AiRequest): Promise<AiResponse> {
     const body = GeminiProvider.toBody(request, this.maxOutputTokens);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeoutMs);

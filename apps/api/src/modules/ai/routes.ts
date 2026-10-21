@@ -85,8 +85,8 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
     },
     app.aiConfig.enabled,
   );
-  const parser = new FoodParseService(app.ai, new FoodService(new FoodRepository(db)), budget, app.aiConfig);
-  const explainer = new ExplainService(app.ai, new TodayRepository(db), budget, app.aiConfig);
+  const parser = new FoodParseService(app.ai, new FoodService(new FoodRepository(db)), budget, app.aiConfig, app.log);
+  const explainer = new ExplainService(app.ai, new TodayRepository(db), budget, app.aiConfig, app.log);
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const errors = { 401: errorEnvelopeSchema, 422: errorEnvelopeSchema, 429: errorEnvelopeSchema, 503: errorEnvelopeSchema };
 

@@ -34,6 +34,8 @@ export class ExplainService {
     private readonly today: TodayRepository,
     private readonly budget: AiBudget,
     private readonly config: AiConfig,
+    /** Operator diagnostics: the failure kind and upstream status, never the text. */
+    private readonly log?: { warn: (obj: Record<string, unknown>, msg: string) => void },
   ) {}
 
   private get model(): string {
@@ -61,6 +63,9 @@ export class ExplainService {
       usage = response.usage;
       text = AiService.plainText(response.text);
     } catch (e) {
+      if (e instanceof AiProviderError) {
+        this.log?.warn({ kind: e.kind, upstreamStatus: e.status ?? null, model: this.model }, 'ai explain: provider failure');
+      }
       await this.budget.record(userId, 'explain', this.model, usage, 'failed');
       throw AiService.toAppError(e);
     }

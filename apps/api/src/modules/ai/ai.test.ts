@@ -35,6 +35,7 @@ function gemini(status: number, body: unknown, calls: { url: string; init: Reque
     timeoutMs: 1000,
     maxOutputTokens: 256,
     fetchImpl: scriptedFetch(status, body, calls),
+    retryDelayMs: 0,
   });
 }
 
@@ -117,6 +118,30 @@ describe('GeminiProvider', () => {
     expect(err).toBeInstanceOf(AiProviderError);
     expect((err as AiProviderError).kind).toBe(kind);
     expect((err as AiProviderError).message).not.toContain(KEY);
+  });
+
+  it('Phase 14: a 5xx is retried once (free-tier "overloaded", seen live); 429, 4xx and a good answer are not', async () => {
+    for (const [status, calls] of [[503, 2], [500, 2], [429, 1], [401, 1]] as const) {
+      const seen: { url: string; init: RequestInit }[] = [];
+      await gemini(status, {}, seen).generate(request).catch(() => undefined);
+      expect(seen, `HTTP ${status}`).toHaveLength(calls);
+    }
+    // A 503 then an answer: the answer is returned.
+    let n = 0;
+    const answer = { candidates: [{ content: { parts: [{ text: 'Back.' }] }, finishReason: 'STOP' }] };
+    const flaky = new GeminiProvider({
+      apiKey: KEY,
+      model: 'gemini-3.6-flash',
+      timeoutMs: 1000,
+      maxOutputTokens: 256,
+      retryDelayMs: 0,
+      fetchImpl: (async () => {
+        n += 1;
+        return new Response(JSON.stringify(n === 1 ? {} : answer), { status: n === 1 ? 503 : 200 });
+      }) as typeof fetch,
+    });
+    expect((await flaky.generate(request)).text).toBe('Back.');
+    expect(n).toBe(2);
   });
 
   it('a hung upstream → timeout after AI_TIMEOUT_MS', async () => {

@@ -34,6 +34,7 @@ describe('numbers in text', () => {
     expect(numbersIn('0.5 kg a week')).toEqual(new Set(['0.5']));
     expect(numbersIn('about 1/2 a katori')).toEqual(new Set(['0.5', '1', '2']));
     expect(numbersIn('three sets, twice a week')).toEqual(new Set(['3', '2']));
+    expect(numbersIn('a dozen, forty-seven times')).toEqual(new Set(['12', '40', '7']));
     expect(numbersIn('1200.0 equals 1200')).toEqual(new Set(['1200']));
     expect(numbersIn('no numbers here')).toEqual(new Set());
   });
@@ -112,6 +113,14 @@ describe('choosing a FITOS portion for a parsed food (numbers from the database,
   it('a unit the food serves in picks that serving, exactly', () => {
     expect(choosePortion(chapati, { quantity: 2, unit: 'pieces', grams: null })).toEqual({ row: 0, servings: 2, exact: true });
     expect(choosePortion(dal, { quantity: 1.5, unit: 'katori', grams: 300 })).toEqual({ row: 0, servings: 1.5, exact: true });
+  });
+
+  it('a count meets a serving that counts the food ("2 eggs"), not a measure ("1 katori") — found in the live smoke', () => {
+    const eggs = [{ basis: 'per_serving' as const, servingLabel: '2 eggs', servingGrams: 110 }];
+    expect(choosePortion(eggs, { quantity: 2, unit: 'piece', grams: 100 })).toEqual({ row: 0, servings: 1, exact: true });
+    expect(choosePortion(eggs, { quantity: 3, unit: 'pcs', grams: null })).toEqual({ row: 0, servings: 1.5, exact: true });
+    // A measured serving is not a count: two "pieces" of dal stay a guess.
+    expect(choosePortion(dal, { quantity: 2, unit: 'piece', grams: null })?.exact).toBe(false);
   });
 
   it('grams or ml go by weight, per 100 g first', () => {

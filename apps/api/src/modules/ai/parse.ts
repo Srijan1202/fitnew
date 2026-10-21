@@ -79,6 +79,8 @@ export class FoodParseService {
     private readonly foods: FoodService,
     private readonly budget: AiBudget,
     private readonly config: AiConfig,
+    /** Operator diagnostics: the failure kind and upstream status, never the text. */
+    private readonly log?: { warn: (obj: Record<string, unknown>, msg: string) => void },
   ) {}
 
   private get model(): string {
@@ -102,6 +104,9 @@ export class FoodParseService {
       usage = response.usage;
       answer = FoodParseService.read(response.text);
     } catch (e) {
+      if (e instanceof AiProviderError) {
+        this.log?.warn({ kind: e.kind, upstreamStatus: e.status ?? null, model: this.model }, 'ai parse: provider failure');
+      }
       await this.budget.record(userId, 'parse', this.model, usage, 'failed');
       throw AiService.toAppError(e);
     }
@@ -131,16 +136,18 @@ export class FoodParseService {
   private async resolve(userId: string, item: z.infer<typeof modelItemSchema>): Promise<DraftItem> {
     const base = { phrase: item.phrase, quantity: item.quantity, unit: item.unit };
     const hits = (await this.foods.search(userId, { q: item.name, limit: 1 })).items;
-    const food = hits[0];
+    // A fuzzy hit is a different food as often as a misspelling ("brown
+    // bread" → "Sugars, brown" in the live smoke); the model already gives a
+    // common name, so only exact, alias and prefix hits count as FITOS foods.
+    const food = hits.find((h) => h.match !== 'fuzzy');
     if (food !== undefined) {
       const chosen = choosePortion(food.nutrition, { quantity: item.quantity, unit: item.unit, grams: item.grams ?? null });
       if (chosen !== null) {
         const row = food.nutrition[chosen.row]!;
         const snap = snapshotNutrition(rangeOf(row), chosen.servings).macros;
-        // Confidence: never above the model's; a fuzzy name or a guessed amount lowers it.
+        // Confidence: never above the model's; a prefix match or a guessed amount lowers it.
         let confidence: AiConfidence = item.confidence;
-        if (food.match === 'fuzzy') confidence = atMost(confidence, 'low');
-        else if (food.match === 'prefix') confidence = atMost(confidence, 'medium');
+        if (food.match === 'prefix') confidence = atMost(confidence, 'medium');
         if (!chosen.exact) confidence = atMost(confidence, 'medium');
         return {
           ...base,
