@@ -13,3 +13,4 @@ export * from './mess-recommend.js';
 export * from './today.js';
 export * from './progress.js';
 export * from './recovery.js';
+export * from './notifications.js';
