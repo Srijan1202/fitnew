@@ -6,9 +6,15 @@
  */
 import { z } from 'zod';
 
+import { foodMatchKindSchema, foodNutritionSchema, nutritionBasisSchema } from './food.js';
 import { programRequestSchema } from './training.js';
 
 export const aiStatusResponseSchema = z.object({
+  /**
+   * Phase 14 kill switch (`AI_ENABLED`, §19.3): false turns every AI route
+   * off (503) and the app hides AI entry points; everything else works.
+   */
+  enabled: z.boolean(),
   /** False when the server has no model credentials; chat answers 503. */
   configured: z.boolean(),
   /** Provider and model names — never credentials. */
@@ -80,3 +86,99 @@ export const aiChatResponseSchema = z.object({
   model: z.string(),
 });
 export type AiChatResponse = z.infer<typeof aiChatResponseSchema>;
+
+/* ------------------------------------------------- Phase 14: drafts -- */
+
+/**
+ * §19.2: every AI result is a DRAFT. `source` and `requiresConfirmation`
+ * are literals, so a draft can never claim to be anything else, and nothing
+ * in it is stored until the user confirms it (ADR-020).
+ */
+export const AI_CONFIDENCE = ['high', 'medium', 'low'] as const;
+export const aiConfidenceSchema = z.enum(AI_CONFIDENCE);
+
+/** POST /nutrition/parse — a meal in the user's words. Nothing else is sent to the model. */
+export const PARSE_TEXT_MAX = 500;
+export const parseFoodRequestSchema = z.object({ text: z.string().trim().min(2).max(PARSE_TEXT_MAX) }).strict();
+export type ParseFoodRequest = z.infer<typeof parseFoodRequestSchema>;
+
+const macroRange = {
+  kcalLow: z.number().nonnegative(),
+  kcalHigh: z.number().nonnegative(),
+  proteinLow: z.number().nonnegative(),
+  proteinHigh: z.number().nonnegative(),
+  carbLow: z.number().nonnegative(),
+  carbHigh: z.number().nonnegative(),
+  fatLow: z.number().nonnegative(),
+  fatHigh: z.number().nonnegative(),
+};
+
+/** A phrase matched to a FITOS food: the numbers are the food database's, never the model's. */
+export const draftMatchSchema = z
+  .object({
+    foodId: z.string().uuid(),
+    name: z.string().min(1),
+    matchKind: foodMatchKindSchema,
+    basis: nutritionBasisSchema,
+    servingLabel: z.string().min(1).max(60),
+    /** The portion as servings of that row (0.1–20, hundredths) — what the log will send. */
+    servings: z.number().min(0.1).max(20),
+    /** That row, so the phone can preview a changed portion (display only, §30). */
+    row: foodNutritionSchema,
+    /** The row at `servings`, rounded as a log item would be. */
+    snapshot: z.object(macroRange).strict(),
+  })
+  .strict();
+
+/** A food the database does not have: the model's estimate, checked against §19.2's bounds. */
+export const draftEstimateSchema = z
+  .object({
+    name: z.string().min(1).max(60),
+    grams: z.number().positive().nullable(),
+    kcal: z.number().nonnegative(),
+    proteinG: z.number().nonnegative(),
+    carbG: z.number().nonnegative(),
+    fatG: z.number().nonnegative(),
+  })
+  .strict();
+
+export const draftItemSchema = z
+  .object({
+    /** What the model read from the text, e.g. "2 rotis". */
+    phrase: z.string().min(1).max(120),
+    quantity: z.number().positive(),
+    unit: z.string().min(1).max(30),
+    confidence: aiConfidenceSchema,
+    /** Exactly one of `match`, `estimate`, or a `problem` saying why there is neither. */
+    match: draftMatchSchema.nullable(),
+    estimate: draftEstimateSchema.nullable(),
+    problem: z.string().min(1).nullable(),
+  })
+  .strict();
+export type DraftItem = z.infer<typeof draftItemSchema>;
+
+export const foodDraftSchema = z
+  .object({
+    data: z.object({ items: z.array(draftItemSchema).max(12) }).strict(),
+    confidence: aiConfidenceSchema,
+    source: z.literal('ai-draft'),
+    requiresConfirmation: z.literal(true),
+  })
+  .strict();
+
+export const parseFoodResponseSchema = z.object({ draft: foodDraftSchema, model: z.string() }).strict();
+export type ParseFoodResponse = z.infer<typeof parseFoodResponseSchema>;
+
+/** POST /ai/explain — a TODAY action's reason in plainer words, or the engine's own. */
+export const explainRequestSchema = z.object({ actionId: z.string().uuid() }).strict();
+export type ExplainRequest = z.infer<typeof explainRequestSchema>;
+
+export const explainResponseSchema = z
+  .object({
+    text: z.string().min(1),
+    /** `engine`: the rephrasing was discarded (§19.2) and FITOS's own words are shown. */
+    source: z.enum(['ai', 'engine']),
+    discarded: z.enum(['new-number', 'empty', 'too-long']).nullable(),
+  })
+  .strict();
+export type ExplainResponse = z.infer<typeof explainResponseSchema>;
