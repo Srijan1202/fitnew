@@ -6,7 +6,6 @@ import 'package:fitos/core/routing/app_shell.dart';
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/features/home/presentation/screens/home_screen.dart';
-import 'package:fitos/features/ai/presentation/controllers/ai_providers.dart';
 import 'package:fitos/features/auth/domain/entities/auth_state.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_providers.dart';
@@ -70,8 +69,7 @@ void main() {
         trainingRepositoryProvider.overrideWithValue(training),
         exerciseRepositoryProvider.overrideWithValue(exercises),
         profileRepositoryProvider.overrideWithValue(profile),
-        aiApiProvider.overrideWithValue(FakeAiApi()),
-        ...workoutOverrides(db, workoutApi),
+        ...workoutOverrides(db, workoutApi, ai: FakeAiApi()),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
     );

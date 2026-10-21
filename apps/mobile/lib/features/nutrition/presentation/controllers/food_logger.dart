@@ -198,6 +198,58 @@ class FoodLogger {
         ),
       );
 
+  /// "1.5 × 1 katori", "150 g": a draft food's portion as servings of its row.
+  static String servingsText(FoodNutrition row, double servings) =>
+      row.basis == NutritionBasis.per100g
+          ? '${FoodFormat.number(servings * 100)} g'
+          : '${FoodFormat.number(servings)} × ${row.servingLabel}';
+
+  /// Phase 14: what the user confirmed from a FITOS AI meal draft. The
+  /// database foods go as ONE search log (one item each, named by row, as
+  /// servings of it — no numbers; the server snapshots them); each estimate
+  /// goes as its own quick add, named, with the numbers the user saw. All
+  /// through the ordinary queue, so it works offline like any other log.
+  Future<void> logDraft({
+    required List<
+            ({String foodId, String name, FoodNutrition row, double servings})>
+        foods,
+    required List<QuickAdd> estimates,
+    required LogTarget target,
+  }) async {
+    if (foods.isNotEmpty) {
+      await _repo.log(
+        CreateLogRequest.search(
+          clientLogId: _uuid.v4(),
+          loggedAt: loggedAtFor(target),
+          mealSlot: target.slot,
+          items: [
+            for (final f in foods)
+              LogFoodItemRequest(
+                foodId: f.foodId,
+                basis: f.row.basis,
+                servingLabel: f.row.servingLabel,
+                servings: f.servings,
+              ),
+          ],
+        ),
+        localDate: target.date,
+        preview: PendingPreview(
+          items: [
+            for (final f in foods)
+              PendingItem(
+                name: f.name,
+                portion: servingsText(f.row, f.servings),
+                preview: PortionPreview.scale(f.row, f.servings),
+              ),
+          ],
+        ),
+      );
+    }
+    for (final q in estimates) {
+      await logQuickAdd(q, target: target);
+    }
+  }
+
   Future<void> logQuickAdd(QuickAdd quickAdd, {required LogTarget target}) =>
       _repo.log(
         CreateLogRequest.quickAdd(

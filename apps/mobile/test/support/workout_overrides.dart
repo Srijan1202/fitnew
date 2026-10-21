@@ -1,4 +1,5 @@
 import 'package:fitos/core/db/app_database.dart';
+import 'package:fitos/features/ai/presentation/controllers/ai_providers.dart';
 import 'package:fitos/features/mess/presentation/mess_providers.dart';
 import 'package:fitos/features/nutrition/presentation/controllers/food_log_providers.dart';
 import 'package:fitos/features/progress/presentation/progress_providers.dart';
@@ -9,6 +10,7 @@ import 'package:fitos/features/workout/presentation/controllers/workout_provider
 import 'package:riverpod/misc.dart' show Override;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'fake_ai_api.dart';
 import 'fake_food_log_api.dart';
 import 'fake_mess_api.dart';
 import 'fake_progress_api.dart';
@@ -27,6 +29,7 @@ List<Override> workoutOverrides(
   FakeTodayApi? today,
   FakeProgressApi? progress,
   FakeRecoveryApi? recovery,
+  FakeAiApi? ai,
 }) {
   SharedPreferences.setMockInitialValues(const {});
   return [
@@ -48,5 +51,8 @@ List<Override> workoutOverrides(
     progressApiProvider.overrideWithValue(progress ?? FakeProgressApi()),
     // Phase 13: Recovery from a scripted server; nothing checked in unless a test says.
     recoveryApiProvider.overrideWithValue(recovery ?? FakeRecoveryApi()),
+    // Phase 14: FITOS AI switched off unless a test says, so no AI entry
+    // point (Describe your meal, Explain simply) appears by default.
+    aiApiProvider.overrideWithValue(ai ?? FakeAiApi.off()),
   ];
 }

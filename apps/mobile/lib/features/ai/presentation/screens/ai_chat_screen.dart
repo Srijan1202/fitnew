@@ -158,7 +158,8 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   Widget build(BuildContext context) {
     final status = ref.watch(aiStatusProvider);
     final chat = ref.watch(aiChatProvider);
-    final configured = status.value?.configured ?? true;
+    final s = status.value;
+    final configured = s == null || (s.enabled && s.configured);
 
     return Scaffold(
       appBar: AppBar(
@@ -187,17 +188,19 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                   message: (e is Failure ? e : const Unknown()).message,
                   onRetry: () => ref.invalidate(aiStatusProvider),
                 ),
-                data: (s) => !s.configured
-                    ? const _NotConfigured()
-                    : chat.turns.isEmpty
-                        ? _Empty(onPrompt: _send)
-                        : _Conversation(
-                            controller: _scroll,
-                            state: chat,
-                            onAction: _act,
-                            onRetry: () =>
-                                ref.read(aiChatProvider.notifier).retry(),
-                          ),
+                data: (s) => !s.enabled
+                    ? const _NotConfigured(switchedOff: true)
+                    : !s.configured
+                        ? const _NotConfigured()
+                        : chat.turns.isEmpty
+                            ? _Empty(onPrompt: _send)
+                            : _Conversation(
+                                controller: _scroll,
+                                state: chat,
+                                onAction: _act,
+                                onRetry: () =>
+                                    ref.read(aiChatProvider.notifier).retry(),
+                              ),
               ),
             ),
             _Composer(
@@ -453,23 +456,33 @@ class _Conversation extends StatelessWidget {
 }
 
 class _NotConfigured extends StatelessWidget {
-  const _NotConfigured();
+  const _NotConfigured({this.switchedOff = false});
+
+  /// Phase 14: the server's kill switch is off (AI_ENABLED=false).
+  final bool switchedOff;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Padding(
-      key: const ValueKey('ai.notConfigured'),
+      key: ValueKey(switchedOff ? 'ai.switchedOff' : 'ai.notConfigured'),
       padding: const EdgeInsets.all(FitSpacing.screen),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text('FITOS AI', style: textTheme.labelSmall),
           const SizedBox(height: FitSpacing.xs),
-          Text('Not set up on this server yet.', style: textTheme.displaySmall),
+          Text(
+            switchedOff
+                ? 'Switched off for now.'
+                : 'Not set up on this server yet.',
+            style: textTheme.displaySmall,
+          ),
           const SizedBox(height: FitSpacing.sm),
           Text(
-            'The assistant runs on the FITOS server. This build\'s server has no model configured, so there is nothing to ask yet. Everything else in FITOS works as usual.',
+            switchedOff
+                ? 'FITOS AI has been turned off on the server for the moment. Everything else in FITOS works as usual.'
+                : 'The assistant runs on the FITOS server. This build\'s server has no model configured, so there is nothing to ask yet. Everything else in FITOS works as usual.',
             style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
           ),
         ],

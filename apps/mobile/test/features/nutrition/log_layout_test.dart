@@ -1,4 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:fitos/features/ai/presentation/controllers/ai_providers.dart';
 import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
@@ -19,6 +20,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../support/ai_drafts.dart';
+import '../../support/fake_ai_api.dart';
 import '../../support/fake_food_log_api.dart';
 import '../../support/fake_mess_api.dart';
 import '../../support/fake_food_repository.dart';
@@ -83,7 +86,11 @@ void main() {
     addTearDown(tester.view.reset);
   }
 
-  Widget harness({double textScale = 1, String initial = '/nutrition'}) {
+  Widget harness({
+    double textScale = 1,
+    String initial = '/nutrition',
+    FakeAiApi? ai,
+  }) {
     final router = GoRouter(
       initialLocation: initial,
       routes: [
@@ -110,6 +117,8 @@ void main() {
         appDatabaseProvider.overrideWithValue(db),
         foodLogApiProvider.overrideWithValue(api),
         // Phase 9: no mess configured — the Phase 8 screens as they were.
+        // Phase 14: FITOS AI off unless a test switches it on.
+        aiApiProvider.overrideWithValue(ai ?? FakeAiApi.off()),
         messApiProvider.overrideWithValue(FakeMessApi(mine: null)),
         foodRepositoryProvider.overrideWithValue(FakeFoodRepository()),
         connectivityStreamProvider.overrideWithValue(
@@ -230,6 +239,68 @@ void main() {
         await tester.tap(find.byKey(const ValueKey('eat.prev')));
         await settle(tester);
         expectClean(tester, 'previous day');
+      });
+
+      testWidgets(
+          '$label: Describe your meal (Phase 14) — the entry, the field with the keyboard open, the full draft — no overflow',
+          (tester) async {
+        screen(tester, size);
+        final ai = FakeAiApi()..nextDraft = mealDraft();
+        await tester.pumpWidget(harness(textScale: scale, ai: ai));
+        await settle(tester);
+        await openLog(tester);
+        expectClean(tester, 'Log Food with the Describe entry');
+        final entry = find.byKey(const ValueKey('log.describe'));
+        await tester.ensureVisible(entry);
+        await settle(tester);
+        await tester.tap(entry);
+        await settle(tester);
+        expectClean(tester, 'Describe, empty');
+        final describeScroll = find
+            .descendant(
+              of: find.byKey(const ValueKey('describe.scroll')),
+              matching: find.byType(Scrollable),
+            )
+            .first;
+        // Focus the field, then the keyboard opens (as on the phone).
+        await tester.showKeyboard(find.byKey(const ValueKey('describe.input')));
+        screen(tester, size, keyboardOpen: true);
+        await settle(tester);
+        await tester.enterText(
+          find.byKey(const ValueKey('describe.input')),
+          '2 chapati, a katori of dal, a zqxv bar and a mystery shake',
+        );
+        await settle(tester);
+        expectClean(tester, 'Describe, keyboard open');
+        // The text being typed is above the keyboard.
+        final typing = tester.getRect(
+          find.descendant(
+            of: find.byKey(const ValueKey('describe.input')),
+            matching: find.byType(EditableText),
+          ),
+        );
+        expect(typing.bottom, lessThanOrEqualTo(size.h - keyboard));
+        screen(tester, size);
+        await settle(tester);
+        final read = find.byKey(const ValueKey('describe.read'));
+        await tester.ensureVisible(read);
+        await settle(tester);
+        await tester.tap(read);
+        await settle(tester);
+        expectClean(tester, 'Describe, the draft');
+        // To the end of the list (a drag at 2x text lands on the
+        // multi-line field and scrolls its text instead).
+        // The list builds lazily, so its end moves as rows build.
+        final add = find.byKey(const ValueKey('describe.add'));
+        for (var i = 0; i < 10 && add.evaluate().isEmpty; i++) {
+          final position =
+              tester.state<ScrollableState>(describeScroll).position;
+          position.jumpTo(position.maxScrollExtent);
+          await settle(tester);
+          expectClean(tester, 'Describe, scrolling the draft');
+        }
+        expect(add, findsOneWidget);
+        expectClean(tester, 'Describe, scrolled to Add');
       });
 
       testWidgets(

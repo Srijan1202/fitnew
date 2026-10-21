@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/tokens.dart';
 import '../domain/today.dart';
+import 'explain_simply.dart';
 import 'today_words.dart';
 
 /// What the user chose in the "why" sheet.
@@ -55,6 +56,8 @@ Future<WhyChoice?> showTodayWhySheet(
               key: const ValueKey('today.why.detail'),
               style: textTheme.bodyLarge,
             ),
+            // Phase 14: the reason reworded by FITOS AI, numbers checked.
+            if (!cached) ExplainSimply(actionId: action.id),
             if (facts.isNotEmpty) ...<Widget>[
               const SizedBox(height: FitSpacing.md),
               for (final (label, value) in facts)

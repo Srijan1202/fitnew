@@ -9,6 +9,7 @@ import '../../../../core/errors/result.dart';
 import '../../../../core/routing/navigation.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
+import '../../../ai/presentation/controllers/ai_providers.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../../home/presentation/controllers/home_providers.dart';
 import '../../../mess/data/mess_repository.dart';
@@ -27,6 +28,7 @@ import '../widgets/eat_widgets.dart';
 import '../widgets/food_widgets.dart';
 import '../widgets/log_controls.dart';
 import '../widgets/portion_sheet.dart';
+import 'describe_meal_screen.dart';
 
 enum LogSource {
   /// Phase 9: the day's mess menu — offered when the user has a mess.
@@ -124,6 +126,7 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
     final hasMess = ref.watch(messMenuProvider((date: _date, code: null))).value
         is MenuLoaded;
     final source = _source(hasMess);
+    final aiOn = ref.watch(aiAvailableProvider);
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.popOrHome()),
@@ -164,6 +167,17 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
                       onSelect: (s) => setState(() => _slot = s),
                     ),
                     const SizedBox(height: FitSpacing.md),
+                    // Phase 14: a meal in words, read by FITOS AI into a
+                    // draft the user checks. Only while AI is on and set up.
+                    if (aiOn) ...<Widget>[
+                      _DescribeEntry(
+                        onTap: () async {
+                          FocusScope.of(context).unfocus();
+                          if (await showDescribeMeal(context, _target)) _done();
+                        },
+                      ),
+                      const SizedBox(height: FitSpacing.md),
+                    ],
                     SegmentBar<LogSource>(
                       keyPrefix: 'log.source',
                       selected: source,
@@ -194,6 +208,48 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
               child: SizedBox(height: FitSpacing.xl),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Phase 14: the way into "Describe your meal".
+class _DescribeEntry extends StatelessWidget {
+  const _DescribeEntry({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return InkWell(
+      key: const ValueKey('log.describe'),
+      onTap: onTap,
+      child: DecoratedBox(
+        decoration: BoxDecoration(border: Border.all(color: FitColors.ink)),
+        child: Padding(
+          padding: const EdgeInsets.all(FitSpacing.md),
+          child: Row(
+            children: <Widget>[
+              const Icon(Icons.auto_awesome_outlined, color: FitColors.ink),
+              const SizedBox(width: FitSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text('Describe your meal', style: textTheme.titleMedium),
+                    Text(
+                      'Type what you ate; you check it before it is logged.',
+                      style: textTheme.bodyMedium
+                          ?.copyWith(color: FitColors.ink60),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: FitColors.ink60),
+            ],
+          ),
         ),
       ),
     );

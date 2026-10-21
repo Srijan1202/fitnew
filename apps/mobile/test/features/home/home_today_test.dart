@@ -3,6 +3,7 @@ import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
+import 'package:fitos/features/ai/domain/entities/ai_draft.dart';
 import 'package:fitos/features/auth/domain/entities/auth_state.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_providers.dart';
@@ -25,6 +26,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../support/fake_ai_api.dart';
 import '../../support/fake_auth_repository.dart';
 import '../../support/fake_exercise_repository.dart';
 import '../../support/fake_food_log_api.dart';
@@ -51,6 +53,7 @@ void main() {
   late FakeFoodLogApi foodLog;
   late FakeTodayApi today;
   late FakeAuthRepository auth;
+  late FakeAiApi ai;
 
   setUp(() {
     db = AppDatabase.inMemory();
@@ -60,6 +63,7 @@ void main() {
     profile = FakeProfileRepository();
     foodLog = FakeFoodLogApi();
     today = FakeTodayApi(date: date);
+    ai = FakeAiApi.off();
     auth = FakeAuthRepository()
       ..restoreResult = AuthState.signedIn(testProfile);
   });
@@ -116,7 +120,7 @@ void main() {
         trainingRepositoryProvider.overrideWithValue(FakeTrainingRepository()),
         localHourProvider.overrideWithValue(12),
         localTodayProvider.overrideWithValue(date),
-        ...workoutOverrides(db, api, foodLog: foodLog, today: today),
+        ...workoutOverrides(db, api, foodLog: foodLog, today: today, ai: ai),
         ...healthOverrides(health),
       ],
       // As FitOSApp does: the completion watcher lives at the root.
@@ -323,6 +327,95 @@ void main() {
     // No mess configured: the log flow for the action's meal and day.
     expect(find.text('LOG $date lunch'), findsOneWidget);
     expect(today.sent, ['a-eat:shown', 'a-eat:opened', 'a-eat:accepted']);
+  });
+
+  // Phase 14 (ADR-020 D5): "Explain simply" — FITOS AI rewords the reason;
+  // a rewording that adds a number comes back as the engine's own words.
+  testToday('explain simply: not offered while FITOS AI is off',
+      (tester) async {
+    today.plan = plan([eat]);
+    await tester.pumpWidget(app());
+    await settle(tester);
+    await tester.tap(key('home.suggestion.eat-protein.open'));
+    await settle(tester);
+    expect(key('today.why'), findsOneWidget);
+    expect(key('today.why.explain'), findsNothing);
+  });
+
+  testToday(
+      "explain simply: FITOS AI's plain words for this action, labelled; the engine's detail stays",
+      (tester) async {
+    ai = FakeAiApi()
+      ..nextExplain = const ExplainResponse(
+        text:
+            'You have had little protein so far. Lunch is a good time to catch up.',
+        source: ExplainSource.ai,
+      );
+    today.plan = plan([eat]);
+    await tester.pumpWidget(app());
+    await settle(tester);
+    await tester.tap(key('home.suggestion.eat-protein.open'));
+    await settle(tester);
+    await tester.tap(key('today.why.explain'));
+    await settle(tester);
+    expect(ai.explained, ['a-eat']);
+    expect(
+      textOf(tester, 'today.why.simple.label'),
+      'IN PLAIN WORDS · FITOS AI',
+    );
+    expect(
+      textOf(tester, 'today.why.simple.text'),
+      'You have had little protein so far. Lunch is a good time to catch up.',
+    );
+    expect(key('today.why.simple.note'), findsNothing);
+    expect(textOf(tester, 'today.why.detail'), eat.detail);
+    // Asking is not a TODAY event.
+    expect(today.sent, ['a-eat:shown', 'a-eat:opened']);
+  });
+
+  testToday(
+      "explain simply: a rewording that added a number is not shown — FITOS's own words, and why",
+      (tester) async {
+    ai = FakeAiApi()
+      ..nextExplain = ExplainResponse(
+        text: eat.detail,
+        source: ExplainSource.engine,
+        discarded: 'new-number',
+      );
+    today.plan = plan([eat]);
+    await tester.pumpWidget(app());
+    await settle(tester);
+    await tester.tap(key('home.suggestion.eat-protein.open'));
+    await settle(tester);
+    await tester.tap(key('today.why.explain'));
+    await settle(tester);
+    expect(textOf(tester, 'today.why.simple.label'), "FITOS'S OWN WORDS");
+    expect(textOf(tester, 'today.why.simple.text'), eat.detail);
+    expect(
+      textOf(tester, 'today.why.simple.note'),
+      'The simpler version was not used: it added a number FITOS did not give.',
+    );
+  });
+
+  testToday(
+      "explain simply: a refusal shows the server's words; the button stays",
+      (tester) async {
+    ai = FakeAiApi()
+      ..explainFailure = const RateLimited(
+        'You have used this 20 times in the last hour. Try again a little later.',
+      );
+    today.plan = plan([eat]);
+    await tester.pumpWidget(app());
+    await settle(tester);
+    await tester.tap(key('home.suggestion.eat-protein.open'));
+    await settle(tester);
+    await tester.tap(key('today.why.explain'));
+    await settle(tester);
+    expect(
+      textOf(tester, 'today.why.explain.error'),
+      'You have used this 20 times in the last hour. Try again a little later.',
+    );
+    expect(key('today.why.explain'), findsOneWidget);
   });
 
   for (final (label, kind, destination) in [

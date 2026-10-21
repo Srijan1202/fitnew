@@ -4,7 +4,6 @@ import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/features/ai/domain/entities/ai.dart';
-import 'package:fitos/features/ai/presentation/controllers/ai_providers.dart';
 import 'package:fitos/features/ai/presentation/screens/ai_chat_screen.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:fitos/features/exercise/domain/entities/exercise.dart';
@@ -77,9 +76,8 @@ void main() {
     return ProviderScope(
       overrides: [
         sessionUserIdProvider.overrideWithValue('user-1'),
-        aiApiProvider.overrideWithValue(ai),
         trainingRepositoryProvider.overrideWithValue(training),
-        ...workoutOverrides(db, workout),
+        ...workoutOverrides(db, workout, ai: ai),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
     );
@@ -268,6 +266,21 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('ai.notConfigured')), findsOneWidget);
     expect(find.text('Not set up on this server yet.'), findsOneWidget);
+    expect(
+      tester.widget<TextField>(find.byKey(const ValueKey('ai.input'))).enabled,
+      isFalse,
+    );
+    expect(ai.calls.where((c) => c == 'chat'), isEmpty);
+  });
+
+  testWidgets(
+      'switched off on the server (Phase 14 kill switch): says so, no composer, nothing sent',
+      (tester) async {
+    ai.status_ = ai.status_.copyWith(enabled: false);
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('ai.switchedOff')), findsOneWidget);
+    expect(find.text('Switched off for now.'), findsOneWidget);
     expect(
       tester.widget<TextField>(find.byKey(const ValueKey('ai.input'))).enabled,
       isFalse,

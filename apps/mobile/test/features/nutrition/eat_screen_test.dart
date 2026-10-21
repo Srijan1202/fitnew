@@ -1,4 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:fitos/features/ai/domain/entities/ai_draft.dart';
+import 'package:fitos/features/ai/presentation/controllers/ai_providers.dart';
 import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/theme/app_theme.dart';
@@ -21,6 +23,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../support/ai_drafts.dart';
+import '../../support/fake_ai_api.dart';
 import '../../support/fake_food_log_api.dart';
 import '../../support/fake_mess_api.dart';
 import '../../support/fake_food_repository.dart';
@@ -81,8 +85,10 @@ void main() {
   late AppDatabase db;
   late FakeFoodLogApi api;
   late FakeFoodRepository foods;
+  late FakeAiApi ai;
 
   setUp(() {
+    ai = FakeAiApi.off();
     db = AppDatabase.inMemory();
     api = FakeFoodLogApi(todayDate: today, targets: targets);
     api.snapshot[dalTadka.id] = serverSnapshot(dalTadka);
@@ -122,6 +128,8 @@ void main() {
         appDatabaseProvider.overrideWithValue(db),
         foodLogApiProvider.overrideWithValue(api),
         // Phase 9: no mess configured — the Phase 8 screens as they were.
+        // Phase 14: FITOS AI off unless a test switches it on.
+        aiApiProvider.overrideWithValue(ai),
         messApiProvider.overrideWithValue(FakeMessApi(mine: null)),
         foodRepositoryProvider.overrideWithValue(foods),
         connectivityStreamProvider.overrideWithValue(
@@ -675,6 +683,173 @@ void main() {
             .where((c) => c.startsWith('create') || c.startsWith('delete')),
         isEmpty,
       );
+    });
+  });
+
+  /// Phase 14 (ADR-020): "Describe your meal" — FITOS AI reads the words
+  /// into a draft; the user checks it; only Add logs, through the queue.
+  group('describe your meal (FITOS AI)', () {
+    setUp(() {
+      ai = FakeAiApi()..nextDraft = mealDraft();
+      api.snapshot[chapati.id] = serverSnapshot(chapati);
+    });
+
+    Future<void> openDescribe(WidgetTester tester) async {
+      await tester.tap(find.byKey(const ValueKey('eat.log')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('log.describe')));
+      await settle(tester);
+    }
+
+    Future<void> read(WidgetTester tester, String text) async {
+      await tester.enterText(
+        find.byKey(const ValueKey('describe.input')),
+        text,
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('describe.read')));
+      await settle(tester);
+    }
+
+    testWidgets('AI off on the server: no way in; the log sheet as before',
+        (tester) async {
+      tall(tester);
+      ai = FakeAiApi.off();
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('eat.log')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('log.source.Recent')), findsOneWidget);
+      expect(find.byKey(const ValueKey('log.describe')), findsNothing);
+    });
+
+    testWidgets(
+        'the draft: FITOS foods, an estimate and a problem, each labelled; only the text is sent; nothing logged before Add',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await openDescribe(tester);
+      expect(find.byKey(const ValueKey('describe.privacy')), findsOneWidget);
+      await read(
+        tester,
+        '2 chapati, a katori of dal, a zqxv bar, mystery shake',
+      );
+      expect(
+        ai.parsed,
+        ['2 chapati, a katori of dal, a zqxv bar, mystery shake'],
+      );
+
+      expect(textOf(tester, 'describe.item.0.name').data, 'Chapati');
+      expect(textOf(tester, 'describe.item.0.tag').data, 'FITOS');
+      expect(textOf(tester, 'describe.item.0.portion').data, '2 × 1 piece');
+      expect(
+        textOf(tester, 'describe.item.0.kcal').data,
+        '170–240 kcal · 5–8 g protein',
+      );
+      expect(
+        find.byKey(const ValueKey('describe.item.0.unsure')),
+        findsOneWidget,
+      );
+      expect(textOf(tester, 'describe.item.1.portion').data, '1 × 1 katori');
+      expect(
+        find.byKey(const ValueKey('describe.item.1.unsure')),
+        findsNothing,
+      );
+      expect(textOf(tester, 'describe.item.2.name').data, 'Zqxv crunch bar');
+      expect(textOf(tester, 'describe.item.2.tag').data, 'ESTIMATE');
+      expect(
+        textOf(tester, 'describe.item.2.kcal').data,
+        '180 kcal · 8 g protein',
+      );
+      expect(textOf(tester, 'describe.item.3.tag').data, 'NOT FOUND');
+      expect(
+        find.byKey(const ValueKey('describe.item.3.problem')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('describe.item.3.include')),
+        findsNothing,
+      );
+      expect(
+        textOf(tester, 'describe.total').data,
+        'About 470–605 kcal · 19–25 g protein',
+      );
+      expect(find.text('Add 3 to Lunch'), findsOneWidget);
+
+      expect(api.logs, isEmpty);
+      expect(api.calls.where((c) => c.startsWith('create')), isEmpty);
+    });
+
+    testWidgets(
+        'adjust and confirm: more chapati, no dal → ONE search log (servings, no numbers) and the estimate as a named quick add',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await openDescribe(tester);
+      await read(tester, '2 chapati, dal, a zqxv bar');
+      await tester.tap(find.byKey(const ValueKey('describe.item.0.more')));
+      await tester.pump();
+      expect(textOf(tester, 'describe.item.0.portion').data, '2.5 × 1 piece');
+      await tester.tap(find.byKey(const ValueKey('describe.item.1.include')));
+      await tester.pump();
+      expect(find.text('Add 2 to Lunch'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('describe.add')));
+      await settle(tester);
+
+      // Back on EAT; two logs went through the ordinary queue.
+      expect(find.byType(EatScreen), findsOneWidget);
+      final logs = api.logs.values.toList();
+      expect(logs, hasLength(2));
+      final search =
+          logs.singleWhere((l) => l.entryMethod == EntryMethod.search);
+      expect(search.items.single.foodId, chapati.id);
+      expect(search.items.single.servings, 2.5);
+      expect(search.mealSlot, MealSlot.lunch);
+      final quick =
+          logs.singleWhere((l) => l.entryMethod == EntryMethod.quickAdd);
+      expect(quick.items.single.foodName, 'Zqxv crunch bar');
+      expect(quick.items.single.kcalLow, 180);
+    });
+
+    testWidgets("a refusal shows the server's words; nothing is logged",
+        (tester) async {
+      tall(tester);
+      ai.parseFailure = const ServiceUnavailable(
+        'FITOS AI is switched off on this server. Everything else works as usual.',
+      );
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await openDescribe(tester);
+      await read(tester, 'two idli');
+      expect(
+        textOf(tester, 'describe.error').data,
+        'FITOS AI is switched off on this server. Everything else works as usual.',
+      );
+      expect(find.byKey(const ValueKey('describe.add')), findsNothing);
+      expect(api.logs, isEmpty);
+    });
+
+    testWidgets('nothing edible in the text: says so; Add stays off',
+        (tester) async {
+      tall(tester);
+      ai.nextDraft = const ParseFoodResponse(
+        model: 'fake-1',
+        draft: FoodDraft(items: [], confidence: AiConfidence.low),
+      );
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await openDescribe(tester);
+      await read(tester, 'nothing today');
+      expect(find.byKey(const ValueKey('describe.empty')), findsOneWidget);
+      final add = tester.widget<ButtonStyleButton>(
+        find.ancestor(
+          of: find.text('Nothing chosen'),
+          matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+        ),
+      );
+      expect(add.onPressed, isNull);
     });
   });
 }

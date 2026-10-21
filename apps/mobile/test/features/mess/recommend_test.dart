@@ -1,4 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:fitos/features/ai/presentation/controllers/ai_providers.dart';
 import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/theme/app_theme.dart';
@@ -28,6 +29,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../support/fake_ai_api.dart';
 import '../../support/fake_food_log_api.dart';
 import '../../support/fake_food_repository.dart';
 import '../../support/fake_mess_api.dart';
@@ -113,6 +115,8 @@ void main() {
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
         foodLogApiProvider.overrideWithValue(api),
+        // Phase 14: FITOS AI off unless a test switches it on.
+        aiApiProvider.overrideWithValue(FakeAiApi.off()),
         messApiProvider.overrideWithValue(mess),
         profileRepositoryProvider.overrideWithValue(profile),
         foodRepositoryProvider.overrideWithValue(FakeFoodRepository()),
