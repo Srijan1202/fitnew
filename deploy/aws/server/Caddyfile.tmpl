@@ -14,3 +14,7 @@ __API_DOMAIN__ {
 	header -Server
 	reverse_proxy __UPSTREAM__:8080
 }
+
+# The website (tryfitos.me), when deployed from the fitos-website repository:
+# it writes sites/website.caddy. No file there is fine (nothing is imported).
+import /etc/caddy/sites/*.caddy
