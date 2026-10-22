@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/features/ai/presentation/controllers/ai_providers.dart';
 import 'package:fitos/features/mess/presentation/mess_providers.dart';
@@ -37,12 +38,15 @@ List<Override> workoutOverrides(
   FakeNotificationsApi? notifications,
   FakeNotificationScheduler? scheduler,
   FakePrivacyApi? privacy,
+  Stream<List<ConnectivityResult>>? connectivity,
 }) {
   SharedPreferences.setMockInitialValues(const {});
   return [
     appDatabaseProvider.overrideWithValue(db),
     workoutApiProvider.overrideWithValue(api),
-    connectivityStreamProvider.overrideWithValue(const Stream.empty()),
+    // No connectivity events unless a test sends its own (Phase 18 flows).
+    connectivityStreamProvider
+        .overrideWithValue(connectivity ?? const Stream.empty()),
     restNotifierProvider.overrideWithValue(const NoopRestNotifier()),
     // Widget tests drive the queue by hand on a fake clock; the engine's own
     // retries are covered with real timers in automatic_sync_test.dart.
