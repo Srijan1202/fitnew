@@ -62,6 +62,12 @@ class ProgramController extends AsyncNotifier<Program?> {
 
   Future<Failure?> rename(String name) => _apply(_repo.rename(name));
 
+  /// ADR-030: skip today; the week moves one day later.
+  Future<Failure?> skipToday() => _apply(_repo.skipToday());
+
+  /// ADR-030: undo today's skip.
+  Future<Failure?> undoSkip() => _apply(_repo.undoSkip());
+
   Future<Failure?> applyTemplate(
     String slug, {
     int? preferredSessionMinutes,

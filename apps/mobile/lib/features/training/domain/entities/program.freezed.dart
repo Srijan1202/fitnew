@@ -2070,6 +2070,9 @@ mixin _$Program {
   int get mesocycleWeek;
   bool get active;
   String get createdAt;
+
+  /// ADR-030: the local date last skipped (the week then moved a day).
+  String? get skippedOn;
   List<ProgramDay> get days;
   Map<String, double> get weeklyVolume;
   List<String> get rationale;
@@ -2104,6 +2107,8 @@ mixin _$Program {
             (identical(other.active, active) || other.active == active) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
+            (identical(other.skippedOn, skippedOn) ||
+                other.skippedOn == skippedOn) &&
             const DeepCollectionEquality().equals(other.days, days) &&
             const DeepCollectionEquality()
                 .equals(other.weeklyVolume, weeklyVolume) &&
@@ -2125,6 +2130,7 @@ mixin _$Program {
       mesocycleWeek,
       active,
       createdAt,
+      skippedOn,
       const DeepCollectionEquality().hash(days),
       const DeepCollectionEquality().hash(weeklyVolume),
       const DeepCollectionEquality().hash(rationale),
@@ -2132,7 +2138,7 @@ mixin _$Program {
 
   @override
   String toString() {
-    return 'Program(id: $id, name: $name, splitType: $splitType, daysPerWeek: $daysPerWeek, source: $source, templateSlug: $templateSlug, mesocycleWeek: $mesocycleWeek, active: $active, createdAt: $createdAt, days: $days, weeklyVolume: $weeklyVolume, rationale: $rationale, shortfalls: $shortfalls)';
+    return 'Program(id: $id, name: $name, splitType: $splitType, daysPerWeek: $daysPerWeek, source: $source, templateSlug: $templateSlug, mesocycleWeek: $mesocycleWeek, active: $active, createdAt: $createdAt, skippedOn: $skippedOn, days: $days, weeklyVolume: $weeklyVolume, rationale: $rationale, shortfalls: $shortfalls)';
   }
 }
 
@@ -2151,6 +2157,7 @@ abstract mixin class $ProgramCopyWith<$Res> {
       int mesocycleWeek,
       bool active,
       String createdAt,
+      String? skippedOn,
       List<ProgramDay> days,
       Map<String, double> weeklyVolume,
       List<String> rationale,
@@ -2178,6 +2185,7 @@ class _$ProgramCopyWithImpl<$Res> implements $ProgramCopyWith<$Res> {
     Object? mesocycleWeek = null,
     Object? active = null,
     Object? createdAt = null,
+    Object? skippedOn = freezed,
     Object? days = null,
     Object? weeklyVolume = null,
     Object? rationale = null,
@@ -2220,6 +2228,10 @@ class _$ProgramCopyWithImpl<$Res> implements $ProgramCopyWith<$Res> {
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as String,
+      skippedOn: freezed == skippedOn
+          ? _self.skippedOn
+          : skippedOn // ignore: cast_nullable_to_non_nullable
+              as String?,
       days: null == days
           ? _self.days
           : days // ignore: cast_nullable_to_non_nullable
@@ -2343,6 +2355,7 @@ extension ProgramPatterns on Program {
             int mesocycleWeek,
             bool active,
             String createdAt,
+            String? skippedOn,
             List<ProgramDay> days,
             Map<String, double> weeklyVolume,
             List<String> rationale,
@@ -2363,6 +2376,7 @@ extension ProgramPatterns on Program {
             _that.mesocycleWeek,
             _that.active,
             _that.createdAt,
+            _that.skippedOn,
             _that.days,
             _that.weeklyVolume,
             _that.rationale,
@@ -2397,6 +2411,7 @@ extension ProgramPatterns on Program {
             int mesocycleWeek,
             bool active,
             String createdAt,
+            String? skippedOn,
             List<ProgramDay> days,
             Map<String, double> weeklyVolume,
             List<String> rationale,
@@ -2416,6 +2431,7 @@ extension ProgramPatterns on Program {
             _that.mesocycleWeek,
             _that.active,
             _that.createdAt,
+            _that.skippedOn,
             _that.days,
             _that.weeklyVolume,
             _that.rationale,
@@ -2449,6 +2465,7 @@ extension ProgramPatterns on Program {
             int mesocycleWeek,
             bool active,
             String createdAt,
+            String? skippedOn,
             List<ProgramDay> days,
             Map<String, double> weeklyVolume,
             List<String> rationale,
@@ -2468,6 +2485,7 @@ extension ProgramPatterns on Program {
             _that.mesocycleWeek,
             _that.active,
             _that.createdAt,
+            _that.skippedOn,
             _that.days,
             _that.weeklyVolume,
             _that.rationale,
@@ -2491,6 +2509,7 @@ class _Program implements Program {
       required this.mesocycleWeek,
       required this.active,
       required this.createdAt,
+      this.skippedOn = null,
       required final List<ProgramDay> days,
       required final Map<String, double> weeklyVolume,
       required final List<String> rationale,
@@ -2520,6 +2539,11 @@ class _Program implements Program {
   final bool active;
   @override
   final String createdAt;
+
+  /// ADR-030: the local date last skipped (the week then moved a day).
+  @override
+  @JsonKey()
+  final String? skippedOn;
   final List<ProgramDay> _days;
   @override
   List<ProgramDay> get days {
@@ -2586,6 +2610,8 @@ class _Program implements Program {
             (identical(other.active, active) || other.active == active) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
+            (identical(other.skippedOn, skippedOn) ||
+                other.skippedOn == skippedOn) &&
             const DeepCollectionEquality().equals(other._days, _days) &&
             const DeepCollectionEquality()
                 .equals(other._weeklyVolume, _weeklyVolume) &&
@@ -2608,6 +2634,7 @@ class _Program implements Program {
       mesocycleWeek,
       active,
       createdAt,
+      skippedOn,
       const DeepCollectionEquality().hash(_days),
       const DeepCollectionEquality().hash(_weeklyVolume),
       const DeepCollectionEquality().hash(_rationale),
@@ -2615,7 +2642,7 @@ class _Program implements Program {
 
   @override
   String toString() {
-    return 'Program(id: $id, name: $name, splitType: $splitType, daysPerWeek: $daysPerWeek, source: $source, templateSlug: $templateSlug, mesocycleWeek: $mesocycleWeek, active: $active, createdAt: $createdAt, days: $days, weeklyVolume: $weeklyVolume, rationale: $rationale, shortfalls: $shortfalls)';
+    return 'Program(id: $id, name: $name, splitType: $splitType, daysPerWeek: $daysPerWeek, source: $source, templateSlug: $templateSlug, mesocycleWeek: $mesocycleWeek, active: $active, createdAt: $createdAt, skippedOn: $skippedOn, days: $days, weeklyVolume: $weeklyVolume, rationale: $rationale, shortfalls: $shortfalls)';
   }
 }
 
@@ -2635,6 +2662,7 @@ abstract mixin class _$ProgramCopyWith<$Res> implements $ProgramCopyWith<$Res> {
       int mesocycleWeek,
       bool active,
       String createdAt,
+      String? skippedOn,
       List<ProgramDay> days,
       Map<String, double> weeklyVolume,
       List<String> rationale,
@@ -2662,6 +2690,7 @@ class __$ProgramCopyWithImpl<$Res> implements _$ProgramCopyWith<$Res> {
     Object? mesocycleWeek = null,
     Object? active = null,
     Object? createdAt = null,
+    Object? skippedOn = freezed,
     Object? days = null,
     Object? weeklyVolume = null,
     Object? rationale = null,
@@ -2704,6 +2733,10 @@ class __$ProgramCopyWithImpl<$Res> implements _$ProgramCopyWith<$Res> {
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as String,
+      skippedOn: freezed == skippedOn
+          ? _self.skippedOn
+          : skippedOn // ignore: cast_nullable_to_non_nullable
+              as String?,
       days: null == days
           ? _self._days
           : days // ignore: cast_nullable_to_non_nullable

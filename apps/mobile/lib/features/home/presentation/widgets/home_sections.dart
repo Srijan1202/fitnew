@@ -343,6 +343,10 @@ class TodayMetrics extends StatelessWidget {
     } else if (today == null) {
       workoutValue = '—';
       workoutLine = 'Could not load today';
+    } else if (today.skipped) {
+      // ADR-030.
+      workoutValue = 'Skipped';
+      workoutLine = 'Your week moved a day';
     } else if (today.isRest) {
       workoutValue = 'Rest';
       workoutLine =

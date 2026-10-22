@@ -123,6 +123,11 @@ export const programSchema = z.object({
   mesocycleWeek: z.number().int().min(1),
   active: z.boolean(),
   createdAt: z.string().datetime(),
+  /**
+   * ADR-030: the local date the user last skipped (every day then moved one
+   * day later); that date is shown as skipped and its skip can be undone.
+   */
+  skippedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
   /** Always seven, Monday first; rest days included so a week is a week. */
   days: z.array(programDaySchema).length(7),
   /** Weekly hard sets per muscle as planned, secondaries at 0.5. Derived on read. */

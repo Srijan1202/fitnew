@@ -581,6 +581,8 @@ Protein bounded by Morton et al. (*Br J Sports Med* 2018): plateau ~1.62 g/kg, p
 
 Then: filter exercises by available equipment → exclude by `user_limitations` via `exercise_contraindications` → select by movement pattern to reach per-muscle **MEV** → order compound-first → fit to `preferred_session_minutes` (~3.5 min/working set including rest).
 
+`AMENDED 2026-10-22 (Phase 19, ADR-030, owner)`: **Skip today.** On a training day the user can skip today: every day of the programme moves one day later (rest days too, the order kept, the day ids kept), so tomorrow brings today's session. Today then shows as skipped: no session, no workout reminder, and no "missed session" message the next morning. The skip can be undone on the same day. It is refused while a session is open or after training today, and allowed once a day. The shift is permanent; the week simply runs a day later from there.
+
 ### 12.3 Volume landmarks (per muscle, weekly hard sets)
 
 | | MV | MEV | MAV | MRV |

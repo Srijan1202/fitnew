@@ -112,6 +112,7 @@ export function programFrom(bundle: ProgramBundle): Program {
     mesocycleWeek: p.mesocycleWeek,
     active: p.active,
     createdAt: p.createdAt.toISOString(),
+    skippedOn: p.skippedOn,
     days: [...bundle.days].sort((a, b) => a.dayOfWeek - b.dayOfWeek).map((d) => dayFrom(bundle, d.id)),
     weeklyVolume: volume,
     rationale: p.rationale,

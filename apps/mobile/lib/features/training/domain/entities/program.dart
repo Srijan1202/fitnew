@@ -226,6 +226,9 @@ abstract class Program with _$Program {
     required int mesocycleWeek,
     required bool active,
     required String createdAt,
+
+    /// ADR-030: the local date last skipped (the week then moved a day).
+    @Default(null) String? skippedOn,
     required List<ProgramDay> days,
     required Map<String, double> weeklyVolume,
     required List<String> rationale,

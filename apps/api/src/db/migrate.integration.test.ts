@@ -70,7 +70,7 @@ describeIfDb('migrations (real Postgres)', () => {
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
   const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
   const PHASE6_TABLES = ['muscle_volume_weekly', 'exercise_rejections'];
-  const TOTAL_MIGRATIONS = 23;
+  const TOTAL_MIGRATIONS = 24;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -476,6 +476,35 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from mess_providers where id = ${prov!.id}`;
   });
 
+  it('0023: program skip (Phase 19, ADR-030) — programs gain skipped_on; the weekday rule is a deferrable constraint, so all seven days can move one weekday in one update; down restores the index', async () => {
+    await client`insert into users (firebase_uid) values ('mig-skip')`;
+    const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-skip'`;
+    const [p] = await client<{ id: string }[]>`
+      insert into programs (user_id, name, split_type, days_per_week, source, skipped_on)
+      values (${u!.id}, 'Skip', 'full-body', 3, 'custom', '2026-10-22') returning id`;
+    for (let d = 1; d <= 7; d++) {
+      await client`insert into program_days (program_id, day_of_week, session_name, is_rest) values (${p!.id}, ${d}, ${'S' + d}, ${d > 3})`;
+    }
+    // Still one row per weekday.
+    await expect(client`insert into program_days (program_id, day_of_week, session_name) values (${p!.id}, 1, 'Twice')`).rejects.toThrow(/program_days_program_day/);
+    // Seven days, one weekday later, in one statement (row by row it would collide).
+    await client.begin(async (tx) => {
+      await tx`set constraints program_days_program_day deferred`;
+      await tx`update program_days set day_of_week = (day_of_week % 7) + 1 where program_id = ${p!.id}`;
+    });
+    const rows = await client<{ day_of_week: number; session_name: string }[]>`
+      select day_of_week, session_name from program_days where program_id = ${p!.id} order by day_of_week`;
+    expect(rows.map((r) => r.session_name)).toEqual(['S7', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6']);
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
+    const cols = await client<{ column_name: string }[]>`
+      select column_name from information_schema.columns where table_name = 'programs' and column_name = 'skipped_on'`;
+    expect(cols).toEqual([]);
+    await expect(client`insert into program_days (program_id, day_of_week, session_name) values (${p!.id}, 1, 'Twice')`).rejects.toThrow(/program_days_program_day/);
+    await migrateUp(connectionString);
+    expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
+    await client`delete from users where id = ${u!.id}`;
+  });
+
   it('0022: premium (Phase 19) — users gain premium_since, premium_granted_by and avatar_id (checked); premium_requests with one pending per user; down drops them', async () => {
     await client`insert into users (firebase_uid) values ('mig-premium')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-premium'`;
@@ -486,6 +515,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`update premium_requests set status = 'denied' where user_id = ${u!.id}`;
     await client`insert into premium_requests (user_id) values (${u!.id})`;
     await expect(client`insert into premium_requests (user_id, status) values (${u!.id}, 'maybe')`).rejects.toThrow(/premium_requests_status/);
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await tableExists(client, 'premium_requests')).toBe(false);
     const cols = await client<{ column_name: string }[]>`
@@ -506,6 +536,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await expect(client`insert into feedback (user_id, category, message, app_version, status) values (${u!.id}, 'bug', 'x', '1', 'lost')`).rejects.toThrow(/feedback_status/);
     await client`delete from users where id = ${u!.id}`;
     expect((await client`select 1 from feedback where user_id = ${u!.id}`).length).toBe(0);
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
     expect(await tableExists(client, 'feedback')).toBe(false);
@@ -518,6 +549,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`insert into users (firebase_uid) values ('mig-consent')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-consent'`;
     await client`insert into consent_records (user_id, consent_type, granted, policy_version) values (${u!.id}, 'privacy-policy', true, 'v'), (${u!.id}, 'ai-processing', true, 'v')`;
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
     expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
@@ -530,6 +562,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0019: audit_logs, feature_flags, mess_dish_overrides and the admin marks on foods/exercises — Phase 16; down drops them', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
     expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
@@ -562,6 +595,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0018: notifications (one per user, kind and local date; status; cascade) and push_tokens (unique token, android) — Phase 15; down drops them', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
     expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
@@ -598,6 +632,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0017: ai_usage (per user, route, model, tokens, outcome; tokens non-negative; cascade) — the §19.3 cost ledger; down drops it (Phase 14)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
     expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
@@ -623,6 +658,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await expect(client`insert into ai_usage (user_id, route, model, input_tokens, output_tokens, outcome) values (${u!.id}, 'parse', 'm', -1, 0, 'ok')`).rejects.toThrow(/ai_usage_tokens/);
     await expect(client.unsafe(`insert into ai_usage (user_id, route, model, outcome) values ('${u!.id}', 'photo', 'm', 'ok')`)).rejects.toThrow(/invalid input value for enum ai_route/);
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
 
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
@@ -639,6 +675,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0016: recovery_logs (one per user and local date; optional values, at least one; ranges; cascade; hard delete) and low-readiness in today_action_kind; down rebuilds the enum (Phase 13)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
     expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
@@ -687,6 +724,7 @@ describeIfDb('migrations (real Postgres)', () => {
     );
 
     // Down with data: the table and type go; the enum is rebuilt without the value; other rows keep their kind.
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
     expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
@@ -712,6 +750,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0015: body_measurements (one per user, day and site; checks; cascade), the PR window index, and calorie-adjust in today_action_kind; down rebuilds the enum (Phase 12)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
     expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
@@ -756,6 +795,7 @@ describeIfDb('migrations (real Postgres)', () => {
     );
 
     // Down with data: the table and type go; the enum is rebuilt without the value; other rows keep their kind.
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
     expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
@@ -784,6 +824,7 @@ describeIfDb('migrations (real Postgres)', () => {
 
   it('0014: every deload activation is kept by a trigger on programs (Phase 6 code untouched); backfill; down drops it (Phase 11)', async () => {
     // Down, then a deload week already running when 0014 applies: the backfill records it.
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
     expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
@@ -824,6 +865,7 @@ describeIfDb('migrations (real Postgres)', () => {
     expect((await client`select 1 from deload_activations where program_id = ${q!.id}`).length).toBe(0);
 
     // Down removes the trigger, its function and the table; programs keeps working as in Phase 6.
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
     expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
@@ -843,6 +885,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0013: TODAY recommendations and events — identity, checks, event rules, cascades; down drops them (Phase 11, ADR-017)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
     expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
@@ -933,6 +976,7 @@ describeIfDb('migrations (real Postgres)', () => {
       `insert into recommendations (user_id, generated_for, kind, subject_key, rank, priority, basis, target, payload, engine_version, input_digest, headline, detail, content_hash)
        values ('${d!.id}', '2026-09-24', 'log-weight', '', 1, 45, 'calculated', 'progress', '{}'::jsonb, 'today-1', '${H}', 'h', 'd', '${H}')`,
     );
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
     expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
@@ -950,6 +994,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0012: four Phase 9 estimates corrected with provenance, only where still wrong; down restores them (Phase 10 Amendment B)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
     expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
@@ -994,6 +1039,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await expect(client`insert into mess_dish_nutrition_revisions (dish_slug, reason, previous, current) values ('curd-rice', ' ', '{}', '{}')`).rejects.toThrow(/revisions_reason/);
 
     // Down puts the recorded previous values back and drops the provenance table.
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');
     expect(await rollbackLastMigration(connectionString)).toBe('0020_ai_consent');
@@ -1086,6 +1132,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Mess lunch', '[{"kind":"mess","dishSlug":"dal","name":"Dal","servings":1}]'::jsonb)`;
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Plain', '[{"kind":"quick-add","name":"X","kcal":1,"proteinG":0,"carbG":0,"fatG":0,"fibreG":null}]'::jsonb)`;
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0023_program_skip');
     expect(await rollbackLastMigration(connectionString)).toBe('0022_premium');
 
     expect(await rollbackLastMigration(connectionString)).toBe('0021_feedback');

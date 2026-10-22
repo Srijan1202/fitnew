@@ -85,6 +85,7 @@ const facts = (over: Partial<PlanFacts> = {}): PlanFacts => ({
   proteinTargetG: null,
   todayProteinHigh: 0,
   readinessBand: null,
+  skippedDates: [],
   history: [],
   ...over,
 });

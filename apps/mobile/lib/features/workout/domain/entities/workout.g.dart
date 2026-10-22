@@ -565,6 +565,7 @@ _TodayResponse _$TodayResponseFromJson(Map<String, dynamic> json) =>
       programDayId: json['programDayId'] as String?,
       sessionName: json['sessionName'] as String?,
       isRest: json['isRest'] as bool,
+      skipped: json['skipped'] as bool? ?? false,
       focus: (json['focus'] as List<dynamic>)
           .map((e) => $enumDecode(_$MuscleGroupEnumMap, e))
           .toList(),
@@ -594,6 +595,7 @@ Map<String, dynamic> _$TodayResponseToJson(_TodayResponse instance) =>
       'programDayId': instance.programDayId,
       'sessionName': instance.sessionName,
       'isRest': instance.isRest,
+      'skipped': instance.skipped,
       'focus': instance.focus.map((e) => _$MuscleGroupEnumMap[e]!).toList(),
       'exercises': instance.exercises,
       'activeSession': instance.activeSession,

@@ -28,6 +28,7 @@ function facts(over: Partial<PlanFacts> = {}): PlanFacts {
     proteinTargetG: null,
     todayProteinHigh: 0,
     readinessBand: null,
+    skippedDates: [],
     history: [],
     ...over,
   };
@@ -194,6 +195,16 @@ describe('notify/planner', () => {
     expect(tue.title + tue.body).toMatch(/Push|Yesterday/);
     expect(formatClock(minuteOfDay(tue.at, TZ))).toBe('08:30');
     expect(tue.cancelOn.map((c) => `${c.event}@${c.localDate}`)).toEqual(['workout-completed@2026-10-19', 'workout-started@2026-10-20']);
+  });
+
+  it('ADR-030: a skipped day gets no workout reminder, and no "missed session" the morning after', () => {
+    // Monday skipped: the week has moved on a day, so Monday's weekday entry is
+    // not a session today, and Tuesday morning does not call it missed.
+    const plan = planNotifications(facts({ programme: { 1: 'Push', 3: 'Pull' }, skippedDates: ['2026-10-19'], settings: onlyKinds('workout-reminder') }));
+    expect(plan.map((p) => p.localDate)).toEqual(['2026-10-21']);
+    const now = ist('2026-10-20', '06:00');
+    const missed = planNotifications(facts({ now, programme: { 1: 'Push' }, skippedDates: ['2026-10-19'], settings: onlyKinds('missed-session') }));
+    expect(missed.find((p) => p.localDate === '2026-10-20')).toBeUndefined();
   });
 
   it('streak at risk: tonight, with the real streak; cancelled by any activity', () => {

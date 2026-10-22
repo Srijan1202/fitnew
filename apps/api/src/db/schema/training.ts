@@ -9,6 +9,7 @@ import { sql } from 'drizzle-orm';
 import {
   boolean,
   check,
+  date,
   index,
   integer,
   jsonb,
@@ -17,6 +18,7 @@ import {
   smallint,
   text,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
@@ -52,6 +54,11 @@ export const programs = pgTable(
       .$type<{ muscle: string; targetSets: number; plannedSets: number; reason: string; detail: string }[]>()
       .notNull()
       .default([]),
+    /**
+     * ADR-030: the local date the user last skipped (the whole week then moved
+     * one day later). That date shows as skipped; undo is allowed on it.
+     */
+    skippedOn: date('skipped_on', { mode: 'string' }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
@@ -81,7 +88,9 @@ export const programDays = pgTable(
     isRest: boolean('is_rest').notNull().default(false),
   },
   (t) => [
-    uniqueIndex('program_days_program_day').on(t.programId, t.dayOfWeek),
+    // ADR-030: a constraint (DEFERRABLE in the migration, which drizzle does
+    // not model) so a skip can move all seven days one weekday in one update.
+    unique('program_days_program_day').on(t.programId, t.dayOfWeek),
     check('program_days_dow_range', sql`${t.dayOfWeek} BETWEEN 1 AND 7`),
   ],
 );

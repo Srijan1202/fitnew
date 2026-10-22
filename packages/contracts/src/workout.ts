@@ -279,6 +279,8 @@ export const todayResponseSchema = z.object({
   programDayId: z.string().uuid().nullable(),
   sessionName: z.string().nullable(),
   isRest: z.boolean(),
+  /** ADR-030: the user skipped this date — no session, the week moved on a day. */
+  skipped: z.boolean(),
   focus: z.array(muscleGroupSchema),
   exercises: z.array(todayExerciseSchema),
   /** An `active` session, whatever day it belongs to, or null. */

@@ -162,6 +162,13 @@
       "when": 1792646866257,
       "tag": "0022_premium",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792672365398,
+      "tag": "0023_program_skip",
+      "breakpoints": true
     }
   ]
 }

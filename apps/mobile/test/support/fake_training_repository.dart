@@ -376,6 +376,42 @@ class FakeTrainingRepository implements TrainingRepository {
     return nextRename;
   }
 
+  /// ADR-030: the date a skip records (the phone's local today by default).
+  String skipDate = () {
+    final n = DateTime.now();
+    return '${n.year}-${n.month.toString().padLeft(2, '0')}-${n.day.toString().padLeft(2, '0')}';
+  }();
+
+  /// A scripted skip or undo result, in place of the rotation.
+  Result<Program>? nextSkip;
+
+  /// Every day one weekday later (or back), Monday first, as the server does.
+  Program _shift(Program p, int by, String? skippedOn) {
+    final days = [
+      for (final d in p.days)
+        d.copyWith(dayOfWeek: ((d.dayOfWeek - 1 + by + 7) % 7) + 1),
+    ]..sort((a, b) => a.dayOfWeek.compareTo(b.dayOfWeek));
+    return p.copyWith(days: days, skippedOn: skippedOn);
+  }
+
+  @override
+  Future<Result<Program>> skipToday() async {
+    calls.add('skipToday');
+    if (nextSkip case final scripted?) return scripted;
+    final next = _shift(stored ?? generatedProgram, 1, skipDate);
+    stored = next;
+    return Ok(next);
+  }
+
+  @override
+  Future<Result<Program>> undoSkip() async {
+    calls.add('undoSkip');
+    if (nextSkip case final scripted?) return scripted;
+    final next = _shift(stored ?? generatedProgram, -1, null);
+    stored = next;
+    return Ok(next);
+  }
+
   @override
   Future<Result<List<ProgramTemplate>>> listTemplates() async {
     calls.add('listTemplates');

@@ -59,6 +59,11 @@ export interface PlanFacts {
   readonly settings: NotifySettings;
   /** ISO weekday (1–7) → session name, training days only; null without a programme. */
   readonly programme: Readonly<Record<number, string>> | null;
+  /**
+   * ADR-030: local dates the user skipped. No workout reminder on them, and no
+   * "missed session" the morning after (the week has moved on by a day).
+   */
+  readonly skippedDates: readonly string[];
   /** Recent session starts (about four weeks). */
   readonly sessionStarts: readonly Date[];
   /** Local dates with a completed session (about five weeks). */
@@ -302,6 +307,7 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
       ? 'An hour before 18:00, until FITOS learns when you usually train.'
       : `About an hour before you usually start training (around ${at(m)} lately).`;
 
+  const skipped = new Set(facts.skippedDates);
   for (let i = 0; i <= HORIZON_DAYS; i++) {
     const d = addDays(today, i);
     const weekday = isoWeekday(d);
@@ -315,7 +321,7 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
     // Day 7 of no app use is the last word: "we'll stop for now" and nothing else.
     const silentAfterStop = i === HORIZON_DAYS;
 
-    const session = facts.programme?.[weekday] ?? null;
+    const session = skipped.has(d) ? null : (facts.programme?.[weekday] ?? null);
     if (!silentAfterStop && session !== null && !sets.completed.has(d) && !(i === 0 && facts.readinessBand === 'rest')) {
       const learned = habits.training(weekday);
       candidates.push({
@@ -330,7 +336,7 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
     }
 
     const prev = addDays(d, -1);
-    const missed = facts.programme?.[isoWeekday(prev)] ?? null;
+    const missed = skipped.has(prev) ? null : (facts.programme?.[isoWeekday(prev)] ?? null);
     if (!silentAfterStop && missed !== null && !sets.completed.has(prev)) {
       candidates.push({
         kind: 'missed-session',

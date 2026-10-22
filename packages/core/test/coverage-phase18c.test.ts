@@ -77,7 +77,7 @@ describe('reminders inside quiet hours', () => {
       now: at('2026-10-19', 9 * 60), timeZone: TZ, seed: 's', name: null,
       settings: { ...DEFAULT_NOTIFY_SETTINGS, quietStart: '20:30', quietEnd: '07:30', kinds: Object.fromEntries(NOTIFY_KINDS.map((k) => [k, k === 'protein-gap'])) as typeof DEFAULT_NOTIFY_SETTINGS.kinds },
       programme: null, sessionStarts: [], completedDates: [], foodLogs: dinners, weighIns: [], checkIns: [], proteinMetDates: [],
-      proteinTargetG: 100, todayProteinHigh: 0, readinessBand: null, history: [],
+      proteinTargetG: 100, todayProteinHigh: 0, readinessBand: null, history: [], skippedDates: [],
     });
     expect(formatClock(minuteOfDay(plan[0]!.at, TZ))).toBe('20:00');
   });

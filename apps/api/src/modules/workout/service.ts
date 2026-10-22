@@ -22,6 +22,7 @@ import type {
   PatchSetRequest,
   PersonalRecord,
   PlannedSet,
+  Program,
   ProgressionDetail,
   ProgressionRecommendation,
   DeloadState,
@@ -38,6 +39,7 @@ import type {
 
 import { uniqueViolationOf } from '../../db/errors.js';
 import { AppError } from '../../lib/errors.js';
+import { programFrom } from '../training/service.js';
 import type { PlannedExerciseJoined, ProgramBundle, TrainingRepository } from '../training/repository.js';
 import type { LowReadinessSource } from '../recovery/readiness.js';
 import { ProgressionAssembler } from './progression.js';
@@ -516,7 +518,10 @@ export class WorkoutService {
     const date = localDate(now, tz);
     const dow = dayOfWeek ?? isoDayOfWeek(date);
     const program = await this.training.activeProgram(userId);
-    const day = program?.days.find((d) => d.dayOfWeek === dow) ?? null;
+    // ADR-030: a skipped today has no session (its weekday now holds
+    // yesterday's, the week having moved on a day).
+    const skipped = program !== null && program.program.skippedOn === date && dow === isoDayOfWeek(date);
+    const day = skipped ? null : (program?.days.find((d) => d.dayOfWeek === dow) ?? null);
     const planned = program !== null && day !== null ? program.exercises.filter((x) => x.programDayId === day.id) : [];
     const prior = await this.repo.priorWork(userId, [...new Set(planned.map((x) => x.exerciseId))]);
     const active = await this.repo.active(userId);
@@ -543,6 +548,7 @@ export class WorkoutService {
       programDayId: day?.id ?? null,
       sessionName: day === null || day.isRest ? null : day.sessionName,
       isRest: day === null ? true : day.isRest,
+      skipped,
       focus: day?.focus ?? [],
       exercises: planned.map((x) => ({
         plannedExerciseId: x.id,
@@ -575,6 +581,48 @@ export class WorkoutService {
       deload,
       neglected: this.progression.neglected(volumeSets, owned, date),
     };
+  }
+
+  /* ------------------------------------------------ ADR-030: skip -- */
+
+  /**
+   * Skip today: every day of the active programme moves one day later, so
+   * tomorrow brings today's session and the order never breaks; today shows
+   * as skipped. Not while a session is open or after training today.
+   */
+  async skipToday(userId: string): Promise<Program> {
+    const { program, date } = await this.skipContext(userId);
+    if ((await this.repo.active(userId)) !== null) {
+      throw new AppError('CONFLICT', 'Finish or discard the open session before skipping today.', [{ path: 'session', issue: 'session-open' }]);
+    }
+    if (await this.completedOn(userId, date)) {
+      throw new AppError('CONFLICT', 'You already trained today, so there is nothing to skip.', [{ path: 'date', issue: 'trained-today' }]);
+    }
+    const bundle = await this.training.shiftWeek(userId, program.program.id, 'skip', date);
+    if (bundle === null) throw new AppError('CONFLICT', 'Today is already skipped.', [{ path: 'date', issue: 'already-skipped' }]);
+    return programFrom(bundle);
+  }
+
+  /** Undo today's skip: every day moves back one day. Only on the day itself. */
+  async undoSkip(userId: string): Promise<Program> {
+    const { program, date } = await this.skipContext(userId);
+    const bundle = await this.training.shiftWeek(userId, program.program.id, 'undo', date);
+    if (bundle === null) throw new AppError('CONFLICT', 'Only a skip made today can be undone.', [{ path: 'date', issue: 'not-skipped' }]);
+    return programFrom(bundle);
+  }
+
+  private async skipContext(userId: string): Promise<{ program: ProgramBundle; date: string }> {
+    const tz = await this.repo.userTimezone(userId);
+    const program = await this.training.activeProgram(userId);
+    if (program === null) throw new AppError('NOT_FOUND', 'No active programme.');
+    return { program, date: localDate(new Date(), tz) };
+  }
+
+  private async completedOn(userId: string, date: string): Promise<boolean> {
+    const tz = await this.repo.userTimezone(userId);
+    return (await this.repo.list(userId, { limit: 20, status: 'completed' })).some(
+      (s) => s.completedAt !== null && localDate(s.completedAt, tz) === date,
+    );
   }
 
   /* ---------------------------------------------- Phase 6 endpoints -- */

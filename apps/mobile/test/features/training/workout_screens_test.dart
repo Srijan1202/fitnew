@@ -7,6 +7,7 @@ import 'package:fitos/core/theme/tokens.dart';
 import 'package:fitos/features/exercise/domain/entities/exercise.dart';
 import 'package:fitos/features/exercise/presentation/controllers/exercise_providers.dart';
 import 'package:fitos/features/exercise/presentation/screens/exercise_browser_screen.dart';
+import 'package:fitos/features/health/presentation/controllers/health_providers.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:fitos/features/training/domain/entities/program.dart';
 import 'package:fitos/features/training/presentation/controllers/program_controller.dart';
@@ -643,6 +644,122 @@ void main() {
       await settle(tester);
       expect(find.text('History'), findsOneWidget);
       expect(find.text('Start empty session'), findsWidgets);
+    });
+  });
+
+  group('skip today (ADR-030)', () {
+    /// The fixture with today's weekday a training day ("Leg Day") and the
+    /// day after it a rest day, whatever day the tests run on.
+    Program todayIsLegDay() {
+      final today = DateTime.now().weekday;
+      final tomorrow = (today % 7) + 1;
+      return generatedProgram.copyWith(
+        days: [
+          for (final d in generatedProgram.days)
+            if (d.dayOfWeek == today)
+              d.copyWith(
+                isRest: false,
+                sessionName: 'Leg Day',
+                exercises: [plannedSquat],
+              )
+            else if (d.dayOfWeek == tomorrow)
+              d.copyWith(isRest: true, sessionName: 'Rest', exercises: [])
+            else
+              d,
+        ],
+      );
+    }
+
+    testWidgets(
+        "skip: confirm, every day moves one day later (today shows skipped, tomorrow is today's session); undo moves it back",
+        (tester) async {
+      training.stored = todayIsLegDay();
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      training.skipDate = ProviderScope.containerOf(
+        tester.element(find.byType(WorkoutWeekScreen)),
+      ).read(localTodayProvider);
+      final today = DateTime.now().weekday;
+      final legDayId =
+          training.stored!.days.firstWhere((d) => d.dayOfWeek == today).id;
+
+      await tester.tap(find.byKey(const ValueKey('plan.menu')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('plan.skip')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('skip.dialog')), findsOneWidget);
+      expect(find.textContaining('Leg Day moves to tomorrow'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('skip.confirm')));
+      await settle(tester);
+
+      expect(training.calls, contains('skipToday'));
+      final moved = training.stored!;
+      expect(
+        moved.days.firstWhere((d) => d.id == legDayId).dayOfWeek,
+        (today % 7) + 1,
+      );
+      expect(find.byKey(const ValueKey('day.skipped')), findsOneWidget);
+      expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('day.skipped.next')))
+            .data,
+        'Your week moved one day later. Tomorrow is Leg Day.',
+      );
+
+      // Skipped once: the menu no longer offers it.
+      await tester.tap(find.byKey(const ValueKey('plan.menu')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('plan.skip')), findsNothing);
+      await tester.tapAt(Offset.zero);
+      await settle(tester);
+
+      await tester.tap(find.byKey(const ValueKey('day.undoSkip')));
+      await settle(tester);
+      expect(training.calls, contains('undoSkip'));
+      expect(
+        training.stored!.days.firstWhere((d) => d.id == legDayId).dayOfWeek,
+        today,
+      );
+      expect(find.byKey(const ValueKey('day.skipped')), findsNothing);
+      expect(find.text('Leg Day'), findsWidgets);
+    });
+
+    testWidgets('a rest day today: nothing to skip', (tester) async {
+      final today = DateTime.now().weekday;
+      training.stored = generatedProgram.copyWith(
+        days: [
+          for (final d in generatedProgram.days)
+            d.dayOfWeek == today
+                ? d.copyWith(isRest: true, sessionName: 'Rest', exercises: [])
+                : d,
+        ],
+      );
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('plan.menu')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('plan.skip')), findsNothing);
+      expect(find.text('Edit this day'), findsOneWidget);
+    });
+
+    testWidgets('a refusal is shown, nothing moves', (tester) async {
+      training.stored = todayIsLegDay();
+      training.nextSkip = const Err(
+        Conflict('Finish or discard the open session before skipping today.'),
+      );
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('plan.menu')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('plan.skip')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('skip.confirm')));
+      await settle(tester);
+      expect(
+        find.text('Finish or discard the open session before skipping today.'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('day.skipped')), findsNothing);
     });
   });
 

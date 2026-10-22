@@ -126,6 +126,18 @@ class DioTrainingRepository implements TrainingRepository {
       );
 
   @override
+  Future<Result<Program>> skipToday() => _guard(
+        () => _dio.post<Map<String, dynamic>>('/v1/training/today/skip'),
+        Program.fromJson,
+      );
+
+  @override
+  Future<Result<Program>> undoSkip() => _guard(
+        () => _dio.delete<Map<String, dynamic>>('/v1/training/today/skip'),
+        Program.fromJson,
+      );
+
+  @override
   Future<Result<List<ProgramTemplate>>> listTemplates() => _guard(
         () => _dio.get<Map<String, dynamic>>('/v1/training/templates'),
         (json) => [

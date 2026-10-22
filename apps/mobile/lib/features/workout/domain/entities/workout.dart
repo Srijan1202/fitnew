@@ -443,6 +443,9 @@ abstract class TodayResponse with _$TodayResponse {
     required String? programDayId,
     required String? sessionName,
     required bool isRest,
+
+    /// ADR-030: today was skipped — no session; the week moved on a day.
+    @Default(false) bool skipped,
     required List<MuscleGroup> focus,
     required List<TodayExercise> exercises,
     required WorkoutSession? activeSession,

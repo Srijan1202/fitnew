@@ -110,12 +110,17 @@ class TodaySessionPanel extends ConsumerWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text('Rest', style: textTheme.displaySmall),
+                Text(
+                  t.skipped ? 'Skipped' : 'Rest',
+                  style: textTheme.displaySmall,
+                ),
                 const SizedBox(height: FitSpacing.xs),
                 Text(
-                  t.programId == null
-                      ? 'No programme yet. Build one under Training, or log something anyway.'
-                      : 'Nothing planned. Recovery is part of the programme.',
+                  t.skipped
+                      ? 'You skipped today; your week moved one day later.'
+                      : t.programId == null
+                          ? 'No programme yet. Build one under Training, or log something anyway.'
+                          : 'Nothing planned. Recovery is part of the programme.',
                   style: textTheme.bodyMedium,
                 ),
                 const SizedBox(height: FitSpacing.md),

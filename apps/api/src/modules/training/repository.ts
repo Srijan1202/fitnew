@@ -375,6 +375,43 @@ export class TrainingRepository {
     }).then((program) => this.bundle(program));
   }
 
+  /**
+   * ADR-030: every day of the programme one weekday later (`skip`) or back
+   * (`undo`), with the skip date set or cleared — one transaction, the weekday
+   * rule checked at commit (a deferrable constraint). Null when the guard
+   * fails: already skipped on [date] (skip), or not skipped on it (undo).
+   */
+  async shiftWeek(userId: string, programId: string, move: 'skip' | 'undo', date: string): Promise<ProgramBundle | null> {
+    const program = await this.db.transaction(async (tx) => {
+      const [p] = await tx
+        .update(programs)
+        .set({ skippedOn: move === 'skip' ? date : null, updatedAt: sql`now()` })
+        .where(
+          and(
+            eq(programs.id, programId),
+            eq(programs.userId, userId),
+            move === 'skip'
+              ? sql`${programs.skippedOn} IS DISTINCT FROM ${date}::date`
+              : eq(programs.skippedOn, date),
+          ),
+        )
+        .returning();
+      if (p === undefined) return null;
+      await tx.execute(sql`SET CONSTRAINTS program_days_program_day DEFERRED`);
+      await tx
+        .update(programDays)
+        .set({
+          dayOfWeek:
+            move === 'skip'
+              ? sql`(${programDays.dayOfWeek} % 7) + 1`
+              : sql`((${programDays.dayOfWeek} + 5) % 7) + 1`,
+        })
+        .where(eq(programDays.programId, programId));
+      return p;
+    });
+    return program === null ? null : this.bundle(program);
+  }
+
   /** Rename the active programme; null when there is none. */
   async rename(userId: string, name: string): Promise<ProgramBundle | null> {
     const [program] = await this.db

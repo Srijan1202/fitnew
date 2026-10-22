@@ -8,6 +8,8 @@ import '../../../../core/errors/failure.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
+import '../../../health/presentation/controllers/health_providers.dart';
+import '../../../today/presentation/today_providers.dart';
 import '../../../exercise/domain/entities/exercise.dart';
 import '../../../workout/domain/entities/workout.dart';
 import '../../../workout/presentation/controllers/workout_providers.dart';
@@ -274,6 +276,12 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
         if (program == null) return const PlanStartScreen();
         final selected = _selectedDow ??= _defaultDay(program);
         final day = program.days.firstWhere((d) => d.dayOfWeek == selected);
+        // ADR-030: today can be skipped once; then it shows as skipped.
+        final todayDow = DateTime.now().weekday;
+        final skippedToday = program.skippedOn == ref.watch(localTodayProvider);
+        final todayDay =
+            program.days.firstWhere((d) => d.dayOfWeek == todayDow);
+        final canSkip = !skippedToday && !todayDay.isRest;
         // Phase 6: the server's view of this day (deload state, per-lift
         // substitutions). Absent offline — the plan still renders.
         final serverDay =
@@ -306,21 +314,35 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
                       context.push(Routes.volume);
                     case 'adhoc':
                       _start(program, null);
+                    case 'skip':
+                      _skip(program, todayDay);
                   }
                 },
-                itemBuilder: (_) => const [
-                  PopupMenuItem(value: 'edit', child: Text('Edit this day')),
-                  PopupMenuItem(value: 'history', child: Text('History')),
-                  PopupMenuItem(value: 'volume', child: Text('Volume')),
-                  PopupMenuItem(
+                itemBuilder: (_) => [
+                  if (canSkip)
+                    const PopupMenuItem(
+                      key: ValueKey('plan.skip'),
+                      value: 'skip',
+                      child: Text('Skip today'),
+                    ),
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Text('Edit this day'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'history',
+                    child: Text('History'),
+                  ),
+                  const PopupMenuItem(value: 'volume', child: Text('Volume')),
+                  const PopupMenuItem(
                     value: 'adhoc',
                     child: Text('Start empty session'),
                   ),
-                  PopupMenuItem(
+                  const PopupMenuItem(
                     value: 'rename',
                     child: Text('Rename programme'),
                   ),
-                  PopupMenuItem(
+                  const PopupMenuItem(
                     value: 'change',
                     child: Text('Change programme'),
                   ),
@@ -338,38 +360,47 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
                     onSelect: (dow) => setState(() => _selectedDow = dow),
                   ),
                   Expanded(
-                    child: _DayView(
-                      key: ValueKey('day.${day.id}'),
-                      day: day,
-                      exercises: _exercisesOf(day),
-                      startButton: StartSessionButton(
-                        dayOfWeek: day.dayOfWeek,
-                        isRest: day.isRest,
-                        onStart: () => _start(program, day),
-                      ),
-                      onAddSet: (id) => _addSet(day, id),
-                      onRemoveSet: (id, i) => _removeSet(day, id, i),
-                      expanded: _expanded,
-                      saveState: _saveState[day.id] ?? _SaveState.idle,
-                      saveFailure: _saveFailure[day.id],
-                      onToggle: (id) => setState(() {
-                        if (!_expanded.remove(id)) _expanded.add(id);
-                      }),
-                      onSetChanged: (id, set) => _setChanged(day, id, set),
-                      onRemove: (id) => _remove(day, id),
-                      onReplace: (x) => _replace(day, x),
-                      onRetry: () => _flush(day.id),
-                      onEditDay: () => context.push(Routes.planDayEdit(day.id)),
-                      deload: phase6?.deload,
-                      mesocycleWeek: phase6?.mesocycleWeek,
-                      substitutions: {
-                        if (phase6 != null)
-                          for (final x in phase6.exercises)
-                            if (x.substitution != null)
-                              x.plannedExerciseId: x.substitution!,
-                      },
-                      onSubstitute: (x, alt) => _substitute(day, x, alt),
-                    ),
+                    child: skippedToday && selected == todayDow
+                        ? _SkippedToday(
+                            tomorrow: program.days.firstWhere(
+                              (d) => d.dayOfWeek == (todayDow % 7) + 1,
+                            ),
+                            onUndo: _undoSkip,
+                          )
+                        : _DayView(
+                            key: ValueKey('day.${day.id}'),
+                            day: day,
+                            exercises: _exercisesOf(day),
+                            startButton: StartSessionButton(
+                              dayOfWeek: day.dayOfWeek,
+                              isRest: day.isRest,
+                              onStart: () => _start(program, day),
+                            ),
+                            onAddSet: (id) => _addSet(day, id),
+                            onRemoveSet: (id, i) => _removeSet(day, id, i),
+                            expanded: _expanded,
+                            saveState: _saveState[day.id] ?? _SaveState.idle,
+                            saveFailure: _saveFailure[day.id],
+                            onToggle: (id) => setState(() {
+                              if (!_expanded.remove(id)) _expanded.add(id);
+                            }),
+                            onSetChanged: (id, set) =>
+                                _setChanged(day, id, set),
+                            onRemove: (id) => _remove(day, id),
+                            onReplace: (x) => _replace(day, x),
+                            onRetry: () => _flush(day.id),
+                            onEditDay: () =>
+                                context.push(Routes.planDayEdit(day.id)),
+                            deload: phase6?.deload,
+                            mesocycleWeek: phase6?.mesocycleWeek,
+                            substitutions: {
+                              if (phase6 != null)
+                                for (final x in phase6.exercises)
+                                  if (x.substitution != null)
+                                    x.plannedExerciseId: x.substitution!,
+                            },
+                            onSubstitute: (x, alt) => _substitute(day, x, alt),
+                          ),
                   ),
                 ],
               ),
@@ -403,6 +434,72 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
     final session = await repo.startSession(day: seed);
     if (!mounted) return;
     await context.push(Routes.session(session.clientSessionId));
+  }
+
+  /// ADR-030: skip today — confirm, then every day moves one day later.
+  Future<void> _skip(Program program, ProgramDay today) async {
+    final tomorrowDow = (today.dayOfWeek % 7) + 1;
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        key: const ValueKey('skip.dialog'),
+        title: const Text('Skip today?'),
+        content: Text(
+          '${today.sessionName} moves to tomorrow, and every day after it '
+          'moves one day later — rest days too. Your week keeps its order; '
+          'it just starts a day later from here.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            key: const ValueKey('skip.confirm'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Skip today'),
+          ),
+        ],
+      ),
+    );
+    if (go != true || !mounted) return;
+    final failure = await _controller!.skipToday();
+    if (!mounted) return;
+    _refreshToday();
+    final messenger = ScaffoldMessenger.of(context);
+    if (failure != null) {
+      messenger.showSnackBar(SnackBar(content: Text(failure.message)));
+      return;
+    }
+    setState(() => _selectedDow = DateTime.now().weekday);
+    messenger.showSnackBar(
+      SnackBar(
+        key: const ValueKey('skip.done'),
+        content: Text(
+          'Skipped. ${today.sessionName} is tomorrow '
+          '(${kWeekdayLabels[tomorrowDow - 1]}).',
+        ),
+        action: SnackBarAction(label: 'Undo', onPressed: _undoSkip),
+      ),
+    );
+  }
+
+  Future<void> _undoSkip() async {
+    final failure = await _controller!.undoSkip();
+    if (!mounted) return;
+    _refreshToday();
+    if (failure != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(failure.message)));
+    }
+  }
+
+  /// Home and TODAY read today from the server: refetch after a skip.
+  void _refreshToday() {
+    ref
+      ..invalidate(todayProvider)
+      ..invalidate(dayProvider)
+      ..invalidate(todayPlanProvider);
   }
 
   Future<void> _rename(BuildContext context, Program program) async {
@@ -634,6 +731,52 @@ class _DayView extends StatelessWidget {
             key: const ValueKey('day.edit'),
             onPressed: onEditDay,
             child: const Text('Add or reorder exercises'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// ADR-030: today, skipped — what comes tomorrow, and the way back.
+class _SkippedToday extends StatelessWidget {
+  const _SkippedToday({required this.tomorrow, required this.onUndo});
+
+  final ProgramDay tomorrow;
+  final VoidCallback onUndo;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final next = tomorrow.isRest ? 'a rest day' : tomorrow.sessionName;
+    return ListView(
+      key: const ValueKey('day.skipped'),
+      padding: const EdgeInsets.only(bottom: FitSpacing.xl),
+      children: <Widget>[
+        FitBlock(
+          glow: true,
+          margin: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+          flatPadding: const EdgeInsets.all(FitSpacing.screen),
+          padding: const EdgeInsets.all(FitSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text('TODAY', style: textTheme.labelSmall),
+              const SizedBox(height: FitSpacing.xs),
+              Text('Skipped', style: textTheme.displayMedium),
+              const SizedBox(height: FitSpacing.sm),
+              Text(
+                'Your week moved one day later. Tomorrow is $next.',
+                key: const ValueKey('day.skipped.next'),
+                style: textTheme.bodyLarge,
+              ),
+              const SizedBox(height: FitSpacing.md),
+              OutlinedButton(
+                key: const ValueKey('day.undoSkip'),
+                onPressed: onUndo,
+                child: const Text('Undo skip'),
+              ),
+            ],
           ),
         ),
       ],

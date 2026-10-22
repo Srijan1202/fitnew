@@ -8361,6 +8361,9 @@ mixin _$TodayResponse {
   String? get programDayId;
   String? get sessionName;
   bool get isRest;
+
+  /// ADR-030: today was skipped — no session; the week moved on a day.
+  bool get skipped;
   List<MuscleGroup> get focus;
   List<TodayExercise> get exercises;
   WorkoutSession? get activeSession;
@@ -8395,6 +8398,7 @@ mixin _$TodayResponse {
             (identical(other.sessionName, sessionName) ||
                 other.sessionName == sessionName) &&
             (identical(other.isRest, isRest) || other.isRest == isRest) &&
+            (identical(other.skipped, skipped) || other.skipped == skipped) &&
             const DeepCollectionEquality().equals(other.focus, focus) &&
             const DeepCollectionEquality().equals(other.exercises, exercises) &&
             (identical(other.activeSession, activeSession) ||
@@ -8417,6 +8421,7 @@ mixin _$TodayResponse {
       programDayId,
       sessionName,
       isRest,
+      skipped,
       const DeepCollectionEquality().hash(focus),
       const DeepCollectionEquality().hash(exercises),
       activeSession,
@@ -8427,7 +8432,7 @@ mixin _$TodayResponse {
 
   @override
   String toString() {
-    return 'TodayResponse(date: $date, dayOfWeek: $dayOfWeek, programId: $programId, programDayId: $programDayId, sessionName: $sessionName, isRest: $isRest, focus: $focus, exercises: $exercises, activeSession: $activeSession, completedSessionId: $completedSessionId, mesocycleWeek: $mesocycleWeek, deload: $deload, neglected: $neglected)';
+    return 'TodayResponse(date: $date, dayOfWeek: $dayOfWeek, programId: $programId, programDayId: $programDayId, sessionName: $sessionName, isRest: $isRest, skipped: $skipped, focus: $focus, exercises: $exercises, activeSession: $activeSession, completedSessionId: $completedSessionId, mesocycleWeek: $mesocycleWeek, deload: $deload, neglected: $neglected)';
   }
 }
 
@@ -8444,6 +8449,7 @@ abstract mixin class $TodayResponseCopyWith<$Res> {
       String? programDayId,
       String? sessionName,
       bool isRest,
+      bool skipped,
       List<MuscleGroup> focus,
       List<TodayExercise> exercises,
       WorkoutSession? activeSession,
@@ -8475,6 +8481,7 @@ class _$TodayResponseCopyWithImpl<$Res>
     Object? programDayId = freezed,
     Object? sessionName = freezed,
     Object? isRest = null,
+    Object? skipped = null,
     Object? focus = null,
     Object? exercises = null,
     Object? activeSession = freezed,
@@ -8507,6 +8514,10 @@ class _$TodayResponseCopyWithImpl<$Res>
       isRest: null == isRest
           ? _self.isRest
           : isRest // ignore: cast_nullable_to_non_nullable
+              as bool,
+      skipped: null == skipped
+          ? _self.skipped
+          : skipped // ignore: cast_nullable_to_non_nullable
               as bool,
       focus: null == focus
           ? _self.focus
@@ -8664,6 +8675,7 @@ extension TodayResponsePatterns on TodayResponse {
             String? programDayId,
             String? sessionName,
             bool isRest,
+            bool skipped,
             List<MuscleGroup> focus,
             List<TodayExercise> exercises,
             WorkoutSession? activeSession,
@@ -8684,6 +8696,7 @@ extension TodayResponsePatterns on TodayResponse {
             _that.programDayId,
             _that.sessionName,
             _that.isRest,
+            _that.skipped,
             _that.focus,
             _that.exercises,
             _that.activeSession,
@@ -8718,6 +8731,7 @@ extension TodayResponsePatterns on TodayResponse {
             String? programDayId,
             String? sessionName,
             bool isRest,
+            bool skipped,
             List<MuscleGroup> focus,
             List<TodayExercise> exercises,
             WorkoutSession? activeSession,
@@ -8737,6 +8751,7 @@ extension TodayResponsePatterns on TodayResponse {
             _that.programDayId,
             _that.sessionName,
             _that.isRest,
+            _that.skipped,
             _that.focus,
             _that.exercises,
             _that.activeSession,
@@ -8770,6 +8785,7 @@ extension TodayResponsePatterns on TodayResponse {
             String? programDayId,
             String? sessionName,
             bool isRest,
+            bool skipped,
             List<MuscleGroup> focus,
             List<TodayExercise> exercises,
             WorkoutSession? activeSession,
@@ -8789,6 +8805,7 @@ extension TodayResponsePatterns on TodayResponse {
             _that.programDayId,
             _that.sessionName,
             _that.isRest,
+            _that.skipped,
             _that.focus,
             _that.exercises,
             _that.activeSession,
@@ -8812,6 +8829,7 @@ class _TodayResponse implements TodayResponse {
       required this.programDayId,
       required this.sessionName,
       required this.isRest,
+      this.skipped = false,
       required final List<MuscleGroup> focus,
       required final List<TodayExercise> exercises,
       required this.activeSession,
@@ -8837,6 +8855,11 @@ class _TodayResponse implements TodayResponse {
   final String? sessionName;
   @override
   final bool isRest;
+
+  /// ADR-030: today was skipped — no session; the week moved on a day.
+  @override
+  @JsonKey()
+  final bool skipped;
   final List<MuscleGroup> _focus;
   @override
   List<MuscleGroup> get focus {
@@ -8902,6 +8925,7 @@ class _TodayResponse implements TodayResponse {
             (identical(other.sessionName, sessionName) ||
                 other.sessionName == sessionName) &&
             (identical(other.isRest, isRest) || other.isRest == isRest) &&
+            (identical(other.skipped, skipped) || other.skipped == skipped) &&
             const DeepCollectionEquality().equals(other._focus, _focus) &&
             const DeepCollectionEquality()
                 .equals(other._exercises, _exercises) &&
@@ -8926,6 +8950,7 @@ class _TodayResponse implements TodayResponse {
       programDayId,
       sessionName,
       isRest,
+      skipped,
       const DeepCollectionEquality().hash(_focus),
       const DeepCollectionEquality().hash(_exercises),
       activeSession,
@@ -8936,7 +8961,7 @@ class _TodayResponse implements TodayResponse {
 
   @override
   String toString() {
-    return 'TodayResponse(date: $date, dayOfWeek: $dayOfWeek, programId: $programId, programDayId: $programDayId, sessionName: $sessionName, isRest: $isRest, focus: $focus, exercises: $exercises, activeSession: $activeSession, completedSessionId: $completedSessionId, mesocycleWeek: $mesocycleWeek, deload: $deload, neglected: $neglected)';
+    return 'TodayResponse(date: $date, dayOfWeek: $dayOfWeek, programId: $programId, programDayId: $programDayId, sessionName: $sessionName, isRest: $isRest, skipped: $skipped, focus: $focus, exercises: $exercises, activeSession: $activeSession, completedSessionId: $completedSessionId, mesocycleWeek: $mesocycleWeek, deload: $deload, neglected: $neglected)';
   }
 }
 
@@ -8955,6 +8980,7 @@ abstract mixin class _$TodayResponseCopyWith<$Res>
       String? programDayId,
       String? sessionName,
       bool isRest,
+      bool skipped,
       List<MuscleGroup> focus,
       List<TodayExercise> exercises,
       WorkoutSession? activeSession,
@@ -8988,6 +9014,7 @@ class __$TodayResponseCopyWithImpl<$Res>
     Object? programDayId = freezed,
     Object? sessionName = freezed,
     Object? isRest = null,
+    Object? skipped = null,
     Object? focus = null,
     Object? exercises = null,
     Object? activeSession = freezed,
@@ -9020,6 +9047,10 @@ class __$TodayResponseCopyWithImpl<$Res>
       isRest: null == isRest
           ? _self.isRest
           : isRest // ignore: cast_nullable_to_non_nullable
+              as bool,
+      skipped: null == skipped
+          ? _self.skipped
+          : skipped // ignore: cast_nullable_to_non_nullable
               as bool,
       focus: null == focus
           ? _self._focus

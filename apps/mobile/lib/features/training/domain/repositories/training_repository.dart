@@ -14,6 +14,12 @@ abstract class TrainingRepository {
     PatchProgramDayRequest request,
   );
   Future<Result<Program>> rename(String name);
+
+  /// ADR-030: skip today — every day of the week moves one day later.
+  Future<Result<Program>> skipToday();
+
+  /// ADR-030: undo today's skip — every day moves back.
+  Future<Result<Program>> undoSkip();
   Future<Result<List<ProgramTemplate>>> listTemplates();
   Future<Result<TemplatePreview>> previewTemplate(
     String slug,

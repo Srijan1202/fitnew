@@ -13,6 +13,7 @@ import {
   errorEnvelopeSchema,
   progressionDetailSchema,
   progressionParamsSchema,
+  programSchema,
   volumeResponseSchema,
   logSetsRequestSchema,
   patchSessionExerciseRequestSchema,
@@ -67,6 +68,32 @@ export async function workoutRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request) => service.today(requireUserId(request.userId), request.query.dayOfWeek),
+  );
+
+  typed.post(
+    '/training/today/skip',
+    {
+      schema: {
+        summary: 'Skip today (ADR-030): every day of the programme moves one day later; 409 if already skipped, a session is open, or you trained today',
+        tags,
+        security,
+        response: { 200: programSchema, ...errors },
+      },
+    },
+    async (request) => service.skipToday(requireUserId(request.userId)),
+  );
+
+  typed.delete(
+    '/training/today/skip',
+    {
+      schema: {
+        summary: "Undo today's skip: every day moves back one day; 409 if today is not skipped",
+        tags,
+        security,
+        response: { 200: programSchema, ...errors },
+      },
+    },
+    async (request) => service.undoSkip(requireUserId(request.userId)),
   );
 
   typed.post(
