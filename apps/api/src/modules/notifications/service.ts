@@ -95,7 +95,7 @@ export class NotificationService {
       name,
       settings,
       programme,
-      skippedDates: program?.program.skippedOn == null ? [] : [program.program.skippedOn],
+      skippedDates: program === null || program.program.skippedOn === null ? [] : [program.program.skippedOn],
       sessionStarts: sessions.map((s) => s.startedAt),
       completedDates: sessions.filter((s) => s.completedAt !== null).map((s) => localDateOf(s.completedAt!, timeZone)),
       foodLogs,
