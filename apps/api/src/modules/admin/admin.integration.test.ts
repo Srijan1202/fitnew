@@ -321,14 +321,14 @@ describeIfDb('/v1/admin (real Postgres)', { timeout: 60_000 }, () => {
 
   it('flags: set by an admin, audited, served by the public /meta/config (§10.1)', async () => {
     const plain = await user();
-    expect((await call(plain, 'GET', '/meta/config')).json()).toEqual({ flags: {} });
+    expect((await call(plain, 'GET', '/meta/config')).json()).toEqual({ flags: {}, minimumBuild: 0 });
     expect((await call(null, 'GET', '/meta/config')).statusCode).toBe(200);
     expect((await call(admin, 'PUT', '/admin/flags/Bad Key', { enabled: true })).statusCode).toBeGreaterThanOrEqual(400);
     const put = await call(admin, 'PUT', '/admin/flags/describe-meal', { enabled: false, description: 'FITOS AI meal parsing' });
     expect(put.statusCode, put.body).toBe(200);
     await call(admin, 'PUT', '/admin/flags/describe-meal', { enabled: true });
-    expect((await call(plain, 'GET', '/meta/config')).json()).toEqual({ flags: { 'describe-meal': true } });
-    expect((await call(null, 'GET', '/meta/config')).json()).toEqual({ flags: { 'describe-meal': true } });
+    expect((await call(plain, 'GET', '/meta/config')).json()).toEqual({ flags: { 'describe-meal': true }, minimumBuild: 0 });
+    expect((await call(null, 'GET', '/meta/config')).json()).toEqual({ flags: { 'describe-meal': true }, minimumBuild: 0 });
     const list = (await call(admin, 'GET', '/admin/flags')).json() as { items: { key: string; description: string }[] };
     expect(list.items).toEqual([expect.objectContaining({ key: 'describe-meal', description: 'FITOS AI meal parsing' })]);
     expect((await audits('flag.set')).map((a) => a.metadata['enabled'])).toEqual([false, true]);

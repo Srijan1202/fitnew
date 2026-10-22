@@ -39,3 +39,4 @@ export * from './schema/recovery.js';
 export * from './schema/ai.js';
 export * from './schema/notifications.js';
 export * from './schema/admin.js';
+export * from './schema/feedback.js';

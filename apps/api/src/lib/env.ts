@@ -112,6 +112,11 @@ const envSchema = z.object({
   // 12 in development, off elsewhere (hosted, Cloud Scheduler is the trigger:
   // deferred while GCP work is paused). The job itself is dist/jobs/mirror-mess.js.
   MESS_MIRROR_INTERVAL_HOURS: z.coerce.number().min(0).max(168).optional(),
+
+  // Phase 19 (E1, ADR-026) — the oldest app build allowed to run. A build
+  // number below it opens "Update FITOS" and nothing else. 0 (the default)
+  // asks nothing. Served by GET /meta/config.
+  MIN_APP_BUILD: z.coerce.number().int().min(0).default(0),
 }).superRefine((env, ctx) => {
   // Phase 6.7 — a hosted server must not boot on development fallbacks.
   if (!isHostedEnvironment(env.NODE_ENV)) return;

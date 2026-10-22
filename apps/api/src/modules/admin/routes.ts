@@ -47,7 +47,7 @@ import { AdminService } from './service.js';
 
 const idParams = z.object({ id: z.string().uuid() }).strict();
 
-export async function adminRoutes(app: FastifyInstance): Promise<void> {
+export async function adminRoutes(app: FastifyInstance, opts: { minimumAppBuild: number }): Promise<void> {
   const db = app.database.db;
   const service = new AdminService(new AdminRepository(db), new TrainingRepository(db));
   const typed = app.withTypeProvider<ZodTypeProvider>();
@@ -65,7 +65,7 @@ export async function adminRoutes(app: FastifyInstance): Promise<void> {
       tags: ['meta'],
       response: { 200: metaConfigSchema },
     },
-  }, async () => service.metaConfig());
+  }, async () => service.metaConfig(opts.minimumAppBuild));
 
   typed.get('/admin/me', { ...admin, schema: { summary: 'Am I an administrator? (403 if not)', tags, security, response: { 200: adminMeSchema, ...errors } } }, async (request) => ({
     userId: request.userId,

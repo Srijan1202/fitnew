@@ -323,8 +323,8 @@ export class AdminService {
     return { key: row.key, enabled: row.enabled, description: row.description, updatedAt: row.updatedAt.toISOString() };
   }
 
-  async metaConfig(): Promise<{ flags: Record<string, boolean> }> {
-    return { flags: Object.fromEntries((await this.repo.flags()).map((f) => [f.key, f.enabled])) };
+  async metaConfig(minimumBuild: number): Promise<{ flags: Record<string, boolean>; minimumBuild: number }> {
+    return { flags: Object.fromEntries((await this.repo.flags()).map((f) => [f.key, f.enabled])), minimumBuild };
   }
 
   /* ------------------------------------------------------------ support -- */

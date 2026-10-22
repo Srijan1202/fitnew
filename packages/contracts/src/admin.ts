@@ -185,7 +185,11 @@ export const featureFlagListSchema = z.object({ items: z.array(featureFlagSchema
 export const putFlagRequestSchema = z.object({ enabled: z.boolean(), description: z.string().trim().max(300).optional() }).strict();
 export const flagParamsSchema = z.object({ key: flagKeySchema }).strict();
 /** GET /meta/config (§10.1, public): what the app may switch on. The minimum app version is not served yet (BACKLOG E1). */
-export const metaConfigSchema = z.object({ flags: z.record(z.string(), z.boolean()) }).strict();
+/**
+ * The app's start-up config (public, §10.1). `minimumBuild` (Phase 19, E1): a
+ * build below it shows "Update FITOS" and nothing else; 0 asks nothing.
+ */
+export const metaConfigSchema = z.object({ flags: z.record(z.string(), z.boolean()), minimumBuild: z.number().int().min(0) }).strict();
 
 /* ---------------------------------------------------------- support view -- */
 
