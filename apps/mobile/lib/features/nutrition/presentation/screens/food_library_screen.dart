@@ -111,7 +111,7 @@ class _FoodLibraryScreenState extends ConsumerState<FoodLibraryScreen> {
                 onChanged: _onChanged,
               ),
             ),
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             Expanded(
               child: query.isEmpty
                   ? const _Intro()
@@ -169,7 +169,7 @@ class _Intro extends StatelessWidget {
           style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
         ),
         const SizedBox(height: FitSpacing.xl),
-        const Divider(color: FitColors.rule, height: 1),
+        Divider(color: FitColors.rule, height: 1),
         const SizedBox(height: FitSpacing.afterRule),
         const UsdaAttribution(),
       ],
@@ -221,8 +221,7 @@ class _Results extends StatelessWidget {
       key: const ValueKey('food.results'),
       padding: const EdgeInsets.only(bottom: FitSpacing.xl),
       itemCount: items.length,
-      separatorBuilder: (_, __) =>
-          const Divider(color: FitColors.rule, height: 1),
+      separatorBuilder: (_, __) => Divider(color: FitColors.rule, height: 1),
       itemBuilder: (context, i) => FoodRow(result: items[i]),
     );
   }
@@ -287,7 +286,7 @@ class FoodRow extends StatelessWidget {
               ),
               const SizedBox(width: FitSpacing.sm),
               FoodSourceBadge(food: food),
-              const Icon(
+              Icon(
                 Icons.chevron_right,
                 size: 20,
                 color: FitColors.ink60,
@@ -308,8 +307,7 @@ class _ListSkeleton extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
       itemCount: 6,
-      separatorBuilder: (_, __) =>
-          const Divider(color: FitColors.rule, height: 1),
+      separatorBuilder: (_, __) => Divider(color: FitColors.rule, height: 1),
       itemBuilder: (_, i) => Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: FitSpacing.screen,

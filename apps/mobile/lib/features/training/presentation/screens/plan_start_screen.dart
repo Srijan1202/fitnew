@@ -103,7 +103,7 @@ class _Mode extends StatelessWidget {
       key: modeKey,
       onTap: onTap,
       child: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(top: BorderSide(color: FitColors.ink, width: 2)),
         ),
         padding: const EdgeInsets.symmetric(vertical: FitSpacing.lg),
@@ -127,7 +127,7 @@ class _Mode extends StatelessWidget {
               children: <Widget>[
                 Text(action, style: textTheme.titleMedium),
                 const SizedBox(width: FitSpacing.xs),
-                const Icon(Icons.arrow_forward, size: 18, color: FitColors.ink),
+                Icon(Icons.arrow_forward, size: 18, color: FitColors.ink),
               ],
             ),
           ],

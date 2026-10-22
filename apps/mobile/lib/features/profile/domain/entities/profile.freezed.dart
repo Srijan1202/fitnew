@@ -367,6 +367,9 @@ mixin _$UserProfileDetail {
   bool? get isVitStudent;
   MessRef? get mess;
 
+  /// Phase 19 (ADR-027): one of the ten drawn pictures; null = initials.
+  String? get avatarId;
+
   /// Create a copy of UserProfileDetail
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -411,7 +414,9 @@ mixin _$UserProfileDetail {
                 other.onboardingStage == onboardingStage) &&
             (identical(other.isVitStudent, isVitStudent) ||
                 other.isVitStudent == isVitStudent) &&
-            (identical(other.mess, mess) || other.mess == mess));
+            (identical(other.mess, mess) || other.mess == mess) &&
+            (identical(other.avatarId, avatarId) ||
+                other.avatarId == avatarId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -433,11 +438,12 @@ mixin _$UserProfileDetail {
       locale,
       onboardingStage,
       isVitStudent,
-      mess);
+      mess,
+      avatarId);
 
   @override
   String toString() {
-    return 'UserProfileDetail(displayName: $displayName, sex: $sex, birthDate: $birthDate, heightCm: $heightCm, experienceLevel: $experienceLevel, trainingDaysPerWeek: $trainingDaysPerWeek, activityLevel: $activityLevel, preferredSessionMinutes: $preferredSessionMinutes, trainingLocation: $trainingLocation, equipment: $equipment, latestWeightKg: $latestWeightKg, timezone: $timezone, locale: $locale, onboardingStage: $onboardingStage, isVitStudent: $isVitStudent, mess: $mess)';
+    return 'UserProfileDetail(displayName: $displayName, sex: $sex, birthDate: $birthDate, heightCm: $heightCm, experienceLevel: $experienceLevel, trainingDaysPerWeek: $trainingDaysPerWeek, activityLevel: $activityLevel, preferredSessionMinutes: $preferredSessionMinutes, trainingLocation: $trainingLocation, equipment: $equipment, latestWeightKg: $latestWeightKg, timezone: $timezone, locale: $locale, onboardingStage: $onboardingStage, isVitStudent: $isVitStudent, mess: $mess, avatarId: $avatarId)';
   }
 }
 
@@ -463,7 +469,8 @@ abstract mixin class $UserProfileDetailCopyWith<$Res> {
       String locale,
       String onboardingStage,
       bool? isVitStudent,
-      MessRef? mess});
+      MessRef? mess,
+      String? avatarId});
 
   $MessRefCopyWith<$Res>? get mess;
 }
@@ -497,6 +504,7 @@ class _$UserProfileDetailCopyWithImpl<$Res>
     Object? onboardingStage = null,
     Object? isVitStudent = freezed,
     Object? mess = freezed,
+    Object? avatarId = freezed,
   }) {
     return _then(_self.copyWith(
       displayName: freezed == displayName
@@ -563,6 +571,10 @@ class _$UserProfileDetailCopyWithImpl<$Res>
           ? _self.mess
           : mess // ignore: cast_nullable_to_non_nullable
               as MessRef?,
+      avatarId: freezed == avatarId
+          ? _self.avatarId
+          : avatarId // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 
@@ -690,7 +702,8 @@ extension UserProfileDetailPatterns on UserProfileDetail {
             String locale,
             String onboardingStage,
             bool? isVitStudent,
-            MessRef? mess)?
+            MessRef? mess,
+            String? avatarId)?
         $default, {
     required TResult orElse(),
   }) {
@@ -713,7 +726,8 @@ extension UserProfileDetailPatterns on UserProfileDetail {
             _that.locale,
             _that.onboardingStage,
             _that.isVitStudent,
-            _that.mess);
+            _that.mess,
+            _that.avatarId);
       case _:
         return orElse();
     }
@@ -750,7 +764,8 @@ extension UserProfileDetailPatterns on UserProfileDetail {
             String locale,
             String onboardingStage,
             bool? isVitStudent,
-            MessRef? mess)
+            MessRef? mess,
+            String? avatarId)
         $default,
   ) {
     final _that = this;
@@ -772,7 +787,8 @@ extension UserProfileDetailPatterns on UserProfileDetail {
             _that.locale,
             _that.onboardingStage,
             _that.isVitStudent,
-            _that.mess);
+            _that.mess,
+            _that.avatarId);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -808,7 +824,8 @@ extension UserProfileDetailPatterns on UserProfileDetail {
             String locale,
             String onboardingStage,
             bool? isVitStudent,
-            MessRef? mess)?
+            MessRef? mess,
+            String? avatarId)?
         $default,
   ) {
     final _that = this;
@@ -830,7 +847,8 @@ extension UserProfileDetailPatterns on UserProfileDetail {
             _that.locale,
             _that.onboardingStage,
             _that.isVitStudent,
-            _that.mess);
+            _that.mess,
+            _that.avatarId);
       case _:
         return null;
     }
@@ -856,7 +874,8 @@ class _UserProfileDetail implements UserProfileDetail {
       required this.locale,
       required this.onboardingStage,
       this.isVitStudent = null,
-      required this.mess})
+      required this.mess,
+      this.avatarId = null})
       : _equipment = equipment;
   factory _UserProfileDetail.fromJson(Map<String, dynamic> json) =>
       _$UserProfileDetailFromJson(json);
@@ -904,6 +923,11 @@ class _UserProfileDetail implements UserProfileDetail {
   final bool? isVitStudent;
   @override
   final MessRef? mess;
+
+  /// Phase 19 (ADR-027): one of the ten drawn pictures; null = initials.
+  @override
+  @JsonKey()
+  final String? avatarId;
 
   /// Create a copy of UserProfileDetail
   /// with the given fields replaced by the non-null parameter values.
@@ -954,7 +978,9 @@ class _UserProfileDetail implements UserProfileDetail {
                 other.onboardingStage == onboardingStage) &&
             (identical(other.isVitStudent, isVitStudent) ||
                 other.isVitStudent == isVitStudent) &&
-            (identical(other.mess, mess) || other.mess == mess));
+            (identical(other.mess, mess) || other.mess == mess) &&
+            (identical(other.avatarId, avatarId) ||
+                other.avatarId == avatarId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -976,11 +1002,12 @@ class _UserProfileDetail implements UserProfileDetail {
       locale,
       onboardingStage,
       isVitStudent,
-      mess);
+      mess,
+      avatarId);
 
   @override
   String toString() {
-    return 'UserProfileDetail(displayName: $displayName, sex: $sex, birthDate: $birthDate, heightCm: $heightCm, experienceLevel: $experienceLevel, trainingDaysPerWeek: $trainingDaysPerWeek, activityLevel: $activityLevel, preferredSessionMinutes: $preferredSessionMinutes, trainingLocation: $trainingLocation, equipment: $equipment, latestWeightKg: $latestWeightKg, timezone: $timezone, locale: $locale, onboardingStage: $onboardingStage, isVitStudent: $isVitStudent, mess: $mess)';
+    return 'UserProfileDetail(displayName: $displayName, sex: $sex, birthDate: $birthDate, heightCm: $heightCm, experienceLevel: $experienceLevel, trainingDaysPerWeek: $trainingDaysPerWeek, activityLevel: $activityLevel, preferredSessionMinutes: $preferredSessionMinutes, trainingLocation: $trainingLocation, equipment: $equipment, latestWeightKg: $latestWeightKg, timezone: $timezone, locale: $locale, onboardingStage: $onboardingStage, isVitStudent: $isVitStudent, mess: $mess, avatarId: $avatarId)';
   }
 }
 
@@ -1008,7 +1035,8 @@ abstract mixin class _$UserProfileDetailCopyWith<$Res>
       String locale,
       String onboardingStage,
       bool? isVitStudent,
-      MessRef? mess});
+      MessRef? mess,
+      String? avatarId});
 
   @override
   $MessRefCopyWith<$Res>? get mess;
@@ -1043,6 +1071,7 @@ class __$UserProfileDetailCopyWithImpl<$Res>
     Object? onboardingStage = null,
     Object? isVitStudent = freezed,
     Object? mess = freezed,
+    Object? avatarId = freezed,
   }) {
     return _then(_UserProfileDetail(
       displayName: freezed == displayName
@@ -1109,6 +1138,10 @@ class __$UserProfileDetailCopyWithImpl<$Res>
           ? _self.mess
           : mess // ignore: cast_nullable_to_non_nullable
               as MessRef?,
+      avatarId: freezed == avatarId
+          ? _self.avatarId
+          : avatarId // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 

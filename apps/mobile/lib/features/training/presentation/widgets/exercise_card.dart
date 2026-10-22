@@ -56,7 +56,7 @@ class ExerciseCard extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        const Divider(color: FitColors.rule, height: 1),
+        Divider(color: FitColors.rule, height: 1),
         InkWell(
           key: ValueKey('$cardKey.header'),
           onTap: onToggle,
@@ -108,7 +108,7 @@ class ExerciseCard extends ConsumerWidget {
                   child: AnimatedRotation(
                     turns: expanded ? 0.5 : 0,
                     duration: const Duration(milliseconds: 150),
-                    child: const Icon(
+                    child: Icon(
                       Icons.expand_more,
                       size: 22,
                       color: FitColors.ink60,
@@ -148,7 +148,7 @@ class ExerciseCard extends ConsumerWidget {
                                 : null,
                             borderRadius:
                                 const BorderRadius.all(FitRadius.medium),
-                            child: const SizedBox(
+                            child: SizedBox(
                               width: 32,
                               height: 44,
                               child: Icon(

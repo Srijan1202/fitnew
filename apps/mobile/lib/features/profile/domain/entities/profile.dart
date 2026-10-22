@@ -42,6 +42,9 @@ abstract class UserProfileDetail with _$UserProfileDetail {
     /// Screen 6's answer; null before it is answered (Phase 9 on the wire).
     @Default(null) bool? isVitStudent,
     required MessRef? mess,
+
+    /// Phase 19 (ADR-027): one of the ten drawn pictures; null = initials.
+    @Default(null) String? avatarId,
   }) = _UserProfileDetail;
 
   factory UserProfileDetail.fromJson(Map<String, dynamic> json) =>

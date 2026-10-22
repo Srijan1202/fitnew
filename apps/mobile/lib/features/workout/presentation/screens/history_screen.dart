@@ -112,7 +112,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 padding: const EdgeInsets.only(bottom: FitSpacing.xl),
                 itemCount: items.length + (_nextBefore != null ? 1 : 0),
                 separatorBuilder: (_, __) =>
-                    const Divider(color: FitColors.rule, height: 1),
+                    Divider(color: FitColors.rule, height: 1),
                 itemBuilder: (context, i) {
                   if (i == items.length) {
                     return Padding(
@@ -185,7 +185,7 @@ class _Row extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, size: 20, color: FitColors.ink60),
+            Icon(Icons.chevron_right, size: 20, color: FitColors.ink60),
           ],
         ),
       ),

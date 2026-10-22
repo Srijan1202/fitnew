@@ -225,7 +225,7 @@ class _NotificationSettingsScreenState
                     ),
                     const SizedBox(height: FitSpacing.lg),
                     Text('WHAT TO SEND', style: textTheme.labelSmall),
-                    const Divider(color: FitColors.rule, height: 1),
+                    Divider(color: FitColors.rule, height: 1),
                     for (final k in NotifyKind.values)
                       _KindRow(
                         kind: k,
@@ -246,7 +246,7 @@ class _NotificationSettingsScreenState
                       ),
                     const SizedBox(height: FitSpacing.lg),
                     Text('QUIET HOURS', style: textTheme.labelSmall),
-                    const Divider(color: FitColors.rule, height: 1),
+                    Divider(color: FitColors.rule, height: 1),
                     _ClockRow(
                       keyName: 'notify.quietStart',
                       label: 'Nothing after',
@@ -261,7 +261,7 @@ class _NotificationSettingsScreenState
                     ),
                     const SizedBox(height: FitSpacing.lg),
                     Text('COMING UP', style: textTheme.labelSmall),
-                    const Divider(color: FitColors.rule, height: 1),
+                    Divider(color: FitColors.rule, height: 1),
                     if (upcoming.isEmpty)
                       Padding(
                         padding:

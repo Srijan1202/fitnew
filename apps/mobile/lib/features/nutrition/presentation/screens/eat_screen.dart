@@ -273,7 +273,7 @@ class _Header extends ConsumerWidget {
             ),
           ],
         ),
-        const Divider(color: FitColors.rule, height: 1),
+        Divider(color: FitColors.rule, height: 1),
       ],
     );
   }
@@ -452,7 +452,7 @@ class _MealSection extends ConsumerWidget {
       key: ValueKey('eat.slot.${slot.wire}'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        const Divider(color: FitColors.rule, height: 1),
+        Divider(color: FitColors.rule, height: 1),
         Row(
           children: <Widget>[
             Icon(mealSlotIcon(slot), size: 20, color: FitColors.ink),
@@ -473,7 +473,7 @@ class _MealSection extends ConsumerWidget {
                 key: ValueKey('eat.save.${slot.wire}'),
                 tooltip: 'Save as meal',
                 onPressed: () => _saveMeal(context, ref),
-                icon: const Icon(
+                icon: Icon(
                   Icons.bookmark_add_outlined,
                   size: 20,
                   color: FitColors.ink60,
@@ -656,7 +656,7 @@ class _LogEntry extends ConsumerWidget {
           IconButton(
             key: ValueKey('log.${log.clientLogId}.delete'),
             tooltip: 'Delete entry',
-            icon: const Icon(Icons.close, size: 18, color: FitColors.ink35),
+            icon: Icon(Icons.close, size: 18, color: FitColors.ink35),
             onPressed: () async {
               if (await _confirmDelete(context)) {
                 await ref
@@ -716,7 +716,7 @@ class _PendingEntry extends ConsumerWidget {
         IconButton(
           key: ValueKey('pending.${pending.clientLogId}.delete'),
           tooltip: 'Delete entry',
-          icon: const Icon(Icons.close, size: 18, color: FitColors.ink35),
+          icon: Icon(Icons.close, size: 18, color: FitColors.ink35),
           onPressed: () async {
             if (await _confirmDelete(context)) {
               await ref

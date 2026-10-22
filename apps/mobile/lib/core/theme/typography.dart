@@ -13,7 +13,7 @@ abstract final class FitTypography {
   static const String metricFamily = 'Anton';
   static const String bodyFamily = 'Archivo';
 
-  static const TextTheme textTheme = TextTheme(
+  static TextTheme textTheme = TextTheme(
     // Metrics — Anton, large numbers only, 26–88px.
     displayLarge: TextStyle(
       fontFamily: metricFamily,

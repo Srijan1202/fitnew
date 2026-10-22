@@ -176,7 +176,7 @@ class MessScreen extends ConsumerWidget {
           meal: meal,
           key: ValueKey('mess.meal.${meal.slot.wire}'),
         ),
-        const Divider(color: FitColors.rule, height: 1),
+        Divider(color: FitColors.rule, height: 1),
         // Ambient items (bread, tea, jam…) after the meal's own dishes.
         for (final dish in <MessDish>[
           ...meal.dishes.where((d) => !d.isAmbient),

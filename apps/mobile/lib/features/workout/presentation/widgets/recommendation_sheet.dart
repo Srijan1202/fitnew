@@ -85,7 +85,7 @@ class RecommendationSheet extends ConsumerWidget {
                 style: textTheme.bodyLarge,
               ),
             const SizedBox(height: FitSpacing.md),
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             const SizedBox(height: FitSpacing.md),
             Text('LAST THREE SESSIONS', style: textTheme.labelSmall),
             const SizedBox(height: FitSpacing.xs),

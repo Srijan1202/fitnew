@@ -1,3 +1,4 @@
+import 'weekly_report_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -124,6 +125,9 @@ class ProgressScreen extends ConsumerWidget {
                           .read(progressWindowProvider.notifier)
                           .set(v.first),
                     ),
+                    const SizedBox(height: FitSpacing.md),
+                    // Phase 19 (ADR-027): the weekly report, premium.
+                    const WeeklyReportEntry(),
                   ],
                 ),
               ),
@@ -139,10 +143,10 @@ class ProgressScreen extends ConsumerWidget {
                   ),
                 ),
               if (async.isLoading && s == null)
-                const Padding(
-                  padding: EdgeInsets.all(FitSpacing.screen),
+                Padding(
+                  padding: const EdgeInsets.all(FitSpacing.screen),
                   child: LinearProgressIndicator(
-                    key: ValueKey('progress.loading'),
+                    key: const ValueKey('progress.loading'),
                     color: FitColors.ink,
                     backgroundColor: FitColors.paper2,
                   ),
@@ -220,7 +224,7 @@ class ProgressScreen extends ConsumerWidget {
 /// §6.2: corners of 2 px and an ink outline for this page's secondary buttons.
 final ButtonStyle _squareOutline = OutlinedButton.styleFrom(
   foregroundColor: FitColors.ink,
-  side: const BorderSide(color: FitColors.ink),
+  side: BorderSide(color: FitColors.ink),
   shape: const RoundedRectangleBorder(
     borderRadius: BorderRadius.all(FitRadius.small),
   ),
@@ -254,7 +258,7 @@ class _SectionHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Divider(color: FitColors.rule, height: 1),
+          Divider(color: FitColors.rule, height: 1),
           const SizedBox(height: FitSpacing.afterRule),
           _Pad(
             child: Column(
@@ -359,14 +363,14 @@ class _StatGrid extends StatelessWidget {
     final rows = <Widget>[];
     for (var i = 0; i < tiles.length; i += 2) {
       rows
-        ..add(const Divider(color: FitColors.rule, height: 1))
+        ..add(Divider(color: FitColors.rule, height: 1))
         ..add(
           IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 Expanded(child: tiles[i]),
-                const VerticalDivider(color: FitColors.rule, width: 1),
+                VerticalDivider(color: FitColors.rule, width: 1),
                 Expanded(
                   child: i + 1 < tiles.length ? tiles[i + 1] : const SizedBox(),
                 ),
@@ -375,7 +379,7 @@ class _StatGrid extends StatelessWidget {
           ),
         );
     }
-    rows.add(const Divider(color: FitColors.rule, height: 1));
+    rows.add(Divider(color: FitColors.rule, height: 1));
     return Column(children: rows);
   }
 }
@@ -446,9 +450,9 @@ class _Panel extends StatelessWidget {
       key: panelKey,
       width: double.infinity,
       padding: const EdgeInsets.all(FitSpacing.md),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: FitColors.paper2,
-        borderRadius: BorderRadius.all(FitRadius.small),
+        borderRadius: const BorderRadius.all(FitRadius.small),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -709,7 +713,7 @@ class _StrengthSectionState extends State<_StrengthSection> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         for (final b in visible) ...<Widget>[
-          const Divider(color: FitColors.rule, height: 1),
+          Divider(color: FitColors.rule, height: 1),
           _Pad(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm + 4),
@@ -751,7 +755,7 @@ class _StrengthSectionState extends State<_StrengthSection> {
             ),
           ),
         ],
-        const Divider(color: FitColors.rule, height: 1),
+        Divider(color: FitColors.rule, height: 1),
         if (lifts.length > _StrengthSection.shown)
           Align(
             alignment: Alignment.centerLeft,
@@ -1082,7 +1086,7 @@ class _RecordsSectionState extends State<_RecordsSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          const Divider(color: FitColors.rule, height: 1),
+          Divider(color: FitColors.rule, height: 1),
           InkWell(
             key: const ValueKey('progress.records.toggle'),
             onTap: prs.isEmpty ? null : () => setState(() => _open = !_open),
@@ -1128,7 +1132,7 @@ class _RecordsSectionState extends State<_RecordsSection> {
           ),
           if (_open)
             for (final p in prs) ...<Widget>[
-              const Divider(
+              Divider(
                 color: FitColors.rule,
                 height: 1,
                 indent: FitSpacing.screen,
@@ -1142,8 +1146,8 @@ class _RecordsSectionState extends State<_RecordsSection> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    const Padding(
-                      padding: EdgeInsets.only(top: 2),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
                       child: Icon(
                         Icons.emoji_events_outlined,
                         size: 18,
@@ -1167,7 +1171,7 @@ class _RecordsSectionState extends State<_RecordsSection> {
                 ),
               ),
             ],
-          const Divider(color: FitColors.rule, height: 1),
+          Divider(color: FitColors.rule, height: 1),
         ],
       ),
     );

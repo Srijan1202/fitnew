@@ -26,7 +26,7 @@ class SplashGateScreen extends StatelessWidget {
               const FitosWordmark(),
               if (Env.configurationProblem case final problem?) ...<Widget>[
                 const SizedBox(height: FitSpacing.lg),
-                const Divider(color: FitColors.rule, height: 1),
+                Divider(color: FitColors.rule, height: 1),
                 const SizedBox(height: FitSpacing.afterRule),
                 Text(
                   'This hosted build has an unusable server address.',
@@ -40,7 +40,7 @@ class SplashGateScreen extends StatelessWidget {
                 ),
               ] else if (!Env.firebaseConfigured) ...<Widget>[
                 const SizedBox(height: FitSpacing.lg),
-                const Divider(color: FitColors.rule, height: 1),
+                Divider(color: FitColors.rule, height: 1),
                 const SizedBox(height: FitSpacing.afterRule),
                 Text(
                   'Firebase is not configured for this build.',

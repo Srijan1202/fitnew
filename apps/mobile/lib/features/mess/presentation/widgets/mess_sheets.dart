@@ -466,11 +466,11 @@ class _MessPicker extends ConsumerWidget {
                       contentPadding: EdgeInsets.zero,
                       title: Text(m.messLabel),
                       trailing: m.code == currentCode
-                          ? const Icon(Icons.check, color: FitColors.pine)
+                          ? Icon(Icons.check, color: FitColors.pine)
                           : null,
                       onTap: () => Navigator.of(context).pop(MessChoice(m)),
                     ),
-                  const Divider(color: FitColors.rule, height: 1),
+                  Divider(color: FitColors.rule, height: 1),
                 ],
                 if (allowNone)
                   ListTile(

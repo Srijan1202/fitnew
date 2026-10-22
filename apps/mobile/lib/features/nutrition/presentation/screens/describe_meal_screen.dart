@@ -1,3 +1,4 @@
+import '../../../premium/presentation/premium_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -90,6 +91,11 @@ class _DescribeMealScreenState extends ConsumerState<DescribeMealScreen> {
     if (text.length < 2 || _reading) return;
     FocusScope.of(context).unfocus();
     // Phase 17: FITOS AI is its own consent (asked once, before first use).
+    // Phase 19: FITOS AI is premium.
+    if (!await ensurePremium(context, ref, feature: 'Describe your meal') ||
+        !mounted) {
+      return;
+    }
     if (!await ensureAiConsent(context, ref) || !mounted) return;
     setState(() {
       _reading = true;
@@ -251,7 +257,7 @@ class _DescribeMealScreenState extends ConsumerState<DescribeMealScreen> {
               const SizedBox(height: FitSpacing.lg),
               Text('CHECK BEFORE ADDING', style: textTheme.labelSmall),
               const SizedBox(height: FitSpacing.xs),
-              const Divider(color: FitColors.rule, height: 1),
+              Divider(color: FitColors.rule, height: 1),
               if (lines.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
@@ -328,7 +334,7 @@ class _LineTile extends StatelessWidget {
             : (item.phrase, 'NOT FOUND', FitColors.oxide);
     return DecoratedBox(
       key: ValueKey('describe.item.$index'),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: FitColors.rule)),
       ),
       child: Padding(
@@ -345,8 +351,8 @@ class _LineTile extends StatelessWidget {
                       shape: const RoundedRectangleBorder(),
                       onChanged: (v) => onInclude(v ?? false),
                     )
-                  : const Padding(
-                      padding: EdgeInsets.only(top: FitSpacing.sm),
+                  : Padding(
+                      padding: const EdgeInsets.only(top: FitSpacing.sm),
                       child: Icon(Icons.error_outline, color: FitColors.oxide),
                     ),
             ),

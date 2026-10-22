@@ -25,7 +25,7 @@ class HairlineSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const Divider(color: FitColors.rule, thickness: 1, height: 1),
+        Divider(color: FitColors.rule, thickness: 1, height: 1),
         const SizedBox(height: FitSpacing.afterRule),
         if (label != null) ...<Widget>[
           Text(

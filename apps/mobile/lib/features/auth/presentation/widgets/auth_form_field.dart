@@ -61,16 +61,16 @@ class AuthFormField extends StatelessWidget {
           decoration: InputDecoration(
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
-            enabledBorder: const UnderlineInputBorder(
+            enabledBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: FitColors.rule),
             ),
-            focusedBorder: const UnderlineInputBorder(
+            focusedBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: FitColors.ink, width: 1.5),
             ),
-            errorBorder: const UnderlineInputBorder(
+            errorBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: FitColors.oxide),
             ),
-            focusedErrorBorder: const UnderlineInputBorder(
+            focusedErrorBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: FitColors.oxide, width: 1.5),
             ),
             errorStyle: textTheme.bodyMedium?.copyWith(color: FitColors.oxide),
@@ -84,11 +84,11 @@ class AuthFormField extends StatelessWidget {
 /// A single line of feedback beneath a form. Oxide for failures, pine for
 /// confirmations. States what happened and what to do (§6.6), no more.
 class AuthFeedback extends StatelessWidget {
-  const AuthFeedback.error(this.text, {super.key}) : _color = FitColors.oxide;
-  const AuthFeedback.success(this.text, {super.key}) : _color = FitColors.pine;
+  const AuthFeedback.error(this.text, {super.key}) : _success = false;
+  const AuthFeedback.success(this.text, {super.key}) : _success = true;
 
   final String text;
-  final Color _color;
+  final bool _success;
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +96,10 @@ class AuthFeedback extends StatelessWidget {
       liveRegion: true,
       child: Text(
         text,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: _color),
+        style: Theme.of(context)
+            .textTheme
+            .bodyMedium
+            ?.copyWith(color: _success ? FitColors.pine : FitColors.oxide),
       ),
     );
   }

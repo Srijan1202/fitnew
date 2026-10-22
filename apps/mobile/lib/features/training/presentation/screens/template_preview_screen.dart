@@ -121,7 +121,7 @@ class _TemplatePreviewScreenState extends ConsumerState<TemplatePreviewScreen> {
                       ),
                     ),
                     for (final day in preview.days) _PreviewDayRow(day: day),
-                    const Divider(color: FitColors.rule, height: 1),
+                    Divider(color: FitColors.rule, height: 1),
                     if (_failure != null)
                       Padding(
                         padding: const EdgeInsets.all(FitSpacing.screen),
@@ -131,7 +131,7 @@ class _TemplatePreviewScreenState extends ConsumerState<TemplatePreviewScreen> {
                 ),
               ),
               Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   border: Border(top: BorderSide(color: FitColors.rule)),
                 ),
                 padding: const EdgeInsets.fromLTRB(
@@ -153,7 +153,7 @@ class _TemplatePreviewScreenState extends ConsumerState<TemplatePreviewScreen> {
                       key: const ValueKey('template.use'),
                       onPressed: _busy ? null : _apply,
                       child: _busy
-                          ? const SizedBox.square(
+                          ? SizedBox.square(
                               dimension: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
@@ -185,7 +185,7 @@ class _PreviewDayRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const Divider(color: FitColors.rule, height: 1),
+        Divider(color: FitColors.rule, height: 1),
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: FitSpacing.screen,
@@ -269,7 +269,7 @@ class _PreviewSkeleton extends StatelessWidget {
           Container(width: 220, height: 28, color: FitColors.paper2),
           const SizedBox(height: FitSpacing.lg),
           for (var i = 0; i < 5; i++) ...<Widget>[
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             const SizedBox(height: FitSpacing.md),
             Container(width: 260, height: 16, color: FitColors.paper2),
             const SizedBox(height: FitSpacing.md),

@@ -1,6 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fitos/features/premium/data/premium_api.dart';
+import 'package:fitos/features/premium/domain/avatars.dart';
+import 'package:fitos/features/premium/domain/premium.dart';
+import '../support/fake_premium_api.dart';
 import 'package:fitos/core/config/app_config.dart';
 import 'package:fitos/features/feedback/data/feedback_api.dart';
 import 'package:fitos/features/ai/data/ai_api.dart';
@@ -2528,6 +2532,77 @@ void main() {
       final back = AppConfig.fromJson(c.toJson());
       expect(back.flags, c.flags);
       expect(back.minimumBuild, c.minimumBuild);
+    });
+  });
+
+  group('Premium (Phase 19)', () {
+    test('GET /premium: the status and the latest request, every field',
+        () async {
+      final api = FakePremiumApi()..approve(note: 'ok');
+      final status = (await api.status())
+          .when(ok: (s) => s, err: (_) => throw StateError('no'));
+      final schema = schemaOf('/premium', 'get');
+      expect(status.toJson().keys.toSet(), keysOf(schema));
+      final request = properties(schema)['request'] as Map<String, dynamic>;
+      final requestSchema = (request['anyOf'] as List<dynamic>?)
+              ?.cast<Map<String, dynamic>>()
+              .firstWhere((m) => m.containsKey('properties')) ??
+          request;
+      expect(status.request!.toJson().keys.toSet(), keysOf(requestSchema));
+      expect(
+        PremiumRequestStatus.values.map((s) => s.wire).toList(),
+        enumOf(properties(requestSchema)['status'] as Map<String, dynamic>),
+      );
+    });
+
+    test(
+        'POST /premium/request and PUT /user/avatar send exactly the accepted properties',
+        () {
+      expect(
+        DioPremiumApi.requestJson(message: 'please').keys.toSet(),
+        keysOf(schemaOf('/premium/request', 'post', request: true)),
+      );
+      final avatar = schemaOf('/user/avatar', 'put', request: true);
+      expect(DioPremiumApi.avatarJson('runner').keys.toSet(), keysOf(avatar));
+    });
+
+    test(
+        'the ten pictures are the server\'s, in its order; the last three are premium',
+        () {
+      final avatar =
+          properties(schemaOf('/user/avatar', 'put', request: true))['avatarId']
+              as Map<String, dynamic>;
+      final options = (avatar['anyOf'] as List<dynamic>?)
+              ?.cast<Map<String, dynamic>>()
+              .firstWhere((m) => m.containsKey('enum')) ??
+          avatar;
+      expect(
+        kAvatars.map((a) => a.id).toList(),
+        (options['enum'] as List<dynamic>).cast<String>(),
+      );
+      expect(
+        kAvatars.where((a) => a.premium).map((a) => a.id),
+        ['crown', 'flame', 'trophy'],
+      );
+    });
+
+    test('GET /progress/weekly: the report has the documented sections', () {
+      expect(
+        keysOf(schemaOf('/progress/weekly', 'get')),
+        {
+          'isoWeek',
+          'from',
+          'to',
+          'complete',
+          'weeks',
+          'training',
+          'volume',
+          'prs',
+          'nutrition',
+          'weight',
+          'highlights',
+        },
+      );
     });
   });
 

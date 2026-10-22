@@ -192,7 +192,7 @@ class _FoodPreferencesScreenState extends ConsumerState<FoodPreferencesScreen> {
                     }),
                     onSeverity: (s) => setState(() => _allergies[a] = s),
                   ),
-                  const Divider(color: FitColors.rule, height: 1),
+                  Divider(color: FitColors.rule, height: 1),
                 ],
                 const SizedBox(height: FitSpacing.md),
                 Text(

@@ -66,7 +66,7 @@ class OnboardingStep extends StatelessWidget {
                       Text(lede!, style: textTheme.bodyMedium),
                     ],
                     const SizedBox(height: FitSpacing.lg),
-                    const Divider(color: FitColors.rule, height: 1),
+                    Divider(color: FitColors.rule, height: 1),
                     const SizedBox(height: FitSpacing.afterRule),
                     child,
                     if (failure != null) ...<Widget>[
@@ -97,7 +97,7 @@ class OnboardingStep extends StatelessWidget {
                   FilledButton(
                     onPressed: busy || !canContinue ? null : onContinue,
                     child: busy
-                        ? const SizedBox.square(
+                        ? SizedBox.square(
                             dimension: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
@@ -151,7 +151,7 @@ class ChoiceList<T> extends StatelessWidget {
             subtitle: blurb?.call(option),
             textTheme: textTheme,
           ),
-          const Divider(color: FitColors.rule, height: 1),
+          Divider(color: FitColors.rule, height: 1),
         ],
       ],
     );
@@ -188,7 +188,7 @@ class MultiChoiceList<T> extends StatelessWidget {
             title: label(option),
             textTheme: textTheme,
           ),
-          const Divider(color: FitColors.rule, height: 1),
+          Divider(color: FitColors.rule, height: 1),
         ],
       ],
     );

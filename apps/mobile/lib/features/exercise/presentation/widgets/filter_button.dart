@@ -51,7 +51,7 @@ class FilterButton extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: FitSpacing.xs),
-              const Icon(Icons.expand_more, size: 18, color: FitColors.ink60),
+              Icon(Icons.expand_more, size: 18, color: FitColors.ink60),
             ],
           ),
         ),

@@ -92,9 +92,9 @@ class _DeloadPanelState extends ConsumerState<DeloadPanel> {
         return Container(
           key: const ValueKey('deload.offer'),
           padding: const EdgeInsets.all(FitSpacing.md),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: FitColors.paper2,
-            borderRadius: BorderRadius.all(FitRadius.medium),
+            borderRadius: const BorderRadius.all(FitRadius.medium),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

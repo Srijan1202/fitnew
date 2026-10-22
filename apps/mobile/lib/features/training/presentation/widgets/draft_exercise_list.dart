@@ -89,7 +89,7 @@ class _Row extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: FitColors.paper,
         border: Border(bottom: BorderSide(color: FitColors.rule)),
       ),
@@ -99,7 +99,7 @@ class _Row extends StatelessWidget {
           ReorderableDragStartListener(
             index: index,
             enabled: enabled,
-            child: const SizedBox(
+            child: SizedBox(
               width: 44,
               height: 44,
               child: Icon(Icons.drag_handle, size: 20, color: FitColors.ink60),
@@ -120,7 +120,7 @@ class _Row extends StatelessWidget {
           IconButton(
             tooltip: 'Remove ${draft.name}',
             onPressed: enabled ? onRemove : null,
-            icon: const Icon(Icons.close, size: 18, color: FitColors.ink60),
+            icon: Icon(Icons.close, size: 18, color: FitColors.ink60),
           ),
         ],
       ),

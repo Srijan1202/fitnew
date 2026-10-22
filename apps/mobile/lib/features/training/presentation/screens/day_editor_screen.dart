@@ -171,7 +171,7 @@ class _DayEditorScreenState extends ConsumerState<DayEditorScreen> {
               ),
             ),
             Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(top: BorderSide(color: FitColors.rule)),
               ),
               padding: const EdgeInsets.fromLTRB(
@@ -187,7 +187,7 @@ class _DayEditorScreenState extends ConsumerState<DayEditorScreen> {
                     key: const ValueKey('day.save'),
                     onPressed: _busy || draft.isEmpty ? null : _save,
                     child: _busy
-                        ? const SizedBox.square(
+                        ? SizedBox.square(
                             dimension: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,

@@ -70,7 +70,7 @@ class TemplateLibraryScreen extends ConsumerWidget {
                 ),
               ),
               for (final t in templates) _TemplateRow(template: t),
-              const Divider(color: FitColors.rule, height: 1),
+              Divider(color: FitColors.rule, height: 1),
             ],
           ),
         ),
@@ -93,7 +93,7 @@ class _TemplateRow extends StatelessWidget {
     };
     return Column(
       children: <Widget>[
-        const Divider(color: FitColors.rule, height: 1),
+        Divider(color: FitColors.rule, height: 1),
         InkWell(
           key: ValueKey('template.${t.slug}'),
           onTap: () => context.push(Routes.planTemplate(t.slug)),
@@ -142,8 +142,8 @@ class _TemplateRow extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: FitSpacing.sm),
-                const Padding(
-                  padding: EdgeInsets.only(top: 2),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
                   child: Icon(
                     Icons.arrow_forward,
                     size: 18,
@@ -174,7 +174,7 @@ class _LibrarySkeleton extends StatelessWidget {
           Container(width: 240, height: 28, color: FitColors.paper2),
           const SizedBox(height: FitSpacing.lg),
           for (var i = 0; i < 6; i++) ...<Widget>[
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             const SizedBox(height: FitSpacing.md),
             Container(width: 200, height: 18, color: FitColors.paper2),
             const SizedBox(height: FitSpacing.md),

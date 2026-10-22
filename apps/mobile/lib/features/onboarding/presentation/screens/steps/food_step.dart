@@ -113,7 +113,7 @@ class _FoodStepState extends State<FoodStep> {
               onToggle: () => _toggle(a),
               onSeverity: (s) => setState(() => _allergies[a] = s),
             ),
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
           ],
         ],
       ),
@@ -190,8 +190,8 @@ class AllergyRow extends StatelessWidget {
                     labelStyle: textTheme.bodyMedium?.copyWith(
                       color: s == severity ? FitColors.paper : FitColors.ink,
                     ),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(FitRadius.small),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: const BorderRadius.all(FitRadius.small),
                       side: BorderSide(color: FitColors.ink),
                     ),
                     showCheckmark: false,

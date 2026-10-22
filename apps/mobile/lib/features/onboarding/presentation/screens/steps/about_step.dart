@@ -178,7 +178,7 @@ class _AboutStepState extends State<AboutStep> {
               onTap: _busy ? null : _pickDate,
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   border: Border(bottom: BorderSide(color: FitColors.rule)),
                 ),
                 child: Text(
@@ -212,7 +212,7 @@ class _AboutStepState extends State<AboutStep> {
               enabled: !_busy,
             ),
             const SizedBox(height: FitSpacing.lg),
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             const SizedBox(height: FitSpacing.afterRule),
             _ConsentRow(
               checked: _consented,

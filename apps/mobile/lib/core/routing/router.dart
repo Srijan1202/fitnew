@@ -14,6 +14,7 @@ import '../../features/exercise/presentation/screens/exercise_browser_screen.dar
 import '../../features/exercise/presentation/screens/exercise_detail_screen.dart';
 import '../../features/mess/presentation/mess_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
+import '../../features/progress/presentation/weekly_report_screen.dart';
 import '../../features/profile/presentation/screens/food_preferences_screen.dart';
 import '../../features/nutrition/domain/entities/food.dart';
 import '../../features/nutrition/presentation/screens/custom_food_screen.dart';
@@ -84,6 +85,7 @@ abstract final class Routes {
 
   /// Phase 12: Progress & Recovery (the tab that was Market).
   static const String progress = '/progress';
+  static const String weeklyReport = '/progress/weekly';
 
   // Food library (Phase 7) and logging (Phase 8); root navigator, the bar
   // is hidden. `/nutrition` itself is EAT.
@@ -386,6 +388,14 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
                 path: Routes.progress,
                 name: 'progress',
                 builder: (context, state) => const ProgressScreen(),
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: 'weekly',
+                    name: 'weekly-report',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const WeeklyReportScreen(),
+                  ),
+                ],
               ),
             ],
           ),

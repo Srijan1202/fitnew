@@ -162,7 +162,7 @@ class _Detail extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            const Icon(
+                            Icon(
                               Icons.arrow_forward,
                               size: 18,
                               color: FitColors.ink60,
@@ -171,7 +171,7 @@ class _Detail extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const Divider(color: FitColors.rule, height: 1),
+                    Divider(color: FitColors.rule, height: 1),
                   ],
                 ],
               ),

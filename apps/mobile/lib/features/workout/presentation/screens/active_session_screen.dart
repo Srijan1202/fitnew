@@ -427,7 +427,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
             const SyncPill(),
             PopupMenuButton<String>(
               key: const ValueKey('session.menu'),
-              icon: const Icon(Icons.more_horiz, color: FitColors.ink),
+              icon: Icon(Icons.more_horiz, color: FitColors.ink),
               onSelected: (v) {
                 switch (v) {
                   case 'add':
@@ -472,7 +472,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
               for (var i = 0; i < session.exercises.length; i++)
                 _card(session, i, repo),
               if (session.exercises.isNotEmpty) ...<Widget>[
-                const Divider(color: FitColors.rule, height: 1),
+                Divider(color: FitColors.rule, height: 1),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(
                     FitSpacing.screen,

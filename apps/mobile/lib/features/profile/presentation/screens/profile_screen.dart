@@ -1,3 +1,8 @@
+import '../../../premium/presentation/avatar_picker.dart';
+import '../../../premium/presentation/premium_card.dart';
+import '../../../premium/presentation/premium_providers.dart';
+import '../../../premium/presentation/profile_avatar.dart';
+import '../../../premium/presentation/theme_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -66,11 +71,35 @@ class ProfileScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text('PROFILE', style: textTheme.labelSmall),
-                const SizedBox(height: FitSpacing.xs),
-                Text(
-                  view.goal.goal.goalType.label,
-                  style: textTheme.displaySmall,
+                Row(
+                  children: <Widget>[
+                    // Phase 19 (ADR-027): the picture — tap to change it.
+                    InkWell(
+                      key: const ValueKey('profile.avatar'),
+                      customBorder: const CircleBorder(),
+                      onTap: () => showAvatarPicker(context),
+                      child: ProfileAvatar(
+                        avatarId: view.profile.avatarId,
+                        name: view.profile.displayName,
+                        premium: ref.watch(isPremiumProvider) ?? false,
+                        size: 64,
+                      ),
+                    ),
+                    const SizedBox(width: FitSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text('PROFILE', style: textTheme.labelSmall),
+                          const SizedBox(height: FitSpacing.xs),
+                          Text(
+                            view.goal.goal.goalType.label,
+                            style: textTheme.displaySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: FitSpacing.lg),
                 if (view.goal.targets != null) ...<Widget>[
@@ -116,6 +145,10 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: FitSpacing.xl),
+                const PremiumCard(),
+                const SizedBox(height: FitSpacing.md),
+                const ThemePicker(),
+                const SizedBox(height: FitSpacing.lg),
                 OutlinedButton(
                   key: const ValueKey('profile.notifications'),
                   onPressed: () => context.push(Routes.notifications),
@@ -214,7 +247,7 @@ Future<void> _signOut(BuildContext context, WidgetRef ref) async {
 
 final _outlined = OutlinedButton.styleFrom(
   foregroundColor: FitColors.ink,
-  side: const BorderSide(color: FitColors.ink),
+  side: BorderSide(color: FitColors.ink),
   minimumSize: const Size(88, 48),
   shape: const RoundedRectangleBorder(
     borderRadius: BorderRadius.all(FitRadius.small),
@@ -295,7 +328,7 @@ class _Facts extends ConsumerWidget {
                 ],
               ),
             ),
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
           ] else ...<Widget>[
             Padding(
               padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
@@ -310,14 +343,14 @@ class _Facts extends ConsumerWidget {
                 ],
               ),
             ),
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
           ],
         // Phase 9 (owner D13): the mess by name, changeable here.
         MessSettingRow(mess: profile.mess),
-        const Divider(color: FitColors.rule, height: 1),
+        Divider(color: FitColors.rule, height: 1),
         // Phase 10: diet and allergies — the hard rules for suggestions.
         const FoodSettingRow(),
-        const Divider(color: FitColors.rule, height: 1),
+        Divider(color: FitColors.rule, height: 1),
       ],
     );
   }

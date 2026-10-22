@@ -2,6 +2,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fitos/core/config/app_config.dart';
 import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/features/feedback/presentation/feedback_screen.dart';
+import 'package:fitos/features/premium/presentation/premium_providers.dart';
+import 'package:fitos/features/progress/presentation/weekly_report_screen.dart';
 import 'package:fitos/features/ai/presentation/controllers/ai_providers.dart';
 import 'package:fitos/features/mess/presentation/mess_providers.dart';
 import 'package:fitos/features/notifications/presentation/notification_coordinator.dart';
@@ -17,6 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_ai_api.dart';
 import 'fake_feedback_api.dart';
+import 'fake_premium_api.dart';
 import 'fake_food_log_api.dart';
 import 'fake_mess_api.dart';
 import 'fake_notifications.dart';
@@ -45,6 +48,8 @@ List<Override> workoutOverrides(
   FakeFeedbackApi? feedback,
   FakeMetaApi? meta,
   int appBuild = 4,
+  FakePremiumApi? premium,
+  FakeWeeklyReportApi? weekly,
 }) {
   SharedPreferences.setMockInitialValues(const {});
   return [
@@ -84,5 +89,8 @@ List<Override> workoutOverrides(
     feedbackApiProvider.overrideWithValue(feedback ?? FakeFeedbackApi()),
     metaApiProvider.overrideWithValue(meta ?? FakeMetaApi()),
     appBuildProvider.overrideWith((_) async => appBuild),
+    // Phase 19 (ADR-027): free unless a test says; a scripted weekly report.
+    premiumApiProvider.overrideWithValue(premium ?? FakePremiumApi()),
+    weeklyReportApiProvider.overrideWithValue(weekly ?? FakeWeeklyReportApi()),
   ];
 }

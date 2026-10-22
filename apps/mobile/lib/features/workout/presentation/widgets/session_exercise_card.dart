@@ -119,7 +119,7 @@ class SessionExerciseCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        const Divider(color: FitColors.rule, height: 1),
+        Divider(color: FitColors.rule, height: 1),
         InkWell(
           key: ValueKey('$key.header'),
           onTap: onToggle,
@@ -212,7 +212,7 @@ class SessionExerciseCard extends StatelessWidget {
                   child: AnimatedRotation(
                     turns: expanded ? 0.5 : 0,
                     duration: const Duration(milliseconds: 150),
-                    child: const Icon(
+                    child: Icon(
                       Icons.expand_more,
                       size: 22,
                       color: FitColors.ink60,

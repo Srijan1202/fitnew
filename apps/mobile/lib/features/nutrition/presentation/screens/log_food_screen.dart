@@ -232,7 +232,7 @@ class _DescribeEntry extends StatelessWidget {
           padding: const EdgeInsets.all(FitSpacing.md),
           child: Row(
             children: <Widget>[
-              const Icon(Icons.auto_awesome_outlined, color: FitColors.ink),
+              Icon(Icons.auto_awesome_outlined, color: FitColors.ink),
               const SizedBox(width: FitSpacing.md),
               Expanded(
                 child: Column(
@@ -247,7 +247,7 @@ class _DescribeEntry extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: FitColors.ink60),
+              Icon(Icons.chevron_right, color: FitColors.ink60),
             ],
           ),
         ),
@@ -409,7 +409,7 @@ class LogFoodRow extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.add_circle_outline, color: FitColors.ink60),
+              Icon(Icons.add_circle_outline, color: FitColors.ink60),
             ],
           ),
         ),
@@ -555,7 +555,7 @@ List<Widget> _recentSlivers(
         SliverList.separated(
           itemCount: value.value.length,
           separatorBuilder: (_, __) =>
-              const Divider(color: FitColors.rule, height: 1),
+              Divider(color: FitColors.rule, height: 1),
           itemBuilder: (_, i) {
             final r = value.value[i];
             return LogFoodRow(
@@ -706,7 +706,7 @@ class _SearchPaneState extends ConsumerState<_SearchPane> {
                   key: const ValueKey('log.results'),
                   itemCount: value.length,
                   separatorBuilder: (_, __) =>
-                      const Divider(color: FitColors.rule, height: 1),
+                      Divider(color: FitColors.rule, height: 1),
                   itemBuilder: (_, i) => LogFoodRow(
                     key: ValueKey('food.${value[i].food.slug}'),
                     food: value[i].food,
@@ -764,7 +764,7 @@ class _SavedPane extends ConsumerWidget {
               key: const ValueKey('log.saved'),
               itemCount: value.value.length,
               separatorBuilder: (_, __) =>
-                  const Divider(color: FitColors.rule, height: 1),
+                  Divider(color: FitColors.rule, height: 1),
               itemBuilder: (_, i) => _SavedMealTile(
                 meal: value.value[i],
                 target: target,
@@ -813,7 +813,7 @@ class _SavedMealTile extends ConsumerWidget {
       ),
       child: Row(
         children: <Widget>[
-          const Icon(Icons.bookmark, color: FitColors.ink),
+          Icon(Icons.bookmark, color: FitColors.ink),
           const SizedBox(width: FitSpacing.md),
           Expanded(
             child: Column(
@@ -840,7 +840,7 @@ class _SavedMealTile extends ConsumerWidget {
           IconButton(
             key: ValueKey('saved.${meal.id}.delete'),
             tooltip: 'Delete saved meal',
-            icon: const Icon(Icons.close, size: 18, color: FitColors.ink35),
+            icon: Icon(Icons.close, size: 18, color: FitColors.ink35),
             onPressed: () async {
               final r = await ref
                   .read(nutritionLogRepositoryProvider)
@@ -987,7 +987,7 @@ class _QuickAddPaneState extends ConsumerState<_QuickAddPane> {
             children: <Widget>[
               Row(
                 children: <Widget>[
-                  const Icon(Icons.bolt_outlined, color: FitColors.ink),
+                  Icon(Icons.bolt_outlined, color: FitColors.ink),
                   const SizedBox(width: FitSpacing.sm),
                   Expanded(
                     child: Text('Quick add', style: textTheme.titleLarge),

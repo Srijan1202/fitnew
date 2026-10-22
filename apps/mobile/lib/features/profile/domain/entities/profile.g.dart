@@ -44,6 +44,7 @@ _UserProfileDetail _$UserProfileDetailFromJson(Map<String, dynamic> json) =>
       mess: json['mess'] == null
           ? null
           : MessRef.fromJson(json['mess'] as Map<String, dynamic>),
+      avatarId: json['avatarId'] as String? ?? null,
     );
 
 Map<String, dynamic> _$UserProfileDetailToJson(_UserProfileDetail instance) =>
@@ -65,6 +66,7 @@ Map<String, dynamic> _$UserProfileDetailToJson(_UserProfileDetail instance) =>
       'onboardingStage': instance.onboardingStage,
       'isVitStudent': instance.isVitStudent,
       'mess': instance.mess,
+      'avatarId': instance.avatarId,
     };
 
 const _$SexEnumMap = {

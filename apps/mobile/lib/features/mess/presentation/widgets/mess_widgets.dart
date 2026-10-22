@@ -148,15 +148,15 @@ class MessDishRow extends StatelessWidget {
               ),
               const SizedBox(width: FitSpacing.sm),
               if (logged)
-                const Icon(
+                Icon(
                   Icons.check,
-                  key: ValueKey('mess.logged'),
+                  key: const ValueKey('mess.logged'),
                   size: 20,
                   color: FitColors.pine,
                   semanticLabel: 'Logged',
                 )
               else if (dish.nutrition != null)
-                const Icon(Icons.add_circle_outline, color: FitColors.ink60),
+                Icon(Icons.add_circle_outline, color: FitColors.ink60),
             ],
           ),
         ),
@@ -229,7 +229,7 @@ class _Banner extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: FitSpacing.xs),
       padding: const EdgeInsets.all(FitSpacing.sm),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(left: BorderSide(color: FitColors.amber, width: 3)),
         color: FitColors.paper2,
       ),
@@ -297,7 +297,7 @@ class TodaysMessStrip extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
           child: Row(
             children: <Widget>[
-              const Icon(Icons.restaurant_outlined, color: FitColors.ink),
+              Icon(Icons.restaurant_outlined, color: FitColors.ink),
               const SizedBox(width: FitSpacing.sm),
               Expanded(
                 child: Column(
@@ -332,7 +332,7 @@ class TodaysMessStrip extends ConsumerWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: FitColors.ink60),
+              Icon(Icons.chevron_right, color: FitColors.ink60),
             ],
           ),
         ),

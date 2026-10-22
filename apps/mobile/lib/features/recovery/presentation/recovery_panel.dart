@@ -109,8 +109,8 @@ class _RecoveryPanelState extends ConsumerState<RecoveryPanel> {
               ),
             ),
           if (async.isLoading && view == null)
-            const LinearProgressIndicator(
-              key: ValueKey('recovery.loading'),
+            LinearProgressIndicator(
+              key: const ValueKey('recovery.loading'),
               color: FitColors.ink,
             ),
           if (today != null && log != null && !_editing) ...<Widget>[
@@ -149,9 +149,9 @@ class _RecoveryPanelState extends ConsumerState<RecoveryPanel> {
     return Container(
       key: const ValueKey('recovery.checkIn'),
       padding: const EdgeInsets.all(FitSpacing.md),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: FitColors.paper2,
-        borderRadius: BorderRadius.all(FitRadius.medium),
+        borderRadius: const BorderRadius.all(FitRadius.medium),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

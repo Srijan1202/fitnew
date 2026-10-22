@@ -125,6 +125,8 @@ Colour carries meaning only. Primary actions are **solid ink blocks**, never col
 
 `DECISION` — light foundation. Every major competitor (WHOOP, Oura, Strava, Hevy) is dark. Paper reads as a training log rather than a telemetry dashboard, and it is the differentiated choice.
 
+`AMENDED 2026-10-22 (Phase 19, ADR-027, owner)`: Paper stays the default and the only free look. Premium users may choose **Night** (dark), **Forest** or **Ocean**. Each is a complete set of these nine roles, so the three semantic colours keep their meanings in every palette.
+
 ### 6.3 Type
 
 | Role | Face | Usage |
@@ -953,6 +955,11 @@ readiness = 100
 ---
 
 ## 19. AI Architecture
+
+`AMENDED 2026-10-22 (Phase 19, ADR-027, owner)`:
+- **Premium only:** FITOS AI (chat, Describe your meal, Explain simply) is premium. A free user gets 403 `premium-required` before consent or any model call.
+- **Who has premium:** the owner approves it in the admin panel and it lasts until revoked. Admins have it by role.
+- **Higher limits:** premium limits are the §19.3 limits times `AI_PREMIUM_LIMIT_MULTIPLIER` (default 2).
 
 ### 19.1 The boundary
 

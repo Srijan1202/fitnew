@@ -1,0 +1,138 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/theme/theme_controller.dart';
+import '../../../core/theme/tokens.dart';
+import '../domain/avatars.dart';
+import 'premium_providers.dart';
+import 'premium_sheet.dart';
+
+/// Phase 19 (ADR-027): Profile → Theme. Paper for everyone; Night, Forest and
+/// Ocean for premium (a lock, then the premium sheet, for a free user).
+class ThemePicker extends ConsumerWidget {
+  const ThemePicker({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textTheme = Theme.of(context).textTheme;
+    final current = ref.watch(themeControllerProvider);
+    final premium = ref.watch(isPremiumProvider) ?? false;
+    return Column(
+      key: const ValueKey('profile.theme'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text('THEME', style: textTheme.labelSmall),
+        const SizedBox(height: FitSpacing.sm),
+        Wrap(
+          spacing: FitSpacing.md,
+          runSpacing: FitSpacing.sm,
+          children: <Widget>[
+            for (final p in FitPalette.all)
+              _Swatch(
+                key: ValueKey('theme.${p.id}'),
+                palette: p,
+                selected: current.id == p.id,
+                locked: p.premium && !premium,
+                onTap: () async {
+                  if (p.premium && !premium) {
+                    await showPremiumSheet(
+                      context,
+                      feature: 'The ${p.label} theme',
+                    );
+                    return;
+                  }
+                  await ref.read(themeControllerProvider.notifier).choose(p);
+                },
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _Swatch extends StatelessWidget {
+  const _Swatch({
+    required this.palette,
+    required this.selected,
+    required this.locked,
+    required this.onTap,
+    super.key,
+  });
+
+  final FitPalette palette;
+  final bool selected;
+  final bool locked;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label:
+          locked ? '${palette.label} theme, premium' : '${palette.label} theme',
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          children: <Widget>[
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: palette.paper,
+                border: Border.all(
+                  color: selected ? FitColors.ink : palette.rule,
+                  width: selected ? 2 : 1,
+                ),
+              ),
+              child: Stack(
+                children: <Widget>[
+                  Positioned(
+                    left: 8,
+                    top: 10,
+                    child: Container(width: 26, height: 4, color: palette.ink),
+                  ),
+                  Positioned(
+                    left: 8,
+                    top: 20,
+                    child:
+                        Container(width: 18, height: 4, color: palette.ink60),
+                  ),
+                  Positioned(
+                    left: 8,
+                    bottom: 8,
+                    child: Row(
+                      children: <Widget>[
+                        for (final c in [
+                          palette.pine,
+                          palette.amber,
+                          palette.oxide,
+                        ])
+                          Container(
+                            width: 8,
+                            height: 8,
+                            margin: const EdgeInsets.only(right: 3),
+                            color: c,
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (locked)
+                    const Positioned(
+                      right: 3,
+                      top: 3,
+                      child: Icon(Icons.lock, size: 14, color: kGoldDeep),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: FitSpacing.xs),
+            Text(palette.label, style: textTheme.labelSmall),
+          ],
+        ),
+      ),
+    );
+  }
+}

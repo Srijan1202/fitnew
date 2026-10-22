@@ -102,7 +102,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   FilledButton(
                     onPressed: busy ? null : _submit,
                     child: busy
-                        ? const SizedBox.square(
+                        ? SizedBox.square(
                             dimension: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
@@ -112,7 +112,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                         : const Text('Sign in'),
                   ),
                   const SizedBox(height: FitSpacing.lg),
-                  const Divider(color: FitColors.rule, height: 1),
+                  Divider(color: FitColors.rule, height: 1),
                   const SizedBox(height: FitSpacing.afterRule),
                   OutlinedButton(
                     onPressed: busy
@@ -122,7 +122,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                             .signInWithGoogle(),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: FitColors.ink,
-                      side: const BorderSide(color: FitColors.ink),
+                      side: BorderSide(color: FitColors.ink),
                       minimumSize: const Size(88, 48),
                       shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(FitRadius.small),

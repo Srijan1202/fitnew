@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/config/app_config.dart';
 import 'core/routing/router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_controller.dart';
+import 'core/theme/tokens.dart';
+import 'features/premium/presentation/premium_providers.dart';
 import 'features/nutrition/presentation/controllers/food_log_providers.dart';
 import 'features/workout/presentation/controllers/workout_providers.dart';
 import 'features/health/presentation/controllers/health_providers.dart';
@@ -32,6 +35,24 @@ class FitOSApp extends ConsumerWidget {
     // Phase 19 (E1): a build below the server's minimum shows only
     // "Update FITOS". Unknown (offline) never blocks.
     final updateRequired = ref.watch(updateRequiredProvider);
+    // Phase 19 (ADR-027): the palette every token reads; a change rebuilds
+    // the whole tree in place. A premium palette falls back to Paper as
+    // soon as the app knows the user is not premium.
+    final palette = ref.watch(themeControllerProvider);
+    FitPalette.current = palette;
+    ref.listen(themeControllerProvider, (previous, next) {
+      if (previous?.id == next.id) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) rebuildEverything(context);
+      });
+    });
+    ref.listen(isPremiumProvider, (_, premium) {
+      if (premium == false && FitPalette.current.premium) {
+        ref
+            .read(themeControllerProvider.notifier)
+            .choose(FitPalette.paperPalette);
+      }
+    });
 
     return MaterialApp.router(
       title: 'FITOS',

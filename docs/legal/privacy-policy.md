@@ -10,7 +10,7 @@ FITOS is a fitness and nutrition app for VIT students, built and run by its deve
 
 ## What FITOS keeps
 
-Your account (email and name, through Google Firebase sign-in). Your profile: sex, birth date, height, weight, goal, diet, allergies and any limitations you add. What you log: workouts and sets, meals, weigh-ins and body measurements, recovery check-ins, your mess. Your reminder settings and this phone's notification token. Feedback you send from the app, with the app's version. A count of FITOS AI uses (not what was said). Your consent records, with a one-way scrambled form of the network address you consented from.
+Your account (email and name, through Google Firebase sign-in). Your profile: sex, birth date, height, weight, goal, diet, allergies and any limitations you add. What you log: workouts and sets, meals, weigh-ins and body measurements, recovery check-ins, your mess. Your reminder settings and this phone's notification token. Feedback you send from the app, with the app's version. Your profile picture choice, and any request for Premium with the answer to it. A count of FITOS AI uses (not what was said). Your consent records, with a one-way scrambled form of the network address you consented from.
 
 ## What stays on your phone
 

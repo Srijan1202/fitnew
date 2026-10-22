@@ -40,7 +40,7 @@ class SessionFooter extends ConsumerWidget {
       child: SafeArea(
         top: false,
         child: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             border: Border(top: BorderSide(color: FitColors.rule)),
           ),
           padding: const EdgeInsets.fromLTRB(

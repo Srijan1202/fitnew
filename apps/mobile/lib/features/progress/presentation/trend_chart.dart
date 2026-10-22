@@ -164,8 +164,8 @@ class TrendPainter extends CustomPainter {
   static const double trendStroke = 2.5;
   static const double rawStroke = 1;
   static const double rawTick = 5;
-  static const Color trendColor = FitColors.ink;
-  static const Color rawColor = FitColors.ink35;
+  static final Color trendColor = FitColors.ink;
+  static final Color rawColor = FitColors.ink35;
 
   @override
   void paint(Canvas canvas, Size size) {

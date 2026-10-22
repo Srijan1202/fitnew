@@ -284,7 +284,7 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
             actions: <Widget>[
               PopupMenuButton<String>(
                 key: const ValueKey('plan.menu'),
-                icon: const Icon(Icons.more_horiz, color: FitColors.ink),
+                icon: Icon(Icons.more_horiz, color: FitColors.ink),
                 onSelected: (value) {
                   switch (value) {
                     case 'edit':
@@ -609,7 +609,7 @@ class _DayView extends StatelessWidget {
                   : (alt) => onSubstitute!(exercises[i], alt),
             ),
         ],
-        const Divider(color: FitColors.rule, height: 1),
+        Divider(color: FitColors.rule, height: 1),
         Padding(
           padding: const EdgeInsets.fromLTRB(
             FitSpacing.screen,
@@ -690,7 +690,7 @@ class _WeekSkeleton extends StatelessWidget {
               Container(width: 180, height: 36, color: FitColors.paper2),
               const SizedBox(height: FitSpacing.lg),
               for (var i = 0; i < 4; i++) ...<Widget>[
-                const Divider(color: FitColors.rule, height: 1),
+                Divider(color: FitColors.rule, height: 1),
                 const SizedBox(height: FitSpacing.md),
                 Container(width: 220, height: 18, color: FitColors.paper2),
                 const SizedBox(height: FitSpacing.md),

@@ -7,11 +7,13 @@ import 'typography.dart';
 ///
 /// Light foundation is a recorded decision (§6.2): every major competitor is
 /// dark, and paper reads as a training log rather than a telemetry dashboard.
-/// There is deliberately no dark theme.
+/// Paper stays the default and every free user's; Phase 19 (ADR-027, owner)
+/// adds premium palettes, one of them dark (Night), built from the same
+/// nine tokens so meaning never changes with the colours.
 abstract final class FitTheme {
   static ThemeData build() {
-    const colorScheme = ColorScheme(
-      brightness: Brightness.light,
+    final colorScheme = ColorScheme(
+      brightness: FitPalette.current.brightness,
       primary: FitColors.ink,
       onPrimary: FitColors.paper,
       secondary: FitColors.pine,
@@ -27,7 +29,7 @@ abstract final class FitTheme {
       colorScheme: colorScheme,
       scaffoldBackgroundColor: FitColors.paper,
       textTheme: FitTypography.textTheme,
-      dividerTheme: const DividerThemeData(
+      dividerTheme: DividerThemeData(
         color: FitColors.rule,
         thickness: 1,
         space: 1,
@@ -45,7 +47,7 @@ abstract final class FitTheme {
           textStyle: FitTypography.textTheme.titleMedium,
         ),
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: FitColors.paper,
         surfaceTintColor: Colors.transparent,
         elevation: 0,

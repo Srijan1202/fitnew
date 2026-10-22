@@ -103,7 +103,7 @@ class _GenerateOptionsScreenState extends ConsumerState<GenerateOptionsScreen> {
               key: const ValueKey('generate.go'),
               onPressed: _busy ? null : _generate,
               child: _busy
-                  ? const SizedBox.square(
+                  ? SizedBox.square(
                       dimension: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,

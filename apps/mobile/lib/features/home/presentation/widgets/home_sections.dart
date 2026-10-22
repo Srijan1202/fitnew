@@ -1,3 +1,4 @@
+import '../../../premium/presentation/profile_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -145,12 +146,8 @@ class HomeHeader extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            key: const ValueKey('home.profile'),
-            onPressed: () => context.push(Routes.profile),
-            icon: const Icon(Icons.person_outline, color: FitColors.ink),
-            tooltip: 'Profile',
-          ),
+          // Phase 19: the user's picture, gold-rimmed when premium.
+          const ProfileAvatarButton(),
         ],
       ),
     );
@@ -257,14 +254,14 @@ class _Grid extends StatelessWidget {
     final rows = <Widget>[];
     for (var i = 0; i < blocks.length; i += 2) {
       rows
-        ..add(const Divider(color: FitColors.rule, height: 1))
+        ..add(Divider(color: FitColors.rule, height: 1))
         ..add(
           IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 Expanded(child: blocks[i]),
-                const VerticalDivider(color: FitColors.rule, width: 1),
+                VerticalDivider(color: FitColors.rule, width: 1),
                 Expanded(
                   child: i + 1 < blocks.length
                       ? blocks[i + 1]
@@ -275,7 +272,7 @@ class _Grid extends StatelessWidget {
           ),
         );
     }
-    rows.add(const Divider(color: FitColors.rule, height: 1));
+    rows.add(Divider(color: FitColors.rule, height: 1));
     return Column(children: rows);
   }
 }
@@ -652,7 +649,7 @@ class WeekSection extends StatelessWidget {
         );
     return Column(
       children: <Widget>[
-        const Divider(color: FitColors.rule, height: 1),
+        Divider(color: FitColors.rule, height: 1),
         if (week.trainingPlanned > 0)
           row(
             'Training',
@@ -687,7 +684,7 @@ class WeekSection extends StatelessWidget {
           row('Movement', week.movementDays!, 7, 'home.week.movement'),
         if (week.sleepDays != null)
           row('Sleep', week.sleepDays!, 7, 'home.week.sleep'),
-        const Divider(color: FitColors.rule, height: 1),
+        Divider(color: FitColors.rule, height: 1),
       ],
     );
   }
@@ -715,7 +712,7 @@ class ServerNotice extends StatelessWidget {
         FitSpacing.lg,
       ),
       child: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(
             top: BorderSide(color: FitColors.ink),
             bottom: BorderSide(color: FitColors.rule),

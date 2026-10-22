@@ -162,7 +162,7 @@ class _CustomBuilderScreenState extends ConsumerState<CustomBuilderScreen> {
               ),
             ),
             Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(top: BorderSide(color: FitColors.rule)),
               ),
               padding: const EdgeInsets.fromLTRB(
@@ -188,7 +188,7 @@ class _CustomBuilderScreenState extends ConsumerState<CustomBuilderScreen> {
                             ? _save
                             : _next,
                     child: _busy
-                        ? const SizedBox.square(
+                        ? SizedBox.square(
                             dimension: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
@@ -282,7 +282,7 @@ class _CustomBuilderScreenState extends ConsumerState<CustomBuilderScreen> {
           ),
           const SizedBox(height: FitSpacing.md),
           for (final d in _sorted) ...<Widget>[
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             const SizedBox(height: FitSpacing.afterRule),
             Text(
               '${kWeekdayLabels[d.dayOfWeek - 1]} · ${d.nameController.text.trim()}'
@@ -313,7 +313,7 @@ class _CustomBuilderScreenState extends ConsumerState<CustomBuilderScreen> {
           ),
           const SizedBox(height: FitSpacing.md),
           for (final d in _sorted) ...<Widget>[
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             const SizedBox(height: FitSpacing.afterRule),
             Text(
               '${kWeekdayLabels[d.dayOfWeek - 1]} · ${d.nameController.text.trim()}'
@@ -345,7 +345,7 @@ class _CustomBuilderScreenState extends ConsumerState<CustomBuilderScreen> {
           ),
           const SizedBox(height: FitSpacing.md),
           for (final d in _sorted) ...<Widget>[
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             const SizedBox(height: FitSpacing.afterRule),
             Text(
               '${kWeekdayLabels[d.dayOfWeek - 1]} · ${d.nameController.text.trim()}'
@@ -424,7 +424,7 @@ class _CustomBuilderScreenState extends ConsumerState<CustomBuilderScreen> {
           ),
           const SizedBox(height: FitSpacing.md),
           for (final d in _sorted) ...<Widget>[
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             const SizedBox(height: FitSpacing.afterRule),
             Text(
               kWeekdayLabels[d.dayOfWeek - 1].toUpperCase(),

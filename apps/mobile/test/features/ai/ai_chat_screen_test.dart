@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../support/fake_premium_api.dart';
 import '../../support/fake_ai_api.dart';
 import '../../support/fake_training_repository.dart';
 import '../../support/fake_workout_api.dart';
@@ -77,7 +78,12 @@ void main() {
       overrides: [
         sessionUserIdProvider.overrideWithValue('user-1'),
         trainingRepositoryProvider.overrideWithValue(training),
-        ...workoutOverrides(db, workout, ai: ai),
+        ...workoutOverrides(
+          db,
+          workout,
+          ai: ai,
+          premium: FakePremiumApi(premium: true),
+        ),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
     );

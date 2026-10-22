@@ -68,9 +68,9 @@ class _NamePromptState extends ConsumerState<NamePrompt> {
         FitSpacing.lg,
       ),
       padding: const EdgeInsets.all(FitSpacing.md),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border.fromBorderSide(BorderSide(color: FitColors.rule)),
-        borderRadius: BorderRadius.all(FitRadius.medium),
+        borderRadius: const BorderRadius.all(FitRadius.medium),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

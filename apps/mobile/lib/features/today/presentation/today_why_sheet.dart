@@ -87,7 +87,7 @@ Future<WhyChoice?> showTodayWhySheet(
                 ),
             ],
             const SizedBox(height: FitSpacing.md),
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             const SizedBox(height: FitSpacing.sm),
             Text(
               'Why this was suggested: ${action.basis.label.toLowerCase()}.'

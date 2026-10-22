@@ -258,7 +258,7 @@ class _PersonalDetailsScreenState extends ConsumerState<PersonalDetailsScreen> {
               blurb: (a) => a.blurb,
             ),
             const SizedBox(height: FitSpacing.lg),
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             const SizedBox(height: FitSpacing.afterRule),
             Row(
               children: <Widget>[
@@ -293,7 +293,7 @@ class _PersonalDetailsScreenState extends ConsumerState<PersonalDetailsScreen> {
               key: const ValueKey('details.save'),
               onPressed: _busy ? null : _save,
               child: _busy
-                  ? const SizedBox.square(
+                  ? SizedBox.square(
                       dimension: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,

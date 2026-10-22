@@ -254,7 +254,7 @@ class _ExerciseBrowserScreenState extends ConsumerState<ExerciseBrowserScreen> {
               ),
             ),
             const SizedBox(height: FitSpacing.sm),
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             Expanded(
               child: async.when(
                 loading: () => const _ListSkeleton(),
@@ -324,8 +324,7 @@ class _ExerciseList extends StatelessWidget {
       key: const ValueKey('exercises.list'),
       padding: const EdgeInsets.only(bottom: FitSpacing.xl),
       itemCount: shown + 1,
-      separatorBuilder: (_, __) =>
-          const Divider(color: FitColors.rule, height: 1),
+      separatorBuilder: (_, __) => Divider(color: FitColors.rule, height: 1),
       itemBuilder: (context, index) {
         if (index == 0) {
           return Padding(
@@ -410,7 +409,7 @@ class ExerciseRow extends StatelessWidget {
                   key: ValueKey('exercise.${item.slug}.info'),
                   tooltip: 'About ${item.name}',
                   onPressed: () => context.push(Routes.exerciseDetail(item.id)),
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.info_outline,
                     size: 20,
                     color: FitColors.ink60,
@@ -437,8 +436,7 @@ class _ListSkeleton extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
       itemCount: 8,
-      separatorBuilder: (_, __) =>
-          const Divider(color: FitColors.rule, height: 1),
+      separatorBuilder: (_, __) => Divider(color: FitColors.rule, height: 1),
       itemBuilder: (_, i) => Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: FitSpacing.screen,

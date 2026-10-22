@@ -131,14 +131,16 @@ class EatNotice extends StatelessWidget {
     required this.text,
     this.action,
     this.onAction,
-    this.colour = FitColors.ink60,
+    this.colour,
     super.key,
   });
 
   final String text;
   final String? action;
   final VoidCallback? onAction;
-  final Color colour;
+
+  /// Ink 60 unless given.
+  final Color? colour;
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +152,8 @@ class EatNotice extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: textTheme.bodyMedium?.copyWith(color: colour),
+              style: textTheme.bodyMedium
+                  ?.copyWith(color: colour ?? FitColors.ink60),
             ),
           ),
           if (action != null)

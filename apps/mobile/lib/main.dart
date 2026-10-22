@@ -8,6 +8,7 @@ import 'core/config/device_time_zone.dart';
 import 'core/config/env.dart';
 import 'core/config/firebase_options.dart';
 import 'core/diagnostics/crash_reporting.dart';
+import 'core/theme/theme_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +24,9 @@ Future<void> main() async {
     if (!kDebugMode) reporter = CrashlyticsReporter();
   }
   await installCrashReporting(reporter);
+
+  // Phase 19: open in the theme chosen last time (Paper by default).
+  await loadSavedPalette();
 
   // The phone's IANA zone, for sign-in and Profile (never blocks: null on failure).
   await DeviceTimeZone.load();

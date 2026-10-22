@@ -56,7 +56,7 @@ class StartSessionButton extends ConsumerWidget {
         onPressed: onStart,
         style: OutlinedButton.styleFrom(
           foregroundColor: FitColors.ink,
-          side: const BorderSide(color: FitColors.ink),
+          side: BorderSide(color: FitColors.ink),
         ),
         child: const Text('Start empty session'),
       );

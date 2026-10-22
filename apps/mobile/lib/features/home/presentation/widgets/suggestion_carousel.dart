@@ -267,9 +267,9 @@ class _Card extends StatelessWidget {
     );
     return Material(
       color: Colors.transparent,
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         side: BorderSide(color: FitColors.rule),
-        borderRadius: BorderRadius.all(FitRadius.medium),
+        borderRadius: const BorderRadius.all(FitRadius.medium),
       ),
       clipBehavior: Clip.antiAlias,
       child: onOpen == null

@@ -246,10 +246,10 @@ class _VolumeBodyState extends State<_VolumeBody> {
           ),
         ),
         for (final m in muscles) ...<Widget>[
-          const Divider(color: FitColors.rule, height: 1),
+          Divider(color: FitColors.rule, height: 1),
           _row(context, m, current, last),
         ],
-        const Divider(color: FitColors.rule, height: 1),
+        Divider(color: FitColors.rule, height: 1),
         Padding(
           padding: const EdgeInsets.fromLTRB(
             FitSpacing.screen,
@@ -337,7 +337,7 @@ class _VolumeBodyState extends State<_VolumeBody> {
                   AnimatedRotation(
                     turns: open ? 0.5 : 0,
                     duration: const Duration(milliseconds: 150),
-                    child: const Icon(
+                    child: Icon(
                       Icons.expand_more,
                       size: 20,
                       color: FitColors.ink60,

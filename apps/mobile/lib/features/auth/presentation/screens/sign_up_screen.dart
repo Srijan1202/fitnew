@@ -110,7 +110,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   FilledButton(
                     onPressed: busy ? null : _submit,
                     child: busy
-                        ? const SizedBox.square(
+                        ? SizedBox.square(
                             dimension: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,

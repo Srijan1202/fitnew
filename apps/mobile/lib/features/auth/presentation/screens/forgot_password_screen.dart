@@ -101,7 +101,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 FilledButton(
                   onPressed: _busy || _sent ? null : _submit,
                   child: _busy
-                      ? const SizedBox.square(
+                      ? SizedBox.square(
                           dimension: 18,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,

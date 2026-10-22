@@ -19,6 +19,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../support/fake_premium_api.dart';
 import '../../support/fake_ai_api.dart';
 import '../../support/fake_auth_repository.dart';
 import '../../support/fake_exercise_repository.dart';
@@ -69,7 +70,12 @@ void main() {
         trainingRepositoryProvider.overrideWithValue(training),
         exerciseRepositoryProvider.overrideWithValue(exercises),
         profileRepositoryProvider.overrideWithValue(profile),
-        ...workoutOverrides(db, workoutApi, ai: FakeAiApi()),
+        ...workoutOverrides(
+          db,
+          workoutApi,
+          ai: FakeAiApi(),
+          premium: FakePremiumApi(premium: true),
+        ),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
     );

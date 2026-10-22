@@ -1,3 +1,4 @@
+import '../../premium/presentation/premium_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -28,6 +29,11 @@ class _ExplainSimplyState extends ConsumerState<ExplainSimply> {
 
   Future<void> _ask() async {
     // Phase 17: FITOS AI is its own consent (asked once, before first use).
+    // Phase 19: FITOS AI is premium.
+    if (!await ensurePremium(context, ref, feature: 'Explain simply') ||
+        !mounted) {
+      return;
+    }
     if (!await ensureAiConsent(context, ref) || !mounted) return;
     setState(() {
       _loading = true;

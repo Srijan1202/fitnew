@@ -103,7 +103,7 @@ class _GoalEditorScreenState extends ConsumerState<GoalEditorScreen> {
                 onPressed:
                     _busy || _goal == null || _goal == current ? null : _save,
                 child: _busy
-                    ? const SizedBox.square(
+                    ? SizedBox.square(
                         dimension: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
@@ -114,7 +114,7 @@ class _GoalEditorScreenState extends ConsumerState<GoalEditorScreen> {
               ),
               if (_updated != null) ...<Widget>[
                 const SizedBox(height: FitSpacing.xl),
-                const Divider(color: FitColors.rule, height: 1),
+                Divider(color: FitColors.rule, height: 1),
                 const SizedBox(height: FitSpacing.afterRule),
                 Text('NEW TARGETS', style: textTheme.labelSmall),
                 const SizedBox(height: FitSpacing.sm),

@@ -23,7 +23,7 @@ class DaySelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: FitColors.paper,
         border: Border(bottom: BorderSide(color: FitColors.rule)),
       ),

@@ -116,7 +116,7 @@ class _OrphanSessionNoticeState extends ConsumerState<OrphanSessionNotice> {
     final sets = _setCount(s);
     return DecoratedBox(
       key: const ValueKey('orphan.notice'),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
           top: BorderSide(color: FitColors.oxide),
           bottom: BorderSide(color: FitColors.rule),

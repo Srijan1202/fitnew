@@ -137,7 +137,7 @@ class _PrivacyScreenState extends ConsumerState<PrivacyScreen> {
                 ],
               ),
             Text('FITOS AI', style: textTheme.labelSmall),
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             if (consents.hasError && c == null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
@@ -162,7 +162,7 @@ class _PrivacyScreenState extends ConsumerState<PrivacyScreen> {
             ),
             const SizedBox(height: FitSpacing.lg),
             Text('CRASH REPORTS', style: textTheme.labelSmall),
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             SwitchListTile(
               key: const ValueKey('privacy.crash'),
               contentPadding: EdgeInsets.zero,
@@ -176,7 +176,7 @@ class _PrivacyScreenState extends ConsumerState<PrivacyScreen> {
             ),
             const SizedBox(height: FitSpacing.lg),
             Text('YOUR DATA', style: textTheme.labelSmall),
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             const SizedBox(height: FitSpacing.sm),
             Text(
               'Everything FITOS holds about you, in one machine-readable file (JSON).',
@@ -206,7 +206,7 @@ class _PrivacyScreenState extends ConsumerState<PrivacyScreen> {
                 shape: const RoundedRectangleBorder(),
                 minimumSize: const Size.fromHeight(48),
                 foregroundColor: FitColors.oxide,
-                side: const BorderSide(color: FitColors.oxide),
+                side: BorderSide(color: FitColors.oxide),
               ),
               onPressed: _busy ? null : _delete,
               icon: const Icon(Icons.delete_forever_outlined),
@@ -229,7 +229,7 @@ class _PrivacyScreenState extends ConsumerState<PrivacyScreen> {
               key: const ValueKey('privacy.policy'),
               style: textTheme.labelSmall,
             ),
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             for (final (title, body) in kPolicySections)
               Padding(
                 padding: const EdgeInsets.only(top: FitSpacing.md),

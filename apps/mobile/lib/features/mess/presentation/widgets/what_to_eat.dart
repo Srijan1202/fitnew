@@ -183,8 +183,8 @@ class _WhatToEatSectionState extends ConsumerState<WhatToEatSection>
                 ),
               ],
             AsyncError() => <Widget>[
-                const _Note(
-                  key: ValueKey('rec.failed'),
+                _Note(
+                  key: const ValueKey('rec.failed'),
                   text: 'Could not work out a plate.',
                   colour: FitColors.oxide,
                 ),
@@ -258,8 +258,8 @@ class _WhatToEatSectionState extends ConsumerState<WhatToEatSection>
         return [
           ...logged,
           safety,
-          const _Note(
-            key: ValueKey('rec.nothingSafe'),
+          _Note(
+            key: const ValueKey('rec.nothingSafe'),
             text:
                 'Nothing at this meal is confirmed safe for your diet and allergies, so there is no plate.',
             colour: FitColors.oxide,
@@ -270,8 +270,8 @@ class _WhatToEatSectionState extends ConsumerState<WhatToEatSection>
         return [
           ...logged,
           safety,
-          const _Note(
-            key: ValueKey('rec.noMeal'),
+          _Note(
+            key: const ValueKey('rec.noMeal'),
             text:
                 'No meal can be made from what this menu offers you: there is no staple (rice, roti, idli…) or protein dish that fits your diet and allergies. A drink, dessert or side on its own is never suggested as a meal.',
             colour: FitColors.oxide,
@@ -306,8 +306,8 @@ class _WhatToEatSectionState extends ConsumerState<WhatToEatSection>
           ...logged,
           safety,
           if (rec.basis == 'inferred')
-            const _Note(
-              key: ValueKey('rec.inferred'),
+            _Note(
+              key: const ValueKey('rec.inferred'),
               text:
                   'Based on the inferred menu — the mess has not published this day.',
               colour: FitColors.amber,
@@ -444,7 +444,7 @@ class _SafetyLine extends StatelessWidget {
           children: <Widget>[
             Row(
               children: <Widget>[
-                const Icon(
+                Icon(
                   Icons.verified_user_outlined,
                   size: 18,
                   color: FitColors.pine,
@@ -458,7 +458,7 @@ class _SafetyLine extends StatelessWidget {
                         ?.copyWith(fontWeight: FontWeight.w600),
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.chevron_right,
                   size: 18,
                   color: FitColors.ink60,
@@ -493,7 +493,7 @@ class _Shortfall extends StatelessWidget {
       key: const ValueKey('rec.shortfall'),
       margin: const EdgeInsets.only(top: FitSpacing.sm),
       padding: const EdgeInsets.all(FitSpacing.sm),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(left: BorderSide(color: FitColors.amber, width: 3)),
         color: FitColors.paper2,
       ),
@@ -647,7 +647,7 @@ class _OtherPlate extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: FitColors.ink60),
+              Icon(Icons.chevron_right, color: FitColors.ink60),
             ],
           ),
         ),
@@ -729,18 +729,22 @@ class _WhyNot extends StatelessWidget {
 }
 
 class _Note extends StatelessWidget {
-  const _Note({required this.text, this.colour = FitColors.ink60, super.key});
+  const _Note({required this.text, this.colour, super.key});
 
   final String text;
-  final Color colour;
+
+  /// Ink 60 unless given.
+  final Color? colour;
 
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(vertical: FitSpacing.xs),
         child: Text(
           text,
-          style:
-              Theme.of(context).textTheme.bodyMedium?.copyWith(color: colour),
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: colour ?? FitColors.ink60),
         ),
       );
 }

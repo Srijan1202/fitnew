@@ -10,6 +10,8 @@ import '../../../training/presentation/controllers/program_controller.dart';
 import '../../../workout/presentation/controllers/workout_providers.dart';
 import '../../domain/entities/ai.dart';
 import '../controllers/ai_providers.dart';
+import '../../../premium/presentation/premium_providers.dart';
+import '../../../premium/presentation/premium_sheet.dart';
 import '../../../privacy/presentation/privacy_providers.dart';
 
 /// Phase 6.6 — FITOS AI (Part 7). The conversation as a running editorial
@@ -49,7 +51,10 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   Future<void> _send([String? text]) async {
     final message = (text ?? _input.text).trim();
     if (message.isEmpty) return;
-    // Phase 17: FITOS AI is its own consent (asked once, before first use).
+    // Phase 19: FITOS AI is premium; Phase 17: and its own consent.
+    if (!await ensurePremium(context, ref, feature: 'FITOS AI') || !mounted) {
+      return;
+    }
     if (!await ensureAiConsent(context, ref) || !mounted) return;
     _input.clear();
     await ref.read(aiChatProvider.notifier).send(message);
@@ -162,7 +167,9 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     final status = ref.watch(aiStatusProvider);
     final chat = ref.watch(aiChatProvider);
     final s = status.value;
-    final configured = s == null || (s.enabled && s.configured);
+    // Phase 19 (ADR-027): a free user sees what premium is, and the request.
+    final locked = ref.watch(isPremiumProvider) == false;
+    final configured = !locked && (s == null || (s.enabled && s.configured));
 
     return Scaffold(
       appBar: AppBar(
@@ -185,26 +192,40 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
         child: Column(
           children: <Widget>[
             Expanded(
-              child: status.when(
-                loading: () => const SizedBox.shrink(),
-                error: (e, _) => _Unavailable(
-                  message: (e is Failure ? e : const Unknown()).message,
-                  onRetry: () => ref.invalidate(aiStatusProvider),
-                ),
-                data: (s) => !s.enabled
-                    ? const _NotConfigured(switchedOff: true)
-                    : !s.configured
-                        ? const _NotConfigured()
-                        : chat.turns.isEmpty
-                            ? _Empty(onPrompt: _send)
-                            : _Conversation(
-                                controller: _scroll,
-                                state: chat,
-                                onAction: _act,
-                                onRetry: () =>
-                                    ref.read(aiChatProvider.notifier).retry(),
-                              ),
-              ),
+              child: locked
+                  ? const SingleChildScrollView(
+                      padding: EdgeInsets.fromLTRB(
+                        FitSpacing.screen,
+                        FitSpacing.md,
+                        FitSpacing.screen,
+                        FitSpacing.xl,
+                      ),
+                      child: PremiumPitch(
+                        key: ValueKey('ai.premium'),
+                        feature: 'FITOS AI',
+                      ),
+                    )
+                  : status.when(
+                      loading: () => const SizedBox.shrink(),
+                      error: (e, _) => _Unavailable(
+                        message: (e is Failure ? e : const Unknown()).message,
+                        onRetry: () => ref.invalidate(aiStatusProvider),
+                      ),
+                      data: (s) => !s.enabled
+                          ? const _NotConfigured(switchedOff: true)
+                          : !s.configured
+                              ? const _NotConfigured()
+                              : chat.turns.isEmpty
+                                  ? _Empty(onPrompt: _send)
+                                  : _Conversation(
+                                      controller: _scroll,
+                                      state: chat,
+                                      onAction: _act,
+                                      onRetry: () => ref
+                                          .read(aiChatProvider.notifier)
+                                          .retry(),
+                                    ),
+                    ),
             ),
             _Composer(
               controller: _input,
@@ -240,7 +261,7 @@ class _Composer extends StatelessWidget {
         FitSpacing.sm,
         84,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: FitColors.paper,
         border: Border(top: BorderSide(color: FitColors.rule)),
       ),
@@ -312,7 +333,7 @@ class _Empty extends StatelessWidget {
           Text('TRY', style: textTheme.labelSmall),
           const SizedBox(height: FitSpacing.xs),
           for (final p in AiChatScreen.starterPrompts) ...<Widget>[
-            const Divider(color: FitColors.rule, height: 1),
+            Divider(color: FitColors.rule, height: 1),
             InkWell(
               key: ValueKey(
                 'ai.prompt.${AiChatScreen.starterPrompts.indexOf(p)}',
@@ -323,7 +344,7 @@ class _Empty extends StatelessWidget {
                 child: Row(
                   children: <Widget>[
                     Expanded(child: Text(p, style: textTheme.titleMedium)),
-                    const Icon(
+                    Icon(
                       Icons.arrow_forward,
                       size: 18,
                       color: FitColors.ink60,
@@ -333,7 +354,7 @@ class _Empty extends StatelessWidget {
               ),
             ),
           ],
-          const Divider(color: FitColors.rule, height: 1),
+          Divider(color: FitColors.rule, height: 1),
         ],
       ),
     );
@@ -367,7 +388,7 @@ class _Conversation extends StatelessWidget {
       ),
       children: <Widget>[
         for (final (i, t) in state.turns.indexed) ...<Widget>[
-          if (i > 0) const Divider(color: FitColors.rule, height: 1),
+          if (i > 0) Divider(color: FitColors.rule, height: 1),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
             child: Column(
@@ -408,12 +429,12 @@ class _Conversation extends StatelessWidget {
           ),
         ],
         if (state.sending) ...<Widget>[
-          const Divider(color: FitColors.rule, height: 1),
+          Divider(color: FitColors.rule, height: 1),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
             child: Row(
               children: <Widget>[
-                const SizedBox(
+                SizedBox(
                   width: 14,
                   height: 14,
                   child: CircularProgressIndicator(
@@ -432,7 +453,7 @@ class _Conversation extends StatelessWidget {
           ),
         ],
         if (state.failure != null) ...<Widget>[
-          const Divider(color: FitColors.rule, height: 1),
+          Divider(color: FitColors.rule, height: 1),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
             child: Column(

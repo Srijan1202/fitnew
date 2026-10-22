@@ -215,7 +215,7 @@ class _Body extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Divider(color: FitColors.rule, height: 1),
+          Divider(color: FitColors.rule, height: 1),
           const SizedBox(height: FitSpacing.sm),
           Row(
             children: <Widget>[
