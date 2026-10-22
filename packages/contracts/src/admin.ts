@@ -217,6 +217,27 @@ export const userSupportSchema = z
   })
   .strict();
 
+/* --------------------------------------------------------- administrators -- */
+
+/**
+ * An account with the admin claim (ADR-022 D2 amendment). Granted and taken
+ * away in the panel by another administrator; both audited.
+ */
+export const adminAccountSchema = z
+  .object({
+    firebaseUid: z.string(),
+    email: z.string().nullable(),
+    /** Our user row, once the account has used FITOS. */
+    userId: z.string().uuid().nullable(),
+    lastSignInAt: isoOrNull,
+    /** The administrator asking. They cannot remove themselves. */
+    isYou: z.boolean(),
+  })
+  .strict();
+export const adminAccountListSchema = z.object({ items: z.array(adminAccountSchema) }).strict();
+export const grantAdminRequestSchema = z.object({ email: z.string().trim().toLowerCase().email().max(254) }).strict();
+export const adminAccountParamsSchema = z.object({ uid: z.string().regex(/^[A-Za-z0-9_-]{1,128}$/) }).strict();
+
 /* ------------------------------------------------------------------ audit -- */
 
 export const auditQuerySchema = z.object({ limit: z.coerce.number().int().min(1).max(200).default(50), before: iso.optional() }).strict();
@@ -244,5 +265,7 @@ export type AdminExerciseSummary = z.infer<typeof adminExerciseSummarySchema>;
 export type AdminExercise = z.infer<typeof adminExerciseSchema>;
 export type FeatureFlag = z.infer<typeof featureFlagSchema>;
 export type UserSupport = z.infer<typeof userSupportSchema>;
+export type AdminAccount = z.infer<typeof adminAccountSchema>;
+export type AdminAccountList = z.infer<typeof adminAccountListSchema>;
 export type AuditEntry = z.infer<typeof auditEntrySchema>;
 export type AuditList = z.infer<typeof auditListSchema>;

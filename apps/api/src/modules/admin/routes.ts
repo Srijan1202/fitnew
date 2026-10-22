@@ -8,6 +8,9 @@ import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import {
+  adminAccountListSchema,
+  adminAccountParamsSchema,
+  adminAccountSchema,
   adminDishParamsSchema,
   adminExerciseListSchema,
   adminExerciseQuerySchema,
@@ -33,6 +36,7 @@ import {
   featureFlagListSchema,
   featureFlagSchema,
   flagParamsSchema,
+  grantAdminRequestSchema,
   metaConfigSchema,
   putFlagRequestSchema,
   reviewCorrectionRequestSchema,
@@ -42,6 +46,7 @@ import {
 
 import { requireAdmin } from '../../plugins/auth.js';
 import { TrainingRepository } from '../training/repository.js';
+import { AdministratorsService } from './administrators.js';
 import { AdminRepository } from './repository.js';
 import { AdminService } from './service.js';
 
@@ -50,6 +55,7 @@ const idParams = z.object({ id: z.string().uuid() }).strict();
 export async function adminRoutes(app: FastifyInstance, opts: { minimumAppBuild: number }): Promise<void> {
   const db = app.database.db;
   const service = new AdminService(new AdminRepository(db), new TrainingRepository(db));
+  const administrators = new AdministratorsService(new AdminRepository(db), app.adminDirectory);
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const security = [{ bearerAuth: [] }];
   const errors = { 401: errorEnvelopeSchema, 403: errorEnvelopeSchema, 404: errorEnvelopeSchema, 409: errorEnvelopeSchema, 422: errorEnvelopeSchema };
@@ -192,6 +198,38 @@ export async function adminRoutes(app: FastifyInstance, opts: { minimumAppBuild:
       response: { 200: userSupportSchema, ...errors },
     },
   }, async (request) => service.lookupUser(request.userId, request.query));
+
+  /* ----------------------------------------------------- administrators -- */
+
+  typed.get('/admin/admins', {
+    ...admin,
+    schema: { summary: 'Every account with the admin role', tags, security, response: { 200: adminAccountListSchema, ...errors } },
+  }, async (request) => ({ items: await administrators.list(request.identity!.uid) }));
+
+  typed.post('/admin/admins', {
+    ...admin,
+    schema: {
+      summary: 'Make an account an administrator by email (it must have signed in once; it takes effect at its next sign-in). Audited.',
+      tags,
+      security,
+      body: grantAdminRequestSchema,
+      response: { 201: adminAccountSchema, ...errors },
+    },
+  }, async (request, reply) => reply.code(201).send(await administrators.grant(request.userId, request.identity!.uid, request.body.email)));
+
+  typed.delete('/admin/admins/:uid', {
+    ...admin,
+    schema: {
+      summary: 'Take the admin role away, ending that account’s sessions at once; not yourself. Audited.',
+      tags,
+      security,
+      params: adminAccountParamsSchema,
+      response: { 204: z.null(), ...errors },
+    },
+  }, async (request, reply) => {
+    await administrators.revoke(request.userId, request.identity!.uid, request.params.uid);
+    return reply.code(204).send(null);
+  });
 
   typed.get('/admin/audit', {
     ...admin,

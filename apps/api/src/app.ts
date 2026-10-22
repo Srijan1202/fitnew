@@ -16,6 +16,7 @@ import { fastifyTrustProxy, isHostedEnvironment, parseTrustProxy, type Env } fro
 import type { DatabaseHandle } from './db/client.js';
 import { FirebaseAccountDeleter, RecordingAccountDeleter, type AccountDeleter } from './lib/account-deleter.js';
 import { loggerOptions } from './lib/logger.js';
+import { FirebaseAdminDirectory, InMemoryAdminDirectory, type AdminDirectory } from './lib/admin-directory.js';
 import { FirebaseTokenVerifier, type TokenVerifier } from './lib/token-verifier.js';
 import aiPlugin from './plugins/ai.js';
 import authPlugin, { PROTECTED_PREFIX } from './plugins/auth.js';
@@ -60,6 +61,8 @@ export interface BuildAppOptions {
   readonly aiProvider?: AiProvider;
   /** Phase 17: removes the Firebase account on deletion; tests record instead. */
   readonly accountDeleter?: AccountDeleter;
+  /** Who is an administrator (ADR-022): test apps get an in-memory directory. */
+  readonly adminDirectory?: AdminDirectory;
   /** Phase 17: where log lines go (the redaction test reads them). */
   readonly logStream?: { write(line: string): void };
 }
@@ -159,6 +162,14 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
       (options.tokenVerifier !== undefined
         ? new RecordingAccountDeleter()
         : new FirebaseAccountDeleter({ projectId: env.FIREBASE_PROJECT_ID, credentialsPath: env.GOOGLE_APPLICATION_CREDENTIALS })),
+  );
+
+  app.decorate(
+    'adminDirectory',
+    options.adminDirectory ??
+      (options.tokenVerifier !== undefined
+        ? new InMemoryAdminDirectory()
+        : new FirebaseAdminDirectory({ projectId: env.FIREBASE_PROJECT_ID, credentialsPath: env.GOOGLE_APPLICATION_CREDENTIALS })),
   );
 
   await app.register(aiPlugin, options.aiProvider !== undefined ? { provider: options.aiProvider, env } : { env });

@@ -57,6 +57,13 @@ export class AdminRepository {
     await this.db.insert(auditLogs).values({ ...e, metadata: e.metadata ?? {} });
   }
 
+  /** users.id for each Firebase uid that has used FITOS. */
+  async userIdsByFirebaseUid(uids: readonly string[]): Promise<Map<string, string>> {
+    if (uids.length === 0) return new Map();
+    const rows = await this.db.select({ uid: users.firebaseUid, id: users.id }).from(users).where(inArray(users.firebaseUid, [...uids]));
+    return new Map(rows.map((r) => [r.uid, r.id]));
+  }
+
   /* ---------------------------------------------------------- overview -- */
 
   async endpoints() {

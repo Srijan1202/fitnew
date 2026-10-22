@@ -18,7 +18,7 @@ export class ApiError extends Error {
  * user's Firebase ID token. Every admin route checks the `role: admin`
  * claim on the server; this client decides nothing.
  */
-export async function api<T>(method: 'GET' | 'POST' | 'PUT' | 'PATCH', path: string, body?: unknown): Promise<T> {
+export async function api<T>(method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: string, body?: unknown): Promise<T> {
   const user = firebaseAuth().currentUser;
   if (user === null) throw new ApiError(401, 'UNAUTHENTICATED', 'Sign in to continue.');
   const token = await user.getIdToken();

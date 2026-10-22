@@ -16,6 +16,7 @@ const NAV = [
   { href: '/feedback', label: 'Feedback' },
   { href: '/flags', label: 'Flags' },
   { href: '/users', label: 'Support' },
+  { href: '/admins', label: 'Admins' },
   { href: '/audit', label: 'Audit log' },
 ];
 

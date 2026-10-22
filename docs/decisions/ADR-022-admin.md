@@ -96,4 +96,12 @@ The owner chose to run the admin controls from the web, at **https://admin.tryfi
   - the DNS record `admin` → the Elastic IP;
   - `admin.tryfitos.me` added to Firebase Authentication's authorised domains, for Google sign-in.
 
+**Administrators in the panel (2026-10-23, owner):** one administrator can make another account an administrator, or take it away, on the **Admins** page.
+- `GET /v1/admin/admins` lists accounts with the claim.
+- `POST /v1/admin/admins` takes an email. The account must exist in Firebase (signed in to FITOS once): 404 otherwise, 409 if already an administrator.
+- `DELETE /v1/admin/admins/:uid` removes the claim and revokes that account's sessions. The API checks revocation on every token, so the change is immediate. Nobody removes themselves (409), so one administrator always remains.
+- Each change writes `admin.grant` / `admin.revoke` to `audit_logs`, in a transaction that commits only after Firebase accepted the change.
+- Firebase sits behind `AdminDirectory` (`lib/admin-directory.ts`); tests use an in-memory one.
+- `admin-grant` (the script, D2) and `scripts/aws/admin-grant.ps1` still work, for the first administrator or a lock-out.
+
 The last consequence above ("works only on the PC") no longer holds. The local panel still works.
