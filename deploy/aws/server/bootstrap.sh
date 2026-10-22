@@ -5,9 +5,9 @@
 # - creates fitos_migrator and fitos_app on RDS (db-roles.sql) with passwords
 #   generated here, and stores their connection strings in Parameter Store;
 # - generates the consent-hash salt.
-# Nothing is printed except what was created. Refuses to run twice (the
-# roles would exist); --force is not offered on purpose: re-creating roles is
-# a manual decision.
+# Nothing is printed except what was created. A second run changes nothing
+# and says so; --force is not offered on purpose: re-creating roles is a
+# manual decision.
 #
 # Needs the stack's BootstrapMode=true (read the RDS master secret, write
 # parameters). Set it back to false afterwards.
@@ -24,8 +24,9 @@ exists() { aws ssm get-parameter --region "$AWS_REGION" --name "$1" >/dev/null 2
 put() { aws ssm put-parameter --region "$AWS_REGION" --name "$1" --type SecureString --value "$2" >/dev/null; }
 
 if exists /fitos/beta/env/DATABASE_URL || exists /fitos/beta/migrator/DATABASE_URL; then
-  echo "already bootstrapped: /fitos/beta/env/DATABASE_URL exists. Nothing changed." >&2
-  exit 1
+  # A second run is not an error: the roles and URLs already exist and stay as they are.
+  echo "already bootstrapped: /fitos/beta/env/DATABASE_URL exists. Nothing changed."
+  exit 0
 fi
 
 master_json="$(aws secretsmanager get-secret-value --region "$AWS_REGION" --secret-id "$SECRET_ARN" --query SecretString --output text)"

@@ -156,7 +156,11 @@ Resources:
       VPCSecurityGroups: [!Ref DbSecurityGroup]
       PubliclyAccessible: false
       MultiAZ: false
-      BackupRetentionPeriod: 7
+      # 1 day: the account's Free plan refused 7 ("exceeds the maximum available
+      # to free tier customers"). 1 is the smallest value that keeps automated
+      # backups and point-in-time restore (0 would turn them off). Raise it (an
+      # in-place change, no replacement) after an upgrade to the Paid plan.
+      BackupRetentionPeriod: 1
       PreferredBackupWindow: '20:30-21:00'          # 02:00-02:30 IST
       PreferredMaintenanceWindow: 'sun:21:30-sun:22:00'
       AutoMinorVersionUpgrade: true

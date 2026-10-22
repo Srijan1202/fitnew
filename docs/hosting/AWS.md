@@ -66,9 +66,15 @@ Then, from `D:\dev\fit new`:
 ```
 aws cloudformation deploy --template-file infra/aws/fitos-beta.yaml --stack-name fitos-beta `
   --capabilities CAPABILITY_NAMED_IAM --profile fitos --region ap-south-1 `
-  --parameter-overrides ApiDomain=api.tryfitos.me AcmeEmail=<your email> BudgetEmail=<your email>
+  --parameter-overrides ApiDomain=api.tryfitos.me AcmeEmail=you@example.com BudgetEmail=you@example.com
 ```
+- Put your own address in place of `you@example.com`. (A `<placeholder>` breaks in PowerShell: `<` is an operator there.)
 - It takes about 15 minutes; the database is the slow part.
+- **If it fails:** list the cause with
+  `aws cloudformation describe-stack-events --stack-name fitos-beta --profile fitos --region ap-south-1 --query "StackEvents[?ResourceStatus=='CREATE_FAILED'].[LogicalResourceId,ResourceStatusReason]" --output table`.
+  A first deploy that fails ends in `ROLLBACK_COMPLETE`, which cannot be updated: after the fix, delete it
+  (`aws cloudformation delete-stack --stack-name fitos-beta --profile fitos --region ap-south-1`, then `aws cloudformation wait stack-delete-complete` with the same options) and deploy again.
+- **The Free plan** refused 7 days of database backups on the first deploy (2026-10-22); the template keeps 1 (see Maintenance).
 - Other parameters have defaults:
   - `InstanceType=t3.small`, `DbInstanceClass=db.t4g.micro`, `MonthlyBudgetUsd=45`;
   - `GitHubRepository=Srijan1202/fitnew`;
@@ -202,7 +208,7 @@ This:
   aws ec2 reboot-instances --instance-ids <InstanceId> --profile fitos --region ap-south-1
   ```
 - **Before a risky migration:** RDS console → the database → Actions → Take snapshot.
-- **Backups:** RDS keeps 7 days of automatic backups and can restore to any minute in that window.
+- **Backups:** RDS keeps **1 day** of automatic backups (the Free plan refused 7) and can restore to any minute in the last day. Anything older needs a manual snapshot: take one before a risky migration and before a release that changes data, and keep it. Manual snapshots stay until you delete them, and their storage is charged. After an upgrade to the Paid plan, raise `BackupRetentionPeriod` in the template to 7; it changes in place.
 
 ## Switching to Google Cloud
 
