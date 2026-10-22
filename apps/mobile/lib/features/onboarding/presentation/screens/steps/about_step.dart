@@ -253,7 +253,7 @@ class _ConsentRow extends StatelessWidget {
             value: checked,
             onChanged: enabled ? (v) => onChanged(v ?? false) : null,
             activeColor: FitColors.ink,
-            shape: const RoundedRectangleBorder(
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(FitRadius.small),
             ),
           ),

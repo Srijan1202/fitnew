@@ -60,7 +60,7 @@ class FoodSourceBadge extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
           border: Border.all(color: _colour),
-          borderRadius: const BorderRadius.all(FitRadius.small),
+          borderRadius: BorderRadius.all(FitRadius.small),
         ),
         child: Text(food.source.badge.toUpperCase(), style: style),
       ),

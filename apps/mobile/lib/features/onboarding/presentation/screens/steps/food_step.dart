@@ -191,7 +191,7 @@ class AllergyRow extends StatelessWidget {
                       color: s == severity ? FitColors.paper : FitColors.ink,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: const BorderRadius.all(FitRadius.small),
+                      borderRadius: BorderRadius.all(FitRadius.small),
                       side: BorderSide(color: FitColors.ink),
                     ),
                     showCheckmark: false,

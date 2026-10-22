@@ -62,7 +62,7 @@ abstract final class FitTheme {
         style: FilledButton.styleFrom(
           backgroundColor: FitColors.accent,
           foregroundColor: FitColors.onAccent,
-          shape: const RoundedRectangleBorder(
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(FitRadius.small),
           ),
           // 44×44 minimum tap target (§6.8).
@@ -83,13 +83,45 @@ abstract final class FitTheme {
         scrolledUnderElevation: 0,
         systemOverlayStyle: overlayStyle,
       ),
+      // ADR-029: on the glass palettes, controls are rounded the iPhone way;
+      // Paper keeps its 2 px corners (FitRadius follows the palette).
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(FitRadius.small),
+          ),
+        ),
+      ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: SegmentedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(FitRadius.small),
+          ),
+          selectedBackgroundColor: FitPalette.current.glass
+              ? FitColors.accent
+              : FitColors.ink.withValues(alpha: 0.12),
+          selectedForegroundColor:
+              FitPalette.current.glass ? FitColors.onAccent : FitColors.ink,
+        ),
+      ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: FitColors.paper,
         surfaceTintColor: Colors.transparent,
+        shape: FitPalette.current.glass
+            ? const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              )
+            : null,
+        dragHandleColor: FitColors.ink35,
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: FitColors.paper,
         surfaceTintColor: Colors.transparent,
+        shape: FitPalette.current.glass
+            ? const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(28)),
+              )
+            : null,
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: FitColors.ink,

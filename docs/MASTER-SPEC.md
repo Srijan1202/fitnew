@@ -106,6 +106,8 @@ Persona C is the go-to-market wedge: geographically concentrated, underserved, a
 
 Card soup · uniform rounded cards · glassmorphism · decorative gradients · AI illustrations · "Good morning 👋" · circular progress rings as default · heavy shadows · every feature inside a card · motivational quotes · emoji in system copy.
 
+`AMENDED 2026-10-22 (Phase 19, ADR-029, owner)`: on every palette except Paper, the app uses rounded, translucent blocks with a soft shadow in the palette's glow colour (radius 14 for controls, 22 for blocks). Paper keeps the flat, hairline look of this section and §6.2–§6.4 exactly.
+
 ### 6.2 Design tokens (`DECISION`)
 
 ```

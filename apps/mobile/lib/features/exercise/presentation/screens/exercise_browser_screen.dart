@@ -65,7 +65,7 @@ class _ExerciseBrowserScreenState extends ConsumerState<ExerciseBrowserScreen> {
       context: context,
       backgroundColor: FitColors.paper,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: FitRadius.medium),
       ),
       builder: (ctx) => SafeArea(

@@ -146,7 +146,12 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.text('Premium is on.'), findsOneWidget);
+      expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('profile.premium.line')))
+            .data,
+        'Active',
+      );
     });
 
     testWidgets(
@@ -233,10 +238,7 @@ void main() {
       expect(FitPalette.current.id, 'fitos-light');
       // A button style built once kept FITOS Dark's white: invisible on light.
       final changeGoal = tester.widget<OutlinedButton>(
-        find.ancestor(
-          of: find.text('Change goal'),
-          matching: find.byType(OutlinedButton),
-        ),
+        find.byKey(const ValueKey('profile.changeGoal')),
       );
       expect(
         changeGoal.style?.foregroundColor?.resolve(<WidgetState>{}),

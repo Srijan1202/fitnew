@@ -146,8 +146,7 @@ class ExerciseCard extends ConsumerWidget {
                             onTap: enabled
                                 ? () => onRemoveSet!(set.setIndex)
                                 : null,
-                            borderRadius:
-                                const BorderRadius.all(FitRadius.medium),
+                            borderRadius: BorderRadius.all(FitRadius.medium),
                             child: SizedBox(
                               width: 32,
                               height: 44,

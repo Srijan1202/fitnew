@@ -132,7 +132,7 @@ class FitBottomBar extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: sideMargin),
         child: ClipRRect(
-          borderRadius: const BorderRadius.all(FitRadius.medium),
+          borderRadius: BorderRadius.all(FitRadius.medium),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
             child: Container(
@@ -140,16 +140,20 @@ class FitBottomBar extends StatelessWidget {
               height: contentHeight,
               foregroundDecoration: BoxDecoration(
                 border: Border.all(color: FitColors.rule),
-                borderRadius: const BorderRadius.all(FitRadius.medium),
+                borderRadius: BorderRadius.all(FitRadius.medium),
               ),
               decoration: BoxDecoration(
                 color: surface,
-                borderRadius: const BorderRadius.all(FitRadius.medium),
-                boxShadow: const <BoxShadow>[
+                borderRadius: BorderRadius.all(FitRadius.medium),
+                // ADR-029: a soft shadow in the palette's glow on glass.
+                boxShadow: <BoxShadow>[
                   BoxShadow(
-                    color: Color(0x1A17171A),
-                    blurRadius: 12,
-                    offset: Offset(0, 4),
+                    color: FitPalette.current.glass
+                        ? FitPalette.current.glow.withValues(alpha: 0.18)
+                        : const Color(0x1A17171A),
+                    blurRadius: FitPalette.current.glass ? 24 : 12,
+                    spreadRadius: FitPalette.current.glass ? -4 : 0,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),

@@ -28,13 +28,13 @@ class FilterButton extends StatelessWidget {
       label: on ? '$label: $value' : label,
       child: InkWell(
         onTap: onTap,
-        borderRadius: const BorderRadius.all(FitRadius.medium),
+        borderRadius: BorderRadius.all(FitRadius.medium),
         child: Container(
           constraints: const BoxConstraints(minHeight: 44),
           padding: const EdgeInsets.symmetric(horizontal: FitSpacing.sm + 2),
           decoration: BoxDecoration(
             border: Border.all(color: on ? FitColors.ink : FitColors.rule),
-            borderRadius: const BorderRadius.all(FitRadius.medium),
+            borderRadius: BorderRadius.all(FitRadius.medium),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

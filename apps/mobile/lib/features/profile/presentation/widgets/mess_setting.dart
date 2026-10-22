@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/failure.dart';
-import '../../../../core/theme/tokens.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 import '../../../mess/domain/mess.dart';
 import '../../../mess/presentation/mess_providers.dart';
 import '../../../mess/presentation/widgets/mess_sheets.dart';
@@ -51,7 +51,7 @@ Future<void> changeMess(
   );
 }
 
-/// Profile: "Mess — Men's Hostel · Vegetarian   Change".
+/// Profile: "Mess — Men's Hostel · Vegetarian  ›" (ADR-029: a list row).
 class MessSettingRow extends ConsumerWidget {
   const MessSettingRow({required this.mess, super.key});
 
@@ -59,7 +59,6 @@ class MessSettingRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textTheme = Theme.of(context).textTheme;
     final m = mess;
     final list = ref.watch(messesProvider).value;
     final known = m == null
@@ -69,28 +68,13 @@ class MessSettingRow extends ConsumerWidget {
             .firstOrNull;
     final value =
         m == null ? 'Not set' : known?.label ?? '${m.hostelId} · ${m.messId}';
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: FitSpacing.xs),
-      child: Row(
-        children: <Widget>[
-          SizedBox(
-            width: 120,
-            child: Text('Mess', style: textTheme.bodyMedium),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              key: const ValueKey('profile.mess'),
-              style: textTheme.bodyLarge,
-            ),
-          ),
-          TextButton(
-            key: const ValueKey('profile.mess.change'),
-            onPressed: () => changeMess(context, ref, currentCode: known?.code),
-            child: Text(m == null ? 'Choose' : 'Change'),
-          ),
-        ],
-      ),
+    return FitRow(
+      key: const ValueKey('profile.mess.change'),
+      icon: Icons.restaurant_outlined,
+      title: 'Mess',
+      value: value,
+      valueKey: const ValueKey('profile.mess'),
+      onTap: () => changeMess(context, ref, currentCode: known?.code),
     );
   }
 }

@@ -293,7 +293,7 @@ class _Tap extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: enabled ? onTap : null,
-      borderRadius: const BorderRadius.all(FitRadius.medium),
+      borderRadius: BorderRadius.all(FitRadius.medium),
       child: SizedBox(
         width: 40,
         height: 44,

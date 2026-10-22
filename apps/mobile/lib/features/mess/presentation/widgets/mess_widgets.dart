@@ -67,7 +67,7 @@ class DietMark extends StatelessWidget {
         height: 14,
         decoration: BoxDecoration(
           border: Border.all(color: _colour, width: 1.5),
-          borderRadius: const BorderRadius.all(FitRadius.small),
+          borderRadius: BorderRadius.all(FitRadius.small),
         ),
         alignment: Alignment.center,
         child: diet == DietClass.unknown

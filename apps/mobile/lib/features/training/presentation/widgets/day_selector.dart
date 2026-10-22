@@ -81,7 +81,7 @@ class _DayTab extends StatelessWidget {
       label: '$label${isRest ? ', rest' : ''}',
       child: InkWell(
         onTap: onTap,
-        borderRadius: const BorderRadius.all(FitRadius.small),
+        borderRadius: BorderRadius.all(FitRadius.small),
         child: Container(
           constraints: const BoxConstraints(minHeight: 56),
           padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),

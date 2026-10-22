@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../../core/routing/router.dart';
+import '../../../shared/widgets/fit_glass.dart';
 import '../../../core/theme/tokens.dart';
 import '../../health/presentation/controllers/health_providers.dart';
 import '../../home/domain/home_suggestion_engine.dart';
@@ -79,110 +80,113 @@ class ProgressScreen extends ConsumerWidget {
     final view = async.value;
     final s = view?.summary;
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          color: FitColors.ink,
-          onRefresh: () => _refresh(ref),
-          child: ListView(
-            key: const ValueKey('progress.list'),
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.only(bottom: 112),
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  FitSpacing.screen,
-                  FitSpacing.lg,
-                  FitSpacing.screen,
-                  FitSpacing.md,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text('PROGRESS', style: textTheme.labelSmall),
-                    const SizedBox(height: FitSpacing.xs),
-                    Text(
-                      'Progress & Recovery',
-                      key: const ValueKey('progress.title'),
-                      style: textTheme.displaySmall,
-                    ),
-                    const SizedBox(height: FitSpacing.md),
-                    SegmentedButton<ProgressWindow>(
-                      key: const ValueKey('progress.window'),
-                      segments: [
-                        for (final w in ProgressWindow.values)
-                          ButtonSegment(
-                            value: w,
-                            label: Text(
-                              w.label,
-                              key: ValueKey('progress.window.${w.wire}'),
-                            ),
-                          ),
-                      ],
-                      selected: {window},
-                      showSelectedIcon: false,
-                      onSelectionChanged: (v) => ref
-                          .read(progressWindowProvider.notifier)
-                          .set(v.first),
-                    ),
-                    const SizedBox(height: FitSpacing.md),
-                    // Phase 19 (ADR-027): the weekly report, premium.
-                    const WeeklyReportEntry(),
-                  ],
-                ),
-              ),
-              if (_status(ref, view) case final line?)
-                _Pad(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: FitSpacing.md),
-                    child: _Note(
-                      line.$2,
-                      textKey: ValueKey(line.$1),
-                      icon: Icons.cloud_off_outlined,
-                    ),
-                  ),
-                ),
-              if (async.isLoading && s == null)
+      body: FitBackdrop(
+        child: SafeArea(
+          bottom: false,
+          child: RefreshIndicator(
+            color: FitColors.ink,
+            onRefresh: () => _refresh(ref),
+            child: ListView(
+              key: const ValueKey('progress.list'),
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(bottom: 112),
+              children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.all(FitSpacing.screen),
-                  child: LinearProgressIndicator(
-                    key: const ValueKey('progress.loading'),
-                    color: FitColors.ink,
-                    backgroundColor: FitColors.paper2,
+                  padding: const EdgeInsets.fromLTRB(
+                    FitSpacing.screen,
+                    FitSpacing.lg,
+                    FitSpacing.screen,
+                    FitSpacing.md,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text('PROGRESS', style: textTheme.labelSmall),
+                      const SizedBox(height: FitSpacing.xs),
+                      Text(
+                        'Progress & Recovery',
+                        key: const ValueKey('progress.title'),
+                        style: textTheme.displaySmall,
+                      ),
+                      const SizedBox(height: FitSpacing.md),
+                      SegmentedButton<ProgressWindow>(
+                        key: const ValueKey('progress.window'),
+                        segments: [
+                          for (final w in ProgressWindow.values)
+                            ButtonSegment(
+                              value: w,
+                              label: Text(
+                                w.label,
+                                key: ValueKey('progress.window.${w.wire}'),
+                              ),
+                            ),
+                        ],
+                        selected: {window},
+                        showSelectedIcon: false,
+                        onSelectionChanged: (v) => ref
+                            .read(progressWindowProvider.notifier)
+                            .set(v.first),
+                      ),
+                      const SizedBox(height: FitSpacing.md),
+                      // Phase 19 (ADR-027): the weekly report, premium.
+                      const WeeklyReportEntry(),
+                    ],
                   ),
                 ),
-              if (s != null) ...<Widget>[
-                const _SectionHeader('Weight'),
-                _WeightSection(summary: s),
-              ],
-              const _SectionHeader(
-                'Recovery',
-                sub: 'Check in daily — readiness is worked out from it.',
-              ),
-              const _RecoverySection(),
-              if (s != null) ...<Widget>[
-                const _SectionHeader('Body measurements'),
-                _MeasurementSection(summary: s),
+                if (_status(ref, view) case final line?)
+                  _Pad(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: FitSpacing.md),
+                      child: _Note(
+                        line.$2,
+                        textKey: ValueKey(line.$1),
+                        icon: Icons.cloud_off_outlined,
+                      ),
+                    ),
+                  ),
+                if (async.isLoading && s == null)
+                  Padding(
+                    padding: const EdgeInsets.all(FitSpacing.screen),
+                    child: LinearProgressIndicator(
+                      key: const ValueKey('progress.loading'),
+                      color: FitColors.ink,
+                      backgroundColor: FitColors.paper2,
+                    ),
+                  ),
+                if (s != null) ...<Widget>[
+                  const _SectionHeader('Weight'),
+                  _Card(child: _WeightSection(summary: s)),
+                ],
                 const _SectionHeader(
-                  'Strength',
-                  sub: 'Best estimated one-rep max per lift, this period.',
+                  'Recovery',
+                  sub: 'Check in daily — readiness is worked out from it.',
                 ),
-                _StrengthSection(summary: s),
-                const _SectionHeader('Training'),
-                _ConsistencySection(summary: s),
-              ] else
-                const _SectionHeader('Training'),
-              const _VolumeHeatmap(),
-              if (s != null) ...<Widget>[
-                const _SectionHeader(
-                  'Nutrition',
-                  sub:
-                      'Only days with food logged count — a day without a log is not a miss.',
-                ),
-                _AdherenceSection(summary: s),
-                _RecordsSection(summary: s),
+                const _Card(child: _RecoverySection()),
+                if (s != null) ...<Widget>[
+                  const _SectionHeader('Body measurements'),
+                  _Card(child: _MeasurementSection(summary: s)),
+                  const _SectionHeader(
+                    'Strength',
+                    sub: 'Best estimated one-rep max per lift, this period.',
+                  ),
+                  _Card(child: _StrengthSection(summary: s)),
+                  const _SectionHeader('Training'),
+                  _Card(child: _ConsistencySection(summary: s)),
+                  const SizedBox(height: FitSpacing.md),
+                ] else
+                  const _SectionHeader('Training'),
+                const _Card(child: _VolumeHeatmap()),
+                if (s != null) ...<Widget>[
+                  const _SectionHeader(
+                    'Nutrition',
+                    sub:
+                        'Only days with food logged count — a day without a log is not a miss.',
+                  ),
+                  _Card(child: _AdherenceSection(summary: s)),
+                  _RecordsSection(summary: s),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -226,7 +230,7 @@ class ProgressScreen extends ConsumerWidget {
 ButtonStyle get _squareOutline => OutlinedButton.styleFrom(
       foregroundColor: FitColors.ink,
       side: BorderSide(color: FitColors.ink),
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.all(FitRadius.small),
       ),
       minimumSize: const Size.fromHeight(44),
@@ -239,7 +243,23 @@ class _Pad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
+        padding: EdgeInsets.symmetric(
+          horizontal: fitGlass ? FitSpacing.md : FitSpacing.screen,
+        ),
+        child: child,
+      );
+}
+
+/// ADR-029: a section's body in a rounded block; nothing extra on Paper.
+class _Card extends StatelessWidget {
+  const _Card({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => FitBlock(
+        margin: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
         child: child,
       );
 }
@@ -259,9 +279,12 @@ class _SectionHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Divider(color: FitColors.rule, height: 1),
-          const SizedBox(height: FitSpacing.afterRule),
-          _Pad(
+          const FitRule(),
+          SizedBox(height: fitGlass ? FitSpacing.sm : FitSpacing.afterRule),
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: fitGlass ? 20 : FitSpacing.screen,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -284,7 +307,7 @@ class _SectionHeader extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: FitSpacing.md),
+          SizedBox(height: fitGlass ? FitSpacing.sm : FitSpacing.md),
         ],
       ),
     );
@@ -319,9 +342,9 @@ class _Stat extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: FitSpacing.screen,
-        vertical: FitSpacing.md,
+      padding: EdgeInsets.symmetric(
+        horizontal: fitGlass ? 14 : FitSpacing.screen,
+        vertical: fitGlass ? 12 : FitSpacing.md,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,29 +383,10 @@ class _StatGrid extends StatelessWidget {
   final List<Widget> tiles;
 
   @override
-  Widget build(BuildContext context) {
-    final rows = <Widget>[];
-    for (var i = 0; i < tiles.length; i += 2) {
-      rows
-        ..add(Divider(color: FitColors.rule, height: 1))
-        ..add(
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Expanded(child: tiles[i]),
-                VerticalDivider(color: FitColors.rule, width: 1),
-                Expanded(
-                  child: i + 1 < tiles.length ? tiles[i + 1] : const SizedBox(),
-                ),
-              ],
-            ),
-          ),
-        );
-    }
-    rows.add(Divider(color: FitColors.rule, height: 1));
-    return Column(children: rows);
-  }
+  Widget build(BuildContext context) => FitTileGrid(
+        tiles: tiles,
+        margin: const EdgeInsets.symmetric(horizontal: FitSpacing.md),
+      );
 }
 
 /// A thin share bar: pine fill (on track, §6.2) on the recessed paper.
@@ -393,7 +397,7 @@ class _Bar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ClipRRect(
-        borderRadius: const BorderRadius.all(FitRadius.small),
+        borderRadius: BorderRadius.all(FitRadius.small),
         child: LinearProgressIndicator(
           value: share.clamp(0, 1),
           minHeight: 6,
@@ -452,8 +456,10 @@ class _Panel extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(FitSpacing.md),
       decoration: BoxDecoration(
-        color: FitColors.paper2,
-        borderRadius: const BorderRadius.all(FitRadius.small),
+        color: fitGlass
+            ? FitColors.ink.withValues(alpha: 0.045)
+            : FitColors.paper2,
+        borderRadius: BorderRadius.all(FitRadius.small),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -714,7 +720,13 @@ class _StrengthSectionState extends State<_StrengthSection> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         for (final b in visible) ...<Widget>[
-          Divider(color: FitColors.rule, height: 1),
+          if (!fitGlass || b != visible.first)
+            Divider(
+              color: FitColors.rule,
+              height: 1,
+              indent: fitGlass ? FitSpacing.md : 0,
+              endIndent: fitGlass ? FitSpacing.md : 0,
+            ),
           _Pad(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm + 4),
@@ -756,7 +768,7 @@ class _StrengthSectionState extends State<_StrengthSection> {
             ),
           ),
         ],
-        Divider(color: FitColors.rule, height: 1),
+        const FitRule(),
         if (lifts.length > _StrengthSection.shown)
           Align(
             alignment: Alignment.centerLeft,
@@ -906,7 +918,7 @@ class _Cell extends StatelessWidget {
                 ? null
                 : VolumeWording.color(status).withValues(alpha: 0.8),
             border: Border.all(color: FitColors.rule),
-            borderRadius: const BorderRadius.all(FitRadius.small),
+            borderRadius: BorderRadius.all(FitRadius.small),
           ),
         ),
       );
@@ -1032,7 +1044,7 @@ class _WeekDots extends StatelessWidget {
                       border: Border.all(
                         color: i < filled ? FitColors.ink : FitColors.rule,
                       ),
-                      borderRadius: const BorderRadius.all(FitRadius.small),
+                      borderRadius: BorderRadius.all(FitRadius.small),
                     ),
                   ),
                 if (extra > 0)
@@ -1084,96 +1096,99 @@ class _RecordsSectionState extends State<_RecordsSection> {
     final muted = textTheme.bodySmall?.copyWith(color: FitColors.ink60);
     return Padding(
       padding: const EdgeInsets.only(top: FitSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Divider(color: FitColors.rule, height: 1),
-          InkWell(
-            key: const ValueKey('progress.records.toggle'),
-            onTap: prs.isEmpty ? null : () => setState(() => _open = !_open),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: FitSpacing.screen,
-                vertical: FitSpacing.md,
-              ),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          'RECORDS',
-                          style: textTheme.labelSmall?.copyWith(
-                            color: FitColors.ink,
-                            letterSpacing: 1.2,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          prs.isEmpty
-                              ? 'No records this period'
-                              : '${prs.length} ${prs.length == 1 ? 'record' : 'records'} this period',
-                          key: const ValueKey('progress.records.count'),
-                          style: muted,
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (prs.isNotEmpty)
-                    Icon(
-                      _open ? Icons.expand_less : Icons.expand_more,
-                      color: FitColors.ink60,
-                      semanticLabel: _open ? 'Hide records' : 'Show records',
-                    ),
-                ],
-              ),
-            ),
-          ),
-          if (_open)
-            for (final p in prs) ...<Widget>[
-              Divider(
-                color: FitColors.rule,
-                height: 1,
-                indent: FitSpacing.screen,
-              ),
-              Padding(
-                key: ValueKey('progress.pr.${p.id}'),
+      child: FitBlock(
+        margin: const EdgeInsets.symmetric(horizontal: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            const FitRule(),
+            InkWell(
+              key: const ValueKey('progress.records.toggle'),
+              onTap: prs.isEmpty ? null : () => setState(() => _open = !_open),
+              child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: FitSpacing.screen,
-                  vertical: FitSpacing.sm + 2,
+                  vertical: FitSpacing.md,
                 ),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Icon(
-                        Icons.emoji_events_outlined,
-                        size: 18,
-                        color: FitColors.pine,
-                      ),
-                    ),
-                    const SizedBox(width: FitSpacing.sm),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            '${p.exerciseName} · ${ProgressScreen.date(p.achievedOn)}',
-                            style: textTheme.bodyMedium,
+                            'RECORDS',
+                            style: textTheme.labelSmall?.copyWith(
+                              color: FitColors.ink,
+                              letterSpacing: 1.2,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                          Text(p.reason, style: muted),
+                          const SizedBox(height: 2),
+                          Text(
+                            prs.isEmpty
+                                ? 'No records this period'
+                                : '${prs.length} ${prs.length == 1 ? 'record' : 'records'} this period',
+                            key: const ValueKey('progress.records.count'),
+                            style: muted,
+                          ),
                         ],
                       ),
                     ),
+                    if (prs.isNotEmpty)
+                      Icon(
+                        _open ? Icons.expand_less : Icons.expand_more,
+                        color: FitColors.ink60,
+                        semanticLabel: _open ? 'Hide records' : 'Show records',
+                      ),
                   ],
                 ),
               ),
-            ],
-          Divider(color: FitColors.rule, height: 1),
-        ],
+            ),
+            if (_open)
+              for (final p in prs) ...<Widget>[
+                Divider(
+                  color: FitColors.rule,
+                  height: 1,
+                  indent: FitSpacing.screen,
+                ),
+                Padding(
+                  key: ValueKey('progress.pr.${p.id}'),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: FitSpacing.screen,
+                    vertical: FitSpacing.sm + 2,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Icon(
+                          Icons.emoji_events_outlined,
+                          size: 18,
+                          color: FitColors.pine,
+                        ),
+                      ),
+                      const SizedBox(width: FitSpacing.sm),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              '${p.exerciseName} · ${ProgressScreen.date(p.achievedOn)}',
+                              style: textTheme.bodyMedium,
+                            ),
+                            Text(p.reason, style: muted),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            const FitRule(),
+          ],
+        ),
       ),
     );
   }

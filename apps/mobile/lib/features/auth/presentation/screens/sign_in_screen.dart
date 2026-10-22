@@ -124,7 +124,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       foregroundColor: FitColors.ink,
                       side: BorderSide(color: FitColors.ink),
                       minimumSize: const Size(88, 48),
-                      shape: const RoundedRectangleBorder(
+                      shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(FitRadius.small),
                       ),
                     ),

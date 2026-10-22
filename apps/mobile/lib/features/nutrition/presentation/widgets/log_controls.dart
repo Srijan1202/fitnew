@@ -170,7 +170,7 @@ class ChoiceWrap<T> extends StatelessWidget {
             child: InkWell(
               key: ValueKey('$keyPrefix.${label(o)}'),
               onTap: () => onSelect(o),
-              borderRadius: const BorderRadius.all(FitRadius.medium),
+              borderRadius: BorderRadius.all(FitRadius.medium),
               child: Container(
                 constraints: const BoxConstraints(minHeight: 44),
                 padding: const EdgeInsets.symmetric(
@@ -182,7 +182,7 @@ class ChoiceWrap<T> extends StatelessWidget {
                   border: Border.all(
                     color: o == selected ? FitColors.ink : FitColors.rule,
                   ),
-                  borderRadius: const BorderRadius.all(FitRadius.medium),
+                  borderRadius: BorderRadius.all(FitRadius.medium),
                 ),
                 child: Text(
                   label(o),

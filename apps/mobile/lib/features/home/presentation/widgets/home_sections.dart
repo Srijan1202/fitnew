@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/router.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../health/domain/entities/health.dart';
 import '../../../recovery/domain/recovery.dart';
@@ -213,9 +214,9 @@ class _Block extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final body = Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: FitSpacing.screen,
-        vertical: FitSpacing.md,
+      padding: EdgeInsets.symmetric(
+        horizontal: fitGlass ? 14 : FitSpacing.screen,
+        vertical: fitGlass ? 14 : FitSpacing.md,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,32 +250,9 @@ class _Grid extends StatelessWidget {
 
   final List<Widget> blocks;
 
+  /// ADR-029: separate glass tiles; the hairline grid on Paper.
   @override
-  Widget build(BuildContext context) {
-    final rows = <Widget>[];
-    for (var i = 0; i < blocks.length; i += 2) {
-      rows
-        ..add(Divider(color: FitColors.rule, height: 1))
-        ..add(
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Expanded(child: blocks[i]),
-                VerticalDivider(color: FitColors.rule, width: 1),
-                Expanded(
-                  child: i + 1 < blocks.length
-                      ? blocks[i + 1]
-                      : const SizedBox.shrink(),
-                ),
-              ],
-            ),
-          ),
-        );
-    }
-    rows.add(Divider(color: FitColors.rule, height: 1));
-    return Column(children: rows);
-  }
+  Widget build(BuildContext context) => FitTileGrid(tiles: blocks);
 }
 
 /// Steps · Active calories · Food · Workout.
@@ -460,8 +438,10 @@ class RecoverySection extends StatelessWidget {
       child: const Text('Connect Health data →'),
     );
     if (!anyGranted && loggedSleep == null && readiness == null) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
+      return FitBlock(
+        margin: const EdgeInsets.symmetric(horizontal: FitSpacing.md),
+        padding: const EdgeInsets.all(FitSpacing.md),
+        flatPadding: const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -610,8 +590,8 @@ class WeekSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     Widget row(String label, int done, int total, String key) => Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: FitSpacing.screen,
+          padding: EdgeInsets.symmetric(
+            horizontal: fitGlass ? FitSpacing.md : FitSpacing.screen,
             vertical: FitSpacing.sm,
           ),
           child: Row(
@@ -629,11 +609,20 @@ class WeekSection extends StatelessWidget {
                         height: 10,
                         margin: const EdgeInsets.only(right: 6),
                         decoration: BoxDecoration(
-                          color: i < done ? FitColors.ink : Colors.transparent,
+                          color: i < done
+                              ? (fitGlass ? FitColors.accent : FitColors.ink)
+                              : Colors.transparent,
                           border: Border.all(
-                            color: i < done ? FitColors.ink : FitColors.ink35,
+                            color: i < done
+                                ? (fitGlass ? FitColors.accent : FitColors.ink)
+                                : FitColors.ink35,
                           ),
-                          borderRadius: const BorderRadius.all(FitRadius.small),
+                          // Dots on glass; the §6 squares on Paper.
+                          shape:
+                              fitGlass ? BoxShape.circle : BoxShape.rectangle,
+                          borderRadius: fitGlass
+                              ? null
+                              : BorderRadius.all(FitRadius.small),
                         ),
                       ),
                   ],
@@ -647,45 +636,49 @@ class WeekSection extends StatelessWidget {
             ],
           ),
         );
-    return Column(
-      children: <Widget>[
-        Divider(color: FitColors.rule, height: 1),
-        if (week.trainingPlanned > 0)
-          row(
-            'Training',
-            week.trainingDone,
-            week.trainingPlanned,
-            'home.week.training',
-          )
-        else
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: FitSpacing.screen,
-              vertical: FitSpacing.sm,
-            ),
-            child: Row(
-              children: <Widget>[
-                SizedBox(
-                  width: 96,
-                  child: Text('Training', style: textTheme.titleMedium),
-                ),
-                Expanded(
-                  child: Text(
-                    'No programme yet',
-                    key: const ValueKey('home.week.training'),
-                    style:
-                        textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+    return FitBlock(
+      margin: const EdgeInsets.symmetric(horizontal: FitSpacing.md),
+      padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
+      child: Column(
+        children: <Widget>[
+          const FitRule(),
+          if (week.trainingPlanned > 0)
+            row(
+              'Training',
+              week.trainingDone,
+              week.trainingPlanned,
+              'home.week.training',
+            )
+          else
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: fitGlass ? FitSpacing.md : FitSpacing.screen,
+                vertical: FitSpacing.sm,
+              ),
+              child: Row(
+                children: <Widget>[
+                  SizedBox(
+                    width: 96,
+                    child: Text('Training', style: textTheme.titleMedium),
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: Text(
+                      'No programme yet',
+                      key: const ValueKey('home.week.training'),
+                      style: textTheme.bodyMedium
+                          ?.copyWith(color: FitColors.ink60),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        if (week.movementDays != null)
-          row('Movement', week.movementDays!, 7, 'home.week.movement'),
-        if (week.sleepDays != null)
-          row('Sleep', week.sleepDays!, 7, 'home.week.sleep'),
-        Divider(color: FitColors.rule, height: 1),
-      ],
+          if (week.movementDays != null)
+            row('Movement', week.movementDays!, 7, 'home.week.movement'),
+          if (week.sleepDays != null)
+            row('Sleep', week.sleepDays!, 7, 'home.week.sleep'),
+          const FitRule(),
+        ],
+      ),
     );
   }
 }

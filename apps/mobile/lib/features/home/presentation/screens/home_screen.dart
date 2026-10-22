@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../../../core/routing/router.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../health/domain/entities/health.dart';
 import '../../../health/presentation/controllers/health_providers.dart';
@@ -176,112 +177,116 @@ class HomeScreen extends ConsumerWidget {
     final status = _planStatus(ref, ref.watch(todayPlanProvider).value);
 
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          color: FitColors.ink,
-          onRefresh: () => _refresh(ref),
-          child: SingleChildScrollView(
-            key: const ValueKey('home.list'),
-            physics: const AlwaysScrollableScrollPhysics(),
-            // Room for the floating bar over the last section.
-            padding: const EdgeInsets.only(bottom: 112),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                HomeHeader(
-                  hour: c.hourOfDay,
-                  date: c.date,
-                  name: c.displayName,
-                ),
-                if (ref.watch(askForNameProvider)) const NamePrompt(),
-                if (ref.watch(homeServerFailureProvider) case final f?)
-                  ServerNotice(
-                    message: f.message,
-                    onRetry: () => _refresh(ref),
+      body: FitBackdrop(
+        child: SafeArea(
+          bottom: false,
+          child: RefreshIndicator(
+            color: FitColors.ink,
+            onRefresh: () => _refresh(ref),
+            child: SingleChildScrollView(
+              key: const ValueKey('home.list'),
+              physics: const AlwaysScrollableScrollPhysics(),
+              // Room for the floating bar over the last section.
+              padding: const EdgeInsets.only(bottom: 112),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  HomeHeader(
+                    hour: c.hourOfDay,
+                    date: c.date,
+                    name: c.displayName,
                   ),
-                // Phase 6.6 Gate 7: a session FITOS holds that this phone
-                // lost (sign-out / cleared data) blocks every new one.
-                if (ref.watch(orphanedSessionProvider).value != null)
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      FitSpacing.screen,
-                      0,
-                      FitSpacing.screen,
-                      FitSpacing.md,
+                  if (ref.watch(askForNameProvider)) const NamePrompt(),
+                  if (ref.watch(homeServerFailureProvider) case final f?)
+                    ServerNotice(
+                      message: f.message,
+                      onRetry: () => _refresh(ref),
                     ),
-                    child: OrphanSessionNotice(),
-                  ),
-                if (loading && carousel.isEmpty)
-                  const HomeSkeleton()
-                else if (carousel.isNotEmpty || status != null) ...<Widget>[
-                  const SectionLabel('Your next move'),
-                  if (status != null)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(
+                  // Phase 6.6 Gate 7: a session FITOS holds that this phone
+                  // lost (sign-out / cleared data) blocks every new one.
+                  if (ref.watch(orphanedSessionProvider).value != null)
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(
                         FitSpacing.screen,
                         0,
                         FitSpacing.screen,
-                        FitSpacing.sm,
+                        FitSpacing.md,
                       ),
-                      child: Text(
-                        status.$2,
-                        key: ValueKey(status.$1),
-                        style: textTheme.bodyMedium
-                            ?.copyWith(color: FitColors.ink60),
+                      child: OrphanSessionNotice(),
+                    ),
+                  if (loading && carousel.isEmpty)
+                    const HomeSkeleton()
+                  else if (carousel.isNotEmpty || status != null) ...<Widget>[
+                    const SectionLabel('Your next move'),
+                    if (status != null)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          FitSpacing.screen,
+                          0,
+                          FitSpacing.screen,
+                          FitSpacing.sm,
+                        ),
+                        child: Text(
+                          status.$2,
+                          key: ValueKey(status.$1),
+                          style: textTheme.bodyMedium
+                              ?.copyWith(color: FitColors.ink60),
+                        ),
                       ),
-                    ),
-                  if (carousel.isNotEmpty)
-                    SuggestionCarousel(
-                      key: const ValueKey('home.carousel'),
-                      suggestions: carousel,
-                      recorded: ref.watch(todayRecordedProvider),
-                      messConfigured: _messConfigured(ref),
-                      onAction: (s) => _act(context, ref, s),
-                      onOpen: (s) => _open(context, ref, s),
-                      onDismiss: (s) => _dismiss(ref, s),
-                      onShown: (s) => _record(ref, s, TodayEventName.shown),
-                    ),
-                ],
-                const SizedBox(height: FitSpacing.lg),
-                const SectionLabel('Today'),
-                TodayMetrics(context: c),
-                const SizedBox(height: FitSpacing.lg),
-                const SectionLabel('Recovery'),
-                RecoverySection(
-                  context: c,
-                  checkIn: ref.watch(recoveryTodayProvider).value?.today,
-                ),
-                if (_showBody(c)) ...<Widget>[
+                    if (carousel.isNotEmpty)
+                      SuggestionCarousel(
+                        key: const ValueKey('home.carousel'),
+                        suggestions: carousel,
+                        recorded: ref.watch(todayRecordedProvider),
+                        messConfigured: _messConfigured(ref),
+                        onAction: (s) => _act(context, ref, s),
+                        onOpen: (s) => _open(context, ref, s),
+                        onDismiss: (s) => _dismiss(ref, s),
+                        onShown: (s) => _record(ref, s, TodayEventName.shown),
+                      ),
+                  ],
                   const SizedBox(height: FitSpacing.lg),
-                  const SectionLabel('Body'),
-                  BodySection(context: c),
+                  const SectionLabel('Today'),
+                  TodayMetrics(context: c),
+                  const SizedBox(height: FitSpacing.lg),
+                  const SectionLabel('Recovery'),
+                  RecoverySection(
+                    context: c,
+                    checkIn: ref.watch(recoveryTodayProvider).value?.today,
+                  ),
+                  if (_showBody(c)) ...<Widget>[
+                    const SizedBox(height: FitSpacing.lg),
+                    const SectionLabel('Body'),
+                    BodySection(context: c),
+                  ],
+                  const SizedBox(height: FitSpacing.lg),
+                  const SectionLabel('This week'),
+                  WeekSection(week: c.week),
+                  const SizedBox(height: FitSpacing.md),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: FitSpacing.screen,
+                    ),
+                    child: OutlinedButton(
+                      key: const ValueKey('today.volume'),
+                      onPressed: () => context.push(Routes.volume),
+                      child: const Text('Training volume →'),
+                    ),
+                  ),
+                  const SizedBox(height: FitSpacing.lg),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: FitSpacing.screen,
+                    ),
+                    child: Text(
+                      _footer(c),
+                      key: const ValueKey('home.footer'),
+                      style: textTheme.bodyMedium
+                          ?.copyWith(color: FitColors.ink35),
+                    ),
+                  ),
                 ],
-                const SizedBox(height: FitSpacing.lg),
-                const SectionLabel('This week'),
-                WeekSection(week: c.week),
-                const SizedBox(height: FitSpacing.md),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
-                  child: OutlinedButton(
-                    key: const ValueKey('today.volume'),
-                    onPressed: () => context.push(Routes.volume),
-                    child: const Text('Training volume →'),
-                  ),
-                ),
-                const SizedBox(height: FitSpacing.lg),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
-                  child: Text(
-                    _footer(c),
-                    key: const ValueKey('home.footer'),
-                    style:
-                        textTheme.bodyMedium?.copyWith(color: FitColors.ink35),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),

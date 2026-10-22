@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/theme_controller.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../shared/widgets/fit_glass.dart';
 import '../domain/avatars.dart';
 import 'premium_providers.dart';
 import 'premium_sheet.dart';
@@ -81,10 +82,17 @@ class _Swatch extends StatelessWidget {
             Container(
               width: 52,
               height: 52,
+              clipBehavior: fitGlass ? Clip.antiAlias : Clip.none,
               decoration: BoxDecoration(
                 color: palette.paper,
+                // ADR-029: rounded on the glass palettes.
+                borderRadius: fitGlass
+                    ? const BorderRadius.all(Radius.circular(12))
+                    : null,
                 border: Border.all(
-                  color: selected ? FitColors.ink : palette.rule,
+                  color: selected
+                      ? (fitGlass ? FitColors.accent : FitColors.ink)
+                      : palette.rule,
                   width: selected ? 2 : 1,
                 ),
               ),

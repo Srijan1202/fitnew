@@ -69,10 +69,13 @@ class FitPalette {
     required this.oxide,
     Color? accent,
     Color? onAccent,
+    Color? glow,
     this.brandMark = false,
+    this.glass = true,
     this.premium = true,
   })  : accent = accent ?? ink,
-        onAccent = onAccent ?? paper;
+        onAccent = onAccent ?? paper,
+        glow = glow ?? pine;
 
   final String id;
   final String label;
@@ -91,6 +94,13 @@ class FitPalette {
 
   /// The logo's mark in the lime gradient (the brand themes), not in ink.
   final bool brandMark;
+
+  /// ADR-029: rounded, translucent blocks with a soft coloured shadow. Every
+  /// palette but Paper, which keeps the flat §6 look exactly.
+  final bool glass;
+
+  /// The colour of the blocks' soft shadow and the background glow.
+  final Color glow;
   final bool premium;
 
   /// The palette every screen reads now. Set by the theme controller before
@@ -114,6 +124,7 @@ class FitPalette {
     oxide: Color(0xFFFF6B57),
     accent: Color(0xFFC6F432),
     onAccent: Color(0xFF0A0D0B),
+    glow: Color(0xFFC6F432),
     brandMark: true,
     premium: false,
   );
@@ -133,6 +144,7 @@ class FitPalette {
     pine: Color(0xFF2F7A18),
     amber: Color(0xFFA8641B),
     oxide: Color(0xFFB3261E),
+    glow: Color(0xFF5BC62A),
     brandMark: true,
     premium: false,
   );
@@ -151,6 +163,7 @@ class FitPalette {
     pine: Color(0xFF1E6B47),
     amber: Color(0xFFA8641B),
     oxide: Color(0xFF9E2B21),
+    glass: false,
     premium: false,
   );
 
@@ -200,6 +213,7 @@ class FitPalette {
     pine: Color(0xFF1E6B57),
     amber: Color(0xFFA0621E),
     oxide: Color(0xFF9C2E28),
+    glow: Color(0xFF2E7DB5),
   );
 
   static const all = <FitPalette>[
@@ -235,8 +249,16 @@ abstract final class FitSpacing {
   static const double afterRule = 14;
 }
 
-/// Radius is 2px, 4px maximum, never more (§6.2).
+/// Radius was 2px, 4px maximum (§6.2). ADR-029: the glass palettes round
+/// controls and blocks the iPhone way; Paper keeps 2 and 4.
 abstract final class FitRadius {
-  static const Radius small = Radius.circular(2);
-  static const Radius medium = Radius.circular(4);
+  /// Controls: buttons, inputs, chips, small panels.
+  static Radius get small => Radius.circular(FitPalette.current.glass ? 14 : 2);
+
+  /// Bars and larger panels.
+  static Radius get medium =>
+      Radius.circular(FitPalette.current.glass ? 20 : 4);
+
+  /// Blocks (ADR-029); unused on Paper, where blocks are flat.
+  static const Radius block = Radius.circular(22);
 }

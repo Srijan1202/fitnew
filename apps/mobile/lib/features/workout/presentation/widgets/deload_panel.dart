@@ -94,7 +94,7 @@ class _DeloadPanelState extends ConsumerState<DeloadPanel> {
           padding: const EdgeInsets.all(FitSpacing.md),
           decoration: BoxDecoration(
             color: FitColors.paper2,
-            borderRadius: const BorderRadius.all(FitRadius.medium),
+            borderRadius: BorderRadius.all(FitRadius.medium),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

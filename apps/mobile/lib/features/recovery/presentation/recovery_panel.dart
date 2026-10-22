@@ -151,7 +151,7 @@ class _RecoveryPanelState extends ConsumerState<RecoveryPanel> {
       padding: const EdgeInsets.all(FitSpacing.md),
       decoration: BoxDecoration(
         color: FitColors.paper2,
-        borderRadius: const BorderRadius.all(FitRadius.medium),
+        borderRadius: BorderRadius.all(FitRadius.medium),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -217,7 +217,7 @@ class _RecoveryPanelState extends ConsumerState<RecoveryPanel> {
                       selected: _scales[s] == v,
                       showCheckmark: false,
                       // §6.2: square corners; the chosen value is a solid ink block.
-                      shape: const RoundedRectangleBorder(
+                      shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(FitRadius.small),
                       ),
                       side: BorderSide(
@@ -409,7 +409,7 @@ class _ReadinessDisplay extends ConsumerWidget {
                 Expanded(
                   child: c.available
                       ? ClipRRect(
-                          borderRadius: const BorderRadius.all(FitRadius.small),
+                          borderRadius: BorderRadius.all(FitRadius.small),
                           child: LinearProgressIndicator(
                             value: c.max == 0 ? 0 : c.penalty / c.max,
                             minHeight: 6,

@@ -1,3 +1,4 @@
+import '../../../premium/domain/avatars.dart';
 import '../../../premium/presentation/avatar_picker.dart';
 import '../../../premium/presentation/premium_card.dart';
 import '../../../premium/presentation/premium_providers.dart';
@@ -12,8 +13,9 @@ import '../../../../core/config/env.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/routing/navigation.dart';
+import '../../../../core/theme/theme_controller.dart';
 import '../../../../core/theme/tokens.dart';
-import '../../../../shared/widgets/hairline_section.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../../progress/domain/progress.dart';
@@ -25,10 +27,9 @@ import '../widgets/mess_setting.dart';
 import 'food_preferences_screen.dart' show FoodSettingRow;
 import '../widgets/targets_display.dart';
 
-/// Profile: what the server holds about this user, the active goal with its
-/// targets, and the way to change the goal. Read-only apart from that link —
-/// editing the other fields is a ledger of small forms that lands with the
-/// features that need them (§32 deferred list).
+/// Profile (ADR-029, owner): laid out like iPhone Settings — who you are and
+/// your targets at the top, what you are in small tiles, then every setting
+/// as a grouped list, one tap from the top instead of under a long page.
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -36,171 +37,309 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(profileControllerProvider);
     final textTheme = Theme.of(context).textTheme;
+    // Read so a theme change rebuilds this page.
+    ref.watch(themeControllerProvider);
+    final side = fitGlass ? FitSpacing.md : FitSpacing.screen;
 
     return Scaffold(
-      appBar: AppBar(leading: BackButton(onPressed: () => context.popOrHome())),
-      body: SafeArea(
-        child: async.when(
-          loading: () => const Padding(
-            padding: EdgeInsets.all(FitSpacing.screen),
-            child: TargetsSkeleton(),
-          ),
-          error: (e, _) => Padding(
-            padding: const EdgeInsets.all(FitSpacing.screen),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                AuthFeedback.error(
-                  (e is Failure ? e : const Unknown()).message,
-                ),
-                const SizedBox(height: FitSpacing.md),
-                FilledButton(
-                  onPressed: () => ref.invalidate(profileControllerProvider),
-                  child: const Text('Try again'),
-                ),
-              ],
+      appBar: AppBar(
+        leading: BackButton(onPressed: () => context.popOrHome()),
+        title: Text('Profile', style: textTheme.titleMedium),
+        centerTitle: true,
+        backgroundColor: fitGlass ? Colors.transparent : null,
+      ),
+      extendBodyBehindAppBar: fitGlass,
+      body: FitBackdrop(
+        child: SafeArea(
+          child: async.when(
+            loading: () => const Padding(
+              padding: EdgeInsets.all(FitSpacing.screen),
+              child: TargetsSkeleton(),
             ),
-          ),
-          data: (view) => SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              FitSpacing.screen,
-              FitSpacing.sm,
-              FitSpacing.screen,
-              FitSpacing.xl,
+            error: (e, _) => Padding(
+              padding: const EdgeInsets.all(FitSpacing.screen),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  AuthFeedback.error(
+                    (e is Failure ? e : const Unknown()).message,
+                  ),
+                  const SizedBox(height: FitSpacing.md),
+                  FilledButton(
+                    onPressed: () => ref.invalidate(profileControllerProvider),
+                    child: const Text('Try again'),
+                  ),
+                ],
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    // Phase 19 (ADR-027): the picture — tap to change it.
-                    InkWell(
-                      key: const ValueKey('profile.avatar'),
-                      customBorder: const CircleBorder(),
-                      onTap: () => showAvatarPicker(context),
-                      child: ProfileAvatar(
-                        avatarId: view.profile.avatarId,
-                        name: view.profile.displayName,
-                        premium: ref.watch(isPremiumProvider) ?? false,
-                        size: 64,
+            // Every row built (not a lazy list): the page is short, and
+            // Sign out must exist to be scrolled to.
+            data: (view) => SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(side, FitSpacing.sm, side, 48),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  _Header(view: view),
+                  _PhoneTimeZone(stored: view.profile.timezone),
+                  const SizedBox(height: FitSpacing.md),
+                  _Targets(view: view),
+                  const SizedBox(height: FitSpacing.lg),
+                  const _Eyebrow('About you'),
+                  _AboutTiles(profile: view.profile),
+                  const SizedBox(height: FitSpacing.lg),
+                  FitGroup(
+                    children: <Widget>[
+                      FitRow(
+                        key: const ValueKey('profile.personalDetails'),
+                        icon: Icons.person_outline,
+                        title: 'Personal details',
+                        onTap: () => context.push(Routes.personalDetails),
                       ),
-                    ),
-                    const SizedBox(width: FitSpacing.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text('PROFILE', style: textTheme.labelSmall),
-                          const SizedBox(height: FitSpacing.xs),
-                          Text(
-                            view.goal.goal.goalType.label,
-                            style: textTheme.displaySmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: FitSpacing.lg),
-                if (view.goal.targets != null) ...<Widget>[
-                  TargetsDisplay(targets: view.goal.targets!),
-                  const SizedBox(height: FitSpacing.sm),
-                  Text(
-                    'Since ${view.goal.targets!.effectiveFrom} · ${view.goal.targets!.reason}',
-                    style: textTheme.bodyMedium,
+                      MessSettingRow(mess: view.profile.mess),
+                      const FoodSettingRow(),
+                    ],
                   ),
                   const SizedBox(height: FitSpacing.lg),
-                ],
-                OutlinedButton(
-                  onPressed: () => context.push(Routes.goalEditor),
-                  style: _outlined,
-                  child: const Text('Change goal'),
-                ),
-                const SizedBox(height: FitSpacing.xl),
-                HairlineSection(
-                  label: 'About you',
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  FitGroup(
+                    label: 'Appearance',
                     children: <Widget>[
-                      Text(
-                        view.profile.displayName ?? 'No name yet',
-                        key: const ValueKey('profile.displayName'),
-                        style: textTheme.titleLarge?.copyWith(
-                          color: view.profile.displayName == null
-                              ? FitColors.ink60
-                              : FitColors.ink,
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: fitGlass ? 14 : 0,
+                          vertical: fitGlass ? 14 : FitSpacing.sm,
                         ),
-                      ),
-                      const SizedBox(height: FitSpacing.sm),
-                      _Facts(profile: view.profile),
-                      _PhoneTimeZone(stored: view.profile.timezone),
-                      const SizedBox(height: FitSpacing.md),
-                      OutlinedButton(
-                        key: const ValueKey('profile.personalDetails'),
-                        onPressed: () => context.push(Routes.personalDetails),
-                        style: _outlined,
-                        child: const Text('Edit personal details'),
+                        child: const ThemePicker(),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: FitSpacing.xl),
-                const PremiumCard(),
-                const SizedBox(height: FitSpacing.md),
-                const ThemePicker(),
-                const SizedBox(height: FitSpacing.lg),
-                OutlinedButton(
-                  key: const ValueKey('profile.notifications'),
-                  onPressed: () => context.push(Routes.notifications),
-                  style: _outlined,
-                  child: const Text('Notifications'),
-                ),
-                const SizedBox(height: FitSpacing.md),
-                OutlinedButton(
-                  key: const ValueKey('profile.privacy'),
-                  onPressed: () => context.push(Routes.privacy),
-                  style: _outlined,
-                  child: const Text('Privacy & data'),
-                ),
-                const SizedBox(height: FitSpacing.md),
-                OutlinedButton(
-                  key: const ValueKey('profile.feedback'),
-                  onPressed: () => context.push(Routes.feedback),
-                  style: _outlined,
-                  child: const Text('Send feedback'),
-                ),
-                const SizedBox(height: FitSpacing.md),
-                OutlinedButton(
-                  key: const ValueKey('profile.health'),
-                  onPressed: () => context.push(Routes.healthData),
-                  style: _outlined,
-                  child: const Text('Health data'),
-                ),
-                const SizedBox(height: FitSpacing.md),
-                OutlinedButton(
-                  key: const ValueKey('profile.signOut'),
-                  onPressed: () => _signOut(context, ref),
-                  style: _outlined,
-                  child: const Text('Sign out'),
-                ),
-                const SizedBox(height: FitSpacing.lg),
-                // Phase 6.6: which build talks to which backend, so a
-                // tester's report can name it. No secrets here.
-                Text(
-                  'FITOS ${Env.appVersion} · ${Env.flavor} · ${Env.apiHost}',
-                  key: const ValueKey('profile.build'),
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall
-                      ?.copyWith(color: FitColors.ink60),
-                ),
-              ],
+                  const SizedBox(height: FitSpacing.lg),
+                  FitGroup(
+                    label: 'App',
+                    children: <Widget>[
+                      FitRow(
+                        key: const ValueKey('profile.notifications'),
+                        icon: Icons.notifications_none,
+                        title: 'Notifications',
+                        onTap: () => context.push(Routes.notifications),
+                      ),
+                      FitRow(
+                        key: const ValueKey('profile.health'),
+                        icon: Icons.favorite_border,
+                        title: 'Health data',
+                        onTap: () => context.push(Routes.healthData),
+                      ),
+                      FitRow(
+                        key: const ValueKey('profile.timezone'),
+                        icon: Icons.public,
+                        title: 'Time zone',
+                        value: view.profile.timezone,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: FitSpacing.lg),
+                  FitGroup(
+                    label: 'Account',
+                    children: <Widget>[
+                      const PremiumCard(),
+                      FitRow(
+                        key: const ValueKey('profile.privacy'),
+                        icon: Icons.lock_outline,
+                        title: 'Privacy & data',
+                        onTap: () => context.push(Routes.privacy),
+                      ),
+                      FitRow(
+                        key: const ValueKey('profile.feedback'),
+                        icon: Icons.chat_bubble_outline,
+                        title: 'Send feedback',
+                        onTap: () => context.push(Routes.feedback),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: FitSpacing.lg),
+                  FitGroup(
+                    children: <Widget>[
+                      FitRow(
+                        key: const ValueKey('profile.signOut'),
+                        icon: Icons.logout,
+                        title: 'Sign out',
+                        destructive: true,
+                        onTap: () => _signOut(context, ref),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: FitSpacing.lg),
+                  // Phase 6.6: which build talks to which backend, so a
+                  // tester's report can name it. No secrets here.
+                  Text(
+                    'FITOS ${Env.appVersion} · ${Env.flavor} · ${Env.apiHost}',
+                    key: const ValueKey('profile.build'),
+                    textAlign: TextAlign.center,
+                    style:
+                        textTheme.labelSmall?.copyWith(color: FitColors.ink60),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+}
+
+/// The picture (tap to change), the name, the goal and Premium.
+class _Header extends ConsumerWidget {
+  const _Header({required this.view});
+
+  final ProfileView view;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textTheme = Theme.of(context).textTheme;
+    final premium = ref.watch(isPremiumProvider) ?? false;
+    final p = view.profile;
+    final line = <String>[
+      view.goal.goal.goalType.label,
+      if (p.sex != null) p.sex!.label,
+      if (p.birthDate != null && p.birthDate!.length >= 4)
+        'born ${p.birthDate!.substring(0, 4)}',
+    ].join(' · ');
+    return FitBlock(
+      glow: true,
+      padding: const EdgeInsets.all(FitSpacing.md),
+      flatPadding: const EdgeInsets.only(bottom: FitSpacing.sm),
+      child: Row(
+        children: <Widget>[
+          // Phase 19 (ADR-027): the picture — tap to change it.
+          InkWell(
+            key: const ValueKey('profile.avatar'),
+            customBorder: const CircleBorder(),
+            onTap: () => showAvatarPicker(context),
+            child: ProfileAvatar(
+              avatarId: p.avatarId,
+              name: p.displayName,
+              premium: premium,
+              size: 68,
+            ),
+          ),
+          const SizedBox(width: FitSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  p.displayName ?? 'No name yet',
+                  key: const ValueKey('profile.displayName'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.titleLarge?.copyWith(
+                    fontSize: 22,
+                    color:
+                        p.displayName == null ? FitColors.ink60 : FitColors.ink,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(line, style: textTheme.bodyMedium),
+                if (premium) ...<Widget>[
+                  const SizedBox(height: FitSpacing.sm),
+                  const _PremiumBadge(),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PremiumBadge extends StatelessWidget {
+  const _PremiumBadge();
+
+  @override
+  Widget build(BuildContext context) => Container(
+        key: const ValueKey('profile.premiumBadge'),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        decoration: BoxDecoration(
+          color: kGold.withValues(alpha: 0.16),
+          borderRadius: const BorderRadius.all(Radius.circular(20)),
+          border: Border.all(color: kGold.withValues(alpha: 0.6)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const Icon(Icons.workspace_premium, size: 14, color: kGold),
+            const SizedBox(width: 4),
+            Text(
+              'PREMIUM',
+              style: Theme.of(context)
+                  .textTheme
+                  .labelSmall
+                  ?.copyWith(color: kGold),
+            ),
+          ],
+        ),
+      );
+}
+
+/// The daily targets with the way to change the goal.
+class _Targets extends StatelessWidget {
+  const _Targets({required this.view});
+
+  final ProfileView view;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final targets = view.goal.targets;
+    final change = OutlinedButton.icon(
+      key: const ValueKey('profile.changeGoal'),
+      onPressed: () => context.push(Routes.goalEditor),
+      style: _outlined,
+      icon: const Icon(Icons.flag_outlined, size: 18),
+      label: const Text('Change goal'),
+    );
+    if (targets == null) return change;
+    return FitBlock(
+      padding: const EdgeInsets.all(FitSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Text('DAILY TARGETS', style: textTheme.labelSmall),
+          const SizedBox(height: FitSpacing.sm),
+          TargetsDisplay(targets: targets),
+          const SizedBox(height: FitSpacing.sm),
+          Text(
+            'Since ${targets.effectiveFrom} · ${targets.reason}',
+            style: textTheme.bodyMedium,
+          ),
+          const SizedBox(height: FitSpacing.md),
+          change,
+        ],
+      ),
+    );
+  }
+}
+
+/// A group's eyebrow, outside its blocks.
+class _Eyebrow extends StatelessWidget {
+  const _Eyebrow(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          fitGlass ? FitSpacing.sm : 0,
+          0,
+          0,
+          FitSpacing.sm,
+        ),
+        child: Text(
+          label.toUpperCase(),
+          style: Theme.of(context).textTheme.labelSmall,
+        ),
+      );
 }
 
 /// Phase 6.6 Gate 7: signing out wipes this phone's workout data, sync
@@ -250,108 +389,97 @@ ButtonStyle get _outlined => OutlinedButton.styleFrom(
       foregroundColor: FitColors.ink,
       side: BorderSide(color: FitColors.ink),
       minimumSize: const Size(88, 48),
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.all(FitRadius.small),
       ),
     );
 
-class _Facts extends ConsumerWidget {
-  const _Facts({required this.profile});
+/// What FITOS knows about you, as small tiles — the trend weight first
+/// (§13.2: the trend is the headline, the latest raw reading small beneath).
+class _AboutTiles extends ConsumerWidget {
+  const _AboutTiles({required this.profile});
 
   final UserProfileDetail profile;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
-    // Phase 12, §13.2: the trend weight is the headline; the latest raw
-    // reading is shown small beneath it (never the other way round).
     final trend = ref
         .watch(progressSummaryProvider(ProgressWindow.d30))
         .value
         ?.summary
         ?.weight
         .currentTrendKg;
-    final rows = <(String, String)>[
-      if (profile.sex != null) ('Sex', profile.sex!.label),
-      if (profile.birthDate != null) ('Born', profile.birthDate!),
-      if (profile.heightCm != null) ('Height', '${profile.heightCm} cm'),
-      // Rendered below as the trend headline with the raw reading small.
-      if (trend != null || profile.latestWeightKg != null) ('Weight', ''),
-      if (profile.experienceLevel != null)
-        ('Experience', profile.experienceLevel!.label),
+    Widget tile(String label, Widget value, [Widget? under]) => Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: fitGlass ? 14 : FitSpacing.sm,
+            vertical: 12,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(label.toUpperCase(), style: textTheme.labelSmall),
+              const SizedBox(height: FitSpacing.xs),
+              value,
+              if (under != null) under,
+            ],
+          ),
+        );
+    Widget big(String text) => Text(
+          text,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: textTheme.titleMedium,
+        );
+    final tiles = <Widget>[
+      if (trend != null || profile.latestWeightKg != null)
+        tile(
+          'Weight',
+          Text(
+            trend == null
+                ? 'Trend after your next readings'
+                : '${trend.toStringAsFixed(1)} kg trend',
+            key: const ValueKey('profile.weight.trend'),
+            style: trend == null
+                ? textTheme.bodyMedium?.copyWith(color: FitColors.ink60)
+                : textTheme.titleMedium,
+          ),
+          profile.latestWeightKg == null
+              ? null
+              : Text(
+                  'Latest reading ${profile.latestWeightKg} kg',
+                  key: const ValueKey('profile.weight.raw'),
+                  style: textTheme.bodySmall?.copyWith(color: FitColors.ink35),
+                ),
+        ),
+      if (profile.heightCm != null)
+        tile('Height', big('${profile.heightCm} cm')),
       if (profile.trainingDaysPerWeek != null)
-        ('Training', '${profile.trainingDaysPerWeek} days / week'),
+        tile('Training', big('${profile.trainingDaysPerWeek} days / week')),
+      if (profile.experienceLevel != null)
+        tile('Experience', big(profile.experienceLevel!.label)),
       if (profile.activityLevel != null)
-        ('Outside the gym', profile.activityLevel!.label),
+        tile('Outside the gym', big(profile.activityLevel!.label)),
       if (profile.trainingLocation != null)
-        ('Trains at', profile.trainingLocation!.label),
-      if (profile.equipment.isNotEmpty)
-        ('Equipment', profile.equipment.map((e) => e.label).join(', ')),
-      ('Time zone', profile.timezone),
+        tile('Trains at', big(profile.trainingLocation!.label)),
     ];
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        for (final (label, value) in rows)
-          if (label == 'Weight') ...<Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  SizedBox(
-                    width: 120,
-                    child: Text('Weight', style: textTheme.bodyMedium),
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          trend == null
-                              ? 'Trend after your next readings'
-                              : '${trend.toStringAsFixed(1)} kg trend',
-                          key: const ValueKey('profile.weight.trend'),
-                          style: trend == null
-                              ? textTheme.bodyMedium
-                                  ?.copyWith(color: FitColors.ink60)
-                              : textTheme.bodyLarge,
-                        ),
-                        if (profile.latestWeightKg != null)
-                          Text(
-                            'Latest reading ${profile.latestWeightKg} kg',
-                            key: const ValueKey('profile.weight.raw'),
-                            style: textTheme.bodySmall
-                                ?.copyWith(color: FitColors.ink35),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+        FitTileGrid(tiles: tiles, margin: EdgeInsets.zero),
+        if (profile.equipment.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              fitGlass ? FitSpacing.sm : 0,
+              FitSpacing.sm,
+              0,
+              0,
             ),
-            Divider(color: FitColors.rule, height: 1),
-          ] else ...<Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  SizedBox(
-                    width: 120,
-                    child: Text(label, style: textTheme.bodyMedium),
-                  ),
-                  Expanded(child: Text(value, style: textTheme.bodyLarge)),
-                ],
-              ),
+            child: Text(
+              'Equipment: ${profile.equipment.map((e) => e.label).join(', ')}',
+              style: textTheme.bodySmall?.copyWith(color: FitColors.ink60),
             ),
-            Divider(color: FitColors.rule, height: 1),
-          ],
-        // Phase 9 (owner D13): the mess by name, changeable here.
-        MessSettingRow(mess: profile.mess),
-        Divider(color: FitColors.rule, height: 1),
-        // Phase 10: diet and allergies — the hard rules for suggestions.
-        const FoodSettingRow(),
-        Divider(color: FitColors.rule, height: 1),
+          ),
       ],
     );
   }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/routing/router.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../shared/widgets/fit_glass.dart';
 import '../../premium/domain/avatars.dart';
 import '../../premium/presentation/premium_providers.dart';
 
@@ -19,9 +20,18 @@ class WeeklyReportEntry extends ConsumerWidget {
     return InkWell(
       key: const ValueKey('progress.weekly'),
       onTap: () => context.push(Routes.weeklyReport),
+      customBorder: fitGlass
+          ? const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(FitRadius.block),
+            )
+          : null,
       child: Container(
         padding: const EdgeInsets.all(FitSpacing.md),
-        decoration: BoxDecoration(border: Border.all(color: kGold)),
+        decoration: fitGlass
+            ? FitBlock.decoration(glow: true).copyWith(
+                border: Border.all(color: kGold.withValues(alpha: 0.55)),
+              )
+            : BoxDecoration(border: Border.all(color: kGold)),
         child: Row(
           children: <Widget>[
             const Icon(Icons.insights, color: kGoldDeep),

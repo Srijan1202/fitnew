@@ -171,7 +171,7 @@ class _SuggestionCarouselState extends State<SuggestionCarousel> {
                     margin: const EdgeInsets.only(right: 6),
                     decoration: BoxDecoration(
                       color: i == _page ? FitColors.ink : FitColors.ink35,
-                      borderRadius: const BorderRadius.all(FitRadius.small),
+                      borderRadius: BorderRadius.all(FitRadius.small),
                     ),
                   ),
               ],
@@ -269,7 +269,7 @@ class _Card extends StatelessWidget {
       color: Colors.transparent,
       shape: RoundedRectangleBorder(
         side: BorderSide(color: FitColors.rule),
-        borderRadius: const BorderRadius.all(FitRadius.medium),
+        borderRadius: BorderRadius.all(FitRadius.medium),
       ),
       clipBehavior: Clip.antiAlias,
       child: onOpen == null

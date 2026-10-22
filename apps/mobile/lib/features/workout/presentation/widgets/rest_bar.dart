@@ -152,7 +152,7 @@ class _Tap extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     return InkWell(
       onTap: onTap,
-      borderRadius: const BorderRadius.all(FitRadius.medium),
+      borderRadius: BorderRadius.all(FitRadius.medium),
       child: Container(
         constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
         padding: const EdgeInsets.symmetric(horizontal: FitSpacing.sm),

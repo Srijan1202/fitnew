@@ -37,7 +37,7 @@ Future<PortionChoice?> showPortionSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: FitColors.paper,
-    shape: const RoundedRectangleBorder(
+    shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: FitRadius.medium),
     ),
     builder: (ctx) => Padding(

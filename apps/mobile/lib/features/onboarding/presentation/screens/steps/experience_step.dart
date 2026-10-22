@@ -147,7 +147,7 @@ class _DayPicker extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: d == value ? FitColors.ink : Colors.transparent,
                   border: Border.all(color: FitColors.ink),
-                  borderRadius: const BorderRadius.all(FitRadius.small),
+                  borderRadius: BorderRadius.all(FitRadius.small),
                 ),
                 child: Text(
                   '$d',

@@ -6,6 +6,7 @@ import '../../../../core/errors/failure.dart';
 import '../../../../core/errors/result.dart';
 import '../../../../core/routing/navigation.dart';
 import '../../../../core/routing/router.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
@@ -47,34 +48,18 @@ class FoodSettingRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textTheme = Theme.of(context).textTheme;
     final diet = ref.watch(dietPreferencesProvider);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: FitSpacing.xs),
-      child: Row(
-        children: <Widget>[
-          SizedBox(
-            width: 120,
-            child: Text('Food', style: textTheme.bodyMedium),
-          ),
-          Expanded(
-            child: Text(
-              switch (diet) {
-                AsyncData(:final value) => foodSummary(value),
-                AsyncError() => 'Not set',
-                _ => '…',
-              },
-              key: const ValueKey('profile.food'),
-              style: textTheme.bodyLarge,
-            ),
-          ),
-          TextButton(
-            key: const ValueKey('profile.food.edit'),
-            onPressed: () => context.push(Routes.profileFood),
-            child: const Text('Edit'),
-          ),
-        ],
-      ),
+    return FitRow(
+      key: const ValueKey('profile.food.edit'),
+      icon: Icons.eco_outlined,
+      title: 'Food',
+      value: switch (diet) {
+        AsyncData(:final value) => foodSummary(value),
+        AsyncError() => 'Not set',
+        _ => '…',
+      },
+      valueKey: const ValueKey('profile.food'),
+      onTap: () => context.push(Routes.profileFood),
     );
   }
 }
