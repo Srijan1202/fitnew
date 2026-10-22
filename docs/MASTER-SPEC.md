@@ -1166,6 +1166,8 @@ these before diagnosing anything else on a new machine.
 | Auth | Every endpoint tested for 401 unauthenticated and 403 cross-user access |
 | Migrations | Up-and-down verified in CI |
 
+`AMENDED 2026-10-22 (Phase 18, ADR-024)`: `packages/core/vitest.config.ts` enforces it. CI runs `test:coverage`, which fails below 100 % branches over `src/**`. A branch no input can reach is first removed when its invariant is local. Otherwise it carries a `v8 ignore next -- @preserve` hint, with the invariant written above it.
+
 ### 26.2 Deterministic recommendation fixtures (required)
 
 Build `test/fixtures/personas/` covering the full matrix. Each fixture is a frozen `UserModel` + expected ranked actions.
@@ -1183,6 +1185,10 @@ All six endpoints as fixtures · malformed payload rejection · missing date →
 ### 26.4 Flutter
 
 Unit (formatters, controllers with mocked repos) · widget tests for every shared component · **golden tests** for `MetricDisplay`, `EstimateRange`, `LedgerRow`, `ConfidenceBar` · integration: full onboarding, log a workout offline then sync, log a mess meal.
+
+`AMENDED 2026-10-22 (Phase 18, ADR-024)`:
+- **Integration tests** are whole-app flows (`FitOSApp`, every server scripted) under `flutter test`, in `test/integration/`, so they run in CI. Offline-then-sync is driven by a real connectivity stream.
+- **Goldens** wait for the four components, which do not exist until the design-system pass (BACKLOG O4, E20).
 
 ### 26.5 Gates
 
@@ -1602,6 +1608,9 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 **Prereq:** 17.
 **Tasks:** raise `packages/core` to 100% branch coverage; complete persona fixtures; Flutter integration tests; load test the API.
 **Acceptance:** 100% branch coverage on core decision functions · all persona snapshots green · p95 <500ms at 50 rps.
+`AMENDED 2026-10-22 (Phase 18, ADR-024)`: the load test is `pnpm --filter @fitos/api load:test`.
+- It runs on `<db>_test` with real HTTP, open-loop at 50 rps for 60 s, over 30 users, with the per-user limit on.
+- It is re-run against the hosted API in Phase 19.
 
 ---
 

@@ -40,6 +40,8 @@
 | E14 | §38 Phase 0 open boxes: Neon staging/prod, the extra Firebase projects, Cloud Run region verification | — | Follow O1 (hosting) |
 | E15 | Reading GitHub CI from this PC | S | The public API allows 60 calls an hour; installing `gh` (authenticated) would make CI checks reliable |
 | E16 | `tsx` "module.register() is deprecated" warning | S | Upgrade tsx when convenient |
+| E20 | Golden tests for `MetricDisplay`, `EstimateRange`, `LedgerRow`, `ConfidenceBar` (§26.4) | S | The components do not exist yet; write the goldens with the design-system pass (O4, ADR-024 D4) |
+| E21 | Re-run the load test against the hosted API | S | Phase 19, after O1; `load:test` measures the local stack (ADR-024 D5) |
 | E17 | Name a high-protein dish from tonight's mess menu in the protein nudge | M | Phase 10 suggestions exist on the Eat tab; the planner would need that day's menu at plan time (ADR-021 "Not in Phase 15") |
 
 ## Later phases (already in MASTER-SPEC, listed so nothing is lost)
