@@ -1,0 +1,16 @@
+# FITOS beta (ADR-025): HTTPS for the API, rendered by release.sh.
+# Caddy obtains and renews the certificate itself (Let's Encrypt) once the
+# domain's A record points at this server. It replaces any X-Forwarded-For a
+# client sends with the real address, so the API trusts exactly one hop
+# (TRUST_PROXY=1). No access log here: the API logs requests itself, with
+# sensitive query values masked (Phase 17).
+{
+	email __ACME_EMAIL__
+	admin localhost:2019
+}
+
+__API_DOMAIN__ {
+	encode zstd gzip
+	header -Server
+	reverse_proxy __UPSTREAM__:8080
+}

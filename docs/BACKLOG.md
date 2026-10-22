@@ -7,7 +7,7 @@
 
 | # | Item | Why it waits | Notes |
 |---|---|---|---|
-| O1 | **Hosting (Phase 6.7)** | GCP billing prepayment; no GCP/Cloud Run/DNS changes without approval | Until then the app works only on the PC's Wi-Fi, and every IP change needs an APK rebuild (`.\tool\alpha.ps1 -ApiHostOverride <ip>`). The admin panel (Phase 16) is local too; §20 names Vercel for it |
+| O1 | **Hosting**: now **AWS** (ADR-025, 2026-10-22) | The owner creates the account, domain and stack and runs every step (docs/hosting/AWS.md); no AWS resource is created without the owner | Everything is prepared on `phase-19` and rehearsed locally. Until the stack exists the app works only on the PC's Wi-Fi. Cloud Run stays ready as the second target. The admin panel (Phase 16) is still local; §20 names Vercel for it |
 | O2 | **§18 readiness cap** | Spec consequence | The check-in alone bottoms out at 35 (the reduce band), so rest and escalation need a training or nutrition penalty. Options: count 35 as rest, change the caps, or keep §18 as written |
 | O3 | **Merges into `main`** | Explicit approval only | Unmerged, all accepted: `phase-12`, `phase-13`, `phase-13-audit-fixes`, `phase-14`, `phase-15` (2026-10-22). `phase-15` contains all of them, so one fast-forward of `main` to it would bring everything in |
 | O4 | **Phase 12 Progress & Recovery UI polish** | Owner: after Phase 13 is accepted | A separate visual pass; not to be mixed into feature work |

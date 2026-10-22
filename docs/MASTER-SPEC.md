@@ -312,6 +312,12 @@ Everything else in your preferred stack is kept: Cloud Run, Firebase Auth, FCM, 
 - 0.5 GB storage. `ASSUMPTION` — ample for low thousands of users; body photos go to Cloud Storage, never the database.
 - `OPEN QUESTION` — Cloud Run region. `asia-south1` (Mumbai) minimises latency for Indian users. `UNVERIFIED` whether the always-free tier applies identically outside Tier-1 US regions. **Verify in Phase 0 before deploying.** Fallback: `us-central1` accepting ~200ms extra latency.
 
+`AMENDED 2026-10-22 (Phase 19, ADR-025)` — **the beta runs on AWS in Mumbai** (owner decision):
+- **Setup:** one EC2 server runs the API image behind Caddy (HTTPS for the owner's own domain), with RDS Postgres 18 in the same region. It is one CloudFormation stack, `infra/aws/fitos-beta.yaml`, with the runbook in `docs/hosting/AWS.md`.
+- **Google services stay:** Firebase Auth, FCM, Crashlytics and Gemini are unaffected. The server reaches Firebase Admin with no key, through Workload Identity Federation.
+- **Cloud Run stays ready as the second target:** `scripts/deploy.ps1 -Target aws|gcp`. A switch is a release there, a database copy and a DNS change, with no APK rebuild.
+- **Cost:** about $40 a month after the new-account credits (ADR-025, `RESEARCH`, re-verify).
+
 ---
 
 ## 9. Database Architecture
@@ -1618,6 +1624,7 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 
 **Prereq:** 18.
 **Tasks:** staging → production Cloud Run; Play Store internal testing; Crashlytics; billing alerts; feedback channel.
+`AMENDED 2026-10-22 (ADR-025)` — production is AWS (EC2 + RDS, `ap-south-1`), and the billing alerts are the stack's AWS Budget. Cloud Run is the prepared second target. There is no separate staging environment for a 20-user beta: every release is checked beside the old one before it takes traffic, and a rollback takes seconds.
 `AMENDED 2026-09-20 (ADR-003)` — TestFlight removed: V1 is Android only.
 **Acceptance:** installable build · crash-free rate >99% over one week with 20 real users.
 **Manual:** 20 VIT students complete onboarding and log a week.

@@ -21,6 +21,13 @@ Reserved by spec §29.
   `pnpm --filter @fitos/api db:seed`): it needs the API's Drizzle schema and
   database client, and `scripts/` is not a pnpm workspace member.
 
+- `deploy.ps1` — Phase 19 (ADR-025). `-Target aws|gcp`: the same image to
+  either cloud, through the target's own script.
+- `aws/` — Phase 19. Owner-run scripts for the AWS beta: `deploy.ps1`,
+  `rollback.ps1`, the one-time `bootstrap.ps1`, `set-parameter.ps1` (secrets
+  through a hidden prompt). They reach the server only through Systems
+  Manager and run `deploy/aws/server/` there. Stack: `infra/aws/`. Runbook:
+  `docs/hosting/AWS.md`.
 - `cloudrun/` — Phase 6.7. Owner-run release scripts for the hosted alpha
   (`deploy.ps1`, `rollback.ps1`), the Neon roles script and the Artifact
   Registry cleanup policy. Runbook: `docs/hosting/CLOUD-RUN.md`.

@@ -163,3 +163,31 @@ jobs:
           docker tag fitos-api:ci "$IMAGE"
           docker push "$IMAGE"
           echo "pushed $IMAGE"
+
+      # Phase 19 (ADR-025) — the same smoke-tested image to ECR for the AWS
+      # beta. Keyless: GitHub's OIDC token becomes the fitos-ci-publisher role,
+      # which may ONLY push to the fitos-api repository (infra/aws/fitos-beta.yaml)
+      # — no deploy, no secrets, no server access. Pushes from main and phase-*
+      # branches (the role's trust policy allows exactly those). The variable is
+      # an identifier, not a secret. Skipped until it exists.
+      - name: Authenticate to AWS (image push only)
+        id: aws
+        if: >-
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/phase-')) &&
+          vars.AWS_CI_ROLE_ARN != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_CI_ROLE_ARN }}
+          aws-region: ap-south-1
+
+      - name: Push image to ECR
+        if: steps.aws.outcome == 'success'
+        run: |
+          set -euo pipefail
+          registry="$(aws sts get-caller-identity --query Account --output text).dkr.ecr.ap-south-1.amazonaws.com"
+          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin "$registry"
+          image="$registry/fitos-api:${{ github.sha }}"
+          docker tag fitos-api:ci "$image"
+          docker push "$image"
+          echo "pushed $image"

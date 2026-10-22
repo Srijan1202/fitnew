@@ -50,22 +50,42 @@ export interface TokenVerifier {
 export interface FirebaseVerifierOptions {
   readonly projectId: string;
   /**
-   * Path to a service-account JSON. Omit on Cloud Run, where Application
-   * Default Credentials come from the runtime with no file at all (§24).
+   * Path to a service-account JSON, or (on AWS, ADR-025) a Workload Identity
+   * Federation configuration. Omit on Cloud Run, where Application Default
+   * Credentials come from the runtime with no file at all (§24).
    */
   readonly credentialsPath?: string | undefined;
+}
+
+/**
+ * Phase 19 (ADR-025) — what kind of Google credential a file holds.
+ *
+ * - `service_account`: a key (the LAN PC; the hosted fallback).
+ * - anything else (`external_account`, i.e. Workload Identity Federation from
+ *   AWS): a configuration with no secret in it. Google's auth library
+ *   exchanges the server's own AWS identity for a short-lived Google token,
+ *   so a server on AWS reaches Firebase with no key, as one on Cloud Run does.
+ */
+export function credentialFileKind(json: unknown): 'service-account' | 'application-default' {
+  const type = (json as { type?: unknown } | null)?.type;
+  return type === 'service_account' ? 'service-account' : 'application-default';
 }
 
 export function firebaseApp(options: FirebaseVerifierOptions): App {
   const existing = getApps()[0];
   if (existing !== undefined) return existing;
 
-  const credential =
-    options.credentialsPath !== undefined
-      ? cert(JSON.parse(readFileSync(options.credentialsPath, 'utf8')) as Parameters<typeof cert>[0])
-      : applicationDefault();
+  return initializeApp({ credential: credentialFor(options.credentialsPath), projectId: options.projectId });
+}
 
-  return initializeApp({ credential, projectId: options.projectId });
+function credentialFor(path: string | undefined): ReturnType<typeof applicationDefault> {
+  if (path === undefined) return applicationDefault();
+  const json = JSON.parse(readFileSync(path, 'utf8')) as unknown;
+  if (credentialFileKind(json) === 'service-account') return cert(json as Parameters<typeof cert>[0]);
+  // The library reads the file from this variable; make sure it is the same
+  // file whichever way the path arrived.
+  process.env['GOOGLE_APPLICATION_CREDENTIALS'] = path;
+  return applicationDefault();
 }
 
 function classify(error: unknown): TokenFailureReason {

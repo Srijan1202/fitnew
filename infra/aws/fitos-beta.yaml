@@ -1,0 +1,369 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  FITOS beta (Phase 19, ADR-025) in ap-south-1: one EC2 server running the API
+  image and Caddy (HTTPS for the API domain), RDS Postgres in private subnets,
+  an ECR repository with a keyless GitHub push role, parameters for secrets,
+  logs, a budget and an automatic recovery alarm. Nothing here is specific to
+  the app's code: the same image runs on Cloud Run (docs/hosting/CLOUD-RUN.md).
+
+Parameters:
+  ApiDomain:
+    Type: String
+    Description: The API's DNS name, e.g. api.example.in. Its A record points at the Elastic IP output.
+    AllowedPattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$'
+  AcmeEmail:
+    Type: String
+    Description: Contact address Let's Encrypt uses for certificate expiry notices.
+  BudgetEmail:
+    Type: String
+    Description: Where the monthly budget alerts go.
+  MonthlyBudgetUsd:
+    Type: Number
+    Default: 45
+    Description: Alerts at 50 %, 80 % and 100 % of this (actual) and 100 % (forecast).
+  InstanceType:
+    Type: String
+    Default: t3.small
+    AllowedValues: [t3.micro, t3.small, t3.medium]
+  DbInstanceClass:
+    Type: String
+    Default: db.t4g.micro
+    AllowedValues: [db.t4g.micro, db.t4g.small, db.t4g.medium]
+  PostgresVersion:
+    Type: String
+    Default: '18'
+    Description: Major version; matches docker/docker-compose.yml and CI. Check with `aws rds describe-db-engine-versions --engine postgres`.
+  GitHubRepository:
+    Type: String
+    Default: Srijan1202/fitnew
+    Description: owner/name. Only pushes from its main and phase-* branches may publish images.
+  CreateGitHubOidcProvider:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+    Description: An account holds one GitHub OIDC provider; set false if it already exists.
+  BootstrapMode:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+    Description: >-
+      true lets the server read the RDS master secret and write the generated
+      database URLs and salt once (scripts/aws/bootstrap.ps1). Set false right after.
+  LatestAmi:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+
+Conditions:
+  MakeOidcProvider: !Equals [!Ref CreateGitHubOidcProvider, 'true']
+  Bootstrapping: !Equals [!Ref BootstrapMode, 'true']
+
+Resources:
+  # ------------------------------------------------------------------ network
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.40.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags: [{ Key: Name, Value: fitos-beta }]
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: { VpcId: !Ref Vpc, InternetGatewayId: !Ref InternetGateway }
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.40.0.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      # A public address from the first boot (the first-boot install needs the
+      # internet before the Elastic IP is attached; the EIP then replaces it).
+      MapPublicIpOnLaunch: true
+      Tags: [{ Key: Name, Value: fitos-beta-public }]
+  PublicRoutes:
+    Type: AWS::EC2::RouteTable
+    Properties: { VpcId: !Ref Vpc }
+  PublicDefaultRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachment
+    Properties: { RouteTableId: !Ref PublicRoutes, DestinationCidrBlock: 0.0.0.0/0, GatewayId: !Ref InternetGateway }
+  PublicSubnetRoutes:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: { SubnetId: !Ref PublicSubnet, RouteTableId: !Ref PublicRoutes }
+
+  # The database has no route to the internet at all. RDS needs two zones in
+  # its subnet group even for a single instance.
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.40.10.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags: [{ Key: Name, Value: fitos-beta-private-a }]
+  PrivateSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.40.11.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags: [{ Key: Name, Value: fitos-beta-private-b }]
+
+  # No SSH: the owner reaches the server through Systems Manager only.
+  ApiSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: FITOS API server - HTTP (redirect and certificate challenge) and HTTPS only
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - { IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: 0.0.0.0/0 }
+        - { IpProtocol: tcp, FromPort: 443, ToPort: 443, CidrIp: 0.0.0.0/0 }
+  DbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: FITOS database - Postgres from the API server only
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - { IpProtocol: tcp, FromPort: 5432, ToPort: 5432, SourceSecurityGroupId: !Ref ApiSecurityGroup }
+
+  # ----------------------------------------------------------------- database
+  DbSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: FITOS beta private subnets
+      SubnetIds: [!Ref PrivateSubnetA, !Ref PrivateSubnetB]
+
+  Database:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      DBInstanceIdentifier: fitos-beta
+      Engine: postgres
+      EngineVersion: !Ref PostgresVersion
+      DBInstanceClass: !Ref DbInstanceClass
+      AllocatedStorage: '20'
+      StorageType: gp3
+      StorageEncrypted: true
+      DBName: fitos
+      MasterUsername: fitos_owner
+      # RDS creates and keeps the master password in Secrets Manager: no one
+      # types it, and it never appears in a parameter, a log or this template.
+      ManageMasterUserPassword: true
+      DBSubnetGroupName: !Ref DbSubnetGroup
+      VPCSecurityGroups: [!Ref DbSecurityGroup]
+      PubliclyAccessible: false
+      MultiAZ: false
+      BackupRetentionPeriod: 7
+      PreferredBackupWindow: '20:30-21:00'          # 02:00-02:30 IST
+      PreferredMaintenanceWindow: 'sun:21:30-sun:22:00'
+      AutoMinorVersionUpgrade: true
+      DeletionProtection: true
+      CopyTagsToSnapshot: true
+
+  # ------------------------------------------------------------------ images
+  ImageRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: fitos-api
+      ImageTagMutability: IMMUTABLE
+      ImageScanningConfiguration: { ScanOnPush: true }
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {"rules":[{"rulePriority":1,"description":"keep the last 30 images","selection":{"tagStatus":"any","countType":"imageCountMoreThan","countNumber":30},"action":{"type":"expire"}}]}
+
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Condition: MakeOidcProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList: [sts.amazonaws.com]
+
+  # CI may push to the one repository and nothing else: no deploy, no secrets,
+  # no server access. The same rule as the Google side (ADR-012, O5).
+  CiPublisherRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: fitos-ci-publisher
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !If
+                - MakeOidcProvider
+                - !Ref GitHubOidcProvider
+                - !Sub arn:aws:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                token.actions.githubusercontent.com:sub:
+                  - !Sub repo:${GitHubRepository}:ref:refs/heads/main
+                  - !Sub repo:${GitHubRepository}:ref:refs/heads/phase-*
+      Policies:
+        - PolicyName: push-fitos-api
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: ecr:GetAuthorizationToken
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:InitiateLayerUpload
+                  - ecr:UploadLayerPart
+                  - ecr:CompleteLayerUpload
+                  - ecr:PutImage
+                  - ecr:BatchGetImage
+                  - ecr:DescribeImages
+                Resource: !GetAtt ImageRepository.Arn
+
+  # ------------------------------------------------------------------- server
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /fitos/beta/api
+      RetentionInDays: 30
+
+  ServerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: fitos-beta-server
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - { Effect: Allow, Principal: { Service: ec2.amazonaws.com }, Action: sts:AssumeRole }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: run-fitos
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: ecr:GetAuthorizationToken
+                Resource: '*'
+              - Effect: Allow
+                Action: [ecr:BatchGetImage, ecr:GetDownloadUrlForLayer, ecr:BatchCheckLayerAvailability]
+                Resource: !GetAtt ImageRepository.Arn
+              - Effect: Allow
+                Action: [ssm:GetParameter, ssm:GetParameters, ssm:GetParametersByPath]
+                Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/fitos/beta/*
+              - Effect: Allow
+                Action: [logs:CreateLogStream, logs:PutLogEvents, logs:DescribeLogStreams]
+                Resource: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/fitos/beta/api:*
+        - !If
+          - Bootstrapping
+          - PolicyName: bootstrap-once
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action: secretsmanager:GetSecretValue
+                  Resource: !GetAtt Database.MasterUserSecret.SecretArn
+                - Effect: Allow
+                  Action: ssm:PutParameter
+                  Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/fitos/beta/*
+          - !Ref AWS::NoValue
+
+  ServerProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties: { Roles: [!Ref ServerRole] }
+
+  Server:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestAmi
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref ServerProfile
+      SubnetId: !Ref PublicSubnet
+      SecurityGroupIds: [!Ref ApiSecurityGroup]
+      # IMDSv2 only. Hop limit 2 so the API container can use the server's
+      # AWS identity for Workload Identity Federation to Firebase (ADR-025 D4).
+      MetadataOptions: { HttpTokens: required, HttpPutResponseHopLimit: 2, HttpEndpoint: enabled }
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs: { VolumeSize: 20, VolumeType: gp3, Encrypted: true, DeleteOnTermination: true }
+      Tags: [{ Key: Name, Value: fitos-beta-api }]
+      # First boot only: Docker, automatic security updates, the working
+      # directory. Releases come later through scripts/aws/deploy.ps1.
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -euxo pipefail
+          dnf -y upgrade --security
+          dnf -y install docker dnf-automatic
+          systemctl enable --now docker
+          sed -i 's/^upgrade_type.*/upgrade_type = security/; s/^apply_updates.*/apply_updates = yes/' /etc/dnf/automatic.conf
+          systemctl enable --now dnf-automatic.timer
+          install -d -m 0750 /opt/fitos
+          printf 'API_DOMAIN=%s\nACME_EMAIL=%s\nAWS_REGION=%s\nIMAGE_REPO=%s\nLOG_GROUP=%s\n' \
+            '${ApiDomain}' '${AcmeEmail}' '${AWS::Region}' '${ImageRepository.RepositoryUri}' '${LogGroup}' > /opt/fitos/host.env
+          chmod 0640 /opt/fitos/host.env
+
+  ServerAddress:
+    Type: AWS::EC2::EIP
+    DependsOn: GatewayAttachment
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref Server
+
+  # A failed host check moves the instance to healthy hardware, same IP and disk.
+  RecoverAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: FITOS API server - recover on a failed system status check
+      Namespace: AWS/EC2
+      MetricName: StatusCheckFailed_System
+      Dimensions: [{ Name: InstanceId, Value: !Ref Server }]
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 2
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions: [!Sub 'arn:aws:automate:${AWS::Region}:ec2:recover']
+
+  # -------------------------------------------------------------------- money
+  Budget:
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget:
+        BudgetName: fitos-monthly
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit: { Amount: !Ref MonthlyBudgetUsd, Unit: USD }
+      NotificationsWithSubscribers:
+        - Notification: { NotificationType: ACTUAL, ComparisonOperator: GREATER_THAN, Threshold: 50, ThresholdType: PERCENTAGE }
+          Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref BudgetEmail }]
+        - Notification: { NotificationType: ACTUAL, ComparisonOperator: GREATER_THAN, Threshold: 80, ThresholdType: PERCENTAGE }
+          Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref BudgetEmail }]
+        - Notification: { NotificationType: ACTUAL, ComparisonOperator: GREATER_THAN, Threshold: 100, ThresholdType: PERCENTAGE }
+          Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref BudgetEmail }]
+        - Notification: { NotificationType: FORECASTED, ComparisonOperator: GREATER_THAN, Threshold: 100, ThresholdType: PERCENTAGE }
+          Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref BudgetEmail }]
+
+Outputs:
+  ElasticIp:
+    Description: Point the API domain's A record here.
+    Value: !Ref ServerAddress
+  InstanceId:
+    Value: !Ref Server
+  ImageRepositoryUri:
+    Value: !GetAtt ImageRepository.RepositoryUri
+  CiPublisherRoleArn:
+    Description: GitHub repository variable AWS_CI_ROLE_ARN.
+    Value: !GetAtt CiPublisherRole.Arn
+  DatabaseEndpoint:
+    Value: !GetAtt Database.Endpoint.Address
+  DatabaseMasterSecretArn:
+    Value: !GetAtt Database.MasterUserSecret.SecretArn
+  ServerRoleArn:
+    Description: The identity Google's Workload Identity Federation trusts (ADR-025 D4).
+    Value: !GetAtt ServerRole.Arn
+  ApiDomain:
+    Value: !Ref ApiDomain
