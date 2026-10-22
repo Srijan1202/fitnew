@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/tokens.dart';
+import 'fit_glass.dart';
 
 /// Multi-select toggles that wrap — muscle groups, weekdays. Hairline
 /// underline off, 2 px ink underline on; no filled chips. 44 px targets.
@@ -68,22 +69,36 @@ class _Toggle extends StatelessWidget {
       selected: on,
       child: InkWell(
         onTap: enabled ? onTap : null,
+        borderRadius: fitGlass ? BorderRadius.all(FitRadius.small) : null,
         child: Container(
           constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
-          padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: on ? FitColors.ink : FitColors.rule,
-                width: on ? 2 : 1,
-              ),
-            ),
+          padding: EdgeInsets.symmetric(
+            vertical: FitSpacing.sm,
+            horizontal: fitGlass ? 14 : 0,
           ),
+          // ADR-029: an accent pill when on, on glass; the underline on Paper.
+          decoration: fitGlass
+              ? BoxDecoration(
+                  color: on
+                      ? FitColors.accent
+                      : FitColors.ink.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.all(FitRadius.small),
+                )
+              : BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: on ? FitColors.ink : FitColors.rule,
+                      width: on ? 2 : 1,
+                    ),
+                  ),
+                ),
           alignment: Alignment.center,
           child: Text(
             text,
             style: textTheme.titleMedium?.copyWith(
-              color: on ? FitColors.ink : FitColors.ink60,
+              color: on
+                  ? (fitGlass ? FitColors.onAccent : FitColors.ink)
+                  : FitColors.ink60,
               fontWeight: on ? FontWeight.w700 : FontWeight.w500,
             ),
           ),

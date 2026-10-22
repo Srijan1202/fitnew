@@ -7,6 +7,7 @@ import '../../../../profile/domain/entities/vocabulary.dart';
 import '../../../domain/entities/onboarding.dart';
 import '../../widgets/onboarding_step.dart';
 import 'goal_step.dart' show SubmitAnswer;
+import '../../../../../shared/widgets/fit_glass.dart';
 
 /// Screen 2 — About you (§32): sex, birth date, height, weight, and the
 /// consent that must precede any of it (§23).
@@ -176,11 +177,22 @@ class _AboutStepState extends State<AboutStep> {
             InkWell(
               key: const ValueKey('about.birthDate'),
               onTap: _busy ? null : _pickDate,
+              borderRadius: fitGlass ? BorderRadius.all(FitRadius.small) : null,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
-                decoration: BoxDecoration(
-                  border: Border(bottom: BorderSide(color: FitColors.rule)),
-                ),
+                width: double.infinity,
+                padding: fitGlass
+                    ? const EdgeInsets.symmetric(horizontal: 14, vertical: 12)
+                    : const EdgeInsets.symmetric(vertical: FitSpacing.sm),
+                // ADR-029: the rounded filled field on glass.
+                decoration: fitGlass
+                    ? BoxDecoration(
+                        color: FitColors.ink.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.all(FitRadius.small),
+                      )
+                    : BoxDecoration(
+                        border:
+                            Border(bottom: BorderSide(color: FitColors.rule)),
+                      ),
                 child: Text(
                   _birthDate == null ? 'Choose a date' : _iso(_birthDate!),
                   style: textTheme.bodyLarge?.copyWith(
@@ -212,7 +224,7 @@ class _AboutStepState extends State<AboutStep> {
               enabled: !_busy,
             ),
             const SizedBox(height: FitSpacing.lg),
-            Divider(color: FitColors.rule, height: 1),
+            const FitRule(),
             const SizedBox(height: FitSpacing.afterRule),
             _ConsentRow(
               checked: _consented,

@@ -6,6 +6,7 @@ import '../../../../profile/domain/entities/vocabulary.dart';
 import '../../../domain/entities/onboarding.dart';
 import '../../widgets/onboarding_step.dart';
 import 'goal_step.dart' show SubmitAnswer;
+import '../../../../../shared/widgets/fit_glass.dart';
 
 /// Screen 3 — Experience (§32): level, days per week, and activity level
 /// (asked here rather than deferred; the TDEE formula needs it on screen 7).
@@ -144,15 +145,24 @@ class _DayPicker extends StatelessWidget {
                 width: 40,
                 height: 44,
                 alignment: Alignment.center,
+                // ADR-029: the chosen day an accent tile on glass.
                 decoration: BoxDecoration(
-                  color: d == value ? FitColors.ink : Colors.transparent,
-                  border: Border.all(color: FitColors.ink),
-                  borderRadius: BorderRadius.all(FitRadius.small),
+                  color: d == value
+                      ? (fitGlass ? FitColors.accent : FitColors.ink)
+                      : (fitGlass
+                          ? FitColors.ink.withValues(alpha: 0.06)
+                          : Colors.transparent),
+                  border: fitGlass ? null : Border.all(color: FitColors.ink),
+                  borderRadius: BorderRadius.all(
+                    fitGlass ? const Radius.circular(12) : FitRadius.small,
+                  ),
                 ),
                 child: Text(
                   '$d',
                   style: textTheme.titleMedium?.copyWith(
-                    color: d == value ? FitColors.paper : FitColors.ink,
+                    color: d == value
+                        ? (fitGlass ? FitColors.onAccent : FitColors.paper)
+                        : FitColors.ink,
                   ),
                 ),
               ),

@@ -9,6 +9,7 @@ import '../../../exercise/domain/entities/exercise.dart';
 import '../../domain/entities/workout.dart';
 import '../controllers/workout_providers.dart';
 import '../widgets/deload_panel.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Phase 6, owner 12.8 — presentation only. The server answers the
 /// current ISO week and the three before it with hard sets, a status and
@@ -31,32 +32,34 @@ class VolumeScreen extends ConsumerWidget {
         title: Text('TRAINING VOLUME', style: textTheme.labelSmall),
         centerTitle: false,
       ),
-      body: SafeArea(
-        child: async.when(
-          loading: () => const SizedBox.shrink(),
-          error: (e, _) => Padding(
-            padding: const EdgeInsets.all(FitSpacing.screen),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  'Could not load your training volume',
-                  style: textTheme.titleLarge,
-                ),
-                const SizedBox(height: FitSpacing.sm),
-                AuthFeedback.error(
-                  (e is Failure ? e : const Unknown()).message,
-                ),
-                const SizedBox(height: FitSpacing.lg),
-                FilledButton(
-                  key: const ValueKey('volume.retry'),
-                  onPressed: () => ref.invalidate(volumeProvider),
-                  child: const Text('Try again'),
-                ),
-              ],
+      body: FitBackdrop(
+        child: SafeArea(
+          child: async.when(
+            loading: () => const SizedBox.shrink(),
+            error: (e, _) => Padding(
+              padding: const EdgeInsets.all(FitSpacing.screen),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'Could not load your training volume',
+                    style: textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: FitSpacing.sm),
+                  AuthFeedback.error(
+                    (e is Failure ? e : const Unknown()).message,
+                  ),
+                  const SizedBox(height: FitSpacing.lg),
+                  FilledButton(
+                    key: const ValueKey('volume.retry'),
+                    onPressed: () => ref.invalidate(volumeProvider),
+                    child: const Text('Try again'),
+                  ),
+                ],
+              ),
             ),
+            data: (v) => _VolumeBody(volume: v),
           ),
-          data: (v) => _VolumeBody(volume: v),
         ),
       ),
     );
@@ -245,11 +248,16 @@ class _VolumeBodyState extends State<_VolumeBody> {
             ],
           ),
         ),
+        // ADR-029: each muscle a block on glass, its status strip inside.
         for (final m in muscles) ...<Widget>[
-          Divider(color: FitColors.rule, height: 1),
-          _row(context, m, current, last),
+          if (!fitGlass) Divider(color: FitColors.rule, height: 1),
+          FitBlock(
+            key: ValueKey('volume.block.${m.wire}'),
+            margin: const EdgeInsets.fromLTRB(12, 5, 12, 5),
+            child: _row(context, m, current, last),
+          ),
         ],
-        Divider(color: FitColors.rule, height: 1),
+        const FitRule(),
         Padding(
           padding: const EdgeInsets.fromLTRB(
             FitSpacing.screen,

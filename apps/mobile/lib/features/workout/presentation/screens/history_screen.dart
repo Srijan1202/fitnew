@@ -11,6 +11,7 @@ import '../../domain/entities/workout.dart';
 import '../controllers/workout_providers.dart';
 import '../widgets/rest_bar.dart';
 import 'session_summary_screen.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Completed (and abandoned) sessions, newest first, with more on scroll.
 class HistoryScreen extends ConsumerStatefulWidget {
@@ -54,83 +55,93 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         title: Text('HISTORY', style: textTheme.labelSmall),
         centerTitle: false,
       ),
-      body: SafeArea(
-        child: async.when(
-          loading: () => const SizedBox.shrink(),
-          error: (e, _) => Padding(
-            padding: const EdgeInsets.all(FitSpacing.screen),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  'Could not load your history',
-                  style: textTheme.titleLarge,
-                ),
-                const SizedBox(height: FitSpacing.sm),
-                AuthFeedback.error(
-                  (e is Failure ? e : const Unknown()).message,
-                ),
-                const SizedBox(height: FitSpacing.lg),
-                FilledButton(
-                  onPressed: () => ref.invalidate(historyProvider),
-                  child: const Text('Try again'),
-                ),
-              ],
+      body: FitBackdrop(
+        child: SafeArea(
+          child: async.when(
+            loading: () => const SizedBox.shrink(),
+            error: (e, _) => Padding(
+              padding: const EdgeInsets.all(FitSpacing.screen),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'Could not load your history',
+                    style: textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: FitSpacing.sm),
+                  AuthFeedback.error(
+                    (e is Failure ? e : const Unknown()).message,
+                  ),
+                  const SizedBox(height: FitSpacing.lg),
+                  FilledButton(
+                    onPressed: () => ref.invalidate(historyProvider),
+                    child: const Text('Try again'),
+                  ),
+                ],
+              ),
             ),
-          ),
-          data: (first) {
-            if (!_pagedOnce) {
-              _pagedOnce = true;
-              _nextBefore = first.nextBefore;
-            }
-            final items = [...first.items, ..._more];
-            if (items.isEmpty) {
-              return Padding(
-                padding: const EdgeInsets.all(FitSpacing.screen),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text('No sessions yet', style: textTheme.displaySmall),
-                    const SizedBox(height: FitSpacing.sm),
-                    Text(
-                      'Your first logged session will show up here.',
-                      style: textTheme.bodyMedium,
-                    ),
-                  ],
+            data: (first) {
+              if (!_pagedOnce) {
+                _pagedOnce = true;
+                _nextBefore = first.nextBefore;
+              }
+              final items = [...first.items, ..._more];
+              if (items.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.all(FitSpacing.screen),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text('No sessions yet', style: textTheme.displaySmall),
+                      const SizedBox(height: FitSpacing.sm),
+                      Text(
+                        'Your first logged session will show up here.',
+                        style: textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return NotificationListener<ScrollNotification>(
+                onNotification: (n) {
+                  if (n.metrics.pixels > n.metrics.maxScrollExtent - 200) {
+                    _loadMore();
+                  }
+                  return false;
+                },
+                child: ListView.separated(
+                  key: const ValueKey('history.list'),
+                  padding: EdgeInsets.only(
+                    top: fitGlass ? FitSpacing.sm : 0,
+                    bottom: FitSpacing.xl,
+                  ),
+                  itemCount: items.length + (_nextBefore != null ? 1 : 0),
+                  // ADR-029: each session a block on glass.
+                  separatorBuilder: (_, __) => fitGlass
+                      ? const SizedBox(height: 10)
+                      : Divider(color: FitColors.rule, height: 1),
+                  itemBuilder: (context, i) {
+                    if (i == items.length) {
+                      return Padding(
+                        padding: const EdgeInsets.all(FitSpacing.md),
+                        child: Center(
+                          child: TextButton(
+                            key: const ValueKey('history.more'),
+                            onPressed: _loadingMore ? null : _loadMore,
+                            child: const Text('Load more'),
+                          ),
+                        ),
+                      );
+                    }
+                    return FitBlock(
+                      margin: const EdgeInsets.symmetric(horizontal: 12),
+                      child: _Row(item: items[i]),
+                    );
+                  },
                 ),
               );
-            }
-            return NotificationListener<ScrollNotification>(
-              onNotification: (n) {
-                if (n.metrics.pixels > n.metrics.maxScrollExtent - 200) {
-                  _loadMore();
-                }
-                return false;
-              },
-              child: ListView.separated(
-                key: const ValueKey('history.list'),
-                padding: const EdgeInsets.only(bottom: FitSpacing.xl),
-                itemCount: items.length + (_nextBefore != null ? 1 : 0),
-                separatorBuilder: (_, __) =>
-                    Divider(color: FitColors.rule, height: 1),
-                itemBuilder: (context, i) {
-                  if (i == items.length) {
-                    return Padding(
-                      padding: const EdgeInsets.all(FitSpacing.md),
-                      child: Center(
-                        child: TextButton(
-                          key: const ValueKey('history.more'),
-                          onPressed: _loadingMore ? null : _loadMore,
-                          child: const Text('Load more'),
-                        ),
-                      ),
-                    );
-                  }
-                  return _Row(item: items[i]);
-                },
-              ),
-            );
-          },
+            },
+          ),
         ),
       ),
     );
@@ -205,32 +216,34 @@ class HistoryDetailScreen extends ConsumerWidget {
     final async = ref.watch(sessionDetailProvider(serverId));
     return Scaffold(
       appBar: AppBar(leading: BackButton(onPressed: () => context.popOrHome())),
-      body: SafeArea(
-        child: async.when(
-          loading: () => const SizedBox.shrink(),
-          error: (e, _) => Padding(
-            padding: const EdgeInsets.all(FitSpacing.screen),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  'Could not load this session',
-                  style: textTheme.titleLarge,
-                ),
-                const SizedBox(height: FitSpacing.sm),
-                AuthFeedback.error(
-                  (e is Failure ? e : const Unknown()).message,
-                ),
-                const SizedBox(height: FitSpacing.lg),
-                FilledButton(
-                  onPressed: () =>
-                      ref.invalidate(sessionDetailProvider(serverId)),
-                  child: const Text('Try again'),
-                ),
-              ],
+      body: FitBackdrop(
+        child: SafeArea(
+          child: async.when(
+            loading: () => const SizedBox.shrink(),
+            error: (e, _) => Padding(
+              padding: const EdgeInsets.all(FitSpacing.screen),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'Could not load this session',
+                    style: textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: FitSpacing.sm),
+                  AuthFeedback.error(
+                    (e is Failure ? e : const Unknown()).message,
+                  ),
+                  const SizedBox(height: FitSpacing.lg),
+                  FilledButton(
+                    onPressed: () =>
+                        ref.invalidate(sessionDetailProvider(serverId)),
+                    child: const Text('Try again'),
+                  ),
+                ],
+              ),
             ),
+            data: (session) => SummaryBody(session: session),
           ),
-          data: (session) => SummaryBody(session: session),
         ),
       ),
     );

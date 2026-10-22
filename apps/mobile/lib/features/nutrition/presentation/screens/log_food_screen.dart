@@ -29,6 +29,7 @@ import '../widgets/food_widgets.dart';
 import '../widgets/log_controls.dart';
 import '../widgets/portion_sheet.dart';
 import 'describe_meal_screen.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 enum LogSource {
   /// Phase 9: the day's mess menu — offered when the user has a mess.
@@ -146,68 +147,72 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
           ],
         ),
       ),
-      body: SafeArea(
-        top: false,
-        child: CustomScrollView(
-          key: const ValueKey('log.scroll'),
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          slivers: <Widget>[
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: FitSpacing.screen,
-              ),
-              sliver: SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    Text('ADD TO', style: textTheme.labelSmall),
-                    MealSlotBar(
-                      keyPrefix: 'log.slot',
-                      selected: _slot,
-                      onSelect: (s) => setState(() => _slot = s),
-                    ),
-                    const SizedBox(height: FitSpacing.md),
-                    // Phase 14: a meal in words, read by FITOS AI into a
-                    // draft the user checks. Only while AI is on and set up.
-                    if (aiOn) ...<Widget>[
-                      _DescribeEntry(
-                        onTap: () async {
-                          FocusScope.of(context).unfocus();
-                          if (await showDescribeMeal(context, _target)) _done();
-                        },
+      body: FitBackdrop(
+        child: SafeArea(
+          top: false,
+          child: CustomScrollView(
+            key: const ValueKey('log.scroll'),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            slivers: <Widget>[
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: FitSpacing.screen,
+                ),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Text('ADD TO', style: textTheme.labelSmall),
+                      MealSlotBar(
+                        keyPrefix: 'log.slot',
+                        selected: _slot,
+                        onSelect: (s) => setState(() => _slot = s),
                       ),
                       const SizedBox(height: FitSpacing.md),
-                    ],
-                    SegmentBar<LogSource>(
-                      keyPrefix: 'log.source',
-                      selected: source,
-                      onSelect: (s) => setState(() => _chosen = s),
-                      segments: [
-                        for (final s in LogSource.values)
-                          if (s != LogSource.mess || hasMess)
-                            Segment(value: s, label: s.label, icon: s.icon),
+                      // Phase 14: a meal in words, read by FITOS AI into a
+                      // draft the user checks. Only while AI is on and set up.
+                      if (aiOn) ...<Widget>[
+                        _DescribeEntry(
+                          onTap: () async {
+                            FocusScope.of(context).unfocus();
+                            if (await showDescribeMeal(context, _target)) {
+                              _done();
+                            }
+                          },
+                        ),
+                        const SizedBox(height: FitSpacing.md),
                       ],
-                    ),
-                  ],
+                      SegmentBar<LogSource>(
+                        keyPrefix: 'log.source',
+                        selected: source,
+                        onSelect: (s) => setState(() => _chosen = s),
+                        segments: [
+                          for (final s in LogSource.values)
+                            if (s != LogSource.mess || hasMess)
+                              Segment(value: s, label: s.label, icon: s.icon),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            switch (source) {
-              LogSource.mess => _MessPane(
-                  date: _date,
-                  slot: _slot,
-                  onLogged: _done,
-                ),
-              LogSource.recent => _RecentPane(onPick: _logFood),
-              LogSource.search => _SearchPane(onPick: (f) => _logFood(f)),
-              LogSource.saved => _SavedPane(target: _target, onLogged: _done),
-              LogSource.quickAdd =>
-                _QuickAddPane(target: _target, onLogged: _done),
-            },
-            const SliverToBoxAdapter(
-              child: SizedBox(height: FitSpacing.xl),
-            ),
-          ],
+              switch (source) {
+                LogSource.mess => _MessPane(
+                    date: _date,
+                    slot: _slot,
+                    onLogged: _done,
+                  ),
+                LogSource.recent => _RecentPane(onPick: _logFood),
+                LogSource.search => _SearchPane(onPick: (f) => _logFood(f)),
+                LogSource.saved => _SavedPane(target: _target, onLogged: _done),
+                LogSource.quickAdd =>
+                  _QuickAddPane(target: _target, onLogged: _done),
+              },
+              const SliverToBoxAdapter(
+                child: SizedBox(height: FitSpacing.xl),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -226,8 +231,16 @@ class _DescribeEntry extends StatelessWidget {
     return InkWell(
       key: const ValueKey('log.describe'),
       onTap: onTap,
+      customBorder: fitGlass
+          ? const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(FitRadius.block),
+            )
+          : null,
       child: DecoratedBox(
-        decoration: BoxDecoration(border: Border.all(color: FitColors.ink)),
+        // ADR-029: a glowing block on glass.
+        decoration: fitGlass
+            ? FitBlock.decoration(glow: true)
+            : BoxDecoration(border: Border.all(color: FitColors.ink)),
         child: Padding(
           padding: const EdgeInsets.all(FitSpacing.md),
           child: Row(
@@ -554,20 +567,25 @@ List<Widget> _recentSlivers(
         ),
         SliverList.separated(
           itemCount: value.value.length,
-          separatorBuilder: (_, __) =>
-              Divider(color: FitColors.rule, height: 1),
+          separatorBuilder: (_, __) => fitGlass
+              ? const SizedBox.shrink()
+              : Divider(color: FitColors.rule, height: 1),
           itemBuilder: (_, i) {
             final r = value.value[i];
-            return LogFoodRow(
-              key: ValueKey('recent.${r.food.slug}'),
-              food: r.food,
-              detail:
-                  'Last ${FoodFormat.number(r.lastServings)} × ${r.lastServingLabel}',
-              onTap: () => onPick(
-                r.food,
-                rowLabel: r.lastServingLabel,
-                rowBasis: r.lastBasis,
-                servings: r.lastServings,
+            return FitSegment(
+              index: i,
+              count: value.value.length,
+              child: LogFoodRow(
+                key: ValueKey('recent.${r.food.slug}'),
+                food: r.food,
+                detail:
+                    'Last ${FoodFormat.number(r.lastServings)} × ${r.lastServingLabel}',
+                onTap: () => onPick(
+                  r.food,
+                  rowLabel: r.lastServingLabel,
+                  rowBasis: r.lastBasis,
+                  servings: r.lastServings,
+                ),
               ),
             );
           },
@@ -705,12 +723,17 @@ class _SearchPaneState extends ConsumerState<_SearchPane> {
                 SliverList.separated(
                   key: const ValueKey('log.results'),
                   itemCount: value.length,
-                  separatorBuilder: (_, __) =>
-                      Divider(color: FitColors.rule, height: 1),
-                  itemBuilder: (_, i) => LogFoodRow(
-                    key: ValueKey('food.${value[i].food.slug}'),
-                    food: value[i].food,
-                    onTap: () => widget.onPick(value[i].food),
+                  separatorBuilder: (_, __) => fitGlass
+                      ? const SizedBox.shrink()
+                      : Divider(color: FitColors.rule, height: 1),
+                  itemBuilder: (_, i) => FitSegment(
+                    index: i,
+                    count: value.length,
+                    child: LogFoodRow(
+                      key: ValueKey('food.${value[i].food.slug}'),
+                      food: value[i].food,
+                      onTap: () => widget.onPick(value[i].food),
+                    ),
                   ),
                 ),
               ],
@@ -763,12 +786,17 @@ class _SavedPane extends ConsumerWidget {
             SliverList.separated(
               key: const ValueKey('log.saved'),
               itemCount: value.value.length,
-              separatorBuilder: (_, __) =>
-                  Divider(color: FitColors.rule, height: 1),
-              itemBuilder: (_, i) => _SavedMealTile(
-                meal: value.value[i],
-                target: target,
-                onLogged: onLogged,
+              separatorBuilder: (_, __) => fitGlass
+                  ? const SizedBox.shrink()
+                  : Divider(color: FitColors.rule, height: 1),
+              itemBuilder: (_, i) => FitSegment(
+                index: i,
+                count: value.value.length,
+                child: _SavedMealTile(
+                  meal: value.value[i],
+                  target: target,
+                  onLogged: onLogged,
+                ),
               ),
             ),
           ],

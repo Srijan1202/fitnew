@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/tokens.dart';
+import 'fit_glass.dart';
 
 /// Section separation by a 1px hairline plus 14px, not by card margins (§6.4).
 ///
@@ -22,6 +23,29 @@ class HairlineSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = this.label;
+    if (fitGlass) {
+      // ADR-029: on glass, the eyebrow over a block.
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          if (label != null)
+            Padding(
+              padding: const EdgeInsets.only(
+                left: FitSpacing.sm,
+                bottom: FitSpacing.sm,
+              ),
+              child: Text(
+                label.toUpperCase(),
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+            ),
+          FitBlock(
+            padding: const EdgeInsets.all(FitSpacing.md),
+            child: child,
+          ),
+        ],
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[

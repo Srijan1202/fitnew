@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/tokens.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// A text field in the §6 language: hairline underline, no filled box, label
 /// as an eyebrow above. Errors render in oxide beneath, never as a red border
@@ -58,23 +59,32 @@ class AuthFormField extends StatelessWidget {
           autovalidateMode: AutovalidateMode.onUserInteraction,
           style: textTheme.bodyLarge,
           cursorColor: FitColors.ink,
-          decoration: InputDecoration(
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: FitColors.rule),
-            ),
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: FitColors.ink, width: 1.5),
-            ),
-            errorBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: FitColors.oxide),
-            ),
-            focusedErrorBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: FitColors.oxide, width: 1.5),
-            ),
-            errorStyle: textTheme.bodyMedium?.copyWith(color: FitColors.oxide),
-          ),
+          // ADR-029: on glass, the theme's rounded filled field.
+          decoration: fitGlass
+              ? InputDecoration(
+                  isDense: true,
+                  errorStyle:
+                      textTheme.bodyMedium?.copyWith(color: FitColors.oxide),
+                )
+              : InputDecoration(
+                  isDense: true,
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: FitSpacing.sm),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: FitColors.rule),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: FitColors.ink, width: 1.5),
+                  ),
+                  errorBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: FitColors.oxide),
+                  ),
+                  focusedErrorBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: FitColors.oxide, width: 1.5),
+                  ),
+                  errorStyle:
+                      textTheme.bodyMedium?.copyWith(color: FitColors.oxide),
+                ),
         ),
       ],
     );

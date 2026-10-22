@@ -11,6 +11,7 @@ import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../domain/entities/food.dart';
 import '../controllers/food_providers.dart';
 import '../widgets/food_widgets.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// The food library (Phase 7; opened from EAT since Phase 8): search, read
 /// what a food contains and where the numbers come from, add your own from a
@@ -59,76 +60,78 @@ class _FoodLibraryScreenState extends ConsumerState<FoodLibraryScreen> {
     final async = ref.watch(foodSearchProvider);
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                FitSpacing.screen,
-                FitSpacing.lg,
-                FitSpacing.sm,
-                FitSpacing.sm,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: <Widget>[
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text('NUTRITION', style: textTheme.labelSmall),
-                        const SizedBox(height: FitSpacing.xs),
-                        Text('Food library', style: textTheme.displaySmall),
-                      ],
-                    ),
-                  ),
-                  TextButton.icon(
-                    key: const ValueKey('food.add'),
-                    onPressed: () => context.push(Routes.foodNew),
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Add a food'),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                FitSpacing.screen,
-                FitSpacing.xs,
-                FitSpacing.screen,
-                FitSpacing.sm,
-              ),
-              child: AuthFormField(
-                fieldKey: const ValueKey('food.search'),
-                label: 'Search foods',
-                controller: _search,
-                textInputAction: TextInputAction.search,
-                onFieldSubmitted: (v) {
-                  _debounce?.cancel();
-                  ref.read(foodQueryProvider.notifier).set(v);
-                },
-                onChanged: _onChanged,
-              ),
-            ),
-            Divider(color: FitColors.rule, height: 1),
-            Expanded(
-              child: query.isEmpty
-                  ? const _Intro()
-                  : async.when(
-                      loading: () => const _ListSkeleton(),
-                      error: (e, _) => _SearchFailed(
-                        failure: e is Failure ? e : const Unknown(),
-                        onRetry: () => ref.invalidate(foodSearchProvider),
-                      ),
-                      data: (items) => _Results(
-                        query: query,
-                        items: items ?? const <FoodSearchResult>[],
-                        onClear: _clear,
+      body: FitBackdrop(
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  FitSpacing.screen,
+                  FitSpacing.lg,
+                  FitSpacing.sm,
+                  FitSpacing.sm,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: <Widget>[
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text('NUTRITION', style: textTheme.labelSmall),
+                          const SizedBox(height: FitSpacing.xs),
+                          Text('Food library', style: textTheme.displaySmall),
+                        ],
                       ),
                     ),
-            ),
-          ],
+                    TextButton.icon(
+                      key: const ValueKey('food.add'),
+                      onPressed: () => context.push(Routes.foodNew),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('Add a food'),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  FitSpacing.screen,
+                  FitSpacing.xs,
+                  FitSpacing.screen,
+                  FitSpacing.sm,
+                ),
+                child: AuthFormField(
+                  fieldKey: const ValueKey('food.search'),
+                  label: 'Search foods',
+                  controller: _search,
+                  textInputAction: TextInputAction.search,
+                  onFieldSubmitted: (v) {
+                    _debounce?.cancel();
+                    ref.read(foodQueryProvider.notifier).set(v);
+                  },
+                  onChanged: _onChanged,
+                ),
+              ),
+              const FitRule(),
+              Expanded(
+                child: query.isEmpty
+                    ? const _Intro()
+                    : async.when(
+                        loading: () => const _ListSkeleton(),
+                        error: (e, _) => _SearchFailed(
+                          failure: e is Failure ? e : const Unknown(),
+                          onRetry: () => ref.invalidate(foodSearchProvider),
+                        ),
+                        data: (items) => _Results(
+                          query: query,
+                          items: items ?? const <FoodSearchResult>[],
+                          onClear: _clear,
+                        ),
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -169,7 +172,7 @@ class _Intro extends StatelessWidget {
           style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
         ),
         const SizedBox(height: FitSpacing.xl),
-        Divider(color: FitColors.rule, height: 1),
+        const FitRule(),
         const SizedBox(height: FitSpacing.afterRule),
         const UsdaAttribution(),
       ],
@@ -219,10 +222,20 @@ class _Results extends StatelessWidget {
     }
     return ListView.separated(
       key: const ValueKey('food.results'),
-      padding: const EdgeInsets.only(bottom: FitSpacing.xl),
+      padding: EdgeInsets.only(
+        top: fitGlass ? FitSpacing.sm : 0,
+        bottom: FitSpacing.xl,
+      ),
       itemCount: items.length,
-      separatorBuilder: (_, __) => Divider(color: FitColors.rule, height: 1),
-      itemBuilder: (context, i) => FoodRow(result: items[i]),
+      // ADR-029: one rounded group on glass.
+      separatorBuilder: (_, __) => fitGlass
+          ? const SizedBox.shrink()
+          : Divider(color: FitColors.rule, height: 1),
+      itemBuilder: (context, i) => FitSegment(
+        index: i,
+        count: items.length,
+        child: FoodRow(result: items[i]),
+      ),
     );
   }
 }

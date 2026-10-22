@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/tokens.dart';
 import '../../domain/entities/food_log.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Compact controls for the Phase 8 logging screens. Each sizes to its
 /// content or shares the row equally — never a full-width stack of labels —
@@ -46,7 +47,7 @@ class SegmentBar<T> extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     // Grows with the text scale (to 200 %, §6.8) from a 56 dp minimum; the
     // segments share the width and stretch to the tallest one.
-    return IntrinsicHeight(
+    final bar = IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
@@ -60,17 +61,27 @@ class SegmentBar<T> extends StatelessWidget {
                 child: InkWell(
                   key: ValueKey('$keyPrefix.${s.label}'),
                   onTap: () => onSelect(s.value),
+                  borderRadius:
+                      fitGlass ? BorderRadius.all(FitRadius.small) : null,
                   child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: s.value == selected
-                              ? FitColors.ink
-                              : FitColors.rule,
-                          width: s.value == selected ? 2 : 1,
-                        ),
-                      ),
-                    ),
+                    // ADR-029: the selected segment an accent pill on glass.
+                    decoration: fitGlass
+                        ? BoxDecoration(
+                            color: s.value == selected
+                                ? FitColors.accent
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.all(FitRadius.small),
+                          )
+                        : BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: s.value == selected
+                                    ? FitColors.ink
+                                    : FitColors.rule,
+                                width: s.value == selected ? 2 : 1,
+                              ),
+                            ),
+                          ),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(minHeight: height),
                       child: Column(
@@ -82,7 +93,9 @@ class SegmentBar<T> extends StatelessWidget {
                               s.icon,
                               size: 20,
                               color: s.value == selected
-                                  ? FitColors.ink
+                                  ? (fitGlass
+                                      ? FitColors.onAccent
+                                      : FitColors.ink)
                                   : FitColors.ink60,
                             ),
                           const SizedBox(height: 2),
@@ -93,7 +106,9 @@ class SegmentBar<T> extends StatelessWidget {
                               maxLines: 1,
                               style: textTheme.bodyLarge?.copyWith(
                                 color: s.value == selected
-                                    ? FitColors.ink
+                                    ? (fitGlass
+                                        ? FitColors.onAccent
+                                        : FitColors.ink)
                                     : FitColors.ink60,
                                 fontWeight: s.value == selected
                                     ? FontWeight.w700
@@ -110,6 +125,12 @@ class SegmentBar<T> extends StatelessWidget {
             ),
         ],
       ),
+    );
+    if (!fitGlass) return bar;
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: FitBlock.decoration(radius: const Radius.circular(18)),
+      child: bar,
     );
   }
 }
@@ -178,16 +199,22 @@ class ChoiceWrap<T> extends StatelessWidget {
                   vertical: FitSpacing.sm,
                 ),
                 decoration: BoxDecoration(
-                  color: o == selected ? FitColors.ink : null,
+                  color: o == selected
+                      ? (fitGlass ? FitColors.accent : FitColors.ink)
+                      : null,
                   border: Border.all(
-                    color: o == selected ? FitColors.ink : FitColors.rule,
+                    color: o == selected
+                        ? (fitGlass ? FitColors.accent : FitColors.ink)
+                        : FitColors.rule,
                   ),
                   borderRadius: BorderRadius.all(FitRadius.medium),
                 ),
                 child: Text(
                   label(o),
                   style: textTheme.bodyLarge?.copyWith(
-                    color: o == selected ? FitColors.paper : FitColors.ink,
+                    color: o == selected
+                        ? (fitGlass ? FitColors.onAccent : FitColors.paper)
+                        : FitColors.ink,
                   ),
                 ),
               ),

@@ -7,6 +7,7 @@ import '../../../../profile/domain/entities/vocabulary.dart';
 import '../../../domain/entities/onboarding.dart';
 import '../../widgets/onboarding_step.dart';
 import 'goal_step.dart' show SubmitAnswer;
+import '../../../../../shared/widgets/fit_glass.dart';
 
 /// Screen 5 — Food (§32): diet type and allergies.
 ///
@@ -105,16 +106,30 @@ class _FoodStepState extends State<FoodStep> {
           const SizedBox(height: FitSpacing.lg),
           Text('ALLERGIES — LEAVE EMPTY IF NONE', style: textTheme.labelSmall),
           const SizedBox(height: FitSpacing.xs),
-          for (final a in Allergen.values) ...<Widget>[
-            AllergyRow(
-              allergen: a,
-              severity: _allergies[a],
-              enabled: !_busy,
-              onToggle: () => _toggle(a),
-              onSeverity: (s) => setState(() => _allergies[a] = s),
+          // ADR-029: one rounded group on glass, hairlines on Paper.
+          FitBlock(
+            child: Column(
+              children: <Widget>[
+                for (final a in Allergen.values) ...<Widget>[
+                  if (fitGlass && a != Allergen.values.first)
+                    Divider(
+                      color: FitColors.rule.withValues(alpha: 0.6),
+                      height: 1,
+                      indent: FitSpacing.md,
+                      endIndent: FitSpacing.md,
+                    ),
+                  AllergyRow(
+                    allergen: a,
+                    severity: _allergies[a],
+                    enabled: !_busy,
+                    onToggle: () => _toggle(a),
+                    onSeverity: (s) => setState(() => _allergies[a] = s),
+                  ),
+                  if (!fitGlass) Divider(color: FitColors.rule, height: 1),
+                ],
+              ],
             ),
-            Divider(color: FitColors.rule, height: 1),
-          ],
+          ),
         ],
       ),
     );
@@ -155,7 +170,9 @@ class AllergyRow extends StatelessWidget {
                 Container(
                   width: 3,
                   height: 24,
-                  color: selected ? FitColors.ink : Colors.transparent,
+                  color: selected
+                      ? (fitGlass ? FitColors.accent : FitColors.ink)
+                      : Colors.transparent,
                 ),
                 const SizedBox(width: FitSpacing.md),
                 Expanded(

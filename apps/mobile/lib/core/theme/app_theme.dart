@@ -70,6 +70,39 @@ abstract final class FitTheme {
           textStyle: textTheme.titleMedium,
         ),
       ),
+      // ADR-029: on glass, text fields are rounded and filled; on Paper the
+      // Material default (each screen draws its own hairline).
+      inputDecorationTheme: FitPalette.current.glass
+          ? InputDecorationTheme(
+              filled: true,
+              fillColor: FitColors.ink.withValues(alpha: 0.06),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.all(FitRadius.small),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(FitRadius.small),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(FitRadius.small),
+                borderSide: BorderSide(color: FitColors.accent, width: 1.5),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(FitRadius.small),
+                borderSide: BorderSide(color: FitColors.oxide),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(FitRadius.small),
+                borderSide: BorderSide(color: FitColors.oxide, width: 1.5),
+              ),
+              hintStyle: textTheme.bodyLarge?.copyWith(color: FitColors.ink35),
+              prefixIconColor: FitColors.ink60,
+              suffixIconColor: FitColors.ink60,
+            )
+          : null,
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: FitColors.ink,
         selectionColor: FitColors.accent.withValues(alpha: 0.35),

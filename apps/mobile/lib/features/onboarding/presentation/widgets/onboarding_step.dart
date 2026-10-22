@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// The frame every onboarding screen sits in: eyebrow with the step count,
 /// title, optional lede, the screen's body, then a back link and the primary
 /// action. Submit/busy/error handling lives here once rather than six times.
 ///
-/// No cards, no progress ring (§6.1). Progress is the eyebrow text.
+/// No progress ring (§6.1): the eyebrow says the step, and (owner,
+/// 2026-10-22) a thin line across the very top fills in the glow colour.
 class OnboardingStep extends StatelessWidget {
   const OnboardingStep({
     required this.screenNumber,
@@ -41,75 +43,78 @@ class OnboardingStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: SingleChildScrollView(
+      body: FitBackdrop(
+        child: SafeArea(
+          child: Column(
+            children: <Widget>[
+              FitProgressLine(step: screenNumber, total: totalScreens),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(
+                    FitSpacing.screen,
+                    FitSpacing.lg,
+                    FitSpacing.screen,
+                    FitSpacing.md,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        'STEP $screenNumber OF $totalScreens',
+                        style: textTheme.labelSmall,
+                      ),
+                      const SizedBox(height: FitSpacing.xs),
+                      Text(title, style: textTheme.displaySmall),
+                      if (lede != null) ...<Widget>[
+                        const SizedBox(height: FitSpacing.sm),
+                        Text(lede!, style: textTheme.bodyMedium),
+                      ],
+                      const SizedBox(height: FitSpacing.lg),
+                      const FitRule(),
+                      SizedBox(height: fitGlass ? 0 : FitSpacing.afterRule),
+                      child,
+                      if (failure != null) ...<Widget>[
+                        const SizedBox(height: FitSpacing.md),
+                        AuthFeedback.error(failure!.message),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              // Sticky footer: the action is always reachable without scrolling
+              // past a long list.
+              Padding(
                 padding: const EdgeInsets.fromLTRB(
                   FitSpacing.screen,
-                  FitSpacing.lg,
+                  FitSpacing.sm,
                   FitSpacing.screen,
                   FitSpacing.md,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: <Widget>[
-                    Text(
-                      'STEP $screenNumber OF $totalScreens',
-                      style: textTheme.labelSmall,
+                    if (onBack != null)
+                      TextButton(
+                        onPressed: busy ? null : onBack,
+                        child: const Text('Back'),
+                      ),
+                    const Spacer(),
+                    FilledButton(
+                      onPressed: busy || !canContinue ? null : onContinue,
+                      child: busy
+                          ? SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: FitColors.paper,
+                              ),
+                            )
+                          : Text(continueLabel),
                     ),
-                    const SizedBox(height: FitSpacing.xs),
-                    Text(title, style: textTheme.displaySmall),
-                    if (lede != null) ...<Widget>[
-                      const SizedBox(height: FitSpacing.sm),
-                      Text(lede!, style: textTheme.bodyMedium),
-                    ],
-                    const SizedBox(height: FitSpacing.lg),
-                    Divider(color: FitColors.rule, height: 1),
-                    const SizedBox(height: FitSpacing.afterRule),
-                    child,
-                    if (failure != null) ...<Widget>[
-                      const SizedBox(height: FitSpacing.md),
-                      AuthFeedback.error(failure!.message),
-                    ],
                   ],
                 ),
               ),
-            ),
-            // Sticky footer: the action is always reachable without scrolling
-            // past a long list.
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                FitSpacing.screen,
-                FitSpacing.sm,
-                FitSpacing.screen,
-                FitSpacing.md,
-              ),
-              child: Row(
-                children: <Widget>[
-                  if (onBack != null)
-                    TextButton(
-                      onPressed: busy ? null : onBack,
-                      child: const Text('Back'),
-                    ),
-                  const Spacer(),
-                  FilledButton(
-                    onPressed: busy || !canContinue ? null : onContinue,
-                    child: busy
-                        ? SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: FitColors.paper,
-                            ),
-                          )
-                        : Text(continueLabel),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -140,9 +145,9 @@ class ChoiceList<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return Column(
-      children: <Widget>[
-        for (final option in options) ...<Widget>[
+    return _ChoiceGroup(
+      rows: <Widget>[
+        for (final option in options)
           _ChoiceRow(
             selected: option == selected,
             enabled: enabled,
@@ -151,8 +156,6 @@ class ChoiceList<T> extends StatelessWidget {
             subtitle: blurb?.call(option),
             textTheme: textTheme,
           ),
-          Divider(color: FitColors.rule, height: 1),
-        ],
       ],
     );
   }
@@ -178,19 +181,56 @@ class MultiChoiceList<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return Column(
-      children: <Widget>[
-        for (final option in options) ...<Widget>[
+    return _ChoiceGroup(
+      rows: <Widget>[
+        for (final option in options)
           _ChoiceRow(
             selected: selected.contains(option),
             enabled: enabled,
             onTap: () => onToggle(option),
             title: label(option),
             textTheme: textTheme,
+            multi: true,
           ),
-          Divider(color: FitColors.rule, height: 1),
-        ],
       ],
+    );
+  }
+}
+
+/// The rows of a choice list: hairlines under each on Paper; one rounded
+/// group with inset hairlines on glass (ADR-029).
+class _ChoiceGroup extends StatelessWidget {
+  const _ChoiceGroup({required this.rows});
+
+  final List<Widget> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!fitGlass) {
+      return Column(
+        children: <Widget>[
+          for (final r in rows) ...<Widget>[
+            r,
+            Divider(color: FitColors.rule, height: 1),
+          ],
+        ],
+      );
+    }
+    return FitBlock(
+      child: Column(
+        children: <Widget>[
+          for (var i = 0; i < rows.length; i++) ...<Widget>[
+            if (i > 0)
+              Divider(
+                color: FitColors.rule.withValues(alpha: 0.6),
+                height: 1,
+                indent: FitSpacing.md,
+                endIndent: FitSpacing.md,
+              ),
+            rows[i],
+          ],
+        ],
+      ),
     );
   }
 }
@@ -203,6 +243,7 @@ class _ChoiceRow extends StatelessWidget {
     required this.title,
     required this.textTheme,
     this.subtitle,
+    this.multi = false,
   });
 
   final bool selected;
@@ -212,8 +253,12 @@ class _ChoiceRow extends StatelessWidget {
   final String? subtitle;
   final TextTheme textTheme;
 
+  /// A multi-select row: a square check rather than a round one (glass).
+  final bool multi;
+
   @override
   Widget build(BuildContext context) {
+    if (fitGlass) return _glass();
     return Semantics(
       selected: selected,
       button: true,
@@ -251,6 +296,67 @@ class _ChoiceRow extends StatelessWidget {
                   ),
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// ADR-029: the chosen row tinted, with an accent check on the right.
+  Widget _glass() {
+    final mark = AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        color: selected ? FitColors.accent : Colors.transparent,
+        shape: multi ? BoxShape.rectangle : BoxShape.circle,
+        borderRadius: multi ? const BorderRadius.all(Radius.circular(7)) : null,
+        border: Border.all(
+          color: selected ? FitColors.accent : FitColors.ink35,
+          width: 1.5,
+        ),
+      ),
+      child: selected
+          ? Icon(Icons.check, size: 16, color: FitColors.onAccent)
+          : null,
+    );
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          color: selected
+              ? FitPalette.current.glow.withValues(alpha: 0.10)
+              : Colors.transparent,
+          constraints: const BoxConstraints(minHeight: 52),
+          padding: const EdgeInsets.symmetric(
+            horizontal: FitSpacing.md,
+            vertical: 10,
+          ),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      title,
+                      style: textTheme.bodyLarge?.copyWith(
+                        fontWeight:
+                            selected ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                    ),
+                    if (subtitle != null)
+                      Text(subtitle!, style: textTheme.bodyMedium),
+                  ],
+                ),
+              ),
+              const SizedBox(width: FitSpacing.sm),
+              mark,
             ],
           ),
         ),

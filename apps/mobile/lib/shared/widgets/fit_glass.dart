@@ -403,3 +403,125 @@ class FitRow extends StatelessWidget {
     );
   }
 }
+
+/// One row of a lazy grouped list (a `ListView.separated` or a sliver list):
+/// on glass, the rows join into one rounded translucent group — the first
+/// rounds its top, the last its bottom, inset hairlines between. On Paper it
+/// is only its child (the list keeps its own hairlines).
+class FitSegment extends StatelessWidget {
+  const FitSegment({
+    required this.index,
+    required this.count,
+    required this.child,
+    this.margin = const EdgeInsets.symmetric(horizontal: 12),
+    super.key,
+  });
+
+  final int index;
+  final int count;
+  final Widget child;
+  final EdgeInsetsGeometry margin;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!fitGlass) return child;
+    final p = FitPalette.current;
+    final dark = p.brightness == Brightness.dark;
+    final first = index == 0;
+    final last = index == count - 1;
+    const r = FitRadius.block;
+    return Padding(
+      padding: margin,
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: dark
+              ? p.ink.withValues(alpha: 0.06)
+              : Colors.white.withValues(alpha: 0.78),
+          borderRadius: BorderRadius.vertical(
+            top: first ? r : Radius.zero,
+            bottom: last ? r : Radius.zero,
+          ),
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              if (!first)
+                Divider(
+                  color: FitColors.rule.withValues(alpha: 0.6),
+                  height: 1,
+                  indent: FitSpacing.md,
+                  endIndent: FitSpacing.md,
+                ),
+              child,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A thin line across the very top of a flow that fills as its steps are
+/// done, in the palette's glow (the neon lime on FITOS Dark). It animates
+/// from the previous step's share to this one's.
+class FitProgressLine extends StatelessWidget {
+  const FitProgressLine({
+    required this.step,
+    required this.total,
+    super.key,
+  });
+
+  /// 1-based: the step on screen counts as reached.
+  final int step;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    final to = (step / total).clamp(0.0, 1.0);
+    final from = ((step - 1) / total).clamp(0.0, 1.0);
+    final glow = FitPalette.current.glow;
+    return Semantics(
+      label: 'Step $step of $total',
+      child: SizedBox(
+        key: const ValueKey('flow.progress'),
+        height: 3,
+        width: double.infinity,
+        child: TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: from, end: to),
+          duration: const Duration(milliseconds: 450),
+          curve: Curves.easeOutCubic,
+          builder: (context, value, _) => Stack(
+            children: <Widget>[
+              Positioned.fill(
+                child: ColoredBox(color: FitColors.ink.withValues(alpha: 0.08)),
+              ),
+              Positioned.fill(
+                child: FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: value,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: glow,
+                      borderRadius: const BorderRadius.horizontal(
+                        right: Radius.circular(3),
+                      ),
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color: glow.withValues(alpha: 0.55),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -525,8 +525,8 @@ void main() {
     final rows = [
       for (final w in delegate.children)
         if (w.key is ValueKey<String> &&
-            (w.key! as ValueKey<String>).value.startsWith('volume.row.'))
-          (w.key! as ValueKey<String>).value.substring('volume.row.'.length),
+            (w.key! as ValueKey<String>).value.startsWith('volume.block.'))
+          (w.key! as ValueKey<String>).value.substring('volume.block.'.length),
     ];
     expect(rows.take(2), ['chest', 'calves']);
     expect(rows.length, MuscleGroup.values.length);
