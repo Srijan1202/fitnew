@@ -13,7 +13,11 @@
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { inflateRawSync } from 'node:zlib';
+
+/** The repository root, whatever the working directory (hosted.ps1 runs from apps/mobile). */
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 const PATTERNS = [
   ['private key', /-----BEGIN (?:RSA |EC |OPENSSH |)PRIVATE KEY-----/],
@@ -32,8 +36,8 @@ function envValue(path, key) {
   return v === undefined || v === '' ? null : v;
 }
 
-const gemini = envValue('docker/.env', 'GEMINI_API_KEY');
-const firebaseClientKey = envValue('apps/mobile/alpha.env', 'FIREBASE_API_KEY');
+const gemini = envValue(`${ROOT}docker/.env`, 'GEMINI_API_KEY');
+const firebaseClientKey = envValue(`${ROOT}apps/mobile/alpha.env`, 'FIREBASE_API_KEY');
 
 /** Findings in one blob of text. `allowFirebaseKey`: an APK may carry the public client key. */
 function scan(name, text, allowFirebaseKey) {
@@ -91,11 +95,11 @@ if (apkIndex > 0) {
   }
   console.log(`scanned ${entries} entries in ${apk}`);
 } else {
-  const files = execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8' }).split('\0').filter((f) => f !== '');
+  const files = execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8', cwd: ROOT }).split('\0').filter((f) => f !== '');
   let scanned = 0;
   for (const f of files) {
-    if (!existsSync(f)) continue;
-    const buf = readFileSync(f);
+    if (!existsSync(`${ROOT}${f}`)) continue;
+    const buf = readFileSync(`${ROOT}${f}`);
     if (buf.length > 5_000_000 || buf.includes(0)) continue; // large or binary
     scanned++;
     findings.push(...scan(f, buf.toString('utf8'), false));
