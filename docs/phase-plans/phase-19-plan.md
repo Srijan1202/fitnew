@@ -64,7 +64,8 @@
    - ~~bootstrap~~ done;
    - ~~`BootstrapMode=false`~~ done;
    - ~~settings~~ done;
-   - Firebase federation (`gcloud`);
+   - ~~Firebase federation (`gcloud`)~~ done 2026-10-22: pool `fitos-aws`, provider `aws-ec2`, service account `fitos-api-aws`;
+   - ~~the Gemini key, `AI_ENABLED=true`~~ done 2026-10-22: AI is on for premium users, on the free tier (O7 still open);
    - the GitHub variable `AWS_CI_ROLE_ARN`;
    - the first release.
 2. **Play** (PLAY.md):
