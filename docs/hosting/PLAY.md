@@ -64,7 +64,7 @@ The app sends crash reports only from release builds, and only while the user ha
    - Free
    - Accept the declarations.
 3. Under App content, fill in what internal testing needs:
-   - **privacy policy URL:** host `docs/legal/privacy-policy.md` on the GitHub Pages site behind `tryfitos.me`, e.g. `https://tryfitos.me/privacy`;
+   - **privacy policy URL:** `https://tryfitos.me/privacy/` (the FITOS website, a separate repository: its `/privacy/` page carries `docs/legal/privacy-policy.md`; keep the two in step);
    - **data safety:** see the table below;
    - **target audience:** 18+;
    - **ads:** no;
