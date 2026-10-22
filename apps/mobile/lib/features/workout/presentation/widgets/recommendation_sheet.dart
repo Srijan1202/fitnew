@@ -113,7 +113,7 @@ class RecommendationSheet extends ConsumerWidget {
                             padding:
                                 const EdgeInsets.only(bottom: FitSpacing.xs),
                             child: Text(
-                              '${h.date}  ${h.sets.map((s) => '${s.weightKg == null ? '—' : _kg(s.weightKg!)}×${s.reps}${s.rir == null ? '' : ' @${s.rir}'}').join('  ')}',
+                              '${h.date}  ${h.sets.map((s) => '${s.weightKg == null ? '—' : _kg(s.weightKg!)}×${s.reps}').join('  ')}',
                               key: ValueKey(
                                 'recommendation.history.${h.sessionId}',
                               ),

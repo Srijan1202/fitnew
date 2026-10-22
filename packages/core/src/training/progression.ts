@@ -64,7 +64,7 @@ export function workingWeight(session: SessionLog): number | null {
   return Math.max(...weights);
 }
 
-/** Every working set reached repMax at or below the RIR target. */
+/** Every working set reached repMax (and, where RIR was logged, at or below its target). */
 function clearedTopOfRange(session: SessionLog, target: ExerciseTarget): boolean {
   const working = workingWeight(session);
   // recommendProgression answers an unloaded last session (step 1b) before asking this.
@@ -193,7 +193,7 @@ export function recommendProgression(input: ProgressionInput): ProgressionRecomm
       weightKg: next,
       repTarget,
       targetRir: target.targetRir,
-      reason: `You hit ${target.repMax} reps on every working set at ${lastWeight} kg with ${target.targetRir} RIR or less. Move to ${next} kg and work back up from ${target.repMin}.`,
+      reason: `You hit ${target.repMax} reps on every working set at ${lastWeight} kg. Move to ${next} kg and work back up from ${target.repMin}.`,
     };
   }
 
@@ -214,7 +214,7 @@ export function recommendProgression(input: ProgressionInput): ProgressionRecomm
     weightKg: lastWeight,
     repTarget,
     targetRir: target.targetRir,
-    reason: `Stay at ${lastWeight} kg and add reps. Once all ${target.sets} sets reach ${target.repMax} at ${target.targetRir} RIR, the weight goes up.`,
+    reason: `Stay at ${lastWeight} kg and add reps. Once all ${target.sets} sets reach ${target.repMax}, the weight goes up.`,
   };
 }
 

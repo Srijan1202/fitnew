@@ -178,7 +178,7 @@ void main() {
         matching: find.byType(Text),
       ),
     );
-    expect(line.data, startsWith('↑ 75 kg × 6 · 1 RIR — Every working set'));
+    expect(line.data, startsWith('↑ 75 kg × 6 — Every working set'));
     expect(line.style?.color, FitColors.pine);
     expect(line.maxLines, 1);
     // No recommendation on the calf raise (the fake sends none): no line.
@@ -228,7 +228,7 @@ void main() {
         tester,
         'recommendation.history.99999999-9999-4999-8999-999999999999',
       ).data,
-      '2026-09-14  70×12 @1',
+      '2026-09-14  70×12',
     );
     await tester.tap(find.byKey(const ValueKey('recommendation.useLast')));
     await settle(tester);
@@ -364,7 +364,6 @@ void main() {
       'DELOAD · plan was 3 × 6–12 @ 80 kg',
     );
     expect(weightOf(tester, '$k.set.1.weight'), '63');
-    expect(textOf(tester, '$k.set.1.rir').data, '3');
     final o = textOf(tester, '$k.set.1.original');
     expect(o.data, 'plan 80×6–12');
     expect(o.style?.color, FitColors.ink35);

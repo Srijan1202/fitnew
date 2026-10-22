@@ -250,8 +250,8 @@ void main() {
         'set.1.reps.minus',
         'set.2.weight.plus',
         'set.2.weight.minus',
-        'set.3.rir.plus',
-        'set.3.rir.minus',
+        'set.3.reps.plus',
+        'set.3.reps.minus',
       ]) {
         await tester.tap(find.byKey(ValueKey('$cardKey.$control')));
         await tester.pump();
@@ -469,13 +469,16 @@ void main() {
       final cardKey = 'exercise.${plannedSquat.id}';
       await tester.tap(find.byKey(ValueKey('$cardKey.header')));
       await settle(tester);
-      await tester.tap(find.byKey(ValueKey('$cardKey.set.1.rir.plus')));
+      final reps = int.parse(
+        tester.widget<Text>(find.byKey(ValueKey('$cardKey.set.1.reps'))).data!,
+      );
+      await tester.tap(find.byKey(ValueKey('$cardKey.set.1.reps.plus')));
       await autosave(tester);
 
       expect(find.byKey(const ValueKey('save.retry')), findsOneWidget);
       expect(
-        tester.widget<Text>(find.byKey(ValueKey('$cardKey.set.1.rir'))).data,
-        '2',
+        tester.widget<Text>(find.byKey(ValueKey('$cardKey.set.1.reps'))).data,
+        '${reps + 1}',
         reason: 'the edit is still on screen',
       );
 

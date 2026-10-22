@@ -4,7 +4,8 @@ import 'package:flutter/services.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../domain/entities/program.dart';
 
-/// One set, editable in place: reps, weight, RIR. Built for a gym: 44 px
+/// One set, editable in place: reps and weight (RIR is not asked, owner
+/// 2026-10-22 — a plan keeps its target RIR). Built for a gym: 44 px
 /// targets, −/+ on everything, tap the weight to type it. Nothing here
 /// navigates; every change goes up through [onChanged].
 class SetRow extends StatefulWidget {
@@ -73,12 +74,6 @@ class _SetRowState extends State<SetRow> {
     widget.onChanged(widget.set.copyWith(weightKg: _round(next)));
   }
 
-  void _rir(int delta) {
-    widget.onChanged(
-      widget.set.copyWith(rir: (widget.set.rir + delta).clamp(0, 5)),
-    );
-  }
-
   void _startTyping() {
     setState(() {
       _typing = true;
@@ -111,7 +106,7 @@ class _SetRowState extends State<SetRow> {
     final weightLabel = s.weightKg == null ? '—' : _fmt(s.weightKg!);
     return Semantics(
       label:
-          'Set ${s.setIndex}: ${s.targetReps} reps, ${s.weightKg == null ? 'no weight set' : '${s.weightKg} kilograms'}, ${s.rir} reps in reserve',
+          'Set ${s.setIndex}: ${s.targetReps} reps, ${s.weightKg == null ? 'no weight set' : '${s.weightKg} kilograms'}',
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: FitSpacing.xs),
         child: Row(
@@ -192,22 +187,6 @@ class _SetRowState extends State<SetRow> {
                       ),
                     ),
             ),
-            const SizedBox(width: FitSpacing.sm),
-            // RIR
-            _Stepper(
-              minusKey: _k('rir.minus'),
-              plusKey: _k('rir.plus'),
-              enabled: widget.enabled,
-              onMinus: () => _rir(-1),
-              onPlus: () => _rir(1),
-              compact: true,
-              unit: 'RIR',
-              child: Text(
-                '${s.rir}',
-                key: _k('rir'),
-                style: textTheme.titleLarge,
-              ),
-            ),
             if (widget.trailing != null) widget.trailing!,
           ],
         ),
@@ -226,7 +205,6 @@ class _Stepper extends StatelessWidget {
     required this.onPlus,
     this.minusKey,
     this.plusKey,
-    this.compact = false,
   });
 
   final Widget child;
@@ -236,13 +214,12 @@ class _Stepper extends StatelessWidget {
   final VoidCallback onPlus;
   final Key? minusKey;
   final Key? plusKey;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Expanded(
-      flex: compact ? 3 : 4,
+      flex: 4,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[

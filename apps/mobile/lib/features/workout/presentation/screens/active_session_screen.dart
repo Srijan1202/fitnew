@@ -199,7 +199,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
         setType: row.setType,
         weightKg: v.weightKg,
         reps: v.repsMax,
-        rir: v.rir,
+        // Owner 2026-10-22: RIR is no longer asked; the rules work without it.
+        rir: null,
         loggedAt: DateTime.now().toUtc().toIso8601String(),
         plannedSetId: row.plannedSetId,
       ),
@@ -545,7 +546,6 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                 reps: values.repsMax,
                 weightKg: values.weightKg,
                 weightCleared: values.weightKg == null && set.weightKg != null,
-                rir: values.rir,
               ),
       onDeleteLogged: (set) => ref
           .read(workoutRepositoryProvider)

@@ -94,7 +94,7 @@ class SessionExerciseCard extends StatelessWidget {
   /// "65 kg × 6" / "× 12 (bodyweight)" — the recommendation in one line.
   static String recommendationLabel(ProgressionRecommendation r) {
     final load = r.weightKg == null ? 'bodyweight' : '${_kg(r.weightKg!)} kg';
-    return '$load × ${r.repTarget} · ${r.targetRir} RIR';
+    return '$load × ${r.repTarget}';
   }
 
   /// Plan targets summarised: "4 × 6–12 @ 80 kg".

@@ -143,11 +143,12 @@ void main() {
     expect(find.text('Barbell Back Squat'), findsOneWidget);
     expect(find.text('Standing Calf Raise'), findsOneWidget);
     expect(textOf(tester, '$k.last').data, 'Last time: 70×10  70×9  70×8');
-    // Three pending rows: reps = the plan's target (12), weight = last time (70), RIR = the plan (1).
+    // Three pending rows: reps = the plan's target (12), weight = last time
+    // (70). RIR is not asked (owner 2026-10-22): no control for it.
     for (final i in [1, 2, 3]) {
       expect(textOf(tester, '$k.set.$i.reps').data, '12');
       expect(weightOf(tester, '$k.set.$i.weight'), '70');
-      expect(textOf(tester, '$k.set.$i.rir').data, '1');
+      expect(find.byKey(ValueKey('$k.set.$i.rir')), findsNothing);
     }
     expect(textOf(tester, '$k.count').data, '0 / 3');
     expect(textOf(tester, 'session.sets').data, '0 / 5');
@@ -179,7 +180,7 @@ void main() {
     final logged = local.exercises.first.sets.single;
     expect(logged.reps, 10);
     expect(logged.weightKg, 70);
-    expect(logged.rir, 1);
+    expect(logged.rir, isNull, reason: 'RIR is not asked any more');
     expect(logged.setType, SetType.working);
     expect(textOf(tester, '$k.count').data, '1 / 3');
     expect(textOf(tester, 'session.sets').data, '1 / 5');
