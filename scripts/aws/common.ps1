@@ -2,8 +2,8 @@
   FITOS beta on AWS (ADR-025): helpers shared by deploy.ps1, rollback.ps1,
   bootstrap.ps1 and set-parameter.ps1. Dot-source it; it does nothing alone.
 
-  Every call runs as the owner's own AWS CLI profile (`aws configure sso`,
-  default name `fitos`). No access key is stored by these scripts or passed
+  Every call runs as the owner's own AWS CLI profile (`aws login --profile
+  fitos`: short-lived credentials from the console sign-in; default name `fitos`). No access key is stored by these scripts or passed
   on a command line, and the server is reached only through Systems Manager:
   it has no SSH.
 #>
@@ -27,7 +27,11 @@ function Initialize-Aws([string]$AwsProfileName, [string]$Region) {
   if (-not (Get-Command aws -ErrorAction SilentlyContinue)) { throw 'The AWS CLI is not installed (https://aws.amazon.com/cli/).' }
   $script:AwsProfile = $AwsProfileName
   $script:AwsRegion = $Region
-  $id = Invoke-Aws sts get-caller-identity --output json | ConvertFrom-Json
+  try {
+    $id = Invoke-Aws sts get-caller-identity --output json | ConvertFrom-Json
+  } catch {
+    throw "Not signed in to AWS as '$AwsProfileName'. Run: aws login --profile $AwsProfileName"
+  }
   Write-Host "AWS account $($id.Account) as $($id.Arn) ($Region)"
 }
 

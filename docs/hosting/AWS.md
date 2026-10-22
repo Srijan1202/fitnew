@@ -30,18 +30,24 @@ This runbook sets up the beta on AWS:
 ## 0. Account and CLI (once)
 
 1. In the AWS console (root user): turn on **MFA** for the root user.
-2. **IAM Identity Center:**
-   - enable it;
-   - create a user for yourself with the `AdministratorAccess` permission set;
-   - stop using root.
+2. **Your everyday user:** IAM → Users → Create user, e.g. `srijan-admin`.
+   - Give it console access with a password, then turn on **MFA** for it.
+   - Attach `AdministratorAccess` (the stack creates IAM roles) and `SignInLocalDevelopmentAccess` (the CLI login below).
+   - **No access keys.** Stop using root.
+   - Not IAM Identity Center: it needs an AWS Organization, and creating one moves the account to the paid plan and **ends the free credits at once**.
 3. **Region:** Asia Pacific (Mumbai) `ap-south-1`.
-4. **Plan:** a new account starts on the Free plan with credits. If step 2 refuses `t3.small`, upgrade to the **Paid plan** (Billing → Free plan → Upgrade). The credits still apply.
-5. Install the **AWS CLI v2**. Then, in PowerShell:
+4. **Plan:** a new account starts on the Free plan with credits, which limits it to some smaller instance types. If step 2 refuses `t3.small` or the database class, either:
+   - upgrade directly to the **Paid plan** (Billing → upgrade). Not through Organizations. AWS says unused credits stay usable for up to 12 months from sign-up; or
+   - stay on the Free plan with `InstanceType=t3.micro` (1 GB, tight). Ask first: the release script's memory limit needs lowering for it.
+5. Install or update the **AWS CLI v2** to 2.32.0 or newer. Then, in PowerShell:
    ```
-   aws configure sso --profile fitos
+   aws login --profile fitos
+   aws configure set region ap-south-1 --profile fitos
    aws sts get-caller-identity --profile fitos
    ```
-   The second command prints your account id; you need it in step 7.
+   - `aws login` opens the browser; sign in as the IAM user. The CLI keeps short-lived credentials that refresh for up to 12 hours; run `aws login --profile fitos` again after that.
+   - No key is ever written to a file.
+   - The last command prints your account id; you need it in step 7.
 
 **Cost:** about $40 a month after the credits (ADR-025 "Cost"). Check it in the AWS Pricing Calculator first.
 
