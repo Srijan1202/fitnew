@@ -12,7 +12,7 @@ export default function NewExercise() {
     <>
       <p><Link href="/exercises">← Exercises</Link></p>
       <Header eyebrow="Library" title="New exercise" />
-      <ExerciseForm initial={EMPTY_EXERCISE} id={null} onSaved={(x) => router.push(`/exercises/${x.id}`)} />
+      <ExerciseForm initial={EMPTY_EXERCISE} id={null} onSaved={(x) => router.push(`/exercises/edit?id=${x.id}`)} />
     </>
   );
 }

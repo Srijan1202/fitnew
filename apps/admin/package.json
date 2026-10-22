@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --port 3000",
     "build": "next build",
+    "build:static": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "echo \"@fitos/admin: the panel holds no rules; the API integration tests cover admin, ci-admin type-checks, lints and builds it\" && exit 0",

@@ -35,7 +35,7 @@ export default function Exercises() {
           <tbody>
             {data.items.map((x) => (
               <tr key={x.id}>
-                <td><Link href={`/exercises/${x.id}`}>{x.name}</Link><div className="muted small">{x.slug}</div></td>
+                <td><Link href={`/exercises/edit?id=${x.id}`}>{x.name}</Link><div className="muted small">{x.slug}</div></td>
                 <td>{x.movementPattern}</td>
                 <td>{x.equipment.join(', ')}</td>
                 <td>

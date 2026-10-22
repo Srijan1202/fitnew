@@ -27,7 +27,7 @@ export default function Foods() {
           <tbody>
             {data.items.map((f) => (
               <tr key={f.id}>
-                <td><Link href={`/foods/${f.id}`}>{f.name}</Link><div className="muted small">{f.slug}</div></td>
+                <td><Link href={`/foods/edit?id=${f.id}`}>{f.name}</Link><div className="muted small">{f.slug}</div></td>
                 <td>{f.source}</td>
                 <td>{f.isVerified ? <Badge tone="ok">verified</Badge> : <Badge tone="muted">estimate</Badge>}</td>
                 <td>{when(f.adminEditedAt)}</td>

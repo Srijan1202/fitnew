@@ -200,6 +200,15 @@ This:
 - Migrations are forward-only and backward-compatible, so a rollback never needs a down migration.
 - A release that fails its checks never takes traffic.
 
+## The website and the admin panel (same server)
+
+Caddy serves more sites beside the API, each from `/opt/fitos/caddy/sites/*.caddy`, which the Caddyfile imports:
+
+- **https://tryfitos.me** (and `www`): the website, from the `fitos-website` repository (`deploy\deploy.ps1`, which also uploads the APK). DNS: `A @ → the Elastic IP`; `www` is a CNAME to the apex.
+- **https://admin.tryfitos.me**: the admin panel (ADR-022 amendment). Publish it with `.\scriptswsdmin.ps1`. DNS: `A admin → the Elastic IP`. Add `admin.tryfitos.me` to Firebase Authentication's authorised domains. The panel's `/api/*` goes to the serving API container (the `fitos_api` snippet), so releases and rollbacks move it too.
+
+Both deploys carry files through the private transfer bucket (stack `fitos-website-transfer`, 15-minute links, emptied after) and run over Systems Manager. The server's role is unchanged.
+
 ## Maintenance
 
 - **Security updates** install by themselves.

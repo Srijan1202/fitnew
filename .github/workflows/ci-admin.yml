@@ -44,3 +44,10 @@ jobs:
 
       - name: Build
         run: pnpm --filter @fitos/admin build
+
+      # The hosted panel (ADR-022 D1 amendment): plain files, no server.
+      - name: Build (static, as hosted)
+        run: |
+          pnpm --filter @fitos/admin build:static
+          test -f apps/admin/out/index.html
+          test -f apps/admin/out/exercises/edit/index.html

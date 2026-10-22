@@ -1,0 +1,44 @@
+# The admin panel (ADR-022 D1 amendment), on the API server's Caddy. admin.sh
+# writes this, with the domain and the release filled in, as
+# /opt/fitos/caddy/sites/admin.caddy. The panel is plain files; /api/* goes to
+# the serving API container (the fitos_api snippet in the Caddyfile), so the
+# browser talks to one origin and the API needs no CORS opening. Every admin
+# route checks the admin claim on the API, and every change is audited there.
+__DOMAIN__ {
+	encode zstd gzip
+
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy no-referrer
+		X-Robots-Tag "noindex, nofollow"
+	}
+
+	handle /robots.txt {
+		respond "User-agent: *
+Disallow: /
+"
+	}
+
+	handle_path /api/* {
+		import fitos_api
+	}
+
+	handle {
+		root * /etc/caddy/admin/releases/__RELEASE__
+		@pages not path /_next/static/*
+		header @pages Cache-Control "no-cache"
+		header /_next/static/* Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
+	handle_errors 404 {
+		root * /etc/caddy/admin/releases/__RELEASE__
+		rewrite * /404.html
+		file_server {
+			status 404
+		}
+	}
+}

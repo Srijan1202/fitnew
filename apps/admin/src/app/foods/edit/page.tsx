@@ -2,8 +2,8 @@
 
 import type { AdminFood } from '@fitos/contracts';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 
 import { Header, Status, useGet, when } from '@/components/ui';
 import { api, errorText } from '@/lib/api';
@@ -11,9 +11,17 @@ import { api, errorText } from '@/lib/api';
 type Row = AdminFood['nutrition'][number];
 const NUMS = ['kcalLow', 'kcalHigh', 'proteinLow', 'proteinHigh', 'carbLow', 'carbHigh', 'fatLow', 'fatHigh', 'fibreLow', 'fibreHigh'] as const;
 
-/** Correct one FITOS food: name, aliases, verified, its nutrition rows. Logged meals keep their numbers. */
-export default function FoodEditor() {
-  const { id } = useParams<{ id: string }>();
+/** Correct one FITOS food: name, aliases, verified, its nutrition rows. Logged meals keep their numbers. By `?id=` (a static page). */
+export default function FoodEditorPage() {
+  return (
+    <Suspense>
+      <FoodEditor />
+    </Suspense>
+  );
+}
+
+function FoodEditor() {
+  const id = encodeURIComponent(useSearchParams().get('id') ?? '');
   const { data, error, loading } = useGet<AdminFood>(`/admin/foods/${id}`);
   const [name, setName] = useState('');
   const [aliases, setAliases] = useState('');

@@ -81,3 +81,19 @@
 - The owner corrects mess and food data without SQL, and every change is answerable: who, when, what it was before.
 - Seeds stay re-runnable without undoing reviewed corrections.
 - The panel works only on the PC that runs the API, like the app's API itself, until hosting.
+
+## Amendment — the panel on the web (2026-10-22, owner)
+
+The owner chose to run the admin controls from the web, at **https://admin.tryfitos.me**, instead of only on the PC (D1). It is the same panel, as plain files:
+
+- `pnpm --filter @fitos/admin build:static` writes `apps/admin/out/` (Next.js static export). `dev`, `build` and `start` keep the local proxy exactly as in D1.
+- The two editors take the id as a query (`/exercises/edit?id=…`, `/foods/edit?id=…`), because a static export has no dynamic routes.
+- Caddy on the API server serves the files and forwards `/api/*` to the serving API container (`deploy/aws/server/admin.caddy`). The `fitos_api` snippet in the Caddyfile names that container, so a release or rollback moves the panel's `/api` with the API. One origin, so the API still has **no CORS opening**.
+- Nothing about who may act changes: every `/v1/admin/*` route checks the admin claim (D2) and every change is audited (D3). Those routes were already reachable on `api.tryfitos.me`; the panel adds only static files.
+- Kept out of search engines (`X-Robots-Tag`, `robots.txt`, `noindex`) and not linked from the website. Frames are refused, there is no referrer, and HSTS is on.
+- Published by `scripts/aws/admin.ps1`: build, a 15-minute transfer link, `deploy/aws/server/admin.sh` over Systems Manager (SHA-256 check, a release folder, a graceful reload, an HTTPS smoke test, and the previous config back on failure).
+- **Owner steps, once:**
+  - the DNS record `admin` → the Elastic IP;
+  - `admin.tryfitos.me` added to Firebase Authentication's authorised domains, for Google sign-in.
+
+The last consequence above ("works only on the PC") no longer holds. The local panel still works.

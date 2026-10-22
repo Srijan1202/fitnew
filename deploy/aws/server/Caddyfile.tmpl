@@ -9,12 +9,19 @@
 	admin localhost:2019
 }
 
-__API_DOMAIN__ {
-	encode zstd gzip
-	header -Server
+# The serving API container. The API site and the admin panel's /api use it,
+# so a release (or a rollback) moves both.
+(fitos_api) {
 	reverse_proxy __UPSTREAM__:8080
 }
 
-# The website (tryfitos.me), when deployed from the fitos-website repository:
-# it writes sites/website.caddy. No file there is fine (nothing is imported).
+__API_DOMAIN__ {
+	encode zstd gzip
+	header -Server
+	import fitos_api
+}
+
+# More sites, each written by its own deploy: sites/website.caddy (tryfitos.me,
+# from the fitos-website repository) and sites/admin.caddy (the admin panel,
+# scripts/aws/admin.ps1). No file there is fine (nothing is imported).
 import /etc/caddy/sites/*.caddy

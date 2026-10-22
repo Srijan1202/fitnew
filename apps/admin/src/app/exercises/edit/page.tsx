@@ -2,15 +2,24 @@
 
 import type { AdminExercise } from '@fitos/contracts';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
 
 import { ExerciseForm } from '@/components/ExerciseForm';
 import { Badge, Header, Status, useGet, when } from '@/components/ui';
 import { api, errorText } from '@/lib/api';
 
-export default function ExerciseEditor() {
-  const { id } = useParams<{ id: string }>();
+/** One exercise, by `?id=` (a static page: the panel is plain files on the server). */
+export default function ExerciseEditorPage() {
+  return (
+    <Suspense>
+      <ExerciseEditor />
+    </Suspense>
+  );
+}
+
+function ExerciseEditor() {
+  const id = encodeURIComponent(useSearchParams().get('id') ?? '');
   const { data, error, loading, reload } = useGet<AdminExercise>(`/admin/exercises/${id}`);
   const [saved, setSaved] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
