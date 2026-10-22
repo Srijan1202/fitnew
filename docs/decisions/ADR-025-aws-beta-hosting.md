@@ -14,7 +14,7 @@
 
 - The owner wants the beta on AWS, but able to move to Google Cloud "in one switch" later (2026-10-22).
 - Owner answers:
-  - their own domain for the API;
+  - their own domain for the API: `tryfitos.me`, claimed in Phase 6.7, so the API is `api.tryfitos.me`;
   - one small server running Docker;
   - RDS Postgres in Mumbai;
   - a new AWS account.
@@ -30,7 +30,7 @@
 |---|---|
 | D1 | **One EC2 instance** (`t3.small`, Amazon Linux 2023, `ap-south-1`) runs the API container and Caddy. **No SSH:** the owner reaches it only through Systems Manager. Automatic security updates; an Elastic IP; an alarm that moves it to healthy hardware if the host fails. The in-memory rate limits (ADR-012 D7) are exact on one server. |
 | D2 | **RDS Postgres 18** (`db.t4g.micro`, encrypted, private subnets, reachable from the server only). 7 days of automatic backups. Deletion protection, and a final snapshot if the stack is deleted. RDS keeps the master password in Secrets Manager. Two roles, as on Neon: `fitos_migrator` (schema) and `fitos_app` (rows only). They are created by `bootstrap.sh` with passwords generated on the server that no one sees. |
-| D3 | **HTTPS by Caddy** for `api.<domain>`, with a Let's Encrypt certificate it renews itself. Caddy replaces any client-sent `X-Forwarded-For`, so `TRUST_PROXY=1`. The app calls the domain only, so a move between clouds is a DNS change and no APK rebuild. |
+| D3 | **HTTPS by Caddy** for `api.tryfitos.me`, with a Let's Encrypt certificate it renews itself. Caddy replaces any client-sent `X-Forwarded-For`, so `TRUST_PROXY=1`. The app calls the domain only, so a move between clouds is a DNS change and no APK rebuild. |
 | D4 | **Firebase from AWS without a key:** Google Workload Identity Federation trusts the server's AWS role. The credential file holds no secret (`type: external_account`). The API now accepts either kind of file (`credentialFileKind`). A service-account key in Parameter Store is the documented fallback. |
 | D5 | **Secrets in SSM Parameter Store** (SecureString, under `/fitos/beta/`). The server role reads only that path. Rights to read the RDS master secret and write parameters exist only while `BootstrapMode=true`. The owner stores values through a hidden prompt (`set-parameter.ps1`), never on a command line or in the chat. |
 | D6 | **Releases:** CI pushes the smoke-tested image to ECR with keyless GitHub OIDC; the `fitos-ci-publisher` role can only push to `fitos-api`. The owner releases with `scripts/aws/deploy.ps1`. On the server, `release.sh` runs: migrations as `fitos_migrator` → the new container beside the old → `/health` → Caddy switched by a graceful reload → an HTTPS smoke test → the old container removed. `rollback.ps1` serves the previous release again, without migrations. |

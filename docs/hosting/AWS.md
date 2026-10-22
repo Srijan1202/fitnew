@@ -14,7 +14,7 @@ This runbook sets up the beta on AWS:
 | Step | What | Who |
 |---|---|---|
 | 0 | Account hygiene, the CLI login | you |
-| 1 | Domain | you |
+| 1 | Domain (`tryfitos.me`, already yours) | — |
 | 2 | Create the stack | you (one command) |
 | 3 | DNS record | you |
 | 4 | Database bootstrap | you (one script) |
@@ -47,7 +47,7 @@ This runbook sets up the beta on AWS:
 
 ## 1. Domain
 
-Buy a domain from any registrar. The API will be `api.<your domain>`; earlier docs used `api.tryfitos.me` as the example. You add one DNS record in step 3.
+You already own **`tryfitos.me`** (claimed in Phase 6.7, 2026-09-23). The API will be **`api.tryfitos.me`**. Nothing to buy; you add one DNS record in step 3, wherever `tryfitos.me`'s DNS is managed.
 
 ## 2. Create the stack
 
@@ -60,7 +60,7 @@ Then, from `D:\dev\fit new`:
 ```
 aws cloudformation deploy --template-file infra/aws/fitos-beta.yaml --stack-name fitos-beta `
   --capabilities CAPABILITY_NAMED_IAM --profile fitos --region ap-south-1 `
-  --parameter-overrides ApiDomain=api.<your domain> AcmeEmail=<your email> BudgetEmail=<your email>
+  --parameter-overrides ApiDomain=api.tryfitos.me AcmeEmail=<your email> BudgetEmail=<your email>
 ```
 - It takes about 15 minutes; the database is the slow part.
 - Other parameters have defaults:
@@ -75,13 +75,13 @@ aws cloudformation describe-stacks --stack-name fitos-beta --query "Stacks[0].Ou
 
 ## 3. DNS
 
-At the registrar, add:
+Where `tryfitos.me`'s DNS is managed, add:
 - **Type:** `A`
 - **Name:** `api`
 - **Value:** the **ElasticIp** output
 - **TTL:** 300
 
-Caddy gets the HTTPS certificate on the first release, once this record resolves. Check that it resolves with `nslookup api.<your domain>`.
+Caddy gets the HTTPS certificate on the first release, once this record resolves. Check that it resolves with `nslookup api.tryfitos.me`.
 
 ## 4. Database bootstrap (once)
 
@@ -162,11 +162,11 @@ This:
 
 ## 10. Acceptance checks
 
-1. `https://api.<your domain>/health` in a browser: `"database":{"reachable":true,...}`.
+1. `https://api.tryfitos.me/health` in a browser: `"database":{"reachable":true,...}`.
 2. **The hosted APK:**
    ```
    cd apps\mobile
-   .\tool\hosted.ps1 -ApiBaseUrl https://api.<your domain> -Install
+   .\tool\hosted.ps1 -ApiBaseUrl https://api.tryfitos.me -Install
    ```
    Sign in, onboard, log a set and a meal.
 3. **Firebase from AWS works:** sign out in the app. This revokes the session through Firebase Admin, which proves step 7. Signing in again works.
