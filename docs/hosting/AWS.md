@@ -138,17 +138,18 @@ The server proves who it is with its AWS role; Google trusts that role for one s
 $P = 'fitos-dev-3208b'; $N = '<project number>'; $A = '<aws account id>'
 gcloud services enable iamcredentials.googleapis.com sts.googleapis.com --project $P
 gcloud iam workload-identity-pools create fitos-aws --location=global --display-name="FITOS on AWS" --project $P
-gcloud iam workload-identity-pools providers create-aws aws --location=global --workload-identity-pool=fitos-aws --account-id=$A --project $P
+gcloud iam workload-identity-pools providers create-aws aws-ec2 --location=global --workload-identity-pool=fitos-aws --account-id=$A --project $P
 gcloud iam service-accounts create fitos-api-aws --display-name="FITOS API on AWS" --project $P
 gcloud projects add-iam-policy-binding $P --member="serviceAccount:fitos-api-aws@$P.iam.gserviceaccount.com" --role=roles/firebaseauth.admin
 gcloud iam service-accounts add-iam-policy-binding "fitos-api-aws@$P.iam.gserviceaccount.com" --project $P `
   --role=roles/iam.workloadIdentityUser `
   --member="principalSet://iam.googleapis.com/projects/$N/locations/global/workloadIdentityPools/fitos-aws/attribute.aws_role/arn:aws:sts::${A}:assumed-role/fitos-beta-server"
-gcloud iam workload-identity-pools create-cred-config "projects/$N/locations/global/workloadIdentityPools/fitos-aws/providers/aws" `
+gcloud iam workload-identity-pools create-cred-config "projects/$N/locations/global/workloadIdentityPools/fitos-aws/providers/aws-ec2" `
   --service-account="fitos-api-aws@$P.iam.gserviceaccount.com" --aws --enable-imdsv2 --output-file=fitos-aws-wif.json
 .\scripts\aws\set-parameter.ps1 -FirebaseCredential .\fitos-aws-wif.json
 Remove-Item .\fitos-aws-wif.json
 ```
+- The provider id must be 4–32 characters (`aws` alone is refused), hence `aws-ec2`.
 - `fitos-aws-wif.json` holds no secret, but keep it out of the repo anyway.
 - **Fallback** if federation fails: create a key for `fitos-api-aws` in the console and store it with `-FirebaseCredential <key.json>`, then delete the downloaded file.
 
