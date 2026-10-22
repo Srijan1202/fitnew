@@ -14,6 +14,7 @@ import '../widgets/eat_widgets.dart';
 import '../widgets/food_widgets.dart';
 import '../widgets/log_controls.dart';
 import '../../../privacy/presentation/privacy_providers.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Opens "Describe your meal" for a day and meal; true when something was
 /// logged (the caller closes the log sheet then).
@@ -184,122 +185,126 @@ class _DescribeMealScreenState extends ConsumerState<DescribeMealScreen> {
           ],
         ),
       ),
-      body: SafeArea(
-        top: false,
-        child: ListView(
-          key: const ValueKey('describe.scroll'),
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          padding: const EdgeInsets.fromLTRB(
-            FitSpacing.screen,
-            FitSpacing.sm,
-            FitSpacing.screen,
-            FitSpacing.xl,
-          ),
-          children: <Widget>[
-            Text(
-              'Write what you ate, the way you would say it. FITOS AI finds '
-              'each food in the FITOS database. Nothing is logged until you '
-              'check it and tap Add.',
-              style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+      body: FitBackdrop(
+        child: SafeArea(
+          top: false,
+          child: ListView(
+            key: const ValueKey('describe.scroll'),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.fromLTRB(
+              FitSpacing.screen,
+              FitSpacing.sm,
+              FitSpacing.screen,
+              FitSpacing.xl,
             ),
-            const SizedBox(height: FitSpacing.md),
-            TextField(
-              key: const ValueKey('describe.input'),
-              controller: _text,
-              minLines: 2,
-              maxLines: 5,
-              maxLength: maxChars,
-              textCapitalization: TextCapitalization.sentences,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _read(),
-              onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(
-                hintText: '2 chapati, a katori of dal and a glass of lassi',
-                border: OutlineInputBorder(borderRadius: BorderRadius.zero),
+            children: <Widget>[
+              Text(
+                'Write what you ate, the way you would say it. FITOS AI finds '
+                'each food in the FITOS database. Nothing is logged until you '
+                'check it and tap Add.',
+                style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
               ),
-            ),
-            Text(
-              'Only this text is sent to FITOS AI — not your profile or your log.',
-              key: const ValueKey('describe.privacy'),
-              style: textTheme.bodySmall?.copyWith(color: FitColors.ink60),
-            ),
-            const SizedBox(height: FitSpacing.md),
-            OutlinedButton.icon(
-              key: const ValueKey('describe.read'),
-              style: OutlinedButton.styleFrom(
-                shape: const RoundedRectangleBorder(),
-                minimumSize: const Size.fromHeight(48),
-              ),
-              onPressed:
-                  _reading || _text.text.trim().length < 2 ? null : _read,
-              icon: _reading
-                  ? const SizedBox.square(
-                      dimension: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.auto_awesome_outlined),
-              label: Text(
-                _reading
-                    ? 'Reading…'
-                    : (lines == null ? 'Read it' : 'Read it again'),
-              ),
-            ),
-            if (_failure case final f?)
-              Padding(
-                padding: const EdgeInsets.only(top: FitSpacing.sm),
-                child: Text(
-                  aiFailureText(f),
-                  key: const ValueKey('describe.error'),
-                  style: textTheme.bodyMedium?.copyWith(color: FitColors.oxide),
-                ),
-              ),
-            if (lines != null) ...<Widget>[
-              const SizedBox(height: FitSpacing.lg),
-              Text('CHECK BEFORE ADDING', style: textTheme.labelSmall),
-              const SizedBox(height: FitSpacing.xs),
-              Divider(color: FitColors.rule, height: 1),
-              if (lines.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
-                  child: Text(
-                    'No food found in that. Try naming what you ate and how much.',
-                    key: const ValueKey('describe.empty'),
-                    style: textTheme.bodyLarge,
-                  ),
-                ),
-              for (final (i, l) in lines.indexed)
-                _LineTile(
-                  index: i,
-                  line: l,
-                  onInclude: (v) => setState(() => l.include = v),
-                  onStep: (d) => _step(l, d),
-                ),
-              if (total != null) ...<Widget>[
-                const SizedBox(height: FitSpacing.md),
-                Text(
-                  'About ${EatFormat.kcal(total.kcalLow, total.kcalHigh)} kcal · '
-                  '${EatFormat.grams(total.proteinLow, total.proteinHigh)} protein',
-                  key: const ValueKey('describe.total'),
-                  style: textTheme.titleMedium,
-                ),
-              ],
               const SizedBox(height: FitSpacing.md),
-              FilledButton.icon(
-                key: const ValueKey('describe.add'),
-                style: FilledButton.styleFrom(
-                  shape: const RoundedRectangleBorder(),
+              TextField(
+                key: const ValueKey('describe.input'),
+                controller: _text,
+                minLines: 2,
+                maxLines: 5,
+                maxLength: maxChars,
+                textCapitalization: TextCapitalization.sentences,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _read(),
+                onChanged: (_) => setState(() {}),
+                decoration: const InputDecoration(
+                  hintText: '2 chapati, a katori of dal and a glass of lassi',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.zero),
+                ),
+              ),
+              Text(
+                'Only this text is sent to FITOS AI — not your profile or your log.',
+                key: const ValueKey('describe.privacy'),
+                style: textTheme.bodySmall?.copyWith(color: FitColors.ink60),
+              ),
+              const SizedBox(height: FitSpacing.md),
+              OutlinedButton.icon(
+                key: const ValueKey('describe.read'),
+                style: OutlinedButton.styleFrom(
+                  shape: fitGlass ? null : const RoundedRectangleBorder(),
                   minimumSize: const Size.fromHeight(48),
                 ),
-                onPressed: chosen.isEmpty || _adding ? null : _add,
-                icon: Icon(mealSlotIcon(widget.target.slot)),
+                onPressed:
+                    _reading || _text.text.trim().length < 2 ? null : _read,
+                icon: _reading
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.auto_awesome_outlined),
                 label: Text(
-                  chosen.isEmpty
-                      ? 'Nothing chosen'
-                      : 'Add ${chosen.length} to ${widget.target.slot.label}',
+                  _reading
+                      ? 'Reading…'
+                      : (lines == null ? 'Read it' : 'Read it again'),
                 ),
               ),
+              if (_failure case final f?)
+                Padding(
+                  padding: const EdgeInsets.only(top: FitSpacing.sm),
+                  child: Text(
+                    aiFailureText(f),
+                    key: const ValueKey('describe.error'),
+                    style:
+                        textTheme.bodyMedium?.copyWith(color: FitColors.oxide),
+                  ),
+                ),
+              if (lines != null) ...<Widget>[
+                const SizedBox(height: FitSpacing.lg),
+                Text('CHECK BEFORE ADDING', style: textTheme.labelSmall),
+                const SizedBox(height: FitSpacing.xs),
+                const FitRule(),
+                if (lines.isEmpty)
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: FitSpacing.md),
+                    child: Text(
+                      'No food found in that. Try naming what you ate and how much.',
+                      key: const ValueKey('describe.empty'),
+                      style: textTheme.bodyLarge,
+                    ),
+                  ),
+                for (final (i, l) in lines.indexed)
+                  _LineTile(
+                    index: i,
+                    line: l,
+                    onInclude: (v) => setState(() => l.include = v),
+                    onStep: (d) => _step(l, d),
+                  ),
+                if (total != null) ...<Widget>[
+                  const SizedBox(height: FitSpacing.md),
+                  Text(
+                    'About ${EatFormat.kcal(total.kcalLow, total.kcalHigh)} kcal · '
+                    '${EatFormat.grams(total.proteinLow, total.proteinHigh)} protein',
+                    key: const ValueKey('describe.total'),
+                    style: textTheme.titleMedium,
+                  ),
+                ],
+                const SizedBox(height: FitSpacing.md),
+                FilledButton.icon(
+                  key: const ValueKey('describe.add'),
+                  style: FilledButton.styleFrom(
+                    shape: fitGlass ? null : const RoundedRectangleBorder(),
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  onPressed: chosen.isEmpty || _adding ? null : _add,
+                  icon: Icon(mealSlotIcon(widget.target.slot)),
+                  label: Text(
+                    chosen.isEmpty
+                        ? 'Nothing chosen'
+                        : 'Add ${chosen.length} to ${widget.target.slot.label}',
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -348,7 +353,7 @@ class _LineTile extends StatelessWidget {
                   ? Checkbox(
                       key: ValueKey('describe.item.$index.include'),
                       value: line.include,
-                      shape: const RoundedRectangleBorder(),
+                      shape: fitGlass ? null : const RoundedRectangleBorder(),
                       onChanged: (v) => onInclude(v ?? false),
                     )
                   : Padding(
@@ -463,7 +468,7 @@ class _StepButton extends StatelessWidget {
         child: OutlinedButton(
           style: OutlinedButton.styleFrom(
             padding: EdgeInsets.zero,
-            shape: const RoundedRectangleBorder(),
+            shape: fitGlass ? null : const RoundedRectangleBorder(),
           ),
           onPressed: onPressed,
           child: Icon(icon, size: 20),

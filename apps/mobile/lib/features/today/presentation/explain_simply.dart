@@ -7,6 +7,7 @@ import '../../../core/theme/tokens.dart';
 import '../../ai/domain/entities/ai_draft.dart';
 import '../../ai/presentation/controllers/ai_providers.dart';
 import '../../privacy/presentation/privacy_providers.dart';
+import '../../../shared/widgets/fit_glass.dart';
 
 /// Phase 14 (ADR-020 D5): "Explain simply" under a TODAY action's reason.
 /// The server rewords the engine's reason; a rewording that brings in any
@@ -101,7 +102,7 @@ class _ExplainSimplyState extends ConsumerState<ExplainSimply> {
           OutlinedButton.icon(
             key: const ValueKey('today.why.explain'),
             style: OutlinedButton.styleFrom(
-              shape: const RoundedRectangleBorder(),
+              shape: fitGlass ? null : const RoundedRectangleBorder(),
               minimumSize: const Size.fromHeight(48),
             ),
             onPressed: _loading ? null : _ask,

@@ -14,6 +14,7 @@ import 'mess_providers.dart';
 import 'widgets/mess_sheets.dart';
 import 'widgets/mess_widgets.dart';
 import 'widgets/what_to_eat.dart';
+import '../../../shared/widgets/fit_glass.dart';
 
 /// MESS (Phase 9, §31): a mess menu for a day, by meal.
 ///
@@ -82,78 +83,80 @@ class MessScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: SafeArea(
-        top: false,
-        child: RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(messMenuProvider(key));
-            await ref.read(messMenuProvider(key).future);
-          },
-          child: ListView(
-            key: const ValueKey('mess.list'),
-            padding: const EdgeInsets.fromLTRB(
-              FitSpacing.screen,
-              0,
-              FitSpacing.screen,
-              FitSpacing.xl,
-            ),
-            children: <Widget>[
-              if (code != null)
-                EatNotice(
-                  key: const ValueKey('mess.browsing'),
-                  text: 'Showing another mess. Your own mess is unchanged.',
-                  action: 'Mine',
-                  onAction: () =>
-                      ref.read(messBrowseProvider.notifier).show(null),
-                ),
-              _DateBar(date: date, today: today),
-              ...state.when(
-                loading: () => const <Widget>[
-                  Padding(
-                    padding: EdgeInsets.all(FitSpacing.lg),
-                    child: Center(
-                      child: Text('Loading the menu…'),
-                    ),
-                  ),
-                ],
-                error: (e, _) => <Widget>[
-                  const AuthFeedback.error('Could not load the menu.'),
-                ],
-                data: (s) => switch (s) {
-                  MenuNotConfigured() => <Widget>[
-                      const SizedBox(height: FitSpacing.md),
-                      Text(
-                        'Choose your mess',
-                        key: const ValueKey('mess.notConfigured'),
-                        style: textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: FitSpacing.xs),
-                      Text(
-                        'FITOS shows your VIT mess menu here, with an estimate for each dish.',
-                        style: textTheme.bodyMedium
-                            ?.copyWith(color: FitColors.ink60),
-                      ),
-                      const SizedBox(height: FitSpacing.md),
-                      const MessSettingButton(),
-                    ],
-                  MenuFailed(:final failure) => <Widget>[
-                      const SizedBox(height: FitSpacing.md),
-                      AuthFeedback.error(failure.message),
-                      const SizedBox(height: FitSpacing.sm),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: FilledButton(
-                          key: const ValueKey('mess.retry'),
-                          onPressed: () =>
-                              ref.invalidate(messMenuProvider(key)),
-                          child: const Text('Try again'),
-                        ),
-                      ),
-                    ],
-                  final MenuLoaded m => _menuBody(context, ref, m),
-                },
+      body: FitBackdrop(
+        child: SafeArea(
+          top: false,
+          child: RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(messMenuProvider(key));
+              await ref.read(messMenuProvider(key).future);
+            },
+            child: ListView(
+              key: const ValueKey('mess.list'),
+              padding: const EdgeInsets.fromLTRB(
+                FitSpacing.screen,
+                0,
+                FitSpacing.screen,
+                FitSpacing.xl,
               ),
-            ],
+              children: <Widget>[
+                if (code != null)
+                  EatNotice(
+                    key: const ValueKey('mess.browsing'),
+                    text: 'Showing another mess. Your own mess is unchanged.',
+                    action: 'Mine',
+                    onAction: () =>
+                        ref.read(messBrowseProvider.notifier).show(null),
+                  ),
+                _DateBar(date: date, today: today),
+                ...state.when(
+                  loading: () => const <Widget>[
+                    Padding(
+                      padding: EdgeInsets.all(FitSpacing.lg),
+                      child: Center(
+                        child: Text('Loading the menu…'),
+                      ),
+                    ),
+                  ],
+                  error: (e, _) => <Widget>[
+                    const AuthFeedback.error('Could not load the menu.'),
+                  ],
+                  data: (s) => switch (s) {
+                    MenuNotConfigured() => <Widget>[
+                        const SizedBox(height: FitSpacing.md),
+                        Text(
+                          'Choose your mess',
+                          key: const ValueKey('mess.notConfigured'),
+                          style: textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: FitSpacing.xs),
+                        Text(
+                          'FITOS shows your VIT mess menu here, with an estimate for each dish.',
+                          style: textTheme.bodyMedium
+                              ?.copyWith(color: FitColors.ink60),
+                        ),
+                        const SizedBox(height: FitSpacing.md),
+                        const MessSettingButton(),
+                      ],
+                    MenuFailed(:final failure) => <Widget>[
+                        const SizedBox(height: FitSpacing.md),
+                        AuthFeedback.error(failure.message),
+                        const SizedBox(height: FitSpacing.sm),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: FilledButton(
+                            key: const ValueKey('mess.retry'),
+                            onPressed: () =>
+                                ref.invalidate(messMenuProvider(key)),
+                            child: const Text('Try again'),
+                          ),
+                        ),
+                      ],
+                    final MenuLoaded m => _menuBody(context, ref, m),
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -171,24 +174,33 @@ class MessScreen extends ConsumerWidget {
       ),
       const SizedBox(height: FitSpacing.md),
       Text('THE MENU', style: Theme.of(context).textTheme.labelSmall),
-      for (final meal in menu.meals) ...<Widget>[
-        MessMealHeader(
-          meal: meal,
-          key: ValueKey('mess.meal.${meal.slot.wire}'),
-        ),
-        Divider(color: FitColors.rule, height: 1),
-        // Ambient items (bread, tea, jam…) after the meal's own dishes.
-        for (final dish in <MessDish>[
-          ...meal.dishes.where((d) => !d.isAmbient),
-          ...meal.dishes.where((d) => d.isAmbient),
-        ])
-          MessDishRow(
-            dish: dish,
-            logged: menu.isLogged(dish.slug),
-            onTap: () => _tap(context, ref, menu, meal.slot, dish),
+      // ADR-029: each meal a block on glass.
+      for (final meal in menu.meals)
+        FitBlock(
+          margin: const EdgeInsets.only(top: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              MessMealHeader(
+                meal: meal,
+                key: ValueKey('mess.meal.${meal.slot.wire}'),
+              ),
+              Divider(color: FitColors.rule, height: 1),
+              // Ambient items (bread, tea, jam…) after the meal's own dishes.
+              for (final dish in <MessDish>[
+                ...meal.dishes.where((d) => !d.isAmbient),
+                ...meal.dishes.where((d) => d.isAmbient),
+              ])
+                MessDishRow(
+                  dish: dish,
+                  logged: menu.isLogged(dish.slug),
+                  onTap: () => _tap(context, ref, menu, meal.slot, dish),
+                ),
+              _AsPublished(meal: meal),
+            ],
           ),
-        _AsPublished(meal: meal),
-      ],
+        ),
     ];
   }
 

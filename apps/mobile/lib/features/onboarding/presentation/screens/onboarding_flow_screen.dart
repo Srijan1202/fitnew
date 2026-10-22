@@ -15,6 +15,7 @@ import 'steps/goal_step.dart';
 import 'steps/plan_step.dart';
 import 'steps/training_step.dart';
 import 'steps/vit_step.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Screens 1–7 (§32).
 ///
@@ -104,22 +105,27 @@ class _Holding extends StatelessWidget {
     // Skeleton matching the final layout, not a spinner (§6.6).
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(FitSpacing.screen),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              const SizedBox(height: FitSpacing.lg),
-              Text('ONBOARDING', style: textTheme.labelSmall),
-              const SizedBox(height: FitSpacing.md),
-              for (final w in const [180.0, 260.0, 220.0])
-                Padding(
-                  padding: const EdgeInsets.only(bottom: FitSpacing.sm),
-                  child:
-                      Container(width: w, height: 14, color: FitColors.paper2),
-                ),
-            ],
+      body: FitBackdrop(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(FitSpacing.screen),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const SizedBox(height: FitSpacing.lg),
+                Text('ONBOARDING', style: textTheme.labelSmall),
+                const SizedBox(height: FitSpacing.md),
+                for (final w in const [180.0, 260.0, 220.0])
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: FitSpacing.sm),
+                    child: Container(
+                      width: w,
+                      height: 14,
+                      color: FitColors.paper2,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -137,19 +143,27 @@ class _LoadFailed extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(FitSpacing.screen),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text('Could not load your progress', style: textTheme.titleLarge),
-              const SizedBox(height: FitSpacing.sm),
-              AuthFeedback.error(failure.message),
-              const SizedBox(height: FitSpacing.lg),
-              FilledButton(onPressed: onRetry, child: const Text('Try again')),
-            ],
+      body: FitBackdrop(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(FitSpacing.screen),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'Could not load your progress',
+                  style: textTheme.titleLarge,
+                ),
+                const SizedBox(height: FitSpacing.sm),
+                AuthFeedback.error(failure.message),
+                const SizedBox(height: FitSpacing.lg),
+                FilledButton(
+                  onPressed: onRetry,
+                  child: const Text('Try again'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

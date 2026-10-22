@@ -9,6 +9,7 @@ import '../../domain/entities/workout.dart';
 import '../controllers/workout_providers.dart';
 import '../widgets/rest_bar.dart';
 import '../widgets/sync_pill.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// After Finish: what the session amounted to. Duration, sets and tonnage
 /// are arithmetic over the phone's rows and show at once; hard sets per
@@ -27,13 +28,15 @@ class SessionSummaryScreen extends ConsumerWidget {
         automaticallyImplyLeading: false,
         actions: const <Widget>[SyncPill()],
       ),
-      body: SafeArea(
-        child: session == null
-            ? const SizedBox.shrink()
-            : SummaryBody(
-                session: session,
-                onDone: () => context.go(Routes.plan),
-              ),
+      body: FitBackdrop(
+        child: SafeArea(
+          child: session == null
+              ? const SizedBox.shrink()
+              : SummaryBody(
+                  session: session,
+                  onDone: () => context.go(Routes.plan),
+                ),
+        ),
       ),
     );
   }

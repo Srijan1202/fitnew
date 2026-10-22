@@ -9,6 +9,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/fitos_wordmark.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/auth_form_field.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Email + Google sign-in (§11). Apple is out of V1 (ADR-003).
 class SignInScreen extends ConsumerStatefulWidget {
@@ -46,115 +47,117 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: FitSpacing.screen,
-            vertical: FitSpacing.xl,
-          ),
-          child: Form(
-            key: _form,
-            child: AutofillGroup(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const FitosWordmark(size: 22),
-                  const SizedBox(height: FitSpacing.xs),
-                  Text('Sign in', style: textTheme.displayMedium),
-                  const SizedBox(height: FitSpacing.xl),
-                  AuthFormField(
-                    fieldKey: const ValueKey('sign-in.email'),
-                    label: 'Email',
-                    controller: _email,
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                    textInputAction: TextInputAction.next,
-                    validator: AuthValidators.email,
-                    enabled: !busy,
-                  ),
-                  const SizedBox(height: FitSpacing.lg),
-                  AuthFormField(
-                    fieldKey: const ValueKey('sign-in.password'),
-                    label: 'Password',
-                    controller: _password,
-                    obscureText: true,
-                    autofillHints: const [AutofillHints.password],
-                    textInputAction: TextInputAction.done,
-                    validator: AuthValidators.password,
-                    onFieldSubmitted: (_) => _submit(),
-                    enabled: !busy,
-                  ),
-                  const SizedBox(height: FitSpacing.sm),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
+      body: FitBackdrop(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: FitSpacing.screen,
+              vertical: FitSpacing.xl,
+            ),
+            child: Form(
+              key: _form,
+              child: AutofillGroup(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const FitosWordmark(size: 22),
+                    const SizedBox(height: FitSpacing.xs),
+                    Text('Sign in', style: textTheme.displayMedium),
+                    const SizedBox(height: FitSpacing.xl),
+                    AuthFormField(
+                      fieldKey: const ValueKey('sign-in.email'),
+                      label: 'Email',
+                      controller: _email,
+                      keyboardType: TextInputType.emailAddress,
+                      autofillHints: const [AutofillHints.email],
+                      textInputAction: TextInputAction.next,
+                      validator: AuthValidators.email,
+                      enabled: !busy,
+                    ),
+                    const SizedBox(height: FitSpacing.lg),
+                    AuthFormField(
+                      fieldKey: const ValueKey('sign-in.password'),
+                      label: 'Password',
+                      controller: _password,
+                      obscureText: true,
+                      autofillHints: const [AutofillHints.password],
+                      textInputAction: TextInputAction.done,
+                      validator: AuthValidators.password,
+                      onFieldSubmitted: (_) => _submit(),
+                      enabled: !busy,
+                    ),
+                    const SizedBox(height: FitSpacing.sm),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: busy
+                            ? null
+                            : () => context.push(Routes.forgotPassword),
+                        child: const Text('Forgot password?'),
+                      ),
+                    ),
+                    if (failure is Failure) ...<Widget>[
+                      const SizedBox(height: FitSpacing.sm),
+                      AuthFeedback.error(failure.message),
+                    ],
+                    const SizedBox(height: FitSpacing.lg),
+                    FilledButton(
+                      onPressed: busy ? null : _submit,
+                      child: busy
+                          ? SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: FitColors.paper,
+                              ),
+                            )
+                          : const Text('Sign in'),
+                    ),
+                    const SizedBox(height: FitSpacing.lg),
+                    const FitRule(),
+                    const SizedBox(height: FitSpacing.afterRule),
+                    OutlinedButton(
                       onPressed: busy
                           ? null
-                          : () => context.push(Routes.forgotPassword),
-                      child: const Text('Forgot password?'),
-                    ),
-                  ),
-                  if (failure is Failure) ...<Widget>[
-                    const SizedBox(height: FitSpacing.sm),
-                    AuthFeedback.error(failure.message),
-                  ],
-                  const SizedBox(height: FitSpacing.lg),
-                  FilledButton(
-                    onPressed: busy ? null : _submit,
-                    child: busy
-                        ? SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: FitColors.paper,
-                            ),
-                          )
-                        : const Text('Sign in'),
-                  ),
-                  const SizedBox(height: FitSpacing.lg),
-                  Divider(color: FitColors.rule, height: 1),
-                  const SizedBox(height: FitSpacing.afterRule),
-                  OutlinedButton(
-                    onPressed: busy
-                        ? null
-                        : () => ref
-                            .read(authControllerProvider.notifier)
-                            .signInWithGoogle(),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: FitColors.ink,
-                      side: BorderSide(color: FitColors.ink),
-                      minimumSize: const Size(88, 48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(FitRadius.small),
+                          : () => ref
+                              .read(authControllerProvider.notifier)
+                              .signInWithGoogle(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: FitColors.ink,
+                        side: BorderSide(color: FitColors.ink),
+                        minimumSize: const Size(88, 48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(FitRadius.small),
+                        ),
                       ),
+                      child: const Text('Continue with Google'),
                     ),
-                    child: const Text('Continue with Google'),
-                  ),
-                  if (Env.showsBackend) ...<Widget>[
-                    const SizedBox(height: FitSpacing.lg),
-                    // Which backend this build talks to. The address is baked
-                    // in at build time, so a tester can tell at a glance that
-                    // the APK predates the PC's current LAN address.
-                    Text(
-                      'Backend ${Env.apiAuthority} · FITOS ${Env.appVersion}',
-                      key: const ValueKey('sign-in.backend'),
-                      style: textTheme.labelSmall?.copyWith(
-                        color: FitColors.ink60,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: FitSpacing.xl),
-                  Row(
-                    children: <Widget>[
-                      Text('New here?', style: textTheme.bodyMedium),
-                      TextButton(
-                        onPressed:
-                            busy ? null : () => context.push(Routes.signUp),
-                        child: const Text('Create an account'),
+                    if (Env.showsBackend) ...<Widget>[
+                      const SizedBox(height: FitSpacing.lg),
+                      // Which backend this build talks to. The address is baked
+                      // in at build time, so a tester can tell at a glance that
+                      // the APK predates the PC's current LAN address.
+                      Text(
+                        'Backend ${Env.apiAuthority} · FITOS ${Env.appVersion}',
+                        key: const ValueKey('sign-in.backend'),
+                        style: textTheme.labelSmall?.copyWith(
+                          color: FitColors.ink60,
+                        ),
                       ),
                     ],
-                  ),
-                ],
+                    const SizedBox(height: FitSpacing.xl),
+                    Row(
+                      children: <Widget>[
+                        Text('New here?', style: textTheme.bodyMedium),
+                        TextButton(
+                          onPressed:
+                              busy ? null : () => context.push(Routes.signUp),
+                          child: const Text('Create an account'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

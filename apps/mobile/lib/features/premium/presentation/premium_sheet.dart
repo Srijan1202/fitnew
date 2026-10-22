@@ -6,6 +6,7 @@ import '../../../core/theme/tokens.dart';
 import '../domain/avatars.dart';
 import '../domain/premium.dart';
 import 'premium_providers.dart';
+import '../../../shared/widgets/fit_glass.dart';
 
 /// Phase 19 (ADR-027): what premium unlocks, and the request. Shown by the
 /// AI tab, by every premium entry point, and from Profile → Premium.
@@ -198,7 +199,7 @@ class _PremiumRequestPanelState extends ConsumerState<PremiumRequestPanel> {
           key: const ValueKey('premium.request'),
           style: FilledButton.styleFrom(
             backgroundColor: kGoldDeep,
-            shape: const RoundedRectangleBorder(),
+            shape: fitGlass ? null : const RoundedRectangleBorder(),
             minimumSize: const Size.fromHeight(48),
           ),
           onPressed: _busy ? null : _request,

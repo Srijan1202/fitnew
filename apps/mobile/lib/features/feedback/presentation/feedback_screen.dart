@@ -9,6 +9,7 @@ import '../../../core/routing/navigation.dart';
 import '../../../core/theme/tokens.dart';
 import '../../auth/presentation/controllers/auth_providers.dart';
 import '../data/feedback_api.dart';
+import '../../../shared/widgets/fit_glass.dart';
 
 final feedbackApiProvider =
     Provider<FeedbackApi>((ref) => DioFeedbackApi(ref.watch(dioProvider)));
@@ -77,80 +78,82 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
         centerTitle: false,
         title: Text('SEND FEEDBACK', style: textTheme.labelSmall),
       ),
-      body: SafeArea(
-        top: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            FitSpacing.screen,
-            FitSpacing.sm,
-            FitSpacing.screen,
-            FitSpacing.xl,
-          ),
-          children: <Widget>[
-            Text(
-              'Something broke, something is missing, or an idea: it goes '
-              'straight to the developer, with the app version. Nothing else '
-              'about your phone is sent.',
-              style: textTheme.bodyMedium,
+      body: FitBackdrop(
+        child: SafeArea(
+          top: false,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(
+              FitSpacing.screen,
+              FitSpacing.sm,
+              FitSpacing.screen,
+              FitSpacing.xl,
             ),
-            const SizedBox(height: FitSpacing.lg),
-            Text('ABOUT', style: textTheme.labelSmall),
-            const SizedBox(height: FitSpacing.xs),
-            Wrap(
-              spacing: FitSpacing.sm,
-              runSpacing: FitSpacing.sm,
-              children: <Widget>[
-                for (final c in FeedbackCategory.values)
-                  ChoiceChip(
-                    key: ValueKey('feedback.category.${c.wire}'),
-                    label: Text(c.label),
-                    selected: _category == c,
-                    onSelected: _busy
-                        ? null
-                        : (_) => setState(() {
-                              _category = c;
-                              _sent = false;
-                            }),
-                  ),
-              ],
-            ),
-            const SizedBox(height: FitSpacing.lg),
-            TextField(
-              key: const ValueKey('feedback.message'),
-              controller: _text,
-              enabled: !_busy,
-              minLines: 5,
-              maxLines: 12,
-              maxLength: kFeedbackMaxLength,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                hintText: 'What happened, or what would help?',
-                border: OutlineInputBorder(borderRadius: BorderRadius.zero),
+            children: <Widget>[
+              Text(
+                'Something broke, something is missing, or an idea: it goes '
+                'straight to the developer, with the app version. Nothing else '
+                'about your phone is sent.',
+                style: textTheme.bodyMedium,
               ),
-              onChanged: (_) => setState(() => _sent = false),
-            ),
-            const SizedBox(height: FitSpacing.sm),
-            FilledButton(
-              key: const ValueKey('feedback.send'),
-              style: FilledButton.styleFrom(
-                shape: const RoundedRectangleBorder(),
-                minimumSize: const Size.fromHeight(48),
+              const SizedBox(height: FitSpacing.lg),
+              Text('ABOUT', style: textTheme.labelSmall),
+              const SizedBox(height: FitSpacing.xs),
+              Wrap(
+                spacing: FitSpacing.sm,
+                runSpacing: FitSpacing.sm,
+                children: <Widget>[
+                  for (final c in FeedbackCategory.values)
+                    ChoiceChip(
+                      key: ValueKey('feedback.category.${c.wire}'),
+                      label: Text(c.label),
+                      selected: _category == c,
+                      onSelected: _busy
+                          ? null
+                          : (_) => setState(() {
+                                _category = c;
+                                _sent = false;
+                              }),
+                    ),
+                ],
               ),
-              onPressed: _ready ? _send : null,
-              child: Text(_busy ? 'Sending…' : 'Send'),
-            ),
-            if (_message case final m?)
-              Padding(
-                padding: const EdgeInsets.only(top: FitSpacing.sm),
-                child: Text(
-                  m,
-                  key: const ValueKey('feedback.result'),
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: _sent ? FitColors.pine : FitColors.oxide,
+              const SizedBox(height: FitSpacing.lg),
+              TextField(
+                key: const ValueKey('feedback.message'),
+                controller: _text,
+                enabled: !_busy,
+                minLines: 5,
+                maxLines: 12,
+                maxLength: kFeedbackMaxLength,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  hintText: 'What happened, or what would help?',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.zero),
+                ),
+                onChanged: (_) => setState(() => _sent = false),
+              ),
+              const SizedBox(height: FitSpacing.sm),
+              FilledButton(
+                key: const ValueKey('feedback.send'),
+                style: FilledButton.styleFrom(
+                  shape: fitGlass ? null : const RoundedRectangleBorder(),
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                onPressed: _ready ? _send : null,
+                child: Text(_busy ? 'Sending…' : 'Send'),
+              ),
+              if (_message case final m?)
+                Padding(
+                  padding: const EdgeInsets.only(top: FitSpacing.sm),
+                  child: Text(
+                    m,
+                    key: const ValueKey('feedback.result'),
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: _sent ? FitColors.pine : FitColors.oxide,
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

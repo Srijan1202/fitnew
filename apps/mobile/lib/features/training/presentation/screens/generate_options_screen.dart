@@ -10,6 +10,7 @@ import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../../profile/data/profile_repository.dart';
 import '../controllers/program_controller.dart';
 import '../widgets/option_row.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Generate: the two things worth choosing per programme — days and session
 /// length — prefilled from the profile. Everything else (goal, level,
@@ -57,62 +58,64 @@ class _GenerateOptionsScreenState extends ConsumerState<GenerateOptionsScreen> {
         leading:
             BackButton(onPressed: _busy ? null : () => context.popOrHome()),
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            FitSpacing.screen,
-            FitSpacing.sm,
-            FitSpacing.screen,
-            FitSpacing.xl,
-          ),
-          children: <Widget>[
-            Text('GENERATE', style: textTheme.labelSmall),
-            const SizedBox(height: FitSpacing.xs),
-            Text('Your week', style: textTheme.displaySmall),
-            const SizedBox(height: FitSpacing.sm),
-            Text(
-              'Goal, level, equipment and limitations come from your profile. Set how often and how long.',
-              style: textTheme.bodyMedium,
+      body: FitBackdrop(
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(
+              FitSpacing.screen,
+              FitSpacing.sm,
+              FitSpacing.screen,
+              FitSpacing.xl,
             ),
-            const SizedBox(height: FitSpacing.lg),
-            OptionRow<int>(
-              label: 'Days a week',
-              options: const [2, 3, 4, 5, 6],
-              selected: days,
-              enabled: !_busy,
-              keyPrefix: 'generate.days',
-              text: (d) => '$d',
-              onSelect: (d) => setState(() => _days = d),
-            ),
-            const SizedBox(height: FitSpacing.lg),
-            OptionRow<int>(
-              label: 'Minutes a session',
-              options: const [30, 45, 60, 75, 90],
-              selected: minutes,
-              enabled: !_busy,
-              keyPrefix: 'generate.minutes',
-              text: (m) => '$m',
-              onSelect: (m) => setState(() => _minutes = m),
-            ),
-            if (_failure != null) ...<Widget>[
-              const SizedBox(height: FitSpacing.md),
-              AuthFeedback.error(_failure!.message),
+            children: <Widget>[
+              Text('GENERATE', style: textTheme.labelSmall),
+              const SizedBox(height: FitSpacing.xs),
+              Text('Your week', style: textTheme.displaySmall),
+              const SizedBox(height: FitSpacing.sm),
+              Text(
+                'Goal, level, equipment and limitations come from your profile. Set how often and how long.',
+                style: textTheme.bodyMedium,
+              ),
+              const SizedBox(height: FitSpacing.lg),
+              OptionRow<int>(
+                label: 'Days a week',
+                options: const [2, 3, 4, 5, 6],
+                selected: days,
+                enabled: !_busy,
+                keyPrefix: 'generate.days',
+                text: (d) => '$d',
+                onSelect: (d) => setState(() => _days = d),
+              ),
+              const SizedBox(height: FitSpacing.lg),
+              OptionRow<int>(
+                label: 'Minutes a session',
+                options: const [30, 45, 60, 75, 90],
+                selected: minutes,
+                enabled: !_busy,
+                keyPrefix: 'generate.minutes',
+                text: (m) => '$m',
+                onSelect: (m) => setState(() => _minutes = m),
+              ),
+              if (_failure != null) ...<Widget>[
+                const SizedBox(height: FitSpacing.md),
+                AuthFeedback.error(_failure!.message),
+              ],
+              const SizedBox(height: FitSpacing.xl),
+              FilledButton(
+                key: const ValueKey('generate.go'),
+                onPressed: _busy ? null : _generate,
+                child: _busy
+                    ? SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: FitColors.paper,
+                        ),
+                      )
+                    : const Text('Generate my programme'),
+              ),
             ],
-            const SizedBox(height: FitSpacing.xl),
-            FilledButton(
-              key: const ValueKey('generate.go'),
-              onPressed: _busy ? null : _generate,
-              child: _busy
-                  ? SizedBox.square(
-                      dimension: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: FitColors.paper,
-                      ),
-                    )
-                  : const Text('Generate my programme'),
-            ),
-          ],
+          ),
         ),
       ),
     );

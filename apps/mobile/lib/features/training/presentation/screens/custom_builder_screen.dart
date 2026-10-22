@@ -14,6 +14,7 @@ import '../widgets/draft.dart';
 import '../widgets/draft_exercise_list.dart';
 import '../widgets/set_row.dart';
 import '../../../../shared/widgets/toggle_wrap.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Custom: a programme built step by step, one concern per screen —
 /// Days → Day details → Muscle groups → Exercises → Sets → Save. One PUT at
@@ -135,78 +136,108 @@ class _CustomBuilderScreenState extends ConsumerState<CustomBuilderScreen> {
       appBar: AppBar(
         leading: BackButton(onPressed: _busy ? null : _back),
       ),
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: ListView(
-                key: ValueKey('builder.step.${_step.name}'),
+      body: FitBackdrop(
+        child: SafeArea(
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: ListView(
+                  key: ValueKey('builder.step.${_step.name}'),
+                  padding: const EdgeInsets.fromLTRB(
+                    FitSpacing.screen,
+                    FitSpacing.sm,
+                    FitSpacing.screen,
+                    FitSpacing.md,
+                  ),
+                  children: <Widget>[
+                    Text(
+                      'CUSTOM · STEP $stepNumber OF ${_Step.values.length}',
+                      style: textTheme.labelSmall,
+                    ),
+                    const SizedBox(height: FitSpacing.xs),
+                    ..._body(textTheme),
+                    if (_failure != null) ...<Widget>[
+                      const SizedBox(height: FitSpacing.md),
+                      AuthFeedback.error(_failure!.message),
+                    ],
+                  ],
+                ),
+              ),
+              Container(
+                decoration: fitGlass
+                    ? null
+                    : BoxDecoration(
+                        border: Border(top: BorderSide(color: FitColors.rule)),
+                      ),
                 padding: const EdgeInsets.fromLTRB(
                   FitSpacing.screen,
                   FitSpacing.sm,
                   FitSpacing.screen,
                   FitSpacing.md,
                 ),
-                children: <Widget>[
-                  Text(
-                    'CUSTOM · STEP $stepNumber OF ${_Step.values.length}',
-                    style: textTheme.labelSmall,
-                  ),
-                  const SizedBox(height: FitSpacing.xs),
-                  ..._body(textTheme),
-                  if (_failure != null) ...<Widget>[
-                    const SizedBox(height: FitSpacing.md),
-                    AuthFeedback.error(_failure!.message),
-                  ],
-                ],
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(color: FitColors.rule)),
-              ),
-              padding: const EdgeInsets.fromLTRB(
-                FitSpacing.screen,
-                FitSpacing.sm,
-                FitSpacing.screen,
-                FitSpacing.md,
-              ),
-              child: Row(
-                children: <Widget>[
-                  if (_step != _Step.days)
-                    TextButton(
-                      key: const ValueKey('builder.back'),
-                      onPressed: _busy ? null : _back,
-                      child: const Text('Back'),
-                    ),
-                  const Spacer(),
-                  FilledButton(
-                    key: const ValueKey('builder.next'),
-                    onPressed: _busy || !_canContinue
-                        ? null
-                        : _step == _Step.review
-                            ? _save
-                            : _next,
-                    child: _busy
-                        ? SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: FitColors.paper,
+                child: Row(
+                  children: <Widget>[
+                    if (_step != _Step.days)
+                      TextButton(
+                        key: const ValueKey('builder.back'),
+                        onPressed: _busy ? null : _back,
+                        child: const Text('Back'),
+                      ),
+                    const Spacer(),
+                    FilledButton(
+                      key: const ValueKey('builder.next'),
+                      onPressed: _busy || !_canContinue
+                          ? null
+                          : _step == _Step.review
+                              ? _save
+                              : _next,
+                      child: _busy
+                          ? SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: FitColors.paper,
+                              ),
+                            )
+                          : Text(
+                              _step == _Step.review
+                                  ? 'Save programme'
+                                  : 'Continue',
                             ),
-                          )
-                        : Text(
-                            _step == _Step.review
-                                ? 'Save programme'
-                                : 'Continue',
-                          ),
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  /// ADR-029: a day's part of a step — a block on glass; on Paper a hairline
+  /// above (unless [rule] is false) and space below, as before.
+  Widget _dayCard(List<Widget> children, {bool rule = true}) {
+    if (fitGlass) {
+      return FitBlock(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(FitSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: children,
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        if (rule) ...<Widget>[
+          Divider(color: FitColors.rule, height: 1),
+          const SizedBox(height: FitSpacing.afterRule),
+        ],
+        ...children,
+        const SizedBox(height: FitSpacing.lg),
+      ],
     );
   }
 
@@ -256,21 +287,21 @@ class _CustomBuilderScreenState extends ConsumerState<CustomBuilderScreen> {
             style: textTheme.bodyMedium,
           ),
           const SizedBox(height: FitSpacing.md),
-          for (final d in _sorted) ...<Widget>[
-            Text(
-              kWeekdayLabels[d.dayOfWeek - 1].toUpperCase(),
-              style: textTheme.labelSmall,
-            ),
-            const SizedBox(height: FitSpacing.xs),
-            AuthFormField(
-              fieldKey: ValueKey('builder.day.${d.dayOfWeek}.name'),
-              label: 'Session name',
-              controller: d.nameController,
-              enabled: !_busy,
-              onChanged: (_) => setState(() {}),
-            ),
-            const SizedBox(height: FitSpacing.lg),
-          ],
+          for (final d in _sorted)
+            _dayCard(rule: false, <Widget>[
+              Text(
+                kWeekdayLabels[d.dayOfWeek - 1].toUpperCase(),
+                style: textTheme.labelSmall,
+              ),
+              const SizedBox(height: FitSpacing.xs),
+              AuthFormField(
+                fieldKey: ValueKey('builder.day.${d.dayOfWeek}.name'),
+                label: 'Session name',
+                controller: d.nameController,
+                enabled: !_busy,
+                onChanged: (_) => setState(() {}),
+              ),
+            ]),
         ];
       case _Step.muscles:
         return <Widget>[
@@ -281,27 +312,25 @@ class _CustomBuilderScreenState extends ConsumerState<CustomBuilderScreen> {
             style: textTheme.bodyMedium,
           ),
           const SizedBox(height: FitSpacing.md),
-          for (final d in _sorted) ...<Widget>[
-            Divider(color: FitColors.rule, height: 1),
-            const SizedBox(height: FitSpacing.afterRule),
-            Text(
-              '${kWeekdayLabels[d.dayOfWeek - 1]} · ${d.nameController.text.trim()}'
-                  .toUpperCase(),
-              style: textTheme.labelSmall,
-            ),
-            const SizedBox(height: FitSpacing.sm),
-            ToggleWrap<MuscleGroup>(
-              keyPrefix: 'builder.day.${d.dayOfWeek}.focus',
-              options: MuscleGroup.values,
-              isSelected: d.focus.contains,
-              enabled: !_busy,
-              label: (m) => m.label,
-              onTap: (m) => setState(() {
-                if (!d.focus.remove(m)) d.focus.add(m);
-              }),
-            ),
-            const SizedBox(height: FitSpacing.lg),
-          ],
+          for (final d in _sorted)
+            _dayCard(<Widget>[
+              Text(
+                '${kWeekdayLabels[d.dayOfWeek - 1]} · ${d.nameController.text.trim()}'
+                    .toUpperCase(),
+                style: textTheme.labelSmall,
+              ),
+              const SizedBox(height: FitSpacing.sm),
+              ToggleWrap<MuscleGroup>(
+                keyPrefix: 'builder.day.${d.dayOfWeek}.focus',
+                options: MuscleGroup.values,
+                isSelected: d.focus.contains,
+                enabled: !_busy,
+                label: (m) => m.label,
+                onTap: (m) => setState(() {
+                  if (!d.focus.remove(m)) d.focus.add(m);
+                }),
+              ),
+            ]),
         ];
       case _Step.exercises:
         return <Widget>[
@@ -312,28 +341,26 @@ class _CustomBuilderScreenState extends ConsumerState<CustomBuilderScreen> {
             style: textTheme.bodyMedium,
           ),
           const SizedBox(height: FitSpacing.md),
-          for (final d in _sorted) ...<Widget>[
-            Divider(color: FitColors.rule, height: 1),
-            const SizedBox(height: FitSpacing.afterRule),
-            Text(
-              '${kWeekdayLabels[d.dayOfWeek - 1]} · ${d.nameController.text.trim()}'
-                  .toUpperCase(),
-              style: textTheme.labelSmall,
-            ),
-            const SizedBox(height: FitSpacing.sm),
-            DraftExerciseList(
-              keyPrefix: 'builder.day.${d.dayOfWeek}',
-              exercises: d.exercises,
-              enabled: !_busy,
-              onChanged: (next) => setState(() => d.exercises = next),
-            ),
-            if (d.exercises.isEmpty)
+          for (final d in _sorted)
+            _dayCard(<Widget>[
               Text(
-                'Add at least one exercise.',
-                style: textTheme.bodyMedium?.copyWith(color: FitColors.amber),
+                '${kWeekdayLabels[d.dayOfWeek - 1]} · ${d.nameController.text.trim()}'
+                    .toUpperCase(),
+                style: textTheme.labelSmall,
               ),
-            const SizedBox(height: FitSpacing.lg),
-          ],
+              const SizedBox(height: FitSpacing.sm),
+              DraftExerciseList(
+                keyPrefix: 'builder.day.${d.dayOfWeek}',
+                exercises: d.exercises,
+                enabled: !_busy,
+                onChanged: (next) => setState(() => d.exercises = next),
+              ),
+              if (d.exercises.isEmpty)
+                Text(
+                  'Add at least one exercise.',
+                  style: textTheme.bodyMedium?.copyWith(color: FitColors.amber),
+                ),
+            ]),
         ];
       case _Step.sets:
         return <Widget>[
@@ -344,73 +371,75 @@ class _CustomBuilderScreenState extends ConsumerState<CustomBuilderScreen> {
             style: textTheme.bodyMedium,
           ),
           const SizedBox(height: FitSpacing.md),
-          for (final d in _sorted) ...<Widget>[
-            Divider(color: FitColors.rule, height: 1),
-            const SizedBox(height: FitSpacing.afterRule),
-            Text(
-              '${kWeekdayLabels[d.dayOfWeek - 1]} · ${d.nameController.text.trim()}'
-                  .toUpperCase(),
-              style: textTheme.labelSmall,
-            ),
-            for (var i = 0; i < d.exercises.length; i++) ...<Widget>[
-              const SizedBox(height: FitSpacing.md),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      d.exercises[i].name,
+          for (final d in _sorted)
+            _dayCard(<Widget>[
+              Text(
+                '${kWeekdayLabels[d.dayOfWeek - 1]} · ${d.nameController.text.trim()}'
+                    .toUpperCase(),
+                style: textTheme.labelSmall,
+              ),
+              for (var i = 0; i < d.exercises.length; i++) ...<Widget>[
+                const SizedBox(height: FitSpacing.md),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        d.exercises[i].name,
+                        style: textTheme.titleMedium,
+                      ),
+                    ),
+                    IconButton(
+                      key: ValueKey(
+                        'builder.day.${d.dayOfWeek}.exercise.$i.sets.minus',
+                      ),
+                      tooltip: 'Fewer sets',
+                      onPressed: _busy || d.exercises[i].sets.length <= 1
+                          ? null
+                          : () => setState(
+                                () => d.exercises[i] =
+                                    d.exercises[i].withSetCount(
+                                  d.exercises[i].sets.length - 1,
+                                ),
+                              ),
+                      icon: const Icon(Icons.remove, size: 18),
+                    ),
+                    Text(
+                      '${d.exercises[i].sets.length} sets',
                       style: textTheme.titleMedium,
                     ),
-                  ),
-                  IconButton(
-                    key: ValueKey(
-                      'builder.day.${d.dayOfWeek}.exercise.$i.sets.minus',
+                    IconButton(
+                      key: ValueKey(
+                        'builder.day.${d.dayOfWeek}.exercise.$i.sets.plus',
+                      ),
+                      tooltip: 'More sets',
+                      onPressed: _busy || d.exercises[i].sets.length >= 10
+                          ? null
+                          : () => setState(
+                                () => d.exercises[i] =
+                                    d.exercises[i].withSetCount(
+                                  d.exercises[i].sets.length + 1,
+                                ),
+                              ),
+                      icon: const Icon(Icons.add, size: 18),
                     ),
-                    tooltip: 'Fewer sets',
-                    onPressed: _busy || d.exercises[i].sets.length <= 1
-                        ? null
-                        : () => setState(
-                              () => d.exercises[i] = d.exercises[i]
-                                  .withSetCount(d.exercises[i].sets.length - 1),
-                            ),
-                    icon: const Icon(Icons.remove, size: 18),
-                  ),
-                  Text(
-                    '${d.exercises[i].sets.length} sets',
-                    style: textTheme.titleMedium,
-                  ),
-                  IconButton(
-                    key: ValueKey(
-                      'builder.day.${d.dayOfWeek}.exercise.$i.sets.plus',
-                    ),
-                    tooltip: 'More sets',
-                    onPressed: _busy || d.exercises[i].sets.length >= 10
-                        ? null
-                        : () => setState(
-                              () => d.exercises[i] = d.exercises[i]
-                                  .withSetCount(d.exercises[i].sets.length + 1),
-                            ),
-                    icon: const Icon(Icons.add, size: 18),
-                  ),
-                ],
-              ),
-              for (final set in d.exercises[i].sets)
-                SetRow(
-                  key: ValueKey(
-                    'builder.day.${d.dayOfWeek}.exercise.$i.set.${set.setIndex}',
-                  ),
-                  rowKey:
-                      'builder.day.${d.dayOfWeek}.exercise.$i.set.${set.setIndex}',
-                  set: set,
-                  incrementKg: d.exercises[i].incrementKg ?? 2.5,
-                  enabled: !_busy,
-                  onChanged: (next) => setState(
-                    () => d.exercises[i] = d.exercises[i].withSet(next),
-                  ),
+                  ],
                 ),
-            ],
-            const SizedBox(height: FitSpacing.lg),
-          ],
+                for (final set in d.exercises[i].sets)
+                  SetRow(
+                    key: ValueKey(
+                      'builder.day.${d.dayOfWeek}.exercise.$i.set.${set.setIndex}',
+                    ),
+                    rowKey:
+                        'builder.day.${d.dayOfWeek}.exercise.$i.set.${set.setIndex}',
+                    set: set,
+                    incrementKg: d.exercises[i].incrementKg ?? 2.5,
+                    enabled: !_busy,
+                    onChanged: (next) => setState(
+                      () => d.exercises[i] = d.exercises[i].withSet(next),
+                    ),
+                  ),
+              ],
+            ]),
         ];
       case _Step.review:
         final totalExercises =
@@ -423,36 +452,34 @@ class _CustomBuilderScreenState extends ConsumerState<CustomBuilderScreen> {
             style: textTheme.bodyMedium,
           ),
           const SizedBox(height: FitSpacing.md),
-          for (final d in _sorted) ...<Widget>[
-            Divider(color: FitColors.rule, height: 1),
-            const SizedBox(height: FitSpacing.afterRule),
-            Text(
-              kWeekdayLabels[d.dayOfWeek - 1].toUpperCase(),
-              style: textTheme.labelSmall,
-            ),
-            const SizedBox(height: FitSpacing.xs),
-            Text(d.nameController.text.trim(), style: textTheme.titleLarge),
-            if (d.focus.isNotEmpty)
+          for (final d in _sorted)
+            _dayCard(<Widget>[
               Text(
-                d.focus.map((m) => m.label).join(' · '),
-                style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+                kWeekdayLabels[d.dayOfWeek - 1].toUpperCase(),
+                style: textTheme.labelSmall,
               ),
-            const SizedBox(height: FitSpacing.sm),
-            for (final x in d.exercises)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(child: Text(x.name, style: textTheme.bodyLarge)),
-                    Text(
-                      '${x.sets.length} × ${x.sets.first.repsLabel}',
-                      style: textTheme.bodyMedium,
-                    ),
-                  ],
+              const SizedBox(height: FitSpacing.xs),
+              Text(d.nameController.text.trim(), style: textTheme.titleLarge),
+              if (d.focus.isNotEmpty)
+                Text(
+                  d.focus.map((m) => m.label).join(' · '),
+                  style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
                 ),
-              ),
-            const SizedBox(height: FitSpacing.lg),
-          ],
+              const SizedBox(height: FitSpacing.sm),
+              for (final x in d.exercises)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(child: Text(x.name, style: textTheme.bodyLarge)),
+                      Text(
+                        '${x.sets.length} × ${x.sets.first.repsLabel}',
+                        style: textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+            ]),
         ];
     }
   }

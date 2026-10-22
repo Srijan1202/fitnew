@@ -12,6 +12,7 @@ import '../controllers/program_controller.dart';
 import '../widgets/draft.dart';
 import '../widgets/draft_exercise_list.dart';
 import '../../../../shared/widgets/toggle_wrap.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// The STRUCTURE of one day: its name, the muscle groups it is for, which
 /// exercises and in what order. Reps, weight and RIR live on the workout
@@ -88,12 +89,14 @@ class _DayEditorScreenState extends ConsumerState<DayEditorScreen> {
       return Scaffold(
         appBar:
             AppBar(leading: BackButton(onPressed: () => context.popOrHome())),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(FitSpacing.screen),
-            child: async.isLoading
-                ? const SizedBox.shrink()
-                : const Text('That day is not on your active programme.'),
+        body: FitBackdrop(
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(FitSpacing.screen),
+              child: async.isLoading
+                  ? const SizedBox.shrink()
+                  : const Text('That day is not on your active programme.'),
+            ),
           ),
         ),
       );
@@ -105,101 +108,105 @@ class _DayEditorScreenState extends ConsumerState<DayEditorScreen> {
         leading:
             BackButton(onPressed: _busy ? null : () => context.popOrHome()),
       ),
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: ListView(
+      body: FitBackdrop(
+        child: SafeArea(
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(
+                    FitSpacing.screen,
+                    FitSpacing.sm,
+                    FitSpacing.screen,
+                    FitSpacing.md,
+                  ),
+                  children: <Widget>[
+                    Text(weekday, style: textTheme.labelSmall),
+                    const SizedBox(height: FitSpacing.xs),
+                    Text(
+                      day.isRest ? 'Train this day' : 'Edit this day',
+                      style: textTheme.displaySmall,
+                    ),
+                    const SizedBox(height: FitSpacing.md),
+                    AuthFormField(
+                      fieldKey: const ValueKey('day.name'),
+                      label: 'Session name',
+                      controller: _name,
+                      enabled: !_busy,
+                      textInputAction: TextInputAction.done,
+                    ),
+                    const SizedBox(height: FitSpacing.lg),
+                    Text('MUSCLE GROUPS', style: textTheme.labelSmall),
+                    const SizedBox(height: FitSpacing.sm),
+                    ToggleWrap<MuscleGroup>(
+                      keyPrefix: 'day.focus',
+                      options: MuscleGroup.values,
+                      isSelected: _focus.contains,
+                      enabled: !_busy,
+                      label: (m) => m.label,
+                      onTap: (m) => setState(() {
+                        if (!_focus.remove(m)) _focus.add(m);
+                      }),
+                    ),
+                    const SizedBox(height: FitSpacing.lg),
+                    Text(
+                      'EXERCISES · DRAG TO REORDER',
+                      style: textTheme.labelSmall,
+                    ),
+                    const SizedBox(height: FitSpacing.sm),
+                    DraftExerciseList(
+                      exercises: draft,
+                      enabled: !_busy,
+                      onChanged: (next) => setState(() => _draft = next),
+                    ),
+                    if (draft.isEmpty) ...<Widget>[
+                      const SizedBox(height: FitSpacing.sm),
+                      Text(
+                        'A training day needs at least one exercise.',
+                        style: textTheme.bodyMedium
+                            ?.copyWith(color: FitColors.amber),
+                      ),
+                    ],
+                    if (_failure != null) ...<Widget>[
+                      const SizedBox(height: FitSpacing.md),
+                      AuthFeedback.error(_failure!.message),
+                    ],
+                  ],
+                ),
+              ),
+              Container(
+                decoration: fitGlass
+                    ? null
+                    : BoxDecoration(
+                        border: Border(top: BorderSide(color: FitColors.rule)),
+                      ),
                 padding: const EdgeInsets.fromLTRB(
                   FitSpacing.screen,
                   FitSpacing.sm,
                   FitSpacing.screen,
                   FitSpacing.md,
                 ),
-                children: <Widget>[
-                  Text(weekday, style: textTheme.labelSmall),
-                  const SizedBox(height: FitSpacing.xs),
-                  Text(
-                    day.isRest ? 'Train this day' : 'Edit this day',
-                    style: textTheme.displaySmall,
-                  ),
-                  const SizedBox(height: FitSpacing.md),
-                  AuthFormField(
-                    fieldKey: const ValueKey('day.name'),
-                    label: 'Session name',
-                    controller: _name,
-                    enabled: !_busy,
-                    textInputAction: TextInputAction.done,
-                  ),
-                  const SizedBox(height: FitSpacing.lg),
-                  Text('MUSCLE GROUPS', style: textTheme.labelSmall),
-                  const SizedBox(height: FitSpacing.sm),
-                  ToggleWrap<MuscleGroup>(
-                    keyPrefix: 'day.focus',
-                    options: MuscleGroup.values,
-                    isSelected: _focus.contains,
-                    enabled: !_busy,
-                    label: (m) => m.label,
-                    onTap: (m) => setState(() {
-                      if (!_focus.remove(m)) _focus.add(m);
-                    }),
-                  ),
-                  const SizedBox(height: FitSpacing.lg),
-                  Text(
-                    'EXERCISES · DRAG TO REORDER',
-                    style: textTheme.labelSmall,
-                  ),
-                  const SizedBox(height: FitSpacing.sm),
-                  DraftExerciseList(
-                    exercises: draft,
-                    enabled: !_busy,
-                    onChanged: (next) => setState(() => _draft = next),
-                  ),
-                  if (draft.isEmpty) ...<Widget>[
-                    const SizedBox(height: FitSpacing.sm),
-                    Text(
-                      'A training day needs at least one exercise.',
-                      style: textTheme.bodyMedium
-                          ?.copyWith(color: FitColors.amber),
+                child: Row(
+                  children: <Widget>[
+                    const Spacer(),
+                    FilledButton(
+                      key: const ValueKey('day.save'),
+                      onPressed: _busy || draft.isEmpty ? null : _save,
+                      child: _busy
+                          ? SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: FitColors.paper,
+                              ),
+                            )
+                          : const Text('Save day'),
                     ),
                   ],
-                  if (_failure != null) ...<Widget>[
-                    const SizedBox(height: FitSpacing.md),
-                    AuthFeedback.error(_failure!.message),
-                  ],
-                ],
+                ),
               ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(color: FitColors.rule)),
-              ),
-              padding: const EdgeInsets.fromLTRB(
-                FitSpacing.screen,
-                FitSpacing.sm,
-                FitSpacing.screen,
-                FitSpacing.md,
-              ),
-              child: Row(
-                children: <Widget>[
-                  const Spacer(),
-                  FilledButton(
-                    key: const ValueKey('day.save'),
-                    onPressed: _busy || draft.isEmpty ? null : _save,
-                    child: _busy
-                        ? SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: FitColors.paper,
-                            ),
-                          )
-                        : const Text('Save day'),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

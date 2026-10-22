@@ -254,13 +254,19 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
     _controller = ref.read(programControllerProvider.notifier);
     final async = ref.watch(programControllerProvider);
     return async.when(
-      loading: () => const Scaffold(body: SafeArea(child: _WeekSkeleton())),
+      loading: () => const Scaffold(
+        body: FitBackdrop(
+          child: SafeArea(child: _WeekSkeleton()),
+        ),
+      ),
       error: (e, _) => Scaffold(
         appBar: AppBar(automaticallyImplyLeading: false),
-        body: SafeArea(
-          child: _Failed(
-            failure: e is Failure ? e : const Unknown(),
-            onRetry: () => ref.invalidate(programControllerProvider),
+        body: FitBackdrop(
+          child: SafeArea(
+            child: _Failed(
+              failure: e is Failure ? e : const Unknown(),
+              onRetry: () => ref.invalidate(programControllerProvider),
+            ),
           ),
         ),
       ),

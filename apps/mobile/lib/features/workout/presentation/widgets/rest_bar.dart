@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/tokens.dart';
 import '../controllers/rest_timer.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 String formatClock(Duration d) {
   final m = d.inMinutes;
@@ -40,9 +41,11 @@ class SessionFooter extends ConsumerWidget {
       child: SafeArea(
         top: false,
         child: Container(
-          decoration: BoxDecoration(
-            border: Border(top: BorderSide(color: FitColors.rule)),
-          ),
+          decoration: fitGlass
+              ? null
+              : BoxDecoration(
+                  border: Border(top: BorderSide(color: FitColors.rule)),
+                ),
           padding: const EdgeInsets.fromLTRB(
             FitSpacing.screen,
             FitSpacing.sm,

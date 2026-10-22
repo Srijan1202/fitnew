@@ -8,6 +8,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/fitos_wordmark.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/auth_form_field.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -60,57 +61,59 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         leading:
             BackButton(onPressed: _busy ? null : () => context.popOrHome()),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: FitSpacing.screen,
-            vertical: FitSpacing.md,
-          ),
-          child: Form(
-            key: _form,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                const FitosWordmark(size: 22),
-                const SizedBox(height: FitSpacing.xs),
-                Text('Reset password', style: textTheme.displayMedium),
-                const SizedBox(height: FitSpacing.sm),
-                Text(
-                  'Enter your email and we will send a link to choose a new one.',
-                  style: textTheme.bodyMedium,
-                ),
-                const SizedBox(height: FitSpacing.xl),
-                AuthFormField(
-                  label: 'Email',
-                  controller: _email,
-                  keyboardType: TextInputType.emailAddress,
-                  autofillHints: const [AutofillHints.email],
-                  textInputAction: TextInputAction.done,
-                  validator: AuthValidators.email,
-                  onFieldSubmitted: (_) => _submit(),
-                  enabled: !_busy && !_sent,
-                ),
-                const SizedBox(height: FitSpacing.md),
-                if (_sent)
-                  const AuthFeedback.success(
-                    'If an account exists for that email, a reset link is on its way.',
-                  )
-                else if (_failure != null)
-                  AuthFeedback.error(_failure!.message),
-                const SizedBox(height: FitSpacing.xl),
-                FilledButton(
-                  onPressed: _busy || _sent ? null : _submit,
-                  child: _busy
-                      ? SizedBox.square(
-                          dimension: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: FitColors.paper,
-                          ),
-                        )
-                      : Text(_sent ? 'Sent' : 'Send reset link'),
-                ),
-              ],
+      body: FitBackdrop(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: FitSpacing.screen,
+              vertical: FitSpacing.md,
+            ),
+            child: Form(
+              key: _form,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const FitosWordmark(size: 22),
+                  const SizedBox(height: FitSpacing.xs),
+                  Text('Reset password', style: textTheme.displayMedium),
+                  const SizedBox(height: FitSpacing.sm),
+                  Text(
+                    'Enter your email and we will send a link to choose a new one.',
+                    style: textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: FitSpacing.xl),
+                  AuthFormField(
+                    label: 'Email',
+                    controller: _email,
+                    keyboardType: TextInputType.emailAddress,
+                    autofillHints: const [AutofillHints.email],
+                    textInputAction: TextInputAction.done,
+                    validator: AuthValidators.email,
+                    onFieldSubmitted: (_) => _submit(),
+                    enabled: !_busy && !_sent,
+                  ),
+                  const SizedBox(height: FitSpacing.md),
+                  if (_sent)
+                    const AuthFeedback.success(
+                      'If an account exists for that email, a reset link is on its way.',
+                    )
+                  else if (_failure != null)
+                    AuthFeedback.error(_failure!.message),
+                  const SizedBox(height: FitSpacing.xl),
+                  FilledButton(
+                    onPressed: _busy || _sent ? null : _submit,
+                    child: _busy
+                        ? SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: FitColors.paper,
+                            ),
+                          )
+                        : Text(_sent ? 'Sent' : 'Send reset link'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

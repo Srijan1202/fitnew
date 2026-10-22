@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/routing/navigation.dart';
 import '../../../../core/theme/tokens.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Three ways to get a programme (Phase 4 rework): three deliberate modes,
 /// each a full-width panel with a number, a name and one honest sentence.
@@ -25,54 +26,56 @@ class PlanStartScreen extends StatelessWidget {
         leading:
             canGoBack ? BackButton(onPressed: () => context.popOrHome()) : null,
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            FitSpacing.screen,
-            FitSpacing.sm,
-            FitSpacing.screen,
-            FitSpacing.xl,
+      body: FitBackdrop(
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(
+              FitSpacing.screen,
+              FitSpacing.sm,
+              FitSpacing.screen,
+              FitSpacing.xl,
+            ),
+            children: <Widget>[
+              Text('TRAINING PLAN', style: textTheme.labelSmall),
+              const SizedBox(height: FitSpacing.xs),
+              Text('How do you want to train?', style: textTheme.displaySmall),
+              const SizedBox(height: FitSpacing.sm),
+              Text(
+                canGoBack
+                    ? 'Choosing a new plan replaces the current one. The old one is kept, not deleted.'
+                    : 'Pick one. You can change it any time, and edit any day of it.',
+                style: textTheme.bodyMedium,
+              ),
+              const SizedBox(height: FitSpacing.lg),
+              _Mode(
+                modeKey: const ValueKey('start.generate'),
+                number: '01',
+                title: 'Generate',
+                body:
+                    'FitOS builds a week from your goal, level, days, equipment and limitations. Every exercise comes with its reason. Adapts as you train.',
+                action: 'Generate for me',
+                onTap: () => context.push(Routes.planGenerate),
+              ),
+              _Mode(
+                modeKey: const ValueKey('start.professional'),
+                number: '02',
+                title: 'Professional',
+                body:
+                    'Recognised structures — push / pull / legs, upper / lower, bro split and more — filled with exercises you can actually do. Preview first, then make it yours.',
+                action: 'Browse structures',
+                onTap: () => context.push(Routes.planTemplates),
+              ),
+              _Mode(
+                modeKey: const ValueKey('start.custom'),
+                number: '03',
+                title: 'Custom',
+                body:
+                    'Your days, your muscle groups, your exercises, your sets and starting weights. Built step by step.',
+                action: 'Build my own',
+                onTap: () => context.push(Routes.planCustom),
+              ),
+            ],
           ),
-          children: <Widget>[
-            Text('TRAINING PLAN', style: textTheme.labelSmall),
-            const SizedBox(height: FitSpacing.xs),
-            Text('How do you want to train?', style: textTheme.displaySmall),
-            const SizedBox(height: FitSpacing.sm),
-            Text(
-              canGoBack
-                  ? 'Choosing a new plan replaces the current one. The old one is kept, not deleted.'
-                  : 'Pick one. You can change it any time, and edit any day of it.',
-              style: textTheme.bodyMedium,
-            ),
-            const SizedBox(height: FitSpacing.lg),
-            _Mode(
-              modeKey: const ValueKey('start.generate'),
-              number: '01',
-              title: 'Generate',
-              body:
-                  'FitOS builds a week from your goal, level, days, equipment and limitations. Every exercise comes with its reason. Adapts as you train.',
-              action: 'Generate for me',
-              onTap: () => context.push(Routes.planGenerate),
-            ),
-            _Mode(
-              modeKey: const ValueKey('start.professional'),
-              number: '02',
-              title: 'Professional',
-              body:
-                  'Recognised structures — push / pull / legs, upper / lower, bro split and more — filled with exercises you can actually do. Preview first, then make it yours.',
-              action: 'Browse structures',
-              onTap: () => context.push(Routes.planTemplates),
-            ),
-            _Mode(
-              modeKey: const ValueKey('start.custom'),
-              number: '03',
-              title: 'Custom',
-              body:
-                  'Your days, your muscle groups, your exercises, your sets and starting weights. Built step by step.',
-              action: 'Build my own',
-              onTap: () => context.push(Routes.planCustom),
-            ),
-          ],
         ),
       ),
     );
@@ -102,11 +105,21 @@ class _Mode extends StatelessWidget {
     return InkWell(
       key: modeKey,
       onTap: onTap,
+      customBorder: fitGlass
+          ? const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(FitRadius.block),
+            )
+          : null,
       child: Container(
-        decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: FitColors.ink, width: 2)),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: FitSpacing.lg),
+        // ADR-029: a glowing block on glass; the ink top rule on Paper.
+        decoration: fitGlass
+            ? FitBlock.decoration(glow: true)
+            : BoxDecoration(
+                border: Border(top: BorderSide(color: FitColors.ink, width: 2)),
+              ),
+        padding: fitGlass
+            ? const EdgeInsets.all(FitSpacing.md)
+            : const EdgeInsets.symmetric(vertical: FitSpacing.lg),
         margin: const EdgeInsets.only(bottom: FitSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

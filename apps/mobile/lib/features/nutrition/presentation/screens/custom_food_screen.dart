@@ -12,6 +12,7 @@ import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../domain/entities/food.dart';
 import '../controllers/food_providers.dart';
 import 'food_detail_screen.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Add a food from its label (Phase 7). The numbers are the user's, stored
 /// exactly as typed and marked as theirs: private, unverified. Checks mirror
@@ -166,132 +167,136 @@ class _CustomFoodScreenState extends ConsumerState<CustomFoodScreen> {
         title: Text('ADD A FOOD', style: textTheme.labelSmall),
         centerTitle: false,
       ),
-      body: SafeArea(
-        child: Form(
-          key: _form,
-          child: ListView(
-            key: const ValueKey('food.form'),
-            padding: const EdgeInsets.fromLTRB(
-              FitSpacing.screen,
-              FitSpacing.sm,
-              FitSpacing.screen,
-              FitSpacing.xl,
-            ),
-            children: <Widget>[
-              Text('From its label', style: textTheme.displaySmall),
-              const SizedBox(height: FitSpacing.sm),
-              Text(
-                'Copy the numbers from the nutrition label. Only you will see '
-                'this food, and FITOS marks it as yours, not verified.',
-                style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+      body: FitBackdrop(
+        child: SafeArea(
+          child: Form(
+            key: _form,
+            child: ListView(
+              key: const ValueKey('food.form'),
+              padding: const EdgeInsets.fromLTRB(
+                FitSpacing.screen,
+                FitSpacing.sm,
+                FitSpacing.screen,
+                FitSpacing.xl,
               ),
-              const SizedBox(height: FitSpacing.lg),
-              AuthFormField(
-                fieldKey: const ValueKey('food.form.name'),
-                label: 'Name',
-                controller: _name,
-                textInputAction: TextInputAction.next,
-                validator: (v) => _text(v, required: true, max: 80),
-              ),
-              gap(),
-              AuthFormField(
-                fieldKey: const ValueKey('food.form.brand'),
-                label: 'Brand (optional)',
-                controller: _brand,
-                textInputAction: TextInputAction.next,
-                validator: (v) => _text(v, required: false, max: 60),
-              ),
-              const SizedBox(height: FitSpacing.lg),
-              Text('THE LABEL GIVES VALUES', style: textTheme.labelSmall),
-              const SizedBox(height: FitSpacing.xs),
-              ToggleWrap<NutritionBasis>(
-                keyPrefix: 'food.form.basis',
-                options: NutritionBasis.values,
-                isSelected: (b) => b == _basis,
-                onTap: (b) => setState(() => _basis = b),
-                label: (b) => b.label,
-                enabled: !_saving,
-              ),
-              if (perServing) ...<Widget>[
-                gap(),
+              children: <Widget>[
+                Text('From its label', style: textTheme.displaySmall),
+                const SizedBox(height: FitSpacing.sm),
+                Text(
+                  'Copy the numbers from the nutrition label. Only you will see '
+                  'this food, and FITOS marks it as yours, not verified.',
+                  style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+                ),
+                const SizedBox(height: FitSpacing.lg),
                 AuthFormField(
-                  fieldKey: const ValueKey('food.form.servingLabel'),
-                  label: 'Serving, as the label says (e.g. 1 bar)',
-                  controller: _servingLabel,
+                  fieldKey: const ValueKey('food.form.name'),
+                  label: 'Name',
+                  controller: _name,
                   textInputAction: TextInputAction.next,
-                  validator: (v) => _text(v, required: true, max: 60),
+                  validator: (v) => _text(v, required: true, max: 80),
                 ),
                 gap(),
                 AuthFormField(
-                  fieldKey: const ValueKey('food.form.servingGrams'),
-                  label: 'Serving weight in g (optional)',
-                  controller: _servingGrams,
+                  fieldKey: const ValueKey('food.form.brand'),
+                  label: 'Brand (optional)',
+                  controller: _brand,
+                  textInputAction: TextInputAction.next,
+                  validator: (v) => _text(v, required: false, max: 60),
+                ),
+                const SizedBox(height: FitSpacing.lg),
+                Text('THE LABEL GIVES VALUES', style: textTheme.labelSmall),
+                const SizedBox(height: FitSpacing.xs),
+                ToggleWrap<NutritionBasis>(
+                  keyPrefix: 'food.form.basis',
+                  options: NutritionBasis.values,
+                  isSelected: (b) => b == _basis,
+                  onTap: (b) => setState(() => _basis = b),
+                  label: (b) => b.label,
+                  enabled: !_saving,
+                ),
+                if (perServing) ...<Widget>[
+                  gap(),
+                  AuthFormField(
+                    fieldKey: const ValueKey('food.form.servingLabel'),
+                    label: 'Serving, as the label says (e.g. 1 bar)',
+                    controller: _servingLabel,
+                    textInputAction: TextInputAction.next,
+                    validator: (v) => _text(v, required: true, max: 60),
+                  ),
+                  gap(),
+                  AuthFormField(
+                    fieldKey: const ValueKey('food.form.servingGrams'),
+                    label: 'Serving weight in g (optional)',
+                    controller: _servingGrams,
+                    keyboardType: decimal,
+                    textInputAction: TextInputAction.next,
+                    validator: (v) {
+                      final base = _amount(required: false, max: 5000)(v);
+                      if (base != null) return base;
+                      final g = _parse(v ?? '');
+                      return g != null && g == 0
+                          ? 'Must be more than 0.'
+                          : null;
+                    },
+                  ),
+                ],
+                gap(),
+                AuthFormField(
+                  fieldKey: const ValueKey('food.form.kcal'),
+                  label: 'Energy (kcal)',
+                  controller: _kcal,
                   keyboardType: decimal,
                   textInputAction: TextInputAction.next,
-                  validator: (v) {
-                    final base = _amount(required: false, max: 5000)(v);
-                    if (base != null) return base;
-                    final g = _parse(v ?? '');
-                    return g != null && g == 0 ? 'Must be more than 0.' : null;
-                  },
+                  validator: _amount(required: true, max: 5000, unit: 'kcal'),
+                ),
+                gap(),
+                AuthFormField(
+                  fieldKey: const ValueKey('food.form.protein'),
+                  label: 'Protein (g)',
+                  controller: _protein,
+                  keyboardType: decimal,
+                  textInputAction: TextInputAction.next,
+                  validator: _amount(required: true, max: 500),
+                ),
+                gap(),
+                AuthFormField(
+                  fieldKey: const ValueKey('food.form.carb'),
+                  label: 'Carbohydrate (g)',
+                  controller: _carb,
+                  keyboardType: decimal,
+                  textInputAction: TextInputAction.next,
+                  validator: _amount(required: true, max: 500),
+                ),
+                gap(),
+                AuthFormField(
+                  fieldKey: const ValueKey('food.form.fat'),
+                  label: 'Fat (g)',
+                  controller: _fat,
+                  keyboardType: decimal,
+                  textInputAction: TextInputAction.next,
+                  validator: _amount(required: true, max: 500),
+                ),
+                gap(),
+                AuthFormField(
+                  fieldKey: const ValueKey('food.form.fibre'),
+                  label: 'Fibre (g) — leave empty if the label does not say',
+                  controller: _fibre,
+                  keyboardType: decimal,
+                  textInputAction: TextInputAction.done,
+                  validator: _amount(required: false, max: 500),
+                ),
+                if (_error != null) ...<Widget>[
+                  gap(),
+                  AuthFeedback.error(_error!),
+                ],
+                const SizedBox(height: FitSpacing.lg),
+                FilledButton(
+                  key: const ValueKey('food.form.save'),
+                  onPressed: _saving ? null : _save,
+                  child: Text(_saving ? 'Saving…' : 'Save food'),
                 ),
               ],
-              gap(),
-              AuthFormField(
-                fieldKey: const ValueKey('food.form.kcal'),
-                label: 'Energy (kcal)',
-                controller: _kcal,
-                keyboardType: decimal,
-                textInputAction: TextInputAction.next,
-                validator: _amount(required: true, max: 5000, unit: 'kcal'),
-              ),
-              gap(),
-              AuthFormField(
-                fieldKey: const ValueKey('food.form.protein'),
-                label: 'Protein (g)',
-                controller: _protein,
-                keyboardType: decimal,
-                textInputAction: TextInputAction.next,
-                validator: _amount(required: true, max: 500),
-              ),
-              gap(),
-              AuthFormField(
-                fieldKey: const ValueKey('food.form.carb'),
-                label: 'Carbohydrate (g)',
-                controller: _carb,
-                keyboardType: decimal,
-                textInputAction: TextInputAction.next,
-                validator: _amount(required: true, max: 500),
-              ),
-              gap(),
-              AuthFormField(
-                fieldKey: const ValueKey('food.form.fat'),
-                label: 'Fat (g)',
-                controller: _fat,
-                keyboardType: decimal,
-                textInputAction: TextInputAction.next,
-                validator: _amount(required: true, max: 500),
-              ),
-              gap(),
-              AuthFormField(
-                fieldKey: const ValueKey('food.form.fibre'),
-                label: 'Fibre (g) — leave empty if the label does not say',
-                controller: _fibre,
-                keyboardType: decimal,
-                textInputAction: TextInputAction.done,
-                validator: _amount(required: false, max: 500),
-              ),
-              if (_error != null) ...<Widget>[
-                gap(),
-                AuthFeedback.error(_error!),
-              ],
-              const SizedBox(height: FitSpacing.lg),
-              FilledButton(
-                key: const ValueKey('food.form.save'),
-                onPressed: _saving ? null : _save,
-                child: Text(_saving ? 'Saving…' : 'Save food'),
-              ),
-            ],
+            ),
           ),
         ),
       ),

@@ -10,6 +10,7 @@ import '../../../../shared/widgets/hairline_section.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../domain/entities/exercise.dart';
 import '../controllers/exercise_providers.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// One exercise: what it trains, what you need, how to do it, what to do
 /// instead. Instructions are shown as the library has them — never
@@ -24,26 +25,28 @@ class ExerciseDetailScreen extends ConsumerWidget {
     final async = ref.watch(exerciseDetailProvider(id));
     return Scaffold(
       appBar: AppBar(leading: BackButton(onPressed: () => context.popOrHome())),
-      body: SafeArea(
-        child: async.when(
-          loading: () => const _DetailSkeleton(),
-          error: (e, _) => Padding(
-            padding: const EdgeInsets.all(FitSpacing.screen),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                AuthFeedback.error(
-                  (e is Failure ? e : const Unknown()).message,
-                ),
-                const SizedBox(height: FitSpacing.md),
-                FilledButton(
-                  onPressed: () => ref.invalidate(exerciseDetailProvider(id)),
-                  child: const Text('Try again'),
-                ),
-              ],
+      body: FitBackdrop(
+        child: SafeArea(
+          child: async.when(
+            loading: () => const _DetailSkeleton(),
+            error: (e, _) => Padding(
+              padding: const EdgeInsets.all(FitSpacing.screen),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  AuthFeedback.error(
+                    (e is Failure ? e : const Unknown()).message,
+                  ),
+                  const SizedBox(height: FitSpacing.md),
+                  FilledButton(
+                    onPressed: () => ref.invalidate(exerciseDetailProvider(id)),
+                    child: const Text('Try again'),
+                  ),
+                ],
+              ),
             ),
+            data: (d) => _Detail(detail: d),
           ),
-          data: (d) => _Detail(detail: d),
         ),
       ),
     );

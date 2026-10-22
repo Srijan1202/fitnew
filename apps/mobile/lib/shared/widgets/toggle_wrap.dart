@@ -27,8 +27,9 @@ class ToggleWrap<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Wrap(
-      spacing: FitSpacing.md,
-      runSpacing: FitSpacing.xs,
+      // ADR-029: compact pills on glass, sized to their text.
+      spacing: fitGlass ? FitSpacing.sm : FitSpacing.md,
+      runSpacing: fitGlass ? FitSpacing.sm : FitSpacing.xs,
       children: <Widget>[
         for (final option in options)
           _Toggle(
@@ -92,9 +93,10 @@ class _Toggle extends StatelessWidget {
                     ),
                   ),
                 ),
-          alignment: Alignment.center,
+          alignment: fitGlass ? null : Alignment.center,
           child: Text(
             text,
+            textAlign: TextAlign.center,
             style: textTheme.titleMedium?.copyWith(
               color: on
                   ? (fitGlass ? FitColors.onAccent : FitColors.ink)

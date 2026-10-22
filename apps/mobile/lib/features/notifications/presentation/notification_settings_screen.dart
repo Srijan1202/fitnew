@@ -9,6 +9,7 @@ import '../../../core/theme/tokens.dart';
 import '../../health/presentation/controllers/health_providers.dart';
 import '../domain/notifications.dart';
 import 'notification_coordinator.dart';
+import '../../../shared/widgets/fit_glass.dart';
 
 /// Phase 15 (§21, ADR-021): every reminder switchable, the tone, quiet
 /// hours, what is coming up and why, and a sample to see the words.
@@ -132,194 +133,223 @@ class _NotificationSettingsScreenState
         centerTitle: false,
         title: Text('NOTIFICATIONS', style: textTheme.labelSmall),
       ),
-      body: SafeArea(
-        top: false,
-        child: s == null
-            ? Center(
-                child: loaded.hasError
-                    ? Padding(
-                        padding: const EdgeInsets.all(FitSpacing.screen),
-                        child: Text(
-                          (loaded.error is Failure
-                                  ? loaded.error! as Failure
-                                  : const Unknown())
-                              .message,
-                          key: const ValueKey('notify.loadError'),
-                        ),
-                      )
-                    : const CircularProgressIndicator(),
-              )
-            : ListView(
-                key: const ValueKey('notify.scroll'),
-                padding: const EdgeInsets.fromLTRB(
-                  FitSpacing.screen,
-                  FitSpacing.sm,
-                  FitSpacing.screen,
-                  FitSpacing.xl,
-                ),
-                children: <Widget>[
-                  if (notify.permitted == false)
-                    _PermissionCard(
-                      onAllow: () => coordinator.askPermission(),
-                    ),
-                  SwitchListTile(
-                    key: const ValueKey('notify.enabled'),
-                    contentPadding: EdgeInsets.zero,
-                    title: Text('Reminders', style: textTheme.titleMedium),
-                    subtitle: const Text(
-                      'At most two a day, three hours apart. FITOS learns when '
-                      'you usually train and eat, and times them around that.',
-                    ),
-                    value: s.enabled,
-                    onChanged: _saving
-                        ? null
-                        : (v) => _update({'enabled': v}, _with(s, enabled: v)),
-                  ),
-                  if (_failure case final f?)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: FitSpacing.sm),
-                      child: Text(
-                        f.message,
-                        key: const ValueKey('notify.error'),
-                        style: textTheme.bodyMedium
-                            ?.copyWith(color: FitColors.oxide),
-                      ),
-                    ),
-                  if (s.enabled) ...<Widget>[
-                    const SizedBox(height: FitSpacing.md),
-                    Text('TONE', style: textTheme.labelSmall),
-                    const SizedBox(height: FitSpacing.xs),
-                    Row(
-                      children: <Widget>[
-                        for (final t in NotifyTone.values) ...<Widget>[
-                          Expanded(
-                            child: ChoiceChip(
-                              key: ValueKey('notify.tone.${t.wire}'),
-                              shape: const RoundedRectangleBorder(),
-                              showCheckmark: false,
-                              label: SizedBox(
-                                width: double.infinity,
-                                child:
-                                    Text(t.label, textAlign: TextAlign.center),
-                              ),
-                              selected: s.tone == t,
-                              onSelected: _saving
-                                  ? null
-                                  : (_) => _update(
-                                        {'tone': t.wire},
-                                        _with(s, tone: t),
-                                      ),
-                            ),
+      body: FitBackdrop(
+        child: SafeArea(
+          top: false,
+          child: s == null
+              ? Center(
+                  child: loaded.hasError
+                      ? Padding(
+                          padding: const EdgeInsets.all(FitSpacing.screen),
+                          child: Text(
+                            (loaded.error is Failure
+                                    ? loaded.error! as Failure
+                                    : const Unknown())
+                                .message,
+                            key: const ValueKey('notify.loadError'),
                           ),
-                          if (t != NotifyTone.values.last)
-                            const SizedBox(width: FitSpacing.sm),
-                        ],
+                        )
+                      : const CircularProgressIndicator(),
+                )
+              : ListView(
+                  key: const ValueKey('notify.scroll'),
+                  padding: const EdgeInsets.fromLTRB(
+                    FitSpacing.screen,
+                    FitSpacing.sm,
+                    FitSpacing.screen,
+                    FitSpacing.xl,
+                  ),
+                  children: <Widget>[
+                    if (notify.permitted == false)
+                      _PermissionCard(
+                        onAllow: () => coordinator.askPermission(),
+                      ),
+                    FitSection(
+                      label: 'REMINDERS',
+                      children: <Widget>[
+                        SwitchListTile(
+                          key: const ValueKey('notify.enabled'),
+                          contentPadding: EdgeInsets.zero,
+                          title:
+                              Text('Reminders', style: textTheme.titleMedium),
+                          subtitle: const Text(
+                            'At most two a day, three hours apart. FITOS learns when '
+                            'you usually train and eat, and times them around that.',
+                          ),
+                          value: s.enabled,
+                          onChanged: _saving
+                              ? null
+                              : (v) =>
+                                  _update({'enabled': v}, _with(s, enabled: v)),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: FitSpacing.xs),
-                    Text(
-                      s.tone.description,
-                      key: const ValueKey('notify.tone.description'),
-                      style: textTheme.bodyMedium
-                          ?.copyWith(color: FitColors.ink60),
-                    ),
-                    const SizedBox(height: FitSpacing.lg),
-                    Text('WHAT TO SEND', style: textTheme.labelSmall),
-                    Divider(color: FitColors.rule, height: 1),
-                    for (final k in NotifyKind.values)
-                      _KindRow(
-                        kind: k,
-                        on: s.kinds[k] ?? false,
-                        next: [
-                          for (final u in upcoming)
-                            if (u.kind == k.wire) u,
-                        ].firstOrNull,
-                        when: _when,
-                        onChanged: _saving
-                            ? null
-                            : (v) => _update(
-                                  {
-                                    'kinds': {k.wire: v},
-                                  },
-                                  _with(s, kinds: {...s.kinds, k: v}),
-                                ),
-                      ),
-                    const SizedBox(height: FitSpacing.lg),
-                    Text('QUIET HOURS', style: textTheme.labelSmall),
-                    Divider(color: FitColors.rule, height: 1),
-                    _ClockRow(
-                      keyName: 'notify.quietStart',
-                      label: 'Nothing after',
-                      value: s.quietStart,
-                      onTap: _saving ? null : () => _pickTime(s, start: true),
-                    ),
-                    _ClockRow(
-                      keyName: 'notify.quietEnd',
-                      label: 'Nothing before',
-                      value: s.quietEnd,
-                      onTap: _saving ? null : () => _pickTime(s, start: false),
-                    ),
-                    const SizedBox(height: FitSpacing.lg),
-                    Text('COMING UP', style: textTheme.labelSmall),
-                    Divider(color: FitColors.rule, height: 1),
-                    if (upcoming.isEmpty)
+                    if (_failure case final f?)
                       Padding(
-                        padding:
-                            const EdgeInsets.symmetric(vertical: FitSpacing.md),
+                        padding: const EdgeInsets.only(bottom: FitSpacing.sm),
                         child: Text(
-                          notify.plan == null
-                              ? 'The plan arrives the next time FITOS reaches the server.'
-                              : 'Nothing planned right now.',
-                          key: const ValueKey('notify.upcoming.empty'),
+                          f.message,
+                          key: const ValueKey('notify.error'),
                           style: textTheme.bodyMedium
-                              ?.copyWith(color: FitColors.ink60),
+                              ?.copyWith(color: FitColors.oxide),
                         ),
                       ),
-                    for (final (i, u) in upcoming.take(6).indexed)
-                      Padding(
-                        key: ValueKey('notify.upcoming.$i'),
-                        padding:
-                            const EdgeInsets.symmetric(vertical: FitSpacing.sm),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              '${_when(u.at)} · ${u.notifyKind?.label ?? u.kind}',
-                              style: textTheme.labelSmall,
+                    if (s.enabled) ...<Widget>[
+                      const SizedBox(height: FitSpacing.md),
+                      Text('TONE', style: textTheme.labelSmall),
+                      const SizedBox(height: FitSpacing.xs),
+                      Row(
+                        children: <Widget>[
+                          for (final t in NotifyTone.values) ...<Widget>[
+                            Expanded(
+                              child: ChoiceChip(
+                                key: ValueKey('notify.tone.${t.wire}'),
+                                shape: fitGlass
+                                    ? null
+                                    : const RoundedRectangleBorder(),
+                                showCheckmark: false,
+                                label: SizedBox(
+                                  width: double.infinity,
+                                  child: Text(
+                                    t.label,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                selected: s.tone == t,
+                                onSelected: _saving
+                                    ? null
+                                    : (_) => _update(
+                                          {'tone': t.wire},
+                                          _with(s, tone: t),
+                                        ),
+                              ),
                             ),
-                            Text(u.title, style: textTheme.titleMedium),
-                            Text(u.body, style: textTheme.bodyMedium),
-                            Text(
-                              u.why,
-                              style: textTheme.bodySmall
-                                  ?.copyWith(color: FitColors.ink60),
-                            ),
+                            if (t != NotifyTone.values.last)
+                              const SizedBox(width: FitSpacing.sm),
                           ],
+                        ],
+                      ),
+                      const SizedBox(height: FitSpacing.xs),
+                      Text(
+                        s.tone.description,
+                        key: const ValueKey('notify.tone.description'),
+                        style: textTheme.bodyMedium
+                            ?.copyWith(color: FitColors.ink60),
+                      ),
+                      const SizedBox(height: FitSpacing.lg),
+                      FitSection(
+                        label: 'WHAT TO SEND',
+                        children: <Widget>[
+                          for (final k in NotifyKind.values)
+                            _KindRow(
+                              kind: k,
+                              on: s.kinds[k] ?? false,
+                              next: [
+                                for (final u in upcoming)
+                                  if (u.kind == k.wire) u,
+                              ].firstOrNull,
+                              when: _when,
+                              onChanged: _saving
+                                  ? null
+                                  : (v) => _update(
+                                        {
+                                          'kinds': {k.wire: v},
+                                        },
+                                        _with(s, kinds: {...s.kinds, k: v}),
+                                      ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: FitSpacing.lg),
+                      FitSection(
+                        label: 'QUIET HOURS',
+                        children: <Widget>[
+                          _ClockRow(
+                            keyName: 'notify.quietStart',
+                            label: 'Nothing after',
+                            value: s.quietStart,
+                            onTap: _saving
+                                ? null
+                                : () => _pickTime(s, start: true),
+                          ),
+                          _ClockRow(
+                            keyName: 'notify.quietEnd',
+                            label: 'Nothing before',
+                            value: s.quietEnd,
+                            onTap: _saving
+                                ? null
+                                : () => _pickTime(s, start: false),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: FitSpacing.lg),
+                      FitSection(
+                        label: 'COMING UP',
+                        children: <Widget>[
+                          if (upcoming.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: FitSpacing.md,
+                              ),
+                              child: Text(
+                                notify.plan == null
+                                    ? 'The plan arrives the next time FITOS reaches the server.'
+                                    : 'Nothing planned right now.',
+                                key: const ValueKey('notify.upcoming.empty'),
+                                style: textTheme.bodyMedium
+                                    ?.copyWith(color: FitColors.ink60),
+                              ),
+                            ),
+                          for (final (i, u) in upcoming.take(6).indexed)
+                            Padding(
+                              key: ValueKey('notify.upcoming.$i'),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: FitSpacing.sm,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    '${_when(u.at)} · ${u.notifyKind?.label ?? u.kind}',
+                                    style: textTheme.labelSmall,
+                                  ),
+                                  Text(u.title, style: textTheme.titleMedium),
+                                  Text(u.body, style: textTheme.bodyMedium),
+                                  Text(
+                                    u.why,
+                                    style: textTheme.bodySmall
+                                        ?.copyWith(color: FitColors.ink60),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: FitSpacing.md),
+                      OutlinedButton.icon(
+                        key: const ValueKey('notify.sample'),
+                        style: OutlinedButton.styleFrom(
+                          shape:
+                              fitGlass ? null : const RoundedRectangleBorder(),
+                          minimumSize: const Size.fromHeight(48),
                         ),
+                        onPressed: () => _trySample(s),
+                        icon: const Icon(Icons.notifications_active_outlined),
+                        label: const Text('Send me a sample'),
                       ),
-                    const SizedBox(height: FitSpacing.md),
-                    OutlinedButton.icon(
-                      key: const ValueKey('notify.sample'),
-                      style: OutlinedButton.styleFrom(
-                        shape: const RoundedRectangleBorder(),
-                        minimumSize: const Size.fromHeight(48),
-                      ),
-                      onPressed: () => _trySample(s),
-                      icon: const Icon(Icons.notifications_active_outlined),
-                      label: const Text('Send me a sample'),
-                    ),
-                    if (_sample case final sample?)
-                      Padding(
-                        padding: const EdgeInsets.only(top: FitSpacing.sm),
-                        child: Text(
-                          sample,
-                          key: const ValueKey('notify.sample.text'),
-                          style: textTheme.bodyMedium,
+                      if (_sample case final sample?)
+                        Padding(
+                          padding: const EdgeInsets.only(top: FitSpacing.sm),
+                          child: Text(
+                            sample,
+                            key: const ValueKey('notify.sample.text'),
+                            style: textTheme.bodyMedium,
+                          ),
                         ),
-                      ),
+                    ],
                   ],
-                ],
-              ),
+                ),
+        ),
       ),
     );
   }
@@ -337,7 +367,7 @@ class _PermissionCard extends StatelessWidget {
       key: const ValueKey('notify.permission'),
       margin: const EdgeInsets.only(bottom: FitSpacing.md),
       padding: const EdgeInsets.all(FitSpacing.md),
-      decoration: BoxDecoration(border: Border.all(color: FitColors.amber)),
+      decoration: fitNoticeDecoration(FitColors.amber),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
@@ -355,7 +385,7 @@ class _PermissionCard extends StatelessWidget {
           FilledButton(
             key: const ValueKey('notify.permission.allow'),
             style: FilledButton.styleFrom(
-              shape: const RoundedRectangleBorder(),
+              shape: fitGlass ? null : const RoundedRectangleBorder(),
             ),
             onPressed: onAllow,
             child: const Text('Allow notifications'),

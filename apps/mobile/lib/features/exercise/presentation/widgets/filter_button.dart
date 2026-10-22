@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/tokens.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// "Muscle ▾" / "Chest ▾": a filter that opens a sheet. Hairline border,
 /// ink text; a chosen value makes it bold — a state, not a colour.
@@ -32,8 +33,18 @@ class FilterButton extends StatelessWidget {
         child: Container(
           constraints: const BoxConstraints(minHeight: 44),
           padding: const EdgeInsets.symmetric(horizontal: FitSpacing.sm + 2),
+          // ADR-029: on glass, a filled pill, tinted in the accent when set.
           decoration: BoxDecoration(
-            border: Border.all(color: on ? FitColors.ink : FitColors.rule),
+            color: fitGlass
+                ? (on
+                    ? FitPalette.current.glow.withValues(alpha: 0.16)
+                    : FitColors.ink.withValues(alpha: 0.06))
+                : null,
+            border: Border.all(
+              color: on
+                  ? (fitGlass ? FitPalette.current.glow : FitColors.ink)
+                  : (fitGlass ? Colors.transparent : FitColors.rule),
+            ),
             borderRadius: BorderRadius.all(FitRadius.medium),
           ),
           child: Row(

@@ -349,12 +349,16 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
         appBar: AppBar(
           leading: BackButton(onPressed: () => context.popOrHome()),
         ),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(FitSpacing.screen),
-            child: Text(
-              async.isLoading ? '' : 'This session is no longer on this phone.',
-              style: textTheme.bodyLarge,
+        body: FitBackdrop(
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(FitSpacing.screen),
+              child: Text(
+                async.isLoading
+                    ? ''
+                    : 'This session is no longer on this phone.',
+                style: textTheme.bodyLarge,
+              ),
             ),
           ),
         ),

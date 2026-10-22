@@ -525,3 +525,65 @@ class FitProgressLine extends StatelessWidget {
     );
   }
 }
+
+/// A settings section: on glass, the eyebrow over a block holding the rows;
+/// on Paper, the eyebrow, a hairline, then the rows (the §6.4 section).
+class FitSection extends StatelessWidget {
+  const FitSection({
+    required this.label,
+    required this.children,
+    this.labelKey,
+    super.key,
+  });
+
+  /// Shown as given (callers pass the eyebrow in capitals).
+  final String label;
+  final Key? labelKey;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final eyebrow = Text(
+      label,
+      key: labelKey,
+      style: Theme.of(context).textTheme.labelSmall,
+    );
+    if (!fitGlass) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          eyebrow,
+          Divider(color: FitColors.rule, height: 1),
+          ...children,
+        ],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(left: FitSpacing.sm, bottom: 6),
+          child: eyebrow,
+        ),
+        FitBlock(
+          padding:
+              const EdgeInsets.fromLTRB(FitSpacing.md, 4, FitSpacing.md, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: children,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A notice box (a changed policy, a missing permission): a tinted rounded
+/// block with an edge in [edge] on glass; a plain bordered box on Paper.
+BoxDecoration fitNoticeDecoration(Color edge) => fitGlass
+    ? FitBlock.decoration().copyWith(
+        color: edge.withValues(alpha: 0.10),
+        gradient: null,
+        border: Border.all(color: edge.withValues(alpha: 0.7)),
+      )
+    : BoxDecoration(border: Border.all(color: edge));

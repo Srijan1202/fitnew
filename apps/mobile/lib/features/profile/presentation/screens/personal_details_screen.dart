@@ -14,6 +14,7 @@ import '../../../today/presentation/today_providers.dart';
 import '../../data/profile_repository.dart';
 import '../../domain/entities/profile.dart';
 import '../../domain/entities/vocabulary.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Phase 6.6 Gate 7 — Profile → Personal details. The onboarding "about" and
 /// "experience" answers, editable: name, sex, height, weight, activity. One
@@ -138,19 +139,21 @@ class _PersonalDetailsScreenState extends ConsumerState<PersonalDetailsScreen> {
           onPressed: _busy ? null : () => context.popOrHome(),
         ),
       ),
-      body: SafeArea(
-        child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Padding(
-            padding: const EdgeInsets.all(FitSpacing.screen),
-            child: AuthFeedback.error(
-              (e is Failure ? e : const Unknown()).message,
+      body: FitBackdrop(
+        child: SafeArea(
+          child: async.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Padding(
+              padding: const EdgeInsets.all(FitSpacing.screen),
+              child: AuthFeedback.error(
+                (e is Failure ? e : const Unknown()).message,
+              ),
             ),
+            data: (view) {
+              _prefill(view.profile);
+              return _buildForm(context, textTheme, view);
+            },
           ),
-          data: (view) {
-            _prefill(view.profile);
-            return _buildForm(context, textTheme, view);
-          },
         ),
       ),
     );
@@ -258,7 +261,7 @@ class _PersonalDetailsScreenState extends ConsumerState<PersonalDetailsScreen> {
               blurb: (a) => a.blurb,
             ),
             const SizedBox(height: FitSpacing.lg),
-            Divider(color: FitColors.rule, height: 1),
+            const FitRule(),
             const SizedBox(height: FitSpacing.afterRule),
             Row(
               children: <Widget>[

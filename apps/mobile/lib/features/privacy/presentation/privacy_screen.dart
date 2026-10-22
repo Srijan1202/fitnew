@@ -9,6 +9,7 @@ import '../../../core/theme/tokens.dart';
 import '../../profile/domain/entities/vocabulary.dart';
 import 'policy_text.dart';
 import 'privacy_providers.dart';
+import '../../../shared/widgets/fit_glass.dart';
 
 /// Phase 17 (§23, ADR-023): the privacy policy, consent per purpose (FITOS AI
 /// on or off), downloading everything, and deleting the account.
@@ -104,145 +105,163 @@ class _PrivacyScreenState extends ConsumerState<PrivacyScreen> {
         centerTitle: false,
         title: Text('PRIVACY & DATA', style: textTheme.labelSmall),
       ),
-      body: SafeArea(
-        top: false,
-        child: ListView(
-          key: const ValueKey('privacy.scroll'),
-          padding: const EdgeInsets.fromLTRB(
-            FitSpacing.screen,
-            FitSpacing.sm,
-            FitSpacing.screen,
-            FitSpacing.xl,
-          ),
-          children: <Widget>[
-            if (c != null && c.needsReconsent)
-              _Card(
-                key: const ValueKey('privacy.reconsent'),
-                border: FitColors.amber,
+      body: FitBackdrop(
+        child: SafeArea(
+          top: false,
+          child: ListView(
+            key: const ValueKey('privacy.scroll'),
+            padding: const EdgeInsets.fromLTRB(
+              FitSpacing.screen,
+              FitSpacing.sm,
+              FitSpacing.screen,
+              FitSpacing.xl,
+            ),
+            children: <Widget>[
+              if (c != null && c.needsReconsent)
+                _Card(
+                  key: const ValueKey('privacy.reconsent'),
+                  border: FitColors.amber,
+                  children: <Widget>[
+                    Text(
+                      'The privacy policy changed',
+                      style: textTheme.titleMedium,
+                    ),
+                    Text(
+                      'Version ${c.currentPolicyVersion}. Read it below, then accept it to keep using FITOS.',
+                      style: textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: FitSpacing.sm),
+                    FilledButton(
+                      key: const ValueKey('privacy.reconsent.accept'),
+                      onPressed: _busy ? null : _reconsent,
+                      child: const Text('Accept the updated policy'),
+                    ),
+                  ],
+                ),
+              FitSection(
+                label: 'FITOS AI',
                 children: <Widget>[
-                  Text(
-                    'The privacy policy changed',
-                    style: textTheme.titleMedium,
-                  ),
-                  Text(
-                    'Version ${c.currentPolicyVersion}. Read it below, then accept it to keep using FITOS.',
-                    style: textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: FitSpacing.sm),
-                  FilledButton(
-                    key: const ValueKey('privacy.reconsent.accept'),
-                    onPressed: _busy ? null : _reconsent,
-                    child: const Text('Accept the updated policy'),
+                  if (consents.hasError && c == null)
+                    Padding(
+                      padding:
+                          const EdgeInsets.symmetric(vertical: FitSpacing.md),
+                      child: Text(
+                        (consents.error is Failure
+                                ? consents.error! as Failure
+                                : const Unknown())
+                            .message,
+                        key: const ValueKey('privacy.loadError'),
+                      ),
+                    ),
+                  SwitchListTile(
+                    key: const ValueKey('privacy.ai'),
+                    contentPadding: EdgeInsets.zero,
+                    title: Text('Allow FITOS AI', style: textTheme.titleMedium),
+                    subtitle: const Text(
+                      "Chat, Describe your meal and Explain simply send what you ask to Google's Gemini. "
+                      'Off: those features ask before they are used.',
+                    ),
+                    value: c?.granted(ConsentType.aiProcessing) ?? false,
+                    onChanged: c == null || _busy ? null : _setAi,
                   ),
                 ],
               ),
-            Text('FITOS AI', style: textTheme.labelSmall),
-            Divider(color: FitColors.rule, height: 1),
-            if (consents.hasError && c == null)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
-                child: Text(
-                  (consents.error is Failure
-                          ? consents.error! as Failure
-                          : const Unknown())
-                      .message,
-                  key: const ValueKey('privacy.loadError'),
-                ),
-              ),
-            SwitchListTile(
-              key: const ValueKey('privacy.ai'),
-              contentPadding: EdgeInsets.zero,
-              title: Text('Allow FITOS AI', style: textTheme.titleMedium),
-              subtitle: const Text(
-                "Chat, Describe your meal and Explain simply send what you ask to Google's Gemini. "
-                'Off: those features ask before they are used.',
-              ),
-              value: c?.granted(ConsentType.aiProcessing) ?? false,
-              onChanged: c == null || _busy ? null : _setAi,
-            ),
-            const SizedBox(height: FitSpacing.lg),
-            Text('CRASH REPORTS', style: textTheme.labelSmall),
-            Divider(color: FitColors.rule, height: 1),
-            SwitchListTile(
-              key: const ValueKey('privacy.crash'),
-              contentPadding: EdgeInsets.zero,
-              title: Text('Send crash reports', style: textTheme.titleMedium),
-              subtitle: const Text(
-                'When FITOS crashes, what went wrong goes to Google Firebase Crashlytics: '
-                'never your health, food or workout data. Off: nothing is sent, and unsent reports are deleted.',
-              ),
-              value: ref.watch(crashReportsProvider).value ?? true,
-              onChanged: (v) => ref.read(crashReportsProvider.notifier).set(v),
-            ),
-            const SizedBox(height: FitSpacing.lg),
-            Text('YOUR DATA', style: textTheme.labelSmall),
-            Divider(color: FitColors.rule, height: 1),
-            const SizedBox(height: FitSpacing.sm),
-            Text(
-              'Everything FITOS holds about you, in one machine-readable file (JSON).',
-              style: textTheme.bodyMedium,
-            ),
-            const SizedBox(height: FitSpacing.sm),
-            OutlinedButton.icon(
-              key: const ValueKey('privacy.download'),
-              style: OutlinedButton.styleFrom(
-                shape: const RoundedRectangleBorder(),
-                minimumSize: const Size.fromHeight(48),
-              ),
-              onPressed: _busy ? null : _download,
-              icon: const Icon(Icons.download_outlined),
-              label: const Text('Download my data'),
-            ),
-            const SizedBox(height: FitSpacing.md),
-            Text(
-              'Deleting your account removes every record of it from FITOS at once, '
-              'and your sign-in. It cannot be undone.',
-              style: textTheme.bodyMedium,
-            ),
-            const SizedBox(height: FitSpacing.sm),
-            OutlinedButton.icon(
-              key: const ValueKey('privacy.delete'),
-              style: OutlinedButton.styleFrom(
-                shape: const RoundedRectangleBorder(),
-                minimumSize: const Size.fromHeight(48),
-                foregroundColor: FitColors.oxide,
-                side: BorderSide(color: FitColors.oxide),
-              ),
-              onPressed: _busy ? null : _delete,
-              icon: const Icon(Icons.delete_forever_outlined),
-              label: const Text('Delete my account'),
-            ),
-            if (_message case final m?)
-              Padding(
-                padding: const EdgeInsets.only(top: FitSpacing.sm),
-                child: Text(
-                  m,
-                  key: const ValueKey('privacy.message'),
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: _messageIsError ? FitColors.oxide : FitColors.pine,
+              const SizedBox(height: FitSpacing.lg),
+              FitSection(
+                label: 'CRASH REPORTS',
+                children: <Widget>[
+                  SwitchListTile(
+                    key: const ValueKey('privacy.crash'),
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      'Send crash reports',
+                      style: textTheme.titleMedium,
+                    ),
+                    subtitle: const Text(
+                      'When FITOS crashes, what went wrong goes to Google Firebase Crashlytics: '
+                      'never your health, food or workout data. Off: nothing is sent, and unsent reports are deleted.',
+                    ),
+                    value: ref.watch(crashReportsProvider).value ?? true,
+                    onChanged: (v) =>
+                        ref.read(crashReportsProvider.notifier).set(v),
                   ),
-                ),
+                ],
               ),
-            const SizedBox(height: FitSpacing.lg),
-            Text(
-              'PRIVACY POLICY · VERSION $kPolicyVersion',
-              key: const ValueKey('privacy.policy'),
-              style: textTheme.labelSmall,
-            ),
-            Divider(color: FitColors.rule, height: 1),
-            for (final (title, body) in kPolicySections)
-              Padding(
-                padding: const EdgeInsets.only(top: FitSpacing.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(title, style: textTheme.titleMedium),
-                    const SizedBox(height: FitSpacing.xs),
-                    Text(body, style: textTheme.bodyMedium),
-                  ],
-                ),
+              const SizedBox(height: FitSpacing.lg),
+              FitSection(
+                label: 'YOUR DATA',
+                children: <Widget>[
+                  const SizedBox(height: FitSpacing.sm),
+                  Text(
+                    'Everything FITOS holds about you, in one machine-readable file (JSON).',
+                    style: textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: FitSpacing.sm),
+                  OutlinedButton.icon(
+                    key: const ValueKey('privacy.download'),
+                    style: OutlinedButton.styleFrom(
+                      shape: fitGlass ? null : const RoundedRectangleBorder(),
+                      minimumSize: const Size.fromHeight(48),
+                    ),
+                    onPressed: _busy ? null : _download,
+                    icon: const Icon(Icons.download_outlined),
+                    label: const Text('Download my data'),
+                  ),
+                  const SizedBox(height: FitSpacing.md),
+                  Text(
+                    'Deleting your account removes every record of it from FITOS at once, '
+                    'and your sign-in. It cannot be undone.',
+                    style: textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: FitSpacing.sm),
+                  OutlinedButton.icon(
+                    key: const ValueKey('privacy.delete'),
+                    style: OutlinedButton.styleFrom(
+                      shape: fitGlass ? null : const RoundedRectangleBorder(),
+                      minimumSize: const Size.fromHeight(48),
+                      foregroundColor: FitColors.oxide,
+                      side: BorderSide(color: FitColors.oxide),
+                    ),
+                    onPressed: _busy ? null : _delete,
+                    icon: const Icon(Icons.delete_forever_outlined),
+                    label: const Text('Delete my account'),
+                  ),
+                  if (_message case final m?)
+                    Padding(
+                      padding: const EdgeInsets.only(top: FitSpacing.sm),
+                      child: Text(
+                        m,
+                        key: const ValueKey('privacy.message'),
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: _messageIsError
+                              ? FitColors.oxide
+                              : FitColors.pine,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-          ],
+              const SizedBox(height: FitSpacing.lg),
+              FitSection(
+                label: 'PRIVACY POLICY · VERSION $kPolicyVersion',
+                labelKey: const ValueKey('privacy.policy'),
+                children: <Widget>[
+                  for (final (title, body) in kPolicySections)
+                    Padding(
+                      padding: const EdgeInsets.only(top: FitSpacing.md),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(title, style: textTheme.titleMedium),
+                          const SizedBox(height: FitSpacing.xs),
+                          Text(body, style: textTheme.bodyMedium),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -259,7 +278,7 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         margin: const EdgeInsets.only(bottom: FitSpacing.md),
         padding: const EdgeInsets.all(FitSpacing.md),
-        decoration: BoxDecoration(border: Border.all(color: border)),
+        decoration: fitNoticeDecoration(border),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: children,
@@ -289,7 +308,7 @@ class _DeleteDialogState extends State<_DeleteDialog> {
     final ok = _text.text.trim() == 'DELETE';
     return AlertDialog(
       key: const ValueKey('privacy.delete.dialog'),
-      shape: const RoundedRectangleBorder(),
+      shape: fitGlass ? null : const RoundedRectangleBorder(),
       title: const Text('Delete your account?'),
       content: Column(
         mainAxisSize: MainAxisSize.min,

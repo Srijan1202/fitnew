@@ -10,6 +10,7 @@ import '../../premium/domain/avatars.dart';
 import '../../premium/presentation/premium_providers.dart';
 import '../../premium/presentation/premium_sheet.dart';
 import '../data/weekly_report_api.dart';
+import '../../../shared/widgets/fit_glass.dart';
 
 final weeklyReportApiProvider = Provider<WeeklyReportApi>(
   (ref) => DioWeeklyReportApi(ref.watch(dioProvider)),
@@ -48,46 +49,48 @@ class _WeeklyReportScreenState extends ConsumerState<WeeklyReportScreen> {
         centerTitle: false,
         title: Text('WEEKLY REPORT', style: textTheme.labelSmall),
       ),
-      body: SafeArea(
-        top: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            FitSpacing.screen,
-            FitSpacing.sm,
-            FitSpacing.screen,
-            FitSpacing.xl,
-          ),
-          children: <Widget>[
-            if (locked)
-              const PremiumPitch(
-                key: ValueKey('weekly.premium'),
-                feature: 'The weekly report',
-              )
-            else
-              ...report!.when(
-                loading: () => const <Widget>[
-                  Padding(
-                    padding: EdgeInsets.all(FitSpacing.xl),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                ],
-                error: (e, _) => <Widget>[
-                  Text(
-                    (e is Failure ? e : const Unknown()).message,
-                    key: const ValueKey('weekly.error'),
-                  ),
-                  if (e is Forbidden && e.issue == 'premium-required')
-                    TextButton(
-                      onPressed: () => showPremiumSheet(
-                        context,
-                        feature: 'The weekly report',
-                      ),
-                      child: const Text('See Premium'),
+      body: FitBackdrop(
+        child: SafeArea(
+          top: false,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(
+              FitSpacing.screen,
+              FitSpacing.sm,
+              FitSpacing.screen,
+              FitSpacing.xl,
+            ),
+            children: <Widget>[
+              if (locked)
+                const PremiumPitch(
+                  key: ValueKey('weekly.premium'),
+                  feature: 'The weekly report',
+                )
+              else
+                ...report!.when(
+                  loading: () => const <Widget>[
+                    Padding(
+                      padding: EdgeInsets.all(FitSpacing.xl),
+                      child: Center(child: CircularProgressIndicator()),
                     ),
-                ],
-                data: (r) => _body(context, r),
-              ),
-          ],
+                  ],
+                  error: (e, _) => <Widget>[
+                    Text(
+                      (e is Failure ? e : const Unknown()).message,
+                      key: const ValueKey('weekly.error'),
+                    ),
+                    if (e is Forbidden && e.issue == 'premium-required')
+                      TextButton(
+                        onPressed: () => showPremiumSheet(
+                          context,
+                          feature: 'The weekly report',
+                        ),
+                        child: const Text('See Premium'),
+                      ),
+                  ],
+                  data: (r) => _body(context, r),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -131,7 +134,11 @@ class _WeeklyReportScreenState extends ConsumerState<WeeklyReportScreen> {
       const SizedBox(height: FitSpacing.md),
       Container(
         padding: const EdgeInsets.all(FitSpacing.md),
-        decoration: BoxDecoration(border: Border.all(color: kGold)),
+        decoration: fitGlass
+            ? FitBlock.decoration(glow: true).copyWith(
+                border: Border.all(color: kGold.withValues(alpha: 0.55)),
+              )
+            : BoxDecoration(border: Border.all(color: kGold)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[

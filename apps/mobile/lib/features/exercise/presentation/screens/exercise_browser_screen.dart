@@ -14,6 +14,7 @@ import '../../../profile/domain/entities/vocabulary.dart';
 import '../../domain/entities/exercise.dart';
 import '../controllers/exercise_providers.dart';
 import '../widgets/filter_button.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Exercise library and — in [pickMode] — the picker the programme editors
 /// open. Built for choosing quickly: a search field, three filter buttons
@@ -191,89 +192,91 @@ class _ExerciseBrowserScreenState extends ConsumerState<ExerciseBrowserScreen> {
             ),
         ],
       ),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                FitSpacing.screen,
-                FitSpacing.xs,
-                FitSpacing.screen,
-                FitSpacing.sm,
-              ),
-              child: AuthFormField(
-                fieldKey: const ValueKey('exercises.search'),
-                label: 'Search exercises',
-                controller: _search,
-                textInputAction: TextInputAction.search,
-                onFieldSubmitted: (_) => notifier.setSearch(_search.text),
-                onChanged: _onSearchChanged,
-              ),
-            ),
-            // Three buttons that read as what they filter on, and say what
-            // is chosen. They share the width so all three fit a 360 px
-            // phone, and open sheets: the whole vocabulary on one row was
-            // the clutter, and its tail ran off the screen.
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: FilterButton(
-                      key: const ValueKey('filter.muscle'),
-                      label: 'Muscle',
-                      value: filters.muscle?.label,
-                      onTap: _openMuscle,
-                    ),
-                  ),
-                  const SizedBox(width: FitSpacing.sm),
-                  Expanded(
-                    child: FilterButton(
-                      key: const ValueKey('filter.equipment'),
-                      label: 'Equipment',
-                      value: kit == 0
-                          ? null
-                          : kit == 1
-                              ? filters.equipment.first.label
-                              : '$kit items',
-                      onTap: _openEquipment,
-                    ),
-                  ),
-                  const SizedBox(width: FitSpacing.sm),
-                  Expanded(
-                    child: FilterButton(
-                      key: const ValueKey('filter.pattern'),
-                      label: 'Pattern',
-                      value: filters.pattern?.label,
-                      onTap: _openPattern,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: FitSpacing.sm),
-            Divider(color: FitColors.rule, height: 1),
-            Expanded(
-              child: async.when(
-                loading: () => const _ListSkeleton(),
-                error: (e, _) => _ListFailed(
-                  failure: e is Failure ? e : const Unknown(),
-                  onRetry: () => ref.invalidate(exerciseListProvider),
+      body: FitBackdrop(
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  FitSpacing.screen,
+                  FitSpacing.xs,
+                  FitSpacing.screen,
+                  FitSpacing.sm,
                 ),
-                data: (page) => _ExerciseList(
-                  page: page,
-                  pickMode: widget.pickMode,
-                  hasFilters: filters.hasFilters,
-                  onClear: () {
-                    _search.clear();
-                    notifier.clear();
-                  },
+                child: AuthFormField(
+                  fieldKey: const ValueKey('exercises.search'),
+                  label: 'Search exercises',
+                  controller: _search,
+                  textInputAction: TextInputAction.search,
+                  onFieldSubmitted: (_) => notifier.setSearch(_search.text),
+                  onChanged: _onSearchChanged,
                 ),
               ),
-            ),
-          ],
+              // Three buttons that read as what they filter on, and say what
+              // is chosen. They share the width so all three fit a 360 px
+              // phone, and open sheets: the whole vocabulary on one row was
+              // the clutter, and its tail ran off the screen.
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: FilterButton(
+                        key: const ValueKey('filter.muscle'),
+                        label: 'Muscle',
+                        value: filters.muscle?.label,
+                        onTap: _openMuscle,
+                      ),
+                    ),
+                    const SizedBox(width: FitSpacing.sm),
+                    Expanded(
+                      child: FilterButton(
+                        key: const ValueKey('filter.equipment'),
+                        label: 'Equipment',
+                        value: kit == 0
+                            ? null
+                            : kit == 1
+                                ? filters.equipment.first.label
+                                : '$kit items',
+                        onTap: _openEquipment,
+                      ),
+                    ),
+                    const SizedBox(width: FitSpacing.sm),
+                    Expanded(
+                      child: FilterButton(
+                        key: const ValueKey('filter.pattern'),
+                        label: 'Pattern',
+                        value: filters.pattern?.label,
+                        onTap: _openPattern,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: FitSpacing.sm),
+              const FitRule(),
+              Expanded(
+                child: async.when(
+                  loading: () => const _ListSkeleton(),
+                  error: (e, _) => _ListFailed(
+                    failure: e is Failure ? e : const Unknown(),
+                    onRetry: () => ref.invalidate(exerciseListProvider),
+                  ),
+                  data: (page) => _ExerciseList(
+                    page: page,
+                    pickMode: widget.pickMode,
+                    hasFilters: filters.hasFilters,
+                    onClear: () {
+                      _search.clear();
+                      notifier.clear();
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -324,7 +327,10 @@ class _ExerciseList extends StatelessWidget {
       key: const ValueKey('exercises.list'),
       padding: const EdgeInsets.only(bottom: FitSpacing.xl),
       itemCount: shown + 1,
-      separatorBuilder: (_, __) => Divider(color: FitColors.rule, height: 1),
+      // ADR-029: one rounded group on glass.
+      separatorBuilder: (_, __) => fitGlass
+          ? const SizedBox.shrink()
+          : Divider(color: FitColors.rule, height: 1),
       itemBuilder: (context, index) {
         if (index == 0) {
           return Padding(
@@ -343,7 +349,11 @@ class _ExerciseList extends StatelessWidget {
           );
         }
         final item = page.items[index - 1];
-        return ExerciseRow(item: item, pickMode: pickMode);
+        return FitSegment(
+          index: index - 1,
+          count: shown,
+          child: ExerciseRow(item: item, pickMode: pickMode),
+        );
       },
     );
   }

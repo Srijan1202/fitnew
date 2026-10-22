@@ -8,6 +8,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/fitos_wordmark.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/auth_form_field.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -52,74 +53,76 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       appBar: AppBar(
         leading: BackButton(onPressed: busy ? null : () => context.popOrHome()),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: FitSpacing.screen,
-            vertical: FitSpacing.md,
-          ),
-          child: Form(
-            key: _form,
-            child: AutofillGroup(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const FitosWordmark(size: 22),
-                  const SizedBox(height: FitSpacing.xs),
-                  Text('Create account', style: textTheme.displayMedium),
-                  const SizedBox(height: FitSpacing.sm),
-                  Text(
-                    'Your password stays with Firebase. It never reaches our servers.',
-                    style: textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: FitSpacing.xl),
-                  AuthFormField(
-                    label: 'Email',
-                    controller: _email,
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                    textInputAction: TextInputAction.next,
-                    validator: AuthValidators.email,
-                    enabled: !busy,
-                  ),
-                  const SizedBox(height: FitSpacing.lg),
-                  AuthFormField(
-                    label: 'Password',
-                    controller: _password,
-                    obscureText: true,
-                    autofillHints: const [AutofillHints.newPassword],
-                    textInputAction: TextInputAction.next,
-                    validator: AuthValidators.password,
-                    enabled: !busy,
-                  ),
-                  const SizedBox(height: FitSpacing.lg),
-                  AuthFormField(
-                    label: 'Confirm password',
-                    controller: _confirm,
-                    obscureText: true,
-                    textInputAction: TextInputAction.done,
-                    validator: _matches,
-                    onFieldSubmitted: (_) => _submit(),
-                    enabled: !busy,
-                  ),
-                  if (failure is Failure) ...<Widget>[
-                    const SizedBox(height: FitSpacing.md),
-                    AuthFeedback.error(failure.message),
+      body: FitBackdrop(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: FitSpacing.screen,
+              vertical: FitSpacing.md,
+            ),
+            child: Form(
+              key: _form,
+              child: AutofillGroup(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const FitosWordmark(size: 22),
+                    const SizedBox(height: FitSpacing.xs),
+                    Text('Create account', style: textTheme.displayMedium),
+                    const SizedBox(height: FitSpacing.sm),
+                    Text(
+                      'Your password stays with Firebase. It never reaches our servers.',
+                      style: textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: FitSpacing.xl),
+                    AuthFormField(
+                      label: 'Email',
+                      controller: _email,
+                      keyboardType: TextInputType.emailAddress,
+                      autofillHints: const [AutofillHints.email],
+                      textInputAction: TextInputAction.next,
+                      validator: AuthValidators.email,
+                      enabled: !busy,
+                    ),
+                    const SizedBox(height: FitSpacing.lg),
+                    AuthFormField(
+                      label: 'Password',
+                      controller: _password,
+                      obscureText: true,
+                      autofillHints: const [AutofillHints.newPassword],
+                      textInputAction: TextInputAction.next,
+                      validator: AuthValidators.password,
+                      enabled: !busy,
+                    ),
+                    const SizedBox(height: FitSpacing.lg),
+                    AuthFormField(
+                      label: 'Confirm password',
+                      controller: _confirm,
+                      obscureText: true,
+                      textInputAction: TextInputAction.done,
+                      validator: _matches,
+                      onFieldSubmitted: (_) => _submit(),
+                      enabled: !busy,
+                    ),
+                    if (failure is Failure) ...<Widget>[
+                      const SizedBox(height: FitSpacing.md),
+                      AuthFeedback.error(failure.message),
+                    ],
+                    const SizedBox(height: FitSpacing.xl),
+                    FilledButton(
+                      onPressed: busy ? null : _submit,
+                      child: busy
+                          ? SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: FitColors.paper,
+                              ),
+                            )
+                          : const Text('Create account'),
+                    ),
                   ],
-                  const SizedBox(height: FitSpacing.xl),
-                  FilledButton(
-                    onPressed: busy ? null : _submit,
-                    child: busy
-                        ? SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: FitColors.paper,
-                            ),
-                          )
-                        : const Text('Create account'),
-                  ),
-                ],
+                ),
               ),
             ),
           ),

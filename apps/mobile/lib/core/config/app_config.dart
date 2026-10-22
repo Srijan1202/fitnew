@@ -5,6 +5,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../features/auth/presentation/controllers/auth_providers.dart';
 import '../theme/tokens.dart';
+import '../../shared/widgets/fit_glass.dart';
 
 /// Phase 19 (E1, E18; ADR-026): the server's public start-up config,
 /// `GET /v1/meta/config`: the feature flags and the oldest build allowed.
@@ -81,27 +82,29 @@ class UpdateRequiredScreen extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       key: const ValueKey('update.required'),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(FitSpacing.screen),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text('UPDATE FITOS', style: textTheme.labelSmall),
-              const SizedBox(height: FitSpacing.sm),
-              Text(
-                'This version is too old.',
-                style: textTheme.headlineMedium,
-              ),
-              const SizedBox(height: FitSpacing.sm),
-              Text(
-                'Install the latest FITOS from where you got it (the Play Store '
-                'testing link or the beta group). Your data is safe on the '
-                'server and comes back when you sign in.',
-                style: textTheme.bodyLarge,
-              ),
-            ],
+      body: FitBackdrop(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(FitSpacing.screen),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text('UPDATE FITOS', style: textTheme.labelSmall),
+                const SizedBox(height: FitSpacing.sm),
+                Text(
+                  'This version is too old.',
+                  style: textTheme.headlineMedium,
+                ),
+                const SizedBox(height: FitSpacing.sm),
+                Text(
+                  'Install the latest FITOS from where you got it (the Play Store '
+                  'testing link or the beta group). Your data is safe on the '
+                  'server and comes back when you sign in.',
+                  style: textTheme.bodyLarge,
+                ),
+              ],
+            ),
           ),
         ),
       ),

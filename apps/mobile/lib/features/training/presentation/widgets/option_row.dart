@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/tokens.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// A labelled row of equal-width choices — "2 3 4 5 6" — in the hairline
 /// language: the chosen value is ink with a 2 px underline, the rest ink60.
@@ -76,21 +77,32 @@ class _Choice extends StatelessWidget {
       selected: on,
       child: InkWell(
         onTap: enabled ? onTap : null,
+        borderRadius: fitGlass ? BorderRadius.all(FitRadius.small) : null,
         child: Container(
           constraints: const BoxConstraints(minHeight: 48),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: on ? FitColors.ink : FitColors.rule,
-                width: on ? 2 : 1,
-              ),
-            ),
-          ),
+          // ADR-029: an accent pill when chosen, on glass.
+          decoration: fitGlass
+              ? BoxDecoration(
+                  color: on
+                      ? FitColors.accent
+                      : FitColors.ink.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.all(FitRadius.small),
+                )
+              : BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: on ? FitColors.ink : FitColors.rule,
+                      width: on ? 2 : 1,
+                    ),
+                  ),
+                ),
           alignment: Alignment.center,
           child: Text(
             text,
             style: textTheme.titleLarge?.copyWith(
-              color: on ? FitColors.ink : FitColors.ink60,
+              color: on
+                  ? (fitGlass ? FitColors.onAccent : FitColors.ink)
+                  : FitColors.ink60,
               fontWeight: on ? FontWeight.w700 : FontWeight.w500,
             ),
           ),

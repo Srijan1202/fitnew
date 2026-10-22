@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 import '../../../exercise/domain/entities/exercise.dart';
 import 'draft.dart';
 
@@ -89,11 +90,26 @@ class _Row extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Container(
-      decoration: BoxDecoration(
-        color: FitColors.paper,
-        border: Border(bottom: BorderSide(color: FitColors.rule)),
+      // ADR-029: a rounded tile per exercise on glass; hairlines on Paper.
+      margin: fitGlass ? const EdgeInsets.only(bottom: 6) : null,
+      decoration: fitGlass
+          ? BoxDecoration(
+              color: FitPalette.current.brightness == Brightness.dark
+                  ? Color.alphaBlend(
+                      FitColors.ink.withValues(alpha: 0.07),
+                      FitColors.paper,
+                    )
+                  : Colors.white,
+              borderRadius: BorderRadius.all(FitRadius.small),
+            )
+          : BoxDecoration(
+              color: FitColors.paper,
+              border: Border(bottom: BorderSide(color: FitColors.rule)),
+            ),
+      padding: EdgeInsets.symmetric(
+        vertical: FitSpacing.sm,
+        horizontal: fitGlass ? 4 : 0,
       ),
-      padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
       child: Row(
         children: <Widget>[
           ReorderableDragStartListener(

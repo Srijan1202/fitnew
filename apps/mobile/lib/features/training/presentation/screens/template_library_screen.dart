@@ -9,6 +9,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../domain/entities/program.dart';
 import '../controllers/program_controller.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Professional: the structure library. Each row is a structure people
 /// already know — days, what each day trains, who runs it, how long. No
@@ -23,55 +24,57 @@ class TemplateLibraryScreen extends ConsumerWidget {
     final async = ref.watch(templatesProvider);
     return Scaffold(
       appBar: AppBar(leading: BackButton(onPressed: () => context.popOrHome())),
-      body: SafeArea(
-        child: async.when(
-          loading: () => const _LibrarySkeleton(),
-          error: (e, _) => Padding(
-            padding: const EdgeInsets.all(FitSpacing.screen),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: FitBackdrop(
+        child: SafeArea(
+          child: async.when(
+            loading: () => const _LibrarySkeleton(),
+            error: (e, _) => Padding(
+              padding: const EdgeInsets.all(FitSpacing.screen),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  AuthFeedback.error(
+                    (e is Failure ? e : const Unknown()).message,
+                  ),
+                  const SizedBox(height: FitSpacing.md),
+                  FilledButton(
+                    onPressed: () => ref.invalidate(templatesProvider),
+                    child: const Text('Try again'),
+                  ),
+                ],
+              ),
+            ),
+            data: (templates) => ListView(
+              padding: const EdgeInsets.only(bottom: FitSpacing.xl),
               children: <Widget>[
-                AuthFeedback.error(
-                  (e is Failure ? e : const Unknown()).message,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    FitSpacing.screen,
+                    FitSpacing.sm,
+                    FitSpacing.screen,
+                    FitSpacing.md,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text('PROFESSIONAL', style: textTheme.labelSmall),
+                      const SizedBox(height: FitSpacing.xs),
+                      Text(
+                        'Choose a training structure',
+                        style: textTheme.displaySmall,
+                      ),
+                      const SizedBox(height: FitSpacing.sm),
+                      Text(
+                        'Established splits, filled with exercises you can do with your equipment. Preview before you commit.',
+                        style: textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: FitSpacing.md),
-                FilledButton(
-                  onPressed: () => ref.invalidate(templatesProvider),
-                  child: const Text('Try again'),
-                ),
+                for (final t in templates) _TemplateRow(template: t),
+                const FitRule(),
               ],
             ),
-          ),
-          data: (templates) => ListView(
-            padding: const EdgeInsets.only(bottom: FitSpacing.xl),
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  FitSpacing.screen,
-                  FitSpacing.sm,
-                  FitSpacing.screen,
-                  FitSpacing.md,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text('PROFESSIONAL', style: textTheme.labelSmall),
-                    const SizedBox(height: FitSpacing.xs),
-                    Text(
-                      'Choose a training structure',
-                      style: textTheme.displaySmall,
-                    ),
-                    const SizedBox(height: FitSpacing.sm),
-                    Text(
-                      'Established splits, filled with exercises you can do with your equipment. Preview before you commit.',
-                      style: textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-              ),
-              for (final t in templates) _TemplateRow(template: t),
-              Divider(color: FitColors.rule, height: 1),
-            ],
           ),
         ),
       ),
@@ -91,70 +94,74 @@ class _TemplateRow extends StatelessWidget {
     final muscles = <String>{
       for (final d in t.days) ...d.muscles.map((m) => m.label),
     };
-    return Column(
-      children: <Widget>[
-        Divider(color: FitColors.rule, height: 1),
-        InkWell(
-          key: ValueKey('template.${t.slug}'),
-          onTap: () => context.push(Routes.planTemplate(t.slug)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: FitSpacing.screen,
-              vertical: FitSpacing.md,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                SizedBox(
-                  width: 56,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        '${t.daysPerWeek}',
-                        style: textTheme.displaySmall?.copyWith(height: 1),
-                      ),
-                      Text(
-                        'DAYS',
-                        style: textTheme.labelSmall
-                            ?.copyWith(color: FitColors.ink60),
-                      ),
-                    ],
+    // ADR-029: each programme a block on glass.
+    return FitBlock(
+      margin: const EdgeInsets.fromLTRB(12, 5, 12, 5),
+      child: Column(
+        children: <Widget>[
+          const FitRule(),
+          InkWell(
+            key: ValueKey('template.${t.slug}'),
+            onTap: () => context.push(Routes.planTemplate(t.slug)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: FitSpacing.screen,
+                vertical: FitSpacing.md,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  SizedBox(
+                    width: 56,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          '${t.daysPerWeek}',
+                          style: textTheme.displaySmall?.copyWith(height: 1),
+                        ),
+                        Text(
+                          'DAYS',
+                          style: textTheme.labelSmall
+                              ?.copyWith(color: FitColors.ink60),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(t.name, style: textTheme.titleLarge),
-                      const SizedBox(height: FitSpacing.xs),
-                      Text(
-                        t.days.map((d) => d.sessionName).join(' · '),
-                        style: textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: FitSpacing.xs),
-                      Text(
-                        '${t.level.label} · ~${t.approxMinutes} min · ${muscles.length} muscle groups',
-                        style: textTheme.bodyMedium
-                            ?.copyWith(color: FitColors.ink60),
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(t.name, style: textTheme.titleLarge),
+                        const SizedBox(height: FitSpacing.xs),
+                        Text(
+                          t.days.map((d) => d.sessionName).join(' · '),
+                          style: textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: FitSpacing.xs),
+                        Text(
+                          '${t.level.label} · ~${t.approxMinutes} min · ${muscles.length} muscle groups',
+                          style: textTheme.bodyMedium
+                              ?.copyWith(color: FitColors.ink60),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: FitSpacing.sm),
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Icon(
-                    Icons.arrow_forward,
-                    size: 18,
-                    color: FitColors.ink60,
+                  const SizedBox(width: FitSpacing.sm),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Icon(
+                      Icons.arrow_forward,
+                      size: 18,
+                      color: FitColors.ink60,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

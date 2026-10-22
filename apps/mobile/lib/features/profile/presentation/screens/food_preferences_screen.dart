@@ -133,77 +133,98 @@ class _FoodPreferencesScreenState extends ConsumerState<FoodPreferencesScreen> {
         leading: BackButton(onPressed: () => context.popOrHome()),
         title: const Text('Food'),
       ),
-      body: SafeArea(
-        top: false,
-        child: switch (loaded) {
-          AsyncError(:final error) when !_loaded => Padding(
-              padding: const EdgeInsets.all(FitSpacing.screen),
-              child: AuthFeedback.error(
-                error is Failure ? error.message : 'Could not load.',
+      body: FitBackdrop(
+        child: SafeArea(
+          top: false,
+          child: switch (loaded) {
+            AsyncError(:final error) when !_loaded => Padding(
+                padding: const EdgeInsets.all(FitSpacing.screen),
+                child: AuthFeedback.error(
+                  error is Failure ? error.message : 'Could not load.',
+                ),
               ),
-            ),
-          AsyncLoading() when !_loaded => const Center(child: Text('Loading…')),
-          _ => ListView(
-              key: const ValueKey('food.list'),
-              padding: const EdgeInsets.all(FitSpacing.screen),
-              children: <Widget>[
-                Text(
-                  'Diet type and allergies are hard rules for every food suggestion. '
-                  'An allergy keeps off every dish FITOS cannot confirm is free of it — whatever its severity.',
-                  style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
-                ),
-                const SizedBox(height: FitSpacing.lg),
-                Text('DIET', style: textTheme.labelSmall),
-                const SizedBox(height: FitSpacing.xs),
-                ChoiceList<DietType>(
-                  options: DietType.values,
-                  selected: _diet,
-                  enabled: !_busy,
-                  onSelect: (d) => setState(() => _diet = d),
-                  label: (d) => d.label,
-                ),
-                const SizedBox(height: FitSpacing.lg),
-                Text('ALLERGIES', style: textTheme.labelSmall),
-                const SizedBox(height: FitSpacing.xs),
-                for (final a in Allergen.values) ...<Widget>[
-                  AllergyRow(
-                    allergen: a,
-                    severity: _allergies[a],
+            AsyncLoading() when !_loaded =>
+              const Center(child: Text('Loading…')),
+            _ => ListView(
+                key: const ValueKey('food.list'),
+                padding: const EdgeInsets.all(FitSpacing.screen),
+                children: <Widget>[
+                  Text(
+                    'Diet type and allergies are hard rules for every food suggestion. '
+                    'An allergy keeps off every dish FITOS cannot confirm is free of it — whatever its severity.',
+                    style:
+                        textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+                  ),
+                  const SizedBox(height: FitSpacing.lg),
+                  Text('DIET', style: textTheme.labelSmall),
+                  const SizedBox(height: FitSpacing.xs),
+                  ChoiceList<DietType>(
+                    options: DietType.values,
+                    selected: _diet,
                     enabled: !_busy,
-                    onToggle: () => setState(() {
-                      if (_allergies.remove(a) == null) {
-                        _allergies[a] = AllergySeverity.moderate;
-                      }
-                    }),
-                    onSeverity: (s) => setState(() => _allergies[a] = s),
+                    onSelect: (d) => setState(() => _diet = d),
+                    label: (d) => d.label,
                   ),
-                  Divider(color: FitColors.rule, height: 1),
+                  const SizedBox(height: FitSpacing.lg),
+                  Text('ALLERGIES', style: textTheme.labelSmall),
+                  const SizedBox(height: FitSpacing.xs),
+                  // ADR-029: one rounded group on glass, hairlines on Paper.
+                  FitBlock(
+                    child: Column(
+                      children: <Widget>[
+                        for (final a in Allergen.values) ...<Widget>[
+                          if (fitGlass && a != Allergen.values.first)
+                            Divider(
+                              color: FitColors.rule.withValues(alpha: 0.6),
+                              height: 1,
+                              indent: FitSpacing.md,
+                              endIndent: FitSpacing.md,
+                            ),
+                          AllergyRow(
+                            allergen: a,
+                            severity: _allergies[a],
+                            enabled: !_busy,
+                            onToggle: () => setState(() {
+                              if (_allergies.remove(a) == null) {
+                                _allergies[a] = AllergySeverity.moderate;
+                              }
+                            }),
+                            onSeverity: (s) =>
+                                setState(() => _allergies[a] = s),
+                          ),
+                          if (!fitGlass)
+                            Divider(color: FitColors.rule, height: 1),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: FitSpacing.md),
+                  Text(
+                    'Shared mess kitchens can have cross-contact that FITOS cannot rule out.',
+                    style:
+                        textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+                  ),
+                  if (_failure != null) ...<Widget>[
+                    const SizedBox(height: FitSpacing.sm),
+                    AuthFeedback.error(
+                      _failure is Offline
+                          ? 'Saving needs a connection.'
+                          : _failure!.message,
+                    ),
+                  ],
+                  const SizedBox(height: FitSpacing.lg),
+                  FilledButton(
+                    key: const ValueKey('food.save'),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                    ),
+                    onPressed: _busy || _diet == null ? null : _save,
+                    child: Text(_busy ? 'Saving…' : 'Save'),
+                  ),
                 ],
-                const SizedBox(height: FitSpacing.md),
-                Text(
-                  'Shared mess kitchens can have cross-contact that FITOS cannot rule out.',
-                  style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
-                ),
-                if (_failure != null) ...<Widget>[
-                  const SizedBox(height: FitSpacing.sm),
-                  AuthFeedback.error(
-                    _failure is Offline
-                        ? 'Saving needs a connection.'
-                        : _failure!.message,
-                  ),
-                ],
-                const SizedBox(height: FitSpacing.lg),
-                FilledButton(
-                  key: const ValueKey('food.save'),
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
-                  ),
-                  onPressed: _busy || _diet == null ? null : _save,
-                  child: Text(_busy ? 'Saving…' : 'Save'),
-                ),
-              ],
-            ),
-        },
+              ),
+          },
+        ),
       ),
     );
   }

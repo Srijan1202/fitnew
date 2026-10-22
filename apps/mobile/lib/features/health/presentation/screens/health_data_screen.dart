@@ -6,6 +6,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/hairline_section.dart';
 import '../../domain/entities/health.dart';
 import '../controllers/health_providers.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Phase 6.5 — Health Connect connection (Part G). Says why FITOS wants
 /// the data, shows Connected / Not connected and the grant per category
@@ -34,68 +35,73 @@ class HealthDataScreen extends ConsumerWidget {
         title: Text('HEALTH DATA', style: textTheme.labelSmall),
         centerTitle: false,
       ),
-      body: SafeArea(
-        child: ListView(
-          key: const ValueKey('health.list'),
-          padding: const EdgeInsets.fromLTRB(
-            FitSpacing.screen,
-            FitSpacing.lg,
-            FitSpacing.screen,
-            FitSpacing.xl,
-          ),
-          children: <Widget>[
-            Text('Health Connect', style: textTheme.displayMedium),
-            const SizedBox(height: FitSpacing.sm),
-            Text(
-              'FITOS uses your activity, training, recovery and body data to make your daily recommendations more useful. It only reads; nothing is written back, sent to a server or to any AI service.',
-              style: textTheme.bodyLarge,
+      body: FitBackdrop(
+        child: SafeArea(
+          child: ListView(
+            key: const ValueKey('health.list'),
+            padding: const EdgeInsets.fromLTRB(
+              FitSpacing.screen,
+              FitSpacing.lg,
+              FitSpacing.screen,
+              FitSpacing.xl,
             ),
-            const SizedBox(height: FitSpacing.lg),
-            conn.when(
-              loading: () => Text(
-                'Checking…',
-                style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+            children: <Widget>[
+              Text('Health Connect', style: textTheme.displayMedium),
+              const SizedBox(height: FitSpacing.sm),
+              Text(
+                'FITOS uses your activity, training, recovery and body data to make your daily recommendations more useful. It only reads; nothing is written back, sent to a server or to any AI service.',
+                style: textTheme.bodyLarge,
               ),
-              error: (_, __) => _Unsupported(
-                key: const ValueKey('health.error'),
-                text: 'Could not reach Health Connect. Try again in a moment.',
-                onRetry: () =>
-                    ref.read(healthConnectionProvider.notifier).refresh(),
+              const SizedBox(height: FitSpacing.lg),
+              conn.when(
+                loading: () => Text(
+                  'Checking…',
+                  style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+                ),
+                error: (_, __) => _Unsupported(
+                  key: const ValueKey('health.error'),
+                  text:
+                      'Could not reach Health Connect. Try again in a moment.',
+                  onRetry: () =>
+                      ref.read(healthConnectionProvider.notifier).refresh(),
+                ),
+                data: (c) => _Body(state: c, snapshot: snapshot),
               ),
-              data: (c) => _Body(state: c, snapshot: snapshot),
-            ),
-            const SizedBox(height: FitSpacing.xl),
-            HairlineSection(
-              label: 'Daily step goal',
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      '${_group(goal)} steps',
-                      key: const ValueKey('health.stepGoal'),
-                      style: textTheme.displaySmall,
+              const SizedBox(height: FitSpacing.xl),
+              HairlineSection(
+                label: 'Daily step goal',
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        '${_group(goal)} steps',
+                        key: const ValueKey('health.stepGoal'),
+                        style: textTheme.displaySmall,
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    key: const ValueKey('health.stepGoal.minus'),
-                    onPressed: goal > 2000
-                        ? () =>
-                            ref.read(stepGoalProvider.notifier).set(goal - 1000)
-                        : null,
-                    icon: const Icon(Icons.remove),
-                  ),
-                  IconButton(
-                    key: const ValueKey('health.stepGoal.plus'),
-                    onPressed: goal < 30000
-                        ? () =>
-                            ref.read(stepGoalProvider.notifier).set(goal + 1000)
-                        : null,
-                    icon: const Icon(Icons.add),
-                  ),
-                ],
+                    IconButton(
+                      key: const ValueKey('health.stepGoal.minus'),
+                      onPressed: goal > 2000
+                          ? () => ref
+                              .read(stepGoalProvider.notifier)
+                              .set(goal - 1000)
+                          : null,
+                      icon: const Icon(Icons.remove),
+                    ),
+                    IconButton(
+                      key: const ValueKey('health.stepGoal.plus'),
+                      onPressed: goal < 30000
+                          ? () => ref
+                              .read(stepGoalProvider.notifier)
+                              .set(goal + 1000)
+                          : null,
+                      icon: const Icon(Icons.add),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -210,44 +216,53 @@ class _Body extends ConsumerWidget {
       CategoryGrant.partial => FitColors.amber,
       CategoryGrant.none => FitColors.ink60,
     };
+    // ADR-029: each category a block on glass.
     return Padding(
-      padding: const EdgeInsets.only(bottom: FitSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Divider(color: FitColors.rule, height: 1),
-          const SizedBox(height: FitSpacing.sm),
-          Row(
-            children: <Widget>[
-              Expanded(child: Text(c.label, style: textTheme.titleMedium)),
-              Text(
-                HealthDataScreen.grantLabel(grant),
-                key: ValueKey('health.${c.name}.grant'),
-                style: textTheme.bodyMedium?.copyWith(color: color),
-              ),
-            ],
-          ),
-          const SizedBox(height: FitSpacing.xs),
-          Text(
-            kinds.map((k) => k.label).join(' · '),
-            style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
-          ),
-          if (grant != CategoryGrant.all)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                key: ValueKey('health.${c.name}.allow'),
-                onPressed: () =>
-                    ref.read(healthConnectionProvider.notifier).connect({c}),
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(0, 36),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: EdgeInsets.only(bottom: fitGlass ? 10 : FitSpacing.md),
+      child: FitBlock(
+        padding: const EdgeInsets.fromLTRB(
+          FitSpacing.md,
+          FitSpacing.xs,
+          FitSpacing.md,
+          FitSpacing.sm,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const FitRule(),
+            const SizedBox(height: FitSpacing.sm),
+            Row(
+              children: <Widget>[
+                Expanded(child: Text(c.label, style: textTheme.titleMedium)),
+                Text(
+                  HealthDataScreen.grantLabel(grant),
+                  key: ValueKey('health.${c.name}.grant'),
+                  style: textTheme.bodyMedium?.copyWith(color: color),
                 ),
-                child: Text('Allow ${c.label.toLowerCase()}'),
-              ),
+              ],
             ),
-        ],
+            const SizedBox(height: FitSpacing.xs),
+            Text(
+              kinds.map((k) => k.label).join(' · '),
+              style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+            ),
+            if (grant != CategoryGrant.all)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  key: ValueKey('health.${c.name}.allow'),
+                  onPressed: () =>
+                      ref.read(healthConnectionProvider.notifier).connect({c}),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(0, 36),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text('Allow ${c.label.toLowerCase()}'),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

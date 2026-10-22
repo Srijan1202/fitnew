@@ -14,6 +14,7 @@ import '../controllers/food_log_providers.dart';
 import '../controllers/food_logger.dart';
 import '../widgets/food_widgets.dart';
 import '../widgets/portion_sheet.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// One food: what it contains, per 100 g and per serving, and where every
 /// number comes from. Estimates are ranges and say so; a verified USDA
@@ -68,14 +69,16 @@ class FoodDetailScreen extends ConsumerWidget {
     final food = this.food;
     return Scaffold(
       appBar: AppBar(leading: BackButton(onPressed: () => context.popOrHome())),
-      body: SafeArea(
-        child: food == null
-            ? const _Missing()
-            : _Detail(
-                food: food,
-                justCreated: justCreated,
-                onLog: () => _log(context, ref, food),
-              ),
+      body: FitBackdrop(
+        child: SafeArea(
+          child: food == null
+              ? const _Missing()
+              : _Detail(
+                  food: food,
+                  justCreated: justCreated,
+                  onLog: () => _log(context, ref, food),
+                ),
+        ),
       ),
     );
   }
