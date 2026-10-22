@@ -49,6 +49,10 @@ final notifyDrainedProvider = Provider<Stream<void>>(
 final pushTokenSourceProvider = Provider<Future<String?> Function()>(
   (_) => () async {
     try {
+      // firebase_messaging 17 prefers register()/onRegistered, which yields
+      // an installation id (FID), not this FCM token. Server push (BACKLOG
+      // O9) is not built yet; it moves to the FID with it.
+      // ignore: deprecated_member_use
       return await FirebaseMessaging.instance.getToken();
     } on Object {
       return null;

@@ -145,6 +145,8 @@ abstract final class FitTheme {
                 borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
               )
             : null,
+        // ADR-029: every sheet shows the iOS grab handle on glass.
+        showDragHandle: FitPalette.current.glass ? true : null,
         dragHandleColor: FitColors.ink35,
       ),
       dialogTheme: DialogThemeData(

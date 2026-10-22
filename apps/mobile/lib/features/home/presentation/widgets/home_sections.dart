@@ -88,6 +88,37 @@ class HomeSections {
     return '${d.inDays} d ago';
   }
 
+  /// The largest display size (56 down to 30) at which [text] fits two lines
+  /// without breaking a word; 30 if none does (then it ends in an ellipsis).
+  static double greetingSize(
+    String text,
+    TextStyle? base,
+    double maxWidth,
+    TextScaler scaler,
+  ) {
+    const sizes = <double>[56, 48, 42, 36, 30];
+    if (base == null || !maxWidth.isFinite) return sizes.first;
+    for (final size in sizes) {
+      final style = base.copyWith(fontSize: size);
+      bool fits(String t, int lines) {
+        final painter = TextPainter(
+          text: TextSpan(text: t, style: style),
+          textDirection: TextDirection.ltr,
+          textScaler: scaler,
+          maxLines: lines,
+        )..layout(maxWidth: maxWidth);
+        final ok = !painter.didExceedMaxLines;
+        painter.dispose();
+        return ok;
+      }
+
+      if (fits(text, 2) && text.split(' ').every((w) => fits(w, 1))) {
+        return size;
+      }
+    }
+    return sizes.last;
+  }
+
   static String greeting(int hour) {
     if (hour < 5) return 'Good night';
     if (hour < 12) return 'Good morning';
@@ -128,15 +159,30 @@ class HomeHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(
-                  name == null || name!.trim().isEmpty
-                      ? HomeSections.greeting(hour)
-                      : '${HomeSections.greeting(hour)}, ${name!.trim()}',
-                  key: const ValueKey('home.greeting'),
-                  style:
-                      textTheme.displayMedium?.copyWith(color: FitColors.ink),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                LayoutBuilder(
+                  builder: (context, box) {
+                    final text = name == null || name!.trim().isEmpty
+                        ? HomeSections.greeting(hour)
+                        : '${HomeSections.greeting(hour)}, ${name!.trim()}';
+                    final base =
+                        textTheme.displayMedium?.copyWith(color: FitColors.ink);
+                    return Text(
+                      text,
+                      key: const ValueKey('home.greeting'),
+                      // Shrinks to fit two lines rather than cutting a word
+                      // ("Good afternoo…" with a long name).
+                      style: base?.copyWith(
+                        fontSize: HomeSections.greetingSize(
+                          text,
+                          base,
+                          box.maxWidth,
+                          MediaQuery.textScalerOf(context),
+                        ),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  },
                 ),
                 const SizedBox(height: FitSpacing.xs),
                 Text(

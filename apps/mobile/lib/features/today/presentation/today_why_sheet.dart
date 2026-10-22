@@ -4,6 +4,7 @@ import '../../../core/theme/tokens.dart';
 import '../domain/today.dart';
 import 'explain_simply.dart';
 import 'today_words.dart';
+import '../../../shared/widgets/fit_glass.dart';
 
 /// What the user chose in the "why" sheet.
 enum WhyChoice { primary, dismiss }
@@ -87,7 +88,7 @@ Future<WhyChoice?> showTodayWhySheet(
                 ),
             ],
             const SizedBox(height: FitSpacing.md),
-            Divider(color: FitColors.rule, height: 1),
+            const FitRule(),
             const SizedBox(height: FitSpacing.sm),
             Text(
               'Why this was suggested: ${action.basis.label.toLowerCase()}.'

@@ -190,9 +190,11 @@ class _PremiumRequestPanelState extends ConsumerState<PremiumRequestPanel> {
           maxLength: 500,
           minLines: 1,
           maxLines: 3,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'Anything to add? (optional)',
-            border: OutlineInputBorder(borderRadius: BorderRadius.zero),
+            border: fitGlass
+                ? null
+                : const OutlineInputBorder(borderRadius: BorderRadius.zero),
           ),
         ),
         FilledButton.icon(

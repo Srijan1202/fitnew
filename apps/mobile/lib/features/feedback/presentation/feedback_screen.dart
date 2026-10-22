@@ -125,9 +125,13 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                 maxLines: 12,
                 maxLength: kFeedbackMaxLength,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: 'What happened, or what would help?',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.zero),
+                  border: fitGlass
+                      ? null
+                      : const OutlineInputBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
                 ),
                 onChanged: (_) => setState(() => _sent = false),
               ),

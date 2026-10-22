@@ -13,6 +13,7 @@ import '../../../nutrition/presentation/widgets/portion_sheet.dart';
 import '../../domain/mess.dart';
 import '../mess_providers.dart';
 import 'mess_widgets.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Tap a dish. With an estimate, on a day that can be logged: the Phase 8
 /// portion step, with the estimate's qualifiers and "Report wrong
@@ -470,7 +471,12 @@ class _MessPicker extends ConsumerWidget {
                           : null,
                       onTap: () => Navigator.of(context).pop(MessChoice(m)),
                     ),
-                  Divider(color: FitColors.rule, height: 1),
+                  Divider(
+                    color: FitColors.rule.withValues(alpha: fitGlass ? 0.6 : 1),
+                    height: 1,
+                    indent: fitGlass ? FitSpacing.md : 0,
+                    endIndent: fitGlass ? FitSpacing.md : 0,
+                  ),
                 ],
                 if (allowNone)
                   ListTile(

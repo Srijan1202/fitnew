@@ -215,9 +215,13 @@ class _DescribeMealScreenState extends ConsumerState<DescribeMealScreen> {
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => _read(),
                 onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: '2 chapati, a katori of dal and a glass of lassi',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.zero),
+                  border: fitGlass
+                      ? null
+                      : const OutlineInputBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
                 ),
               ),
               Text(

@@ -5,6 +5,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../domain/entities/workout.dart';
 import '../controllers/workout_providers.dart';
 import 'session_exercise_card.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Tap on the reason line (plan §6): the full reason, the last three
 /// sessions of this lift from the server, and **Use last time's weight**
@@ -85,7 +86,7 @@ class RecommendationSheet extends ConsumerWidget {
                 style: textTheme.bodyLarge,
               ),
             const SizedBox(height: FitSpacing.md),
-            Divider(color: FitColors.rule, height: 1),
+            const FitRule(),
             const SizedBox(height: FitSpacing.md),
             Text('LAST THREE SESSIONS', style: textTheme.labelSmall),
             const SizedBox(height: FitSpacing.xs),

@@ -24,26 +24,40 @@ abstract class SessionStore {
 }
 
 class SecureSessionStore implements SessionStore {
+  // flutter_secure_storage 11 (2026-10-22): its own Keystore-backed cipher
+  // storage. What version 9 wrote (EncryptedSharedPreferences) cannot be read
+  // after the jump, so a failed read is "nothing stored": both values are
+  // caches — Firebase keeps the sign-in, the server the profile.
   SecureSessionStore([FlutterSecureStorage? storage])
-      : _storage = storage ??
-            const FlutterSecureStorage(
-              aOptions: AndroidOptions(encryptedSharedPreferences: true),
-            );
+      : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
 
   static const _kIdToken = 'session.idToken';
   static const _kProfile = 'session.profile';
 
+  Future<String?> _read(String key) async {
+    try {
+      return await _storage.read(key: key);
+    } on Object {
+      try {
+        await _storage.delete(key: key);
+      } on Object {
+        // Nothing more to do: the next write replaces it.
+      }
+      return null;
+    }
+  }
+
   @override
-  Future<String?> readIdToken() => _storage.read(key: _kIdToken);
+  Future<String?> readIdToken() => _read(_kIdToken);
 
   @override
   Future<void> writeIdToken(String token) =>
       _storage.write(key: _kIdToken, value: token);
 
   @override
-  Future<String?> readProfileJson() => _storage.read(key: _kProfile);
+  Future<String?> readProfileJson() => _read(_kProfile);
 
   @override
   Future<void> writeProfileJson(String json) =>

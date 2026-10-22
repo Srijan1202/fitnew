@@ -324,9 +324,11 @@ class _DeleteDialogState extends State<_DeleteDialog> {
             controller: _text,
             autofocus: true,
             textCapitalization: TextCapitalization.characters,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Type DELETE to confirm',
-              border: OutlineInputBorder(borderRadius: BorderRadius.zero),
+              border: fitGlass
+                  ? null
+                  : const OutlineInputBorder(borderRadius: BorderRadius.zero),
             ),
             onChanged: (_) => setState(() {}),
           ),

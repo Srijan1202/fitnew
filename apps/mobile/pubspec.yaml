@@ -47,7 +47,7 @@ dependencies:
 
   # Storage
   shared_preferences: 2.3.5
-  flutter_secure_storage: 9.2.4
+  flutter_secure_storage: 11.2.0
 
   # Models — freezed models MenuResolution as a real union (§7.1).
   # freezed_annotation is 3.x because riverpod_analyzer_utils requires ^3.0.0;
@@ -59,8 +59,8 @@ dependencies:
 
   # Auth (§11) — Firebase owns credentials; the app holds only the public
   # Firebase config, never a service account (§24). Pinned from pubspec.lock.
-  firebase_core: 4.15.0
-  firebase_auth: 6.7.0
+  firebase_core: 5.0.0
+  firebase_auth: 7.0.0
   google_sign_in: 7.2.0
   uuid: 4.5.3
   flutter_local_notifications: 19.4.0
@@ -68,14 +68,14 @@ dependencies:
   riverpod: 3.0.0
   # Phase 15: FCM registration only (POST /notifications/token); the
   # reminders themselves are scheduled on the phone (ADR-021).
-  firebase_messaging: 16.7.0
+  firebase_messaging: 17.0.0
   # Phase 17: hand the data export (a JSON file) to the system share sheet.
-  share_plus: 12.0.2
+  share_plus: 13.3.1
   # Phase 19 (ADR-026): crash reports, on unless the user turns them off
   # in Privacy & data (owner, 2026-10-22); no health or food data in them.
-  firebase_crashlytics: 5.4.0
+  firebase_crashlytics: 6.0.0
   # Phase 19 (E1): the app's own build number, compared with /meta/config.
-  package_info_plus: 9.0.1
+  package_info_plus: 10.2.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
