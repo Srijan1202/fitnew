@@ -106,8 +106,9 @@ No merge without your approval.
 
 ### 6. OPEN
 
-- **Your steps:** publish the GitHub release for beta 3 (optional once the website serves the APK). Play Console: the upload key, the account and internal testers ([PLAY.md](../hosting/PLAY.md)).
-- **Website:** built in a separate repository (`D:\dev\fitos-website`), with hosting set up as stack `fitos-website` (S3 + CloudFront). It goes live after your AWS sign-in and the Namecheap DNS records. Its `/privacy/` page is the privacy policy URL that Play needs.
+- **Published:** the GitHub pre-release `phase-19-beta-3` with the APK (SHA-256 checked after upload).
+- **Your steps:** Play Console: the upload key, the account and internal testers ([PLAY.md](../hosting/PLAY.md)).
+- **Website:** built in a separate repository (`D:\dev\fitos-website`). CloudFront needs AWS to verify the account first, so for now the API server's Caddy serves `tryfitos.me` too: the Caddyfile imports `sites/*.caddy` (`3578736`), and the website repository's `deploy\deploy.ps1` publishes the site and the APK over Systems Manager. It goes live once the domain's new A record (→ the Elastic IP) is published. Its `/privacy/` page is the privacy policy URL that Play needs.
 - **Before a public launch** (privacy policy, §23): the DPDP obligations, a named contact and grievance officer, and FITOS AI off Google's free tier (O7).
 - **Waiting on others:** firebase_auth, firebase_core and firebase_crashlytics still apply the Kotlin Gradle Plugin in their newest versions (a Flutter build warning). FCM keeps `getToken` until server push (O9) moves to installation IDs.
 - **Later:** admin controls on the website (an in-browser `/admin` calling `/v1/admin/*`; needs CORS); a rolling-cycle programme mode (ADR-030 option 3).
