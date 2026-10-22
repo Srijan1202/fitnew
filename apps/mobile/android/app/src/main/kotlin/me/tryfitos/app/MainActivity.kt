@@ -1,4 +1,4 @@
-package com.example.fitos
+package me.tryfitos.app
 
 import androidx.activity.result.ActivityResultLauncher
 import androidx.health.connect.client.PermissionController

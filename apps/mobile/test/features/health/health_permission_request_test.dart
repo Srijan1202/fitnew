@@ -149,10 +149,10 @@ void main() {
     // keep the fixed shape: a launcher registered by a ComponentActivity, and
     // no hand-built permission intent.
     final channelSource = File(
-      'android/app/src/main/kotlin/com/example/fitos/HealthConnectChannel.kt',
+      'android/app/src/main/kotlin/me/tryfitos/app/HealthConnectChannel.kt',
     ).readAsStringSync();
     final activitySource = File(
-      'android/app/src/main/kotlin/com/example/fitos/MainActivity.kt',
+      'android/app/src/main/kotlin/me/tryfitos/app/MainActivity.kt',
     ).readAsStringSync();
 
     test('the permission request is launched, not started as an intent', () {

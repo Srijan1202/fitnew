@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fitos/core/config/app_config.dart';
+import 'package:fitos/features/feedback/data/feedback_api.dart';
 import 'package:fitos/features/ai/data/ai_api.dart';
 import 'package:fitos/features/ai/domain/entities/ai.dart';
 import 'package:fitos/features/ai/domain/entities/ai_draft.dart';
@@ -2495,6 +2497,37 @@ void main() {
               as Map<String, dynamic>)['application/json']
           as Map<String, dynamic>)['schema'] as Map<String, dynamic>;
       expect(keysOf(ok), {'deleted', 'signInRemoved'});
+    });
+  });
+
+  group('Feedback and the start-up config (Phase 19)', () {
+    test('POST /feedback sends exactly the accepted properties; every category',
+        () {
+      final request = schemaOf('/feedback', 'post', request: true);
+      expect(
+        DioFeedbackApi.requestJson(
+          category: FeedbackCategory.bug,
+          message: 'm',
+          appVersion: '1',
+        ).keys.toSet(),
+        keysOf(request),
+      );
+      expect(
+        FeedbackCategory.values.map((c) => c.wire).toList(),
+        enumOf(properties(request)['category'] as Map<String, dynamic>),
+      );
+      expect(
+        (properties(request)['message'] as Map<String, dynamic>)['maxLength'],
+        kFeedbackMaxLength,
+      );
+    });
+
+    test('GET /meta/config: the flags and the minimum build', () {
+      const c = AppConfig(flags: {'describe-meal': true}, minimumBuild: 3);
+      expect(c.toJson().keys.toSet(), keysOf(schemaOf('/meta/config', 'get')));
+      final back = AppConfig.fromJson(c.toJson());
+      expect(back.flags, c.flags);
+      expect(back.minimumBuild, c.minimumBuild);
     });
   });
 

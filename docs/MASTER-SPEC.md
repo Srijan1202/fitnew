@@ -1625,6 +1625,10 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 **Prereq:** 18.
 **Tasks:** staging → production Cloud Run; Play Store internal testing; Crashlytics; billing alerts; feedback channel.
 `AMENDED 2026-10-22 (ADR-025)` — production is AWS (EC2 + RDS, `ap-south-1`), and the billing alerts are the stack's AWS Budget. Cloud Run is the prepared second target. There is no separate staging environment for a 20-user beta: every release is checked beside the old one before it takes traffic, and a rollback takes seconds.
+`AMENDED 2026-10-22 (ADR-026)`: the app becomes `me.tryfitos.app`, signed with the owner's upload key, for Play internal testing (`docs/hosting/PLAY.md`).
+- **Crashlytics:** on unless the user turns it off in Privacy & data (policy 2026-10-22.2).
+- **Feedback channel:** an in-app form (`POST /feedback`), read in the admin panel.
+- **Minimum build:** `/meta/config.minimumBuild` stops builds that are too old.
 `AMENDED 2026-09-20 (ADR-003)` — TestFlight removed: V1 is Android only.
 **Acceptance:** installable build · crash-free rate >99% over one week with 20 real users.
 **Manual:** 20 VIT students complete onboarding and log a week.

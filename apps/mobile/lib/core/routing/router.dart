@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/notifications/presentation/notification_settings_screen.dart';
 import '../../features/privacy/presentation/privacy_screen.dart';
+import '../../features/feedback/presentation/feedback_screen.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
@@ -68,6 +69,7 @@ abstract final class Routes {
 
   /// Phase 17: consents, download my data, delete my account, the policy.
   static const String privacy = '/profile/privacy';
+  static const String feedback = '/profile/feedback';
   static const String exercises = '/exercises';
   static String exerciseDetail(String id) => '/exercises/$id';
 
@@ -179,6 +181,11 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
             path: 'privacy',
             name: 'privacy',
             builder: (context, state) => const PrivacyScreen(),
+          ),
+          GoRoute(
+            path: 'feedback',
+            name: 'feedback',
+            builder: (context, state) => const FeedbackScreen(),
           ),
         ],
       ),

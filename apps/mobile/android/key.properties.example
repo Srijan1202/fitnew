@@ -1,0 +1,8 @@
+# Phase 19 (ADR-026): the Play upload key, read by app/build.gradle.kts.
+# Copy to android/key.properties (gitignored — never commit it) and fill in.
+# The keystore itself lives OUTSIDE the repo; keep a copy somewhere safe
+# (losing it means asking Google to reset the upload key).
+storeFile=C:\\Users\\<you>\\FitOS-keys\\fitos-upload.jks
+storePassword=
+keyAlias=fitos-upload
+keyPassword=

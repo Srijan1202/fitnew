@@ -49,8 +49,9 @@ Without these the app boots to the splash with a plain message saying so —
 never a native crash.
 
 **Google Sign-In needs two things in the Firebase console first:** an Android
-app registered with package name `com.example.fitos` and the **SHA-1** of your
-debug keystore (`cd android && ./gradlew signingReport`), and Google enabled
+app registered with package name `me.tryfitos.app` (Phase 19; `com.example.fitos`
+before it) and the **SHA-1** of each key that signs it — the debug keystore and the
+Play upload key (`cd android && ./gradlew signingReport`) — and Google enabled
 under **Authentication → Sign-in method**. `GOOGLE_WEB_CLIENT_ID` is the
 *Web client* OAuth id that enabling Google creates — not the Android one.
 

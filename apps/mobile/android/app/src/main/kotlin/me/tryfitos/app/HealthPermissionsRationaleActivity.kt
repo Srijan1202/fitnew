@@ -1,4 +1,4 @@
-package com.example.fitos
+package me.tryfitos.app
 
 import android.app.Activity
 import android.os.Bundle

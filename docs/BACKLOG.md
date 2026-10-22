@@ -22,8 +22,8 @@
 
 | # | Item | Size | Notes |
 |---|---|---|---|
-| E1 | Minimum app version in `/meta/config` | S | Flags were built in Phase 16; the version gate is still missing — **needed before beta** |
-| E18 | The app reads `/meta/config` flags | S | Phase 16 serves them; nothing in the app switches on them yet |
+| E1 | ~~Minimum app version in `/meta/config`~~ | — | **Done in Phase 19** (ADR-026 D5): `MIN_APP_BUILD` → `minimumBuild`; below it the app shows only "Update FITOS" |
+| E18 | Switch app features on `/meta/config` flags | S | Phase 19 reads them (`flagOn()`); no feature is wired to a flag yet |
 | E19 | Edit exercise alternatives in the admin panel | S | Phase 16 keeps them as seeded (ADR-022 D6) |
 | E2 | `/nutrition/targets` (current + history) | S | §10.1, no owning phase; targets are currently read through `/user/goal` |
 | E3 | `/exercises/{id}/history` (full history of a lift) | S–M | §10.1; today only the last three sessions, via `/training/progression/{id}` |

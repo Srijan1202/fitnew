@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/diagnostics/crash_reporting.dart';
 import '../../../core/errors/failure.dart';
 import '../../../core/errors/result.dart';
 import '../../../core/routing/navigation.dart';
@@ -158,6 +159,20 @@ class _PrivacyScreenState extends ConsumerState<PrivacyScreen> {
               ),
               value: c?.granted(ConsentType.aiProcessing) ?? false,
               onChanged: c == null || _busy ? null : _setAi,
+            ),
+            const SizedBox(height: FitSpacing.lg),
+            Text('CRASH REPORTS', style: textTheme.labelSmall),
+            const Divider(color: FitColors.rule, height: 1),
+            SwitchListTile(
+              key: const ValueKey('privacy.crash'),
+              contentPadding: EdgeInsets.zero,
+              title: Text('Send crash reports', style: textTheme.titleMedium),
+              subtitle: const Text(
+                'When FITOS crashes, what went wrong goes to Google Firebase Crashlytics: '
+                'never your health, food or workout data. Off: nothing is sent, and unsent reports are deleted.',
+              ),
+              value: ref.watch(crashReportsProvider).value ?? true,
+              onChanged: (v) => ref.read(crashReportsProvider.notifier).set(v),
             ),
             const SizedBox(height: FitSpacing.lg),
             Text('YOUR DATA', style: textTheme.labelSmall),

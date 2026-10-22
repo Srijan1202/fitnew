@@ -1,5 +1,6 @@
 import java.net.URI
 import java.util.Base64
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -100,8 +101,20 @@ androidComponents {
     }
 }
 
+// Phase 19 (ADR-026): the Play upload key. android/key.properties (gitignored,
+// never committed: storeFile, storePassword, keyAlias, keyPassword) names the
+// keystore the owner made with keytool. Without the file a release build is
+// signed with the debug key, as before, so local and LAN builds keep working;
+// tool/release.ps1 refuses to build a Play bundle without it.
+val uploadKey = Properties().apply {
+    val f = rootProject.file("key.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+
 android {
-    namespace = "com.example.fitos"
+    // Phase 19 (owner, 2026-10-22): the permanent package name, from the domain
+    // tryfitos.me. It can never change after the first Play upload.
+    namespace = "me.tryfitos.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -114,8 +127,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.fitos"
+        applicationId = "me.tryfitos.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         // Phase 6.5: androidx.health.connect:connect-client:1.1.0 declares
@@ -131,11 +143,20 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (!uploadKey.isEmpty) {
+            create("upload") {
+                storeFile = file(uploadKey.getProperty("storeFile"))
+                storePassword = uploadKey.getProperty("storePassword")
+                keyAlias = uploadKey.getProperty("keyAlias")
+                keyPassword = uploadKey.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("upload") ?: signingConfigs.getByName("debug")
         }
     }
 }

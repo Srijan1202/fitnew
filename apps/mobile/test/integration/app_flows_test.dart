@@ -227,8 +227,10 @@ void main() {
       isA<FoodAnswer>(),
       isA<VitAnswer>(),
     ]);
-    expect(onboarding.answers.first,
-        const OnboardingAnswer.goal(goalType: GoalType.fatLoss));
+    expect(
+      onboarding.answers.first,
+      const OnboardingAnswer.goal(goalType: GoalType.fatLoss),
+    );
     final about = onboarding.answers[1] as AboutAnswer;
     expect(about.displayName, 'Asha');
     expect(about.sex, Sex.female);
@@ -293,8 +295,10 @@ void main() {
 
     // Finished on the phone; the server has not seen it.
     expect(find.byKey(const ValueKey('summary.title')), findsOneWidget);
-    expect(tester.widget<Text>(find.byKey(const ValueKey('summary.sets'))).data,
-        '3');
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('summary.sets'))).data,
+      '3',
+    );
     expect(find.byKey(const ValueKey('summary.pending')), findsOneWidget);
     expect(
       workoutApi.sessions[session.clientSessionId]?.status,

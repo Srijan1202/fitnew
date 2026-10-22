@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:fitos/core/diagnostics/crash_reporting.dart';
 import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/fake_privacy_api.dart';
 
@@ -35,8 +37,11 @@ class _RecordingEraser extends AccountEraser {
 void main() {
   late FakePrivacyApi api;
   late _RecordingSharer sharer;
+  late NoCrashReporter reporter;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues(const {});
+    reporter = NoCrashReporter();
     api = FakePrivacyApi(aiGranted: false);
     sharer = _RecordingSharer();
     erased = 0;
@@ -59,6 +64,7 @@ void main() {
         privacyApiProvider.overrideWithValue(api),
         exportSharerProvider.overrideWithValue(sharer),
         accountEraserProvider.overrideWith(_RecordingEraser.new),
+        crashReporterProvider.overrideWithValue(reporter),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
     );
@@ -73,6 +79,25 @@ void main() {
   }
 
   Finder key(String k) => find.byKey(ValueKey(k));
+
+  testWidgets(
+      'Phase 19: crash reports are on by default; off tells the reporter and is remembered on this phone',
+      (tester) async {
+    await open(tester);
+    final tile = key('privacy.crash');
+    expect(tester.widget<SwitchListTile>(tile).value, isTrue);
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+    expect(reporter.enabled, isFalse);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getBool(kCrashReportsPreference), isFalse);
+    expect(await crashReportsEnabled(), isFalse);
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+    expect(reporter.enabled, isTrue);
+    expect(prefs.getBool(kCrashReportsPreference), isTrue);
+  });
 
   testWidgets(
       'FITOS AI consent: shown as it is, switched on and off through the server',

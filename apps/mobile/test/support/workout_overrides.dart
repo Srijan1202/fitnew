@@ -1,5 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:fitos/core/config/app_config.dart';
 import 'package:fitos/core/db/app_database.dart';
+import 'package:fitos/features/feedback/presentation/feedback_screen.dart';
 import 'package:fitos/features/ai/presentation/controllers/ai_providers.dart';
 import 'package:fitos/features/mess/presentation/mess_providers.dart';
 import 'package:fitos/features/notifications/presentation/notification_coordinator.dart';
@@ -14,6 +16,7 @@ import 'package:riverpod/misc.dart' show Override;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_ai_api.dart';
+import 'fake_feedback_api.dart';
 import 'fake_food_log_api.dart';
 import 'fake_mess_api.dart';
 import 'fake_notifications.dart';
@@ -39,6 +42,9 @@ List<Override> workoutOverrides(
   FakeNotificationScheduler? scheduler,
   FakePrivacyApi? privacy,
   Stream<List<ConnectivityResult>>? connectivity,
+  FakeFeedbackApi? feedback,
+  FakeMetaApi? meta,
+  int appBuild = 4,
 }) {
   SharedPreferences.setMockInitialValues(const {});
   return [
@@ -73,5 +79,10 @@ List<Override> workoutOverrides(
     pushTokenSourceProvider.overrideWithValue(() async => null),
     // Phase 17: consents from a scripted server; FITOS AI allowed unless a test says.
     privacyApiProvider.overrideWithValue(privacy ?? FakePrivacyApi()),
+    // Phase 19: feedback and the start-up config from scripted servers; this
+    // build is number 4 unless a test says (no platform plugin).
+    feedbackApiProvider.overrideWithValue(feedback ?? FakeFeedbackApi()),
+    metaApiProvider.overrideWithValue(meta ?? FakeMetaApi()),
+    appBuildProvider.overrideWith((_) async => appBuild),
   ];
 }

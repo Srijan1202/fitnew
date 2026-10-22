@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/config/app_config.dart';
 import 'core/routing/router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/nutrition/presentation/controllers/food_log_providers.dart';
@@ -28,6 +29,9 @@ class FitOSApp extends ConsumerWidget {
     ref.watch(healthRefreshCoordinatorProvider);
     // Phase 15: the reminder plan on the device, kept current.
     ref.watch(notificationCoordinatorProvider);
+    // Phase 19 (E1): a build below the server's minimum shows only
+    // "Update FITOS". Unknown (offline) never blocks.
+    final updateRequired = ref.watch(updateRequiredProvider);
 
     return MaterialApp.router(
       title: 'FITOS',
@@ -42,7 +46,9 @@ class FitOSApp extends ConsumerWidget {
           data: mediaQuery.copyWith(
             textScaler: mediaQuery.textScaler.clamp(maxScaleFactor: 2.0),
           ),
-          child: child ?? const SizedBox.shrink(),
+          child: updateRequired
+              ? const UpdateRequiredScreen()
+              : child ?? const SizedBox.shrink(),
         );
       },
     );

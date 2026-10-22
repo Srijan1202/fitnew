@@ -1,40 +1,47 @@
 <#
 .SYNOPSIS
-  FITOS hosted build (Phase 6.7 Gate 6.7-2): a release APK that talks to the
-  internet API on Cloud Run over HTTPS. The LAN alpha build (tool/alpha.ps1)
-  is separate and unchanged.
+  FITOS hosted build: a release APK, or (-AppBundle) the signed bundle for
+  Google Play, that talks to the internet API over HTTPS. Phase 6.7 made it for
+  Cloud Run; Phase 19 (ADR-025/026) points it at the beta, api.tryfitos.me on
+  AWS. The LAN alpha build (tool/alpha.ps1) is separate and unchanged.
 
 .USAGE
   .\tool\hosted.ps1                      # build (the API must answer /health)
   .\tool\hosted.ps1 -Install             # build, then adb install -r on the phone
-  .\tool\hosted.ps1 -SkipHealthCheck     # build before the service exists (Gate 6.7-2)
-  .\tool\hosted.ps1 -ApiBaseUrl https://api.tryfitos.me   # later, once the domain is set up
+  .\tool\hosted.ps1 -SkipHealthCheck     # build before the service answers
+  .\tool\hosted.ps1 -AppBundle -Version 1.0.0-beta.1 -BuildNumber 4
+                                         # the Play bundle, signed with the upload key
+  .\tool\hosted.ps1 -ApiBaseUrl https://<other host>   # e.g. the Cloud Run service
 
   Configuration: apps/mobile/hosted.env (gitignored; see hosted.env.example).
   The five Firebase values fall back to alpha.env — same Firebase project.
-  API_BASE_URL falls back to the Cloud Run service's deterministic address,
-  https://<Service>-<project number>.<Region>.run.app, where the project
-  number is FIREBASE_MESSAGING_SENDER_ID.
+  API_BASE_URL falls back to https://api.tryfitos.me, the beta's domain: the
+  app only ever knows the domain, so moving the server between clouds needs
+  no new build (ADR-025).
 
   The address must be https://, a DNS name, no port, no path — checked here
   (tool/check_hosted_api_url.dart, the app's own rules) and again by Gradle.
-  Version: 1.0.0-alpha.2 (3) set at build time; pubspec.yaml is not changed,
-  so the LAN alpha build keeps 1.0.0-alpha.1 (2).
-  Output: build\app\outputs\flutter-apk\fitos-hosted-<version>.apk
+  Version: 1.0.0-beta.1 (4) unless given, set at build time; pubspec.yaml is
+  not changed, so the LAN alpha build keeps 1.0.0-alpha.1 (2). Every build
+  number must be higher than the last one uploaded to Play.
+  -AppBundle needs android/key.properties (the upload key, never committed;
+  docs/hosting/PLAY.md) and refuses to build without it.
+  Every APK and bundle is scanned for secrets before it is handed over.
+  Output: build\app\outputs\flutter-apk\fitos-hosted-<version>.apk, or
+          build\app\outputs\bundle\release\fitos-<version>-<build>.aab
 #>
 [CmdletBinding()]
 param(
   [string]$ApiBaseUrl,
-  [string]$Service = 'fitos-api-alpha',
-  [string]$Region = 'asia-south1',
-  [string]$Version = '1.0.0-alpha.2',
-  [int]$BuildNumber = 3,
+  [string]$Version = '1.0.0-beta.1',
+  [int]$BuildNumber = 4,
   [string]$EnvFile,
   # Default: every ABI, like the Phase 6.6 release build. `android-arm64` alone
   # (the S24) when Windows Smart App Control blocks the 32-bit ARM compiler.
   [ValidateSet('', 'android-arm64', 'android-arm', 'android-x64')][string]$TargetPlatform = '',
   [switch]$Install,
-  [switch]$SkipHealthCheck
+  [switch]$SkipHealthCheck,
+  [switch]$AppBundle
 )
 
 $ErrorActionPreference = 'Stop'
@@ -70,9 +77,15 @@ if ($missing) { Write-Error "Missing (in hosted.env or alpha.env): $($missing -j
 $source = 'parameter'
 if (-not $ApiBaseUrl) { $ApiBaseUrl = $cfg['API_BASE_URL']; $source = 'hosted.env' }
 if (-not $ApiBaseUrl) {
-  $ApiBaseUrl = "https://$Service-$($cfg['FIREBASE_MESSAGING_SENDER_ID']).$Region.run.app"
-  $source = "derived: Cloud Run deterministic URL of $Service in $Region (confirm after the first deploy)"
+  $ApiBaseUrl = 'https://api.tryfitos.me'
+  $source = 'default: the beta domain (ADR-025)'
 }
+if ($AppBundle -and -not (Test-Path (Join-Path $mobile 'android\key.properties'))) {
+  Write-Host 'Refusing to build the Play bundle: android/key.properties (the upload key) is missing.'
+  Write-Host 'See docs/hosting/PLAY.md, step 1.'
+  exit 1
+}
+if ($AppBundle -and $Install) { Write-Host '-Install applies to APKs only: a bundle goes to the Play Console.'; exit 1 }
 $ApiBaseUrl = $ApiBaseUrl.TrimEnd('/')
 
 Push-Location $mobile
@@ -112,8 +125,8 @@ if (-not $SkipHealthCheck) {
   catch {
     Write-Host ""
     Write-Host "  /health did NOT answer at $ApiBaseUrl"
-    Write-Host "  Deploy the service first (docs/hosting/CLOUD-RUN.md), pass -ApiBaseUrl with the"
-    Write-Host "  URL gcloud reports, or -SkipHealthCheck to build anyway."
+    Write-Host "  Release the server first (docs/hosting/AWS.md), pass -ApiBaseUrl with another"
+    Write-Host "  address, or -SkipHealthCheck to build anyway."
     exit 1
   }
 }
@@ -137,12 +150,23 @@ Push-Location $mobile
 $ErrorActionPreference = 'Continue'
 try {
   $platform = if ($TargetPlatform) { @('--target-platform', $TargetPlatform) } else { @() }
-  & flutter build apk --release --build-name=$Version --build-number=$BuildNumber @platform @defines
-  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-  $built = 'build\app\outputs\flutter-apk\app-release.apk'
-  $apk = "build\app\outputs\flutter-apk\fitos-hosted-$Version.apk"
+  if ($AppBundle) {
+    & flutter build appbundle --release --build-name=$Version --build-number=$BuildNumber @platform @defines
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    $built = 'build\app\outputs\bundle\release\app-release.aab'
+    $apk = "build\app\outputs\bundle\release\fitos-$Version-$BuildNumber.aab"
+  } else {
+    & flutter build apk --release --build-name=$Version --build-number=$BuildNumber @platform @defines
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    $built = 'build\app\outputs\flutter-apk\app-release.apk'
+    $apk = "build\app\outputs\flutter-apk\fitos-hosted-$Version.apk"
+  }
   Copy-Item -Force $built $apk
-  Write-Host "APK: $(Join-Path $mobile $apk)"
+  # §24 / Phase 17: nothing secret leaves in the binary (the public Firebase
+  # client key is allowed in it; a private key or a server key is not).
+  & node (Join-Path $mobile '..\..\scripts\check-secrets.mjs') --apk $apk
+  if ($LASTEXITCODE -ne 0) { Remove-Item -Force $apk; Write-Host 'Secret scan failed: the build was removed.'; exit 1 }
+  Write-Host "$(if ($AppBundle) { 'Bundle' } else { 'APK' }): $(Join-Path $mobile $apk)"
   if ($Install) {
     & adb install -r $apk
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
