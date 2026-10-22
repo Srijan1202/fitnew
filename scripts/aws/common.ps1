@@ -24,7 +24,11 @@ function Invoke-Aws {
 }
 
 function Initialize-Aws([string]$AwsProfileName, [string]$Region) {
-  if (-not (Get-Command aws -ErrorAction SilentlyContinue)) { throw 'The AWS CLI is not installed (https://aws.amazon.com/cli/).' }
+  if (-not (Get-Command aws -ErrorAction SilentlyContinue)) {
+    # Installed but not on this shell's PATH (a shell opened before the install).
+    $cli = 'C:\Program Files\Amazon\AWSCLIV2'
+    if (Test-Path "$cli\aws.exe") { $env:Path += ";$cli" } else { throw 'The AWS CLI is not installed (https://aws.amazon.com/cli/).' }
+  }
   $script:AwsProfile = $AwsProfileName
   $script:AwsRegion = $Region
   try {
