@@ -25,7 +25,7 @@ Future<void> main() async {
   }
   await installCrashReporting(reporter);
 
-  // Phase 19: open in the theme chosen last time (Paper by default).
+  // Phase 19: open in the theme chosen last time (FITOS Dark by default).
   await loadSavedPalette();
 
   // The phone's IANA zone, for sign-in and Profile (never blocks: null on failure).

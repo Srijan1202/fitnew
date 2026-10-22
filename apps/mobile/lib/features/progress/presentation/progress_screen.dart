@@ -222,14 +222,15 @@ class ProgressScreen extends ConsumerWidget {
 /* -------------------------------------------------------------- building -- */
 
 /// §6.2: corners of 2 px and an ink outline for this page's secondary buttons.
-final ButtonStyle _squareOutline = OutlinedButton.styleFrom(
-  foregroundColor: FitColors.ink,
-  side: BorderSide(color: FitColors.ink),
-  shape: const RoundedRectangleBorder(
-    borderRadius: BorderRadius.all(FitRadius.small),
-  ),
-  minimumSize: const Size.fromHeight(44),
-);
+// A getter: built on each read, so it follows the palette.
+ButtonStyle get _squareOutline => OutlinedButton.styleFrom(
+      foregroundColor: FitColors.ink,
+      side: BorderSide(color: FitColors.ink),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(FitRadius.small),
+      ),
+      minimumSize: const Size.fromHeight(44),
+    );
 
 class _Pad extends StatelessWidget {
   const _Pad({required this.child});

@@ -245,14 +245,15 @@ Future<void> _signOut(BuildContext context, WidgetRef ref) async {
   await ref.read(authControllerProvider.notifier).signOut();
 }
 
-final _outlined = OutlinedButton.styleFrom(
-  foregroundColor: FitColors.ink,
-  side: BorderSide(color: FitColors.ink),
-  minimumSize: const Size(88, 48),
-  shape: const RoundedRectangleBorder(
-    borderRadius: BorderRadius.all(FitRadius.small),
-  ),
-);
+// A getter: built on each read, so it follows the palette.
+ButtonStyle get _outlined => OutlinedButton.styleFrom(
+      foregroundColor: FitColors.ink,
+      side: BorderSide(color: FitColors.ink),
+      minimumSize: const Size(88, 48),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(FitRadius.small),
+      ),
+    );
 
 class _Facts extends ConsumerWidget {
   const _Facts({required this.profile});

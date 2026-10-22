@@ -4,9 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'tokens.dart';
 
-/// Phase 19 (ADR-027): the chosen palette, kept on this phone (a trivial
-/// flag, §7.1). Paper for everyone; the others are premium — the app falls
-/// back to Paper as soon as it knows the user is not premium.
+/// Phase 19 (ADR-027, ADR-028): the chosen palette, kept on this phone (a
+/// trivial flag, §7.1). FITOS Dark by default; FITOS Light and Paper for
+/// everyone; the others are premium — the app falls back to the brand theme
+/// of the same brightness as soon as it knows the user is not premium.
 const kThemePreference = 'theme_id';
 
 /// Read once by main() before the first frame, so the app opens in its theme.
@@ -15,7 +16,7 @@ Future<void> loadSavedPalette() async {
     final prefs = await SharedPreferences.getInstance();
     FitPalette.current = FitPalette.byId(prefs.getString(kThemePreference));
   } on Object {
-    FitPalette.current = FitPalette.paperPalette;
+    FitPalette.current = FitPalette.fitosDark;
   }
 }
 

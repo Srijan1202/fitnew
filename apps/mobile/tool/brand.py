@@ -1,60 +1,55 @@
-"""FITOS mark — generated, not drawn by hand, so it can be regenerated.
+"""FITOS launcher icon and splash, from the brand kit (ADR-028).
 
-Paper / ink, athletic editorial (§6). The mark is a geometric F whose
-middle bar runs on as a thin rule — the hairline that structures every
-FITOS screen. No gradients, no clip art. Outputs feed
+The geometry and colours are the kit's own (brand/build_kit.py), so the
+icon on the phone is the kit's app icon. Outputs feed
 flutter_launcher_icons and flutter_native_splash (see pubspec.yaml).
+Needs Chrome or Edge, like the kit.
 
     python tool/brand.py
 """
+import sys
+import tempfile
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+REPO = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO / 'brand'))
 
-PAPER = (0xED, 0xEB, 0xE4, 255)
-INK = (0x17, 0x17, 0x1A, 255)
-PINE = (0x1E, 0x6B, 0x47, 255)
-CLEAR = (0, 0, 0, 0)
+import build_kit as kit  # noqa: E402
+import kit_assets  # noqa: E402
 
-OUT = Path(__file__).resolve().parent.parent / "assets" / "brand"
-
-
-def mark(draw: ImageDraw.ImageDraw, size: int, scale: float, ink=INK, rule=INK) -> None:
-    """The F at `scale` of the canvas, centred. Proportions in a 100-unit box."""
-    u = size * scale / 100
-    ox = (size - 100 * u) / 2
-    oy = (size - 100 * u) / 2
-
-    def box(x0, y0, x1, y1, fill):
-        draw.rectangle([ox + x0 * u, oy + y0 * u, ox + x1 * u, oy + y1 * u], fill=fill)
-
-    stem = 18
-    box(14, 8, 14 + stem, 92, ink)          # stem
-    box(14, 8, 86, 8 + stem, ink)           # top bar
-    box(14, 44, 68, 44 + 14, ink)           # middle bar, shorter
-    box(68, 49, 100, 49 + 4, rule)          # …runs on as the rule
+OUT = Path(__file__).resolve().parent.parent / 'assets' / 'brand'
 
 
-def icon(size: int, background, scale: float, out: Path) -> None:
-    im = Image.new("RGBA", (size, size), background)
-    mark(ImageDraw.Draw(im), size, scale)
-    im.save(out)
+def centred_mark(fill: str, size: int, share: float) -> str:
+    """The F centred in a transparent square, its box `share` of the side."""
+    m = size * share
+    # The visible F spans y 6-94 of its 100-unit box: centre that span.
+    return kit.svg(size, size, kit_assets.mark_centered(fill, size / 2, size / 2 - 50 * m / 100, m),
+                   kit.defs_gradient('g'))
 
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    # Legacy square launcher icon: paper background, F filling ~62%.
-    icon(1024, PAPER, 0.62, OUT / "icon.png")
-    # Adaptive foreground: transparent, F inside the 66% safe zone.
-    icon(1024, CLEAR, 0.46, OUT / "icon_foreground.png")
-    # Splash mark (shown centred on paper by flutter_native_splash).
-    icon(1152, CLEAR, 0.42, OUT / "splash.png")
-    # Android 12+ splash icon: the OS masks a circle, keep the F small.
-    icon(1152, CLEAR, 0.34, OUT / "splash_android12.png")
-    # A monochrome variant for themed icons (Android 13+): ink only.
-    icon(1024, CLEAR, 0.46, OUT / "icon_monochrome.png")
-    print("wrote", OUT)
+    files = {
+        # Legacy launcher icon: the kit's bold app icon on carbon.
+        'icon.png': (kit_assets.ICONS['app-icon-bold-1-carbon'], 1024),
+        # Adaptive foreground: transparent, the F inside the 66% safe zone.
+        'icon_foreground.png': (centred_mark('url(#g)', 1024, 0.50), 1024),
+        # Themed icons (Android 13+) take only the shape: white on clear.
+        'icon_monochrome.png': (centred_mark('#FFFFFF', 1024, 0.50), 1024),
+        # Splash mark, centred on carbon by flutter_native_splash.
+        'splash.png': (centred_mark('url(#g)', 1152, 0.40), 1152),
+        # Android 12+ splash icon: the OS masks a circle, keep the F inside it.
+        'splash_android12.png': (centred_mark('url(#g)', 1152, 0.44), 1152),
+    }
+    with tempfile.TemporaryDirectory() as tmp:
+        for name, (content, px) in files.items():
+            src = Path(tmp) / name.replace('.png', '.svg')
+            src.write_text(content, encoding='utf-8')
+            kit.render_file(src, OUT / name, px, px, 1)
+            print(name)
+    print('wrote', OUT)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

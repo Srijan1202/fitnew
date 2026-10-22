@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/config/app_config.dart';
@@ -36,8 +37,9 @@ class FitOSApp extends ConsumerWidget {
     // "Update FITOS". Unknown (offline) never blocks.
     final updateRequired = ref.watch(updateRequiredProvider);
     // Phase 19 (ADR-027): the palette every token reads; a change rebuilds
-    // the whole tree in place. A premium palette falls back to Paper as
-    // soon as the app knows the user is not premium.
+    // the whole tree in place. A premium palette falls back to the brand
+    // theme of its brightness as soon as the app knows the user is not
+    // premium (ADR-028).
     final palette = ref.watch(themeControllerProvider);
     FitPalette.current = palette;
     ref.listen(themeControllerProvider, (previous, next) {
@@ -50,7 +52,7 @@ class FitOSApp extends ConsumerWidget {
       if (premium == false && FitPalette.current.premium) {
         ref
             .read(themeControllerProvider.notifier)
-            .choose(FitPalette.paperPalette);
+            .choose(FitPalette.current.freeFallback);
       }
     });
 
@@ -59,19 +61,25 @@ class FitOSApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: FitTheme.build(),
       routerConfig: router,
-      builder: (context, child) {
-        // Text scaling is supported to 200% (§6.8). Large metrics cap their
-        // scale factor so they never truncate; body text scales freely.
-        final mediaQuery = MediaQuery.of(context);
-        return MediaQuery(
-          data: mediaQuery.copyWith(
-            textScaler: mediaQuery.textScaler.clamp(maxScaleFactor: 2.0),
-          ),
-          child: updateRequired
-              ? const UpdateRequiredScreen()
-              : child ?? const SizedBox.shrink(),
-        );
-      },
+      builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+        // Status-bar icons that read on the canvas, on every screen.
+        value: FitTheme.overlayStyle,
+        child: Builder(
+          builder: (context) {
+            // Text scaling is supported to 200% (§6.8). Large metrics cap their
+            // scale factor so they never truncate; body text scales freely.
+            final mediaQuery = MediaQuery.of(context);
+            return MediaQuery(
+              data: mediaQuery.copyWith(
+                textScaler: mediaQuery.textScaler.clamp(maxScaleFactor: 2.0),
+              ),
+              child: updateRequired
+                  ? const UpdateRequiredScreen()
+                  : child ?? const SizedBox.shrink(),
+            );
+          },
+        ),
+      ),
     );
   }
 }

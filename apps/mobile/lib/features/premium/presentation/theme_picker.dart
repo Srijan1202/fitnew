@@ -7,8 +7,9 @@ import '../domain/avatars.dart';
 import 'premium_providers.dart';
 import 'premium_sheet.dart';
 
-/// Phase 19 (ADR-027): Profile → Theme. Paper for everyone; Night, Forest and
-/// Ocean for premium (a lock, then the premium sheet, for a free user).
+/// Phase 19 (ADR-027, ADR-028): Profile → Theme. FITOS Dark (the default),
+/// FITOS Light and Paper for everyone; Night, Forest and Ocean for premium
+/// (a lock, then the premium sheet, for a free user).
 class ThemePicker extends ConsumerWidget {
   const ThemePicker({super.key});
 
@@ -92,7 +93,8 @@ class _Swatch extends StatelessWidget {
                   Positioned(
                     left: 8,
                     top: 10,
-                    child: Container(width: 26, height: 4, color: palette.ink),
+                    child:
+                        Container(width: 26, height: 4, color: palette.accent),
                   ),
                   Positioned(
                     left: 8,

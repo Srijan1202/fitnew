@@ -118,8 +118,10 @@ class FitBottomBar extends StatelessWidget {
   static const double sideMargin = 12;
   static const double bottomMargin = 10;
 
-  /// Paper at 88%: the content shows through, the labels stay legible.
-  static const Color surface = Color(0xE0EDEBE4);
+  /// The canvas at 88%: the content shows through, the labels stay
+  /// legible. From the palette — a fixed paper colour put Night's light
+  /// labels on a light bar.
+  static Color get surface => FitColors.paper.withValues(alpha: 0.88);
 
   @override
   Widget build(BuildContext context) {
@@ -140,10 +142,10 @@ class FitBottomBar extends StatelessWidget {
                 border: Border.all(color: FitColors.rule),
                 borderRadius: const BorderRadius.all(FitRadius.medium),
               ),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: surface,
-                borderRadius: BorderRadius.all(FitRadius.medium),
-                boxShadow: <BoxShadow>[
+                borderRadius: const BorderRadius.all(FitRadius.medium),
+                boxShadow: const <BoxShadow>[
                   BoxShadow(
                     color: Color(0x1A17171A),
                     blurRadius: 12,
@@ -192,7 +194,13 @@ class _BarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = on ? FitColors.ink : FitColors.ink35;
+    // The selected tab in the accent where it reads as type (lime on FITOS
+    // Dark), in ink elsewhere.
+    final color = on
+        ? (FitPalette.current.brightness == Brightness.dark
+            ? FitColors.accent
+            : FitColors.ink)
+        : FitColors.ink35;
     return Semantics(
       button: true,
       selected: on,

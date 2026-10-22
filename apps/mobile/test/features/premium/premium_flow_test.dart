@@ -36,11 +36,11 @@ void main() {
     db = AppDatabase.inMemory();
     premium = FakePremiumApi();
     weekly = FakeWeeklyReportApi();
-    FitPalette.current = FitPalette.paperPalette;
+    FitPalette.current = FitPalette.fitosDark;
     ai = null;
   });
   tearDown(() async {
-    FitPalette.current = FitPalette.paperPalette;
+    FitPalette.current = FitPalette.fitosDark;
     auth.dispose();
     await db.close();
   });
@@ -215,17 +215,44 @@ void main() {
   });
 
   group('colour themes', () {
-    testWidgets('free: Night is locked and opens Premium; Paper stays',
+    testWidgets('free: Night is locked and opens Premium; FITOS Dark stays',
         (tester) async {
       await start(tester);
       await tap(tester, 'home.profile');
       await tap(tester, 'theme.night');
       expect(find.byKey(const ValueKey('premium.sheet')), findsOneWidget);
+      expect(FitPalette.current.id, 'fitos-dark');
+    });
+
+    testWidgets('free: FITOS Light and Paper are open to everyone',
+        (tester) async {
+      await start(tester);
+      await tap(tester, 'home.profile');
+      await tap(tester, 'theme.fitos-light');
+      expect(find.byKey(const ValueKey('premium.sheet')), findsNothing);
+      expect(FitPalette.current.id, 'fitos-light');
+      // A button style built once kept FITOS Dark's white: invisible on light.
+      final changeGoal = tester.widget<OutlinedButton>(
+        find.ancestor(
+          of: find.text('Change goal'),
+          matching: find.byType(OutlinedButton),
+        ),
+      );
+      expect(
+        changeGoal.style?.foregroundColor?.resolve(<WidgetState>{}),
+        FitPalette.fitosLight.ink,
+      );
+      await tap(tester, 'theme.paper');
       expect(FitPalette.current.id, 'paper');
+      // The type follows the palette (it once kept the first palette's ink).
+      expect(
+        Theme.of(tester.element(find.text('THEME'))).textTheme.bodyLarge?.color,
+        FitPalette.paperPalette.ink,
+      );
     });
 
     testWidgets(
-        'premium: Night repaints the app in place; losing premium falls back to Paper',
+        'premium: Night repaints the app in place; losing premium falls back to FITOS Dark',
         (tester) async {
       premium.premium = true;
       await start(tester);
@@ -237,10 +264,23 @@ void main() {
           Theme.of(tester.element(find.byType(Scaffold).last))
               .scaffoldBackgroundColor;
       expect(bg, FitPalette.night.paper);
+      // Night's type is Night's ink, and the tab bar is Night's canvas — the
+      // two that left dark-on-dark and light-on-light before.
+      final ctx = tester.element(find.byType(Scaffold).last);
+      expect(Theme.of(ctx).textTheme.bodyLarge?.color, FitPalette.night.ink);
+      expect(Theme.of(ctx).textTheme.labelSmall?.color, FitPalette.night.ink35);
       expect(
         find.byKey(const ValueKey('profile.theme')),
         findsOneWidget,
         reason: 'still on Profile',
+      );
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      final bar =
+          tester.widget<Container>(find.byKey(const ValueKey('nav.bar')));
+      expect(
+        (bar.decoration! as BoxDecoration).color,
+        FitPalette.night.paper.withValues(alpha: 0.88),
       );
 
       premium.premium = false;
@@ -248,7 +288,7 @@ void main() {
           ProviderScope.containerOf(tester.element(find.byType(FitOSApp)));
       container.invalidate(premiumStatusProvider);
       await tester.pumpAndSettle();
-      expect(FitPalette.current.id, 'paper');
+      expect(FitPalette.current.id, 'fitos-dark');
     });
   });
 

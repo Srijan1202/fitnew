@@ -2,22 +2,21 @@ import 'package:flutter/widgets.dart';
 
 /// Design tokens from spec §6.2.
 ///
-/// These are the whole palette. There are exactly three semantic colours
-/// ([pine], [amber], [oxide]) and adding a fourth requires a recorded decision.
-/// Colour carries meaning only — primary actions are solid [ink] blocks, never
-/// coloured, so colour never competes with semantics.
+/// There are exactly three semantic colours ([pine], [amber], [oxide]) and
+/// adding a fourth requires a recorded decision.
 ///
-/// Phase 19 (ADR-027): the values come from the active [FitPalette]. Paper
-/// is the default and every free user's; the premium themes swap the whole
-/// palette at once, so every screen keeps its meaning.
+/// Phase 19 (ADR-027): the values come from the active [FitPalette]; a theme
+/// swaps the whole palette at once, so every screen keeps its meaning.
+/// ADR-028 (brand kit): [accent] is the primary action — the lime of FITOS
+/// Dark, ink everywhere else — so Paper's ink buttons are unchanged.
 abstract final class FitColors {
-  /// Canvas. Bone, not cream.
+  /// Canvas.
   static Color get paper => FitPalette.current.paper;
 
   /// Recessed surfaces.
   static Color get paper2 => FitPalette.current.paper2;
 
-  /// Primary type and primary buttons.
+  /// Primary type.
   static Color get ink => FitPalette.current.ink;
 
   /// Secondary type.
@@ -37,9 +36,23 @@ abstract final class FitColors {
 
   /// Fatigue / missed / destructive.
   static Color get oxide => FitPalette.current.oxide;
+
+  /// Primary buttons and the selected tab (ADR-028).
+  static Color get accent => FitPalette.current.accent;
+
+  /// Type and icons on [accent].
+  static Color get onAccent => FitPalette.current.onAccent;
 }
 
-/// Phase 19 (ADR-027): one complete set of the nine tokens.
+/// The brand kit's colours (brand/README.md), for the logo.
+abstract final class FitBrand {
+  static const Color limeHi = Color(0xFFE4FF52);
+  static const Color lime = Color(0xFFC6F432);
+  static const Color green = Color(0xFF5BC62A);
+  static const Color carbon = Color(0xFF0A0D0B);
+}
+
+/// Phase 19 (ADR-027): one complete set of the tokens.
 class FitPalette {
   const FitPalette({
     required this.id,
@@ -54,8 +67,12 @@ class FitPalette {
     required this.pine,
     required this.amber,
     required this.oxide,
+    Color? accent,
+    Color? onAccent,
+    this.brandMark = false,
     this.premium = true,
-  });
+  })  : accent = accent ?? ink,
+        onAccent = onAccent ?? paper;
 
   final String id;
   final String label;
@@ -69,13 +86,58 @@ class FitPalette {
   final Color pine;
   final Color amber;
   final Color oxide;
+  final Color accent;
+  final Color onAccent;
+
+  /// The logo's mark in the lime gradient (the brand themes), not in ink.
+  final bool brandMark;
   final bool premium;
 
   /// The palette every screen reads now. Set by the theme controller before
-  /// the app rebuilds; Paper unless a premium user chose another.
-  static FitPalette current = paperPalette;
+  /// the app rebuilds; FITOS Dark unless the user chose another.
+  static FitPalette current = fitosDark;
 
-  /// The §6.2 original: light, paper and ink.
+  /// ADR-028, the default: the brand kit's primary logo — carbon, white type,
+  /// lime actions.
+  static const fitosDark = FitPalette(
+    id: 'fitos-dark',
+    label: 'FITOS Dark',
+    brightness: Brightness.dark,
+    paper: Color(0xFF0A0D0B),
+    paper2: Color(0xFF151A16),
+    ink: Color(0xFFF3F5F1),
+    ink60: Color(0xFFB4BCB5),
+    ink35: Color(0xFF7D867F),
+    rule: Color(0xFF262D27),
+    pine: Color(0xFFC6F432),
+    amber: Color(0xFFF5B342),
+    oxide: Color(0xFFFF6B57),
+    accent: Color(0xFFC6F432),
+    onAccent: Color(0xFF0A0D0B),
+    brandMark: true,
+    premium: false,
+  );
+
+  /// ADR-028: the brand kit's light side — paper white, ink actions, green
+  /// darkened enough to read as text.
+  static const fitosLight = FitPalette(
+    id: 'fitos-light',
+    label: 'FITOS Light',
+    brightness: Brightness.light,
+    paper: Color(0xFFF5F6F3),
+    paper2: Color(0xFFE8EBE5),
+    ink: Color(0xFF0B0B0C),
+    ink60: Color(0xFF4A504B),
+    ink35: Color(0xFF858C86),
+    rule: Color(0xFFD3D8D1),
+    pine: Color(0xFF2F7A18),
+    amber: Color(0xFFA8641B),
+    oxide: Color(0xFFB3261E),
+    brandMark: true,
+    premium: false,
+  );
+
+  /// The §6.2 original: light, paper and ink. Optional since ADR-028.
   static const paperPalette = FitPalette(
     id: 'paper',
     label: 'Paper',
@@ -140,10 +202,22 @@ class FitPalette {
     oxide: Color(0xFF9C2E28),
   );
 
-  static const all = <FitPalette>[paperPalette, night, forest, ocean];
+  static const all = <FitPalette>[
+    fitosDark,
+    fitosLight,
+    paperPalette,
+    night,
+    forest,
+    ocean,
+  ];
+
+  /// Where a theme the user may no longer have falls back to: the brand
+  /// theme of the same brightness.
+  FitPalette get freeFallback =>
+      brightness == Brightness.dark ? fitosDark : fitosLight;
 
   static FitPalette byId(String? id) =>
-      all.firstWhere((p) => p.id == id, orElse: () => paperPalette);
+      all.firstWhere((p) => p.id == id, orElse: () => fitosDark);
 }
 
 /// 8px base grid (§6.4).

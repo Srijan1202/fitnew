@@ -160,12 +160,15 @@ class TrendPainter extends CustomPainter {
   final String from;
   final String to;
 
+  /// The palette it was drawn in: a theme change repaints it.
+  final FitPalette palette = FitPalette.current;
+
   /// §17 rule 1: the trend is bold; raw readings are hairlines.
   static const double trendStroke = 2.5;
   static const double rawStroke = 1;
   static const double rawTick = 5;
-  static final Color trendColor = FitColors.ink;
-  static final Color rawColor = FitColors.ink35;
+  static Color get trendColor => FitColors.ink;
+  static Color get rawColor => FitColors.ink35;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -225,5 +228,8 @@ class TrendPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(TrendPainter old) =>
-      old.points != points || old.from != from || old.to != to;
+      old.points != points ||
+      old.from != from ||
+      old.to != to ||
+      old.palette != palette;
 }

@@ -127,6 +127,8 @@ Colour carries meaning only. Primary actions are **solid ink blocks**, never col
 
 `AMENDED 2026-10-22 (Phase 19, ADR-027, owner)`: Paper stays the default and the only free look. Premium users may choose **Night** (dark), **Forest** or **Ocean**. Each is a complete set of these nine roles, so the three semantic colours keep their meanings in every palette.
 
+`AMENDED 2026-10-22 (Phase 19, ADR-028, owner)`: the app follows the brand kit (`brand/`). **FITOS Dark** is the default; **FITOS Light** and **Paper** are free alternatives; Night, Forest and Ocean stay premium. A tenth token, **accent**, is the primary action: lime `#C6F432` on FITOS Dark, ink in every other palette, so Paper's ink buttons are unchanged. The light foundation above is now an option, not the default.
+
 ### 6.3 Type
 
 | Role | Face | Usage |
@@ -135,6 +137,8 @@ Colour carries meaning only. Primary actions are **solid ink blocks**, never col
 | Everything else | **Archivo** | 11–19px, weights 400/600/700 |
 
 Hierarchy comes from type scale and whitespace, not from boxes. Numbers are the hero.
+
+`AMENDED 2026-10-22 (Phase 19, ADR-028, owner)`: one face, **Barlow** (bundled, SIL OFL), the free equivalent of the brand kit's Bahnschrift. Metrics are Barlow SemiBold at the same sizes; everything else uses weights 400/500/600/700. Anton and Archivo were never bundled.
 
 ### 6.4 Spacing & grid
 

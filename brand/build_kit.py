@@ -169,16 +169,21 @@ def chrome() -> str:
 
 def render(name: str, w: int, h: int, scale: int = 2) -> None:
     """The SVG at `scale`x into png/<name>.png, transparent where the SVG is."""
-    src = (SVG / f'{name}.svg').resolve()
-    html = SVG.parent / f'.render-{name}.html'
+    render_file(SVG / f'{name}.svg', PNG / f'{name}.png', w, h, scale)
+
+
+def render_file(src: Path, out: Path, w: int, h: int, scale: int = 1) -> None:
+    """Any SVG file into a PNG (used by apps/mobile/tool/brand.py too)."""
+    src = src.resolve()
+    html = src.parent / f'.render-{src.stem}.html'
     html.write_text(
         '<!doctype html><html><head><style>html,body{margin:0;padding:0;background:transparent}'
         f'img{{display:block;width:{w}px;height:{h}px}}</style></head>'
         f'<body><img src="{src.as_uri()}"></body></html>', encoding='utf-8')
-    out = (PNG / f'{name}.png').resolve()
     subprocess.run([chrome(), '--headless=new', '--disable-gpu', '--hide-scrollbars',
                     f'--force-device-scale-factor={scale}', f'--window-size={w},{h}',
-                    '--default-background-color=00000000', f'--screenshot={out}', html.resolve().as_uri()],
+                    '--default-background-color=00000000', f'--screenshot={out.resolve()}',
+                    html.resolve().as_uri()],
                    check=True, capture_output=True)
     html.unlink()
 
