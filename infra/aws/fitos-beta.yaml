@@ -33,10 +33,14 @@ Parameters:
     Type: String
     Default: '18'
     Description: Major version; matches docker/docker-compose.yml and CI. Check with `aws rds describe-db-engine-versions --engine postgres`.
-  GitHubRepository:
+  GitHubSubjectPrefix:
     Type: String
-    Default: Srijan1202/fitnew
-    Description: owner/name. Only pushes from its main and phase-* branches may publish images.
+    Default: repo:Srijan1202@142401395/fitnew@1359590462
+    Description: >-
+      The repository's OIDC subject prefix. This repository uses GitHub's
+      immutable subjects (owner@id/name@id), so a renamed or re-created repo
+      cannot match; read it from GET /repos/{owner}/{repo}/actions/oidc/customization/sub.
+      Only pushes from its main and phase-* branches may publish images.
   CreateGitHubOidcProvider:
     Type: String
     Default: 'true'
@@ -206,8 +210,8 @@ Resources:
                 token.actions.githubusercontent.com:aud: sts.amazonaws.com
               StringLike:
                 token.actions.githubusercontent.com:sub:
-                  - !Sub repo:${GitHubRepository}:ref:refs/heads/main
-                  - !Sub repo:${GitHubRepository}:ref:refs/heads/phase-*
+                  - !Sub ${GitHubSubjectPrefix}:ref:refs/heads/main
+                  - !Sub ${GitHubSubjectPrefix}:ref:refs/heads/phase-*
       Policies:
         - PolicyName: push-fitos-api
           PolicyDocument:

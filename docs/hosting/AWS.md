@@ -77,7 +77,7 @@ aws cloudformation deploy --template-file infra/aws/fitos-beta.yaml --stack-name
 - **The Free plan** refused 7 days of database backups on the first deploy (2026-10-22); the template keeps 1 (see Maintenance).
 - Other parameters have defaults:
   - `InstanceType=t3.small`, `DbInstanceClass=db.t4g.micro`, `MonthlyBudgetUsd=45`;
-  - `GitHubRepository=Srijan1202/fitnew`;
+  - `GitHubSubjectPrefix=repo:Srijan1202@142401395/fitnew@1359590462`: this repo's OIDC subject (GitHub's immutable form, owner@id/name@id). It is what CI presents to AWS, and a `repo:owner/name` prefix would be refused;
   - `CreateGitHubOidcProvider=true` (set it `false` only if the account already has GitHub's provider).
 
 Print the outputs (keep this window):
