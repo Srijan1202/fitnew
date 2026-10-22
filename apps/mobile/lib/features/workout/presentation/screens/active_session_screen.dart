@@ -17,6 +17,7 @@ import '../widgets/rest_bar.dart';
 import '../widgets/recommendation_sheet.dart';
 import '../widgets/session_exercise_card.dart';
 import '../widgets/sync_pill.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// The workout in progress (Phase 5). Reads from the phone's database and
 /// writes to it; nothing here waits for the network. One tap logs a set
@@ -444,51 +445,56 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
             ),
           ],
         ),
-        body: SafeArea(
-          child: ListView(
-            key: const ValueKey('session.list'),
-            padding: const EdgeInsets.only(bottom: FitSpacing.xl),
-            children: <Widget>[
-              if (session.exercises.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(FitSpacing.screen),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text('Nothing planned', style: textTheme.displaySmall),
-                      const SizedBox(height: FitSpacing.sm),
-                      Text(
-                        'Add an exercise and log it as you go.',
-                        style: textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: FitSpacing.md),
-                      OutlinedButton(
-                        key: const ValueKey('session.addFirst'),
-                        onPressed: _add,
-                        child: const Text('Add exercise'),
-                      ),
-                    ],
+        body: FitBackdrop(
+          child: SafeArea(
+            child: ListView(
+              key: const ValueKey('session.list'),
+              padding: EdgeInsets.only(
+                top: fitGlass ? FitSpacing.sm : 0,
+                bottom: FitSpacing.xl,
+              ),
+              children: <Widget>[
+                if (session.exercises.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(FitSpacing.screen),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text('Nothing planned', style: textTheme.displaySmall),
+                        const SizedBox(height: FitSpacing.sm),
+                        Text(
+                          'Add an exercise and log it as you go.',
+                          style: textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: FitSpacing.md),
+                        OutlinedButton(
+                          key: const ValueKey('session.addFirst'),
+                          onPressed: _add,
+                          child: const Text('Add exercise'),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              for (var i = 0; i < session.exercises.length; i++)
-                _card(session, i, repo),
-              if (session.exercises.isNotEmpty) ...<Widget>[
-                Divider(color: FitColors.rule, height: 1),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    FitSpacing.screen,
-                    FitSpacing.md,
-                    FitSpacing.screen,
-                    0,
+                for (var i = 0; i < session.exercises.length; i++)
+                  _card(session, i, repo),
+                if (session.exercises.isNotEmpty) ...<Widget>[
+                  const FitRule(),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      FitSpacing.screen,
+                      FitSpacing.md,
+                      FitSpacing.screen,
+                      0,
+                    ),
+                    child: TextButton(
+                      key: const ValueKey('session.addExercise'),
+                      onPressed: _add,
+                      child: const Text('+ Add exercise'),
+                    ),
                   ),
-                  child: TextButton(
-                    key: const ValueKey('session.addExercise'),
-                    onPressed: _add,
-                    child: const Text('+ Add exercise'),
-                  ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
         bottomNavigationBar: SessionFooter(

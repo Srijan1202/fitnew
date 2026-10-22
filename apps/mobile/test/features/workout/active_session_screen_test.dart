@@ -242,12 +242,18 @@ void main() {
       tester.widget<TextButton>(find.byKey(ValueKey('$k.dropSet'))).onPressed,
       isNull,
     );
+    // The cards are taller as blocks (ADR-029): bring each control into view,
+    // up or down, before tapping it.
+    await tester.ensureVisible(find.byKey(ValueKey('$k.set.1.done')));
+    await settle(tester);
     await tester.tap(find.byKey(ValueKey('$k.set.1.done')));
     await settle(tester);
-    await reveal(tester, find.byKey(ValueKey('$k.dropSet')));
+    await tester.ensureVisible(find.byKey(ValueKey('$k.dropSet')));
+    await settle(tester);
     await tester.tap(find.byKey(ValueKey('$k.dropSet')));
     await settle(tester);
-    await reveal(tester, find.byKey(ValueKey('$k.set.1.drop')));
+    await tester.ensureVisible(find.byKey(ValueKey('$k.set.1.drop')));
+    await settle(tester);
     expect(find.byKey(ValueKey('$k.set.1.drop')), findsOneWidget);
     expect(find.text('DROP'), findsOneWidget);
     await tester.tap(find.byKey(ValueKey('$k.set.1.drop.weight.minus')));
@@ -393,6 +399,7 @@ void main() {
       (tester) async {
     final s = await pumpSession(tester, offline: true);
     final curl = 'session.${s.exercises[1].clientExerciseId}';
+    await reveal(tester, find.byKey(ValueKey('$curl.header')));
     await tester.tap(find.byKey(ValueKey('$curl.header')));
     await settle(tester);
     await reveal(tester, find.byKey(ValueKey('$curl.set.1.done')));

@@ -5,6 +5,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../../exercise/presentation/controllers/exercise_providers.dart';
 import '../../domain/entities/program.dart';
 import 'set_row.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// One exercise on the workout-day screen, in two states (progressive
 /// disclosure). Collapsed: number, name, primary muscle, sets × reps, the
@@ -46,7 +47,13 @@ class ExerciseCard extends ConsumerWidget {
       v == v.roundToDouble() ? v.toInt().toString() : v.toString();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FitBlock(
+        // ADR-029: each exercise its own block on the glass palettes.
+        margin: const EdgeInsets.fromLTRB(12, 5, 12, 5),
+        child: _content(context, ref),
+      );
+
+  Widget _content(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     final x = exercise;
     final primary = x.primaryMuscles.map((m) => m.label).join(', ');
@@ -56,7 +63,7 @@ class ExerciseCard extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Divider(color: FitColors.rule, height: 1),
+        const FitRule(),
         InkWell(
           key: ValueKey('$cardKey.header'),
           onTap: onToggle,

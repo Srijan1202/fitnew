@@ -13,6 +13,7 @@ import '../controllers/ai_providers.dart';
 import '../../../premium/presentation/premium_providers.dart';
 import '../../../premium/presentation/premium_sheet.dart';
 import '../../../privacy/presentation/privacy_providers.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// Phase 6.6 — FITOS AI (Part 7). The conversation as a running editorial
 /// column: "YOU" and "FITOS AI" eyebrows, hairlines between turns, the
@@ -187,52 +188,54 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
             ),
         ],
       ),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: locked
-                  ? const SingleChildScrollView(
-                      padding: EdgeInsets.fromLTRB(
-                        FitSpacing.screen,
-                        FitSpacing.md,
-                        FitSpacing.screen,
-                        FitSpacing.xl,
+      body: FitBackdrop(
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: locked
+                    ? const SingleChildScrollView(
+                        padding: EdgeInsets.fromLTRB(
+                          FitSpacing.screen,
+                          FitSpacing.md,
+                          FitSpacing.screen,
+                          FitSpacing.xl,
+                        ),
+                        child: PremiumPitch(
+                          key: ValueKey('ai.premium'),
+                          feature: 'FITOS AI',
+                        ),
+                      )
+                    : status.when(
+                        loading: () => const SizedBox.shrink(),
+                        error: (e, _) => _Unavailable(
+                          message: (e is Failure ? e : const Unknown()).message,
+                          onRetry: () => ref.invalidate(aiStatusProvider),
+                        ),
+                        data: (s) => !s.enabled
+                            ? const _NotConfigured(switchedOff: true)
+                            : !s.configured
+                                ? const _NotConfigured()
+                                : chat.turns.isEmpty
+                                    ? _Empty(onPrompt: _send)
+                                    : _Conversation(
+                                        controller: _scroll,
+                                        state: chat,
+                                        onAction: _act,
+                                        onRetry: () => ref
+                                            .read(aiChatProvider.notifier)
+                                            .retry(),
+                                      ),
                       ),
-                      child: PremiumPitch(
-                        key: ValueKey('ai.premium'),
-                        feature: 'FITOS AI',
-                      ),
-                    )
-                  : status.when(
-                      loading: () => const SizedBox.shrink(),
-                      error: (e, _) => _Unavailable(
-                        message: (e is Failure ? e : const Unknown()).message,
-                        onRetry: () => ref.invalidate(aiStatusProvider),
-                      ),
-                      data: (s) => !s.enabled
-                          ? const _NotConfigured(switchedOff: true)
-                          : !s.configured
-                              ? const _NotConfigured()
-                              : chat.turns.isEmpty
-                                  ? _Empty(onPrompt: _send)
-                                  : _Conversation(
-                                      controller: _scroll,
-                                      state: chat,
-                                      onAction: _act,
-                                      onRetry: () => ref
-                                          .read(aiChatProvider.notifier)
-                                          .retry(),
-                                    ),
-                    ),
-            ),
-            _Composer(
-              controller: _input,
-              enabled: configured && !chat.sending,
-              onSend: _send,
-            ),
-          ],
+              ),
+              _Composer(
+                controller: _input,
+                enabled: configured && !chat.sending,
+                onSend: _send,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -253,6 +256,39 @@ class _Composer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    if (fitGlass) {
+      // ADR-029: a floating rounded field above the floating bar.
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(12, FitSpacing.sm, 12, 84),
+        child: DecoratedBox(
+          decoration: FitBlock.decoration(radius: const Radius.circular(26)),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(FitSpacing.md, 4, 6, 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: <Widget>[
+                Expanded(child: _field(textTheme)),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: IconButton.filled(
+                    key: const ValueKey('ai.send'),
+                    onPressed: enabled ? () => onSend() : null,
+                    icon: const Icon(Icons.arrow_upward),
+                    style: IconButton.styleFrom(
+                      backgroundColor: FitColors.accent,
+                      foregroundColor: FitColors.onAccent,
+                      disabledBackgroundColor:
+                          FitColors.ink.withValues(alpha: 0.12),
+                    ),
+                    tooltip: 'Send',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     return Container(
       // Sits above the floating bar.
       padding: const EdgeInsets.fromLTRB(
@@ -268,25 +304,7 @@ class _Composer extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: <Widget>[
-          Expanded(
-            child: TextField(
-              key: const ValueKey('ai.input'),
-              controller: controller,
-              enabled: enabled,
-              minLines: 1,
-              maxLines: 4,
-              maxLength: 2000,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (_) => onSend(),
-              style: textTheme.bodyLarge,
-              decoration: const InputDecoration(
-                hintText: 'Ask FITOS AI…',
-                counterText: '',
-                border: InputBorder.none,
-                isDense: true,
-              ),
-            ),
-          ),
+          Expanded(child: _field(textTheme)),
           IconButton(
             key: const ValueKey('ai.send'),
             onPressed: enabled ? () => onSend() : null,
@@ -298,6 +316,28 @@ class _Composer extends StatelessWidget {
       ),
     );
   }
+}
+
+extension on _Composer {
+  Widget _field(TextTheme textTheme) => TextField(
+        key: const ValueKey('ai.input'),
+        controller: controller,
+        enabled: enabled,
+        minLines: 1,
+        maxLines: 4,
+        maxLength: 2000,
+        textInputAction: TextInputAction.send,
+        onSubmitted: (_) => onSend(),
+        style: textTheme.bodyLarge,
+        decoration: InputDecoration(
+          hintText: 'Ask FITOS AI…',
+          counterText: '',
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding:
+              fitGlass ? const EdgeInsets.symmetric(vertical: 12) : null,
+        ),
+      );
 }
 
 class _Empty extends StatelessWidget {
@@ -332,29 +372,48 @@ class _Empty extends StatelessWidget {
           const SizedBox(height: FitSpacing.lg),
           Text('TRY', style: textTheme.labelSmall),
           const SizedBox(height: FitSpacing.xs),
-          for (final p in AiChatScreen.starterPrompts) ...<Widget>[
-            Divider(color: FitColors.rule, height: 1),
-            InkWell(
-              key: ValueKey(
-                'ai.prompt.${AiChatScreen.starterPrompts.indexOf(p)}',
-              ),
-              onTap: () => onPrompt(p),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(child: Text(p, style: textTheme.titleMedium)),
-                    Icon(
+          if (fitGlass)
+            FitGroup(
+              children: <Widget>[
+                for (final (i, p) in AiChatScreen.starterPrompts.indexed)
+                  FitRow(
+                    key: ValueKey('ai.prompt.$i'),
+                    icon: Icons.auto_awesome,
+                    title: p,
+                    onTap: () => onPrompt(p),
+                    trailing: Icon(
                       Icons.arrow_forward,
                       size: 18,
                       color: FitColors.ink60,
                     ),
-                  ],
+                  ),
+              ],
+            )
+          else ...<Widget>[
+            for (final p in AiChatScreen.starterPrompts) ...<Widget>[
+              Divider(color: FitColors.rule, height: 1),
+              InkWell(
+                key: ValueKey(
+                  'ai.prompt.${AiChatScreen.starterPrompts.indexOf(p)}',
+                ),
+                onTap: () => onPrompt(p),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(child: Text(p, style: textTheme.titleMedium)),
+                      Icon(
+                        Icons.arrow_forward,
+                        size: 18,
+                        color: FitColors.ink60,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ],
+            Divider(color: FitColors.rule, height: 1),
           ],
-          Divider(color: FitColors.rule, height: 1),
         ],
       ),
     );
@@ -388,9 +447,9 @@ class _Conversation extends StatelessWidget {
       ),
       children: <Widget>[
         for (final (i, t) in state.turns.indexed) ...<Widget>[
-          if (i > 0) Divider(color: FitColors.rule, height: 1),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
+          if (i > 0) const FitRule(),
+          _Bubble(
+            user: t.role == AiRole.user,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -429,7 +488,7 @@ class _Conversation extends StatelessWidget {
           ),
         ],
         if (state.sending) ...<Widget>[
-          Divider(color: FitColors.rule, height: 1),
+          const FitRule(),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
             child: Row(
@@ -453,7 +512,7 @@ class _Conversation extends StatelessWidget {
           ),
         ],
         if (state.failure != null) ...<Widget>[
-          Divider(color: FitColors.rule, height: 1),
+          const FitRule(),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
             child: Column(
@@ -475,6 +534,68 @@ class _Conversation extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// ADR-029: on glass, a turn is a bubble — yours on the right in the
+/// accent's tint, FITOS AI's on the left in a block. On Paper, the turn sits
+/// between hairlines as before.
+class _Bubble extends StatelessWidget {
+  const _Bubble({required this.user, required this.child});
+
+  final bool user;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!fitGlass) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
+        child: child,
+      );
+    }
+    const radius = Radius.circular(20);
+    final bubble = Container(
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+      decoration: user
+          ? BoxDecoration(
+              color: FitPalette.current.glow.withValues(alpha: 0.16),
+              border: Border.all(
+                color: FitPalette.current.glow.withValues(alpha: 0.35),
+              ),
+              borderRadius: const BorderRadius.only(
+                topLeft: radius,
+                topRight: radius,
+                bottomLeft: radius,
+                bottomRight: Radius.circular(6),
+              ),
+            )
+          : FitBlock.decoration().copyWith(
+              borderRadius: const BorderRadius.only(
+                topLeft: radius,
+                topRight: radius,
+                bottomLeft: Radius.circular(6),
+                bottomRight: radius,
+              ),
+            ),
+      child: child,
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment:
+            user ? MainAxisAlignment.end : MainAxisAlignment.start,
+        children: <Widget>[
+          Flexible(
+            child: FractionallySizedBox(
+              widthFactor: user ? 0.85 : 0.94,
+              alignment: user ? Alignment.centerRight : Alignment.centerLeft,
+              child: bubble,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

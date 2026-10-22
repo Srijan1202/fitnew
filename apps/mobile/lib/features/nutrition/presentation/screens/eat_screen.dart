@@ -16,6 +16,7 @@ import '../controllers/food_log_providers.dart';
 import '../controllers/food_logger.dart';
 import '../widgets/eat_widgets.dart';
 import '../widgets/log_controls.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// The Nutrition tab (Phase 8): EAT.
 ///
@@ -42,31 +43,34 @@ class EatScreen extends ConsumerWidget {
     final refresh = ref.watch(nutritionDayRefreshProvider(date));
 
     return Scaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(nutritionDayRefreshProvider(date));
-            await ref.read(nutritionDayRefreshProvider(date).future);
-          },
-          child: ListView(
-            key: const ValueKey('eat.list'),
-            padding: const EdgeInsets.fromLTRB(
-              FitSpacing.screen,
-              FitSpacing.md,
-              FitSpacing.screen,
-              FitSpacing.xl,
-            ),
-            children: <Widget>[
-              _Header(date: date, today: today),
-              const SizedBox(height: FitSpacing.md),
-              ...view.when(
-                loading: () => const <Widget>[_HeroSkeleton()],
-                error: (e, _) => <Widget>[
-                  AuthFeedback.error(failureOf(e).message),
-                ],
-                data: (v) => _dayBody(context, ref, v, refresh, today),
+      body: FitBackdrop(
+        child: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(nutritionDayRefreshProvider(date));
+              await ref.read(nutritionDayRefreshProvider(date).future);
+            },
+            child: ListView(
+              key: const ValueKey('eat.list'),
+              padding: EdgeInsets.fromLTRB(
+                fitGlass ? FitSpacing.md : FitSpacing.screen,
+                FitSpacing.md,
+                fitGlass ? FitSpacing.md : FitSpacing.screen,
+                // Room for the floating bar.
+                fitGlass ? 112 : FitSpacing.xl,
               ),
-            ],
+              children: <Widget>[
+                _Header(date: date, today: today),
+                const SizedBox(height: FitSpacing.md),
+                ...view.when(
+                  loading: () => const <Widget>[_HeroSkeleton()],
+                  error: (e, _) => <Widget>[
+                    AuthFeedback.error(failureOf(e).message),
+                  ],
+                  data: (v) => _dayBody(context, ref, v, refresh, today),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -145,7 +149,11 @@ class EatScreen extends ConsumerWidget {
     final empty = server.totals.isEmpty && v.pending.isEmpty;
     return <Widget>[
       ...notices,
-      _Hero(day: server),
+      FitBlock(
+        glow: true,
+        padding: const EdgeInsets.all(FitSpacing.md),
+        child: _Hero(day: server),
+      ),
       if (empty) ...<Widget>[
         const SizedBox(height: FitSpacing.sm),
         Text(
@@ -273,7 +281,7 @@ class _Header extends ConsumerWidget {
             ),
           ],
         ),
-        Divider(color: FitColors.rule, height: 1),
+        const FitRule(),
       ],
     );
   }
@@ -448,72 +456,77 @@ class _MealSection extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
     final canSave = logs.any((l) => !deleting.contains(l.clientLogId));
     final empty = logs.isEmpty && pending.isEmpty;
-    return Column(
+    // ADR-029: each meal a block on the glass palettes.
+    return FitBlock(
       key: ValueKey('eat.slot.${slot.wire}'),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        Divider(color: FitColors.rule, height: 1),
-        Row(
-          children: <Widget>[
-            Icon(mealSlotIcon(slot), size: 20, color: FitColors.ink),
-            const SizedBox(width: FitSpacing.sm),
-            Expanded(
-              child: Text(
-                slot.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            // Icon-only: stays one row at any text size.
-            if (canSave)
-              IconButton(
-                key: ValueKey('eat.save.${slot.wire}'),
-                tooltip: 'Save as meal',
-                onPressed: () => _saveMeal(context, ref),
-                icon: Icon(
-                  Icons.bookmark_add_outlined,
-                  size: 20,
-                  color: FitColors.ink60,
-                ),
-              ),
-            if (loggable)
-              Flexible(
-                child: TextButton.icon(
-                  key: ValueKey('eat.add.${slot.wire}'),
-                  onPressed: () => context.push(
-                    Routes.foodLog,
-                    extra: LogTarget(date: date, slot: slot),
-                  ),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text(
-                    'Add',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.fromLTRB(14, 4, 6, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          const FitRule(),
+          Row(
+            children: <Widget>[
+              Icon(mealSlotIcon(slot), size: 20, color: FitColors.ink),
+              const SizedBox(width: FitSpacing.sm),
+              Expanded(
+                child: Text(
+                  slot.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-          ],
-        ),
-        if (empty)
-          Padding(
-            padding: const EdgeInsets.only(
-              left: 28,
-              bottom: FitSpacing.sm,
-            ),
-            child: Text(
-              loggable ? 'Nothing yet — add food.' : 'Nothing logged.',
-              key: ValueKey('eat.slot.${slot.wire}.empty'),
-              style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
-            ),
+              // Icon-only: stays one row at any text size.
+              if (canSave)
+                IconButton(
+                  key: ValueKey('eat.save.${slot.wire}'),
+                  tooltip: 'Save as meal',
+                  onPressed: () => _saveMeal(context, ref),
+                  icon: Icon(
+                    Icons.bookmark_add_outlined,
+                    size: 20,
+                    color: FitColors.ink60,
+                  ),
+                ),
+              if (loggable)
+                Flexible(
+                  child: TextButton.icon(
+                    key: ValueKey('eat.add.${slot.wire}'),
+                    onPressed: () => context.push(
+                      Routes.foodLog,
+                      extra: LogTarget(date: date, slot: slot),
+                    ),
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text(
+                      'Add',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+            ],
           ),
-        for (final log in logs)
-          _LogEntry(log: log, deleting: deleting.contains(log.clientLogId)),
-        for (final p in pending) _PendingEntry(pending: p),
-        const SizedBox(height: FitSpacing.sm),
-      ],
+          if (empty)
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 28,
+                bottom: FitSpacing.sm,
+              ),
+              child: Text(
+                loggable ? 'Nothing yet — add food.' : 'Nothing logged.',
+                key: ValueKey('eat.slot.${slot.wire}.empty'),
+                style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+              ),
+            ),
+          for (final log in logs)
+            _LogEntry(log: log, deleting: deleting.contains(log.clientLogId)),
+          for (final p in pending) _PendingEntry(pending: p),
+          const SizedBox(height: FitSpacing.sm),
+        ],
+      ),
     );
   }
 }

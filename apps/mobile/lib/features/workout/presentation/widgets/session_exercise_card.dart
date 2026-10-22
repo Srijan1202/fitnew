@@ -4,6 +4,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../../training/domain/entities/program.dart';
 import '../../../training/presentation/widgets/set_row.dart';
 import '../../domain/entities/workout.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// One exercise in the session in progress. Collapsed: number, name,
 /// "done / planned sets". Expanded: every set as a row — logged sets in
@@ -108,7 +109,13 @@ class SessionExerciseCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FitBlock(
+        // ADR-029: each exercise its own block on the glass palettes.
+        margin: const EdgeInsets.fromLTRB(12, 5, 12, 5),
+        child: _content(context),
+      );
+
+  Widget _content(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final x = exercise;
     final key = 'session.${x.clientExerciseId}';
@@ -119,7 +126,7 @@ class SessionExerciseCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Divider(color: FitColors.rule, height: 1),
+        const FitRule(),
         InkWell(
           key: ValueKey('$key.header'),
           onTap: onToggle,

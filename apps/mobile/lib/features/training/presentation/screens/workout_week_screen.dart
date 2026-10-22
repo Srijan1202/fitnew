@@ -18,6 +18,7 @@ import '../controllers/program_controller.dart';
 import '../widgets/day_selector.dart';
 import '../widgets/exercise_card.dart';
 import 'plan_start_screen.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// The training plan, one day at a time (Phase 4 rework). A fixed day
 /// selector on top; below it only the selected day: its name, its muscles,
@@ -321,49 +322,51 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
               ),
             ],
           ),
-          body: SafeArea(
-            child: Column(
-              children: <Widget>[
-                DaySelector(
-                  days: program.days,
-                  selected: selected,
-                  onSelect: (dow) => setState(() => _selectedDow = dow),
-                ),
-                Expanded(
-                  child: _DayView(
-                    key: ValueKey('day.${day.id}'),
-                    day: day,
-                    exercises: _exercisesOf(day),
-                    startButton: StartSessionButton(
-                      dayOfWeek: day.dayOfWeek,
-                      isRest: day.isRest,
-                      onStart: () => _start(program, day),
-                    ),
-                    onAddSet: (id) => _addSet(day, id),
-                    onRemoveSet: (id, i) => _removeSet(day, id, i),
-                    expanded: _expanded,
-                    saveState: _saveState[day.id] ?? _SaveState.idle,
-                    saveFailure: _saveFailure[day.id],
-                    onToggle: (id) => setState(() {
-                      if (!_expanded.remove(id)) _expanded.add(id);
-                    }),
-                    onSetChanged: (id, set) => _setChanged(day, id, set),
-                    onRemove: (id) => _remove(day, id),
-                    onReplace: (x) => _replace(day, x),
-                    onRetry: () => _flush(day.id),
-                    onEditDay: () => context.push(Routes.planDayEdit(day.id)),
-                    deload: phase6?.deload,
-                    mesocycleWeek: phase6?.mesocycleWeek,
-                    substitutions: {
-                      if (phase6 != null)
-                        for (final x in phase6.exercises)
-                          if (x.substitution != null)
-                            x.plannedExerciseId: x.substitution!,
-                    },
-                    onSubstitute: (x, alt) => _substitute(day, x, alt),
+          body: FitBackdrop(
+            child: SafeArea(
+              child: Column(
+                children: <Widget>[
+                  DaySelector(
+                    days: program.days,
+                    selected: selected,
+                    onSelect: (dow) => setState(() => _selectedDow = dow),
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: _DayView(
+                      key: ValueKey('day.${day.id}'),
+                      day: day,
+                      exercises: _exercisesOf(day),
+                      startButton: StartSessionButton(
+                        dayOfWeek: day.dayOfWeek,
+                        isRest: day.isRest,
+                        onStart: () => _start(program, day),
+                      ),
+                      onAddSet: (id) => _addSet(day, id),
+                      onRemoveSet: (id, i) => _removeSet(day, id, i),
+                      expanded: _expanded,
+                      saveState: _saveState[day.id] ?? _SaveState.idle,
+                      saveFailure: _saveFailure[day.id],
+                      onToggle: (id) => setState(() {
+                        if (!_expanded.remove(id)) _expanded.add(id);
+                      }),
+                      onSetChanged: (id, set) => _setChanged(day, id, set),
+                      onRemove: (id) => _remove(day, id),
+                      onReplace: (x) => _replace(day, x),
+                      onRetry: () => _flush(day.id),
+                      onEditDay: () => context.push(Routes.planDayEdit(day.id)),
+                      deload: phase6?.deload,
+                      mesocycleWeek: phase6?.mesocycleWeek,
+                      substitutions: {
+                        if (phase6 != null)
+                          for (final x in phase6.exercises)
+                            if (x.substitution != null)
+                              x.plannedExerciseId: x.substitution!,
+                      },
+                      onSubstitute: (x, alt) => _substitute(day, x, alt),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -536,54 +539,58 @@ class _DayView extends StatelessWidget {
       key: const ValueKey('day.list'),
       padding: const EdgeInsets.only(bottom: FitSpacing.xl),
       children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            FitSpacing.screen,
-            FitSpacing.lg,
-            FitSpacing.screen,
-            FitSpacing.md,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Expanded(child: Text(weekday, style: textTheme.labelSmall)),
-                  _SaveMark(
-                    state: saveState,
-                    failure: saveFailure,
-                    onRetry: onRetry,
+        FitBlock(
+          glow: true,
+          margin: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              fitGlass ? FitSpacing.md : FitSpacing.screen,
+              fitGlass ? FitSpacing.md : FitSpacing.lg,
+              fitGlass ? FitSpacing.md : FitSpacing.screen,
+              FitSpacing.md,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Expanded(child: Text(weekday, style: textTheme.labelSmall)),
+                    _SaveMark(
+                      state: saveState,
+                      failure: saveFailure,
+                      onRetry: onRetry,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: FitSpacing.xs),
+                Text(
+                  day.sessionName,
+                  key: const ValueKey('day.title'),
+                  style: textTheme.displayMedium,
+                ),
+                const SizedBox(height: FitSpacing.sm),
+                Text(
+                  day.focus.map((m) => m.label).join(' · '),
+                  style: textTheme.bodyLarge,
+                ),
+                const SizedBox(height: FitSpacing.xs),
+                Text(
+                  '${exercises.length} exercises · $sets sets · ~$minutes min${mesocycleWeek == null ? '' : ' · week $mesocycleWeek'}',
+                  key: const ValueKey('day.meta'),
+                  style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+                ),
+                if (deload != null && deload!.state != DeloadStatus.none) ...[
+                  const SizedBox(height: FitSpacing.sm),
+                  DeloadPanel(
+                    deload: deload!,
+                    mesocycleWeek: mesocycleWeek,
+                    compact: deload!.state == DeloadStatus.active,
                   ),
                 ],
-              ),
-              const SizedBox(height: FitSpacing.xs),
-              Text(
-                day.sessionName,
-                key: const ValueKey('day.title'),
-                style: textTheme.displayMedium,
-              ),
-              const SizedBox(height: FitSpacing.sm),
-              Text(
-                day.focus.map((m) => m.label).join(' · '),
-                style: textTheme.bodyLarge,
-              ),
-              const SizedBox(height: FitSpacing.xs),
-              Text(
-                '${exercises.length} exercises · $sets sets · ~$minutes min${mesocycleWeek == null ? '' : ' · week $mesocycleWeek'}',
-                key: const ValueKey('day.meta'),
-                style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
-              ),
-              if (deload != null && deload!.state != DeloadStatus.none) ...[
-                const SizedBox(height: FitSpacing.sm),
-                DeloadPanel(
-                  deload: deload!,
-                  mesocycleWeek: mesocycleWeek,
-                  compact: deload!.state == DeloadStatus.active,
-                ),
+                const SizedBox(height: FitSpacing.md),
+                startButton,
               ],
-              const SizedBox(height: FitSpacing.md),
-              startButton,
-            ],
+            ),
           ),
         ),
         for (var i = 0; i < exercises.length; i++) ...<Widget>[
@@ -609,7 +616,7 @@ class _DayView extends StatelessWidget {
                   : (alt) => onSubstitute!(exercises[i], alt),
             ),
         ],
-        Divider(color: FitColors.rule, height: 1),
+        const FitRule(),
         Padding(
           padding: const EdgeInsets.fromLTRB(
             FitSpacing.screen,

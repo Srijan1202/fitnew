@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/tokens.dart';
 import '../../domain/entities/program.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 
 /// MON … SUN. The selected day is ink with a solid dot; other training days
 /// a hollow dot; rest days a faint dash. Fixed at the top of the workout
@@ -23,13 +24,19 @@ class DaySelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return Container(
-      decoration: BoxDecoration(
-        color: FitColors.paper,
-        border: Border(bottom: BorderSide(color: FitColors.rule)),
-      ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: FitSpacing.sm,
-        vertical: FitSpacing.xs,
+      // ADR-029: a floating strip on glass; the hairline-bottomed bar on Paper.
+      margin: fitGlass
+          ? const EdgeInsets.fromLTRB(12, FitSpacing.sm, 12, 0)
+          : EdgeInsets.zero,
+      decoration: fitGlass
+          ? FitBlock.decoration(radius: const Radius.circular(20))
+          : BoxDecoration(
+              color: FitColors.paper,
+              border: Border(bottom: BorderSide(color: FitColors.rule)),
+            ),
+      padding: EdgeInsets.symmetric(
+        horizontal: fitGlass ? 6 : FitSpacing.sm,
+        vertical: fitGlass ? 6 : FitSpacing.xs,
       ),
       child: Row(
         children: <Widget>[
@@ -70,11 +77,14 @@ class _DayTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected
-        ? FitColors.ink
-        : isRest
-            ? FitColors.ink35
-            : FitColors.ink60;
+    final pill = fitGlass && selected;
+    final color = pill
+        ? FitColors.onAccent
+        : selected
+            ? FitColors.ink
+            : isRest
+                ? FitColors.ink35
+                : FitColors.ink60;
     return Semantics(
       button: true,
       selected: selected,
@@ -85,6 +95,12 @@ class _DayTab extends StatelessWidget {
         child: Container(
           constraints: const BoxConstraints(minHeight: 56),
           padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm),
+          decoration: pill
+              ? BoxDecoration(
+                  color: FitColors.accent,
+                  borderRadius: const BorderRadius.all(Radius.circular(14)),
+                )
+              : null,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -97,7 +113,7 @@ class _DayTab extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: FitSpacing.xs),
-              _Dot(selected: selected, isRest: isRest),
+              _Dot(selected: selected, isRest: isRest, colour: color),
             ],
           ),
         ),
@@ -107,10 +123,17 @@ class _DayTab extends StatelessWidget {
 }
 
 class _Dot extends StatelessWidget {
-  const _Dot({required this.selected, required this.isRest});
+  const _Dot({
+    required this.selected,
+    required this.isRest,
+    required this.colour,
+  });
 
   final bool selected;
   final bool isRest;
+
+  /// The selected day's colour (on the accent pill, the type on it).
+  final Color colour;
 
   @override
   Widget build(BuildContext context) {
@@ -122,8 +145,8 @@ class _Dot extends StatelessWidget {
       height: 8,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: selected ? FitColors.ink : Colors.transparent,
-        border: Border.all(color: selected ? FitColors.ink : FitColors.ink60),
+        color: selected ? colour : Colors.transparent,
+        border: Border.all(color: selected ? colour : FitColors.ink60),
       ),
     );
   }
