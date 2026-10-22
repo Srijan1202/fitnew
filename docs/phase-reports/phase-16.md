@@ -85,7 +85,7 @@ TypeScript typecheck and lint: clean everywhere. OpenAPI exported.
    - (In a private window with an account that is not admin: "Not an administrator", with the grant command.)
 4. **§31 manual — correct a dish:**
    1. On the phone, open the mess menu and report a dish's calories with the dish's correction option.
-   2. In the panel, open ** Mess corrections**: the report is there, grouped under the dish, with the current estimate. Adjust Low/High if you like, then **Accept**.
+   2. In the panel, open **Mess corrections**: the report is there, grouped under the dish, with the current estimate. Adjust Low/High if you like, then **Accept**.
    3. On the phone, open the **next day the dish appears** (or the same day again): it shows the new numbers.
    4. A meal you had already logged with it keeps its old numbers.
 5. **Diet:** use "Edit this dish directly" to set a dish to `egg`. The phone shows it as egg. Set it back to "As parsed".
