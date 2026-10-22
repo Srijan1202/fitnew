@@ -17,3 +17,4 @@ export * from './notifications.js';
 export * from './admin.js';
 export * from './privacy.js';
 export * from './feedback.js';
+export * from './premium.js';

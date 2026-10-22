@@ -62,6 +62,9 @@ export class UsersRepository {
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
         deletedAt: users.deletedAt,
+        premiumSince: users.premiumSince,
+        premiumGrantedBy: users.premiumGrantedBy,
+        avatarId: users.avatarId,
         inserted: sql<boolean>`(xmax = 0)`,
       });
 

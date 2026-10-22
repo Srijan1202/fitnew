@@ -29,6 +29,9 @@ function mockRepo(inserted: boolean) {
         createdAt: new Date('2026-09-20T10:00:00Z'),
         updatedAt: new Date('2026-09-20T10:00:00Z'),
         deletedAt: null,
+        premiumSince: null,
+        premiumGrantedBy: null,
+        avatarId: null,
       },
     }),
   );

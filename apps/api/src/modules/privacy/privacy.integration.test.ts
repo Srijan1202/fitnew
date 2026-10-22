@@ -121,6 +121,8 @@ describeIfDb('/v1/user privacy (real Postgres)', { timeout: 90_000 }, () => {
       ['ai-processing', false, false],
     ]);
 
+    // Phase 19: FITOS AI is premium; the consent rule below is for a premium user.
+    await sql`update users set premium_since = now() where id = ${u.id}`;
     // Without the AI consent, FITOS AI refuses — before any model call.
     const refused = await call(u, 'POST', '/ai/chat', { message: 'hi' });
     expect(refused.statusCode).toBe(403);

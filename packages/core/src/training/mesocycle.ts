@@ -24,6 +24,18 @@ export function isoWeekKey(localDate: string): string {
   return `${isoYear}-W${String(week).padStart(2, '0')}`;
 }
 
+/** Phase 19: the Monday and Sunday of an ISO week ("2026-W43" → 2026-10-19 … 2026-10-25). */
+export function isoWeekDates(isoWeek: string): { from: string; to: string } {
+  const m = /^(\d{4})-W(\d{2})$/.exec(isoWeek);
+  if (m === null) throw new RangeError(`expected yyyy-Www, got "${isoWeek}"`);
+  // 4 January is always in week 1; its week's Monday starts the ISO year.
+  const jan4 = new Date(Date.UTC(Number(m[1]), 0, 4));
+  const jan4Day = jan4.getUTCDay() === 0 ? 7 : jan4.getUTCDay();
+  const monday = jan4.getTime() + ((Number(m[2]) - 1) * 7 - (jan4Day - 1)) * 86_400_000;
+  const iso = (ms: number): string => new Date(ms).toISOString().slice(0, 10);
+  return { from: iso(monday), to: iso(monday + 6 * 86_400_000) };
+}
+
 /**
  * The mesocycle week for a programme given the LOCAL dates of its
  * completed sessions (order irrelevant, duplicates fine).

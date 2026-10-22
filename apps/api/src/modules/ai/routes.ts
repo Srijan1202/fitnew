@@ -43,6 +43,8 @@ import { FoodParseService } from './parse.js';
 import { AiService } from './service.js';
 import { ToolRegistry } from './tools.js';
 import { PrivacyRepository } from '../privacy/repository.js';
+import { PremiumRepository } from '../premium/repository.js';
+import { PremiumService, premiumRequired } from '../premium/service.js';
 import { AiBudget, AiUsageRepository } from './usage.js';
 
 function requireUserId(userId: string | null): string {
@@ -76,6 +78,13 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
     exercise: new ExerciseService(new ExerciseRepository(db)),
   };
   const consents = new PrivacyRepository(db);
+  const premium = new PremiumService(new PremiumRepository(db));
+  /** Phase 19 (ADR-027): FITOS AI is premium — refused here, before any lookup or model call. */
+  const premiumOf = async (request: FastifyRequest): Promise<boolean> => {
+    budget.assertEnabled();
+    if (!(await premium.isPremium(requireUserId(request.userId), request.identity?.claims))) throw premiumRequired('FITOS AI');
+    return true;
+  };
   const budget = new AiBudget(new AiUsageRepository(db), app.aiConfig, undefined, (userId) => consents.hasConsent(userId, 'ai-processing'));
   const service = new AiService(
     app.ai,
@@ -120,7 +129,7 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
         response: { 200: aiChatResponseSchema, ...errors },
       },
     },
-    async (request) => service.chat(requireUserId(request.userId), request.body),
+    async (request) => service.chat(requireUserId(request.userId), request.body, await premiumOf(request)),
   );
 
   typed.post(
@@ -140,7 +149,7 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
         response: { 200: parseFoodResponseSchema, ...errors },
       },
     },
-    async (request) => parser.parse(requireUserId(request.userId), request.body.text),
+    async (request) => parser.parse(requireUserId(request.userId), request.body.text, await premiumOf(request)),
   );
 
   typed.post(
@@ -155,6 +164,6 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
         response: { 200: explainResponseSchema, 404: errorEnvelopeSchema, ...errors },
       },
     },
-    async (request) => explainer.explain(requireUserId(request.userId), request.body.actionId),
+    async (request) => explainer.explain(requireUserId(request.userId), request.body.actionId, await premiumOf(request)),
   );
 }

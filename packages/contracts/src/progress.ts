@@ -153,3 +153,29 @@ export type LogMeasurementResponse = z.infer<typeof logMeasurementResponseSchema
 
 /** Owner D5: readings can be dated up to this many days back, never ahead. */
 export const PROGRESS_DAYS_BACK = 30;
+
+/* ------------------------------------------- weekly report (Phase 19) -- */
+
+/**
+ * The weekly progress report (ADR-027: premium). One ISO week — the current
+ * one or one of the three before it (the weeks the volume endpoint covers).
+ */
+export const weeklyReportQuerySchema = z.object({ week: z.string().regex(/^\d{4}-W\d{2}$/).optional() }).strict();
+
+export const weeklyReportSchema = z
+  .object({
+    isoWeek: z.string().regex(/^\d{4}-W\d{2}$/),
+    from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    complete: z.boolean(),
+    /** The weeks a report can be asked for, oldest first. */
+    weeks: z.array(z.string()),
+    training: z.object({ completed: z.number().int().min(0), planned: z.number().int().min(0).nullable(), percent: z.number().int().nullable() }).strict(),
+    volume: z.object({ totalHardSets: z.number().min(0), productive: z.array(z.string()), below: z.array(z.string()), above: z.array(z.string()) }).strict(),
+    prs: z.object({ count: z.number().int().min(0), lifts: z.array(z.string()) }).strict(),
+    nutrition: z.object({ loggedDays: z.number().int().min(0), judgedDays: z.number().int().min(0), proteinMet: z.number().int().min(0), caloriesOn: z.number().int().min(0) }).strict(),
+    weight: z.object({ startKg: z.number(), endKg: z.number(), changeKg: z.number() }).strict().nullable(),
+    highlights: z.array(z.string()),
+  })
+  .strict();
+export type WeeklyReport = z.infer<typeof weeklyReportSchema>;

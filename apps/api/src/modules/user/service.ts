@@ -43,6 +43,7 @@ export function profileDetailFrom(bundle: ProfileBundle): UserProfileDetail {
       p?.messProviderId && p.messHostelId && p.messMessId
         ? { providerId: p.messProviderId, hostelId: p.messHostelId, messId: p.messMessId }
         : null,
+    avatarId: bundle.user.avatarId,
   };
 }
 

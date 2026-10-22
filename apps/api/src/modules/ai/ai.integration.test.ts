@@ -59,6 +59,8 @@ describeIfDb('/v1/ai (real Postgres, scripted model)', () => {
     const token = `ai-tok-${n}`;
     verifier.accept(token, { uid: `ai-uid-${n}`, email: `ai${n}@vit.ac.in` });
     expect((await app.inject({ method: 'POST', url: '/v1/auth/session', headers: auth(token), payload: {} })).statusCode).toBe(200);
+    // Phase 19 (ADR-027): FITOS AI is premium.
+    await sql`update users set premium_since = now() where firebase_uid = ${`ai-uid-${n}`}`;
     // Phase 17: FITOS AI is its own consent purpose.
     expect((await app.inject({ method: 'POST', url: '/v1/user/consents', headers: auth(token), payload: { type: 'ai-processing', granted: true } })).statusCode).toBe(200);
     for (const body of [

@@ -85,6 +85,8 @@ describeIfDb('Phase 14 AI features (real Postgres, real food seed, scripted mode
     const token = `p14-tok-${n}`;
     r.verifier.accept(token, { uid: `p14-uid-${n}`, email: `p14-${n}@vit.ac.in` });
     expect((await r.app.inject({ method: 'POST', url: '/v1/auth/session', headers: auth(token), payload: {} })).statusCode).toBe(200);
+    // Phase 19 (ADR-027): FITOS AI is premium.
+    await sql`update users set premium_since = now() where firebase_uid = ${`p14-uid-${n}`}`;
     // Phase 17: FITOS AI is its own consent purpose.
     expect((await r.app.inject({ method: 'POST', url: '/v1/user/consents', headers: auth(token), payload: { type: 'ai-processing', granted: true } })).statusCode).toBe(200);
     const [row] = await sql<{ id: string }[]>`select id from users where firebase_uid = ${`p14-uid-${n}`}`;

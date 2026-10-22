@@ -29,7 +29,7 @@ import {
 type Db = DatabaseHandle['db'];
 
 export interface ProfileBundle {
-  readonly user: { readonly displayName: string | null; readonly timezone: string; readonly locale: string };
+  readonly user: { readonly displayName: string | null; readonly timezone: string; readonly locale: string; readonly avatarId: string | null };
   readonly profile: UserProfileRow | null;
   readonly goal: UserGoalRow | null;
   readonly diet: DietPreferencesRow | null;
@@ -45,7 +45,7 @@ export class UserRepository {
   /** Everything the profile and onboarding endpoints need, in one round trip per table. */
   async loadBundle(userId: string): Promise<ProfileBundle | null> {
     const [user] = await this.db
-      .select({ displayName: users.displayName, timezone: users.timezone, locale: users.locale })
+      .select({ displayName: users.displayName, timezone: users.timezone, locale: users.locale, avatarId: users.avatarId })
       .from(users)
       .where(eq(users.id, userId));
     if (user === undefined) return null;

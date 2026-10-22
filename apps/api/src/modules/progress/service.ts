@@ -5,6 +5,10 @@
  * never recalculates the nutrition targets (owner D5) — the targets follow
  * the trend through TODAY's calorie-adjust action instead.
  */
+import type { VolumeResponse, WeeklyReport } from '@fitos/contracts';
+import { computeTrend } from '@fitos/core/nutrition/trend';
+import { weeklyReport } from '@fitos/core/progress/weekly';
+import { isoWeekDates } from '@fitos/core/training/mesocycle';
 import {
   PROGRESS_DAYS_BACK,
   type LogMeasurementRequest,
@@ -99,6 +103,51 @@ export class ProgressService {
         return { weeks: c.weeks.map((w) => ({ ...w })), completed: c.completed, planned: c.planned, percent: c.percent };
       })(),
     };
+  }
+
+  /**
+   * Phase 19 (ADR-027, premium): the weekly report for one ISO week — the
+   * current one unless asked, and only the weeks `volume` covers.
+   */
+  async weekly(userId: string, volume: VolumeResponse, week: string | undefined): Promise<WeeklyReport> {
+    const weeks = volume.weeks.map((w) => w.isoWeek);
+    const isoWeek = week ?? weeks.at(-1)!;
+    const v = volume.weeks.find((w) => w.isoWeek === isoWeek);
+    if (v === undefined) {
+      throw new AppError('VALIDATION_FAILED', 'A report covers this week or one of the three before it.', [{ path: 'week', issue: 'not available' }]);
+    }
+    const tz = await this.logs.timezoneOf(userId);
+    const today = localDateOf(this.now(), tz);
+    const { from, to } = isoWeekDates(isoWeek);
+    const lo = new Date(Date.parse(`${from}T00:00:00Z`) - DAY_MS);
+    const hi = new Date(Date.parse(`${to}T00:00:00Z`) + 2 * DAY_MS);
+    const inWeek = (at: Date): boolean => {
+      const d = localDateOf(at, tz);
+      return d >= from && d <= to;
+    };
+    const [weights, days, targets, completed, planned, prs] = await Promise.all([
+      this.repo.weights(userId),
+      this.repo.nutritionDays(userId, from, to),
+      this.repo.targets(userId),
+      this.repo.completedAt(userId, lo, hi),
+      this.repo.plannedDays(userId),
+      this.repo.prs(userId, lo, hi),
+    ]);
+    const owned = new Set(volume.owned);
+    const report = weeklyReport({
+      isoWeek,
+      from,
+      to,
+      today,
+      sessionsCompleted: completed.filter(inWeek).length,
+      sessionsPlanned: planned === null ? null : planned.length,
+      volume: v.muscles.filter((m) => owned.has(m.muscle)).map((m) => ({ muscle: m.muscle, hardSets: m.hardSets, status: m.status })),
+      prs: prs.filter((p) => inWeek(p.achievedAt)),
+      days,
+      targets,
+      trend: computeTrend(weights.filter((w) => w.date <= to)),
+    });
+    return { ...report, weeks, volume: { ...report.volume, productive: [...report.volume.productive], below: [...report.volume.below], above: [...report.volume.above] }, prs: { count: report.prs.count, lifts: [...report.prs.lifts] }, highlights: [...report.highlights] };
   }
 
   /**

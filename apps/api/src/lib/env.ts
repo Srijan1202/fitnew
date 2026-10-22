@@ -107,6 +107,9 @@ const envSchema = z.object({
   AI_EXPLAIN_PER_HOUR: z.coerce.number().int().min(1).default(20),
   AI_CHAT_PER_HOUR: z.coerce.number().int().min(1).default(60),
   AI_DAILY_TOKEN_BUDGET: z.coerce.number().int().min(1000).default(200_000),
+  // Phase 19 (ADR-027): FITOS AI is premium; premium users get the limits
+  // above times this (2 = double). Change it like any server setting.
+  AI_PREMIUM_LIMIT_MULTIPLIER: z.coerce.number().min(1).max(20).default(2),
 
   // Phase 9 - the in-process MessIT mirror timer, in hours (0 = off). Unset:
   // 12 in development, off elsewhere (hosted, Cloud Scheduler is the trigger:

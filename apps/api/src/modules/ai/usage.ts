@@ -11,6 +11,7 @@ import type { AiRoute } from '@fitos/core/ai/guard';
 import type { DatabaseHandle } from '../../db/client.js';
 import { aiUsage } from '../../db/schema.js';
 import { AppError } from '../../lib/errors.js';
+import { premiumRequired } from '../premium/service.js';
 import type { AiConfig } from '../../plugins/ai.js';
 
 type Db = DatabaseHandle['db'];
@@ -72,9 +73,13 @@ export class AiBudget {
     }
   }
 
-  /** Off, over this purpose's hourly limit, or over the daily token budget → refused before any model call. */
-  async check(userId: string, route: AiRoute): Promise<void> {
+  /**
+   * Off, not premium (Phase 19, ADR-027), not consented, over this purpose's
+   * hourly limit or over the daily token budget → refused before any model call.
+   */
+  async check(userId: string, route: AiRoute, premium: boolean): Promise<void> {
     this.assertEnabled();
+    if (!premium) throw premiumRequired('FITOS AI');
     // §23.1: FITOS AI sends the user's words or data to the model provider — its own purpose.
     if (this.consent !== undefined && !(await this.consent(userId))) {
       throw new AppError('FORBIDDEN', "Allow FITOS AI first: what you ask is sent to Google's Gemini to answer it.", [
@@ -86,13 +91,13 @@ export class AiBudget {
       this.repo.callsSince(userId, route, new Date(now - HOUR_MS)),
       this.repo.tokensSince(userId, new Date(now - 24 * HOUR_MS)),
     ]);
-    const limit = this.config.perHour[route];
+    const limit = Math.floor(this.config.perHour[route] * this.config.premiumMultiplier);
     if (calls >= limit) {
       throw new AppError('RATE_LIMITED', `You have used this ${limit} times in the last hour. Try again a little later.`, [
         { path: 'ai', issue: `hourly limit (${route})` },
       ]);
     }
-    if (tokens >= this.config.dailyTokens) {
+    if (tokens >= this.config.dailyTokens * this.config.premiumMultiplier) {
       throw new AppError('RATE_LIMITED', "Today's FITOS AI allowance is used up. It resets over the next day.", [
         { path: 'ai', issue: 'daily token budget' },
       ]);

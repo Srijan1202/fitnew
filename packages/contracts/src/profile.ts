@@ -138,6 +138,8 @@ export const userProfileDetailSchema = z.object({
   isVitStudent: z.boolean().nullable(),
   /** Mess selection (§32 screen 6). Null when not a VIT student. */
   mess: messRefSchema.nullable(),
+  /** Phase 19 (ADR-027): the chosen profile picture (premium.ts AVATARS); null = initials. Set with PUT /user/avatar. */
+  avatarId: z.string().nullable(),
 });
 export type UserProfileDetail = z.infer<typeof userProfileDetailSchema>;
 

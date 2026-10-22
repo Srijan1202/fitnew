@@ -87,8 +87,8 @@ export class FoodParseService {
     return this.config.models.parse ?? this.provider.model;
   }
 
-  async parse(userId: string, text: string): Promise<ParseFoodResponse> {
-    await this.budget.check(userId, 'parse');
+  async parse(userId: string, text: string, premium = false): Promise<ParseFoodResponse> {
+    await this.budget.check(userId, 'parse', premium);
     if (this.provider.name === 'none') throw AiService.toAppError(new AiProviderError('not_configured', 'no provider'));
 
     let answer: z.infer<typeof modelAnswerSchema>;

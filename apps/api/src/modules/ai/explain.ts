@@ -42,11 +42,11 @@ export class ExplainService {
     return this.config.models.explain ?? this.provider.model;
   }
 
-  async explain(userId: string, actionId: string): Promise<ExplainResponse> {
+  async explain(userId: string, actionId: string, premium = false): Promise<ExplainResponse> {
     this.budget.assertEnabled();
     const row = await this.today.recommendation(userId, actionId);
     if (row === null) throw new AppError('NOT_FOUND', 'No such action.');
-    await this.budget.check(userId, 'explain');
+    await this.budget.check(userId, 'explain', premium);
     if (this.provider.name === 'none') throw AiService.toAppError(new AiProviderError('not_configured', 'no provider'));
 
     const reason = (row.payload as { reason?: { code?: string; values?: Record<string, unknown> } }).reason ?? {};

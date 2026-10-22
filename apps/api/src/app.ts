@@ -38,6 +38,7 @@ import { notificationRoutes } from './modules/notifications/routes.js';
 import { adminRoutes } from './modules/admin/routes.js';
 import { privacyRoutes } from './modules/privacy/routes.js';
 import { feedbackRoutes } from './modules/feedback/routes.js';
+import { premiumRoutes } from './modules/premium/routes.js';
 import { todayRoutes } from './modules/today/routes.js';
 import { userRoutes } from './modules/user/routes.js';
 import { users } from './db/schema.js';
@@ -185,6 +186,7 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
       await v1.register(adminRoutes, { minimumAppBuild: env.MIN_APP_BUILD });
       await v1.register(privacyRoutes, { ipSalt: env.CONSENT_IP_SALT });
       await v1.register(feedbackRoutes);
+      await v1.register(premiumRoutes);
       await v1.register(aiRoutes);
     },
     { prefix: PROTECTED_PREFIX },

@@ -50,9 +50,9 @@ export class AiService {
 
   /* --------------------------------------------------------------- chat -- */
 
-  async chat(userId: string, request: AiChatRequest): Promise<AiChatResponse> {
+  async chat(userId: string, request: AiChatRequest, premium = false): Promise<AiChatResponse> {
     if (this.deps === undefined) throw new Error('AiService.chat needs an assembler and a tool registry');
-    await this.deps.budget?.check(userId, 'chat');
+    await this.deps.budget?.check(userId, 'chat', premium);
     if (this.provider.name === 'none') throw AiService.toAppError(new AiProviderError('not_configured', 'no provider'));
 
     const context = await this.deps.assembler.assemble(userId);

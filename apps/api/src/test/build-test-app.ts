@@ -24,6 +24,7 @@ export function testEnv(overrides: Partial<Env> = {}): Env {
     AI_MAX_OUTPUT_TOKENS: 512,
     RATE_LIMIT_PER_MINUTE: 120,
     MIN_APP_BUILD: 0,
+    AI_PREMIUM_LIMIT_MULTIPLIER: 1,
     AI_ENABLED: true,
     AI_PARSE_PER_HOUR: 20,
     AI_EXPLAIN_PER_HOUR: 20,

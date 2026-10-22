@@ -23,6 +23,8 @@ export interface AiConfig {
   readonly perHour: { readonly chat: number; readonly parse: number; readonly explain: number };
   /** Tokens a user may spend in 24 hours, across every purpose. */
   readonly dailyTokens: number;
+  /** Phase 19 (ADR-027): premium users' limits are the ones above times this. */
+  readonly premiumMultiplier: number;
 }
 
 declare module 'fastify' {
@@ -54,6 +56,7 @@ export function aiConfigFromEnv(env: Env | undefined): AiConfig {
     models: { parse: env?.MODEL_FOOD_PARSE ?? null, explain: env?.MODEL_EXPLAIN ?? null },
     perHour: { chat: env?.AI_CHAT_PER_HOUR ?? 60, parse: env?.AI_PARSE_PER_HOUR ?? 20, explain: env?.AI_EXPLAIN_PER_HOUR ?? 20 },
     dailyTokens: env?.AI_DAILY_TOKEN_BUDGET ?? 200_000,
+    premiumMultiplier: env?.AI_PREMIUM_LIMIT_MULTIPLIER ?? 2,
   };
 }
 

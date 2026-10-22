@@ -14,10 +14,18 @@ import {
   logWeightResponseSchema,
   progressSummaryQuerySchema,
   progressSummarySchema,
+  weeklyReportQuerySchema,
+  weeklyReportSchema,
 } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
 import { FoodLogRepository } from '../nutrition/log-repository.js';
+import { PremiumRepository } from '../premium/repository.js';
+import { PremiumService, premiumRequired } from '../premium/service.js';
+import { ReadinessAssembler } from '../recovery/readiness.js';
+import { TrainingRepository } from '../training/repository.js';
+import { WorkoutRepository } from '../workout/repository.js';
+import { WorkoutService } from '../workout/service.js';
 import { ProgressRepository } from './repository.js';
 import { ProgressService } from './service.js';
 
@@ -31,6 +39,27 @@ export async function progressRoutes(app: FastifyInstance): Promise<void> {
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const security = [{ bearerAuth: [] }];
   const errors = { 401: errorEnvelopeSchema, 422: errorEnvelopeSchema };
+  const db = app.database.db;
+  const premium = new PremiumService(new PremiumRepository(db));
+  const workouts = new WorkoutService(new WorkoutRepository(db), new TrainingRepository(db), ReadinessAssembler.forDb(db));
+
+  typed.get(
+    '/progress/weekly',
+    {
+      schema: {
+        summary: 'The weekly progress report: sessions, volume per muscle, records, protein days, trend weight (premium, Phase 19)',
+        tags: ['progress'],
+        security,
+        querystring: weeklyReportQuerySchema,
+        response: { 200: weeklyReportSchema, 403: errorEnvelopeSchema, ...errors },
+      },
+    },
+    async (request) => {
+      const userId = requireUserId(request.userId);
+      if (!(await premium.isPremium(userId, request.identity?.claims))) throw premiumRequired('The weekly report');
+      return service.weekly(userId, await workouts.volume(userId), request.query.week);
+    },
+  );
 
   typed.get(
     '/progress/summary',
