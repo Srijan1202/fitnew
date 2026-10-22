@@ -94,6 +94,8 @@ export function resolveDayFromSnapshots(
     const fromAll = resolveMenuDate(merged, date);
     if (fromAll.kind === 'cycle-inferred') {
       const source = newestPublishing(snapshots, fromAll.sourceDate);
+      // The source date came from these snapshots merged, so one of them publishes it.
+      /* v8 ignore next -- @preserve */
       return { day: buildDay(merged, date, servesNonVeg), snapshotId: source?.id ?? null };
     }
   }

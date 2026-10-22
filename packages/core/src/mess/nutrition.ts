@@ -118,6 +118,8 @@ const BASE_TABLE: readonly TableEntry[] = [
 /** The base entry that owns `term` — for spelling variants that share its estimate. */
 function entryWithTerm(term: string): Omit<TableEntry, 'terms'> {
   const entry = BASE_TABLE.find((e) => e.terms.includes(term));
+  // Runs at module load over a fixed table: a typo fails every test, never a user.
+  /* v8 ignore next -- @preserve */
   if (entry === undefined) throw new Error(`no base estimate owns "${term}"`);
   const { terms: _terms, ...rest } = entry;
   return rest;
@@ -166,7 +168,9 @@ function together(servingLabel: string, parts: readonly (readonly [Omit<TableEnt
     parts.reduce((a, [e, n]) => a + pick(e)[0] * n, 0),
     parts.reduce((a, [e, n]) => a + pick(e)[1] * n, 0),
   ];
-  const grams = parts.every(([e]) => e.servingGrams !== null) ? parts.reduce((a, [e, n]) => a + (e.servingGrams ?? 0) * n, 0) : null;
+  // Every part combined today is weighed; an unweighed one makes the whole unweighed.
+  /* v8 ignore next -- @preserve */
+  const grams = parts.every(([e]) => e.servingGrams !== null) ? parts.reduce((a, [e, n]) => a + e.servingGrams! * n, 0) : null;
   const confidence = parts.map(([e]) => e.confidence).reduce((a, b) => (WORSE[b] > WORSE[a] ? b : a));
   return {
     servingLabel, servingGrams: grams,

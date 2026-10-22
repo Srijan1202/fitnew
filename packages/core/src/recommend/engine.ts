@@ -605,6 +605,8 @@ export function buildActions(model: UserModel): Action[] {
   const dismissed = new Set(model.dismissedToday.map((d) => `${d.kind}\u0000${d.subjectKey}`));
   return candidates(model)
     .filter((c) => !dismissed.has(`${c.kind}\u0000${c.subjectKey}`))
+    // No two candidates share a priority today; the kind order keeps it total if they ever do.
+    /* v8 ignore next -- @preserve */
     .sort((a, b) => b.priority - a.priority || KIND_ORDER.get(a.kind)! - KIND_ORDER.get(b.kind)!)
     .map((c, i): Action => {
       const words = wordReason(c.reason);

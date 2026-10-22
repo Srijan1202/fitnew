@@ -34,8 +34,8 @@ const ORPHAN_FRAGMENTS = new Set(['white', 'cream of', 'mix', 'plain']);
 function stripLabel(segment: string): { label: string | null; rest: string } {
   const match = LABEL_PATTERN.exec(segment);
   if (!match) return { label: null, rest: segment.trim() };
-  const rawLabel = match[1];
-  if (rawLabel === undefined) return { label: null, rest: segment.trim() };
+  // The pattern's one group is not optional: a match always captures it.
+  const rawLabel = match[1]!;
   // Normalise "Non  Veg" -> "Non Veg"
   const label = rawLabel.replace(/\s+/g, ' ').trim();
   return { label, rest: segment.slice(match[0].length).trim() };
@@ -53,13 +53,8 @@ function normaliseName(value: string): string {
 function toDisplayName(value: string): string {
   return value
     .split(' ')
-    .map((word) => {
-      if (word.length === 0) return word;
-      if (/^\(?\d/.test(word)) return word; // "65", "(2"
-      const first = word[0];
-      if (first === undefined) return word;
-      return first.toUpperCase() + word.slice(1).toLowerCase();
-    })
+    // "65" and "(2" stay as they are; an empty word stays empty.
+    .map((word) => (/^\(?\d/.test(word) ? word : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()))
     .join(' ');
 }
 

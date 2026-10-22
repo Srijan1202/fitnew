@@ -523,6 +523,8 @@ function selectForSession(
         );
         if (room < 2) continue;
         const u = mustHave ? Math.max(usefulness(ex, need, focus), 0.5) : usefulness(ex, need, focus);
+        // A pick that is not required serves a focus muscle with need left, so u > 0.
+        /* v8 ignore next -- @preserve */
         if (u <= 0) continue;
         const canonical = CANONICAL[pattern] !== undefined && ex.primaryMuscles[0] === CANONICAL[pattern] ? 0.3 : 0;
         const loadable = hasLoad ? loadQuality(ex) : 0;
@@ -602,8 +604,12 @@ function fitToTime(selection: Selection[], preferredMinutes: number): { trimmedS
     if (selection.length > 1 && drop((x) => isolation(x) && x.coverageFor === undefined)) continue;
     if (selection.length > 1 && drop((x) => !isolation(x) && x.coverageFor === undefined)) continue;
     if (shave((x) => x.sets > 2)) continue;
+    // The drop is tested (the 15-minute session); the break after it is not reachable: one
+    // lift left at 2 sets is 7 minutes, under the shortest ceiling (15 × 1.15).
+    /* v8 ignore start -- @preserve */
     if (selection.length > 1 && drop(() => true)) continue;
     break;
+    /* v8 ignore stop -- @preserve */
   }
   return { trimmedSets, dropped };
 }
@@ -880,6 +886,8 @@ export function buildProgram(week: WeekPlan, input: Omit<GeneratorInput, 'daysPe
         goal, experience, hasLoad, usedThisWeek, Math.min(countTarget - selection.length, Math.max(0, maxExercises - selection.length)), FILL_ORDER,
       );
       for (const x of extra) {
+        // The time ceiling for the count fill; the entry check leaves room for the first extra.
+        /* v8 ignore next -- @preserve */
         if (minutesOf(selection) + 2 * MINUTES_PER_WORKING_SET > preferred * 1.15) break;
         x.sets = 2;
         selection.push(x);

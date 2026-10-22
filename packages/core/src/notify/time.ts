@@ -8,7 +8,8 @@
 /** Minutes after local midnight (0–1439) of `instant` in `timeZone`. */
 export function minuteOfDay(instant: Date, timeZone: string): number {
   const parts = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(instant);
-  const get = (t: string): number => Number(parts.find((p) => p.type === t)?.value ?? '0');
+  // formatToParts always returns every field it was asked for.
+  const get = (t: string): number => Number(parts.find((p) => p.type === t)!.value);
   return (get('hour') % 24) * 60 + get('minute');
 }
 
@@ -17,7 +18,8 @@ function offsetMinutes(instant: Date, timeZone: string): number {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
   }).formatToParts(instant);
-  const get = (t: string): number => Number(parts.find((p) => p.type === t)?.value ?? '0');
+  // formatToParts always returns every field it was asked for.
+  const get = (t: string): number => Number(parts.find((p) => p.type === t)!.value);
   const asUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour') % 24, get('minute'));
   return Math.round((asUtc - Math.floor(instant.getTime() / 60_000) * 60_000) / 60_000);
 }

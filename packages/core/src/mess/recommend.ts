@@ -176,6 +176,8 @@ export function isDietAllowed(diet: DietClass, preference: DietPreference): bool
 
 function proteinDensity(dish: MessDish): number {
   const n = dish.nutrition;
+  // Only eligible dishes reach here, and dishVerdicts refuses one with no estimate.
+  /* v8 ignore next -- @preserve */
   if (n === null) return 0;
   const kcal = midpoint(n.macros.kcalLow, n.macros.kcalHigh);
   if (kcal <= 0) return 0;
@@ -227,7 +229,7 @@ export function dishVerdicts(request: PlateRequest): DishVerdict[] {
     const fail = (reasons: DishReason[]): DishVerdict => ({ dish, component, eligible: false, reasons });
 
     if (!isDietAllowed(dish.diet, request.diet)) return fail([{ code: 'diet', dietClass: dish.diet }]);
-    const altDiets = dish.alternativeDiets ?? [];
+    const altDiets = dish.alternativeDiets;
     for (let i = 0; i < dish.alternatives.length; i += 1) {
       const altDiet = altDiets[i] ?? 'unknown';
       if (!isDietAllowed(altDiet, request.diet)) {
@@ -256,6 +258,8 @@ export function dishVerdicts(request: PlateRequest): DishVerdict[] {
 function byDensityThenSlug(a: MessDish, b: MessDish): number {
   const d = proteinDensity(b) - proteinDensity(a);
   if (d !== 0) return d;
+  // A meal never lists one slug twice; 0 keeps the comparator total.
+  /* v8 ignore next -- @preserve */
   return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 }
 
@@ -397,6 +401,8 @@ function sumMacros(items: readonly MacroRange[]): MacroRange {
 /** The Phase 8 snapshot of `dish` × `servings`, as macros. */
 function snapshotOf(dish: MessDish, servings: number): MacroRange {
   const n = dish.nutrition;
+  // Only eligible dishes reach here, and dishVerdicts refuses one with no estimate.
+  /* v8 ignore next -- @preserve */
   if (n === null) return ZERO_MACROS;
   return snapshotNutrition({ macros: n.macros, fibre: null }, servings).macros;
 }
@@ -404,6 +410,8 @@ function snapshotOf(dish: MessDish, servings: number): MacroRange {
 function worstConfidence(items: readonly MessDish[]): 'high' | 'medium' | 'low' {
   let worst: 'high' | 'medium' | 'low' = 'high';
   for (const dish of items) {
+    // Only eligible dishes reach here, and dishVerdicts refuses one with no estimate.
+    /* v8 ignore next -- @preserve */
     const c = dish.nutrition?.confidence ?? 'low';
     if (c === 'low') return 'low';
     if (c === 'medium') worst = 'medium';
@@ -510,6 +518,8 @@ function tailReasons(chosen: readonly MessDish[], macros: MacroRange, request: P
     if (days > 0) r.push({ code: 'repeat', dishSlug: d.id, days });
   }
   for (const d of bySlug) {
+    // Only eligible dishes reach here, and dishVerdicts refuses one with no estimate.
+    /* v8 ignore next -- @preserve */
     if ((d.nutrition?.confidence ?? 'low') === 'low') r.push({ code: 'low-confidence-dish', dishSlug: d.id });
   }
   return r;
@@ -541,11 +551,15 @@ function bestAvailable(slot: MealSlot, groups: Map<MealComponent, number>, menu:
     const need = tierNeeds(slot, tier);
     if ((need.staple && !menu.staple) || (need.strong && !menu.strong) || (need.weak && !menu.weak) || (need.veg && !menu.veg)) continue;
     if (slot === 'snacks') {
+      // Never empty: the caller returns early when nothing was picked.
+      /* v8 ignore next -- @preserve */
       if (!menu.any) return null;
       return { tier, floor: Math.min(...[...groups.values()]) };
     }
     const extra = (need.weak ? min(['pulse-gravy', 'dairy']) : 0) + (need.veg ? min(['veg']) : 0);
     const separate = (need.staple ? min(['staple']) : 0) + (need.strong ? min(['protein']) : 0);
+    // Every non-snack tier needs a staple or a strong protein; Infinity is the guard.
+    /* v8 ignore next -- @preserve */
     const oneDish = need.staple || need.strong ? min(['complete']) : Infinity;
     const floor = Math.min(separate, oneDish) + extra;
     if (Number.isFinite(floor)) return { tier, floor };
@@ -569,6 +583,8 @@ export function searchPlates(request: PlateRequest, maxResults = 3): PlateSearch
 
   const cheapest = new Map<MealComponent, number>();
   for (const c of picked) {
+    // Only eligible dishes reach here, and dishVerdicts refuses one with no estimate.
+    /* v8 ignore next -- @preserve */
     const k = c.dish.nutrition?.macros.kcalLow ?? 0;
     cheapest.set(c.component, Math.min(cheapest.get(c.component) ?? Infinity, k));
   }
@@ -710,12 +726,16 @@ export function searchPlates(request: PlateRequest, maxResults = 3): PlateSearch
     smallestAllowed = Math.min(smallestAllowed, smallest.get(tier) ?? Infinity);
     if (bestTier === undefined && (kept.get(tier)?.size ?? 0) > 0) bestTier = tier;
   }
+  // bestAvailable found a finite floor at best.tier, so some tier has a smallest plate.
+  /* v8 ignore next -- @preserve */
   const smallestMealKcal = Number.isFinite(smallestAllowed) ? Math.round(smallestAllowed) : null;
   if (bestTier === undefined) return { ...none, smallestMealKcal, nothingFits: smallestMealKcal !== null };
 
   // Best tier, score descending, plate key ascending; then owner C3.
   const ranked = [...kept.get(bestTier)!.entries()]
     .map(([mask, k]) => ({ mask, ...k, key: k.key ?? keyOf(k.counts) }))
+    // Plate keys are unique within a tier; 0 keeps the comparator total.
+    /* v8 ignore next -- @preserve */
     .sort((a, b) => (Math.abs(b.score - a.score) > EPS ? b.score - a.score : a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
   const chosen: typeof ranked = [];
   for (const plate of ranked) {

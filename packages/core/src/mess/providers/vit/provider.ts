@@ -102,7 +102,7 @@ export function resolveMenuDate(response: MessItResponse, targetDate: string): M
   const dates = response.menu.map((d) => d.date).sort(); // upstream order is NOT sorted
   if (dates.includes(targetDate)) return { kind: 'exact', date: targetDate };
 
-  const latestAvailable = dates.length > 0 ? dates[dates.length - 1] ?? null : null;
+  const latestAvailable = dates[dates.length - 1] ?? null;
   const cycleLengthDays = detectCycleLength(response);
   if (cycleLengthDays === null) {
     return { kind: 'unavailable', date: targetDate, latestAvailable };
@@ -132,6 +132,8 @@ function buildMeals(
   servesNonVeg: boolean,
 ): MessMeal[] {
   const day = response.menu.find((d) => d.date === sourceDate);
+  // sourceDate always comes from resolveMenuDate over this same response.
+  /* v8 ignore next -- @preserve */
   if (day === undefined) return [];
 
   const meals: MessMeal[] = [];

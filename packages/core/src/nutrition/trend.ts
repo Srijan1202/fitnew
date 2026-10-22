@@ -57,13 +57,9 @@ export function summariseTrend(entries: readonly WeightEntry[], alpha = DEFAULT_
     return { currentTrendKg: null, weeklyChangeKg: null, daysOfData: 0, isReliable: false };
   }
 
-  const firstDate = points[0]?.date;
+  const firstDate = points[0]!.date; // non-empty: `last` exists
   const daysOfData =
-    firstDate === undefined
-      ? 0
-      : Math.round(
-          (Date.parse(`${last.date}T00:00:00Z`) - Date.parse(`${firstDate}T00:00:00Z`)) / 86_400_000,
-        ) + 1;
+    Math.round((Date.parse(`${last.date}T00:00:00Z`) - Date.parse(`${firstDate}T00:00:00Z`)) / 86_400_000) + 1;
 
   if (daysOfData < MIN_DAYS_FOR_TREND) {
     return {
@@ -78,12 +74,9 @@ export function summariseTrend(entries: readonly WeightEntry[], alpha = DEFAULT_
   const targetDate = new Date(Date.parse(`${last.date}T00:00:00Z`) - 14 * 86_400_000)
     .toISOString()
     .slice(0, 10);
-  let reference = points[0];
+  let reference = points[0]!;
   for (const point of points) {
     if (point.date <= targetDate) reference = point;
-  }
-  if (reference === undefined) {
-    return { currentTrendKg: last.trendKg, weeklyChangeKg: null, daysOfData, isReliable: false };
   }
 
   const spanDays = Math.max(
@@ -178,10 +171,8 @@ export function recommendCalorieAdjustment(params: {
 
   // Step size capped at 150 kcal so no single adjustment is disruptive.
   const rawDelta = -(error / 7) * KCAL_PER_KG;
+  // Outside the tolerance (at least 0.1 kg a week) |rawDelta| exceeds 110 kcal: never rounds to 0.
   const deltaKcal = Math.round(Math.max(-150, Math.min(150, rawDelta)) / 10) * 10;
-  if (deltaKcal === 0) {
-    return { shouldAdjust: false, deltaKcal: 0, reason: 'Your trend is close enough to target.' };
-  }
 
   const direction = deltaKcal > 0 ? 'up' : 'down';
   return {

@@ -450,6 +450,8 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
       if (chosen.length >= DAILY_CAP) break;
       if (chosen.some((m) => Math.abs(m - c.minute) < MIN_GAP_MINUTES)) continue;
       const template = chooseVariant(c.kind, tone, c.data, c.stage, used, d, facts.seed);
+      // Ready candidates are kinds with a usable variant; this is the guard.
+      /* v8 ignore next -- @preserve */
       if (template === null) continue;
       chosen.push(c.minute);
       used.push({ variant: template.id, localDate: d, status: 'planned', kind: c.kind });

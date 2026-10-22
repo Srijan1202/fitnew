@@ -67,6 +67,8 @@ export function workingWeight(session: SessionLog): number | null {
 /** Every working set reached repMax at or below the RIR target. */
 function clearedTopOfRange(session: SessionLog, target: ExerciseTarget): boolean {
   const working = workingWeight(session);
+  // recommendProgression answers an unloaded last session (step 1b) before asking this.
+  /* v8 ignore next -- @preserve */
   if (working === null) return false;
   const workingSets = session.sets.filter((s) => s.weightKg === working);
   if (workingSets.length < target.sets) return false;

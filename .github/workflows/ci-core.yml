@@ -44,8 +44,9 @@ jobs:
       - name: Typecheck (strict, noUncheckedIndexedAccess)
         run: pnpm --filter @fitos/core typecheck
 
-      - name: Test
-        run: pnpm --filter @fitos/core test
+      # §26.1 / Phase 18: 100 % branch coverage, enforced by vitest.config.ts.
+      - name: Test (with branch coverage gate)
+        run: pnpm --filter @fitos/core test:coverage
 
       # The contracts package had no CI of its own until Phase 5; its Zod
       # schemas are what the API validates with and the mobile client mirrors.

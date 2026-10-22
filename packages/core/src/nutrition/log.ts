@@ -227,7 +227,8 @@ export function remainingForDay(day: DayTotals, targets: MacroTargetsLike): DayR
 /** yyyy-mm-dd of `instant` in `timeZone` (IANA). The day a log belongs to. */
 export function localDateOf(instant: Date, timeZone: string): string {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(instant);
-  const get = (type: string): string => parts.find((p) => p.type === type)?.value ?? '';
+  // formatToParts always returns every field it was asked for.
+  const get = (type: string): string => parts.find((p) => p.type === type)!.value;
   return `${get('year')}-${get('month')}-${get('day')}`;
 }
 

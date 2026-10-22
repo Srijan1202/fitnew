@@ -83,7 +83,7 @@ export function choosePortion(rows: readonly DraftRow[], asked: PortionAsked): C
   const weighed = rows
     .map((r, i) => ({ i, per: gramsPer(r), basis: r.basis }))
     .filter((r): r is { i: number; per: number; basis: DraftRow['basis'] } => r.per !== null && r.per > 0)
-    .sort((a, b) => (a.basis === b.basis ? 0 : a.basis === 'per_100g' ? -1 : 1));
+    .sort((a, b) => Number(a.basis !== 'per_100g') - Number(b.basis !== 'per_100g'));
 
   if ((unit === 'g' || unit === 'ml') && weighed.length > 0) {
     const w = weighed[0]!;
