@@ -274,7 +274,7 @@ void main() {
       find.byKey(const ValueKey('home.suggestion.start-workout')),
       findsOneWidget,
     );
-    expect(find.text('Training volume →'), findsOneWidget);
+    expect(find.text('Training volume'), findsOneWidget);
   });
 
   testWidgets(

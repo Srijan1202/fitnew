@@ -485,7 +485,14 @@ class RecoverySection extends StatelessWidget {
         minimumSize: const Size(0, 36),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      child: const Text('Connect Health data →'),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Flexible(child: Text('Connect Health data')),
+          SizedBox(width: 6),
+          Icon(Icons.arrow_forward, size: 16),
+        ],
+      ),
     );
     if (!anyGranted && loggedSleep == null && readiness == null) {
       return FitBlock(

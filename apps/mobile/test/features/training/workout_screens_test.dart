@@ -817,9 +817,9 @@ void main() {
       expect(training.calls, contains('previewTemplate:push-pull-legs'));
       expect(training.calls, isNot(contains('applyTemplate:push-pull-legs')));
       expect(find.byKey(const ValueKey('preview.day.1')), findsOneWidget);
-      expect(find.text('→ Push'), findsOneWidget);
-      expect(find.text('→ Pull'), findsOneWidget);
-      expect(find.text('→ Legs'), findsOneWidget);
+      expect(find.text('› Push'), findsOneWidget);
+      expect(find.text('› Pull'), findsOneWidget);
+      expect(find.text('› Legs'), findsOneWidget);
       expect(find.text('Barbell Bench Press'), findsOneWidget);
 
       await tester.tap(find.byKey(const ValueKey('template.use')));

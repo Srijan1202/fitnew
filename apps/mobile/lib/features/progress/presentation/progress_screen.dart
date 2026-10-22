@@ -351,15 +351,27 @@ class _Stat extends StatelessWidget {
         children: <Widget>[
           Text(label.toUpperCase(), style: textTheme.labelSmall),
           const SizedBox(height: FitSpacing.xs),
-          Text(
-            value,
-            key: valueKey,
-            style: muted
-                ? textTheme.titleMedium?.copyWith(color: FitColors.ink60)
-                : textTheme.displaySmall,
-            maxLines: muted ? 3 : 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          if (muted)
+            Text(
+              value,
+              key: valueKey,
+              style: textTheme.titleMedium?.copyWith(color: FitColors.ink60),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            )
+          else
+            // A number shrinks to fit its tile ("−0.4 kg / week") rather
+            // than ending in an ellipsis.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                key: valueKey,
+                style: textTheme.displaySmall,
+                maxLines: 1,
+              ),
+            ),
           if (bar != null) ...<Widget>[
             const SizedBox(height: FitSpacing.sm),
             _Bar(bar!),
@@ -891,7 +903,14 @@ class _VolumeHeatmap extends ConsumerWidget {
                 key: const ValueKey('progress.volume.open'),
                 onPressed: () => context.push(Routes.volume),
                 style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                child: const Text('Training volume →'),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Flexible(child: Text('Training volume')),
+                    SizedBox(width: 6),
+                    Icon(Icons.arrow_forward, size: 16),
+                  ],
+                ),
               ),
             ),
           ],

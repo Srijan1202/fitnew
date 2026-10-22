@@ -228,7 +228,7 @@ class _PreviewDayRow extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              '→ ${day.sessionName}',
+                              '› ${day.sessionName}',
                               key: ValueKey('preview.day.${day.dayOfWeek}'),
                               style: textTheme.titleLarge,
                             ),

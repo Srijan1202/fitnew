@@ -48,7 +48,7 @@ Future<bool?> showAiConsentSheet(BuildContext context) {
               'Health Connect data never leaves your phone. During the alpha, '
               "FITOS uses Google's free tier, where Google may use what is sent "
               'to improve its products. You can turn this off any time in '
-              'Profile → Privacy & data.',
+              'Profile › Privacy & data.',
               style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
             ),
             const SizedBox(height: FitSpacing.md),

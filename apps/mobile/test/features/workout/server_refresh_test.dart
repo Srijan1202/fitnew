@@ -285,7 +285,7 @@ void main() {
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('Training volume →'), findsOneWidget);
+    expect(find.text('Training volume'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('today.volume')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
