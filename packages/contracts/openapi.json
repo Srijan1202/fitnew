@@ -56846,6 +56846,20 @@
           },
           {
             "schema": {
+              "type": "string",
+              "enum": [
+                "red",
+                "yellow",
+                "green",
+                "none"
+              ]
+            },
+            "in": "query",
+            "name": "priority",
+            "required": false
+          },
+          {
+            "schema": {
               "type": "integer",
               "minimum": 1,
               "maximum": 200,
@@ -56915,6 +56929,17 @@
                               "done"
                             ]
                           },
+                          "priority": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "enum": [
+                              "red",
+                              "yellow",
+                              "green"
+                            ]
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -56927,6 +56952,7 @@
                           "message",
                           "appVersion",
                           "status",
+                          "priority",
                           "createdAt"
                         ],
                         "additionalProperties": false
@@ -57279,7 +57305,7 @@
     },
     "/admin/feedback/{id}": {
       "patch": {
-        "summary": "Mark feedback new, read or done (audited)",
+        "summary": "Mark feedback new, read or done, and/or tag it red, yellow or green (null clears); each change audited",
         "tags": [
           "admin"
         ],
@@ -57297,11 +57323,19 @@
                       "read",
                       "done"
                     ]
+                  },
+                  "priority": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "red",
+                      "yellow",
+                      "green"
+                    ]
                   }
                 },
-                "required": [
-                  "status"
-                ],
                 "additionalProperties": false
               }
             }
@@ -57363,6 +57397,17 @@
                         "done"
                       ]
                     },
+                    "priority": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "red",
+                        "yellow",
+                        "green"
+                      ]
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -57375,6 +57420,7 @@
                     "message",
                     "appVersion",
                     "status",
+                    "priority",
                     "createdAt"
                   ],
                   "additionalProperties": false

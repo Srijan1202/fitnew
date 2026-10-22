@@ -55,7 +55,7 @@ describeIfDb('/v1/feedback and /v1/admin/feedback (real Postgres)', { timeout: 6
 
   afterAll(async () => {
     await sql`delete from users where firebase_uid like 'fb-uid-%'`;
-    await sql`delete from audit_logs where action = 'feedback.status'`;
+    await sql`delete from audit_logs where action in ('feedback.status', 'feedback.priority')`;
     await app.close();
     await sql.end({ timeout: 5 });
   });
@@ -121,6 +121,53 @@ describeIfDb('/v1/feedback and /v1/admin/feedback (real Postgres)', { timeout: 6
     expect(audit).toEqual([{ actor_user_id: admin.id, metadata: { status: 'done' } }]);
     expect((await call(admin, 'PATCH', '/admin/feedback/00000000-0000-4000-8000-000000000000', { status: 'read' })).statusCode).toBe(404);
     expect((await call(admin, 'PATCH', `/admin/feedback/${id}`, { status: 'lost' })).statusCode).toBe(422);
+  });
+
+  it('an admin tags it red, yellow or green (null clears), with a status in the same call or alone; each change audited once; filtered by tag', async () => {
+    const plain = await user();
+    const admin = await user(true);
+    const { id } = (await send(plain, 'The app crashes when I save a workout')).json() as { id: string };
+    const { id: other } = (await send(plain, 'Dark mode on the widget', 'idea')).json() as { id: string };
+    const priorityAudit = async (fid: string) =>
+      sql<{ actor_user_id: string; metadata: Record<string, unknown> }[]>`
+        select actor_user_id, metadata from audit_logs where action = 'feedback.priority' and entity_id = ${fid} order by occurred_at`;
+
+    // New feedback is untagged.
+    const fresh = (await call(admin, 'GET', '/admin/feedback?priority=none')).json() as { items: { id: string; priority: string | null }[] };
+    expect(fresh.items.find((i) => i.id === id)?.priority).toBeNull();
+
+    expect((await call(plain, 'PATCH', `/admin/feedback/${id}`, { priority: 'red' })).statusCode).toBe(403);
+    const red = await call(admin, 'PATCH', `/admin/feedback/${id}`, { priority: 'red' });
+    expect(red.statusCode, red.body).toBe(200);
+    expect(red.json()).toMatchObject({ id, priority: 'red', status: 'new' });
+
+    // The same tag again changes and records nothing.
+    expect((await call(admin, 'PATCH', `/admin/feedback/${id}`, { priority: 'red' })).statusCode).toBe(200);
+    expect(await priorityAudit(id)).toEqual([{ actor_user_id: admin.id, metadata: { priority: 'red', from: null } }]);
+
+    // Status and tag together: one row each.
+    const both = await call(admin, 'PATCH', `/admin/feedback/${id}`, { status: 'read', priority: 'yellow' });
+    expect(both.json()).toMatchObject({ status: 'read', priority: 'yellow' });
+    expect((await priorityAudit(id)).at(-1)).toEqual({ actor_user_id: admin.id, metadata: { priority: 'yellow', from: 'red' } });
+    expect((await sql`select 1 from audit_logs where action = 'feedback.status' and entity_id = ${id}`).length).toBe(1);
+
+    await call(admin, 'PATCH', `/admin/feedback/${other}`, { priority: 'green' });
+    const yellow = (await call(admin, 'GET', '/admin/feedback?priority=yellow')).json() as { items: { id: string }[] };
+    expect(yellow.items.map((i) => i.id)).toContain(id);
+    expect(yellow.items.map((i) => i.id)).not.toContain(other);
+    const green = (await call(admin, 'GET', '/admin/feedback?priority=green&status=new')).json() as { items: { id: string }[] };
+    expect(green.items.map((i) => i.id)).toEqual([other]);
+
+    // null clears it.
+    const cleared = await call(admin, 'PATCH', `/admin/feedback/${id}`, { priority: null });
+    expect(cleared.json()).toMatchObject({ priority: null });
+    expect((await priorityAudit(id)).at(-1)).toEqual({ actor_user_id: admin.id, metadata: { priority: null, from: 'yellow' } });
+
+    // Nothing, an unknown tag or an extra field: 422.
+    for (const body of [{}, { priority: 'blue' }, { priority: 'red', note: 'x' }]) {
+      expect((await call(admin, 'PATCH', `/admin/feedback/${id}`, body)).statusCode, JSON.stringify(body)).toBe(422);
+    }
+    expect((await call(admin, 'GET', '/admin/feedback?priority=blue')).statusCode).toBe(422);
   });
 
   it('feedback is the sender\'s data: deleting the account removes it', async () => {

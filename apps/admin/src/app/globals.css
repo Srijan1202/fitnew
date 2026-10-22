@@ -119,3 +119,16 @@ table.dense td:nth-child(2) input { width: 140px; }
 .facts { display: grid; grid-template-columns: 160px 1fr; gap: 6px 12px; margin: 12px 0 0; }
 .facts dt { color: var(--ink-60); font-size: 13px; }
 .facts dd { margin: 0; }
+
+/* Feedback triage (red first, then yellow, then green). */
+.prio { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; padding: 0; cursor: pointer; opacity: 0.3; margin-right: 6px; vertical-align: middle; }
+.prio:hover, .prio:focus-visible { opacity: 0.75; }
+.prio.on { opacity: 1; border-color: var(--ink); }
+.prio.red, .dot.red { background: #d93a2b; }
+.prio.yellow, .dot.yellow { background: #e7b416; }
+.prio.green, .dot.green { background: #2e9d5b; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.dot.none { border: 1px solid var(--ink-35); }
+tr.p-red td:first-child { box-shadow: inset 4px 0 #d93a2b; padding-left: 10px; }
+tr.p-yellow td:first-child { box-shadow: inset 4px 0 #e7b416; padding-left: 10px; }
+tr.p-green td:first-child { box-shadow: inset 4px 0 #2e9d5b; padding-left: 10px; }

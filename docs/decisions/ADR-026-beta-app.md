@@ -60,3 +60,12 @@
 - The store listing (screenshots, description; Phase 20).
 - A public privacy policy URL (PLAY.md step 4 hosts it on tryfitos.me's existing GitHub Pages site).
 - Server push (O9).
+
+## Amendment — feedback priority (2026-10-23, owner)
+
+The owner tags feedback in the admin panel by what to solve first: **red** (first), **yellow** (soon), **green** (later), or none.
+- Stored in `feedback.priority`, nullable and checked (migration 0024, with its down migration).
+- Set with `PATCH /v1/admin/feedback/:id`, which takes `status`, `priority` (null clears it), or both. Each field that actually changes writes its own audit row: `feedback.status`, or `feedback.priority` with the previous value. The row is locked while it changes.
+- `GET /v1/admin/feedback?priority=red|yellow|green|none` filters by tag.
+- The panel lists red, then yellow, then green, then untagged, newest first within each, and colours each row's edge.
+- The tag is internal triage, but it is stored on the user's feedback row, so it appears in their own data export (Phase 17 exports rows as stored).

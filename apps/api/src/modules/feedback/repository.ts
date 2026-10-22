@@ -1,9 +1,9 @@
 /**
- * Feedback (Phase 19, ADR-026): the rows, and the audit entry an admin's
- * status change writes in the same transaction (§20).
+ * Feedback (Phase 19, ADR-026): the rows, and the audit entries an admin's
+ * status or priority change writes in the same transaction (§20).
  */
-import { and, desc, eq, lt } from 'drizzle-orm';
-import type { FeedbackCategory, FeedbackStatus } from '@fitos/contracts';
+import { and, desc, eq, isNull, lt } from 'drizzle-orm';
+import type { FeedbackCategory, FeedbackPriority, FeedbackStatus } from '@fitos/contracts';
 
 import type { DatabaseHandle } from '../../db/client.js';
 import { auditLogs, feedback } from '../../db/schema.js';
@@ -22,13 +22,23 @@ export class FeedbackRepository {
     return r!;
   }
 
-  async page(status: FeedbackStatus | undefined, limit: number, before: Date | null) {
-    const where = and(status === undefined ? undefined : eq(feedback.status, status), before === null ? undefined : lt(feedback.createdAt, before));
+  async page(status: FeedbackStatus | undefined, priority: FeedbackPriority | 'none' | undefined, limit: number, before: Date | null) {
+    const where = and(
+      status === undefined ? undefined : eq(feedback.status, status),
+      priority === undefined ? undefined : priority === 'none' ? isNull(feedback.priority) : eq(feedback.priority, priority),
+      before === null ? undefined : lt(feedback.createdAt, before),
+    );
     return this.db.select().from(feedback).where(where).orderBy(desc(feedback.createdAt), desc(feedback.id)).limit(limit);
   }
 
-  async setStatus(id: string, status: FeedbackStatus) {
-    const [r] = await this.db.update(feedback).set({ status }).where(eq(feedback.id, id)).returning();
+  /** Locked until the transaction ends, so a concurrent change waits. */
+  async get(id: string) {
+    const [r] = await this.db.select().from(feedback).where(eq(feedback.id, id)).limit(1).for('update');
+    return r ?? null;
+  }
+
+  async update(id: string, change: { status?: FeedbackStatus; priority?: FeedbackPriority | null }) {
+    const [r] = await this.db.update(feedback).set(change).where(eq(feedback.id, id)).returning();
     return r ?? null;
   }
 

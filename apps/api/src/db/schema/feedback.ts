@@ -17,6 +17,8 @@ export const feedback = pgTable(
     message: text('message').notNull(),
     appVersion: text('app_version').notNull(),
     status: text('status').notNull().default('new'),
+    /** The owner's triage tag: red first, then yellow, then green; null = not tagged yet. */
+    priority: text('priority'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -24,6 +26,7 @@ export const feedback = pgTable(
     index('feedback_user_idx').on(t.userId),
     check('feedback_category', sql`${t.category} in ('bug', 'idea', 'food', 'training', 'other')`),
     check('feedback_status', sql`${t.status} in ('new', 'read', 'done')`),
+    check('feedback_priority', sql`${t.priority} is null or ${t.priority} in ('red', 'yellow', 'green')`),
     check('feedback_message', sql`length(btrim(${t.message})) between 1 and 2000`),
     check('feedback_app_version', sql`length(btrim(${t.appVersion})) between 1 and 40`),
   ],

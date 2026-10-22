@@ -1,7 +1,8 @@
 /**
  * Feedback (Phase 19, ADR-026). `POST /feedback` for any signed-in user, with
  * a per-user hourly limit; the admin list and status change behind the admin
- * claim, checked before validation like every /admin route (Phase 16).
+ * claim, checked before validation like every /admin route (Phase 16). An
+ * admin sets a status and a triage priority (red, yellow, green).
  */
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
@@ -14,7 +15,7 @@ import {
   errorEnvelopeSchema,
   sendFeedbackRequestSchema,
   sendFeedbackResponseSchema,
-  setFeedbackStatusRequestSchema,
+  updateFeedbackRequestSchema,
 } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
@@ -66,17 +67,17 @@ export async function feedbackRoutes(app: FastifyInstance): Promise<void> {
       querystring: adminFeedbackQuerySchema,
       response: { 200: adminFeedbackListSchema, ...errors },
     },
-  }, async (request) => service.page(request.query.status, request.query.limit, request.query.before));
+  }, async (request) => service.page(request.query.status, request.query.priority, request.query.limit, request.query.before));
 
   typed.patch('/admin/feedback/:id', {
     ...admin,
     schema: {
-      summary: 'Mark feedback new, read or done (audited)',
+      summary: 'Mark feedback new, read or done, and/or tag it red, yellow or green (null clears); each change audited',
       tags: ['admin'],
       security,
       params: idParams,
-      body: setFeedbackStatusRequestSchema,
+      body: updateFeedbackRequestSchema,
       response: { 200: adminFeedbackItemSchema, ...errors },
     },
-  }, async (request) => service.setStatus(request.userId, request.params.id, request.body.status));
+  }, async (request) => service.update(request.userId, request.params.id, request.body));
 }

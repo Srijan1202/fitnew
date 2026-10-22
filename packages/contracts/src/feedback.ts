@@ -11,12 +11,15 @@ const iso = z.string().datetime({ offset: true });
 
 export const FEEDBACK_CATEGORIES = ['bug', 'idea', 'food', 'training', 'other'] as const;
 export const FEEDBACK_STATUSES = ['new', 'read', 'done'] as const;
+/** The owner's triage tag, most urgent first: red, then yellow, then green. */
+export const FEEDBACK_PRIORITIES = ['red', 'yellow', 'green'] as const;
 export const FEEDBACK_MAX_LENGTH = 2000;
 /** Per user per hour: enough for a tester, too few for a flood. */
 export const FEEDBACK_PER_HOUR = 5;
 
 export const feedbackCategorySchema = z.enum(FEEDBACK_CATEGORIES);
 export const feedbackStatusSchema = z.enum(FEEDBACK_STATUSES);
+export const feedbackPrioritySchema = z.enum(FEEDBACK_PRIORITIES);
 
 export const sendFeedbackRequestSchema = z
   .object({
@@ -32,6 +35,8 @@ export const sendFeedbackResponseSchema = z.object({ id: z.string().uuid(), crea
 export const adminFeedbackQuerySchema = z
   .object({
     status: feedbackStatusSchema.optional(),
+    /** One tag, or `none` for feedback not tagged yet. */
+    priority: z.enum([...FEEDBACK_PRIORITIES, 'none']).optional(),
     limit: z.coerce.number().int().min(1).max(200).default(50),
     before: iso.optional(),
   })
@@ -46,16 +51,23 @@ export const adminFeedbackItemSchema = z
     message: z.string(),
     appVersion: z.string(),
     status: feedbackStatusSchema,
+    priority: feedbackPrioritySchema.nullable(),
     createdAt: iso,
   })
   .strict();
 
 export const adminFeedbackListSchema = z.object({ items: z.array(adminFeedbackItemSchema), next: iso.nullable() }).strict();
 
-export const setFeedbackStatusRequestSchema = z.object({ status: feedbackStatusSchema }).strict();
+/** A status, a priority (null clears it), or both; each change audited. */
+export const updateFeedbackRequestSchema = z
+  .object({ status: feedbackStatusSchema.optional(), priority: feedbackPrioritySchema.nullable().optional() })
+  .strict()
+  .refine((b) => b.status !== undefined || b.priority !== undefined, { message: 'give a status, a priority, or both' });
 
 export type FeedbackCategory = z.infer<typeof feedbackCategorySchema>;
 export type FeedbackStatus = z.infer<typeof feedbackStatusSchema>;
+export type FeedbackPriority = z.infer<typeof feedbackPrioritySchema>;
+export type UpdateFeedbackRequest = z.infer<typeof updateFeedbackRequestSchema>;
 export type SendFeedbackRequest = z.infer<typeof sendFeedbackRequestSchema>;
 export type AdminFeedbackItem = z.infer<typeof adminFeedbackItemSchema>;
 export type AdminFeedbackList = z.infer<typeof adminFeedbackListSchema>;

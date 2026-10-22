@@ -1,0 +1,2 @@
+ALTER TABLE "feedback" ADD COLUMN "priority" text;--> statement-breakpoint
+ALTER TABLE "feedback" ADD CONSTRAINT "feedback_priority" CHECK ("feedback"."priority" is null or "feedback"."priority" in ('red', 'yellow', 'green'));
