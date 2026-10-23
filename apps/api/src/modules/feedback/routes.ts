@@ -9,6 +9,7 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import {
   FEEDBACK_PER_HOUR,
+  adminFeedbackCountsSchema,
   adminFeedbackItemSchema,
   adminFeedbackListSchema,
   adminFeedbackQuerySchema,
@@ -61,13 +62,23 @@ export async function feedbackRoutes(app: FastifyInstance): Promise<void> {
   typed.get('/admin/feedback', {
     ...admin,
     schema: {
-      summary: 'Feedback from the app, newest first; the sender as an id only',
+      summary: 'Feedback from the app, newest first, by status (or open: not done) and tag; the sender as an id only',
       tags: ['admin'],
       security,
       querystring: adminFeedbackQuerySchema,
       response: { 200: adminFeedbackListSchema, ...errors },
     },
   }, async (request) => service.page(request.query.status, request.query.priority, request.query.limit, request.query.before));
+
+  typed.get('/admin/feedback/counts', {
+    ...admin,
+    schema: {
+      summary: 'How much feedback is waiting: open and not tagged, open per tag (red, yellow, green), and done',
+      tags: ['admin'],
+      security,
+      response: { 200: adminFeedbackCountsSchema, ...errors },
+    },
+  }, async () => service.counts());
 
   typed.patch('/admin/feedback/:id', {
     ...admin,

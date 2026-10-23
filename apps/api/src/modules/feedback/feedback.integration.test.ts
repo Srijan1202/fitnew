@@ -6,7 +6,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import postgres from 'postgres';
-import { FEEDBACK_MAX_LENGTH, FEEDBACK_PER_HOUR, adminFeedbackListSchema, type AdminFeedbackList } from '@fitos/contracts';
+import { FEEDBACK_MAX_LENGTH, FEEDBACK_PER_HOUR, adminFeedbackCountsSchema, adminFeedbackListSchema, type AdminFeedbackList } from '@fitos/contracts';
 
 import { migrateUp } from '../../db/migrate.js';
 import type { FakeTokenVerifier } from '../../test/fake-token-verifier.js';
@@ -178,6 +178,37 @@ describeIfDb('/v1/feedback and /v1/admin/feedback (real Postgres)', { timeout: 6
     const r = await app.inject({ method: 'DELETE', url: '/v1/user', headers: headers(u.token), payload: { confirm: 'DELETE' } });
     expect(r.statusCode, r.body).toBe(200);
     expect((await sql`select 1 from feedback where user_id = ${u.id}`).length).toBe(0);
+  });
+
+  it('the owner flow: new (untagged), then tagged, to do (open), then done; counts per tab; only an admin', async () => {
+    const plain = await user();
+    const admin = await user(true);
+    await sql`delete from feedback`;
+    const ids: string[] = [];
+    for (const m of ['crash on save', 'add water tracking', 'typo on Home', 'already fixed']) {
+      ids.push(((await send(plain, m)).json() as { id: string }).id);
+    }
+    const [crash, water, typo, fixed] = ids as [string, string, string, string];
+    const counts = async () => adminFeedbackCountsSchema.parse((await call(admin, 'GET', '/admin/feedback/counts')).json());
+    const open = async (q = '') => ((await call(admin, 'GET', `/admin/feedback?status=open${q}`)).json() as AdminFeedbackList).items.map((i) => i.id);
+
+    expect((await call(plain, 'GET', '/admin/feedback/counts')).statusCode).toBe(403);
+    expect(await counts()).toEqual({ untagged: 4, red: 0, yellow: 0, green: 0, done: 0 });
+
+    await call(admin, 'PATCH', `/admin/feedback/${crash}`, { priority: 'red', status: 'read' });
+    await call(admin, 'PATCH', `/admin/feedback/${water}`, { priority: 'green', status: 'read' });
+    await call(admin, 'PATCH', `/admin/feedback/${typo}`, { priority: 'yellow' });
+    await call(admin, 'PATCH', `/admin/feedback/${fixed}`, { status: 'done' });
+    expect(await counts()).toEqual({ untagged: 0, red: 1, yellow: 1, green: 1, done: 1 });
+
+    // To do is everything not done, new or read; New is what is open and untagged.
+    expect((await open()).sort()).toEqual([crash, typo, water].sort());
+    expect(await open('&priority=none')).toEqual([]);
+
+    await call(admin, 'PATCH', `/admin/feedback/${crash}`, { status: 'done' });
+    expect(await counts()).toEqual({ untagged: 0, red: 0, yellow: 1, green: 1, done: 2 });
+    expect(await open()).not.toContain(crash);
+    expect((await call(admin, 'GET', '/admin/feedback?status=closed')).statusCode).toBe(422);
   });
 
   it('E1: /meta/config serves the minimum build, 0 unless configured', async () => {

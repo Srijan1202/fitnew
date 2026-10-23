@@ -34,7 +34,8 @@ export const sendFeedbackResponseSchema = z.object({ id: z.string().uuid(), crea
 
 export const adminFeedbackQuerySchema = z
   .object({
-    status: feedbackStatusSchema.optional(),
+    /** A status, or `open` for everything not done yet (new or read): the to-do list. */
+    status: z.enum([...FEEDBACK_STATUSES, 'open']).optional(),
     /** One tag, or `none` for feedback not tagged yet. */
     priority: z.enum([...FEEDBACK_PRIORITIES, 'none']).optional(),
     limit: z.coerce.number().int().min(1).max(200).default(50),
@@ -58,6 +59,17 @@ export const adminFeedbackItemSchema = z
 
 export const adminFeedbackListSchema = z.object({ items: z.array(adminFeedbackItemSchema), next: iso.nullable() }).strict();
 
+/** How much is waiting (after beta 3.2): open feedback not tagged yet, open feedback per tag, and done. */
+export const adminFeedbackCountsSchema = z
+  .object({
+    untagged: z.number().int().min(0),
+    red: z.number().int().min(0),
+    yellow: z.number().int().min(0),
+    green: z.number().int().min(0),
+    done: z.number().int().min(0),
+  })
+  .strict();
+
 /** A status, a priority (null clears it), or both; each change audited. */
 export const updateFeedbackRequestSchema = z
   .object({ status: feedbackStatusSchema.optional(), priority: feedbackPrioritySchema.nullable().optional() })
@@ -71,3 +83,5 @@ export type UpdateFeedbackRequest = z.infer<typeof updateFeedbackRequestSchema>;
 export type SendFeedbackRequest = z.infer<typeof sendFeedbackRequestSchema>;
 export type AdminFeedbackItem = z.infer<typeof adminFeedbackItemSchema>;
 export type AdminFeedbackList = z.infer<typeof adminFeedbackListSchema>;
+export type AdminFeedbackCounts = z.infer<typeof adminFeedbackCountsSchema>;
+export type AdminFeedbackStatusFilter = z.infer<typeof adminFeedbackQuerySchema>['status'];

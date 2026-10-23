@@ -2,7 +2,7 @@
  * Feedback (Phase 19, ADR-026): the rows, and the audit entries an admin's
  * status or priority change writes in the same transaction (§20).
  */
-import { and, desc, eq, isNull, lt } from 'drizzle-orm';
+import { and, count, desc, eq, isNull, lt, ne } from 'drizzle-orm';
 import type { FeedbackCategory, FeedbackPriority, FeedbackStatus } from '@fitos/contracts';
 
 import type { DatabaseHandle } from '../../db/client.js';
@@ -22,13 +22,21 @@ export class FeedbackRepository {
     return r!;
   }
 
-  async page(status: FeedbackStatus | undefined, priority: FeedbackPriority | 'none' | undefined, limit: number, before: Date | null) {
+  async page(status: FeedbackStatus | 'open' | undefined, priority: FeedbackPriority | 'none' | undefined, limit: number, before: Date | null) {
     const where = and(
-      status === undefined ? undefined : eq(feedback.status, status),
+      status === undefined ? undefined : status === 'open' ? ne(feedback.status, 'done') : eq(feedback.status, status),
       priority === undefined ? undefined : priority === 'none' ? isNull(feedback.priority) : eq(feedback.priority, priority),
       before === null ? undefined : lt(feedback.createdAt, before),
     );
     return this.db.select().from(feedback).where(where).orderBy(desc(feedback.createdAt), desc(feedback.id)).limit(limit);
+  }
+
+  /** How many rows per status and tag. */
+  async counts() {
+    return this.db
+      .select({ status: feedback.status, priority: feedback.priority, n: count() })
+      .from(feedback)
+      .groupBy(feedback.status, feedback.priority);
   }
 
   /** Locked until the transaction ends, so a concurrent change waits. */

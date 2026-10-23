@@ -4,7 +4,7 @@
  * marks it read or done, and tags it red, yellow or green (what to solve
  * first). Each change is audited like every admin action.
  */
-import type { AdminFeedbackItem, AdminFeedbackList, FeedbackPriority, FeedbackStatus, SendFeedbackRequest, UpdateFeedbackRequest } from '@fitos/contracts';
+import type { AdminFeedbackCounts, AdminFeedbackItem, AdminFeedbackList, FeedbackPriority, FeedbackStatus, SendFeedbackRequest, UpdateFeedbackRequest } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
 import type { FeedbackRepository } from './repository.js';
@@ -32,9 +32,19 @@ export class FeedbackService {
     return { id: r.id, createdAt: r.createdAt.toISOString() };
   }
 
-  async page(status: FeedbackStatus | undefined, priority: FeedbackPriority | 'none' | undefined, limit: number, before?: string): Promise<AdminFeedbackList> {
+  async page(status: FeedbackStatus | 'open' | undefined, priority: FeedbackPriority | 'none' | undefined, limit: number, before?: string): Promise<AdminFeedbackList> {
     const rows = await this.repo.page(status, priority, limit, before === undefined ? null : new Date(before));
     return { items: rows.map(item), next: rows.length === limit ? rows.at(-1)!.createdAt.toISOString() : null };
+  }
+
+  /** What is waiting: open feedback not tagged yet, open feedback per tag, and done. */
+  async counts(): Promise<AdminFeedbackCounts> {
+    const counts: AdminFeedbackCounts = { untagged: 0, red: 0, yellow: 0, green: 0, done: 0 };
+    for (const r of await this.repo.counts()) {
+      if (r.status === 'done') counts.done += r.n;
+      else counts[(r.priority as FeedbackPriority | null) ?? 'untagged'] += r.n;
+    }
+    return counts;
   }
 
   /** A status, a priority, or both; one audit row per field that changed. Setting the same value again changes and records nothing. */
