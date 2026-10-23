@@ -120,7 +120,7 @@ describeIfDb('/v1/nutrition/foods/requests (real Postgres, real seed)', () => {
     const admin = await user(true);
     const plain = await user();
     const people = [await user(), await user(), await user()];
-    for (const p of people) await report(p, 'tempeh');
+    for (const p of people) await report(p, 'jicama');
     await report(people[0]!, 'natto');
 
     expect((await call(plain, 'GET', '/admin/foods/requests')).statusCode).toBe(403);
@@ -128,23 +128,23 @@ describeIfDb('/v1/nutrition/foods/requests (real Postgres, real seed)', () => {
     expect(list.statusCode, list.body).toBe(200);
     const items = (list.json() as { items: { id: string; query: string; people: number }[] }).items;
     const order = items.map((i) => i.query);
-    expect(order.indexOf('tempeh')).toBeLessThan(order.indexOf('natto'));
-    const kothu = items.find((i) => i.query === 'tempeh')!;
-    expect(kothu.people).toBe(3);
+    expect(order.indexOf('jicama')).toBeLessThan(order.indexOf('natto'));
+    const jicama = items.find((i) => i.query === 'jicama')!;
+    expect(jicama.people).toBe(3);
 
-    expect((await call(plain, 'PATCH', `/admin/foods/requests/${kothu.id}`, { status: 'added' })).statusCode).toBe(403);
-    const done = await call(admin, 'PATCH', `/admin/foods/requests/${kothu.id}`, { status: 'added' });
+    expect((await call(plain, 'PATCH', `/admin/foods/requests/${jicama.id}`, { status: 'added' })).statusCode).toBe(403);
+    const done = await call(admin, 'PATCH', `/admin/foods/requests/${jicama.id}`, { status: 'added' });
     expect(done.statusCode, done.body).toBe(200);
     expect(done.json()).toMatchObject({ status: 'added', resolvedAt: expect.any(String) });
     const [audit] = await sql<{ actor_user_id: string; metadata: Record<string, unknown> }[]>`
-      select actor_user_id, metadata from audit_logs where action = 'food-request.status' and entity_id = ${kothu.id}`;
-    expect(audit).toEqual({ actor_user_id: admin.id, metadata: { status: 'added', query: 'tempeh' } });
+      select actor_user_id, metadata from audit_logs where action = 'food-request.status' and entity_id = ${jicama.id}`;
+    expect(audit).toEqual({ actor_user_id: admin.id, metadata: { status: 'added', query: 'jicama' } });
 
     const open = (await call(admin, 'GET', '/admin/foods/requests?status=open')).json() as { items: { query: string }[] };
-    expect(open.items.map((i) => i.query)).not.toContain('tempeh');
+    expect(open.items.map((i) => i.query)).not.toContain('jicama');
     const added = (await call(admin, 'GET', '/admin/foods/requests?status=added')).json() as { items: { query: string }[] };
-    expect(added.items.map((i) => i.query)).toEqual(['tempeh']);
+    expect(added.items.map((i) => i.query)).toEqual(['jicama']);
     expect((await call(admin, 'PATCH', '/admin/foods/requests/00000000-0000-4000-8000-000000000000', { status: 'ignored' })).statusCode).toBe(404);
-    expect((await call(admin, 'PATCH', `/admin/foods/requests/${kothu.id}`, { status: 'maybe' })).statusCode).toBe(422);
+    expect((await call(admin, 'PATCH', `/admin/foods/requests/${jicama.id}`, { status: 'maybe' })).statusCode).toBe(422);
   });
 });

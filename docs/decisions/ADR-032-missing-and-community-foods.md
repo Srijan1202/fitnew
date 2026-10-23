@@ -48,3 +48,38 @@ The owner chose (2026-10-23) to show shared foods **immediately, marked Communit
 - The food database grows in the order people actually need, without asking anyone to file a report by hand.
 - A wrong shared food is visible until someone reports it and an admin hides it. The Community · unverified mark and the calorie check limit the damage.
 - Nothing in either feature can be traced back to a person.
+
+## Amendment — a bigger food database (beta 3.2, F3)
+
+The owner asked for many more foods in all four groups. They are added through the Phase 7 pipeline unchanged (`food-seed:build`, reproducible with `--check`). No new kind of source is added.
+
+| | Before | Added | Now |
+|---|---|---|---|
+| USDA records (`usda-picks.json`) | 175 | 151 | 326 |
+| FITOS composite estimates (`recipes.json`) | 54 | 211 | 265 |
+| Carried core estimates | 76 | 0 | 76 |
+| **Total** | **305** | **362** | **667** |
+
+- **Indian dishes** (about 115): breads, rice plates and thalis, dals, paneer and vegetable curries, chicken, mutton, egg and fish dishes, South Indian tiffin, Gujarati snacks and sweets. They are declared recipes from USDA ingredients: `source=estimated`, never verified, confidence medium or low, widened 10–25 %.
+- **Drinks and street food** (about 70): shakes, coffees, juices, sharbats; chaat, rolls, momos, Indo-Chinese dishes, instant noodles, sandwiches, burgers and combos (chole bhature, puri bhaji, misal pav…). Mostly recipes; packaged juices, cola, green tea and espresso are USDA records.
+- **Gym and protein products** (about 60): generic USDA records (whey-based and soy protein powder, whey isolate, egg white powder, Greek yogurt, low-fat cottage cheese, firm tofu, tempeh, edamame, nut butters, instant oats, granola and bars, rice cakes, grilled chicken breast…), plus recipes for shakes, protein oats, egg-white omelettes, rice bowls and the like.
+  - **Change from the plan:** the plan said "generic typical label values". Brand labels are not a permitted source and "typical" values have no record behind them, so these are USDA records and declared recipes instead. Every number still traces to a USDA record.
+  - USDA records that carry a brand name (EAS, Red Bull, Ralston…) are left out.
+- **Whole foods** (about 70 USDA records): fruit, vegetables, legumes, grains and breads, fish and meat, cheeses, condiments, nuts and seeds.
+- **Proxies are named in each recipe's notes,** as Phase 7 did, wherever USDA lacks the ingredient:
+  - queso blanco for paneer and chhena;
+  - spinach for methi leaves;
+  - whole chickpeas for chana dal;
+  - besan for sattu;
+  - milk powder for khoya;
+  - brown sugar for jaggery;
+  - pasta for vermicelli and hakka noodles;
+  - defatted soy flour for soya chunks;
+  - lotus seeds for makhana;
+  - orange juice for mosambi juice.
+- **Aliases only where the equivalence holds.**
+  - "Gooseberries" is not given "amla", because the species differ.
+  - King mackerel is not given "surmai".
+  - Lotus seeds are not called makhana; makhana is its own estimate, with the proxy named.
+- **Missing-food reports first:** none have arrived yet, because the reporting server isn't released. The owner reviews them in the admin panel after the release.
+- **Release:** a seed release (`deploy.ps1 -Seed`). The admin edit protection (Phase 7, D5) keeps hand-corrected foods as they are.

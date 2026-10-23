@@ -1,188 +1,2469 @@
 {
-  "version": 1,
+  "version": 2,
   "note": "Direct USDA FoodData Central records seeded as-is (Phase 7, D2/N3). Name and every number come from the record at build time; this file only chooses records and adds Indian aliases where the equivalence is unambiguous. Foundation Foods (2026-04-30) is preferred; SR Legacy (2018-04, final) fills gaps. Branded Foods, FNDDS and Experimental Foods are not used.",
   "picks": [
-    { "slug": "rice-white-long-grain-cooked", "fdcId": 169757, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "rice-white-long-grain-raw", "fdcId": 169756, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "rice-brown-long-grain-cooked", "fdcId": 169704, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "rice-brown-long-grain-raw", "fdcId": 169703, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "wheat-flour-whole-grain", "fdcId": 168893, "dataset": "sr_legacy", "aliases": ["atta", "whole wheat flour"] },
-    { "slug": "wheat-flour-white-all-purpose", "fdcId": 169761, "dataset": "sr_legacy", "aliases": ["maida"] },
-    { "slug": "semolina", "fdcId": 168933, "dataset": "sr_legacy", "aliases": ["sooji", "suji", "rava"] },
-    { "slug": "oats-rolled", "fdcId": 2346396, "dataset": "foundation", "aliases": [] },
-    { "slug": "bread-white", "fdcId": 174924, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "bread-whole-wheat", "fdcId": 172688, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "rice-flour-white", "fdcId": 169714, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "chickpea-flour", "fdcId": 174288, "dataset": "sr_legacy", "aliases": ["besan", "gram flour"] },
-    { "slug": "corn-flour-whole-grain-yellow", "fdcId": 170290, "dataset": "sr_legacy", "aliases": ["makki ka atta", "makki atta"] },
-    { "slug": "millet-raw", "fdcId": 169702, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "millet-flour", "fdcId": 172023, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "sorghum-flour-whole-grain", "fdcId": 168943, "dataset": "sr_legacy", "aliases": ["jowar flour", "jowar atta"] },
-    { "slug": "sorghum-grain", "fdcId": 169716, "dataset": "sr_legacy", "aliases": ["jowar"] },
-    { "slug": "tapioca-pearl-dry", "fdcId": 169717, "dataset": "sr_legacy", "aliases": ["sabudana"] },
-    { "slug": "barley-pearled-raw", "fdcId": 170284, "dataset": "sr_legacy", "aliases": ["jau"] },
-    { "slug": "quinoa-uncooked", "fdcId": 168874, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "quinoa-cooked", "fdcId": 168917, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "amaranth-grain", "fdcId": 170682, "dataset": "sr_legacy", "aliases": ["rajgira", "ramdana"] },
-    { "slug": "buckwheat-flour", "fdcId": 170687, "dataset": "sr_legacy", "aliases": ["kuttu atta"] },
-    { "slug": "pasta-dry-enriched", "fdcId": 169736, "dataset": "sr_legacy", "aliases": [] },
-
-    { "slug": "lentils-raw", "fdcId": 172420, "dataset": "sr_legacy", "aliases": ["sabut masoor"] },
-    { "slug": "lentils-boiled", "fdcId": 172421, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "lentils-red-raw", "fdcId": 174284, "dataset": "sr_legacy", "aliases": ["masoor", "masoor dal", "red lentils"] },
-    { "slug": "mung-beans-raw", "fdcId": 174256, "dataset": "sr_legacy", "aliases": ["moong", "green gram", "sabut moong"] },
-    { "slug": "mung-beans-boiled", "fdcId": 174257, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "mung-bean-sprouts-raw", "fdcId": 169957, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "mungo-beans-raw", "fdcId": 174259, "dataset": "sr_legacy", "aliases": ["urad", "black gram", "sabut urad"] },
-    { "slug": "mungo-beans-boiled", "fdcId": 172427, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "chickpeas-raw", "fdcId": 173756, "dataset": "sr_legacy", "aliases": ["kabuli chana", "chickpeas"] },
-    { "slug": "chickpeas-boiled", "fdcId": 173757, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "kidney-beans-raw", "fdcId": 173744, "dataset": "sr_legacy", "aliases": ["rajma"] },
-    { "slug": "kidney-beans-boiled", "fdcId": 175194, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "pigeon-peas-raw", "fdcId": 172436, "dataset": "sr_legacy", "aliases": ["toor", "arhar", "tuvar"] },
-    { "slug": "pigeon-peas-boiled", "fdcId": 172437, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "cowpeas-raw", "fdcId": 173758, "dataset": "sr_legacy", "aliases": ["lobia", "chawli"] },
-    { "slug": "cowpeas-boiled", "fdcId": 173759, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "mothbeans-raw", "fdcId": 172425, "dataset": "sr_legacy", "aliases": ["moth", "matki"] },
-    { "slug": "mothbeans-boiled", "fdcId": 172426, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "soybeans-raw", "fdcId": 174270, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "soybeans-boiled", "fdcId": 174271, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "tofu-raw", "fdcId": 172476, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "peanuts-raw", "fdcId": 172430, "dataset": "sr_legacy", "aliases": ["groundnut", "moongphali"] },
-    { "slug": "peanuts-dry-roasted", "fdcId": 173806, "dataset": "sr_legacy", "aliases": ["roasted groundnut"] },
-    { "slug": "peanut-butter-smooth", "fdcId": 172470, "dataset": "sr_legacy", "aliases": [] },
-
-    { "slug": "milk-whole", "fdcId": 746782, "dataset": "foundation", "aliases": [] },
-    { "slug": "milk-reduced-fat-2", "fdcId": 746778, "dataset": "foundation", "aliases": [] },
-    { "slug": "milk-nonfat", "fdcId": 746776, "dataset": "foundation", "aliases": ["skim milk"] },
-    { "slug": "milk-goat", "fdcId": 171278, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "yogurt-plain-whole-milk", "fdcId": 2259793, "dataset": "foundation", "aliases": [] },
-    { "slug": "yogurt-plain-low-fat", "fdcId": 170886, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "cheese-cheddar", "fdcId": 328637, "dataset": "foundation", "aliases": [] },
-    { "slug": "cheese-mozzarella-whole-milk", "fdcId": 170845, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "cheese-cottage-creamed", "fdcId": 172179, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "butter-salted", "fdcId": 173410, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "butter-oil-anhydrous", "fdcId": 173412, "dataset": "sr_legacy", "aliases": ["ghee"] },
-    { "slug": "cream-heavy-whipping", "fdcId": 170859, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "egg-whole-raw", "fdcId": 171287, "dataset": "sr_legacy", "aliases": ["anda"] },
-    { "slug": "egg-whole-hard-boiled", "fdcId": 173424, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "egg-white-raw", "fdcId": 172183, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "egg-whole-scrambled", "fdcId": 172187, "dataset": "sr_legacy", "aliases": [] },
-
-    { "slug": "chicken-breast-raw", "fdcId": 171077, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "chicken-breast-roasted", "fdcId": 171477, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "chicken-thigh-roasted", "fdcId": 172388, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "chicken-drumstick-braised", "fdcId": 331897, "dataset": "foundation", "aliases": [] },
-    { "slug": "goat-raw", "fdcId": 175303, "dataset": "sr_legacy", "aliases": ["mutton"] },
-    { "slug": "goat-roasted", "fdcId": 175304, "dataset": "sr_legacy", "aliases": ["cooked mutton"] },
-    { "slug": "lamb-ground-raw", "fdcId": 174370, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "fish-tilapia-cooked", "fdcId": 175177, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "fish-salmon-farmed-cooked", "fdcId": 175168, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "fish-mackerel-atlantic-cooked", "fdcId": 175120, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "fish-sardine-canned-oil", "fdcId": 175139, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "fish-tuna-light-canned-water", "fdcId": 334194, "dataset": "foundation", "aliases": [] },
-    { "slug": "fish-pompano-cooked", "fdcId": 173683, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "fish-catfish-farmed-cooked", "fdcId": 175166, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "shrimp-cooked", "fdcId": 175180, "dataset": "sr_legacy", "aliases": ["prawns"] },
-    { "slug": "shrimp-raw", "fdcId": 175179, "dataset": "sr_legacy", "aliases": [] },
-
-    { "slug": "potatoes-raw", "fdcId": 170026, "dataset": "sr_legacy", "aliases": ["aloo"] },
-    { "slug": "potatoes-boiled", "fdcId": 170440, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "sweet-potato-raw", "fdcId": 168482, "dataset": "sr_legacy", "aliases": ["shakarkandi"] },
-    { "slug": "sweet-potato-boiled", "fdcId": 168484, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "onions-raw", "fdcId": 170000, "dataset": "sr_legacy", "aliases": ["pyaz", "kanda"] },
-    { "slug": "tomatoes-raw", "fdcId": 170457, "dataset": "sr_legacy", "aliases": ["tamatar"] },
-    { "slug": "garlic-raw", "fdcId": 1104647, "dataset": "foundation", "aliases": ["lahsun"] },
-    { "slug": "ginger-root-raw", "fdcId": 169231, "dataset": "sr_legacy", "aliases": ["adrak"] },
-    { "slug": "green-chili-raw", "fdcId": 170497, "dataset": "sr_legacy", "aliases": ["green chilli", "hari mirch"] },
-    { "slug": "spinach-raw", "fdcId": 168462, "dataset": "sr_legacy", "aliases": ["palak"] },
-    { "slug": "spinach-boiled", "fdcId": 168463, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "mustard-greens-raw", "fdcId": 169256, "dataset": "sr_legacy", "aliases": ["sarson leaves"] },
-    { "slug": "cauliflower-raw", "fdcId": 2685573, "dataset": "foundation", "aliases": ["phool gobi"] },
-    { "slug": "cabbage-raw", "fdcId": 169975, "dataset": "sr_legacy", "aliases": ["patta gobi", "band gobi"] },
-    { "slug": "okra-raw", "fdcId": 169260, "dataset": "sr_legacy", "aliases": ["bhindi", "lady finger", "ladies finger"] },
-    { "slug": "eggplant-raw", "fdcId": 2685577, "dataset": "foundation", "aliases": ["brinjal", "baingan"] },
-    { "slug": "carrots-raw", "fdcId": 170393, "dataset": "sr_legacy", "aliases": ["gajar"] },
-    { "slug": "peas-green-raw", "fdcId": 170419, "dataset": "sr_legacy", "aliases": ["matar", "green peas"] },
-    { "slug": "peas-green-frozen-boiled", "fdcId": 170017, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "beans-snap-green-raw", "fdcId": 2346400, "dataset": "foundation", "aliases": ["french beans"] },
-    { "slug": "bottle-gourd-raw", "fdcId": 169232, "dataset": "sr_legacy", "aliases": ["lauki", "dudhi", "bottle gourd"] },
-    { "slug": "bitter-gourd-raw", "fdcId": 168393, "dataset": "sr_legacy", "aliases": ["karela"] },
-    { "slug": "ash-gourd-raw", "fdcId": 170069, "dataset": "sr_legacy", "aliases": ["ash gourd"] },
-    { "slug": "sponge-gourd-raw", "fdcId": 168414, "dataset": "sr_legacy", "aliases": ["sponge gourd"] },
-    { "slug": "cucumber-raw", "fdcId": 168409, "dataset": "sr_legacy", "aliases": ["kheera"] },
-    { "slug": "pumpkin-raw", "fdcId": 168448, "dataset": "sr_legacy", "aliases": ["kaddu"] },
-    { "slug": "radish-oriental-raw", "fdcId": 168451, "dataset": "sr_legacy", "aliases": ["mooli"] },
-    { "slug": "beets-raw", "fdcId": 2685576, "dataset": "foundation", "aliases": ["beetroot", "chukandar"] },
-    { "slug": "green-bell-pepper-raw", "fdcId": 170427, "dataset": "sr_legacy", "aliases": ["capsicum", "shimla mirch"] },
-    { "slug": "mushrooms-white-raw", "fdcId": 169251, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "sweet-corn-yellow-raw", "fdcId": 169998, "dataset": "sr_legacy", "aliases": ["sweet corn"] },
-    { "slug": "drumstick-pods-raw", "fdcId": 170483, "dataset": "sr_legacy", "aliases": ["moringa", "murungakkai"] },
-    { "slug": "coriander-leaves-raw", "fdcId": 169997, "dataset": "sr_legacy", "aliases": ["dhania", "coriander leaves"] },
-    { "slug": "spearmint-fresh", "fdcId": 173475, "dataset": "sr_legacy", "aliases": ["pudina", "mint"] },
-    { "slug": "lettuce-iceberg-raw", "fdcId": 2346388, "dataset": "foundation", "aliases": [] },
-    { "slug": "broccoli-raw", "fdcId": 747447, "dataset": "foundation", "aliases": [] },
-    { "slug": "taro-raw", "fdcId": 169308, "dataset": "sr_legacy", "aliases": ["arbi", "colocasia"] },
-    { "slug": "plantain-green-raw", "fdcId": 168215, "dataset": "sr_legacy", "aliases": ["raw banana", "kachcha kela"] },
-    { "slug": "lemon-juice-raw", "fdcId": 167747, "dataset": "sr_legacy", "aliases": [] },
-
-    { "slug": "banana-raw", "fdcId": 173944, "dataset": "sr_legacy", "aliases": ["kela"] },
-    { "slug": "apple-raw-with-skin", "fdcId": 171688, "dataset": "sr_legacy", "aliases": ["seb"] },
-    { "slug": "mango-raw", "fdcId": 169910, "dataset": "sr_legacy", "aliases": ["aam"] },
-    { "slug": "papaya-raw", "fdcId": 169926, "dataset": "sr_legacy", "aliases": ["papita"] },
-    { "slug": "guava-raw", "fdcId": 173044, "dataset": "sr_legacy", "aliases": ["amrood", "peru"] },
-    { "slug": "orange-raw", "fdcId": 169097, "dataset": "sr_legacy", "aliases": ["santra"] },
-    { "slug": "grapes-raw", "fdcId": 174683, "dataset": "sr_legacy", "aliases": ["angoor"] },
-    { "slug": "pomegranate-raw", "fdcId": 169134, "dataset": "sr_legacy", "aliases": ["anar"] },
-    { "slug": "watermelon-raw", "fdcId": 167765, "dataset": "sr_legacy", "aliases": ["tarbooz"] },
-    { "slug": "cantaloupe-raw", "fdcId": 746770, "dataset": "foundation", "aliases": ["muskmelon", "kharbuja"] },
-    { "slug": "pineapple-raw", "fdcId": 169124, "dataset": "sr_legacy", "aliases": ["ananas"] },
-    { "slug": "jackfruit-raw", "fdcId": 174687, "dataset": "sr_legacy", "aliases": ["kathal"] },
-    { "slug": "sapodilla-raw", "fdcId": 167759, "dataset": "sr_legacy", "aliases": ["chikoo", "chiku", "sapota"] },
-    { "slug": "sugar-apple-raw", "fdcId": 168175, "dataset": "sr_legacy", "aliases": ["sitaphal"] },
-    { "slug": "litchi-raw", "fdcId": 169086, "dataset": "sr_legacy", "aliases": ["lychee"] },
-    { "slug": "java-plum-raw", "fdcId": 168150, "dataset": "sr_legacy", "aliases": ["jamun"] },
-    { "slug": "coconut-water", "fdcId": 170174, "dataset": "sr_legacy", "aliases": ["nariyal pani", "tender coconut water"] },
-    { "slug": "dates-medjool", "fdcId": 168191, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "dates-deglet-noor", "fdcId": 171726, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "figs-dried", "fdcId": 746768, "dataset": "foundation", "aliases": ["anjeer"] },
-    { "slug": "raisins-dark-seedless", "fdcId": 168165, "dataset": "sr_legacy", "aliases": ["kishmish"] },
-    { "slug": "strawberries-raw", "fdcId": 2346409, "dataset": "foundation", "aliases": [] },
-    { "slug": "pears-bartlett-raw", "fdcId": 746773, "dataset": "foundation", "aliases": ["nashpati"] },
-    { "slug": "kiwifruit-green-raw", "fdcId": 327046, "dataset": "foundation", "aliases": [] },
-
-    { "slug": "almonds-raw", "fdcId": 2346393, "dataset": "foundation", "aliases": ["badam"] },
-    { "slug": "cashews-raw", "fdcId": 2515374, "dataset": "foundation", "aliases": ["kaju"] },
-    { "slug": "cashews-dry-roasted", "fdcId": 170571, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "walnuts-raw", "fdcId": 2346394, "dataset": "foundation", "aliases": ["akhrot"] },
-    { "slug": "pistachios-raw", "fdcId": 2515379, "dataset": "foundation", "aliases": ["pista"] },
-    { "slug": "sesame-seeds", "fdcId": 170150, "dataset": "sr_legacy", "aliases": ["til"] },
-    { "slug": "coconut-meat-raw", "fdcId": 170169, "dataset": "sr_legacy", "aliases": ["fresh coconut", "nariyal"] },
-    { "slug": "coconut-desiccated", "fdcId": 170170, "dataset": "sr_legacy", "aliases": ["desiccated coconut"] },
-    { "slug": "flaxseed", "fdcId": 169414, "dataset": "sr_legacy", "aliases": ["alsi"] },
-    { "slug": "chia-seeds", "fdcId": 170554, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "pumpkin-seeds", "fdcId": 170556, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "sunflower-seeds", "fdcId": 170562, "dataset": "sr_legacy", "aliases": [] },
-
-    { "slug": "oil-sunflower", "fdcId": 171017, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "oil-peanut", "fdcId": 171410, "dataset": "sr_legacy", "aliases": ["groundnut oil"] },
-    { "slug": "oil-mustard", "fdcId": 172337, "dataset": "sr_legacy", "aliases": ["sarson ka tel"] },
-    { "slug": "oil-coconut", "fdcId": 171412, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "oil-soybean", "fdcId": 171411, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "oil-olive", "fdcId": 171413, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "oil-sesame", "fdcId": 171016, "dataset": "sr_legacy", "aliases": ["gingelly oil", "til oil"] },
-    { "slug": "sugar-granulated", "fdcId": 746784, "dataset": "foundation", "aliases": ["chini"] },
-    { "slug": "sugar-brown", "fdcId": 168833, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "honey", "fdcId": 169640, "dataset": "sr_legacy", "aliases": ["shahad"] },
-    { "slug": "tea-black-brewed", "fdcId": 173227, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "coffee-brewed", "fdcId": 171890, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "cocoa-powder-unsweetened", "fdcId": 169593, "dataset": "sr_legacy", "aliases": [] },
-    { "slug": "tomato-ketchup", "fdcId": 168556, "dataset": "sr_legacy", "aliases": ["tomato ketchup"] },
-    { "slug": "turmeric-ground", "fdcId": 172231, "dataset": "sr_legacy", "aliases": ["haldi"] },
-    { "slug": "cumin-seed", "fdcId": 170923, "dataset": "sr_legacy", "aliases": ["jeera"] },
-    { "slug": "coriander-seed", "fdcId": 170922, "dataset": "sr_legacy", "aliases": ["dhania seeds"] },
-    { "slug": "black-pepper", "fdcId": 170931, "dataset": "sr_legacy", "aliases": ["kali mirch"] },
-    { "slug": "cardamom", "fdcId": 170919, "dataset": "sr_legacy", "aliases": ["elaichi"] },
-    { "slug": "fenugreek-seed", "fdcId": 171324, "dataset": "sr_legacy", "aliases": ["methi seeds"] }
+    {
+      "slug": "rice-white-long-grain-cooked",
+      "fdcId": 169757,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "rice-white-long-grain-raw",
+      "fdcId": 169756,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "rice-brown-long-grain-cooked",
+      "fdcId": 169704,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "rice-brown-long-grain-raw",
+      "fdcId": 169703,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "wheat-flour-whole-grain",
+      "fdcId": 168893,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "atta",
+        "whole wheat flour"
+      ]
+    },
+    {
+      "slug": "wheat-flour-white-all-purpose",
+      "fdcId": 169761,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "maida"
+      ]
+    },
+    {
+      "slug": "semolina",
+      "fdcId": 168933,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "sooji",
+        "suji",
+        "rava"
+      ]
+    },
+    {
+      "slug": "oats-rolled",
+      "fdcId": 2346396,
+      "dataset": "foundation",
+      "aliases": []
+    },
+    {
+      "slug": "bread-white",
+      "fdcId": 174924,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "bread-whole-wheat",
+      "fdcId": 172688,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "rice-flour-white",
+      "fdcId": 169714,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "chickpea-flour",
+      "fdcId": 174288,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "besan",
+        "gram flour"
+      ]
+    },
+    {
+      "slug": "corn-flour-whole-grain-yellow",
+      "fdcId": 170290,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "makki ka atta",
+        "makki atta"
+      ]
+    },
+    {
+      "slug": "millet-raw",
+      "fdcId": 169702,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "millet-flour",
+      "fdcId": 172023,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "sorghum-flour-whole-grain",
+      "fdcId": 168943,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "jowar flour",
+        "jowar atta"
+      ]
+    },
+    {
+      "slug": "sorghum-grain",
+      "fdcId": 169716,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "jowar"
+      ]
+    },
+    {
+      "slug": "tapioca-pearl-dry",
+      "fdcId": 169717,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "sabudana"
+      ]
+    },
+    {
+      "slug": "barley-pearled-raw",
+      "fdcId": 170284,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "jau"
+      ]
+    },
+    {
+      "slug": "quinoa-uncooked",
+      "fdcId": 168874,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "quinoa-cooked",
+      "fdcId": 168917,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "amaranth-grain",
+      "fdcId": 170682,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "rajgira",
+        "ramdana"
+      ]
+    },
+    {
+      "slug": "buckwheat-flour",
+      "fdcId": 170687,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "kuttu atta"
+      ]
+    },
+    {
+      "slug": "pasta-dry-enriched",
+      "fdcId": 169736,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "lentils-raw",
+      "fdcId": 172420,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "sabut masoor"
+      ]
+    },
+    {
+      "slug": "lentils-boiled",
+      "fdcId": 172421,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "lentils-red-raw",
+      "fdcId": 174284,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "masoor",
+        "masoor dal",
+        "red lentils"
+      ]
+    },
+    {
+      "slug": "mung-beans-raw",
+      "fdcId": 174256,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "moong",
+        "green gram",
+        "sabut moong"
+      ]
+    },
+    {
+      "slug": "mung-beans-boiled",
+      "fdcId": 174257,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "mung-bean-sprouts-raw",
+      "fdcId": 169957,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "mungo-beans-raw",
+      "fdcId": 174259,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "urad",
+        "black gram",
+        "sabut urad"
+      ]
+    },
+    {
+      "slug": "mungo-beans-boiled",
+      "fdcId": 172427,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "chickpeas-raw",
+      "fdcId": 173756,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "kabuli chana",
+        "chickpeas"
+      ]
+    },
+    {
+      "slug": "chickpeas-boiled",
+      "fdcId": 173757,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "kidney-beans-raw",
+      "fdcId": 173744,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "rajma"
+      ]
+    },
+    {
+      "slug": "kidney-beans-boiled",
+      "fdcId": 175194,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "pigeon-peas-raw",
+      "fdcId": 172436,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "toor",
+        "arhar",
+        "tuvar"
+      ]
+    },
+    {
+      "slug": "pigeon-peas-boiled",
+      "fdcId": 172437,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "cowpeas-raw",
+      "fdcId": 173758,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "lobia",
+        "chawli"
+      ]
+    },
+    {
+      "slug": "cowpeas-boiled",
+      "fdcId": 173759,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "mothbeans-raw",
+      "fdcId": 172425,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "moth",
+        "matki"
+      ]
+    },
+    {
+      "slug": "mothbeans-boiled",
+      "fdcId": 172426,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "soybeans-raw",
+      "fdcId": 174270,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "soybeans-boiled",
+      "fdcId": 174271,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "tofu-raw",
+      "fdcId": 172476,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "peanuts-raw",
+      "fdcId": 172430,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "groundnut",
+        "moongphali"
+      ]
+    },
+    {
+      "slug": "peanuts-dry-roasted",
+      "fdcId": 173806,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "roasted groundnut"
+      ]
+    },
+    {
+      "slug": "peanut-butter-smooth",
+      "fdcId": 172470,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "milk-whole",
+      "fdcId": 746782,
+      "dataset": "foundation",
+      "aliases": []
+    },
+    {
+      "slug": "milk-reduced-fat-2",
+      "fdcId": 746778,
+      "dataset": "foundation",
+      "aliases": []
+    },
+    {
+      "slug": "milk-nonfat",
+      "fdcId": 746776,
+      "dataset": "foundation",
+      "aliases": [
+        "skim milk"
+      ]
+    },
+    {
+      "slug": "milk-goat",
+      "fdcId": 171278,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "yogurt-plain-whole-milk",
+      "fdcId": 2259793,
+      "dataset": "foundation",
+      "aliases": []
+    },
+    {
+      "slug": "yogurt-plain-low-fat",
+      "fdcId": 170886,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "cheese-cheddar",
+      "fdcId": 328637,
+      "dataset": "foundation",
+      "aliases": []
+    },
+    {
+      "slug": "cheese-mozzarella-whole-milk",
+      "fdcId": 170845,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "cheese-cottage-creamed",
+      "fdcId": 172179,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "butter-salted",
+      "fdcId": 173410,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "butter-oil-anhydrous",
+      "fdcId": 173412,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "ghee"
+      ]
+    },
+    {
+      "slug": "cream-heavy-whipping",
+      "fdcId": 170859,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "egg-whole-raw",
+      "fdcId": 171287,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "anda"
+      ]
+    },
+    {
+      "slug": "egg-whole-hard-boiled",
+      "fdcId": 173424,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "egg-white-raw",
+      "fdcId": 172183,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "egg-whole-scrambled",
+      "fdcId": 172187,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "chicken-breast-raw",
+      "fdcId": 171077,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "chicken-breast-roasted",
+      "fdcId": 171477,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "chicken-thigh-roasted",
+      "fdcId": 172388,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "chicken-drumstick-braised",
+      "fdcId": 331897,
+      "dataset": "foundation",
+      "aliases": []
+    },
+    {
+      "slug": "goat-raw",
+      "fdcId": 175303,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "mutton"
+      ]
+    },
+    {
+      "slug": "goat-roasted",
+      "fdcId": 175304,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "cooked mutton"
+      ]
+    },
+    {
+      "slug": "lamb-ground-raw",
+      "fdcId": 174370,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "fish-tilapia-cooked",
+      "fdcId": 175177,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "fish-salmon-farmed-cooked",
+      "fdcId": 175168,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "fish-mackerel-atlantic-cooked",
+      "fdcId": 175120,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "fish-sardine-canned-oil",
+      "fdcId": 175139,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "fish-tuna-light-canned-water",
+      "fdcId": 334194,
+      "dataset": "foundation",
+      "aliases": []
+    },
+    {
+      "slug": "fish-pompano-cooked",
+      "fdcId": 173683,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "fish-catfish-farmed-cooked",
+      "fdcId": 175166,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "shrimp-cooked",
+      "fdcId": 175180,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "prawns"
+      ]
+    },
+    {
+      "slug": "shrimp-raw",
+      "fdcId": 175179,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "potatoes-raw",
+      "fdcId": 170026,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "aloo"
+      ]
+    },
+    {
+      "slug": "potatoes-boiled",
+      "fdcId": 170440,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "sweet-potato-raw",
+      "fdcId": 168482,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "shakarkandi"
+      ]
+    },
+    {
+      "slug": "sweet-potato-boiled",
+      "fdcId": 168484,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "onions-raw",
+      "fdcId": 170000,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "pyaz",
+        "kanda"
+      ]
+    },
+    {
+      "slug": "tomatoes-raw",
+      "fdcId": 170457,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "tamatar"
+      ]
+    },
+    {
+      "slug": "garlic-raw",
+      "fdcId": 1104647,
+      "dataset": "foundation",
+      "aliases": [
+        "lahsun"
+      ]
+    },
+    {
+      "slug": "ginger-root-raw",
+      "fdcId": 169231,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "adrak"
+      ]
+    },
+    {
+      "slug": "green-chili-raw",
+      "fdcId": 170497,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "green chilli",
+        "hari mirch"
+      ]
+    },
+    {
+      "slug": "spinach-raw",
+      "fdcId": 168462,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "palak"
+      ]
+    },
+    {
+      "slug": "spinach-boiled",
+      "fdcId": 168463,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "mustard-greens-raw",
+      "fdcId": 169256,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "sarson leaves"
+      ]
+    },
+    {
+      "slug": "cauliflower-raw",
+      "fdcId": 2685573,
+      "dataset": "foundation",
+      "aliases": [
+        "phool gobi"
+      ]
+    },
+    {
+      "slug": "cabbage-raw",
+      "fdcId": 169975,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "patta gobi",
+        "band gobi"
+      ]
+    },
+    {
+      "slug": "okra-raw",
+      "fdcId": 169260,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "bhindi",
+        "lady finger",
+        "ladies finger"
+      ]
+    },
+    {
+      "slug": "eggplant-raw",
+      "fdcId": 2685577,
+      "dataset": "foundation",
+      "aliases": [
+        "brinjal",
+        "baingan"
+      ]
+    },
+    {
+      "slug": "carrots-raw",
+      "fdcId": 170393,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "gajar"
+      ]
+    },
+    {
+      "slug": "peas-green-raw",
+      "fdcId": 170419,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "matar",
+        "green peas"
+      ]
+    },
+    {
+      "slug": "peas-green-frozen-boiled",
+      "fdcId": 170017,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "beans-snap-green-raw",
+      "fdcId": 2346400,
+      "dataset": "foundation",
+      "aliases": [
+        "french beans"
+      ]
+    },
+    {
+      "slug": "bottle-gourd-raw",
+      "fdcId": 169232,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "lauki",
+        "dudhi",
+        "bottle gourd"
+      ]
+    },
+    {
+      "slug": "bitter-gourd-raw",
+      "fdcId": 168393,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "karela"
+      ]
+    },
+    {
+      "slug": "ash-gourd-raw",
+      "fdcId": 170069,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "ash gourd"
+      ]
+    },
+    {
+      "slug": "sponge-gourd-raw",
+      "fdcId": 168414,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "sponge gourd"
+      ]
+    },
+    {
+      "slug": "cucumber-raw",
+      "fdcId": 168409,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "kheera"
+      ]
+    },
+    {
+      "slug": "pumpkin-raw",
+      "fdcId": 168448,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "kaddu"
+      ]
+    },
+    {
+      "slug": "radish-oriental-raw",
+      "fdcId": 168451,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "mooli"
+      ]
+    },
+    {
+      "slug": "beets-raw",
+      "fdcId": 2685576,
+      "dataset": "foundation",
+      "aliases": [
+        "beetroot",
+        "chukandar"
+      ]
+    },
+    {
+      "slug": "green-bell-pepper-raw",
+      "fdcId": 170427,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "capsicum",
+        "shimla mirch"
+      ]
+    },
+    {
+      "slug": "mushrooms-white-raw",
+      "fdcId": 169251,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "sweet-corn-yellow-raw",
+      "fdcId": 169998,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "sweet corn"
+      ]
+    },
+    {
+      "slug": "drumstick-pods-raw",
+      "fdcId": 170483,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "moringa",
+        "murungakkai"
+      ]
+    },
+    {
+      "slug": "coriander-leaves-raw",
+      "fdcId": 169997,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "dhania",
+        "coriander leaves"
+      ]
+    },
+    {
+      "slug": "spearmint-fresh",
+      "fdcId": 173475,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "pudina",
+        "mint"
+      ]
+    },
+    {
+      "slug": "lettuce-iceberg-raw",
+      "fdcId": 2346388,
+      "dataset": "foundation",
+      "aliases": []
+    },
+    {
+      "slug": "broccoli-raw",
+      "fdcId": 747447,
+      "dataset": "foundation",
+      "aliases": []
+    },
+    {
+      "slug": "taro-raw",
+      "fdcId": 169308,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "arbi",
+        "colocasia"
+      ]
+    },
+    {
+      "slug": "plantain-green-raw",
+      "fdcId": 168215,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "raw banana",
+        "kachcha kela"
+      ]
+    },
+    {
+      "slug": "lemon-juice-raw",
+      "fdcId": 167747,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "banana-raw",
+      "fdcId": 173944,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "kela"
+      ]
+    },
+    {
+      "slug": "apple-raw-with-skin",
+      "fdcId": 171688,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "seb"
+      ]
+    },
+    {
+      "slug": "mango-raw",
+      "fdcId": 169910,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "aam"
+      ]
+    },
+    {
+      "slug": "papaya-raw",
+      "fdcId": 169926,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "papita"
+      ]
+    },
+    {
+      "slug": "guava-raw",
+      "fdcId": 173044,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "amrood",
+        "peru"
+      ]
+    },
+    {
+      "slug": "orange-raw",
+      "fdcId": 169097,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "santra"
+      ]
+    },
+    {
+      "slug": "grapes-raw",
+      "fdcId": 174683,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "angoor"
+      ]
+    },
+    {
+      "slug": "pomegranate-raw",
+      "fdcId": 169134,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "anar"
+      ]
+    },
+    {
+      "slug": "watermelon-raw",
+      "fdcId": 167765,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "tarbooz"
+      ]
+    },
+    {
+      "slug": "cantaloupe-raw",
+      "fdcId": 746770,
+      "dataset": "foundation",
+      "aliases": [
+        "muskmelon",
+        "kharbuja"
+      ]
+    },
+    {
+      "slug": "pineapple-raw",
+      "fdcId": 169124,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "ananas"
+      ]
+    },
+    {
+      "slug": "jackfruit-raw",
+      "fdcId": 174687,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "kathal"
+      ]
+    },
+    {
+      "slug": "sapodilla-raw",
+      "fdcId": 167759,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "chikoo",
+        "chiku",
+        "sapota"
+      ]
+    },
+    {
+      "slug": "sugar-apple-raw",
+      "fdcId": 168175,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "sitaphal"
+      ]
+    },
+    {
+      "slug": "litchi-raw",
+      "fdcId": 169086,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "lychee"
+      ]
+    },
+    {
+      "slug": "java-plum-raw",
+      "fdcId": 168150,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "jamun"
+      ]
+    },
+    {
+      "slug": "coconut-water",
+      "fdcId": 170174,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "nariyal pani",
+        "tender coconut water"
+      ]
+    },
+    {
+      "slug": "dates-medjool",
+      "fdcId": 168191,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "dates-deglet-noor",
+      "fdcId": 171726,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "figs-dried",
+      "fdcId": 746768,
+      "dataset": "foundation",
+      "aliases": [
+        "anjeer"
+      ]
+    },
+    {
+      "slug": "raisins-dark-seedless",
+      "fdcId": 168165,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "kishmish"
+      ]
+    },
+    {
+      "slug": "strawberries-raw",
+      "fdcId": 2346409,
+      "dataset": "foundation",
+      "aliases": []
+    },
+    {
+      "slug": "pears-bartlett-raw",
+      "fdcId": 746773,
+      "dataset": "foundation",
+      "aliases": [
+        "nashpati"
+      ]
+    },
+    {
+      "slug": "kiwifruit-green-raw",
+      "fdcId": 327046,
+      "dataset": "foundation",
+      "aliases": []
+    },
+    {
+      "slug": "almonds-raw",
+      "fdcId": 2346393,
+      "dataset": "foundation",
+      "aliases": [
+        "badam"
+      ]
+    },
+    {
+      "slug": "cashews-raw",
+      "fdcId": 2515374,
+      "dataset": "foundation",
+      "aliases": [
+        "kaju"
+      ]
+    },
+    {
+      "slug": "cashews-dry-roasted",
+      "fdcId": 170571,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "walnuts-raw",
+      "fdcId": 2346394,
+      "dataset": "foundation",
+      "aliases": [
+        "akhrot"
+      ]
+    },
+    {
+      "slug": "pistachios-raw",
+      "fdcId": 2515379,
+      "dataset": "foundation",
+      "aliases": [
+        "pista"
+      ]
+    },
+    {
+      "slug": "sesame-seeds",
+      "fdcId": 170150,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "til"
+      ]
+    },
+    {
+      "slug": "coconut-meat-raw",
+      "fdcId": 170169,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "fresh coconut",
+        "nariyal"
+      ]
+    },
+    {
+      "slug": "coconut-desiccated",
+      "fdcId": 170170,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "desiccated coconut"
+      ]
+    },
+    {
+      "slug": "flaxseed",
+      "fdcId": 169414,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "alsi"
+      ]
+    },
+    {
+      "slug": "chia-seeds",
+      "fdcId": 170554,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "pumpkin-seeds",
+      "fdcId": 170556,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "sunflower-seeds",
+      "fdcId": 170562,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "oil-sunflower",
+      "fdcId": 171017,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "oil-peanut",
+      "fdcId": 171410,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "groundnut oil"
+      ]
+    },
+    {
+      "slug": "oil-mustard",
+      "fdcId": 172337,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "sarson ka tel"
+      ]
+    },
+    {
+      "slug": "oil-coconut",
+      "fdcId": 171412,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "oil-soybean",
+      "fdcId": 171411,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "oil-olive",
+      "fdcId": 171413,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "oil-sesame",
+      "fdcId": 171016,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "gingelly oil",
+        "til oil"
+      ]
+    },
+    {
+      "slug": "sugar-granulated",
+      "fdcId": 746784,
+      "dataset": "foundation",
+      "aliases": [
+        "chini"
+      ]
+    },
+    {
+      "slug": "sugar-brown",
+      "fdcId": 168833,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "honey",
+      "fdcId": 169640,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "shahad"
+      ]
+    },
+    {
+      "slug": "tea-black-brewed",
+      "fdcId": 173227,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "coffee-brewed",
+      "fdcId": 171890,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "cocoa-powder-unsweetened",
+      "fdcId": 169593,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "tomato-ketchup",
+      "fdcId": 168556,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "tomato ketchup"
+      ]
+    },
+    {
+      "slug": "turmeric-ground",
+      "fdcId": 172231,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "haldi"
+      ]
+    },
+    {
+      "slug": "cumin-seed",
+      "fdcId": 170923,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "jeera"
+      ]
+    },
+    {
+      "slug": "coriander-seed",
+      "fdcId": 170922,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "dhania seeds"
+      ]
+    },
+    {
+      "slug": "black-pepper",
+      "fdcId": 170931,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "kali mirch"
+      ]
+    },
+    {
+      "slug": "cardamom",
+      "fdcId": 170919,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "elaichi"
+      ]
+    },
+    {
+      "slug": "fenugreek-seed",
+      "fdcId": 171324,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "methi seeds"
+      ]
+    },
+    {
+      "slug": "protein-powder-whey",
+      "fdcId": 173180,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "whey protein",
+        "whey protein powder"
+      ]
+    },
+    {
+      "slug": "whey-protein-isolate",
+      "fdcId": 173177,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "whey isolate"
+      ]
+    },
+    {
+      "slug": "protein-powder-soy",
+      "fdcId": 173181,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "soy protein powder"
+      ]
+    },
+    {
+      "slug": "soy-protein-isolate",
+      "fdcId": 174276,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "egg-white-dried",
+      "fdcId": 172204,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "egg white powder"
+      ]
+    },
+    {
+      "slug": "peanut-butter-chunky",
+      "fdcId": 172469,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "crunchy peanut butter"
+      ]
+    },
+    {
+      "slug": "almond-butter",
+      "fdcId": 168588,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "oats-instant",
+      "fdcId": 171661,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "instant oats"
+      ]
+    },
+    {
+      "slug": "granola-homemade",
+      "fdcId": 171646,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "granola"
+      ]
+    },
+    {
+      "slug": "granola-bar-plain",
+      "fdcId": 167542,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "granola bar"
+      ]
+    },
+    {
+      "slug": "granola-bar-peanut-butter",
+      "fdcId": 169681,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "rice-cakes-multigrain",
+      "fdcId": 169680,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "rice cakes"
+      ]
+    },
+    {
+      "slug": "trail-mix",
+      "fdcId": 170654,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "beef-jerky",
+      "fdcId": 167536,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "dark-chocolate-70-85",
+      "fdcId": 170273,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "dark chocolate"
+      ]
+    },
+    {
+      "slug": "dark-chocolate-60-69",
+      "fdcId": 170272,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "greek-yogurt-nonfat",
+      "fdcId": 330137,
+      "dataset": "foundation",
+      "aliases": [
+        "greek yogurt"
+      ]
+    },
+    {
+      "slug": "greek-yogurt-whole",
+      "fdcId": 2259794,
+      "dataset": "foundation",
+      "aliases": []
+    },
+    {
+      "slug": "greek-yogurt-lowfat",
+      "fdcId": 170903,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "cottage-cheese-lowfat",
+      "fdcId": 172182,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "tofu-firm",
+      "fdcId": 172448,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "firm tofu"
+      ]
+    },
+    {
+      "slug": "tempeh",
+      "fdcId": 174272,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "edamame-prepared",
+      "fdcId": 168411,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "edamame"
+      ]
+    },
+    {
+      "slug": "soybeans-roasted",
+      "fdcId": 174300,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "roasted soybeans"
+      ]
+    },
+    {
+      "slug": "chicken-breast-grilled",
+      "fdcId": 171534,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "grilled chicken breast"
+      ]
+    },
+    {
+      "slug": "chicken-breast-stewed",
+      "fdcId": 171478,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "boiled chicken breast"
+      ]
+    },
+    {
+      "slug": "chicken-thigh-raw",
+      "fdcId": 173627,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "chicken-ground-raw",
+      "fdcId": 171116,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "chicken mince"
+      ]
+    },
+    {
+      "slug": "chicken-liver-raw",
+      "fdcId": 171060,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "turkey-breast-raw",
+      "fdcId": 171098,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "egg-whole-fried",
+      "fdcId": 173423,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "fried egg"
+      ]
+    },
+    {
+      "slug": "egg-whole-poached",
+      "fdcId": 172186,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "poached egg"
+      ]
+    },
+    {
+      "slug": "egg-yolk-raw",
+      "fdcId": 172184,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "egg yolk"
+      ]
+    },
+    {
+      "slug": "milk-lowfat-1",
+      "fdcId": 170872,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "almond-milk-unsweetened",
+      "fdcId": 174832,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "almond milk"
+      ]
+    },
+    {
+      "slug": "soymilk-original",
+      "fdcId": 172446,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "soy milk"
+      ]
+    },
+    {
+      "slug": "oat-milk-unsweetened",
+      "fdcId": 2257046,
+      "dataset": "foundation",
+      "aliases": [
+        "oat milk"
+      ]
+    },
+    {
+      "slug": "hummus",
+      "fdcId": 174289,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "falafel",
+      "fdcId": 172455,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "puffed-rice",
+      "fdcId": 173912,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "murmura",
+        "kurmura",
+        "mamra"
+      ]
+    },
+    {
+      "slug": "puffed-wheat",
+      "fdcId": 173913,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "popcorn-air-popped",
+      "fdcId": 167959,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "popcorn"
+      ]
+    },
+    {
+      "slug": "mixed-nuts-dry-roasted",
+      "fdcId": 170585,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "mixed nuts"
+      ]
+    },
+    {
+      "slug": "almonds-dry-roasted",
+      "fdcId": 170158,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "roasted almonds"
+      ]
+    },
+    {
+      "slug": "sunflower-seeds-roasted",
+      "fdcId": 170563,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "sweet-potato-baked",
+      "fdcId": 168483,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "blueberries-raw",
+      "fdcId": 171711,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "blueberries"
+      ]
+    },
+    {
+      "slug": "blackberries-raw",
+      "fdcId": 173946,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "blackberries"
+      ]
+    },
+    {
+      "slug": "raspberries-raw",
+      "fdcId": 167755,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "raspberries"
+      ]
+    },
+    {
+      "slug": "peaches-raw",
+      "fdcId": 169928,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "peach",
+        "aadu"
+      ]
+    },
+    {
+      "slug": "plums-raw",
+      "fdcId": 169949,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "plum",
+        "aloo bukhara"
+      ]
+    },
+    {
+      "slug": "apricots-raw",
+      "fdcId": 171697,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "apricot"
+      ]
+    },
+    {
+      "slug": "cherries-sweet-raw",
+      "fdcId": 171719,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "cherries"
+      ]
+    },
+    {
+      "slug": "avocado-raw",
+      "fdcId": 171705,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "avocado"
+      ]
+    },
+    {
+      "slug": "limes-raw",
+      "fdcId": 168155,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "lime"
+      ]
+    },
+    {
+      "slug": "mulberries-raw",
+      "fdcId": 169913,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "mulberries",
+        "shahtoot"
+      ]
+    },
+    {
+      "slug": "tangerines-raw",
+      "fdcId": 169105,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "mandarin orange",
+        "tangerine"
+      ]
+    },
+    {
+      "slug": "grapefruit-raw",
+      "fdcId": 174673,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "grapefruit"
+      ]
+    },
+    {
+      "slug": "prunes",
+      "fdcId": 168162,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "dried plums"
+      ]
+    },
+    {
+      "slug": "apricots-dried",
+      "fdcId": 173941,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "dried apricots",
+        "khubani",
+        "khumani"
+      ]
+    },
+    {
+      "slug": "cranberries-dried",
+      "fdcId": 171723,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "dried cranberries"
+      ]
+    },
+    {
+      "slug": "starfruit-raw",
+      "fdcId": 171715,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "starfruit",
+        "carambola",
+        "kamrakh"
+      ]
+    },
+    {
+      "slug": "jujube-raw",
+      "fdcId": 168151,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "jujube",
+        "ber"
+      ]
+    },
+    {
+      "slug": "honeydew-raw",
+      "fdcId": 169911,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "honeydew melon"
+      ]
+    },
+    {
+      "slug": "figs-raw",
+      "fdcId": 173021,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "fresh figs"
+      ]
+    },
+    {
+      "slug": "raisins-golden",
+      "fdcId": 168164,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "golden raisins"
+      ]
+    },
+    {
+      "slug": "apples-dried",
+      "fdcId": 171691,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "dried apple"
+      ]
+    },
+    {
+      "slug": "pears-asian-raw",
+      "fdcId": 168177,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "asian pear"
+      ]
+    },
+    {
+      "slug": "zucchini-raw",
+      "fdcId": 169291,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "zucchini"
+      ]
+    },
+    {
+      "slug": "celery-raw",
+      "fdcId": 169988,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "celery"
+      ]
+    },
+    {
+      "slug": "kale-raw",
+      "fdcId": 168421,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "kale"
+      ]
+    },
+    {
+      "slug": "asparagus-raw",
+      "fdcId": 168389,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "asparagus"
+      ]
+    },
+    {
+      "slug": "brussels-sprouts-raw",
+      "fdcId": 170383,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "brussels sprouts"
+      ]
+    },
+    {
+      "slug": "taro-leaves-raw",
+      "fdcId": 168487,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "arbi ke patte",
+        "colocasia leaves"
+      ]
+    },
+    {
+      "slug": "lotus-root-raw",
+      "fdcId": 169250,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "lotus root",
+        "kamal kakdi",
+        "bhein"
+      ]
+    },
+    {
+      "slug": "bamboo-shoots-raw",
+      "fdcId": 169210,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "bamboo shoots"
+      ]
+    },
+    {
+      "slug": "mushrooms-oyster-raw",
+      "fdcId": 168580,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "oyster mushrooms"
+      ]
+    },
+    {
+      "slug": "red-cabbage-raw",
+      "fdcId": 169977,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "red cabbage"
+      ]
+    },
+    {
+      "slug": "red-bell-pepper-raw",
+      "fdcId": 170108,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "red capsicum",
+        "red bell pepper"
+      ]
+    },
+    {
+      "slug": "spring-onions-raw",
+      "fdcId": 170005,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "spring onion",
+        "scallions",
+        "hara pyaz"
+      ]
+    },
+    {
+      "slug": "leeks-raw",
+      "fdcId": 169246,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "leeks"
+      ]
+    },
+    {
+      "slug": "turnips-raw",
+      "fdcId": 170465,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "turnip",
+        "shalgam"
+      ]
+    },
+    {
+      "slug": "amaranth-leaves-raw",
+      "fdcId": 168385,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "chaulai",
+        "amaranth leaves"
+      ]
+    },
+    {
+      "slug": "drumstick-leaves-raw",
+      "fdcId": 168416,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "moringa leaves",
+        "sahjan ke patte",
+        "murungai keerai"
+      ]
+    },
+    {
+      "slug": "lettuce-romaine-raw",
+      "fdcId": 169247,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "romaine lettuce"
+      ]
+    },
+    {
+      "slug": "corn-canned-drained",
+      "fdcId": 169214,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "canned sweet corn"
+      ]
+    },
+    {
+      "slug": "black-beans-raw",
+      "fdcId": 173734,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "black-beans-boiled",
+      "fdcId": 173735,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "split-peas-boiled",
+      "fdcId": 172429,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "peanuts-boiled",
+      "fdcId": 174260,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "boiled peanuts"
+      ]
+    },
+    {
+      "slug": "couscous-dry",
+      "fdcId": 169699,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "couscous"
+      ]
+    },
+    {
+      "slug": "bulgur-dry",
+      "fdcId": 170688,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "bulgur"
+      ]
+    },
+    {
+      "slug": "rice-parboiled-raw",
+      "fdcId": 169758,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "parboiled rice"
+      ]
+    },
+    {
+      "slug": "rice-noodles-cooked",
+      "fdcId": 168914,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "rice noodles"
+      ]
+    },
+    {
+      "slug": "egg-noodles-cooked",
+      "fdcId": 168919,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "egg noodles"
+      ]
+    },
+    {
+      "slug": "pasta-whole-wheat-dry",
+      "fdcId": 169738,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "whole wheat pasta"
+      ]
+    },
+    {
+      "slug": "bread-multigrain",
+      "fdcId": 168013,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "multigrain bread"
+      ]
+    },
+    {
+      "slug": "bread-pita",
+      "fdcId": 172816,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "pita bread",
+        "pita"
+      ]
+    },
+    {
+      "slug": "tortilla-flour",
+      "fdcId": 167535,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "flour tortilla"
+      ]
+    },
+    {
+      "slug": "dinner-roll",
+      "fdcId": 172793,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "dinner roll"
+      ]
+    },
+    {
+      "slug": "burger-bun",
+      "fdcId": 172796,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "burger bun",
+        "hot dog bun"
+      ]
+    },
+    {
+      "slug": "crackers-whole-wheat",
+      "fdcId": 172749,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "cornstarch",
+      "fdcId": 169698,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "cornflour",
+        "corn starch"
+      ]
+    },
+    {
+      "slug": "fish-cod-raw",
+      "fdcId": 171955,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "fish-cod-cooked",
+      "fdcId": 171956,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "fish-salmon-farmed-raw",
+      "fdcId": 175167,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "fish-tuna-yellowfin-raw",
+      "fdcId": 175159,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "fish-mackerel-king-raw",
+      "fdcId": 175122,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "squid-raw",
+      "fdcId": 174223,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "squid",
+        "calamari"
+      ]
+    },
+    {
+      "slug": "crab-blue-raw",
+      "fdcId": 174204,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "crab"
+      ]
+    },
+    {
+      "slug": "mussels-raw",
+      "fdcId": 174216,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "mussels"
+      ]
+    },
+    {
+      "slug": "beef-ground-90-raw",
+      "fdcId": 174030,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "cheese-swiss",
+      "fdcId": 171251,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "swiss cheese"
+      ]
+    },
+    {
+      "slug": "cheese-parmesan-grated",
+      "fdcId": 325036,
+      "dataset": "foundation",
+      "aliases": [
+        "parmesan"
+      ]
+    },
+    {
+      "slug": "cheese-cream",
+      "fdcId": 173418,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "cream cheese"
+      ]
+    },
+    {
+      "slug": "cheese-feta",
+      "fdcId": 173420,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "feta"
+      ]
+    },
+    {
+      "slug": "cheese-processed",
+      "fdcId": 171290,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "cheese slice",
+        "processed cheese"
+      ]
+    },
+    {
+      "slug": "cheese-mozzarella-part-skim",
+      "fdcId": 170847,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "cream-sour",
+      "fdcId": 171257,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "sour cream"
+      ]
+    },
+    {
+      "slug": "milk-powder-whole",
+      "fdcId": 170876,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "whole milk powder"
+      ]
+    },
+    {
+      "slug": "milk-powder-skim",
+      "fdcId": 172195,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "skimmed milk powder"
+      ]
+    },
+    {
+      "slug": "condensed-milk-sweetened",
+      "fdcId": 171275,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "condensed milk"
+      ]
+    },
+    {
+      "slug": "coconut-milk",
+      "fdcId": 170172,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "coconut milk"
+      ]
+    },
+    {
+      "slug": "ice-cream-vanilla",
+      "fdcId": 167575,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "vanilla ice cream"
+      ]
+    },
+    {
+      "slug": "jam",
+      "fdcId": 169641,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "jam",
+        "fruit jam"
+      ]
+    },
+    {
+      "slug": "mayonnaise",
+      "fdcId": 171009,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "mayonnaise",
+        "mayo"
+      ]
+    },
+    {
+      "slug": "soy-sauce",
+      "fdcId": 174277,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "soy sauce"
+      ]
+    },
+    {
+      "slug": "vinegar-cider",
+      "fdcId": 173469,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "apple cider vinegar"
+      ]
+    },
+    {
+      "slug": "tahini",
+      "fdcId": 168604,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "salsa",
+      "fdcId": 174524,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "olives-ripe-canned",
+      "fdcId": 169094,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "olives"
+      ]
+    },
+    {
+      "slug": "potato-chips-salted",
+      "fdcId": 169677,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "potato chips"
+      ]
+    },
+    {
+      "slug": "pizza-cheese",
+      "fdcId": 170714,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "cheese pizza"
+      ]
+    },
+    {
+      "slug": "macadamia-nuts",
+      "fdcId": 170178,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "macadamia"
+      ]
+    },
+    {
+      "slug": "brazil-nuts",
+      "fdcId": 170569,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "brazil nuts"
+      ]
+    },
+    {
+      "slug": "pecans",
+      "fdcId": 170182,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "pine-nuts",
+      "fdcId": 170591,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "pine nuts",
+        "chilgoza"
+      ]
+    },
+    {
+      "slug": "hemp-seeds",
+      "fdcId": 170148,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "hemp seeds"
+      ]
+    },
+    {
+      "slug": "watermelon-seeds-dried",
+      "fdcId": 169407,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "watermelon seeds"
+      ]
+    },
+    {
+      "slug": "orange-juice-raw",
+      "fdcId": 169098,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "orange juice",
+        "fresh orange juice",
+        "santra juice"
+      ]
+    },
+    {
+      "slug": "apple-juice",
+      "fdcId": 173933,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "apple juice"
+      ]
+    },
+    {
+      "slug": "pineapple-juice",
+      "fdcId": 168187,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "pineapple juice"
+      ]
+    },
+    {
+      "slug": "pomegranate-juice",
+      "fdcId": 167787,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "pomegranate juice",
+        "anar juice"
+      ]
+    },
+    {
+      "slug": "grape-juice",
+      "fdcId": 2003592,
+      "dataset": "foundation",
+      "aliases": [
+        "grape juice"
+      ]
+    },
+    {
+      "slug": "carrot-juice",
+      "fdcId": 170491,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "carrot juice"
+      ]
+    },
+    {
+      "slug": "tomato-juice",
+      "fdcId": 170545,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "tomato juice"
+      ]
+    },
+    {
+      "slug": "tea-green-brewed",
+      "fdcId": 171917,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "green tea"
+      ]
+    },
+    {
+      "slug": "espresso",
+      "fdcId": 171891,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "espresso"
+      ]
+    },
+    {
+      "slug": "cola",
+      "fdcId": 174852,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "cola"
+      ]
+    },
+    {
+      "slug": "lemon-lime-soda",
+      "fdcId": 173205,
+      "dataset": "sr_legacy",
+      "aliases": []
+    },
+    {
+      "slug": "energy-drink",
+      "fdcId": 174108,
+      "dataset": "sr_legacy",
+      "aliases": [
+        "energy drink"
+      ]
+    }
   ]
 }
