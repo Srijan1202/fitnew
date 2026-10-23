@@ -166,6 +166,10 @@
       {
         "slug": "sumo-squat",
         "reason": "preference"
+      },
+      {
+        "slug": "belt-squat",
+        "reason": "equipment"
       }
     ],
     "contraindications": [
@@ -633,6 +637,14 @@
       {
         "slug": "sumo-deadlift",
         "reason": "preference"
+      },
+      {
+        "slug": "trap-bar-deadlift",
+        "reason": "preference"
+      },
+      {
+        "slug": "rack-pull",
+        "reason": "preference"
       }
     ],
     "contraindications": [
@@ -911,6 +923,10 @@
       },
       {
         "slug": "sumo-deadlift",
+        "reason": "equipment"
+      },
+      {
+        "slug": "trap-bar-deadlift",
         "reason": "equipment"
       }
     ],
@@ -1506,6 +1522,10 @@
       {
         "slug": "walking-lunge",
         "reason": "equipment"
+      },
+      {
+        "slug": "smith-machine-lunge",
+        "reason": "equipment"
       }
     ],
     "contraindications": [
@@ -1793,6 +1813,10 @@
       {
         "slug": "incline-dumbbell-bench-press",
         "reason": "equipment"
+      },
+      {
+        "slug": "smith-machine-incline-press",
+        "reason": "equipment"
       }
     ],
     "contraindications": [
@@ -1824,6 +1848,10 @@
     "alternatives": [
       {
         "slug": "dumbbell-bench-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "decline-dumbbell-bench-press",
         "reason": "equipment"
       }
     ],
@@ -1886,6 +1914,10 @@
       {
         "slug": "smith-machine-bench-press",
         "reason": "equipment"
+      },
+      {
+        "slug": "decline-dumbbell-bench-press",
+        "reason": "preference"
       }
     ],
     "contraindications": [
@@ -1922,6 +1954,10 @@
       },
       {
         "slug": "incline-barbell-bench-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "smith-machine-incline-press",
         "reason": "equipment"
       }
     ],
@@ -2011,6 +2047,10 @@
       },
       {
         "slug": "machine-chest-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "chest-dip",
         "reason": "equipment"
       }
     ],
@@ -2161,6 +2201,10 @@
       },
       {
         "slug": "push-up",
+        "reason": "equipment"
+      },
+      {
+        "slug": "chest-dip",
         "reason": "equipment"
       }
     ],
@@ -2913,6 +2957,10 @@
       {
         "slug": "seated-cable-row",
         "reason": "equipment"
+      },
+      {
+        "slug": "landmine-row",
+        "reason": "equipment"
       }
     ],
     "contraindications": []
@@ -3076,6 +3124,10 @@
       {
         "slug": "machine-row",
         "reason": "injury"
+      },
+      {
+        "slug": "landmine-row",
+        "reason": "preference"
       }
     ],
     "contraindications": [
@@ -3610,6 +3662,10 @@
       {
         "slug": "band-lat-pulldown",
         "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-pullover",
+        "reason": "equipment"
       }
     ],
     "contraindications": [
@@ -3656,6 +3712,10 @@
       {
         "slug": "machine-preacher-curl",
         "reason": "equipment"
+      },
+      {
+        "slug": "ez-bar-curl",
+        "reason": "preference"
       }
     ],
     "contraindications": [
@@ -3711,6 +3771,10 @@
       {
         "slug": "machine-preacher-curl",
         "reason": "equipment"
+      },
+      {
+        "slug": "ez-bar-curl",
+        "reason": "equipment"
       }
     ],
     "contraindications": [
@@ -3741,6 +3805,14 @@
       {
         "slug": "dumbbell-curl",
         "reason": "preference"
+      },
+      {
+        "slug": "reverse-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-hammer-curl",
+        "reason": "equipment"
       }
     ],
     "contraindications": [
@@ -3814,6 +3886,10 @@
       {
         "slug": "dumbbell-curl",
         "reason": "equipment"
+      },
+      {
+        "slug": "barbell-preacher-curl",
+        "reason": "equipment"
       }
     ],
     "contraindications": [
@@ -3886,6 +3962,10 @@
       {
         "slug": "dumbbell-curl",
         "reason": "preference"
+      },
+      {
+        "slug": "barbell-preacher-curl",
+        "reason": "equipment"
       }
     ],
     "contraindications": [
@@ -4360,6 +4440,14 @@
       },
       {
         "slug": "machine-lateral-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "upright-row",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-y-raise",
         "reason": "equipment"
       }
     ],
@@ -5181,6 +5269,10 @@
       {
         "slug": "band-lateral-walk",
         "reason": "equipment"
+      },
+      {
+        "slug": "glute-kickback-machine",
+        "reason": "equipment"
       }
     ],
     "contraindications": [
@@ -5258,6 +5350,10 @@
       {
         "slug": "smith-machine-calf-raise",
         "reason": "preference"
+      },
+      {
+        "slug": "leg-press-calf-raise",
+        "reason": "preference"
       }
     ],
     "contraindications": [
@@ -5333,6 +5429,10 @@
       },
       {
         "slug": "standing-calf-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "leg-press-calf-raise",
         "reason": "equipment"
       }
     ],
@@ -5557,6 +5657,10 @@
       {
         "slug": "reverse-crunch",
         "reason": "equipment"
+      },
+      {
+        "slug": "lying-leg-raise",
+        "reason": "equipment"
       }
     ],
     "contraindications": [
@@ -5714,6 +5818,10 @@
       {
         "slug": "hanging-leg-raise",
         "reason": "equipment"
+      },
+      {
+        "slug": "lying-leg-raise",
+        "reason": "preference"
       }
     ],
     "contraindications": [
@@ -5748,6 +5856,10 @@
       {
         "slug": "dead-bug",
         "reason": "injury"
+      },
+      {
+        "slug": "russian-twist",
+        "reason": "preference"
       }
     ],
     "contraindications": [
@@ -5783,6 +5895,10 @@
       {
         "slug": "side-plank",
         "reason": "equipment"
+      },
+      {
+        "slug": "cable-woodchopper",
+        "reason": "preference"
       }
     ],
     "contraindications": []
@@ -6055,6 +6171,693 @@
     "contraindications": [
       "lower-back",
       "shoulder"
+    ]
+  },
+  {
+    "slug": "chest-dip",
+    "name": "Chest Dip",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "bodyweight",
+      "pull-up-bar"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Support yourself on parallel bars with straight arms.",
+      "Lean your chest slightly forward and lower until your shoulders are just below your elbows.",
+      "Press back up to straight arms. Stop higher if your shoulders complain."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest",
+      "triceps"
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "push-up",
+        "reason": "equipment"
+      },
+      {
+        "slug": "machine-chest-press",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder",
+      "elbow",
+      "wrist"
+    ]
+  },
+  {
+    "slug": "smith-machine-incline-press",
+    "name": "Smith Machine Incline Press",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set a bench at 30 to 45 degrees under the bar so it lines up with your upper chest.",
+      "Unhook the bar and lower it to your upper chest with elbows slightly tucked.",
+      "Press up until your arms are straight, then re-hook the bar."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "shoulders",
+      "triceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "incline-barbell-bench-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "incline-dumbbell-bench-press",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "decline-dumbbell-bench-press",
+    "name": "Decline Dumbbell Bench Press",
+    "movementPattern": "horizontal-push",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Lie on a decline bench with your feet secured and the dumbbells over your lower chest.",
+      "Lower them to the sides of your lower chest with control.",
+      "Press back up until your arms are straight."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "decline-barbell-bench-press",
+        "reason": "equipment"
+      },
+      {
+        "slug": "dumbbell-bench-press",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "dumbbell-pullover",
+    "name": "Dumbbell Pullover",
+    "movementPattern": "vertical-pull",
+    "equipment": [
+      "dumbbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Lie across or along a bench holding one dumbbell over your chest with both hands.",
+      "With a slight bend in the elbows, lower it behind your head until you feel a stretch under your arms.",
+      "Pull it back over your chest using your lats, keeping your ribs down."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "chest",
+      "triceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "straight-arm-pulldown",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "trap-bar-deadlift",
+    "name": "Trap Bar Deadlift",
+    "movementPattern": "hinge",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Stand inside the trap bar with your feet hip-width apart.",
+      "Hinge and bend your knees to grip the handles, chest up and back flat.",
+      "Stand up by pushing the floor away, then lower the bar the same way."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "quads",
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "conventional-deadlift",
+        "reason": "preference"
+      },
+      {
+        "slug": "kettlebell-deadlift",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "rack-pull",
+    "name": "Rack Pull",
+    "movementPattern": "hinge",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Set the bar on pins or blocks just below your knees.",
+      "Grip it, brace, and keep your back flat.",
+      "Stand tall by driving your hips forward, then lower the bar back to the pins."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "secondaryMuscles": [
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "conventional-deadlift",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "ez-bar-curl",
+    "name": "EZ-Bar Curl",
+    "movementPattern": "elbow-flexion",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold an EZ bar on the angled grips with your arms straight.",
+      "Curl it up without swinging, elbows by your sides.",
+      "Lower slowly to straight arms."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "barbell-curl",
+        "reason": "preference"
+      },
+      {
+        "slug": "dumbbell-curl",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "barbell-preacher-curl",
+    "name": "Barbell Preacher Curl",
+    "movementPattern": "elbow-flexion",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Sit at a preacher bench with your upper arms flat on the pad.",
+      "Curl the bar up until your forearms are nearly vertical.",
+      "Lower slowly, stopping just short of locking out."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "machine-preacher-curl",
+        "reason": "equipment"
+      },
+      {
+        "slug": "concentration-curl",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "reverse-curl",
+    "name": "Reverse Curl",
+    "movementPattern": "elbow-flexion",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold a bar with an overhand grip, hands shoulder-width apart.",
+      "Curl it up keeping your wrists straight and elbows by your sides.",
+      "Lower slowly. Use less weight than a normal curl."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "hammer-curl",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow",
+      "wrist"
+    ]
+  },
+  {
+    "slug": "cable-hammer-curl",
+    "name": "Cable Hammer Curl",
+    "movementPattern": "elbow-flexion",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Attach a rope to a low pulley and hold it with your palms facing each other.",
+      "Curl the rope up, elbows by your sides.",
+      "Lower slowly to straight arms."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "hammer-curl",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "elbow"
+    ]
+  },
+  {
+    "slug": "upright-row",
+    "name": "Upright Row",
+    "movementPattern": "shoulder-isolation",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Hold a bar in front of your thighs with hands a little wider than shoulder-width.",
+      "Pull it up along your body, leading with the elbows, to about chest height.",
+      "Lower slowly. Stop lower if your shoulders pinch."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "dumbbell-lateral-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-lateral-raise",
+        "reason": "injury"
+      }
+    ],
+    "contraindications": [
+      "shoulder",
+      "wrist"
+    ]
+  },
+  {
+    "slug": "cable-y-raise",
+    "name": "Cable Y-Raise",
+    "movementPattern": "shoulder-isolation",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set two low pulleys and hold the opposite handles with your arms crossed in front.",
+      "Raise your arms up and out into a Y shape, thumbs up, to just above shoulder height.",
+      "Lower slowly back to the start."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "shoulders"
+    ],
+    "secondaryMuscles": [
+      "back"
+    ],
+    "alternatives": [
+      {
+        "slug": "dumbbell-lateral-raise",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "glute-kickback-machine",
+    "name": "Glute Kickback Machine",
+    "movementPattern": "leg-isolation",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Set the machine so the pad sits on the back of one foot or thigh.",
+      "Push one leg back and up by squeezing your glute, without arching your lower back.",
+      "Return slowly, finish the set, then switch to the other leg."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "cable-kickback",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "hip",
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "smith-machine-lunge",
+    "name": "Smith Machine Lunge",
+    "movementPattern": "lunge",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Stand in a split stance under the bar, front foot well ahead.",
+      "Lower until your back knee nearly touches the floor, front knee over your foot.",
+      "Drive up through your front foot; finish the set on one leg, then switch legs."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "barbell-lunge",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "belt-squat",
+    "name": "Belt Squat",
+    "movementPattern": "squat",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Attach the belt around your hips and stand on the platform, feet shoulder-width.",
+      "Squat down with your chest up until your thighs are about parallel.",
+      "Stand back up by driving through your whole foot."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "alternatives": [
+      {
+        "slug": "goblet-squat",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "knee"
+    ]
+  },
+  {
+    "slug": "russian-twist",
+    "name": "Russian Twist",
+    "movementPattern": "core",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Sit with your knees bent and lean back slightly with a straight back.",
+      "Rotate your shoulders to one side, then to the other, under control.",
+      "Keep your feet down to make it easier, or lift them to make it harder."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "bicycle-crunch",
+        "reason": "preference"
+      },
+      {
+        "slug": "cable-woodchopper",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "lying-leg-raise",
+    "name": "Lying Leg Raise",
+    "movementPattern": "core",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 1,
+    "instructions": [
+      "Lie on your back with your hands under your hips.",
+      "Keep your legs straight and raise them until they point up.",
+      "Lower slowly without letting your lower back arch off the floor."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "hanging-leg-raise",
+        "reason": "equipment"
+      },
+      {
+        "slug": "reverse-crunch",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "cable-woodchopper",
+    "name": "Cable Woodchopper",
+    "movementPattern": "core",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": true,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set a cable high, stand side-on and hold the handle with both hands.",
+      "Rotate your torso to pull the handle down and across your body, arms long.",
+      "Return slowly, finish the set, then switch to the other side."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "abs"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "russian-twist",
+        "reason": "equipment"
+      },
+      {
+        "slug": "pallof-press",
+        "reason": "preference"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
+    ]
+  },
+  {
+    "slug": "leg-press-calf-raise",
+    "name": "Leg Press Calf Raise",
+    "movementPattern": "calf-raise",
+    "equipment": [
+      "machine"
+    ],
+    "difficulty": "beginner",
+    "isUnilateral": false,
+    "defaultIncrementKg": 5,
+    "instructions": [
+      "Sit in the leg press with the balls of your feet on the bottom edge of the platform.",
+      "Keep your knees almost straight and push the platform away with your toes.",
+      "Lower slowly into a deep stretch."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "calves"
+    ],
+    "secondaryMuscles": [],
+    "alternatives": [
+      {
+        "slug": "standing-calf-raise",
+        "reason": "preference"
+      },
+      {
+        "slug": "dumbbell-calf-raise",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "ankle"
+    ]
+  },
+  {
+    "slug": "landmine-row",
+    "name": "Landmine Row",
+    "movementPattern": "horizontal-pull",
+    "equipment": [
+      "barbell"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Straddle a bar anchored in a landmine and hold it near the loaded end.",
+      "Hinge forward with a flat back and pull the bar to your chest.",
+      "Lower it under control."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "back"
+    ],
+    "secondaryMuscles": [
+      "biceps"
+    ],
+    "alternatives": [
+      {
+        "slug": "t-bar-row",
+        "reason": "preference"
+      },
+      {
+        "slug": "dumbbell-row",
+        "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "lower-back"
     ]
   }
 ]

@@ -1,6 +1,6 @@
 /**
  * Programme generator (§12.2, §12.3, §31 Phase 4). Runs against the REAL
- * exercise seed — the same 151 rows the API serves — so a seed edit that
+ * exercise seed — the same rows the API serves (171 since beta 3.2) — so a seed edit that
  * breaks generation fails here, not on a user.
  */
 import { readFileSync } from 'node:fs';
