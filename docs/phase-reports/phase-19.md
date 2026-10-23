@@ -9,6 +9,7 @@
 **Live:**
 - `https://api.tryfitos.me` serves release `ca58df2`. Later commits change only the app and CI, so no redeploy is needed.
 - Beta APK: **1.0.0-beta.3 (6)**, built at `cfe8aca`, tag `phase-19-beta-3`, SHA-256 `fba4e77a…c757`.
+- **Beta 3.1** (2026-10-23): **1.0.0-beta.3.1 (7)**, built at `d6fa01a`, tag `phase-19-beta-3.1`, SHA-256 `d8d40876…db72`; API release `d6fa01a`. Fixes: sets open at last time's weight and reps, with the engine's step as a suggestion and an Apply button (ADR-007 amendment); the Training day shows last time; Done today; FITOS AI scope guard rails (ADR-010 amendment). On tryfitos.me (download and the post `/blog/beta-3-1/`) and GitHub. Improvements go into beta 3.2.
 
 **Decision record:**
 - [plan](../phase-plans/phase-19-plan.md);
