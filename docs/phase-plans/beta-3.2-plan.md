@@ -95,3 +95,135 @@ Each part is committed with its tests. The API is released when T is done (migra
 - amendments: ADR-008 (combined active calories, phone only) and ADR-026 (the update check).
 
 **Not in this part:** eating back workout calories (owner: no); cardio METs per exercise (later: the library has no cardio exercises yet); the Play Store's own updates (sideloaded beta).
+
+
+---
+
+# Part 2 — the owner's further 3.2 items (2026-10-23)
+
+| # | Change | Owner's answer |
+|---|---|---|
+| S | Subtle sound and haptics, especially in tracking (rest over) | — (defaults below) |
+| F1 | Food searched and not found is flagged and reported, then added in a later release | — |
+| F2 | A customer can share a food they add; others see it as a community food | **Immediately, marked Community** |
+| F3 | Expand the food database | **All four groups**: Indian dishes, USDA whole foods, gym and protein products, drinks and street food |
+| P | Progress charts: 1 week, 1 month, 3 months; 1 week by default | — |
+| E | Leg extension "missing", and any other missing exercise | Not found **when adding to a day or routine** |
+| I | More app icons: gold and others | **Gold and the extras premium**; standard and White free |
+
+## S — Sound and haptics (subtle)
+
+**Events, in the session:**
+- **Rest over:** a soft two-note chime and one short vibration, or the rest notification when the app is in the background;
+- **10 seconds left:** one light tick, haptic only;
+- **Set done:** a light tap;
+- **Personal record:** a slightly firmer double tap;
+- **Session finished:** a short three-note chime.
+
+**Elsewhere:** a light tap on toggles and steppers.
+
+**How:**
+- The chimes are tiny sounds made for FITOS, bundled with the app, played quietly (−12 dB).
+- They follow the phone's notification volume and are **silent in silent or vibrate mode**.
+- Haptics use the phone's own haptic engine and follow the system haptics setting. New dependency: `audioplayers`.
+- **Profile → Sounds & haptics:** separate switches for sounds and for haptics, both on by default.
+
+**Tests:** each event fires once, nothing fires with the switches off, and nothing fires twice when the app comes back from the background.
+
+## F1 — Missing foods, reported automatically
+
+- When a food search ends with no results, the phone reports the search text (normalised, at most 60 characters, one report per text per user per day). There is no user id in the report row; a rate limit protects it.
+- An empty result also offers **Ask us to add "…"**, which reports it with a flag that a person asked.
+- **Admin panel → Missing foods:**
+  - what people searched for and didn't find, most-wanted first (searches and people), first and last seen;
+  - mark each one **added**, **already there** (a spelling the search should match: becomes an alias), or **ignore**.
+- Search improves too: Indian spellings (roti/chapati/phulka, dahi/curd…) go in as aliases from the reports.
+- Migration with a down migration; API and integration tests; panel page.
+
+## F2 — Community foods (shared at once, marked)
+
+- Creating a custom food gains a switch: **Share with everyone**, off by default. Shared foods are visible to all users at once, marked **Community · unverified**, and listed after FITOS foods in search.
+- **Checks before sharing (422):**
+  - a name of at least 3 characters;
+  - per-100 g values within physical bounds (≤ 900 kcal, macros ≤ 100 g);
+  - calories that agree with 4P + 4C + 9F within ±25 %;
+  - no duplicate of an existing FITOS food's name, which offers that food instead.
+- **Quality:**
+  - anyone can **Report wrong numbers** on a community food, and it goes to the admin panel;
+  - **Admin panel → Community foods** can **verify** (it becomes a FITOS food), **edit**, or **hide** one. Hidden foods stay in the logs of people who used them.
+- **Privacy:** the creator's name is never shown, only "Community". Deleting your account leaves shared foods in place, without any link to you. The privacy policy's food section gets one sentence on this.
+- Migration (`foods.visibility`: private, community or hidden); API, sanity-check, report and admin tests; app switch, badge and report.
+
+## F3 — A bigger food database (about 400 more)
+
+| Group | About | Source |
+|---|---|---|
+| Hostel and everyday Indian dishes | 150 | Estimate ranges from standard recipes, marked as estimates, as Phase 7 did (never verified, never "high") |
+| Whole and packaged foods | 100 | USDA FoodData Central (public domain), measured values with the FDC id kept |
+| Gym and protein products | 60 | Generic typical label values (whey, bars, peanut butter, oats, soya chunks, paneer, eggs…), no brand tables copied |
+| Drinks and street food | 90 | Estimate ranges (chai, coffee, lassi, juices, shakes; pani puri, vada pav, momos, rolls, Maggi…) |
+
+- Every food gets its portions (piece, katori, glass…) and aliases, like the 305 today.
+- `foods.manifest.json` and the seed tests check each entry: Atwater consistency, bounds, units, no duplicates.
+- **Order:** the missing-food reports from F1 come first once there are any; then the groups above.
+- A seed release; the admin edit protection (D5) keeps hand-corrected foods untouched.
+
+## P — Progress windows: 1W · 1M · 3M, default 1W
+
+- `PROGRESS_WINDOWS` gains `7d`; the selector reads **1W · 1M · 3M** and opens on **1W**. The choice is remembered on the phone.
+- Every chart and figure on Progress follows the selected window.
+- **The "≥ 7 days apart" rule for a change:** in a one-week window, a change shows when the first and last readings are at least 6 days apart (a full week of days). Otherwise the screen says "Too early for a trend this week". Recorded as a decision.
+
+## E — Exercises: findable, and the real gaps filled
+
+**Why leg extension "was missing":** it is in the library and on the live server. But the "Add exercise" picker shares its filters with the Library screen and keeps them. A muscle or equipment filter set in the Library earlier (e.g. Chest) silently hid quad exercises in the picker.
+
+**Fix:**
+- the picker opens with **no filters** every time, with the active filters always visible;
+- a **Clear filters** line whenever filters are on;
+- in a day editor, the day's muscles are offered as **one-tap chips**, never an invisible filter.
+
+**Real gaps added to the library**, each with muscles, equipment, instructions, alternatives and contraindications as in the seed:
+- **Chest:** chest dip, Smith incline press, machine fly, decline dumbbell press;
+- **Back:** shrugs (barbell, dumbbell), assisted pull-up machine, dumbbell pullover, trap-bar deadlift, rack pull;
+- **Arms:** EZ-bar curl, barbell preacher curl, reverse curl, wrist curl, cable hammer curl, close-grip push-up;
+- **Shoulders:** upright row, cable Y-raise;
+- **Legs and glutes:** hip adduction machine, glute kickback machine, Smith lunge, belt squat;
+- **Core:** ab wheel rollout, Russian twist, lying leg raise, cable woodchopper.
+
+That is about 26. **Cardio** (treadmill, cycling, rowing machine…) needs time-and-distance logging rather than sets and reps, so it is **not** in 3.2. It is noted for later, together with cardio calories for C.
+
+## I — App icons
+
+**Free:**
+- **Standard:** lime F on black;
+- **White:** black F on white.
+
+**Premium:**
+- **Gold:** gold F on black, matching the premium rim;
+- **Outline:** a lime outline F on black;
+- **Midnight:** a lime F on deep navy.
+
+**How:**
+- Each icon is rendered from the brand kit (`brand/build_kit.py`): launcher sizes plus the adaptive and monochrome layers.
+- Android launcher aliases; **Profile → Appearance → App icon**.
+- Switching tells the user the phone may close FITOS once to apply it.
+- Losing Premium switches a premium icon back to Standard on the next launch, as themes do.
+
+**Tests:** the choice, premium gating, and the fallback. The alias switch goes through a small platform channel, faked in tests.
+
+## Order for part 2
+
+1. E: the picker fix and the new exercises;
+2. P;
+3. S;
+4. F1, then F2;
+5. I;
+6. F3, the biggest; it is data work and can ship in a seed release after the app.
+
+Every part is committed with its tests. The API is released as server parts land; beta 3.2 is built when all of it is in.
+
+**Docs:**
+- ADR-032 (community foods and missing-food reports);
+- amendments: ADR-024 (Progress windows), ADR-027 (premium icons) and ADR-029 (sound and haptics);
+- the privacy policy line for F2.
