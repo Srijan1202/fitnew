@@ -36,13 +36,19 @@ class ExerciseBrowserScreen extends ConsumerStatefulWidget {
 }
 
 class _ExerciseBrowserScreenState extends ConsumerState<ExerciseBrowserScreen> {
+  /// The picker's own filters (fresh each time); the Library keeps its own.
+  NotifierProvider<ExerciseFilters, ExerciseQuery> get _filtersProvider =>
+      widget.pickMode ? pickerFiltersProvider : exerciseFiltersProvider;
+  FutureProvider<ExerciseListResponse> get _listProvider =>
+      widget.pickMode ? pickerListProvider : exerciseListProvider;
+
   final _search = TextEditingController();
   Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
-    _search.text = ref.read(exerciseFiltersProvider).q;
+    _search.text = ref.read(_filtersProvider).q;
   }
 
   @override
@@ -55,7 +61,7 @@ class _ExerciseBrowserScreenState extends ConsumerState<ExerciseBrowserScreen> {
   void _onSearchChanged(String value) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 250), () {
-      ref.read(exerciseFiltersProvider.notifier).setSearch(value);
+      ref.read(_filtersProvider.notifier).setSearch(value);
     });
   }
 
@@ -116,8 +122,8 @@ class _ExerciseBrowserScreenState extends ConsumerState<ExerciseBrowserScreen> {
         'Muscle',
         (_) => Consumer(
           builder: (context, ref, __) {
-            final filters = ref.watch(exerciseFiltersProvider);
-            final notifier = ref.read(exerciseFiltersProvider.notifier);
+            final filters = ref.watch(_filtersProvider);
+            final notifier = ref.read(_filtersProvider.notifier);
             return ToggleWrap<MuscleGroup>(
               keyPrefix: 'muscle',
               options: MuscleGroup.values,
@@ -133,8 +139,8 @@ class _ExerciseBrowserScreenState extends ConsumerState<ExerciseBrowserScreen> {
         'Equipment I have',
         (_) => Consumer(
           builder: (context, ref, __) {
-            final filters = ref.watch(exerciseFiltersProvider);
-            final notifier = ref.read(exerciseFiltersProvider.notifier);
+            final filters = ref.watch(_filtersProvider);
+            final notifier = ref.read(_filtersProvider.notifier);
             return ToggleWrap<Equipment>(
               keyPrefix: 'equipment',
               options: Equipment.values,
@@ -150,8 +156,8 @@ class _ExerciseBrowserScreenState extends ConsumerState<ExerciseBrowserScreen> {
         'Movement pattern',
         (_) => Consumer(
           builder: (context, ref, __) {
-            final filters = ref.watch(exerciseFiltersProvider);
-            final notifier = ref.read(exerciseFiltersProvider.notifier);
+            final filters = ref.watch(_filtersProvider);
+            final notifier = ref.read(_filtersProvider.notifier);
             return ToggleWrap<MovementPattern>(
               keyPrefix: 'pattern',
               options: MovementPattern.values,
@@ -167,9 +173,9 @@ class _ExerciseBrowserScreenState extends ConsumerState<ExerciseBrowserScreen> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final filters = ref.watch(exerciseFiltersProvider);
-    final notifier = ref.read(exerciseFiltersProvider.notifier);
-    final async = ref.watch(exerciseListProvider);
+    final filters = ref.watch(_filtersProvider);
+    final notifier = ref.read(_filtersProvider.notifier);
+    final async = ref.watch(_listProvider);
     final kit = filters.equipment.length;
 
     return Scaffold(
@@ -262,7 +268,7 @@ class _ExerciseBrowserScreenState extends ConsumerState<ExerciseBrowserScreen> {
                   loading: () => const _ListSkeleton(),
                   error: (e, _) => _ListFailed(
                     failure: e is Failure ? e : const Unknown(),
-                    onRetry: () => ref.invalidate(exerciseListProvider),
+                    onRetry: () => ref.invalidate(_listProvider),
                   ),
                   data: (page) => _ExerciseList(
                     page: page,

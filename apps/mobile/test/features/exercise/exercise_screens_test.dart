@@ -106,6 +106,46 @@ void main() {
     expect(find.text('Muscle'), findsOneWidget);
   });
 
+  testWidgets(
+      'beta 3.2: the picker opens with no filters even when the Library has one (Leg Extension was hidden by a Chest filter set there)',
+      (tester) async {
+    await tester.pumpWidget(harness());
+    await tester.pumpAndSettle();
+    // In the Library: Chest.
+    await tester.tap(find.byKey(const ValueKey('filter.muscle')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('muscle.Chest')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('filters.done')));
+    await tester.pumpAndSettle();
+    expect(repo.queries.last.muscle, MuscleGroup.chest);
+
+    // Open the picker (as a day editor does): no filter, the whole library.
+    GoRouter.of(tester.element(find.byType(ExerciseBrowserScreen)))
+        .push('/exercises/pick');
+    await tester.pumpAndSettle();
+    expect(find.text('ADD EXERCISE'), findsOneWidget);
+    expect(repo.queries.last.muscle, isNull);
+    expect(find.byKey(const ValueKey('filters.clear')), findsNothing);
+
+    // A filter in the picker does not reach the Library, and is gone next time.
+    await tester.tap(find.byKey(const ValueKey('filter.muscle')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('muscle.Back')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('filters.done')));
+    await tester.pumpAndSettle();
+    expect(repo.queries.last.muscle, MuscleGroup.back);
+    GoRouter.of(tester.element(find.text('ADD EXERCISE'))).pop();
+    await tester.pumpAndSettle();
+    expect(find.text('LIBRARY'), findsOneWidget);
+    expect(find.byKey(const ValueKey('filters.clear')), findsOneWidget); // still Chest
+    GoRouter.of(tester.element(find.byType(ExerciseBrowserScreen)))
+        .push('/exercises/pick');
+    await tester.pumpAndSettle();
+    expect(repo.queries.last.muscle, isNull);
+  });
+
   testWidgets('typing in search is debounced into one request', (tester) async {
     await tester.pumpWidget(harness());
     await tester.pumpAndSettle();

@@ -55,3 +55,21 @@ final exerciseDetailProvider = FutureProvider.family<ExerciseDetail, String>(
   },
   retry: (_, __) => null,
 );
+
+/// Beta 3.2: the "Add exercise" picker's own filters and list, fresh every
+/// time it opens. Sharing the Library's kept a filter chosen there (e.g.
+/// Chest) and silently hid exercises in the picker; the owner could not find
+/// Leg Extension while editing a day.
+final pickerFiltersProvider =
+    NotifierProvider.autoDispose<ExerciseFilters, ExerciseQuery>(
+  ExerciseFilters.new,
+);
+
+final pickerListProvider = FutureProvider.autoDispose<ExerciseListResponse>(
+  (ref) async {
+    final query = ref.watch(pickerFiltersProvider);
+    final result = await ref.read(exerciseRepositoryProvider).list(query);
+    return result.when(ok: (r) => r, err: (f) => throw f);
+  },
+  retry: (_, __) => null,
+);
