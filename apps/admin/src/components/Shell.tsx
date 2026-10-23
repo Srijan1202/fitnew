@@ -11,6 +11,7 @@ const NAV = [
   { href: '/', label: 'Overview' },
   { href: '/mess', label: 'Mess corrections' },
   { href: '/foods', label: 'Foods' },
+  { href: '/missing-foods', label: 'Missing foods' },
   { href: '/exercises', label: 'Exercises' },
   { href: '/premium', label: 'Premium' },
   { href: '/feedback', label: 'Feedback' },
