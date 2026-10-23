@@ -69,3 +69,19 @@ The owner tags feedback in the admin panel by what to solve first: **red** (firs
 - `GET /v1/admin/feedback?priority=red|yellow|green|none` filters by tag.
 - The panel lists red, then yellow, then green, then untagged, newest first within each, and colours each row's edge.
 - The tag is internal triage, but it is stored on the user's feedback row, so it appears in their own data export (Phase 17 exports rows as stored).
+
+## Amendment — "a new version is available" (beta 3.2, owner 2026-10-23)
+
+The beta is sideloaded, so testers never hear about a new build. The owner chose **both**: a dialog once per new version, then a Home banner until they update.
+
+- **Source:** `https://tryfitos.me/version.json` (fitos-website, built from `src/site.ts`): `{version, build, url, notesUrl, released}`. Deploying a new APK to the website updates it; nothing else changes per release.
+- **The check (`lib/core/config/app_update.dart`):**
+  - at start, and when the app comes back to the foreground, at most once every 6 hours (the last answer is kept on the phone in between);
+  - a plain public GET, with nothing about the user sent;
+  - offline or a bad file shows nothing and is not retried at once.
+- **Shown when** the feed's `build` is higher than the app's own:
+  - a dialog the first time for that build ("FITOS beta 3.2 is out", **Later** / **Update**);
+  - then a slim Home banner with **Update** and ×. × hides it for that build only.
+- **Update** opens the download page in the browser (`url_launcher`, an Android `<queries>` entry for https). Only `https://tryfitos.me/…` is ever opened; anything else falls back to the download page.
+- The minimum-build screen (E1, D5) gets the same **Download the latest FITOS** button.
+- Beta 3.1 has no check. 3.2 is the last version testers must be told about by hand; from 3.2 on, the app tells them.

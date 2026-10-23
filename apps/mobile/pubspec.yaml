@@ -76,6 +76,8 @@ dependencies:
   firebase_crashlytics: 6.0.0
   # Phase 19 (E1): the app's own build number, compared with /meta/config.
   package_info_plus: 10.2.2
+  # Beta 3.2 (ADR-026 amendment): "Update" opens the download page.
+  url_launcher: 6.3.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

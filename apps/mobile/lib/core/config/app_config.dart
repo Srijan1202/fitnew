@@ -5,6 +5,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../features/auth/presentation/controllers/auth_providers.dart';
 import '../theme/tokens.dart';
+import 'app_update.dart';
 import '../../shared/widgets/fit_glass.dart';
 
 /// Phase 19 (E1, E18; ADR-026): the server's public start-up config,
@@ -74,11 +75,11 @@ bool flagOn(WidgetRef ref, String key, {bool fallback = true}) =>
     ref.watch(appConfigProvider).value?.flags[key] ?? fallback;
 
 /// Everything the app shows while its build is below the minimum.
-class UpdateRequiredScreen extends StatelessWidget {
+class UpdateRequiredScreen extends ConsumerWidget {
   const UpdateRequiredScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       key: const ValueKey('update.required'),
@@ -98,10 +99,17 @@ class UpdateRequiredScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: FitSpacing.sm),
                 Text(
-                  'Install the latest FITOS from where you got it (the Play Store '
-                  'testing link or the beta group). Your data is safe on the '
-                  'server and comes back when you sign in.',
+                  'Download the latest FITOS from tryfitos.me. It installs over '
+                  'this one; your data is safe on the server and comes back when '
+                  'you sign in.',
                   style: textTheme.bodyLarge,
+                ),
+                const SizedBox(height: FitSpacing.lg),
+                FilledButton(
+                  key: const ValueKey('update.required.download'),
+                  onPressed: () =>
+                      ref.read(linkOpenerProvider).open(kDownloadUrl),
+                  child: const Text('Download the latest FITOS'),
                 ),
               ],
             ),

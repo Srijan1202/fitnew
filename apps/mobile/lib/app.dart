@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/config/app_config.dart';
+import 'core/config/app_update.dart';
 import 'core/routing/router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
@@ -33,6 +34,8 @@ class FitOSApp extends ConsumerWidget {
     ref.watch(healthRefreshCoordinatorProvider);
     // Phase 15: the reminder plan on the device, kept current.
     ref.watch(notificationCoordinatorProvider);
+    // Beta 3.2: re-check for a newer beta when the app comes back.
+    ref.watch(updateCheckCoordinatorProvider);
     // Phase 19 (E1): a build below the server's minimum shows only
     // "Update FITOS". Unknown (offline) never blocks.
     final updateRequired = ref.watch(updateRequiredProvider);

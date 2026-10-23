@@ -1,3 +1,4 @@
+import '../../../../core/config/app_update.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -196,6 +197,9 @@ class HomeScreen extends ConsumerWidget {
                     date: c.date,
                     name: c.displayName,
                   ),
+                  // Beta 3.2: a newer beta, asked once, then a banner.
+                  const UpdatePromptHost(),
+                  const UpdateBanner(),
                   if (ref.watch(askForNameProvider)) const NamePrompt(),
                   if (ref.watch(homeServerFailureProvider) case final f?)
                     ServerNotice(

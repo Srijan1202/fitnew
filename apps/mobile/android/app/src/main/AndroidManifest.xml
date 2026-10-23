@@ -97,6 +97,11 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Beta 3.2: "Update" opens tryfitos.me/download in the browser (url_launcher). -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
+        </intent>
         <!-- Health Connect (the APK on Android 9–13; the platform module on 14+). -->
         <package android:name="com.google.android.apps.healthdata" />
     </queries>
