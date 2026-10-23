@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'streak_rewards.dart';
 
 /// Phase 19 (ADR-027, owner 2026-10-22): the ten profile pictures, drawn in
 /// the app — an illustration on a coloured disc, crisp at any size, no image
@@ -12,6 +13,7 @@ class AvatarDef {
     required this.background,
     required this.foreground,
     this.premium = false,
+    this.reward,
   });
 
   final String id;
@@ -20,12 +22,21 @@ class AvatarDef {
   final Color background;
   final Color foreground;
   final bool premium;
+
+  /// Beta 3.4: a picture only a streak earns (null for the others).
+  final StreakReward? reward;
 }
 
 /// The premium gold, for the three pictures and the rim.
 const kGold = Color(0xFFC9A227);
 const kGoldDeep = Color(0xFF8A6A12);
 const kGoldLight = Color(0xFFF1D77A);
+
+/// Beta 3.4: the streak rewards' ember, for their pictures, the rim and the
+/// Ember theme.
+const kEmber = Color(0xFFFF7A2F);
+const kEmberDeep = Color(0xFFB8400F);
+const kEmberLight = Color(0xFFFFC08A);
 
 const kAvatars = <AvatarDef>[
   AvatarDef(
@@ -100,6 +111,22 @@ const kAvatars = <AvatarDef>[
     background: Color(0xFF17171A),
     foreground: kGold,
     premium: true,
+  ),
+  AvatarDef(
+    id: 'spark',
+    label: 'Spark',
+    icon: Icons.whatshot,
+    background: Color(0xFF241109),
+    foreground: kEmber,
+    reward: StreakReward.spark,
+  ),
+  AvatarDef(
+    id: 'century',
+    label: 'Century',
+    icon: Icons.military_tech,
+    background: Color(0xFF241109),
+    foreground: kEmberLight,
+    reward: StreakReward.century,
   ),
 ];
 

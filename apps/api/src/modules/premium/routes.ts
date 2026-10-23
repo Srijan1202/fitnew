@@ -12,6 +12,7 @@ import {
   adminPremiumQuerySchema,
   adminPremiumRequestListSchema,
   avatarResponseSchema,
+  rewardsResponseSchema,
   decidePremiumRequestSchema,
   errorEnvelopeSchema,
   premiumRequestSchema,
@@ -62,6 +63,15 @@ export async function premiumRoutes(app: FastifyInstance): Promise<void> {
     const r = await service.request(requireUserId(request.userId), request.identity?.claims, request.body.message);
     return reply.code(201).send(r);
   });
+
+  typed.get('/user/rewards', {
+    schema: {
+      summary: 'Streak rewards you earned, kept forever (beta 3.4)',
+      tags: ['premium'],
+      security,
+      response: { 200: rewardsResponseSchema, ...errors },
+    },
+  }, async (request) => service.rewards(requireUserId(request.userId)));
 
   typed.put('/user/avatar', {
     schema: {

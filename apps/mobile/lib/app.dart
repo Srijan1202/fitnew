@@ -16,6 +16,7 @@ import 'features/health/presentation/controllers/health_providers.dart';
 import 'features/notifications/presentation/notification_coordinator.dart';
 import 'features/today/presentation/today_providers.dart';
 import 'core/config/app_features.dart';
+import 'features/premium/presentation/rewards_providers.dart';
 
 /// Root widget. Owns the theme; the router comes from Riverpod so the auth
 /// guard can read the same provider the screens do.
@@ -65,6 +66,19 @@ class FitOSApp extends ConsumerWidget {
       if (premium == false) {
         ref.read(appIconControllerProvider.notifier).keepWithin(premium: false);
       }
+    });
+    // Beta 3.4: a streak theme or icon this account has not earned (another
+    // account on the phone) goes back once the earned list is known.
+    ref.listen(earnedRewardsProvider, (_, next) {
+      final earned = next.value;
+      if (earned == null) return;
+      final reward = FitPalette.current.reward;
+      if (reward != null && !earned.any((r) => r.id == reward)) {
+        ref
+            .read(themeControllerProvider.notifier)
+            .choose(FitPalette.current.freeFallback);
+      }
+      ref.read(appIconControllerProvider.notifier).keepEarned(earned);
     });
 
     return MaterialApp.router(

@@ -12,6 +12,7 @@ import { weeklyReport } from '@fitos/core/progress/weekly';
 import { isoWeekDates } from '@fitos/core/training/mesocycle';
 import {
   PROGRESS_DAYS_BACK,
+  STREAK_REWARDS,
   type LogMeasurementRequest,
   type LogMeasurementResponse,
   type LogWeightRequest,
@@ -60,7 +61,10 @@ export class ProgressService {
       skippedDays: new Set(context.skippedOn === null ? [] : [context.skippedOn]),
       firstDay: localDateOf(context.createdAt, tz),
     });
-    return { ...s, week: weekGoal(today, workoutDays, planned?.length ?? 0) };
+    // Beta 3.4 (ADR-027 amendment): every reward the best run has reached, once.
+    const reached = STREAK_REWARDS.filter((r) => s.best >= r.days).map((r) => r.id);
+    const newRewards = await this.repo.grantRewards(userId, reached);
+    return { ...s, week: weekGoal(today, workoutDays, planned?.length ?? 0), newRewards };
   }
 
   async summary(userId: string, window: ProgressWindow): Promise<ProgressSummary> {

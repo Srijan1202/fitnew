@@ -10,7 +10,11 @@ const iso = z.string().datetime({ offset: true });
 
 /* ---------------------------------------------------------- the avatars -- */
 
-/** The ten profile pictures, drawn in the app. The last three are premium. */
+/**
+ * The profile pictures, drawn in the app. Crown, flame and trophy are
+ * premium; spark and century (beta 3.3+, ADR-027 amendment) are streak
+ * rewards, for anyone who earned them.
+ */
 export const AVATARS = [
   { id: 'dumbbell', premium: false },
   { id: 'runner', premium: false },
@@ -22,10 +26,38 @@ export const AVATARS = [
   { id: 'crown', premium: true },
   { id: 'flame', premium: true },
   { id: 'trophy', premium: true },
+  { id: 'spark', premium: false },
+  { id: 'century', premium: false },
 ] as const;
 export const AVATAR_IDS = AVATARS.map((a) => a.id) as unknown as readonly [string, ...string[]];
 export const PREMIUM_AVATAR_IDS: readonly string[] = AVATARS.filter((a) => a.premium).map((a) => a.id);
 export const avatarIdSchema = z.enum(AVATAR_IDS as [string, ...string[]]);
+
+/* -------------------------------------------- streak rewards (beta 3.4) -- */
+
+/**
+ * Beta 3.4 (ADR-027 amendment, owner 2026-10-24): rewards only a streak
+ * earns — the same for free and premium users — at the best streak ever
+ * reaching `days`. Kept forever once earned.
+ */
+export const STREAK_REWARDS = [
+  { id: 'spark', days: 7, kind: 'avatar', name: 'Spark picture' },
+  { id: 'ember-theme', days: 14, kind: 'theme', name: 'Ember theme' },
+  { id: 'blaze-icon', days: 30, kind: 'app-icon', name: 'Blaze app icon' },
+  { id: 'ember-rim', days: 60, kind: 'rim', name: 'Ember rim' },
+  { id: 'century', days: 100, kind: 'avatar', name: 'Century picture and badge' },
+] as const;
+export type StreakRewardId = (typeof STREAK_REWARDS)[number]['id'];
+export const STREAK_REWARD_IDS = STREAK_REWARDS.map((r) => r.id) as unknown as readonly [StreakRewardId, ...StreakRewardId[]];
+export const streakRewardIdSchema = z.enum(STREAK_REWARD_IDS);
+/** Pictures a streak earns (their avatar id is the reward id). */
+export const REWARD_AVATAR_IDS: readonly string[] = STREAK_REWARDS.filter((r) => r.kind === 'avatar').map((r) => r.id);
+
+export const earnedRewardSchema = z.object({ id: streakRewardIdSchema, earnedAt: iso }).strict();
+/** GET /user/rewards: what you earned (readable even while streaks are switched off). */
+export const rewardsResponseSchema = z.object({ earned: z.array(earnedRewardSchema) }).strict();
+export type EarnedReward = z.infer<typeof earnedRewardSchema>;
+export type RewardsResponse = z.infer<typeof rewardsResponseSchema>;
 
 export const setAvatarRequestSchema = z.object({ avatarId: avatarIdSchema.nullable() }).strict();
 export const avatarResponseSchema = z.object({ avatarId: avatarIdSchema.nullable() }).strict();

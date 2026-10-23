@@ -26,6 +26,9 @@ import '../widgets/home_sections.dart';
 import '../widgets/name_prompt.dart';
 import '../widgets/suggestion_carousel.dart';
 import '../widgets/streak_card.dart';
+import '../../../premium/domain/streak_rewards.dart';
+import '../../../premium/presentation/rewards_providers.dart';
+import '../../../premium/presentation/streak_rewards_ui.dart';
 
 /// Phase 6.5 — Home, the TODAY surface. What to know and do right now, in
 /// this order: a compact header; "Your next move" (Phase 11: the server's
@@ -203,6 +206,8 @@ class HomeScreen extends ConsumerWidget {
                   const UpdatePromptHost(),
                   const UpdateBanner(),
                   if (ref.watch(askForNameProvider)) const NamePrompt(),
+                  // Beta 3.4: new streak rewards, celebrated once.
+                  const _RewardsCelebration(),
                   // Beta 3.3: the streak and the weekly goal ring.
                   if (ref.watch(streakProvider).value case final s?)
                     StreakCard(streak: s),
@@ -363,5 +368,37 @@ class HomeScreen extends ConsumerWidget {
     return h.fromCache
         ? 'Health data: last reading kept on this phone; Health Connect did not answer just now.'
         : 'Health data read ${HomeSections.ago(h.fetchedAt)} · stays on this phone.';
+  }
+}
+
+/// Beta 3.4: when a streak read reports rewards earned just now, a small
+/// celebration once, and the earned list is fetched again. Renders nothing.
+class _RewardsCelebration extends ConsumerStatefulWidget {
+  const _RewardsCelebration();
+
+  @override
+  ConsumerState<_RewardsCelebration> createState() =>
+      _RewardsCelebrationState();
+}
+
+class _RewardsCelebrationState extends ConsumerState<_RewardsCelebration> {
+  final Set<String> _shown = <String>{};
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen(streakProvider, (_, next) {
+      final s = next.value;
+      if (s == null) return;
+      final fresh = [
+        for (final id in s.newRewards)
+          if (_shown.add(id)) StreakReward.byId(id),
+      ].whereType<StreakReward>().toList();
+      if (fresh.isEmpty) return;
+      ref.invalidate(earnedRewardsProvider);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) celebrateRewards(context, fresh, fresh.last.days);
+      });
+    });
+    return const SizedBox.shrink();
   }
 }

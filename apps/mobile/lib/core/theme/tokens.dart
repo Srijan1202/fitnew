@@ -73,6 +73,7 @@ class FitPalette {
     this.brandMark = false,
     this.glass = true,
     this.premium = true,
+    this.reward,
   })  : accent = accent ?? ink,
         onAccent = onAccent ?? paper,
         glow = glow ?? pine;
@@ -102,6 +103,9 @@ class FitPalette {
   /// The colour of the blocks' soft shadow and the background glow.
   final Color glow;
   final bool premium;
+
+  /// Beta 3.4: a theme only a streak earns (its reward id), else null.
+  final String? reward;
 
   /// The palette every screen reads now. Set by the theme controller before
   /// the app rebuilds; FITOS Dark unless the user chose another.
@@ -216,6 +220,28 @@ class FitPalette {
     glow: Color(0xFF2E7DB5),
   );
 
+  /// Beta 3.4: earned with a 14-day streak (not premium): carbon warmed
+  /// through, with ember-orange actions.
+  static const ember = FitPalette(
+    id: 'ember',
+    label: 'Ember',
+    brightness: Brightness.dark,
+    paper: Color(0xFF120C0A),
+    paper2: Color(0xFF1E1511),
+    ink: Color(0xFFF6EFEA),
+    ink60: Color(0xFFC4B4AA),
+    ink35: Color(0xFF8C7C72),
+    rule: Color(0xFF35271F),
+    pine: Color(0xFF8FD16A),
+    amber: Color(0xFFF5B342),
+    oxide: Color(0xFFFF6B57),
+    accent: Color(0xFFFF7A2F),
+    onAccent: Color(0xFF120C0A),
+    glow: Color(0xFFFF7A2F),
+    premium: false,
+    reward: 'ember-theme',
+  );
+
   static const all = <FitPalette>[
     fitosDark,
     fitosLight,
@@ -223,6 +249,7 @@ class FitPalette {
     night,
     forest,
     ocean,
+    ember,
   ];
 
   /// Where a theme the user may no longer have falls back to: the brand

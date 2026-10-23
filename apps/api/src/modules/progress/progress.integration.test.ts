@@ -357,11 +357,11 @@ describeIfDb('/v1/progress (real Postgres)', { timeout: 60_000 }, () => {
       sql`insert into daily_nutrition (user_id, local_date, kcal_low, kcal_high, protein_low, protein_high, item_count) values (${u.id}, ${d}, 500, 600, 20, 25, 1)
           on conflict do nothing`;
 
-    expect(await streakOf()).toEqual({ current: 0, best: 0, todayCounted: false, week: null });
+    expect(await streakOf()).toEqual({ current: 0, best: 0, todayCounted: false, week: null, newRewards: [] });
 
     // No programme: every day asks for a log.
     for (const d of [-6, -5, -2, -1]) await food(addDays(t, d));
-    expect(await streakOf()).toEqual({ current: 2, best: 2, todayCounted: false, week: null });
+    expect(await streakOf()).toEqual({ current: 2, best: 2, todayCounted: false, week: null, newRewards: [] });
     await food(t);
     expect(await streakOf()).toMatchObject({ current: 3, todayCounted: true });
 
@@ -394,6 +394,43 @@ describeIfDb('/v1/progress (real Postgres)', { timeout: 60_000 }, () => {
     expect((await app.inject({ method: 'PUT', url: '/v1/admin/flags/streaks', headers: auth('pr-admin-streak'), payload: { enabled: false } })).statusCode).toBe(200);
     const off = await app.inject({ method: 'GET', url: '/v1/progress/streak', headers: auth(other.token) });
     expect(issue(off)).toBe('feature-off');
+    await sql`delete from feature_flags where key = 'streaks'`;
+    await sql`delete from audit_logs where action = 'flag.set'`;
+    app.features.invalidate();
+  });
+
+  it('beta 3.4: streak rewards — granted once when the best run reaches 7 and 14 days, kept, listed; streak pictures only when earned', async () => {
+    const u = await user();
+    const t = today(u);
+    await sql`update users set created_at = now() - interval '40 days' where id = ${u.id}`;
+    const streakOf = async () => streakSchema.parse((await app.inject({ method: 'GET', url: '/v1/progress/streak', headers: auth(u.token) })).json());
+    const rewards = async () => (await app.inject({ method: 'GET', url: '/v1/user/rewards', headers: auth(u.token) })).json() as { earned: { id: string }[] };
+    const avatar = (avatarId: string) => app.inject({ method: 'PUT', url: '/v1/user/avatar', headers: auth(u.token), payload: { avatarId } });
+    const food = (d: string) =>
+      sql`insert into daily_nutrition (user_id, local_date, kcal_low, kcal_high, protein_low, protein_high, item_count) values (${u.id}, ${d}, 500, 600, 20, 25, 1)`;
+
+    expect(issue(await avatar('spark'))).toBe('reward-locked');
+    // A 6-day run: nothing yet.
+    for (let d = -20; d <= -15; d += 1) await food(addDays(t, d));
+    expect((await streakOf()).newRewards).toEqual([]);
+    // A 14-day run that already ended: earned all the same, and only once.
+    for (let d = -14; d <= -1; d += 1) if (d !== -14) await food(addDays(t, d));
+    await food(addDays(t, -14));
+    const first = await streakOf();
+    expect(first.best).toBeGreaterThanOrEqual(14);
+    expect(first.newRewards).toEqual(['spark', 'ember-theme']);
+    expect((await streakOf()).newRewards).toEqual([]);
+    expect((await rewards()).earned.map((r) => r.id)).toEqual(['ember-theme', 'spark'].sort());
+
+    expect((await avatar('spark')).statusCode).toBe(200);
+    expect(issue(await avatar('century'))).toBe('reward-locked');
+
+    // Kept when streaks are switched off: still listed, the picture still allowed.
+    verifier.accept('pr-admin-rewards', { uid: 'pr-uid-admin-rewards', email: 'pr-admin2@vit.ac.in', claims: { role: 'admin' } });
+    await app.inject({ method: 'POST', url: '/v1/auth/session', headers: auth('pr-admin-rewards'), payload: {} });
+    await app.inject({ method: 'PUT', url: '/v1/admin/flags/streaks', headers: auth('pr-admin-rewards'), payload: { enabled: false } });
+    expect((await rewards()).earned).toHaveLength(2);
+    expect((await avatar('spark')).statusCode).toBe(200);
     await sql`delete from feature_flags where key = 'streaks'`;
     await sql`delete from audit_logs where action = 'flag.set'`;
     app.features.invalidate();

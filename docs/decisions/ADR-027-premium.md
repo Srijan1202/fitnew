@@ -87,3 +87,35 @@ The owner asked for different app icons: a gold one and more, with Gold and the 
 - **The premium perks** now read "Themes and app icons".
 - **Tests:** a source guard keeps the manifest, `AppIcons.kt`, the generated resources and the `AppIcon` enum in step. There are controller tests (refusal, fallback) and whole-app flows for free, premium and losing premium.
 - **Accepted:** the monochrome (themed) icon is the same F for all five icons. Some launchers drop the home-screen shortcut and add the new icon in the app drawer.
+
+## Amendment — streak rewards (beta 3.4, owner 2026-10-24)
+
+The owner asked for streak rewards, as **streak-only items** (not premium ones), at **7 · 14 · 30 · 60 · 100** days.
+
+| Days | Reward | What it is |
+|---|---|---|
+| 7 | **Spark** picture | A small lit flame, in ember |
+| 14 | **Ember** theme | A dark palette, carbon warmed through, with ember-orange actions |
+| 30 | **Blaze** app icon | The F in an ember gradient on carbon (activity-alias `.IconBlaze`) |
+| 60 | **Ember rim** | An ember ring around the picture, worn instead of the gold rim; it can be switched off in Profile |
+| 100 | **Century** | A picture, plus a "100 DAYS" badge on Profile |
+
+- **Earned by the best streak ever** (ADR-018's streak, which looks back 400 days). When `GET /v1/progress/streak` is read, every milestone the best run has reached is recorded in `user_rewards` (migration 0030). Each is recorded once and kept forever, even after the streak breaks. Past runs count, so early testers were credited at once.
+- **The same for free and premium users.** These are not premium items, and the premium sheet never opens for them.
+- **Shown once:** the streak read returns `newRewards`. Home shows "🔥 N days! You unlocked: …" once and refetches the earned list.
+- **`GET /v1/user/rewards`** works whatever the `streaks` switch says (ADR-033): what was earned keeps working while streaks are off. Rewards are not *granted* while the switch is off, because the streak endpoint itself is refused.
+- **Pictures are enforced by the server.** `PUT /user/avatar` with `spark` or `century` answers 403 `reward-locked` until earned. The `users.avatar_id` check gains both ids; the down migration resets them to none.
+- **The theme, icon and rim are checked on the phone,** as the premium themes are (D8). A locked item shows 🔥 and "Reach a N-day streak to unlock the …". An unearned streak theme or icon left on a phone by another account falls back once the earned list is known.
+- **Profile:**
+  - a **Streak rewards** row ("2 of 5") opens the list, earned or "N more days than your best";
+  - an **Ember rim** switch, once earned;
+  - the 100-day badge beside the premium badge.
+- **Never shaming:** nothing is taken away, and nothing says "lost".
+- **Tests:**
+  - grants at the thresholds, once, retroactive, and kept with streaks off;
+  - the picture lock;
+  - the contracts and the app agree on ids and days;
+  - the pickers' locks;
+  - the celebration shown once;
+  - the rim switch;
+  - migration 0030 up and down.

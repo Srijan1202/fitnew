@@ -29,6 +29,10 @@ import '../../domain/entities/profile.dart';
 import '../widgets/mess_setting.dart';
 import 'food_preferences_screen.dart' show FoodSettingRow;
 import '../widgets/targets_display.dart';
+import '../../../premium/domain/streak_rewards.dart';
+import '../../../premium/presentation/rewards_providers.dart';
+import '../../../premium/presentation/streak_rewards_ui.dart';
+import '../../../home/presentation/controllers/home_providers.dart';
 
 /// Profile (ADR-029, owner): laid out like iPhone Settings — who you are and
 /// your targets at the top, what you are in small tiles, then every setting
@@ -146,6 +150,42 @@ class ProfileScreen extends ConsumerWidget {
                         title: 'Time zone',
                         value: view.profile.timezone,
                       ),
+                      // Beta 3.4: streak rewards, and the Ember rim once earned.
+                      Consumer(
+                        builder: (context, ref, _) => FitRow(
+                          key: const ValueKey('profile.rewards'),
+                          icon: Icons.local_fire_department,
+                          title: 'Streak rewards',
+                          value:
+                              '${ref.watch(earnedRewardsProvider).value?.length ?? 0} of ${StreakReward.values.length}',
+                          onTap: () => showStreakRewards(
+                            context,
+                            best: ref.read(streakProvider).value?.best,
+                          ),
+                        ),
+                      ),
+                      Consumer(
+                        builder: (context, ref, _) => ref.watch(
+                          rewardEarnedProvider(StreakReward.emberRim),
+                        )
+                            ? FitRow(
+                                key: const ValueKey('profile.emberRim'),
+                                icon: Icons.blur_circular,
+                                title: 'Ember rim',
+                                trailing: Switch(
+                                  key: const ValueKey(
+                                    'profile.emberRim.switch',
+                                  ),
+                                  value: ref.watch(emberRimSettingProvider),
+                                  onChanged: (on) => ref
+                                      .read(
+                                        emberRimSettingProvider.notifier,
+                                      )
+                                      .set(on),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
                       // Beta 3.2: subtle sound and haptics, each switchable.
                       Consumer(
                         builder: (context, ref, _) => FitRow(
@@ -260,6 +300,7 @@ class _Header extends ConsumerWidget {
               avatarId: p.avatarId,
               name: p.displayName,
               premium: premium,
+              ember: ref.watch(emberRimProvider),
               size: 68,
             ),
           ),
@@ -281,10 +322,23 @@ class _Header extends ConsumerWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(line, style: textTheme.bodyMedium),
-                if (premium) ...<Widget>[
-                  const SizedBox(height: FitSpacing.sm),
-                  const _PremiumBadge(),
-                ],
+                if (premium ||
+                    ref.watch(rewardEarnedProvider(StreakReward.century)))
+                  Padding(
+                    padding: const EdgeInsets.only(top: FitSpacing.sm),
+                    child: Wrap(
+                      spacing: FitSpacing.xs,
+                      runSpacing: FitSpacing.xs,
+                      children: <Widget>[
+                        if (premium) const _PremiumBadge(),
+                        // Beta 3.4: a 100-day streak.
+                        if (ref.watch(
+                          rewardEarnedProvider(StreakReward.century),
+                        ))
+                          const CenturyBadge(),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),

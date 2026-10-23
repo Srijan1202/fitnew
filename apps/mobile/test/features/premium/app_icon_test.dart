@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fitos/features/premium/domain/app_icons.dart';
+import 'package:fitos/features/premium/domain/streak_rewards.dart';
 import 'package:fitos/features/premium/presentation/app_icon_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -84,11 +85,18 @@ void main() {
     });
   });
 
-  test('Standard and White are free; Gold, Glow and Lime are premium', () {
+  test(
+      'Standard and White are free; Gold, Glow and Lime are premium; Blaze is a 30-day streak reward',
+      () {
     expect(
-      AppIcon.values.where((i) => !i.premium),
+      AppIcon.values.where((i) => !i.premium && i.reward == null),
       [AppIcon.standard, AppIcon.white],
     );
+    expect(
+      AppIcon.values.where((i) => i.premium),
+      [AppIcon.gold, AppIcon.glow, AppIcon.lime],
+    );
+    expect(AppIcon.blaze.reward, StreakReward.blazeIcon);
     expect(AppIcon.byName('gold'), AppIcon.gold);
     expect(AppIcon.byName('neon'), isNull);
     expect(AppIcon.byName(null), isNull);

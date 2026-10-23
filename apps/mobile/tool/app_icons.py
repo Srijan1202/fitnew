@@ -8,6 +8,7 @@ sized exactly as the standard launcher icon (tool/brand.py):
     gold      gold F on carbon        Premium (the premium rim's gold)
     glow      lime F with its glow    Premium (the kit's bold-2-glow)
     lime      carbon F on lime        Premium (the kit's bold-3-lime)
+    blaze     ember F on carbon       Streak reward, 30 days (beta 3.4)
 
 Writes, for every icon but standard (which tool/brand.py already makes):
   android/app/src/main/res/drawable-nodpi/ic_launcher_<name>_background.png
@@ -42,6 +43,15 @@ def gold_gradient(gid: str) -> str:
             f'<stop offset="1" stop-color="{GOLD[2]}"/></linearGradient>')
 
 
+EMBER = ('#FFC08A', '#FF7A2F', '#B8400F')  # kEmberLight, kEmber, kEmberDeep (premium/domain/avatars.dart)
+
+
+def ember_gradient(gid: str) -> str:
+    return (f'<linearGradient id="{gid}" x1="0.85" y1="0.05" x2="0.15" y2="0.95">'
+            f'<stop offset="0" stop-color="{EMBER[0]}"/><stop offset="0.45" stop-color="{EMBER[1]}"/>'
+            f'<stop offset="1" stop-color="{EMBER[2]}"/></linearGradient>')
+
+
 def lime_bg(gid: str) -> str:
     return (f'<linearGradient id="{gid}" x1="0" y1="0" x2="1" y2="1">'
             f'<stop offset="0" stop-color="{C["lime_hi"]}"/><stop offset="1" stop-color="{C["lime"]}"/></linearGradient>')
@@ -54,6 +64,7 @@ ICONS = {
     'gold': (C['carbon'], 'url(#gold)', gold_gradient('gold'), False),
     'glow': (C['graphite'], 'url(#g)', kit.defs_gradient('g'), True),
     'lime': ('url(#limebg)', C['carbon'], lime_bg('limebg'), False),
+    'blaze': (C['carbon'], 'url(#ember)', ember_gradient('ember'), False),
 }
 
 

@@ -30,6 +30,8 @@ import 'fake_today_api.dart';
 import 'fake_workout_api.dart';
 import 'fake_streak_api.dart';
 import 'package:fitos/features/home/presentation/controllers/home_providers.dart';
+import 'fake_rewards_api.dart';
+import 'package:fitos/features/premium/presentation/rewards_providers.dart';
 
 /// Everything a widget test needs so the workout feature runs on an
 /// in-memory database against the fake server, with no platform plugins:
@@ -53,6 +55,7 @@ List<Override> workoutOverrides(
   FakePremiumApi? premium,
   FakeWeeklyReportApi? weekly,
   FakeStreakApi? streak,
+  FakeRewardsApi? rewards,
 }) {
   SharedPreferences.setMockInitialValues(const {});
   return [
@@ -97,5 +100,7 @@ List<Override> workoutOverrides(
     weeklyReportApiProvider.overrideWithValue(weekly ?? FakeWeeklyReportApi()),
     // Beta 3.3: no streak card unless a test says.
     streakApiProvider.overrideWithValue(streak ?? FakeStreakApi()),
+    // Beta 3.4: nothing earned unless a test says.
+    rewardsApiProvider.overrideWithValue(rewards ?? FakeRewardsApi()),
   ];
 }

@@ -37,7 +37,7 @@ export const users = pgTable(
     avatarId: text('avatar_id'),
   },
   (t) => [
-    check('users_avatar_id', sql`${t.avatarId} is null or ${t.avatarId} in ('dumbbell', 'runner', 'yoga', 'cyclist', 'swimmer', 'boxer', 'hiker', 'crown', 'flame', 'trophy')`),
+    check('users_avatar_id', sql`${t.avatarId} is null or ${t.avatarId} in ('dumbbell', 'runner', 'yoga', 'cyclist', 'swimmer', 'boxer', 'hiker', 'crown', 'flame', 'trophy', 'spark', 'century')`),
     // Case-insensitive lookup by email for support tooling (§20). Not unique:
     // Firebase permits the same email across providers in some configurations,
     // and uniqueness is Firebase's job, not ours.

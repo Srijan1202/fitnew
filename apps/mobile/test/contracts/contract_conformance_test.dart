@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:fitos/features/premium/data/premium_api.dart';
 import 'package:fitos/features/premium/domain/avatars.dart';
+import 'package:fitos/features/premium/domain/streak_rewards.dart';
 import 'package:fitos/features/premium/domain/premium.dart';
 import '../support/fake_premium_api.dart';
 import 'package:fitos/core/config/app_config.dart';
@@ -2569,7 +2570,7 @@ void main() {
     });
 
     test(
-        'the ten pictures are the server\'s, in its order; the last three are premium',
+        'the pictures are the server\'s, in its order; three premium, two streak rewards (beta 3.4)',
         () {
       final avatar =
           properties(schemaOf('/user/avatar', 'put', request: true))['avatarId']
@@ -2586,6 +2587,25 @@ void main() {
         kAvatars.where((a) => a.premium).map((a) => a.id),
         ['crown', 'flame', 'trophy'],
       );
+      expect(
+        kAvatars.where((a) => a.reward != null).map((a) => a.id),
+        ['spark', 'century'],
+      );
+    });
+
+    test('beta 3.4: the streak rewards match the server, ids and days in order',
+        () {
+      final source =
+          File('../../packages/contracts/src/premium.ts').readAsStringSync();
+      final start = source.indexOf('export const STREAK_REWARDS = [');
+      final block =
+          source.substring(start, source.indexOf('] as const;', start));
+      final rows = RegExp(r"id: '([a-z-]+)', days: (\d+)")
+          .allMatches(block)
+          .map((m) => (m.group(1), int.parse(m.group(2)!)))
+          .toList();
+      expect(rows, StreakReward.values.map((r) => (r.id, r.days)).toList());
+      expect(keysOf(schemaOf('/user/rewards', 'get')), {'earned'});
     });
 
     test('GET /progress/weekly: the report has the documented sections', () {

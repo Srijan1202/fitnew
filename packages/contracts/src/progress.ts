@@ -193,6 +193,8 @@ export const streakSchema = z
     best: z.number().int().min(0),
     todayCounted: z.boolean(),
     week: z.object({ done: z.number().int().min(0), planned: z.number().int().min(1) }).strict().nullable(),
+    /** Beta 3.4: streak rewards earned just now by this read (shown once), by id. */
+    newRewards: z.array(z.string()),
   })
   .strict();
 export type StreakSummary = z.infer<typeof streakSchema>;

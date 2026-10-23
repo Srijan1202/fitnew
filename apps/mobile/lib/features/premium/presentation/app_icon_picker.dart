@@ -8,6 +8,7 @@ import '../domain/avatars.dart';
 import 'app_icon_controller.dart';
 import 'premium_providers.dart';
 import 'premium_sheet.dart';
+import 'rewards_providers.dart';
 
 /// Beta 3.2 (ADR-027 amendment): Profile → Appearance → App icon. Standard
 /// and White for everyone; Gold, Glow and Lime for premium (a lock, then the
@@ -21,6 +22,9 @@ class AppIconPicker extends ConsumerWidget {
     if (current == null) return const SizedBox.shrink();
     final textTheme = Theme.of(context).textTheme;
     final premium = ref.watch(isPremiumProvider) ?? false;
+    final earned = ref.watch(earnedRewardsProvider).value ?? const {};
+    bool streakLocked(AppIcon i) =>
+        i.reward != null && !earned.contains(i.reward);
     return Column(
       key: const ValueKey('profile.appIcon'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,8 +40,15 @@ class AppIconPicker extends ConsumerWidget {
                 key: ValueKey('appIcon.${icon.name}'),
                 icon: icon,
                 selected: current == icon,
-                locked: icon.premium && !premium,
+                locked: (icon.premium && !premium) || streakLocked(icon),
+                streakLock: icon.reward != null,
                 onTap: () async {
+                  if (streakLocked(icon)) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(icon.reward!.howToEarn)),
+                    );
+                    return;
+                  }
                   if (icon.premium && !premium) {
                     await showPremiumSheet(
                       context,
@@ -75,9 +86,12 @@ class _IconTile extends StatelessWidget {
     required this.selected,
     required this.locked,
     required this.onTap,
+    this.streakLock = false,
     super.key,
   });
 
+  /// Beta 3.4: locked by a streak (🔥), not by premium.
+  final bool streakLock;
   final AppIcon icon;
   final bool selected;
   final bool locked;
@@ -89,8 +103,9 @@ class _IconTile extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label:
-          locked ? '${icon.label} app icon, premium' : '${icon.label} app icon',
+      label: locked
+          ? '${icon.label} app icon, ${streakLock ? 'streak reward' : 'premium'}'
+          : '${icon.label} app icon',
       child: InkWell(
         onTap: onTap,
         child: Column(
@@ -117,10 +132,14 @@ class _IconTile extends StatelessWidget {
                     ),
                   ),
                   if (locked)
-                    const Positioned(
+                    Positioned(
                       right: 2,
                       top: 2,
-                      child: Icon(Icons.lock, size: 14, color: kGoldDeep),
+                      child: Icon(
+                        streakLock ? Icons.local_fire_department : Icons.lock,
+                        size: 14,
+                        color: streakLock ? kEmber : kGoldDeep,
+                      ),
                     ),
                 ],
               ),

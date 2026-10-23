@@ -13,6 +13,7 @@ class Streak {
     required this.todayCounted,
     required this.weekDone,
     required this.weekPlanned,
+    this.newRewards = const [],
   });
 
   factory Streak.fromJson(Map<String, dynamic> j) {
@@ -23,6 +24,10 @@ class Streak {
       todayCounted: j['todayCounted'] as bool,
       weekDone: week?['done'] as int?,
       weekPlanned: week?['planned'] as int?,
+      newRewards: [
+        for (final id in (j['newRewards'] as List<dynamic>? ?? const []))
+          id as String,
+      ],
     );
   }
 
@@ -36,6 +41,9 @@ class Streak {
   /// Workouts done this week, and planned; null without a programme.
   final int? weekDone;
   final int? weekPlanned;
+
+  /// Beta 3.4: streak reward ids earned by this read (celebrated once).
+  final List<String> newRewards;
 }
 
 abstract class StreakApi {

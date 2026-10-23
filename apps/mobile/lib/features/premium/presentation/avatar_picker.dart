@@ -8,6 +8,7 @@ import '../domain/avatars.dart';
 import 'premium_providers.dart';
 import 'premium_sheet.dart';
 import 'profile_avatar.dart';
+import 'rewards_providers.dart';
 
 /// Phase 19 (ADR-027): choose one of the ten pictures, or the initials. The
 /// three premium ones show a lock for free users and open the premium sheet.
@@ -31,6 +32,12 @@ class _AvatarPickerState extends ConsumerState<_AvatarPicker> {
   String? _error;
 
   Future<void> _choose(String? id, {required bool locked}) async {
+    final reward = avatarById(id)?.reward;
+    if (locked && reward != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(reward.howToEarn)));
+      return;
+    }
     if (locked) {
       await showPremiumSheet(context, feature: 'This picture');
       return;
@@ -57,7 +64,11 @@ class _AvatarPickerState extends ConsumerState<_AvatarPicker> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final premium = ref.watch(isPremiumProvider) ?? false;
+    final earned = ref.watch(earnedRewardsProvider).value ?? const {};
     final profile = ref.watch(profileControllerProvider).value?.profile;
+    bool lockedOf(AvatarDef a) =>
+        (a.premium && !premium) ||
+        (a.reward != null && !earned.contains(a.reward));
     final current = profile?.avatarId;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -94,14 +105,15 @@ class _AvatarPickerState extends ConsumerState<_AvatarPicker> {
                   key: ValueKey('avatar.choice.${a.id}'),
                   label: a.label,
                   selected: current == a.id,
-                  locked: a.premium && !premium,
-                  onTap: _busy
-                      ? null
-                      : () => _choose(a.id, locked: a.premium && !premium),
+                  locked: lockedOf(a),
+                  streakLock: a.reward != null,
+                  onTap:
+                      _busy ? null : () => _choose(a.id, locked: lockedOf(a)),
                   child: ProfileAvatar(
                     avatarId: a.id,
                     name: null,
                     premium: a.premium,
+                    ember: a.reward != null,
                     size: 56,
                   ),
                 ),
@@ -128,12 +140,16 @@ class _Choice extends StatelessWidget {
     required this.onTap,
     required this.child,
     this.locked = false,
+    this.streakLock = false,
     super.key,
   });
 
   final String label;
   final bool selected;
   final bool locked;
+
+  /// Beta 3.4: locked by a streak (🔥), not by premium.
+  final bool streakLock;
   final VoidCallback? onTap;
   final Widget child;
 
@@ -143,7 +159,9 @@ class _Choice extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: locked ? '$label, premium' : label,
+      label: locked
+          ? '$label, ${streakLock ? 'streak reward' : 'premium'}'
+          : label,
       child: InkWell(
         onTap: onTap,
         customBorder: const CircleBorder(),
@@ -156,13 +174,17 @@ class _Choice extends StatelessWidget {
                 children: <Widget>[
                   Opacity(opacity: locked ? 0.55 : 1, child: child),
                   if (locked)
-                    const Positioned(
+                    Positioned(
                       right: -2,
                       bottom: -2,
                       child: CircleAvatar(
                         radius: 10,
-                        backgroundColor: kGoldDeep,
-                        child: Icon(Icons.lock, size: 12, color: Colors.white),
+                        backgroundColor: streakLock ? kEmberDeep : kGoldDeep,
+                        child: Icon(
+                          streakLock ? Icons.local_fire_department : Icons.lock,
+                          size: 12,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   if (selected)

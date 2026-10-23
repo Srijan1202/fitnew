@@ -5,9 +5,13 @@ import 'package:fitos/features/auth/domain/entities/auth_state.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_providers.dart';
 import 'package:fitos/features/onboarding/presentation/controllers/onboarding_controller.dart';
 import 'package:fitos/features/premium/domain/app_icons.dart';
+import 'package:fitos/features/premium/domain/streak_rewards.dart';
+import 'package:fitos/features/home/data/streak_api.dart';
 import 'package:fitos/features/premium/domain/premium.dart';
 import 'package:fitos/features/premium/presentation/app_icon_controller.dart';
 import 'package:fitos/features/premium/presentation/premium_providers.dart';
+import 'package:fitos/features/premium/presentation/rewards_providers.dart';
+import 'package:fitos/features/home/presentation/controllers/home_providers.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +19,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/fake_ai_api.dart';
 import '../../support/fake_feedback_api.dart';
+import '../../support/fake_rewards_api.dart';
+import '../../support/fake_streak_api.dart';
 import '../../support/fake_app_icon_switcher.dart';
 import '../../support/fake_auth_repository.dart';
 import '../../support/fake_onboarding_repository.dart';
@@ -38,6 +44,9 @@ void main() {
   FakeAppIconSwitcher? icons;
   // Beta 3.3 (ADR-033): the server's feature switches.
   FakeMetaApi? meta;
+  // Beta 3.4: streak rewards earned, and the streak (with new rewards).
+  late FakeRewardsApi rewards;
+  late FakeStreakApi streak;
 
   setUp(() {
     auth = FakeAuthRepository()
@@ -49,6 +58,8 @@ void main() {
     ai = null;
     icons = null;
     meta = null;
+    rewards = FakeRewardsApi();
+    streak = FakeStreakApi();
   });
   tearDown(() async {
     FitPalette.current = FitPalette.fitosDark;
@@ -69,6 +80,8 @@ void main() {
             weekly: weekly,
             ai: ai,
             meta: meta,
+            rewards: rewards,
+            streak: streak,
           ),
           if (icons != null) appIconSwitcherProvider.overrideWithValue(icons!),
         ],
@@ -365,6 +378,121 @@ void main() {
       container.invalidate(premiumStatusProvider);
       await tester.pumpAndSettle();
       expect(icons!.chosen, [AppIcon.gold, AppIcon.standard]);
+    });
+  });
+
+  group('streak rewards (beta 3.4)', () {
+    testWidgets(
+        'earned pictures are open, unearned ones say how to earn them; nothing goes to Premium',
+        (tester) async {
+      rewards.rewards = {StreakReward.spark};
+      await start(tester);
+      await tap(tester, 'home.profile');
+      await tap(tester, 'profile.avatar');
+      await tap(tester, 'avatar.choice.century');
+      expect(find.text(StreakReward.century.howToEarn), findsOneWidget);
+      expect(find.byKey(const ValueKey('premium.sheet')), findsNothing);
+      await tap(tester, 'avatar.choice.spark');
+      expect(premium.calls, contains('avatar:spark'));
+    });
+
+    testWidgets(
+        'the Ember theme: locked until earned, then chosen like any other',
+        (tester) async {
+      await start(tester);
+      await tap(tester, 'home.profile');
+      await tap(tester, 'theme.ember');
+      expect(find.text(StreakReward.emberTheme.howToEarn), findsOneWidget);
+      expect(FitPalette.current.id, 'fitos-dark');
+
+      rewards.rewards = {StreakReward.emberTheme};
+      ProviderScope.containerOf(tester.element(find.byType(FitOSApp)))
+          .invalidate(earnedRewardsProvider);
+      await tester.pumpAndSettle();
+      await tap(tester, 'theme.ember');
+      expect(FitPalette.current.id, 'ember');
+    });
+
+    testWidgets(
+        'Profile lists every reward with what is left; the Ember rim shows once earned and can be switched off; the 100-day badge',
+        (tester) async {
+      rewards.rewards = {
+        StreakReward.spark,
+        StreakReward.emberTheme,
+        StreakReward.blazeIcon,
+        StreakReward.emberRim,
+        StreakReward.century,
+      };
+      streak.next = const Streak(
+        current: 3,
+        best: 101,
+        todayCounted: true,
+        weekDone: null,
+        weekPlanned: null,
+      );
+      await start(tester);
+      expect(find.byKey(const ValueKey('avatar.ember')), findsOneWidget);
+      await tap(tester, 'home.profile');
+      expect(
+        find.byKey(const ValueKey('profile.centuryBadge')),
+        findsOneWidget,
+      );
+      await tap(tester, 'profile.emberRim.switch');
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('avatar.ember')), findsNothing);
+
+      await tap(tester, 'home.profile');
+      await tap(tester, 'profile.rewards');
+      for (final r in StreakReward.values) {
+        expect(
+          tester
+              .widget<Text>(find.byKey(ValueKey('rewards.${r.id}.status')))
+              .data,
+          'Earned',
+        );
+      }
+    });
+
+    testWidgets('what is left is counted from the best streak', (tester) async {
+      streak.next = const Streak(
+        current: 2,
+        best: 10,
+        todayCounted: true,
+        weekDone: null,
+        weekPlanned: null,
+      );
+      await start(tester);
+      await tap(tester, 'home.profile');
+      await tap(tester, 'profile.rewards');
+      expect(
+        tester
+            .widget<Text>(
+              find.byKey(const ValueKey('rewards.ember-theme.status')),
+            )
+            .data,
+        '4 more days than your best',
+      );
+    });
+
+    testWidgets('new rewards are celebrated once on Home', (tester) async {
+      rewards.rewards = {StreakReward.spark};
+      streak.next = const Streak(
+        current: 7,
+        best: 7,
+        todayCounted: true,
+        weekDone: null,
+        weekPlanned: null,
+        newRewards: ['spark'],
+      );
+      await start(tester);
+      expect(find.byKey(const ValueKey('rewards.celebrate')), findsOneWidget);
+      expect(find.text('• Spark picture'), findsOneWidget);
+      await tap(tester, 'rewards.celebrate.ok');
+      ProviderScope.containerOf(tester.element(find.byType(FitOSApp)))
+          .invalidate(streakProvider);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('rewards.celebrate')), findsNothing);
     });
   });
 

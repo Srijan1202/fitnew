@@ -2,10 +2,10 @@
  * Premium (Phase 19, ADR-027): the user's mark, their requests, and the
  * admin's decisions, each written with its audit row in one transaction.
  */
-import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, isNotNull, sql } from 'drizzle-orm';
 
 import type { DatabaseHandle } from '../../db/client.js';
-import { auditLogs, premiumRequests, users } from '../../db/schema.js';
+import { auditLogs, premiumRequests, userRewards, users } from '../../db/schema.js';
 
 type Db = DatabaseHandle['db'];
 
@@ -96,6 +96,15 @@ export class PremiumRepository {
       .from(users)
       .where(isNotNull(users.premiumSince))
       .orderBy(desc(users.premiumSince));
+  }
+
+  /** Beta 3.4: the streak rewards this person earned, oldest first. */
+  async rewards(userId: string): Promise<{ reward: string; earnedAt: Date }[]> {
+    return this.db
+      .select({ reward: userRewards.reward, earnedAt: userRewards.earnedAt })
+      .from(userRewards)
+      .where(eq(userRewards.userId, userId))
+      .orderBy(asc(userRewards.earnedAt), asc(userRewards.reward));
   }
 
   async setAvatar(userId: string, avatarId: string | null): Promise<void> {

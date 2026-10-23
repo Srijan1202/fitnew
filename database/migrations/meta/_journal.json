@@ -211,6 +211,13 @@
       "when": 1792782740193,
       "tag": "0029_shared_programmes",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1792790519762,
+      "tag": "0030_streak_rewards",
+      "breakpoints": true
     }
   ]
 }

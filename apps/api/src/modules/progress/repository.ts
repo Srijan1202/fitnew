@@ -17,6 +17,7 @@ import {
   programs,
   sessionExercises,
   setLogs,
+  userRewards,
   users,
   workoutSessions,
   type BodyMeasurementRow,
@@ -115,6 +116,18 @@ export class ProgressRepository {
       .from(dailyNutrition)
       .where(and(eq(dailyNutrition.userId, userId), gte(dailyNutrition.localDate, from), lte(dailyNutrition.localDate, to), gt(dailyNutrition.itemCount, 0)));
     return rows.map((r) => r.date);
+  }
+
+  /** Beta 3.4: records each reward not yet earned; returns the ones earned just now. */
+  async grantRewards(userId: string, rewards: readonly string[]): Promise<string[]> {
+    if (rewards.length === 0) return [];
+    const rows = await this.db
+      .insert(userRewards)
+      .values(rewards.map((reward) => ({ userId, reward })))
+      .onConflictDoNothing()
+      .returning({ reward: userRewards.reward });
+    const fresh = new Set(rows.map((r) => r.reward));
+    return rewards.filter((r) => fresh.has(r));
   }
 
   /** Beta 3.3: when the account started, and the day the active programme last skipped (ADR-030). */

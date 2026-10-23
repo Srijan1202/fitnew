@@ -1,6 +1,6 @@
 # Beta 3.4 — plan
 
-**Date** 2026-10-24 · **Branch** `phase-19` · **Status: awaiting the owner's approval. No code yet.**
+**Date** 2026-10-24 · **Branch** `phase-19` · **Status: approved by the owner 2026-10-24.**
 
 The owner chose two backlog items for 3.4 and answered four questions on 2026-10-24.
 

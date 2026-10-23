@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/app_icons.dart';
+import '../domain/streak_rewards.dart';
 
 /// Beta 3.2 (ADR-027 amendment): the phone's launcher icon. Android keeps the
 /// choice itself (which activity-alias is enabled, AppIcons.kt), so nothing
@@ -60,6 +61,16 @@ class AppIconController extends AsyncNotifier<AppIcon?> {
     if (premium) return;
     final icon = await future;
     if (icon != null && icon.premium) await choose(AppIcon.standard);
+  }
+
+  /// Beta 3.4: a streak icon this account has not earned (another account
+  /// on the phone) goes back to Standard once the earned list is known.
+  Future<void> keepEarned(Set<StreakReward> earned) async {
+    final icon = await future;
+    final reward = icon?.reward;
+    if (reward != null && !earned.contains(reward)) {
+      await choose(AppIcon.standard);
+    }
   }
 }
 

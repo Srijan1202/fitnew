@@ -55,7 +55,8 @@
              longer the launcher entry: exactly one of these aliases is, Standard
              unless the user picked another in Profile -> Appearance (AppIcons.kt
              enables the new one, then disables the rest). Gold, Glow and Lime
-             are premium; White is free. -->
+             are premium; White is free; Blaze is a 30-day
+             streak reward (beta 3.4). -->
         <activity-alias
             android:name=".IconStandard"
             android:enabled="true"
@@ -105,6 +106,17 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_lime"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconBlaze"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_blaze"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

@@ -4,7 +4,7 @@
  * by the user (CASCADE): exported and deleted with the account.
  */
 import { sql } from 'drizzle-orm';
-import { check, index, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { check, index, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
 import { users } from './users.js';
 
@@ -26,5 +26,25 @@ export const premiumRequests = pgTable(
     check('premium_requests_status', sql`${t.status} in ('pending', 'approved', 'denied')`),
     check('premium_requests_message', sql`${t.message} is null or length(${t.message}) <= 500`),
     check('premium_requests_note', sql`${t.note} is null or length(${t.note}) <= 300`),
+  ],
+);
+
+/**
+ * Beta 3.4 (ADR-027 amendment): streak rewards a person earned, once each,
+ * kept forever. Granted when the streak is read and its best run has reached
+ * the reward's days. The person's own data: exported, deleted with them.
+ */
+export const userRewards = pgTable(
+  'user_rewards',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    reward: text('reward').notNull(),
+    earnedAt: timestamp('earned_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.reward] }),
+    check('user_rewards_reward', sql`${t.reward} in ('spark', 'ember-theme', 'blaze-icon', 'ember-rim', 'century')`),
   ],
 );

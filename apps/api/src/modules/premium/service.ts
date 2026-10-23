@@ -3,7 +3,17 @@
  * an approval that lasts until revoked. It unlocks FITOS AI (with higher
  * limits), the weekly report, the colour themes and three profile pictures.
  */
-import { PREMIUM_AVATAR_IDS, type AdminPremiumMember, type AdminPremiumRequest, type PremiumRequest, type PremiumStatus } from '@fitos/contracts';
+import {
+  PREMIUM_AVATAR_IDS,
+  REWARD_AVATAR_IDS,
+  STREAK_REWARDS,
+  type AdminPremiumMember,
+  type AdminPremiumRequest,
+  type PremiumRequest,
+  type PremiumStatus,
+  type RewardsResponse,
+  type StreakRewardId,
+} from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
 import type { PremiumRepository } from './repository.js';
@@ -58,8 +68,23 @@ export class PremiumService {
     if (avatarId !== null && PREMIUM_AVATAR_IDS.includes(avatarId) && !(await this.isPremium(userId, claims))) {
       throw premiumRequired('This picture');
     }
+    // Beta 3.4: a streak picture only once its streak was reached.
+    if (avatarId !== null && REWARD_AVATAR_IDS.includes(avatarId) && !(await this.rewards(userId)).earned.some((r) => r.id === avatarId)) {
+      const reward = STREAK_REWARDS.find((r) => r.id === avatarId)!;
+      throw new AppError('FORBIDDEN', `Reach a ${reward.days}-day streak to unlock this picture.`, [{ path: 'avatarId', issue: 'reward-locked' }]);
+    }
     await this.repo.setAvatar(userId, avatarId);
     return { avatarId };
+  }
+
+  /** Beta 3.4: streak rewards earned (readable whether or not streaks are switched on). */
+  async rewards(userId: string): Promise<RewardsResponse> {
+    const rows = await this.repo.rewards(userId);
+    return {
+      earned: rows
+        .filter((r): r is { reward: StreakRewardId; earnedAt: Date } => STREAK_REWARDS.some((x) => x.id === r.reward))
+        .map((r) => ({ id: r.reward, earnedAt: r.earnedAt.toISOString() })),
+    };
   }
 
   /* -------------------------------------------------------------- admin -- */

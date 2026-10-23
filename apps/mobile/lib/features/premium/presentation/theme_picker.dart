@@ -7,6 +7,8 @@ import '../../../shared/widgets/fit_glass.dart';
 import '../domain/avatars.dart';
 import 'premium_providers.dart';
 import 'premium_sheet.dart';
+import '../domain/streak_rewards.dart';
+import 'rewards_providers.dart';
 
 /// Phase 19 (ADR-027, ADR-028): Profile → Theme. FITOS Dark (the default),
 /// FITOS Light and Paper for everyone; Night, Forest and Ocean for premium
@@ -19,6 +21,9 @@ class ThemePicker extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
     final current = ref.watch(themeControllerProvider);
     final premium = ref.watch(isPremiumProvider) ?? false;
+    final earned = ref.watch(earnedRewardsProvider).value ?? const {};
+    bool streakLocked(FitPalette p) =>
+        p.reward != null && !earned.any((r) => r.id == p.reward);
     return Column(
       key: const ValueKey('profile.theme'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,8 +39,16 @@ class ThemePicker extends ConsumerWidget {
                 key: ValueKey('theme.${p.id}'),
                 palette: p,
                 selected: current.id == p.id,
-                locked: p.premium && !premium,
+                locked: (p.premium && !premium) || streakLocked(p),
+                streakLock: p.reward != null,
                 onTap: () async {
+                  if (streakLocked(p)) {
+                    final reward = StreakReward.byId(p.reward)!;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(reward.howToEarn)),
+                    );
+                    return;
+                  }
                   if (p.premium && !premium) {
                     await showPremiumSheet(
                       context,
@@ -59,9 +72,12 @@ class _Swatch extends StatelessWidget {
     required this.selected,
     required this.locked,
     required this.onTap,
+    this.streakLock = false,
     super.key,
   });
 
+  /// Beta 3.4: locked by a streak (🔥), not by premium.
+  final bool streakLock;
   final FitPalette palette;
   final bool selected;
   final bool locked;
@@ -73,8 +89,9 @@ class _Swatch extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label:
-          locked ? '${palette.label} theme, premium' : '${palette.label} theme',
+      label: locked
+          ? '${palette.label} theme, ${streakLock ? 'streak reward' : 'premium'}'
+          : '${palette.label} theme',
       child: InkWell(
         onTap: onTap,
         child: Column(
@@ -130,10 +147,14 @@ class _Swatch extends StatelessWidget {
                     ),
                   ),
                   if (locked)
-                    const Positioned(
+                    Positioned(
                       right: 3,
                       top: 3,
-                      child: Icon(Icons.lock, size: 14, color: kGoldDeep),
+                      child: Icon(
+                        streakLock ? Icons.local_fire_department : Icons.lock,
+                        size: 14,
+                        color: streakLock ? kEmber : kGoldDeep,
+                      ),
                     ),
                 ],
               ),

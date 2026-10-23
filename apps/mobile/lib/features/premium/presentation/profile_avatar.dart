@@ -7,6 +7,7 @@ import '../../../core/theme/tokens.dart';
 import '../../profile/data/profile_repository.dart';
 import '../domain/avatars.dart';
 import 'premium_providers.dart';
+import 'rewards_providers.dart';
 
 /// Phase 19 (ADR-027): the profile picture — one of the ten drawings, or the
 /// initials — inside a gold rim when the user is premium.
@@ -15,6 +16,7 @@ class ProfileAvatar extends StatelessWidget {
     required this.avatarId,
     required this.name,
     required this.premium,
+    this.ember = false,
     this.size = 40,
     super.key,
   });
@@ -22,6 +24,9 @@ class ProfileAvatar extends StatelessWidget {
   final String? avatarId;
   final String? name;
   final bool premium;
+
+  /// Beta 3.4: the Ember rim (a 60-day streak), worn instead of the gold one.
+  final bool ember;
   final double size;
 
   static String initials(String? name) {
@@ -39,7 +44,11 @@ class ProfileAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final def = avatarById(avatarId);
-    final rim = premium ? size * 0.08 : 1.0;
+    final rimmed = premium || ember;
+    final rim = rimmed ? size * 0.08 : 1.0;
+    final (light, mid, deep) = ember
+        ? (kEmberLight, kEmber, kEmberDeep)
+        : (kGoldLight, kGold, kGoldDeep);
     final inner = size - 2 * rim;
     final letters = initials(name);
     final face = Container(
@@ -68,22 +77,22 @@ class ProfileAvatar extends StatelessWidget {
                 ),
     );
     return Container(
-      key: ValueKey(premium ? 'avatar.premium' : 'avatar.free'),
+      key: ValueKey(
+        ember ? 'avatar.ember' : (premium ? 'avatar.premium' : 'avatar.free'),
+      ),
       width: size,
       height: size,
       padding: EdgeInsets.all(rim),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: premium
-            ? const SweepGradient(
-                colors: [kGoldLight, kGold, kGoldDeep, kGold, kGoldLight],
-              )
+        gradient: rimmed
+            ? SweepGradient(colors: [light, mid, deep, mid, light])
             : null,
-        color: premium ? null : FitColors.rule,
-        boxShadow: premium
+        color: rimmed ? null : FitColors.rule,
+        boxShadow: rimmed
             ? [
                 BoxShadow(
-                  color: kGold.withValues(alpha: 0.35),
+                  color: mid.withValues(alpha: 0.35),
                   blurRadius: size * 0.12,
                 ),
               ]
@@ -103,6 +112,7 @@ class ProfileAvatarButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(profileControllerProvider).value?.profile;
     final premium = ref.watch(isPremiumProvider) ?? false;
+    final ember = ref.watch(emberRimProvider);
     return IconButton(
       key: const ValueKey('home.profile'),
       tooltip: 'Profile',
@@ -111,6 +121,7 @@ class ProfileAvatarButton extends ConsumerWidget {
         avatarId: profile?.avatarId,
         name: profile?.displayName,
         premium: premium,
+        ember: ember,
         size: 36,
       ),
     );
