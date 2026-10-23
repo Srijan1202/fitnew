@@ -28,6 +28,13 @@ export interface ForeignKey {
 const MAX_DEPTH = 6;
 const quote = (ident: string): string => `"${ident.replace(/"/g, '""')}"`;
 
+/**
+ * Tables reached through a user's rows that hold other people's words, not
+ * theirs: beta 3.2 (ADR-032) "wrong numbers" reports on a food they shared.
+ * Deleted with it (CASCADE), never exported to its owner.
+ */
+export const OTHER_PEOPLES: ReadonlySet<string> = new Set(['food_reports']);
+
 export class PrivacyRepository {
   constructor(private readonly db: Db) {}
 
@@ -82,7 +89,7 @@ export class PrivacyRepository {
    * (snake_case columns, JSON values).
    */
   async ownedRows(userId: string): Promise<Record<string, Record<string, unknown>[]>> {
-    const fks = (await this.foreignKeys()).filter((f) => f.onDelete === 'CASCADE');
+    const fks = (await this.foreignKeys()).filter((f) => f.onDelete === 'CASCADE' && !OTHER_PEOPLES.has(f.child));
     const tables: Record<string, Record<string, unknown>[]> = {};
     const seen = new Map<string, Set<string>>();
     const add = (table: string, rows: Record<string, unknown>[]): Record<string, unknown>[] => {

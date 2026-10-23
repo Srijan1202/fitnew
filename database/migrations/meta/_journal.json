@@ -190,6 +190,13 @@
       "when": 1792737049226,
       "tag": "0026_food_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1792738239785,
+      "tag": "0027_community_foods",
+      "breakpoints": true
     }
   ]
 }

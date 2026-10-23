@@ -52,3 +52,50 @@ export type ReportMissingFoodRequest = z.infer<typeof reportMissingFoodRequestSc
 export type FoodRequestStatus = z.infer<typeof foodRequestStatusSchema>;
 export type AdminFoodRequest = z.infer<typeof adminFoodRequestSchema>;
 export type AdminFoodRequestList = z.infer<typeof adminFoodRequestListSchema>;
+
+/* -------------------------------------------------- community foods -- */
+
+/** POST /nutrition/foods/:id/report — "these numbers look wrong" on someone else's shared food. */
+export const reportFoodRequestSchema = z
+  .object({ note: z.string().trim().min(1).max(300).optional() })
+  .strict();
+
+export const COMMUNITY_VISIBILITIES = ['community', 'hidden'] as const;
+
+export const adminCommunityFoodQuerySchema = z
+  .object({
+    filter: z.enum(['reported', 'community', 'hidden', 'all']).default('reported'),
+    limit: z.coerce.number().int().min(1).max(200).default(100),
+  })
+  .strict();
+
+/** A shared food as the admin panel lists it: never who added it. */
+export const adminCommunityFoodSchema = z
+  .object({
+    id: z.string().uuid(),
+    name: z.string(),
+    brand: z.string().nullable(),
+    visibility: z.enum(COMMUNITY_VISIBILITIES),
+    /** The label's first row as entered: basis, serving and macros. */
+    basis: z.string(),
+    servingLabel: z.string().nullable(),
+    kcal: z.number(),
+    proteinG: z.number(),
+    carbG: z.number(),
+    fatG: z.number(),
+    reports: z.number().int(),
+    /** The latest notes, newest first, at most three. */
+    notes: z.array(z.string()),
+    createdAt: iso,
+  })
+  .strict();
+
+export const adminCommunityFoodListSchema = z.object({ items: z.array(adminCommunityFoodSchema) }).strict();
+
+export const setCommunityFoodVisibilityRequestSchema = z
+  .object({ visibility: z.enum(COMMUNITY_VISIBILITIES) })
+  .strict();
+
+export type ReportFoodRequest = z.infer<typeof reportFoodRequestSchema>;
+export type AdminCommunityFood = z.infer<typeof adminCommunityFoodSchema>;
+export type AdminCommunityFoodList = z.infer<typeof adminCommunityFoodListSchema>;

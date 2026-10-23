@@ -78,8 +78,10 @@ export const foodSchema = z.object({
   /** Provenance, e.g. "USDA FoodData Central · SR Legacy (April 2018) · FDC 169757". */
   sourceRef: z.string().nullable(),
   isVerified: z.boolean(),
-  /** True for the caller's own custom food. Another user's is never returned. */
+  /** True for the caller's own custom food. Another user's is returned only when shared (`community`). */
   isCustom: z.boolean(),
+  /** Beta 3.2 (ADR-032): shared with everyone by the person who added it; unverified. */
+  community: z.boolean().default(false),
   aliases: z.array(z.string()),
   nutrition: z.array(foodNutritionSchema).min(1),
 });
@@ -119,6 +121,8 @@ export const createFoodRequestSchema = z
     fatG: z.number().finite().nonnegative().max(500),
     /** Omit or null when the label does not state fibre. */
     fibreG: z.number().finite().nonnegative().max(500).nullable().optional(),
+    /** Beta 3.2 (ADR-032): everyone can find it, marked "Community · unverified". */
+    shareWithCommunity: z.boolean().optional(),
   })
   .strict()
   .superRefine((r, ctx) => {

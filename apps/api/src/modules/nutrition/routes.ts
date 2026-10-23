@@ -47,11 +47,11 @@ export async function nutritionRoutes(app: FastifyInstance): Promise<void> {
     '/nutrition/foods',
     {
       schema: {
-        summary: 'Create a custom food from a label (retry-safe by clientFoodId; visible only to you)',
+        summary: 'Create a custom food from a label (retry-safe by clientFoodId); yours only, or shared with everyone (beta 3.2)',
         tags: ['nutrition'],
         security,
         body: createFoodRequestSchema,
-        response: { 200: foodSchema, 201: foodSchema, ...errors },
+        response: { 200: foodSchema, 201: foodSchema, 409: errorEnvelopeSchema, ...errors },
       },
     },
     async (request, reply) => {

@@ -56,6 +56,7 @@ export function foodFrom(d: FoodDetailRows, userId: string): Food {
     sourceRef: d.food.sourceRef,
     isVerified: d.food.isVerified,
     isCustom: d.food.ownerUserId !== null && d.food.ownerUserId === userId,
+    community: d.food.visibility === 'community',
     aliases: [...d.aliases],
     nutrition: d.nutrition.map(nutritionFrom),
   };
@@ -98,6 +99,7 @@ export class FoodService {
         issues.map((i) => ({ path: i.field, issue: i.problem })),
       );
     }
+    if (body.shareWithCommunity === true) await this.checkShareable(body);
     const m = values.macros;
     const { id, created } = await this.repo.createCustom({
       ownerUserId: userId,
@@ -120,9 +122,40 @@ export class FoodService {
         fibreHigh: values.fibre === null ? null : String(values.fibre.high),
         confidence: 'medium',
       },
+      community: body.shareWithCommunity === true,
     });
     const [detail] = await this.repo.details([id], userId);
     if (detail === undefined) throw new AppError('INTERNAL', 'The food was saved but could not be read back.');
     return { food: foodFrom(detail, userId), created };
   }
+
+  /**
+   * Beta 3.2 (ADR-032): what everyone will see must be plausible. A name of
+   * three letters or more; calories that agree with 4 × protein + 4 × carbs
+   * + 9 × fat within 25 %; not a copy of a FITOS food (that one is offered
+   * instead). The physical bounds are the contract's.
+   */
+  private async checkShareable(body: CreateFoodRequest): Promise<void> {
+    if (body.name.trim().length < 3) {
+      throw new AppError('VALIDATION_FAILED', 'Give a shared food a name of at least 3 letters.', [{ path: 'name', issue: 'too-short' }]);
+    }
+    const expected = 4 * body.proteinG + 4 * body.carbG + 9 * body.fatG;
+    const larger = Math.max(body.kcal, expected);
+    if (larger >= 20 && Math.abs(body.kcal - expected) / larger > SHARE_KCAL_TOLERANCE) {
+      throw new AppError(
+        'VALIDATION_FAILED',
+        `The calories don't match the protein, carbs and fat (about ${Math.round(expected)} kcal). Check the label before sharing.`,
+        [{ path: 'kcal', issue: 'does-not-add-up' }],
+      );
+    }
+    const twin = await this.repo.globalNamed(body.name);
+    if (twin !== null) {
+      throw new AppError('CONFLICT', `FITOS already has \u201c${twin.name}\u201d. Search for it instead of sharing a copy.`, [
+        { path: 'name', issue: `exists:${twin.id}` },
+      ]);
+    }
+  }
 }
+
+/** How far a shared food's calories may sit from its macros (Atwater). */
+export const SHARE_KCAL_TOLERANCE = 0.25;

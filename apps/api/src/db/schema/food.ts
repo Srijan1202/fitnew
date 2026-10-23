@@ -50,6 +50,12 @@ export const foods = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     /** Phase 16 (ADR-022 D5): corrected in the admin panel; the seed no longer overwrites it. */
     adminEditedAt: timestamp('admin_edited_at', { withTimezone: true }),
+    /**
+     * Beta 3.2 (ADR-032): who sees a custom food. `private` (its owner only),
+     * `community` (everyone, marked "Community · unverified") or `hidden`
+     * (shared, then hidden in the admin panel: back to its owner only).
+     */
+    visibility: text('visibility').notNull().default('private'),
   },
   (t) => [
     index('foods_search_name_trgm_idx').using('gin', sql`${t.searchName} gin_trgm_ops`),
@@ -62,6 +68,33 @@ export const foods = pgTable(
     check('foods_unverified_sources', sql`NOT (${t.isVerified} AND ${t.source} IN ('estimated', 'user', 'user-corrected'))`),
     // A custom food is created with its idempotency key; a global food has none.
     check('foods_client_id_custom_only', sql`(${t.source} = 'user') = (${t.clientFoodId} IS NOT NULL)`),
+    check('foods_visibility', sql`${t.visibility} in ('private', 'community', 'hidden')`),
+    // Only a person's own food is ever shared; FITOS's foods are already everyone's.
+    check('foods_visibility_custom_only', sql`${t.visibility} = 'private' OR ${t.ownerUserId} IS NOT NULL`),
+    index('foods_community_idx').on(t.visibility).where(sql`${t.visibility} <> 'private'`),
+  ],
+);
+
+/**
+ * Beta 3.2 (ADR-032): "Report wrong numbers" on a community food. One per
+ * person per food (a salted hash, no user id), with an optional note for the
+ * admin panel.
+ */
+export const foodReports = pgTable(
+  'food_reports',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    foodId: uuid('food_id')
+      .notNull()
+      .references(() => foods.id, { onDelete: 'cascade' }),
+    mark: text('mark').notNull(),
+    note: text('note'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('food_reports_mark').on(t.mark),
+    index('food_reports_food_idx').on(t.foodId),
+    check('food_reports_note_length', sql`${t.note} IS NULL OR length(${t.note}) between 1 and 300`),
   ],
 );
 

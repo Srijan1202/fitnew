@@ -41,6 +41,8 @@ export interface NewCustomFood {
   readonly name: string;
   readonly brand: string | null;
   readonly nutrition: Omit<typeof foodNutrition.$inferInsert, 'id' | 'foodId' | 'position'>;
+  /** Beta 3.2 (ADR-032): shared with everyone from the start. */
+  readonly community?: boolean;
 }
 
 /** Postgres unique_violation. */
@@ -75,21 +77,23 @@ export class FoodRepository {
           greatest(
             word_similarity(${q}, f.search_name),
             coalesce((select max(word_similarity(${q}, a.alias)) from ${foodAliases} a where a.food_id = f.id), 0)
-          ) as sim
+          ) as sim,
+          -- Beta 3.2 (ADR-032): someone else's shared food comes after FITOS's and your own.
+          (f.owner_user_id is not null and f.owner_user_id <> ${userId}) as others
         from ${foods} f
-        where f.owner_user_id is null or f.owner_user_id = ${userId}
+        where f.owner_user_id is null or f.owner_user_id = ${userId} or f.visibility = 'community'
       ) c
       where c.tier < 4 or c.sim >= ${FUZZY_THRESHOLD}
-      order by c.tier, c.sim desc, c.source_rank, length(c.search_name), c.search_name, c.id
+      order by c.others, c.tier, c.sim desc, c.source_rank, length(c.search_name), c.search_name, c.id
       limit ${limit}
     `);
     return rows.map((r) => ({ id: r.id, tier: Number(r.tier) as SearchTier }));
   }
 
-  /** Foods by id, visible to `userId` only, with rows and aliases, in the order of `ids`. */
+  /** Foods by id that `userId` may see (FITOS's, their own, shared ones), with rows and aliases, in the order of `ids`. */
   async details(ids: readonly string[], userId: string): Promise<FoodDetailRows[]> {
     if (ids.length === 0) return [];
-    const visible: SQL = or(isNull(foods.ownerUserId), eq(foods.ownerUserId, userId)) as SQL;
+    const visible: SQL = or(isNull(foods.ownerUserId), eq(foods.ownerUserId, userId), eq(foods.visibility, 'community')) as SQL;
     const [foodRows, nutritionRows, aliasRows] = await Promise.all([
       this.db.select().from(foods).where(and(inArray(foods.id, [...ids]), visible)),
       this.db.select().from(foodNutrition).where(inArray(foodNutrition.foodId, [...ids])).orderBy(asc(foodNutrition.foodId), asc(foodNutrition.position)),
@@ -140,6 +144,7 @@ export class FoodRepository {
             isVerified: false,
             ownerUserId: input.ownerUserId,
             clientFoodId: input.clientFoodId,
+            visibility: input.community === true ? 'community' : 'private',
           })
           .returning({ id: foods.id });
         const foodId = (food as { id: string }).id;
@@ -153,5 +158,15 @@ export class FoodRepository {
       if (winner === null) throw error;
       return { id: winner, created: false };
     }
+  }
+
+  /** Beta 3.2 (ADR-032): FITOS's own food with exactly this name, if any (sharing a duplicate is refused). */
+  async globalNamed(name: string): Promise<{ id: string; name: string } | null> {
+    const [row] = await this.db
+      .select({ id: foods.id, name: foods.name })
+      .from(foods)
+      .where(and(isNull(foods.ownerUserId), sql`${foods.searchName} = btrim(regexp_replace(lower(${name}), '[^a-z0-9]+', ' ', 'g'))`))
+      .limit(1);
+    return row ?? null;
   }
 }
