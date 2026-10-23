@@ -12,10 +12,10 @@ import '../../../../shared/widgets/fit_glass.dart';
 /// "+ Add set", "Drop set", "Superset with next", Replace, Remove.
 ///
 /// Nothing here decides a number: pending values come from the server's
-/// prefill (the engine's recommendation, what you did, or the plan) or
-/// copy the row above. Phase 6 shows the recommendation with its reason,
-/// a one-tap "Use last time's weight" revert, and — in a deload week —
-/// the plan's original targets beside the lighter ones.
+/// prefill (what you did last time, a deload's lighter load, or the plan)
+/// or copy the row above. The engine's suggestion is a line with its reason
+/// and a one-tap **Apply** (owner, 2026-10-23); in a deload week the plan's
+/// original targets show beside the lighter ones.
 class SessionExerciseCard extends StatelessWidget {
   const SessionExerciseCard({
     required this.index,
@@ -34,7 +34,7 @@ class SessionExerciseCard extends StatelessWidget {
     required this.onSupersetToggle,
     required this.onReplace,
     required this.onRemove,
-    this.onUseLastWeight,
+    this.onApplySuggestion,
     this.onRecommendationTap,
     this.prSetIds = const <String>{},
     super.key,
@@ -59,12 +59,12 @@ class SessionExerciseCard extends StatelessWidget {
   final VoidCallback onReplace;
   final VoidCallback onRemove;
 
-  /// Owner 12.1: revert the pending rows to last time's weight. Null when
-  /// there is nothing to revert to (no last time, or the same load).
-  final VoidCallback? onUseLastWeight;
+  /// Owner 2026-10-23: the rows open at last time's numbers; this puts
+  /// the suggestion on them. Null when there is nothing to apply.
+  final VoidCallback? onApplySuggestion;
 
   /// Tap on the reason line: the sheet with the full reason, the last
-  /// three sessions and the revert.
+  /// three sessions and Apply.
   final VoidCallback? onRecommendationTap;
 
   /// Client set ids that beat the prior best when logged (PR moment).
@@ -177,17 +177,34 @@ class SessionExerciseCard extends StatelessWidget {
                       ],
                       if (x.recommendation != null) ...<Widget>[
                         const SizedBox(height: FitSpacing.xs),
-                        InkWell(
-                          key: ValueKey('$key.recommendation'),
-                          onTap: onRecommendationTap,
-                          child: Text(
-                            '${actionGlyph(x.recommendation!.action)} ${recommendationLabel(x.recommendation!)} — ${x.recommendation!.reason}',
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: actionColor(x.recommendation!.action),
+                        Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: InkWell(
+                                key: ValueKey('$key.recommendation'),
+                                onTap: onRecommendationTap,
+                                child: Text(
+                                  '${actionGlyph(x.recommendation!.action)} ${recommendationLabel(x.recommendation!)} — ${x.recommendation!.reason}',
+                                  style: textTheme.bodyMedium?.copyWith(
+                                    color:
+                                        actionColor(x.recommendation!.action),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                            if (onApplySuggestion != null)
+                              TextButton(
+                                key: ValueKey('$key.apply'),
+                                onPressed: onApplySuggestion,
+                                style: TextButton.styleFrom(
+                                  visualDensity: VisualDensity.compact,
+                                  minimumSize: const Size(48, 36),
+                                ),
+                                child: const Text('Apply'),
+                              ),
+                          ],
                         ),
                       ],
                     ],

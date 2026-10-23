@@ -51,7 +51,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
 
   /// Rows the user reverted to last time's weight (owner 12.1), so the
   /// revert survives a rebuild without touching the server's prefill.
-  final Set<String> _usedLast = <String>{};
+  /// Exercises whose suggestion was applied (the button then goes away).
+  final Set<String> _applied = <String>{};
 
   /// Client set ids that beat the prior best when logged (PR moment).
   final Set<String> _prSets = <String>{};
@@ -242,18 +243,31 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
     setState(() => _prSets.add(clientSetId));
   }
 
-  /// Owner 12.1: put last time's weight on every pending working row.
-  void _useLastWeight(SessionExercise x) {
-    final last = SessionExerciseCard.lastWeightOf(x);
-    if (last == null) return;
+  /// Owner 2026-10-23: the rows open at last time's numbers; this puts the
+  /// engine's suggestion (load, and reps at the bottom of the range after an
+  /// increase, else the top) on every pending working row. Logged sets stay.
+  void _applySuggestion(SessionExercise x) {
+    final r = x.recommendation;
+    if (r == null || r.weightKg == null) return;
     setState(() {
-      _usedLast.add(x.clientExerciseId);
+      _applied.add(x.clientExerciseId);
       for (final row in _rowsFor(x)) {
         if (row.logged != null || row.setType != SetType.working) continue;
-        _pending['${x.clientExerciseId}.${row.key}'] =
-            row.values.copyWith(weightKg: last);
+        final reps = _suggestedReps(x, r, row.setIndex) ?? row.values.repsMax;
+        _pending['${x.clientExerciseId}.${row.key}'] = row.values
+            .copyWith(weightKg: r.weightKg, repsMin: reps, repsMax: reps);
       }
     });
+  }
+
+  static int? _suggestedReps(
+    SessionExercise x,
+    ProgressionRecommendation r,
+    int setIndex,
+  ) {
+    if (setIndex < 1 || setIndex > x.targets.length) return null;
+    final t = x.targets[setIndex - 1];
+    return r.action == ProgressionAction.increaseLoad ? t.repsMin : t.repsMax;
   }
 
   Future<void> _replace(SessionExercise x) async {
@@ -512,16 +526,25 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
     );
   }
 
-  /// The revert is offered when the rows opened on a recommendation that
-  /// differs from last time's load, and the user has not reverted yet.
-  bool _canUseLast(SessionExercise x) {
-    if (_usedLast.contains(x.clientExerciseId)) return false;
-    final last = SessionExerciseCard.lastWeightOf(x);
-    if (last == null) return false;
-    final first = x.prefill.isEmpty ? null : x.prefill.first;
-    return first != null &&
-        first.weightSource == 'recommendation' &&
-        first.weightKg != last;
+  /// Offered while a load-changing suggestion differs from a pending
+  /// working row and has not been applied. A deload already opened the rows
+  /// at its load; a baseline has nothing to suggest.
+  bool _canApply(SessionExercise x) {
+    final r = x.recommendation;
+    if (r == null || r.weightKg == null) return false;
+    if (r.action == ProgressionAction.deload ||
+        r.action == ProgressionAction.establishBaseline) {
+      return false;
+    }
+    if (_applied.contains(x.clientExerciseId)) return false;
+    for (final row in _rowsFor(x)) {
+      if (row.logged != null || row.setType != SetType.working) continue;
+      final reps = _suggestedReps(x, r, row.setIndex) ?? row.values.repsMax;
+      if (row.values.weightKg != r.weightKg || row.values.repsMax != reps) {
+        return true;
+      }
+    }
+    return false;
   }
 
   Widget _card(WorkoutSession session, int i, dynamic repo) {
@@ -603,11 +626,11 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
             x.clientExerciseId,
             removed: true,
           ),
-      onUseLastWeight: _canUseLast(x) ? () => _useLastWeight(x) : null,
+      onApplySuggestion: _canApply(x) ? () => _applySuggestion(x) : null,
       onRecommendationTap: () => RecommendationSheet.show(
         context,
         x,
-        onUseLastWeight: _canUseLast(x) ? () => _useLastWeight(x) : null,
+        onApply: _canApply(x) ? () => _applySuggestion(x) : null,
       ),
       prSetIds: _prSets,
     );

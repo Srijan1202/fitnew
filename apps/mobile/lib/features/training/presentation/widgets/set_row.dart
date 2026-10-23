@@ -16,10 +16,16 @@ class SetRow extends StatefulWidget {
     required this.onChanged,
     this.rowKey,
     this.trailing,
+    this.lastWeightKg,
     super.key,
   });
 
   final PlannedSet set;
+
+  /// Last time's weight for this set (the plan screen, owner 2026-10-23).
+  /// Shown faintly while the plan has no weight, and where − / + and typing
+  /// start from. It is not saved into the plan until changed.
+  final double? lastWeightKg;
 
   /// The exercise's load step (§12.4): 2.5 kg for a bench, 5 for a squat.
   final double incrementKg;
@@ -68,7 +74,7 @@ class _SetRowState extends State<SetRow> {
   }
 
   void _weightStep(int direction) {
-    final current = widget.set.weightKg ?? 0;
+    final current = widget.set.weightKg ?? widget.lastWeightKg ?? 0;
     final next =
         (current + direction * widget.incrementKg).clamp(0.0, 500.0).toDouble();
     widget.onChanged(widget.set.copyWith(weightKg: _round(next)));
@@ -77,8 +83,8 @@ class _SetRowState extends State<SetRow> {
   void _startTyping() {
     setState(() {
       _typing = true;
-      _weight.text =
-          widget.set.weightKg == null ? '' : _fmt(widget.set.weightKg!);
+      final w = widget.set.weightKg ?? widget.lastWeightKg;
+      _weight.text = w == null ? '' : _fmt(w);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) => _focus.requestFocus());
   }
@@ -103,7 +109,12 @@ class _SetRowState extends State<SetRow> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final s = widget.set;
-    final weightLabel = s.weightKg == null ? '—' : _fmt(s.weightKg!);
+    final hint = s.weightKg == null ? widget.lastWeightKg : null;
+    final weightLabel = s.weightKg != null
+        ? _fmt(s.weightKg!)
+        : hint != null
+            ? _fmt(hint)
+            : '—';
     return Semantics(
       label:
           'Set ${s.setIndex}: ${s.targetReps} reps, ${s.weightKg == null ? 'no weight set' : '${s.weightKg} kilograms'}',
@@ -142,7 +153,7 @@ class _SetRowState extends State<SetRow> {
               enabled: widget.enabled,
               onMinus: () => _weightStep(-1),
               onPlus: () => _weightStep(1),
-              unit: 'kg',
+              unit: hint != null ? 'kg last time' : 'kg',
               child: _typing
                   ? SizedBox(
                       width: 56,

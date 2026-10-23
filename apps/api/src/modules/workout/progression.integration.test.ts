@@ -133,7 +133,7 @@ describeIfDb('/v1/training progression, volume and deload (real Postgres, real s
     expect(t.mesocycleWeek).toBe(1);
   });
 
-  it('after a session that clears the top of the range: increase-load pre-fills the new load at repMin, with the reason', async () => {
+  it('after a session that clears the top of the range: increase-load is suggested with its reason; the rows open at last time (owner 2026-10-23)', async () => {
     const { token, day } = await withProgram();
     await session(token, day, daysAgo(3), [{ index: 0, weight: 60, reps: 12, rir: 1 }]);
     const t: TodayResponse = (await today(token, day.dayOfWeek)).json();
@@ -142,7 +142,7 @@ describeIfDb('/v1/training progression, volume and deload (real Postgres, real s
     expect(x.recommendation!.weightKg).toBe(60 + x.incrementKg);
     expect(x.recommendation!.reason).toContain('12 reps');
     expect(x.recommendation!.sessionsConsidered).toBe(1);
-    expect(x.prefill[0]).toMatchObject({ weightKg: 60 + x.incrementKg, reps: x.targets[0]!.repsMin, weightSource: 'recommendation' });
+    expect(x.prefill[0]).toMatchObject({ weightKg: 60, reps: 12, weightSource: 'last-session' });
     expect(x.priorBest).toMatchObject({ weightKg: 60, repsAtBestWeight: 12 });
     // Below the top: add-reps at the same load, opening at repMax.
     const other = t.exercises[1]!;
@@ -151,7 +151,7 @@ describeIfDb('/v1/training progression, volume and deload (real Postgres, real s
     const r = await app.inject({ method: 'POST', url: '/v1/training/sessions', headers: auth(token), payload: { clientSessionId: randomUUID(), programDayId: day.id, startedAt: new Date().toISOString() } });
     const s: WorkoutSession = r.json();
     expect(s.exercises[0]!.recommendation!.action).toBe('increase-load');
-    expect(s.exercises[0]!.prefill[0]!.weightKg).toBe(60 + x.incrementKg);
+    expect(s.exercises[0]!.prefill[0]!.weightKg).toBe(60);
     await app.inject({ method: 'POST', url: `/v1/training/sessions/${s.id}/abandon`, headers: auth(token) });
   });
 

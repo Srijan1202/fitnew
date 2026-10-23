@@ -106,7 +106,8 @@ describe('prefill & progression', () => {
       lastPerformance: [{ id: 'a', setType: 'working', weightKg: 50, reps: 10, rir: 2 }],
       recommendation: { action: 'increase-load', weightKg: 52.5, repTarget: '8–12', targetRir: 2, reason: 'x' },
     });
-    expect(p).toMatchObject({ weightKg: 52.5, reps: 8, lastTime: null });
+    // Owner 2026-10-23: last time's top weight, the plan's top reps (set 3 was not done last time).
+    expect(p).toMatchObject({ weightKg: 50, reps: 12, lastTime: null, weightSource: 'last-session' });
   });
 
   const target = { repMin: 8, repMax: 12, targetRir: 2, sets: 3, incrementKg: 2.5 };

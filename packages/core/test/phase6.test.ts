@@ -246,23 +246,27 @@ describe('progression: bodyweight lifts progress by reps (owner 12.5); the six b
 
 /* -------------------------------------------- prefill with recommendation -- */
 
-describe('prefillSet with a recommendation (owner 12.1)', () => {
+describe('prefillSet with a recommendation (owner 2026-10-23: last time wins; only a deload sets the rows)', () => {
   const planned = { setIndex: 1, repsMin: 6, repsMax: 12, weightKg: null, rir: 1 };
   const last = [{ id: 'a', setType: 'working' as const, weightKg: 60, reps: 12, rir: 1 }];
+  const rec = (action: 'increase-load' | 'add-reps' | 'hold' | 'reduce-load' | 'deload' | 'establish-baseline', weightKg: number | null) =>
+    ({ action, weightKg, repTarget: '6–12', targetRir: action === 'deload' ? 3 : 1, reason: 'r' }) as const;
 
-  it('increase-load: the new load and the bottom of the range', () => {
-    const p = prefillSet({ planned, lastPerformance: last, recommendation: { action: 'increase-load', weightKg: 62.5, repTarget: '6–12', targetRir: 1, reason: 'r' } });
-    expect(p).toMatchObject({ weightKg: 62.5, reps: 6, rir: 1, weightSource: 'recommendation' });
-    expect(p.lastTime).toBe(last[0]);
+  it('increase-load, add-reps, hold and reduce-load: last time’s weight and reps; the suggestion is the app’s to apply', () => {
+    for (const action of ['increase-load', 'add-reps', 'hold', 'reduce-load'] as const) {
+      const p = prefillSet({ planned, lastPerformance: last, recommendation: rec(action, action === 'reduce-load' ? 55 : 62.5) });
+      expect(p, action).toMatchObject({ weightKg: 60, reps: 12, weightSource: 'last-session' });
+      expect(p.lastTime).toBe(last[0]);
+    }
   });
 
-  it('hold / add-reps: the recommended load at the top of the range; deload: its lighter load and higher RIR', () => {
-    expect(prefillSet({ planned, lastPerformance: last, recommendation: { action: 'add-reps', weightKg: 60, repTarget: '6–12', targetRir: 1, reason: 'r' } })).toMatchObject({ weightKg: 60, reps: 12 });
-    expect(prefillSet({ planned, lastPerformance: last, recommendation: { action: 'deload', weightKg: 54, repTarget: '6–12', targetRir: 3, reason: 'r' } })).toMatchObject({ weightKg: 54, rir: 3, weightSource: 'recommendation' });
+  it('deload: its lighter load and higher RIR at the plan’s top reps; a deload without a load falls back to last time', () => {
+    expect(prefillSet({ planned, lastPerformance: last, recommendation: rec('deload', 54) })).toMatchObject({ weightKg: 54, reps: 12, rir: 3, weightSource: 'recommendation' });
+    expect(prefillSet({ planned, lastPerformance: last, recommendation: rec('deload', null) })).toMatchObject({ weightKg: 60, weightSource: 'last-session' });
   });
 
-  it('establish-baseline or a reps-only recommendation: back to last time / the plan', () => {
-    expect(prefillSet({ planned, lastPerformance: last, recommendation: { action: 'establish-baseline', weightKg: null, repTarget: '6–12', targetRir: 1, reason: 'r' } })).toMatchObject({ weightKg: 60, weightSource: 'last-session' });
+  it('establish-baseline or no recommendation: last time / the plan', () => {
+    expect(prefillSet({ planned, lastPerformance: last, recommendation: rec('establish-baseline', null) })).toMatchObject({ weightKg: 60, weightSource: 'last-session' });
     expect(prefillSet({ planned, lastPerformance: [], recommendation: null })).toMatchObject({ weightKg: null, weightSource: 'none' });
   });
 });

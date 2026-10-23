@@ -137,11 +137,11 @@ describe('prefillSet — what you did, never what to do', () => {
     expect(prefillSet({ planned: { ...planned, weightKg: 42.5 }, lastPerformance: [] })).toMatchObject({ weightKg: 42.5, weightSource: 'plan' });
   });
 
-  it('history: the same set index last time, weight from it, reps still the target', () => {
+  it('history: the same set index last time, its weight and its reps (owner 2026-10-23)', () => {
     const last = [set(60, 10), set(62.5, 8), set(60, 9)];
     const p = prefillSet({ planned: { ...planned, weightKg: 40 }, lastPerformance: last });
     expect(p.weightKg).toBe(62.5);
-    expect(p.reps).toBe(12);
+    expect(p.reps).toBe(8);
     expect(p.weightSource).toBe('last-session');
     expect(p.lastTime).toBe(last[1]);
   });
@@ -154,6 +154,14 @@ describe('prefillSet — what you did, never what to do', () => {
 
   it('last time only had warm-ups or unloaded sets: fall back to the plan', () => {
     expect(prefillSet({ planned, lastPerformance: [set(30, 10, null, 'warmup'), set(null, 12)] })).toMatchObject({ weightKg: null, weightSource: 'none' });
+  });
+
+  it('bodyweight last time: its reps carry over, no weight invented', () => {
+    expect(prefillSet({ planned, lastPerformance: [set(null, 15), set(null, 14)] })).toMatchObject({ reps: 14, weightKg: null, weightSource: 'none' });
+  });
+
+  it('a set logged with 0 reps last time opens at the plan’s top reps', () => {
+    expect(prefillSet({ planned, lastPerformance: [set(60, 10), set(60, 0)] })).toMatchObject({ reps: 12, weightKg: 60, weightSource: 'last-session' });
   });
 
   it('never increases the load on its own (no progression here)', () => {

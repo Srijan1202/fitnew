@@ -100,3 +100,18 @@ actioned (Phase 11).
   cached `today` without the new keys still parses (defaults).
 - Not done, by decision: no LLM, no recovery/sleep/soreness inputs, no
   TODAY ranking, no PROGRESS screen, no AI rephrasing of reasons.
+
+## Amendment — the rows open at last time (2026-10-23, owner)
+
+This supersedes decision 1 for the pre-fill.
+- **What the rows open with:** a set opens at **last time's weight and reps** for that set (core `prefillSet`, `weightSource: 'last-session'`). Bodyweight sets carry their reps over. A set beyond last time's count opens at last time's top weight and the plan's top reps.
+- **The engine's answer:** still computed, shown and explained the same way, but as a **suggestion**. **Apply** on the session card, or in the sheet ("Apply 75 kg × 6"), puts it on every pending working row: reps at repMin after an increase, else repMax. Logged sets are untouched.
+- **Deload weeks:** only a `deload` still writes the rows (its lighter load and RIR), because it is a planned week.
+- **"Use last time's weight"** is gone; the rows already are last time.
+- **The plan screen** shows last time beside the plan without storing it:
+  - "last 70 kg" in the card header when the plan has no weight;
+  - a "Last time: 70×10 70×9 70×8" line;
+  - each set's last weight, faint, labelled "kg last time", where − / + and typing start from.
+- **Done today:** after the day's session is finished, the plan screen shows **Done today · View session** instead of **Start session**.
+
+Why: the owner logged 12 × 17.5 kg, came back to the plan and saw nothing of it. They want to start from what they did and decide when to progress.

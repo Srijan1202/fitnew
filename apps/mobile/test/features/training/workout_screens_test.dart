@@ -157,6 +157,17 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// The fake server's day with no history (a first week): the plan is all
+  /// there is, so an empty weight is the amber "set weight" nudge.
+  void noHistory() {
+    workoutApi.todayResponse = workoutApi.todayResponse.copyWith(
+      exercises: [
+        for (final x in workoutApi.todayResponse.exercises)
+          x.copyWith(lastPerformance: null),
+      ],
+    );
+  }
+
   /// Wait past the auto-save debounce and let the request settle.
   Future<void> autosave(WidgetTester tester) async {
     await tester.pump(const Duration(milliseconds: 1000));
@@ -205,6 +216,7 @@ void main() {
     testWidgets('cards are collapsed by default and expand on tap',
         (tester) async {
       training.stored = generatedProgram;
+      noHistory();
       await tester.pumpWidget(harness());
       await settle(tester);
       await openMonday(tester);
@@ -337,6 +349,7 @@ void main() {
         'reps and weight are edited per set and auto-saved as one PATCH after a pause',
         (tester) async {
       training.stored = generatedProgram;
+      noHistory();
       await tester.pumpWidget(harness());
       await settle(tester);
       await openMonday(tester);
@@ -430,6 +443,7 @@ void main() {
     testWidgets('edits survive leaving and reopening the screen',
         (tester) async {
       training.stored = generatedProgram;
+      noHistory();
       await tester.pumpWidget(harness());
       await settle(tester);
       await openMonday(tester);
@@ -644,6 +658,109 @@ void main() {
       await settle(tester);
       expect(find.text('History'), findsOneWidget);
       expect(find.text('Start empty session'), findsWidgets);
+    });
+  });
+
+  group('last time on the plan, done today (owner 2026-10-23)', () {
+    /// Today's weekday is the squat day the fake server answers for.
+    Program todayIsSquatDay() {
+      final today = DateTime.now().weekday;
+      return generatedProgram.copyWith(
+        days: [
+          for (final d in generatedProgram.days)
+            d.dayOfWeek == today
+                ? d.copyWith(
+                    isRest: false,
+                    sessionName: 'Leg Day',
+                    exercises: [plannedSquat],
+                  )
+                : d,
+        ],
+      );
+    }
+
+    void serverAnswersForToday() {
+      final today = DateTime.now().weekday;
+      workoutApi.todayResponse = workoutApi.todayResponse.copyWith(
+        dayOfWeek: today,
+        programDayId:
+            'dddddddd-dddd-4ddd-8ddd-${today.toString().padLeft(12, '0')}',
+      );
+    }
+
+    testWidgets(
+        'what was lifted last time shows on the plan: "last 70 kg" in the header, the sets line, and each set\'s weight faintly; + starts from it',
+        (tester) async {
+      training.stored = todayIsSquatDay();
+      serverAnswersForToday();
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      final cardKey = 'exercise.${plannedSquat.id}';
+
+      final header =
+          tester.widget<Text>(find.byKey(ValueKey('$cardKey.weight')));
+      expect(header.data, 'last 70 kg');
+      expect(header.style?.color, FitColors.ink60);
+      expect(find.text('set weight'), findsNothing);
+
+      await tester.tap(find.byKey(ValueKey('$cardKey.header')));
+      await settle(tester);
+      expect(
+        tester.widget<Text>(find.byKey(ValueKey('$cardKey.last'))).data,
+        'Last time: 70×10  70×9  70×8',
+      );
+      String weight(int set) => tester
+          .widget<Text>(
+            find.descendant(
+              of: find.byKey(ValueKey('$cardKey.set.$set.weight')),
+              matching: find.byType(Text),
+            ),
+          )
+          .data!;
+      // Sets 1–3 were lifted last time; set 4 was not: the top weight.
+      for (final i in [1, 2, 3, 4]) {
+        expect(weight(i), '70');
+      }
+      expect(find.text('kg last time'), findsNWidgets(4));
+      // Nothing was written into the plan by showing it.
+      expect(training.patchRequests, isEmpty);
+
+      // + on set 1 starts from last time: 70 → 75, now the plan's weight.
+      await tester.tap(find.byKey(ValueKey('$cardKey.set.1.weight.plus')));
+      await tester.pump();
+      expect(weight(1), '75');
+      expect(find.text('kg last time'), findsNWidgets(3));
+      await autosave(tester);
+      final (_, body) = training.patchRequests.single;
+      final squat = body.exercises!
+          .firstWhere((x) => x.exerciseId == plannedSquat.exerciseId);
+      expect(squat.sets![0].weightKg, 75);
+      expect(squat.sets![1].weightKg, isNull);
+    });
+
+    testWidgets(
+        "after today's session: Done today and View session instead of Start session; another day still offers Start",
+        (tester) async {
+      training.stored = todayIsSquatDay();
+      serverAnswersForToday();
+      workoutApi.todayResponse = workoutApi.todayResponse
+          .copyWith(completedSessionId: '77777777-7777-4777-8777-777777777777');
+      await tester.pumpWidget(harness());
+      await settle(tester);
+
+      expect(find.byKey(const ValueKey('day.done')), findsOneWidget);
+      expect(find.text('Done today'), findsOneWidget);
+      expect(find.byKey(const ValueKey('day.viewSession')), findsOneWidget);
+      expect(find.byKey(const ValueKey('day.start')), findsNothing);
+
+      // Another training day is not "done today".
+      final other = todayIsSquatDay().days.firstWhere(
+            (d) => d.dayOfWeek != DateTime.now().weekday && !d.isRest,
+          );
+      await tester.tap(find.byKey(ValueKey('day.tab.${other.dayOfWeek}')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('day.done')), findsNothing);
+      expect(find.byKey(const ValueKey('day.start')), findsOneWidget);
     });
   });
 

@@ -375,7 +375,16 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
                               dayOfWeek: day.dayOfWeek,
                               isRest: day.isRest,
                               onStart: () => _start(program, day),
+                              completedSessionId: selected == todayDow
+                                  ? phase6?.completedSessionId
+                                  : null,
                             ),
+                            last: {
+                              if (phase6 != null)
+                                for (final x in phase6.exercises)
+                                  if (x.lastPerformance != null)
+                                    x.plannedExerciseId: x.lastPerformance!,
+                            },
                             onAddSet: (id) => _addSet(day, id),
                             onRemoveSet: (id, i) => _removeSet(day, id, i),
                             expanded: _expanded,
@@ -578,6 +587,7 @@ class _DayView extends StatelessWidget {
     this.mesocycleWeek,
     this.substitutions = const {},
     this.onSubstitute,
+    this.last = const {},
     super.key,
   });
 
@@ -603,6 +613,10 @@ class _DayView extends StatelessWidget {
   /// Substitutions by planned exercise id.
   final Map<String, Substitution> substitutions;
   final void Function(PlannedExercise, SubstitutionAlternative)? onSubstitute;
+
+  /// Last time's sets by planned exercise id (owner 2026-10-23: what was
+  /// lifted shows on the plan, as a hint the plan does not store).
+  final Map<String, LastPerformance> last;
 
   @override
   Widget build(BuildContext context) {
@@ -709,6 +723,7 @@ class _DayView extends StatelessWidget {
             onRemove: () => onRemove(exercises[i].id),
             onAddSet: () => onAddSet(exercises[i].id),
             onRemoveSet: (index) => onRemoveSet(exercises[i].id, index),
+            last: last[exercises[i].id],
           ),
           if (substitutions[exercises[i].id] != null)
             SubstitutionLine(

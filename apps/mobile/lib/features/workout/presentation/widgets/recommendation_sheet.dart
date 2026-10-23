@@ -8,24 +8,25 @@ import 'session_exercise_card.dart';
 import '../../../../shared/widgets/fit_glass.dart';
 
 /// Tap on the reason line (plan §6): the full reason, the last three
-/// sessions of this lift from the server, and **Use last time's weight**
-/// which reverts every pending row. Nothing here computes a number.
+/// sessions of this lift from the server, and **Apply** which puts the
+/// suggestion on every pending row (the rows open at last time's numbers,
+/// owner 2026-10-23). Nothing here computes a number.
 class RecommendationSheet extends ConsumerWidget {
   const RecommendationSheet({
     required this.exercise,
-    required this.onUseLastWeight,
+    required this.onApply,
     super.key,
   });
 
   final SessionExercise exercise;
 
-  /// Null when there is nothing to revert to.
-  final VoidCallback? onUseLastWeight;
+  /// Null when there is nothing to apply.
+  final VoidCallback? onApply;
 
   static Future<void> show(
     BuildContext context,
     SessionExercise exercise, {
-    VoidCallback? onUseLastWeight,
+    VoidCallback? onApply,
   }) =>
       showModalBottomSheet<void>(
         context: context,
@@ -33,7 +34,7 @@ class RecommendationSheet extends ConsumerWidget {
         isScrollControlled: true,
         builder: (_) => RecommendationSheet(
           exercise: exercise,
-          onUseLastWeight: onUseLastWeight,
+          onApply: onApply,
         ),
       );
 
@@ -124,16 +125,16 @@ class RecommendationSheet extends ConsumerWidget {
                       ],
                     ),
             ),
-            if (onUseLastWeight != null) ...<Widget>[
+            if (onApply != null && r != null) ...<Widget>[
               const SizedBox(height: FitSpacing.md),
-              OutlinedButton(
-                key: const ValueKey('recommendation.useLast'),
+              FilledButton(
+                key: const ValueKey('recommendation.apply'),
                 onPressed: () {
-                  onUseLastWeight!();
+                  onApply!();
                   Navigator.of(context).pop();
                 },
                 child: Text(
-                  "Use last time's weight (${_kg(SessionExerciseCard.lastWeightOf(exercise)!)} kg)",
+                  'Apply ${SessionExerciseCard.recommendationLabel(r)}',
                 ),
               ),
             ],

@@ -22,8 +22,9 @@ import '../../support/fake_exercise_repository.dart';
 import '../../support/fake_workout_api.dart';
 import '../../support/workout_overrides.dart';
 
-/// Phase 6 on the phone: rows open with the recommended load and its
-/// reason, one tap reverts to last time's weight, a beating set is a PR
+/// Phase 6 on the phone: rows open at last time's numbers (owner
+/// 2026-10-23) with the engine's suggestion and its reason beside them, one
+/// tap applies the suggestion, a beating set is a PR
 /// (a tie is not), a deload week shows the plan's originals beside the
 /// lighter numbers, the deload offer is accepted or declined, the volume
 /// screen renders statuses and neglect, and a cached "today" carries the
@@ -46,7 +47,8 @@ void main() {
   const squatBest =
       PriorBest(weightKg: 70, repsAtBestWeight: 10, estimated1rm: 93.3);
 
-  /// The fake's day with a recommendation on the squat: rows open at 75 × 6.
+  /// The fake's day with a recommendation on the squat: the rows open at
+  /// last time's 70 × 12 (the server's prefill), the suggestion is 75 × 6.
   TodayResponse withRecommendation(TodayResponse t) => t.copyWith(
         exercises: [
           t.exercises.first.copyWith(
@@ -55,9 +57,9 @@ void main() {
             prefill: [
               for (final p in t.exercises.first.prefill)
                 p.copyWith(
-                  weightKg: 75,
-                  reps: 6,
-                  weightSource: 'recommendation',
+                  weightKg: 70,
+                  reps: 12,
+                  weightSource: 'last-session',
                 ),
             ],
           ),
@@ -164,13 +166,13 @@ void main() {
       'session.${s.exercises.first.clientExerciseId}';
 
   testWidgets(
-      'rows open with the recommended load and reps; the reason line is the engine\'s, in pine for increase-load',
+      'rows open at last time\'s numbers; the suggestion line is the engine\'s, in pine for increase-load; Apply puts it on every row',
       (tester) async {
     final s = await pumpSession(tester);
     final k = squatKey(s);
     for (final i in [1, 2, 3]) {
-      expect(weightOf(tester, '$k.set.$i.weight'), '75');
-      expect(textOf(tester, '$k.set.$i.reps').data, '6');
+      expect(weightOf(tester, '$k.set.$i.weight'), '70');
+      expect(textOf(tester, '$k.set.$i.reps').data, '12');
     }
     final line = tester.widget<Text>(
       find.descendant(
@@ -188,10 +190,18 @@ void main() {
       ),
       findsNothing,
     );
+    // One tap: the suggestion on every row; the button goes.
+    await tester.tap(find.byKey(ValueKey('$k.apply')));
+    await settle(tester);
+    for (final i in [1, 2, 3]) {
+      expect(weightOf(tester, '$k.set.$i.weight'), '75');
+      expect(textOf(tester, '$k.set.$i.reps').data, '6');
+    }
+    expect(find.byKey(ValueKey('$k.apply')), findsNothing);
   });
 
   testWidgets(
-      'tap the reason: the sheet shows the full reason and the last three sessions; "Use last time\'s weight" reverts every pending row',
+      'tap the reason: the sheet shows the full reason and the last three sessions; Apply puts the suggestion on every pending row, logged sets stay',
       (tester) async {
     api.progressionDetail = ProgressionDetail(
       exerciseId: api.todayResponse.exercises.first.exerciseId,
@@ -230,13 +240,25 @@ void main() {
       ).data,
       '2026-09-14  70×12',
     );
-    await tester.tap(find.byKey(const ValueKey('recommendation.useLast')));
+    expect(
+      tester
+          .widget<Text>(
+            find.descendant(
+              of: find.byKey(const ValueKey('recommendation.apply')),
+              matching: find.byType(Text),
+            ),
+          )
+          .data,
+      'Apply 75 kg × 6',
+    );
+    await tester.tap(find.byKey(const ValueKey('recommendation.apply')));
     await settle(tester);
     expect(find.byKey(const ValueKey('recommendation.sheet')), findsNothing);
-    expect(weightOf(tester, '$k.set.1.weight'), '75'); // logged: untouched
-    expect(weightOf(tester, '$k.set.2.weight'), '70');
-    expect(weightOf(tester, '$k.set.3.weight'), '70');
-    expect(textOf(tester, '$k.set.2.reps').data, '6'); // reps stay
+    expect(weightOf(tester, '$k.set.1.weight'), '70'); // logged: untouched
+    expect(weightOf(tester, '$k.set.2.weight'), '75');
+    expect(weightOf(tester, '$k.set.3.weight'), '75');
+    // After an increase, the reps start at the bottom of the range.
+    expect(textOf(tester, '$k.set.2.reps').data, '6');
     container.read(restTimerProvider.notifier).skip();
   });
 
@@ -245,7 +267,9 @@ void main() {
       (tester) async {
     final s = await pumpSession(tester);
     final k = squatKey(s);
-    // Set 1 at the recommended 75 kg beats the prior best of 70.
+    // Apply the suggestion; set 1 at 75 kg beats the prior best of 70.
+    await tester.tap(find.byKey(ValueKey('$k.apply')));
+    await settle(tester);
     await tester.tap(find.byKey(ValueKey('$k.set.1.done')));
     await settle(tester);
     expect(find.byKey(ValueKey('$k.set.1.star')), findsOneWidget);
@@ -584,7 +608,7 @@ void main() {
   });
 
   testWidgets(
-      'offline: the cached today carries the recommendation, so a session seeded with no signal opens with it',
+      'offline: the cached today carries the recommendation, so a session seeded with no signal still offers it',
       (tester) async {
     makeContainer();
     final repo = container.read(workoutRepositoryProvider);
@@ -607,7 +631,8 @@ void main() {
     );
     final s = await repo.startSession(day: t);
     expect(s.exercises.first.recommendation, squatRec);
-    expect(s.exercises.first.prefill.first.weightKg, 75);
+    expect(s.exercises.first.prefill.first.weightKg, 70); // last time's
+    expect(s.exercises.first.recommendation!.weightKg, 75); // the suggestion
     // And the volume screen reads its cache the same way.
     api.offline = false;
     await repo.volume();

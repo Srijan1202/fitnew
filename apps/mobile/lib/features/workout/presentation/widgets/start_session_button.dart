@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../training/domain/entities/program.dart';
 import '../../domain/entities/workout.dart';
@@ -9,12 +11,15 @@ import 'orphan_session_notice.dart';
 
 /// "Start session" on a training day, "Start empty session" on a rest
 /// day, "Resume · 12 min" whenever a session is in progress on this phone
-/// (one at a time, whatever day it belongs to).
+/// (one at a time, whatever day it belongs to), and "Done today" with the
+/// summary once today's session is finished (owner 2026-10-23: the day
+/// screen offered Start again right after finishing).
 class StartSessionButton extends ConsumerWidget {
   const StartSessionButton({
     required this.dayOfWeek,
     required this.isRest,
     required this.onStart,
+    this.completedSessionId,
     super.key,
   });
 
@@ -22,9 +27,13 @@ class StartSessionButton extends ConsumerWidget {
   final bool isRest;
   final VoidCallback onStart;
 
+  /// The session finished today (the server's `completedSessionId`), when
+  /// this is today's day. Another session can still be started from ⋯.
+  final String? completedSessionId;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final button = _button(ref);
+    final button = _button(context, ref);
     // Phase 6.6 Gate 7: say why a new session would not reach FITOS, right
     // where it is started. Starting stays possible (gyms have no signal).
     if (ref.watch(orphanedSessionProvider).value == null) return button;
@@ -39,8 +48,32 @@ class StartSessionButton extends ConsumerWidget {
     );
   }
 
-  Widget _button(WidgetRef ref) {
+  Widget _button(BuildContext context, WidgetRef ref) {
     final active = ref.watch(activeSessionProvider).value;
+    if (active == null && completedSessionId != null) {
+      return Row(
+        key: const ValueKey('day.done'),
+        children: <Widget>[
+          Icon(Icons.check_circle, color: FitColors.pine, size: 22),
+          const SizedBox(width: FitSpacing.sm),
+          Expanded(
+            child: Text(
+              'Done today',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(color: FitColors.pine),
+            ),
+          ),
+          OutlinedButton(
+            key: const ValueKey('day.viewSession'),
+            onPressed: () =>
+                context.push(Routes.historyDetail(completedSessionId!)),
+            child: const Text('View session'),
+          ),
+        ],
+      );
+    }
     if (active != null) {
       final minutes =
           DateTime.now().difference(DateTime.parse(active.startedAt)).inMinutes;
