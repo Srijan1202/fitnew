@@ -17,6 +17,10 @@ import '../../../workout/presentation/controllers/workout_providers.dart';
 import '../../domain/home_context.dart';
 import '../../domain/home_suggestion_engine.dart';
 import '../widgets/name_prompt.dart';
+import '../../../../core/config/app_features.dart';
+import '../../../auth/presentation/controllers/auth_providers.dart';
+import '../../data/streak_api.dart';
+import '../../../../core/config/app_config.dart';
 
 /// Phase 6.5 — the Home screen's context, assembled from what the app
 /// already fetches (today, volume, profile, history, the active session)
@@ -260,3 +264,22 @@ extension HealthAvailabilityText on HealthAvailability {
         HealthAvailability.unsupported => 'Not on this phone',
       };
 }
+
+/// Beta 3.3 (ADR-018 amendment): the streak and the goal ring.
+final streakApiProvider =
+    Provider<StreakApi>((ref) => DioStreakApi(ref.watch(dioProvider)));
+
+/// The streak, re-read when a workout or a food log changes; null while
+/// signed out, switched off by the admin, or unreachable (the card hides).
+final streakProvider = FutureProvider<Streak?>((ref) async {
+  if (ref.watch(sessionUserIdProvider) == null) return null;
+  // The switches first (offline counts as on), so a switched-off streak is
+  // never asked for.
+  await ref.watch(appConfigProvider.future);
+  if (!ref.watch(featureOnProvider(AppFeature.streaks))) return null;
+  ref
+    ..watch(historyProvider)
+    ..watch(nutritionDayRefreshProvider(ref.watch(localTodayProvider)));
+  final r = await ref.watch(streakApiProvider).streak();
+  return r.when(ok: (s) => s, err: (_) => null);
+});

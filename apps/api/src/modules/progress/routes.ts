@@ -14,6 +14,7 @@ import {
   logWeightResponseSchema,
   progressSummaryQuerySchema,
   progressSummarySchema,
+  streakSchema,
   weeklyReportQuerySchema,
   weeklyReportSchema,
 } from '@fitos/contracts';
@@ -59,6 +60,23 @@ export async function progressRoutes(app: FastifyInstance): Promise<void> {
       await app.features.require('weekly-report');
       if (!(await premium.isPremium(userId, request.identity?.claims))) throw premiumRequired('The weekly report');
       return service.weekly(userId, await workouts.volume(userId), request.query.week);
+    },
+  );
+
+  typed.get(
+    '/progress/streak',
+    {
+      schema: {
+        summary: 'The streak (a workout or any food logged; rest days and Skip today excused) and the weekly goal ring (beta 3.3)',
+        tags: ['progress'],
+        security,
+        response: { 200: streakSchema, 403: errorEnvelopeSchema, ...errors },
+      },
+    },
+    async (request) => {
+      const userId = requireUserId(request.userId);
+      await app.features.require('streaks');
+      return service.streak(userId);
     },
   );
 

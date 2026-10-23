@@ -9,7 +9,7 @@ import { randomUUID } from 'node:crypto';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import postgres from 'postgres';
-import { progressSummarySchema, type ProgressSummary } from '@fitos/contracts';
+import { progressSummarySchema, streakSchema, type ProgressSummary } from '@fitos/contracts';
 import { addDays, localDateOf } from '@fitos/core/nutrition/log';
 import { summariseTrend } from '@fitos/core/nutrition/trend';
 
@@ -342,5 +342,60 @@ describeIfDb('/v1/progress (real Postgres)', { timeout: 60_000 }, () => {
     const p95 = times[Math.ceil(0.95 * times.length) - 1]!;
     console.info(`GET /v1/progress/summary p50 ${times[Math.floor(times.length / 2)]!.toFixed(1)} ms, p95 ${p95.toFixed(1)} ms (n=${times.length})`);
     expect(p95).toBeLessThan(300);
+  });
+
+  it('beta 3.3: the streak counts days with a workout or food, excuses rest days and Skip today, and the ring counts this week', async () => {
+    const u = await user();
+    const t = today(u);
+    await sql`update users set created_at = now() - interval '40 days' where id = ${u.id}`;
+    const streakOf = async () => {
+      const r = await app.inject({ method: 'GET', url: '/v1/progress/streak', headers: auth(u.token) });
+      expect(r.statusCode, r.body).toBe(200);
+      return streakSchema.parse(r.json());
+    };
+    const food = (d: string) =>
+      sql`insert into daily_nutrition (user_id, local_date, kcal_low, kcal_high, protein_low, protein_high, item_count) values (${u.id}, ${d}, 500, 600, 20, 25, 1)
+          on conflict do nothing`;
+
+    expect(await streakOf()).toEqual({ current: 0, best: 0, todayCounted: false, week: null });
+
+    // No programme: every day asks for a log.
+    for (const d of [-6, -5, -2, -1]) await food(addDays(t, d));
+    expect(await streakOf()).toEqual({ current: 2, best: 2, todayCounted: false, week: null });
+    await food(t);
+    expect(await streakOf()).toMatchObject({ current: 3, todayCounted: true });
+
+    // A programme whose only rest day is the gap at t-3 / t-4: the rest day is excused.
+    const weekday = (d: string) => {
+      const day = new Date(`${d}T00:00:00Z`).getUTCDay();
+      return day === 0 ? 7 : day;
+    };
+    const rest = weekday(addDays(t, -3));
+    const [program] = await sql<{ id: string }[]>`
+      insert into programs (user_id, name, split_type, days_per_week, source) values (${u.id}, 'P', 'full-body', 6, 'generated') returning id`;
+    for (let dow = 1; dow <= 7; dow += 1) {
+      await sql`insert into program_days (program_id, day_of_week, session_name, is_rest) values (${program!.id}, ${dow}, ${`D${dow}`}, ${dow === rest})`;
+    }
+    // t-4 is still a training day without a log: the run starts after it.
+    expect((await streakOf()).current).toBe(3);
+    // Skip today on t-4 excuses it too; then the run reaches back to t-6.
+    await sql`update programs set skipped_on = ${addDays(t, -4)} where id = ${program!.id}`;
+    expect(await streakOf()).toMatchObject({ current: 5, best: 5 });
+
+    // A workout completed today counts on the ring (6 training days planned).
+    await sql`insert into workout_sessions (user_id, client_session_id, status, name, started_at, completed_at, duration_seconds)
+      values (${u.id}, ${randomUUID()}, 'completed', 'S', now() - interval '1 hour', now(), 3600)`;
+    expect((await streakOf()).week).toEqual({ done: 1, planned: 6 });
+
+    // Switched off by the admin: refused.
+    const other = await user();
+    verifier.accept('pr-admin-streak', { uid: 'pr-uid-admin-streak', email: 'pr-admin@vit.ac.in', claims: { role: 'admin' } });
+    await app.inject({ method: 'POST', url: '/v1/auth/session', headers: auth('pr-admin-streak'), payload: {} });
+    expect((await app.inject({ method: 'PUT', url: '/v1/admin/flags/streaks', headers: auth('pr-admin-streak'), payload: { enabled: false } })).statusCode).toBe(200);
+    const off = await app.inject({ method: 'GET', url: '/v1/progress/streak', headers: auth(other.token) });
+    expect(issue(off)).toBe('feature-off');
+    await sql`delete from feature_flags where key = 'streaks'`;
+    await sql`delete from audit_logs where action = 'flag.set'`;
+    app.features.invalidate();
   });
 });

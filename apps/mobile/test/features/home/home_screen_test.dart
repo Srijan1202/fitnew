@@ -12,6 +12,7 @@ import 'package:fitos/features/exercise/presentation/controllers/exercise_provid
 import 'package:fitos/features/health/domain/entities/health.dart';
 import 'package:fitos/features/health/presentation/screens/health_data_screen.dart';
 import 'package:fitos/features/health/presentation/controllers/health_providers.dart';
+import 'package:fitos/features/home/data/streak_api.dart';
 import 'package:fitos/features/home/presentation/controllers/home_providers.dart';
 import 'package:fitos/features/home/presentation/screens/home_screen.dart';
 import 'package:fitos/features/nutrition/domain/entities/food.dart';
@@ -29,7 +30,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../support/fake_feedback_api.dart';
 import '../../support/fake_recovery_api.dart';
+import '../../support/fake_streak_api.dart';
 import '../../support/fake_auth_repository.dart';
 import '../../support/fake_exercise_repository.dart';
 import '../../support/fake_food_log_api.dart';
@@ -56,6 +59,9 @@ void main() {
   late FakeProfileRepository profile;
   late FakeFoodLogApi foodLog;
   late FakeTodayApi today;
+  // Beta 3.3: the streak card and the admin's switches.
+  late FakeStreakApi streakApi;
+  late FakeMetaApi meta;
 
   /// The server's start card for the fake's training day (Legs).
   final startLegs = FakeTodayApi.action(
@@ -81,6 +87,8 @@ void main() {
       );
     auth = FakeAuthRepository()
       ..restoreResult = AuthState.signedIn(testProfile);
+    streakApi = FakeStreakApi();
+    meta = FakeMetaApi();
   });
   tearDown(() => db.close());
 
@@ -137,6 +145,8 @@ void main() {
           foodLog: foodLog,
           today: today,
           recovery: recovery,
+          streak: streakApi,
+          meta: meta,
         ),
         ...healthOverrides(health),
         ...extra,
@@ -796,6 +806,84 @@ void main() {
         container.read(homeSuggestionsProvider).map((s) => s.id),
         isNot(contains('eat-protein')),
       );
+    });
+  });
+
+  group('beta 3.3: streak and weekly goal ring', () {
+    Streak s(
+      int current, {
+      int best = 0,
+      bool today = true,
+      int? done,
+      int? planned,
+    }) =>
+        Streak(
+          current: current,
+          best: best < current ? current : best,
+          todayCounted: today,
+          weekDone: done,
+          weekPlanned: planned,
+        );
+
+    testWidgets(
+        'a run: the days, the best, and the ring; the ring opens Training',
+        (tester) async {
+      streakApi.next = s(12, best: 20, done: 2, planned: 4);
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      expect(textOf(tester, 'home.streak.headline').data, '12-day streak');
+      expect(
+        textOf(tester, 'home.streak.detail').data,
+        'Best so far: 20 days.',
+      );
+      expect(textOf(tester, 'home.ring.count').data, '2/4');
+      await tester.tap(find.byKey(const ValueKey('home.ring')));
+      await tester.pumpAndSettle();
+      expect(find.text('PLAN'), findsOneWidget);
+    });
+
+    testWidgets('today not logged yet: a nudge, never blame', (tester) async {
+      streakApi.next = s(5, today: false);
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      expect(
+        textOf(tester, 'home.streak.detail').data,
+        'Log a workout or a meal today to keep it going.',
+      );
+      expect(find.byKey(const ValueKey('home.ring')), findsNothing);
+    });
+
+    testWidgets('no run: how to start one; at the best: said so',
+        (tester) async {
+      streakApi.next = s(0, today: false);
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      expect(textOf(tester, 'home.streak.headline').data, 'Start a streak');
+      container(tester).invalidate(streakProvider);
+      streakApi.next = s(7);
+      await tester.pumpAndSettle();
+      expect(
+        textOf(tester, 'home.streak.detail').data,
+        'Your best yet. Keep going.',
+      );
+    });
+
+    testWidgets(
+        'switched off by the admin: no card, and the streak is never asked for',
+        (tester) async {
+      meta.flags = {'streaks': false};
+      streakApi.next = s(3);
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('home.streak')), findsNothing);
+      expect(streakApi.calls, 0);
+    });
+
+    testWidgets('unreachable: the card hides', (tester) async {
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('home.streak')), findsNothing);
+      expect(streakApi.calls, greaterThan(0));
     });
   });
 }

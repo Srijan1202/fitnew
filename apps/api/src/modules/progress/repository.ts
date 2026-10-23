@@ -3,7 +3,7 @@
  * is scoped to one user and excludes soft-deleted rows. Reads are indexed
  * range queries the service runs in parallel — no per-row follow-ups.
  */
-import { and, asc, desc, eq, gte, isNull, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, gte, isNull, lte, sql } from 'drizzle-orm';
 
 import type { DatabaseHandle } from '../../db/client.js';
 import {
@@ -17,6 +17,7 @@ import {
   programs,
   sessionExercises,
   setLogs,
+  users,
   workoutSessions,
   type BodyMeasurementRow,
   type BodyMetricRow,
@@ -105,6 +106,26 @@ export class ProgressRepository {
       .from(programDays)
       .where(and(eq(programDays.programId, program.id), eq(programDays.isRest, false)));
     return days.map((d) => d.dow).sort((a, b) => a - b);
+  }
+
+  /** Beta 3.3: days with any food logged in [from, to]. */
+  async loggedDays(userId: string, from: string, to: string): Promise<string[]> {
+    const rows = await this.db
+      .select({ date: dailyNutrition.localDate })
+      .from(dailyNutrition)
+      .where(and(eq(dailyNutrition.userId, userId), gte(dailyNutrition.localDate, from), lte(dailyNutrition.localDate, to), gt(dailyNutrition.itemCount, 0)));
+    return rows.map((r) => r.date);
+  }
+
+  /** Beta 3.3: when the account started, and the day the active programme last skipped (ADR-030). */
+  async streakContext(userId: string): Promise<{ createdAt: Date; skippedOn: string | null }> {
+    const [user] = await this.db.select({ createdAt: users.createdAt }).from(users).where(eq(users.id, userId)).limit(1);
+    const [program] = await this.db
+      .select({ skippedOn: programs.skippedOn })
+      .from(programs)
+      .where(and(eq(programs.userId, userId), eq(programs.active, true), isNull(programs.deletedAt)))
+      .limit(1);
+    return { createdAt: asDate(user!.createdAt), skippedOn: program?.skippedOn ?? null };
   }
 
   /** Records achieved in [from, to], newest first, with the lift's name. */

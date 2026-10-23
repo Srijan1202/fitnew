@@ -25,6 +25,7 @@ import '../controllers/home_providers.dart';
 import '../widgets/home_sections.dart';
 import '../widgets/name_prompt.dart';
 import '../widgets/suggestion_carousel.dart';
+import '../widgets/streak_card.dart';
 
 /// Phase 6.5 — Home, the TODAY surface. What to know and do right now, in
 /// this order: a compact header; "Your next move" (Phase 11: the server's
@@ -42,7 +43,8 @@ class HomeScreen extends ConsumerWidget {
       ..invalidate(todayProvider)
       ..invalidate(todayPlanProvider)
       ..invalidate(volumeProvider)
-      ..invalidate(historyProvider);
+      ..invalidate(historyProvider)
+      ..invalidate(streakProvider);
     await ref.read(healthSnapshotProvider.notifier).refreshAll();
   }
 
@@ -201,6 +203,9 @@ class HomeScreen extends ConsumerWidget {
                   const UpdatePromptHost(),
                   const UpdateBanner(),
                   if (ref.watch(askForNameProvider)) const NamePrompt(),
+                  // Beta 3.3: the streak and the weekly goal ring.
+                  if (ref.watch(streakProvider).value case final s?)
+                    StreakCard(streak: s),
                   if (ref.watch(homeServerFailureProvider) case final f?)
                     ServerNotice(
                       message: f.message,

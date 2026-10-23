@@ -58,3 +58,24 @@ What already existed and is reused:
 - **Windows:** `PROGRESS_WINDOWS` is `7d`, `30d` and `90d`. The app labels them **1W · 1M · 3M** and opens on **1W**; the last choice is remembered on the phone. The server's default stays `30d`, so older apps are unchanged.
 - **§17 rule 2 in the one-week window:** the first and last day of a week are 6 days apart, so a weight or measurement change there needs readings across the whole week (≥ 6 days, `minChangeDays('7d')`). Every longer window keeps ≥ 7 days. Never a day-over-day figure.
 - Profile's trend weight still reads the 30-day summary.
+
+## Amendment — streak and weekly goal ring (beta 3.3, owner 2026-10-23)
+
+- **The streak** (core `progress/streak.ts`, 100 % branch coverage).
+  - A day **counts** when a workout is completed or any food is logged, in the user's time zone.
+  - A planned rest day of the active programme, and the day used by Skip today (ADR-030), are **excused**: they neither break nor add to the run.
+  - Any other day without a log ends the run. Today not logged yet does not end it.
+  - **Without a programme** there are no rest days.
+  - The run is looked for back to the account's first day, at most 400 days, and the best run within that window is reported too.
+- **The weekly goal ring:** workouts completed this ISO week, Monday to Sunday, against the programme's training days. It is null without a programme, and the ring then hides.
+- **`GET /v1/progress/streak`** → `{ current, best, todayCounted, week: { done, planned } | null }`.
+  - It is computed on read, and nothing is stored.
+  - It sits behind the `streaks` switch (ADR-033), answering 403 `feature-off` when the switch is off.
+  - The path is under `/progress`, not `/home` as the plan said, because the progress module owns these reads.
+- **Home:** one compact card under the greeting.
+  - It shows 🔥 *N-day streak*, then the best so far or "Your best yet", and the ring, e.g. "2/4 this week". The ring opens Training.
+  - A run of 0 says "Start a streak · Log a workout or a meal today", and an unlogged today says "… to keep it going". There is no shaming copy.
+  - The card is refetched when the history or today's food changes and on pull-to-refresh. It hides when switched off or unreachable, and a switched-off streak is never requested.
+- **Accepted:**
+  - The current programme's rest days and its last skip apply to the whole window, so a programme change reinterprets older days.
+  - Only the latest Skip today is known (`programs.skipped_on`).

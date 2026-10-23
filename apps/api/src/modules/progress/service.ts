@@ -7,6 +7,7 @@
  */
 import type { VolumeResponse, WeeklyReport } from '@fitos/contracts';
 import { computeTrend } from '@fitos/core/nutrition/trend';
+import { STREAK_LOOKBACK_DAYS, streak, weekGoal } from '@fitos/core/progress/streak';
 import { weeklyReport } from '@fitos/core/progress/weekly';
 import { isoWeekDates } from '@fitos/core/training/mesocycle';
 import {
@@ -17,6 +18,7 @@ import {
   type LogWeightResponse,
   type ProgressSummary,
   type ProgressWindow,
+  type StreakSummary,
 } from '@fitos/contracts';
 import { addDays, localDateOf } from '@fitos/core/nutrition/log';
 import { adherence, bestLifts, consistency, measurementProgress, weightProgress, windowStart } from '@fitos/core/progress/summary';
@@ -34,6 +36,32 @@ export class ProgressService {
     private readonly logs: FoodLogRepository,
     private readonly now: () => Date = () => new Date(),
   ) {}
+
+  /** Beta 3.3 (ADR-018 amendment): the streak and the weekly goal ring, computed on read. */
+  async streak(userId: string): Promise<StreakSummary> {
+    const tz = await this.logs.timezoneOf(userId);
+    const today = localDateOf(this.now(), tz);
+    const from = addDays(today, -STREAK_LOOKBACK_DAYS);
+    const lo = new Date(Date.parse(`${from}T00:00:00Z`) - DAY_MS);
+    const hi = new Date(Date.parse(`${today}T00:00:00Z`) + 2 * DAY_MS);
+    const [completed, logged, planned, context] = await Promise.all([
+      this.repo.completedAt(userId, lo, hi),
+      this.repo.loggedDays(userId, from, today),
+      this.repo.plannedDays(userId),
+      this.repo.streakContext(userId),
+    ]);
+    const workoutDays = completed.map((at) => localDateOf(at, tz));
+    const training = new Set(planned ?? []);
+    const s = streak({
+      today,
+      activeDays: new Set([...workoutDays, ...logged]),
+      // Without a programme there are no rest days: every day asks for a log.
+      restWeekdays: new Set(planned === null ? [] : [1, 2, 3, 4, 5, 6, 7].filter((d) => !training.has(d))),
+      skippedDays: new Set(context.skippedOn === null ? [] : [context.skippedOn]),
+      firstDay: localDateOf(context.createdAt, tz),
+    });
+    return { ...s, week: weekGoal(today, workoutDays, planned?.length ?? 0) };
+  }
 
   async summary(userId: string, window: ProgressWindow): Promise<ProgressSummary> {
     const tz = await this.logs.timezoneOf(userId);

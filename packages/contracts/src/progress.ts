@@ -179,3 +179,20 @@ export const weeklyReportSchema = z
   })
   .strict();
 export type WeeklyReport = z.infer<typeof weeklyReportSchema>;
+
+/* ---------------------------------------- streak and goal (beta 3.3) -- */
+
+/**
+ * Beta 3.3 (ADR-018 amendment): the streak on Home — counted days in the
+ * current run (a workout or any food logged; rest days and Skip today are
+ * excused) — and the weekly goal ring, null without a programme.
+ */
+export const streakSchema = z
+  .object({
+    current: z.number().int().min(0),
+    best: z.number().int().min(0),
+    todayCounted: z.boolean(),
+    week: z.object({ done: z.number().int().min(0), planned: z.number().int().min(1) }).strict().nullable(),
+  })
+  .strict();
+export type StreakSummary = z.infer<typeof streakSchema>;
