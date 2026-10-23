@@ -323,7 +323,7 @@ describeIfDb('/v1/admin (real Postgres)', { timeout: 60_000 }, () => {
     const plain = await user();
     await sql`delete from feature_flags`;
     app.features.invalidate();
-    const allOn = { 'share-programme': true, 'mess-ratings': true, streaks: true, 'community-foods': true, 'food-requests': true, 'weekly-report': true };
+    const allOn = { 'share-programme': true, 'mess-ratings': true, streaks: true, 'community-foods': true, 'food-requests': true, 'weekly-report': true, 'progress-photos': true };
     expect((await call(plain, 'GET', '/meta/config')).json()).toEqual({ flags: allOn, minimumBuild: 0 });
     expect((await call(null, 'GET', '/meta/config')).statusCode).toBe(200);
     expect((await call(admin, 'PUT', '/admin/flags/Bad Key', { enabled: true })).statusCode).toBeGreaterThanOrEqual(400);

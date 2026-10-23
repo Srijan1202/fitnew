@@ -32,7 +32,9 @@ const kPolicySections = <(String, String)>[
         'never with your name, and deleted with your account. A programme you '
         'share as a code shows its days, exercises, sets and reps to anyone '
         'with the code, never your weights or your name; you can stop sharing '
-        'it, and the codes are deleted with your account.',
+        'it, and the codes are deleted with your account. Progress photos stay '
+        'on your phone: they are never uploaded, not even to a backup, and '
+        'are deleted with your account.',
   ),
   (
     'What stays on your phone',

@@ -45,6 +45,7 @@ import '../../features/workout/presentation/screens/session_summary_screen.dart'
 import 'app_shell.dart';
 import 'guards.dart';
 import '../../features/training/presentation/screens/shared_programme_screen.dart';
+import '../../features/progress/presentation/photos/progress_photos_screen.dart';
 
 /// Application routes.
 ///
@@ -88,6 +89,9 @@ abstract final class Routes {
 
   /// Phase 12: Progress & Recovery (the tab that was Market).
   static const String progress = '/progress';
+
+  /// Beta 3.4 (ADR-035): progress photos, on the phone only.
+  static const String progressPhotos = '/progress/photos';
   static const String weeklyReport = '/progress/weekly';
 
   // Food library (Phase 7) and logging (Phase 8); root navigator, the bar
@@ -406,6 +410,12 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
                 name: 'progress',
                 builder: (context, state) => const ProgressScreen(),
                 routes: <RouteBase>[
+                  GoRoute(
+                    path: 'photos',
+                    name: 'progress-photos',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const ProgressPhotosScreen(),
+                  ),
                   GoRoute(
                     path: 'weekly',
                     name: 'weekly-report',

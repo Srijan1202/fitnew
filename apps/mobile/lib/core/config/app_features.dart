@@ -12,7 +12,8 @@ enum AppFeature {
   streaks('streaks'),
   communityFoods('community-foods'),
   foodRequests('food-requests'),
-  weeklyReport('weekly-report');
+  weeklyReport('weekly-report'),
+  progressPhotos('progress-photos');
 
   const AppFeature(this.key);
 

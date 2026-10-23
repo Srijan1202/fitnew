@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Beta 3.4 (ADR-035): progress photos never leave the phone, so Android's
+     automatic backup (Android 11 and below) leaves their folder out. -->
+<full-backup-content>
+    <exclude domain="file" path="progress_photos/" />
+</full-backup-content>

@@ -59,12 +59,12 @@ Not scheduled. When picked, they get a phase plan for approval first. Suggested 
 | F5 | **Streaks and a weekly goal ring** on Home — beta 3.3 | S–M | Days logged in a row; sessions done against the plan this week |
 | F6 | **Mess menu ratings** (👍/👎 per dish) — beta 3.3 | M | Fun for VIT; ratings can later weigh meal suggestions. Needs a table and abuse limits |
 | F7 | **Water tracking** | S | One tap on Home; a daily target from body weight |
-| F8 | **Progress photos, on the phone only** | M | Never uploaded; side-by-side compare. Fits the privacy rules (§23) |
+| F8 | **Progress photos, on the phone only** — beta 3.4 (ADR-035) | M | Never uploaded; side-by-side compare. Fits the privacy rules (§23) |
 | F9 | **Server push notifications** | M | = O9. Reminders and "Premium approved" while the app is closed (FCM from the server) |
 | F10 | **AI that knows your history** | M | = O8, and only after O7 (paid Gemini): answers from the last 4 weeks of training and food |
 | F11 | **Exercise demo animations** | M–L | Short loops for the ~30 most-used lifts; mostly a content job (licensing) |
 | F12 | **Friends / VIT leaderboard** | L | Weekly sessions among friends. Needs a privacy design (opt-in, what is shown) before any code |
-| F13 | **Streak rewards** (owner, 2026-10-23) | M | A long enough streak unlocks rewards: a theme, a profile picture and the like, kept once earned. Builds on beta 3.3's streak (F5) and the premium themes and pictures (ADR-027/028). Needs a decision on which rewards, at what streak lengths, and whether they stay premium-only otherwise |
+| F13 | **Streak rewards** (owner, 2026-10-23) — beta 3.4 (ADR-027 amendment) | M | A long enough streak unlocks rewards: a theme, a profile picture and the like, kept once earned. Builds on beta 3.3's streak (F5) and the premium themes and pictures (ADR-027/028). Needs a decision on which rewards, at what streak lengths, and whether they stay premium-only otherwise |
 
 ## Later phases (already in MASTER-SPEC, listed so nothing is lost)
 

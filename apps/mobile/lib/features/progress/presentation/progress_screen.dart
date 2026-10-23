@@ -20,6 +20,8 @@ import '../domain/progress.dart';
 import 'progress_providers.dart';
 import 'progress_sheets.dart';
 import 'trend_chart.dart';
+import '../../../core/config/app_features.dart';
+import 'photos/progress_photos_screen.dart';
 
 /// Progress & Recovery (Phase 12; redesigned at the owner's request during the
 /// Phase 13 S24 run). What the server computed from the user's own records,
@@ -156,6 +158,13 @@ class ProgressScreen extends ConsumerWidget {
                 if (s != null) ...<Widget>[
                   const _SectionHeader('Weight'),
                   _Card(child: _WeightSection(summary: s)),
+                ],
+                // Beta 3.4 (ADR-035): photos, kept on this phone only.
+                if (ref.watch(
+                  featureOnProvider(AppFeature.progressPhotos),
+                )) ...<Widget>[
+                  const _SectionHeader('Photos'),
+                  const _Card(child: ProgressPhotosCard()),
                 ],
                 const _SectionHeader(
                   'Recovery',

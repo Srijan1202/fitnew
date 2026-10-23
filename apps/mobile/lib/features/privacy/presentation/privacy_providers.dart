@@ -15,6 +15,7 @@ import '../../workout/presentation/controllers/workout_providers.dart';
 import '../data/privacy_api.dart';
 import '../domain/privacy.dart';
 import 'ai_consent_sheet.dart';
+import '../../progress/presentation/photos/progress_photos_providers.dart';
 
 final privacyApiProvider =
     Provider<PrivacyApi>((ref) => DioPrivacyApi(ref.watch(dioProvider)));
@@ -84,6 +85,15 @@ class AccountEraser {
 
   Future<void> eraseLocal() async {
     await _ref.read(notificationCoordinatorProvider.notifier).forgetAll();
+    // Beta 3.4 (ADR-035): this account's progress photos on this phone.
+    final account = _ref.read(sessionUserIdProvider);
+    if (account != null) {
+      try {
+        await _ref.read(accountPhotoEraserProvider)(account);
+      } on Object {
+        // Nothing more to delete.
+      }
+    }
     await _ref.read(appDatabaseProvider).clearAll();
     try {
       await (await SharedPreferences.getInstance()).clear();

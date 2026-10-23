@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Beta 3.4 (ADR-035): progress photos never leave the phone: neither the
+     cloud backup nor a device-to-device transfer (Android 12+) takes them. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="progress_photos/" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="progress_photos/" />
+    </device-transfer>
+</data-extraction-rules>

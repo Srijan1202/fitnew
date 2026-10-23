@@ -194,6 +194,7 @@ export const APP_FEATURES = {
   'community-foods': { name: 'Community foods', description: "Sharing a food with everyone, reporting one, and other people's shared foods in search." },
   'food-requests': { name: 'Missing-food requests', description: 'Counting searches that find nothing, and "Ask us to add it".' },
   'weekly-report': { name: 'Weekly report', description: 'The premium weekly report on Progress.' },
+  'progress-photos': { name: 'Progress photos', description: 'Taking and comparing progress photos (they never leave the phone).' },
 } as const;
 export type AppFeature = keyof typeof APP_FEATURES;
 export const APP_FEATURE_KEYS = Object.keys(APP_FEATURES) as AppFeature[];

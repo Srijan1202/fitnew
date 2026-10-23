@@ -80,6 +80,7 @@ dependencies:
   url_launcher: 6.3.3
   # Beta 3.2 (ADR-029 amendment): two short, quiet chimes made for FITOS.
   audioplayers: 6.8.1
+  image_picker: 1.2.4
 dev_dependencies:
   flutter_test:
     sdk: flutter
