@@ -205,7 +205,7 @@ This:
 Caddy serves more sites beside the API, each from `/opt/fitos/caddy/sites/*.caddy`, which the Caddyfile imports:
 
 - **https://tryfitos.me** (and `www`): the website, from the `fitos-website` repository (`deploy\deploy.ps1`, which also uploads the APK). DNS: `A @ → the Elastic IP`; `www` is a CNAME to the apex.
-- **https://admin.tryfitos.me**: the admin panel (ADR-022 amendment). Publish it with `.\scriptswsdmin.ps1`. DNS: `A admin → the Elastic IP`. Add `admin.tryfitos.me` to Firebase Authentication's authorised domains. The panel's `/api/*` goes to the serving API container (the `fitos_api` snippet), so releases and rollbacks move it too.
+- **https://admin.tryfitos.me**: the admin panel (ADR-022 amendment). Publish it with `.\scripts\aws\admin.ps1`. DNS: `A admin → the Elastic IP`. Add `admin.tryfitos.me` to Firebase Authentication's authorised domains. The panel's `/api/*` goes to the serving API container (the `fitos_api` snippet), so releases and rollbacks move it too.
 
 **Administrators** (ADR-022 D2), from this PC: `.\scripts\aws\admin-grant.ps1 -Email <email>` grants, `-Revoke` takes it away, `-List` shows who has it. The account must have signed in once, then signs out and in again.
 
