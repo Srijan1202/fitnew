@@ -46,6 +46,25 @@
 | E21 | Re-run the load test against the hosted API | S | Phase 19, after O1; `load:test` measures the local stack (ADR-024 D5) |
 | E17 | Name a high-protein dish from tonight's mess menu in the protein nudge | M | Phase 10 suggestions exist on the Eat tab; the planner would need that day's menu at plan time (ADR-021 "Not in Phase 15") |
 
+## Feature ideas for beta 4 and later (owner, 2026-10-23: "add to the future plan; bugs first")
+
+Not scheduled. When picked, they get a phase plan for approval first. Suggested first set: **F1, F2, F3, F5, F6**.
+
+| # | Feature | Size | Notes |
+|---|---|---|---|
+| F1 | **In-app update prompt** | S | The APK is sideloaded, so testers miss new betas. The app reads the latest version (from tryfitos.me or `/meta/config`) and offers "Beta N is out → Download". E1's minimum-build gate stays for forced updates |
+| F2 | **Rolling-cycle programmes** ("4 on, 1 off", no weekdays) | M | ADR-030 option 3. Skip today then simply moves the cycle |
+| F3 | **Food requests from an empty search** | S | "Ask us to add this" goes into Feedback (category food, tagged in the panel), so the E13 gap closes in the order testers need |
+| F4 | **App features behind flags** | S | = E18: wire features to `/meta/config` so the admin panel switches them without an APK |
+| F5 | **Streaks and a weekly goal ring** on Home | S–M | Days logged in a row; sessions done against the plan this week |
+| F6 | **Mess menu ratings** (👍/👎 per dish) | M | Fun for VIT; ratings can later weigh meal suggestions. Needs a table and abuse limits |
+| F7 | **Water tracking** | S | One tap on Home; a daily target from body weight |
+| F8 | **Progress photos, on the phone only** | M | Never uploaded; side-by-side compare. Fits the privacy rules (§23) |
+| F9 | **Server push notifications** | M | = O9. Reminders and "Premium approved" while the app is closed (FCM from the server) |
+| F10 | **AI that knows your history** | M | = O8, and only after O7 (paid Gemini): answers from the last 4 weeks of training and food |
+| F11 | **Exercise demo animations** | M–L | Short loops for the ~30 most-used lifts; mostly a content job (licensing) |
+| F12 | **Friends / VIT leaderboard** | L | Weekly sessions among friends. Needs a privacy design (opt-in, what is shown) before any code |
+
 ## Later phases (already in MASTER-SPEC, listed so nothing is lost)
 
 - **Phase 14 (AI features):** built on `phase-14` (ADR-020); recovery and TODAY stay out of the chat context until O8 is decided.
