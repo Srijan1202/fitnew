@@ -24,6 +24,11 @@ abstract class HealthDataProvider {
 
   /// Open the provider's own settings / permission management, if any.
   Future<bool> openSettings();
+
+  /// Beta 3.2: active kcal the provider counted between two instants (a
+  /// FITOS workout's window). 0 when granted but nothing was recorded; null
+  /// when it cannot say (not connected, not granted, an error). Never throws.
+  Future<double?> activeCaloriesBetween(DateTime start, DateTime end);
 }
 
 /// The provider for platforms with no health source: honest
@@ -57,4 +62,8 @@ class UnsupportedHealthProvider implements HealthDataProvider {
 
   @override
   Future<bool> openSettings() async => false;
+
+  @override
+  Future<double?> activeCaloriesBetween(DateTime start, DateTime end) async =>
+      null;
 }

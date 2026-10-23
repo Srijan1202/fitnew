@@ -117,3 +117,19 @@ sideloaded builds. Recorded, not done.
   is exercised only on a device with Health Connect (manual acceptance).
 - Future providers (HealthKit) implement `HealthDataProvider` and reuse
   every model, screen and rule.
+
+## Amendment — active calories combined with FITOS workouts (beta 3.2, owner 2026-10-23)
+
+The owner asked that a workout logged in FITOS count towards active calories, combined smartly with Health Connect, and **shown only**: the food target does not change.
+
+- **The estimate** (`lib/features/health/domain/active_energy.dart`):
+  - active kcal = (MET − 1) × kg × hours. The "− 1" removes resting energy, as Health Connect's active calories do.
+  - MET is 3.5 for typical resistance training (2024 Compendium, 02050) and 5.0 at 20 or more working sets an hour (02052).
+  - The duration is the session's own, capped at 3 h; the weight is the latest one.
+  - Always shown with "≈".
+- **No double count:** the day's figure is Health Connect's active kcal plus, for each FITOS session completed today (in the user's zone), only max(0, the estimate − what Health Connect counted inside that session's window). The window comes from `HealthDataProvider.activeCaloriesBetween`: 0 when granted and nothing was recorded, null when it cannot say.
+- **On the phone only.** This was planned in packages/core, but it lives in the app because it combines Health Connect data, which never leaves the phone (owner B4). Nothing of it is sent to the server or to FITOS AI.
+- **Shown:**
+  - on Home's "Active calories" tile: "≈ 415 kcal", with "280 phone/watch + 135 workouts", or "From today's workout (estimate)" without Health Connect;
+  - on the Health screen: a block with the total, Health Connect's part and a line per workout.
+- **Not done:** cardio exercises (the library has none yet) and eating back the calories (owner: no).

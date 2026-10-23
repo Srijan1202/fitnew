@@ -1,3 +1,4 @@
+import '../../../home/presentation/controllers/home_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -166,6 +167,7 @@ class _Body extends ConsumerWidget {
           ),
         ],
         const SizedBox(height: FitSpacing.lg),
+        const _ActiveEnergyBlock(),
         for (final c in HealthCategory.values) _category(context, ref, c),
         const SizedBox(height: FitSpacing.md),
         Wrap(
@@ -275,6 +277,65 @@ class _Body extends ConsumerWidget {
     if (d.inMinutes < 60) return '${d.inMinutes} min ago';
     if (d.inHours < 24) return '${d.inHours} h ago';
     return '${d.inDays} d ago';
+  }
+}
+
+/// Beta 3.2 (ADR-008 amendment): today's active calories and where they
+/// came from. Health Connect's figure, plus what each FITOS workout adds
+/// beyond what Health Connect already counted during it. On the phone only.
+class _ActiveEnergyBlock extends ConsumerWidget {
+  const _ActiveEnergyBlock();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final e = ref.watch(activeEnergyProvider).value;
+    if (e == null || e.isEmpty) return const SizedBox.shrink();
+    final textTheme = Theme.of(context).textTheme;
+    final muted = textTheme.bodyMedium?.copyWith(color: FitColors.ink60);
+    return Padding(
+      padding: EdgeInsets.only(bottom: fitGlass ? 10 : FitSpacing.md),
+      child: FitBlock(
+        key: const ValueKey('health.activeEnergy'),
+        padding: const EdgeInsets.all(FitSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text('ACTIVE CALORIES TODAY', style: textTheme.labelSmall),
+            const SizedBox(height: FitSpacing.xs),
+            Text(
+              e.fromWorkouts > 0 ? '\u2248 ${e.total} kcal' : '${e.total} kcal',
+              key: const ValueKey('health.activeEnergy.total'),
+              style: textTheme.displaySmall,
+            ),
+            const SizedBox(height: FitSpacing.sm),
+            Text(
+              e.fromHealth == null
+                  ? 'Phone/watch: not available'
+                  : 'Phone/watch: ${e.fromHealth} kcal',
+              style: textTheme.bodyMedium,
+            ),
+            for (final w in e.workouts)
+              Padding(
+                padding: const EdgeInsets.only(top: FitSpacing.xs),
+                child: Text(
+                  w.healthDuringKcal == null || w.healthDuringKcal == 0
+                      ? '${w.name}: \u2248 ${w.estimateKcal} kcal (estimate), +${w.addedKcal}'
+                      : '${w.name}: \u2248 ${w.estimateKcal} kcal; ${w.healthDuringKcal!.round()} already counted, +${w.addedKcal}',
+                  key: ValueKey('health.activeEnergy.${e.workouts.indexOf(w)}'),
+                  style: textTheme.bodyMedium,
+                ),
+              ),
+            const SizedBox(height: FitSpacing.sm),
+            Text(
+              'Workouts are estimated from their length, your weight and how dense '
+              'they were. Minutes your phone or watch already counted are not added '
+              'twice. Your food target does not change.',
+              style: muted,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

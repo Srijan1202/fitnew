@@ -332,11 +332,20 @@ class TodayMetrics extends StatelessWidget {
       stepsMuted = true;
     }
 
-    // Active calories.
+    // Active calories. Beta 3.2: a workout logged in FITOS adds what Health
+    // Connect did not already count (an estimate, so "≈").
     String kcalValue;
     String kcalLine;
     var kcalMuted = false;
-    if (active != null && active.isAvailable) {
+    final energy = c.activeEnergy;
+    if (energy != null && energy.fromWorkouts > 0) {
+      kcalValue = '≈ ${HomeSections.group(energy.total)} kcal';
+      final fromHealth = energy.fromHealth;
+      kcalLine = fromHealth == null
+          ? "From today's workout (estimate)"
+          : '${HomeSections.group(fromHealth)} phone/watch + '
+              '${HomeSections.group(energy.fromWorkouts)} workouts';
+    } else if (active != null && active.isAvailable) {
       kcalValue = '${HomeSections.group(active.value!)} kcal';
       final total = h!.totalCalories;
       kcalLine = total.isAvailable

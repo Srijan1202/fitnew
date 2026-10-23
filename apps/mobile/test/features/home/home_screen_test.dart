@@ -1,3 +1,5 @@
+import 'package:fitos/features/health/domain/active_energy.dart';
+import 'package:riverpod/misc.dart' show Override;
 import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/core/routing/router.dart';
@@ -82,7 +84,7 @@ void main() {
   });
   tearDown(() => db.close());
 
-  Widget app({String initial = '/'}) {
+  Widget app({String initial = '/', List<Override> extra = const []}) {
     final router = GoRouter(
       initialLocation: initial,
       routes: [
@@ -137,6 +139,7 @@ void main() {
           recovery: recovery,
         ),
         ...healthOverrides(health),
+        ...extra,
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
     );
@@ -228,6 +231,42 @@ void main() {
           : const [],
     );
   }
+
+  testWidgets(
+      'beta 3.2: a FITOS workout adds what Health Connect did not count — Home shows the total and the split; the Health screen explains it',
+      (tester) async {
+    health.connection_ = const HealthConnectionState(
+      sdk: HealthSdkStatus.available,
+      granted: {HealthMetricKind.activeCalories},
+    );
+    health.snapshot_ = snapshot({HealthMetricKind.activeCalories}, active: 280);
+    await tester.pumpWidget(
+      app(
+        extra: [
+          activeEnergyProvider.overrideWith(
+            (_) async => const ActiveEnergy(
+              fromHealth: 280,
+              workouts: [
+                WorkoutEnergy(name: 'Push', estimateKcal: 175, healthDuringKcal: 40),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await reveal(tester, find.byKey(const ValueKey('home.activeCalories')));
+    expect(textOf(tester, 'home.activeCalories').data, '\u2248 415 kcal');
+    expect(find.text('280 phone/watch + 135 workouts'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('home.activeCalories')));
+    await tester.pumpAndSettle();
+    expect(textOf(tester, 'health.activeEnergy.total').data, '\u2248 415 kcal');
+    expect(
+      textOf(tester, 'health.activeEnergy.0').data,
+      'Push: \u2248 175 kcal; 40 already counted, +135',
+    );
+  });
 
   testWidgets(
       'server unreachable with nothing cached: Home says so in one line with Retry; health still shows; Retry refetches',

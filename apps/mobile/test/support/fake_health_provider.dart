@@ -62,6 +62,15 @@ class FakeHealthProvider implements HealthDataProvider {
     calls.add('openSettings');
     return true;
   }
+
+  /// Beta 3.2: what Health Connect counted in a window; null = cannot say.
+  double? Function(DateTime start, DateTime end) activeBetween = (_, __) => null;
+
+  @override
+  Future<double?> activeCaloriesBetween(DateTime start, DateTime end) async {
+    calls.add('activeBetween');
+    return activeBetween(start, end);
+  }
 }
 
 /// A metric with a value, for scripting snapshots.

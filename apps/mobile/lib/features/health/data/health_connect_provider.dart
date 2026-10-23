@@ -81,6 +81,16 @@ class HealthConnectProvider implements HealthDataProvider {
   @override
   Future<bool> openSettings() => _channel.openSettings();
 
+  @override
+  Future<double?> activeCaloriesBetween(DateTime start, DateTime end) async {
+    if (!end.isAfter(start)) return null;
+    final conn = await connection();
+    if (!conn.granted.contains(HealthMetricKind.activeCalories)) return null;
+    final a = await _aggregate(start, end, [HealthMetricKind.activeCalories]);
+    if (a.failure != null) return null;
+    return a.values[HealthMetricKind.activeCalories.wire] ?? 0;
+  }
+
   /* ---------------------------------------------------------- snapshot -- */
 
   @override

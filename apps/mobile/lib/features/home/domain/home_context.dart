@@ -1,3 +1,4 @@
+import '../../health/domain/active_energy.dart';
 import '../../health/domain/entities/health.dart';
 import '../../profile/domain/entities/profile.dart';
 import '../../workout/domain/entities/workout.dart';
@@ -23,7 +24,12 @@ class HomeContext {
     required this.stepGoal,
     required this.volume,
     required this.week,
+    this.activeEnergy,
   });
+
+  /// Beta 3.2: today's active calories, Health Connect and FITOS workouts
+  /// combined on the phone; null until known.
+  final ActiveEnergy? activeEnergy;
 
   /// The canonical display name (`users.display_name`), or null — the
   /// greeting then has no name; never a placeholder.

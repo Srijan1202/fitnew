@@ -4,7 +4,9 @@ import 'package:timezone/timezone.dart' as tz;
 import '../../../../core/errors/failure.dart';
 import '../../../auth/domain/entities/auth_state.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../health/domain/active_energy.dart';
 import '../../../health/domain/entities/health.dart';
+import '../../../health/domain/health_data_provider.dart';
 import '../../../health/presentation/controllers/health_providers.dart';
 import '../../../nutrition/presentation/controllers/food_log_providers.dart';
 import '../../../profile/data/profile_repository.dart';
@@ -127,6 +129,65 @@ final homeNutritionProvider = Provider<NutritionContext>((ref) {
   );
 });
 
+/// Beta 3.2 (ADR-008 amendment): today's active calories. Health
+/// Connect's day plus, for each FITOS workout completed today, only the part
+/// Health Connect did not already count in that session's window. Computed
+/// here, on the phone; nothing of it is sent anywhere.
+final activeEnergyProvider = FutureProvider<ActiveEnergy?>((ref) async {
+  if (ref.watch(sessionUserIdProvider) == null) return null;
+  final day = ref.watch(healthSnapshotProvider).value?.activeCalories;
+  return activeEnergyFor(
+    date: ref.watch(localTodayProvider),
+    location: userLocation(ref.watch(userTimezoneProvider)),
+    sessions: ref.watch(historyProvider).value?.items ?? const [],
+    bodyWeightKg:
+        ref.watch(profileControllerProvider).value?.profile.latestWeightKg,
+    healthDayKcal: day != null && day.isAvailable ? day.value : null,
+    health: ref.watch(healthDataProviderProvider),
+  );
+});
+
+/// The assembly behind [activeEnergyProvider]: the sessions completed on
+/// [date] (in the user's zone), each estimated and checked against what
+/// Health Connect counted in its own window.
+Future<ActiveEnergy> activeEnergyFor({
+  required String date,
+  required tz.Location location,
+  required List<SessionListItem> sessions,
+  required double? bodyWeightKg,
+  required double? healthDayKcal,
+  required HealthDataProvider health,
+}) async {
+  String localDate(DateTime t) {
+    final l = tz.TZDateTime.from(t, location);
+    final mm = l.month.toString().padLeft(2, '0');
+    final dd = l.day.toString().padLeft(2, '0');
+    return '${l.year}-$mm-$dd';
+  }
+
+  final workouts = <WorkoutEnergy>[];
+  for (final s in sessions) {
+    final done = s.completedAt;
+    if (s.status != SessionStatus.completed || done == null) continue;
+    final end = DateTime.parse(done);
+    if (localDate(end) != date) continue;
+    final start = DateTime.parse(s.startedAt);
+    final seconds = s.durationSeconds ?? end.difference(start).inSeconds;
+    workouts.add(
+      WorkoutEnergy(
+        name: s.name,
+        estimateKcal: workoutActiveKcal(
+          durationMinutes: seconds ~/ 60,
+          bodyWeightKg: bodyWeightKg,
+          workingSets: s.workingSets,
+        ),
+        healthDuringKcal: await health.activeCaloriesBetween(start, end),
+      ),
+    );
+  }
+  return combineActiveEnergy(healthDayKcal: healthDayKcal, workouts: workouts);
+}
+
 final homeContextProvider = Provider<HomeContext>((ref) {
   final profile = ref.watch(profileControllerProvider).value;
   return HomeContext(
@@ -143,6 +204,7 @@ final homeContextProvider = Provider<HomeContext>((ref) {
     stepGoal: ref.watch(stepGoalProvider),
     volume: ref.watch(volumeProvider).value,
     week: ref.watch(weekContextProvider),
+    activeEnergy: ref.watch(activeEnergyProvider).value,
   );
 });
 
