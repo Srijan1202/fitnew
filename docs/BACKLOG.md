@@ -52,18 +52,19 @@ Not scheduled. When picked, they get a phase plan for approval first. Suggested 
 
 | # | Feature | Size | Notes |
 |---|---|---|---|
-| F1 | **In-app update prompt** | S | The APK is sideloaded, so testers miss new betas. The app reads the latest version (from tryfitos.me or `/meta/config`) and offers "Beta N is out → Download". E1's minimum-build gate stays for forced updates |
+| F1 | **In-app update prompt** — ✅ done in beta 3.2 | S | The APK is sideloaded, so testers miss new betas. The app reads the latest version (from tryfitos.me or `/meta/config`) and offers "Beta N is out → Download". E1's minimum-build gate stays for forced updates |
 | F2 | **Rolling-cycle programmes** ("4 on, 1 off", no weekdays) | M | ADR-030 option 3. Skip today then simply moves the cycle |
-| F3 | **Food requests from an empty search** | S | "Ask us to add this" goes into Feedback (category food, tagged in the panel), so the E13 gap closes in the order testers need |
-| F4 | **App features behind flags** | S | = E18: wire features to `/meta/config` so the admin panel switches them without an APK |
-| F5 | **Streaks and a weekly goal ring** on Home | S–M | Days logged in a row; sessions done against the plan this week |
-| F6 | **Mess menu ratings** (👍/👎 per dish) | M | Fun for VIT; ratings can later weigh meal suggestions. Needs a table and abuse limits |
+| F3 | **Food requests from an empty search** — ✅ done in beta 3.2 (ADR-032) | S | "Ask us to add this" goes into Feedback (category food, tagged in the panel), so the E13 gap closes in the order testers need |
+| F4 | **App features behind flags** — beta 3.3 | S | = E18: wire features to `/meta/config` so the admin panel switches them without an APK |
+| F5 | **Streaks and a weekly goal ring** on Home — beta 3.3 | S–M | Days logged in a row; sessions done against the plan this week |
+| F6 | **Mess menu ratings** (👍/👎 per dish) — beta 3.3 | M | Fun for VIT; ratings can later weigh meal suggestions. Needs a table and abuse limits |
 | F7 | **Water tracking** | S | One tap on Home; a daily target from body weight |
 | F8 | **Progress photos, on the phone only** | M | Never uploaded; side-by-side compare. Fits the privacy rules (§23) |
 | F9 | **Server push notifications** | M | = O9. Reminders and "Premium approved" while the app is closed (FCM from the server) |
 | F10 | **AI that knows your history** | M | = O8, and only after O7 (paid Gemini): answers from the last 4 weeks of training and food |
 | F11 | **Exercise demo animations** | M–L | Short loops for the ~30 most-used lifts; mostly a content job (licensing) |
 | F12 | **Friends / VIT leaderboard** | L | Weekly sessions among friends. Needs a privacy design (opt-in, what is shown) before any code |
+| F13 | **Streak rewards** (owner, 2026-10-23) | M | A long enough streak unlocks rewards: a theme, a profile picture and the like, kept once earned. Builds on beta 3.3's streak (F5) and the premium themes and pictures (ADR-027/028). Needs a decision on which rewards, at what streak lengths, and whether they stay premium-only otherwise |
 
 ## Later phases (already in MASTER-SPEC, listed so nothing is lost)
 

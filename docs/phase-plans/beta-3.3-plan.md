@@ -1,6 +1,6 @@
 # Beta 3.3 — plan
 
-**Date** 2026-10-23 · **Branch** `phase-19` · **Status: awaiting the owner's approval. No code yet.**
+**Date** 2026-10-23 · **Branch** `phase-19` · **Status: approved by the owner 2026-10-23.**
 
 The owner's list for 3.3, and the four questions they answered on 2026-10-23. Records were checked and left as they are: they work, but appear only from the second session of a lift.
 
