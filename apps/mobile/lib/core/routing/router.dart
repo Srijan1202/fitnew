@@ -25,6 +25,7 @@ import '../../features/nutrition/presentation/screens/food_library_screen.dart';
 import '../../features/nutrition/presentation/screens/log_food_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_flow_screen.dart';
 import '../../features/profile/presentation/screens/goal_editor_screen.dart';
+import '../../features/profile/presentation/screens/targets_editor_screen.dart';
 import '../../features/profile/presentation/screens/personal_details_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
@@ -59,6 +60,7 @@ abstract final class Routes {
   static const String onboarding = '/onboarding';
   static const String profile = '/profile';
   static const String goalEditor = '/profile/goal';
+  static const String targetsEditor = '/profile/targets';
   static const String personalDetails = '/profile/details';
 
   /// Phase 10: diet and allergies, the hard rules for food suggestions.
@@ -158,6 +160,11 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
             path: 'goal',
             name: 'goal-editor',
             builder: (context, state) => const GoalEditorScreen(),
+          ),
+          GoRoute(
+            path: 'targets',
+            name: 'targets-editor',
+            builder: (context, state) => const TargetsEditorScreen(),
           ),
           GoRoute(
             path: 'health',

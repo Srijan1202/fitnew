@@ -21,6 +21,22 @@ class TargetsDisplay extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
+        // Beta 3.2 (ADR-031): the user's own numbers say so.
+        if (targets.isCustom) ...<Widget>[
+          Container(
+            key: const ValueKey('targets.yours'),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              border: Border.all(color: FitColors.accent),
+              borderRadius: BorderRadius.all(FitRadius.small),
+            ),
+            child: Text(
+              'YOUR TARGET',
+              style: textTheme.labelSmall?.copyWith(color: FitColors.accent),
+            ),
+          ),
+          const SizedBox(height: FitSpacing.sm),
+        ],
         // The calorie target is the hero: large, alone, first.
         Semantics(
           label: '${targets.kcal} kilocalories per day',

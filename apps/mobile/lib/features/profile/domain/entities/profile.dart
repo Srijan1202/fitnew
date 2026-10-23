@@ -103,10 +103,71 @@ abstract class NutritionTargets with _$NutritionTargets {
     required int tdeeEstimate,
     required List<String> rationale,
     required String reason,
+
+    /// Beta 3.2 (ADR-031): `custom` when the user set calories and protein.
+    @Default('fitos') String source,
   }) = _NutritionTargets;
 
   factory NutritionTargets.fromJson(Map<String, dynamic> json) =>
       _$NutritionTargetsFromJson(json);
+}
+
+extension NutritionTargetsSource on NutritionTargets {
+  bool get isCustom => source == 'custom';
+}
+
+/// FITOS's own suggestion, beside the targets in effect (ADR-031).
+@freezed
+abstract class TargetsSuggestion with _$TargetsSuggestion {
+  const factory TargetsSuggestion({
+    required int kcal,
+    required int proteinG,
+    required int carbG,
+    required int fatG,
+    required int fiberG,
+  }) = _TargetsSuggestion;
+
+  factory TargetsSuggestion.fromJson(Map<String, dynamic> json) =>
+      _$TargetsSuggestionFromJson(json);
+}
+
+/// The editor's limits for this user (the server's; never computed here).
+@freezed
+abstract class TargetLimits with _$TargetLimits {
+  const factory TargetLimits({
+    required int kcalMin,
+    required int kcalMax,
+    required int proteinMinG,
+    required int proteinMaxG,
+  }) = _TargetLimits;
+
+  factory TargetLimits.fromJson(Map<String, dynamic> json) =>
+      _$TargetLimitsFromJson(json);
+}
+
+/// GET /user/targets.
+@freezed
+abstract class TargetsView with _$TargetsView {
+  const factory TargetsView({
+    required NutritionTargets? current,
+    required TargetsSuggestion? suggestion,
+    required TargetLimits limits,
+  }) = _TargetsView;
+
+  factory TargetsView.fromJson(Map<String, dynamic> json) =>
+      _$TargetsViewFromJson(json);
+}
+
+/// PUT /user/targets/custom: the new targets and any warnings.
+@freezed
+abstract class CustomTargetsResponse with _$CustomTargetsResponse {
+  const factory CustomTargetsResponse({
+    required NutritionTargets targets,
+    required List<String> warnings,
+  }) = _CustomTargetsResponse;
+
+  factory CustomTargetsResponse.fromJson(Map<String, dynamic> json) =>
+      _$CustomTargetsResponseFromJson(json);
 }
 
 @freezed

@@ -87,6 +87,21 @@ class _GoalEditorScreenState extends ConsumerState<GoalEditorScreen> {
                   'Your calorie and protein targets are recomputed the moment you save.',
                   style: textTheme.bodyMedium,
                 ),
+                if (ref
+                        .watch(profileControllerProvider)
+                        .value
+                        ?.goal
+                        .targets
+                        ?.isCustom ??
+                    false) ...<Widget>[
+                  const SizedBox(height: FitSpacing.sm),
+                  Text(
+                    'You set your own targets. Saving a new goal replaces them with FITOS\u2019s suggestion for that goal; you can set your own again after.',
+                    key: const ValueKey('goal.customNote'),
+                    style:
+                        textTheme.bodyMedium?.copyWith(color: FitColors.amber),
+                  ),
+                ],
                 const SizedBox(height: FitSpacing.lg),
                 ChoiceList<GoalType>(
                   options: GoalType.values,

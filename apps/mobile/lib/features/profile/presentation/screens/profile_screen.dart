@@ -310,11 +310,28 @@ class _Targets extends StatelessWidget {
           TargetsDisplay(targets: targets),
           const SizedBox(height: FitSpacing.sm),
           Text(
-            'Since ${targets.effectiveFrom} · ${targets.reason}',
+            targets.isCustom
+                ? 'Your own target since ${targets.effectiveFrom}'
+                : 'Since ${targets.effectiveFrom} · ${targets.reason}',
+            key: const ValueKey('profile.targetsLine'),
             style: textTheme.bodyMedium,
           ),
           const SizedBox(height: FitSpacing.md),
-          change,
+          Wrap(
+            spacing: FitSpacing.sm,
+            runSpacing: FitSpacing.sm,
+            children: <Widget>[
+              change,
+              OutlinedButton.icon(
+                key: const ValueKey('profile.setTargets'),
+                onPressed: () => context.push(Routes.targetsEditor),
+                style: _outlined,
+                icon: const Icon(Icons.tune, size: 18),
+                label:
+                    Text(targets.isCustom ? 'Edit my targets' : 'Set my own'),
+              ),
+            ],
+          ),
         ],
       ),
     );

@@ -2253,6 +2253,9 @@ mixin _$NutritionTargets {
   List<String> get rationale;
   String get reason;
 
+  /// Beta 3.2 (ADR-031): `custom` when the user set calories and protein.
+  String get source;
+
   /// Create a copy of NutritionTargets
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2281,7 +2284,8 @@ mixin _$NutritionTargets {
             (identical(other.tdeeEstimate, tdeeEstimate) ||
                 other.tdeeEstimate == tdeeEstimate) &&
             const DeepCollectionEquality().equals(other.rationale, rationale) &&
-            (identical(other.reason, reason) || other.reason == reason));
+            (identical(other.reason, reason) || other.reason == reason) &&
+            (identical(other.source, source) || other.source == source));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2297,11 +2301,12 @@ mixin _$NutritionTargets {
       bmr,
       tdeeEstimate,
       const DeepCollectionEquality().hash(rationale),
-      reason);
+      reason,
+      source);
 
   @override
   String toString() {
-    return 'NutritionTargets(effectiveFrom: $effectiveFrom, kcal: $kcal, proteinG: $proteinG, carbG: $carbG, fatG: $fatG, fiberG: $fiberG, bmr: $bmr, tdeeEstimate: $tdeeEstimate, rationale: $rationale, reason: $reason)';
+    return 'NutritionTargets(effectiveFrom: $effectiveFrom, kcal: $kcal, proteinG: $proteinG, carbG: $carbG, fatG: $fatG, fiberG: $fiberG, bmr: $bmr, tdeeEstimate: $tdeeEstimate, rationale: $rationale, reason: $reason, source: $source)';
   }
 }
 
@@ -2321,7 +2326,8 @@ abstract mixin class $NutritionTargetsCopyWith<$Res> {
       int bmr,
       int tdeeEstimate,
       List<String> rationale,
-      String reason});
+      String reason,
+      String source});
 }
 
 /// @nodoc
@@ -2347,6 +2353,7 @@ class _$NutritionTargetsCopyWithImpl<$Res>
     Object? tdeeEstimate = null,
     Object? rationale = null,
     Object? reason = null,
+    Object? source = null,
   }) {
     return _then(_self.copyWith(
       effectiveFrom: null == effectiveFrom
@@ -2388,6 +2395,10 @@ class _$NutritionTargetsCopyWithImpl<$Res>
       reason: null == reason
           ? _self.reason
           : reason // ignore: cast_nullable_to_non_nullable
+              as String,
+      source: null == source
+          ? _self.source
+          : source // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -2496,7 +2507,8 @@ extension NutritionTargetsPatterns on NutritionTargets {
             int bmr,
             int tdeeEstimate,
             List<String> rationale,
-            String reason)?
+            String reason,
+            String source)?
         $default, {
     required TResult orElse(),
   }) {
@@ -2513,7 +2525,8 @@ extension NutritionTargetsPatterns on NutritionTargets {
             _that.bmr,
             _that.tdeeEstimate,
             _that.rationale,
-            _that.reason);
+            _that.reason,
+            _that.source);
       case _:
         return orElse();
     }
@@ -2544,7 +2557,8 @@ extension NutritionTargetsPatterns on NutritionTargets {
             int bmr,
             int tdeeEstimate,
             List<String> rationale,
-            String reason)
+            String reason,
+            String source)
         $default,
   ) {
     final _that = this;
@@ -2560,7 +2574,8 @@ extension NutritionTargetsPatterns on NutritionTargets {
             _that.bmr,
             _that.tdeeEstimate,
             _that.rationale,
-            _that.reason);
+            _that.reason,
+            _that.source);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -2590,7 +2605,8 @@ extension NutritionTargetsPatterns on NutritionTargets {
             int bmr,
             int tdeeEstimate,
             List<String> rationale,
-            String reason)?
+            String reason,
+            String source)?
         $default,
   ) {
     final _that = this;
@@ -2606,7 +2622,8 @@ extension NutritionTargetsPatterns on NutritionTargets {
             _that.bmr,
             _that.tdeeEstimate,
             _that.rationale,
-            _that.reason);
+            _that.reason,
+            _that.source);
       case _:
         return null;
     }
@@ -2626,7 +2643,8 @@ class _NutritionTargets implements NutritionTargets {
       required this.bmr,
       required this.tdeeEstimate,
       required final List<String> rationale,
-      required this.reason})
+      required this.reason,
+      this.source = 'fitos'})
       : _rationale = rationale;
   factory _NutritionTargets.fromJson(Map<String, dynamic> json) =>
       _$NutritionTargetsFromJson(json);
@@ -2657,6 +2675,11 @@ class _NutritionTargets implements NutritionTargets {
 
   @override
   final String reason;
+
+  /// Beta 3.2 (ADR-031): `custom` when the user set calories and protein.
+  @override
+  @JsonKey()
+  final String source;
 
   /// Create a copy of NutritionTargets
   /// with the given fields replaced by the non-null parameter values.
@@ -2691,7 +2714,8 @@ class _NutritionTargets implements NutritionTargets {
                 other.tdeeEstimate == tdeeEstimate) &&
             const DeepCollectionEquality()
                 .equals(other._rationale, _rationale) &&
-            (identical(other.reason, reason) || other.reason == reason));
+            (identical(other.reason, reason) || other.reason == reason) &&
+            (identical(other.source, source) || other.source == source));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2707,11 +2731,12 @@ class _NutritionTargets implements NutritionTargets {
       bmr,
       tdeeEstimate,
       const DeepCollectionEquality().hash(_rationale),
-      reason);
+      reason,
+      source);
 
   @override
   String toString() {
-    return 'NutritionTargets(effectiveFrom: $effectiveFrom, kcal: $kcal, proteinG: $proteinG, carbG: $carbG, fatG: $fatG, fiberG: $fiberG, bmr: $bmr, tdeeEstimate: $tdeeEstimate, rationale: $rationale, reason: $reason)';
+    return 'NutritionTargets(effectiveFrom: $effectiveFrom, kcal: $kcal, proteinG: $proteinG, carbG: $carbG, fatG: $fatG, fiberG: $fiberG, bmr: $bmr, tdeeEstimate: $tdeeEstimate, rationale: $rationale, reason: $reason, source: $source)';
   }
 }
 
@@ -2733,7 +2758,8 @@ abstract mixin class _$NutritionTargetsCopyWith<$Res>
       int bmr,
       int tdeeEstimate,
       List<String> rationale,
-      String reason});
+      String reason,
+      String source});
 }
 
 /// @nodoc
@@ -2759,6 +2785,7 @@ class __$NutritionTargetsCopyWithImpl<$Res>
     Object? tdeeEstimate = null,
     Object? rationale = null,
     Object? reason = null,
+    Object? source = null,
   }) {
     return _then(_NutritionTargets(
       effectiveFrom: null == effectiveFrom
@@ -2801,7 +2828,1533 @@ class __$NutritionTargetsCopyWithImpl<$Res>
           ? _self.reason
           : reason // ignore: cast_nullable_to_non_nullable
               as String,
+      source: null == source
+          ? _self.source
+          : source // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
+  }
+}
+
+/// @nodoc
+mixin _$TargetsSuggestion {
+  int get kcal;
+  int get proteinG;
+  int get carbG;
+  int get fatG;
+  int get fiberG;
+
+  /// Create a copy of TargetsSuggestion
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $TargetsSuggestionCopyWith<TargetsSuggestion> get copyWith =>
+      _$TargetsSuggestionCopyWithImpl<TargetsSuggestion>(
+          this as TargetsSuggestion, _$identity);
+
+  /// Serializes this TargetsSuggestion to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is TargetsSuggestion &&
+            (identical(other.kcal, kcal) || other.kcal == kcal) &&
+            (identical(other.proteinG, proteinG) ||
+                other.proteinG == proteinG) &&
+            (identical(other.carbG, carbG) || other.carbG == carbG) &&
+            (identical(other.fatG, fatG) || other.fatG == fatG) &&
+            (identical(other.fiberG, fiberG) || other.fiberG == fiberG));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, kcal, proteinG, carbG, fatG, fiberG);
+
+  @override
+  String toString() {
+    return 'TargetsSuggestion(kcal: $kcal, proteinG: $proteinG, carbG: $carbG, fatG: $fatG, fiberG: $fiberG)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $TargetsSuggestionCopyWith<$Res> {
+  factory $TargetsSuggestionCopyWith(
+          TargetsSuggestion value, $Res Function(TargetsSuggestion) _then) =
+      _$TargetsSuggestionCopyWithImpl;
+  @useResult
+  $Res call({int kcal, int proteinG, int carbG, int fatG, int fiberG});
+}
+
+/// @nodoc
+class _$TargetsSuggestionCopyWithImpl<$Res>
+    implements $TargetsSuggestionCopyWith<$Res> {
+  _$TargetsSuggestionCopyWithImpl(this._self, this._then);
+
+  final TargetsSuggestion _self;
+  final $Res Function(TargetsSuggestion) _then;
+
+  /// Create a copy of TargetsSuggestion
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? kcal = null,
+    Object? proteinG = null,
+    Object? carbG = null,
+    Object? fatG = null,
+    Object? fiberG = null,
+  }) {
+    return _then(_self.copyWith(
+      kcal: null == kcal
+          ? _self.kcal
+          : kcal // ignore: cast_nullable_to_non_nullable
+              as int,
+      proteinG: null == proteinG
+          ? _self.proteinG
+          : proteinG // ignore: cast_nullable_to_non_nullable
+              as int,
+      carbG: null == carbG
+          ? _self.carbG
+          : carbG // ignore: cast_nullable_to_non_nullable
+              as int,
+      fatG: null == fatG
+          ? _self.fatG
+          : fatG // ignore: cast_nullable_to_non_nullable
+              as int,
+      fiberG: null == fiberG
+          ? _self.fiberG
+          : fiberG // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [TargetsSuggestion].
+extension TargetsSuggestionPatterns on TargetsSuggestion {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_TargetsSuggestion value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _TargetsSuggestion() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_TargetsSuggestion value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _TargetsSuggestion():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_TargetsSuggestion value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _TargetsSuggestion() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(int kcal, int proteinG, int carbG, int fatG, int fiberG)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _TargetsSuggestion() when $default != null:
+        return $default(
+            _that.kcal, _that.proteinG, _that.carbG, _that.fatG, _that.fiberG);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(int kcal, int proteinG, int carbG, int fatG, int fiberG)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _TargetsSuggestion():
+        return $default(
+            _that.kcal, _that.proteinG, _that.carbG, _that.fatG, _that.fiberG);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(int kcal, int proteinG, int carbG, int fatG, int fiberG)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _TargetsSuggestion() when $default != null:
+        return $default(
+            _that.kcal, _that.proteinG, _that.carbG, _that.fatG, _that.fiberG);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _TargetsSuggestion implements TargetsSuggestion {
+  const _TargetsSuggestion(
+      {required this.kcal,
+      required this.proteinG,
+      required this.carbG,
+      required this.fatG,
+      required this.fiberG});
+  factory _TargetsSuggestion.fromJson(Map<String, dynamic> json) =>
+      _$TargetsSuggestionFromJson(json);
+
+  @override
+  final int kcal;
+  @override
+  final int proteinG;
+  @override
+  final int carbG;
+  @override
+  final int fatG;
+  @override
+  final int fiberG;
+
+  /// Create a copy of TargetsSuggestion
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$TargetsSuggestionCopyWith<_TargetsSuggestion> get copyWith =>
+      __$TargetsSuggestionCopyWithImpl<_TargetsSuggestion>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$TargetsSuggestionToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _TargetsSuggestion &&
+            (identical(other.kcal, kcal) || other.kcal == kcal) &&
+            (identical(other.proteinG, proteinG) ||
+                other.proteinG == proteinG) &&
+            (identical(other.carbG, carbG) || other.carbG == carbG) &&
+            (identical(other.fatG, fatG) || other.fatG == fatG) &&
+            (identical(other.fiberG, fiberG) || other.fiberG == fiberG));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, kcal, proteinG, carbG, fatG, fiberG);
+
+  @override
+  String toString() {
+    return 'TargetsSuggestion(kcal: $kcal, proteinG: $proteinG, carbG: $carbG, fatG: $fatG, fiberG: $fiberG)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$TargetsSuggestionCopyWith<$Res>
+    implements $TargetsSuggestionCopyWith<$Res> {
+  factory _$TargetsSuggestionCopyWith(
+          _TargetsSuggestion value, $Res Function(_TargetsSuggestion) _then) =
+      __$TargetsSuggestionCopyWithImpl;
+  @override
+  @useResult
+  $Res call({int kcal, int proteinG, int carbG, int fatG, int fiberG});
+}
+
+/// @nodoc
+class __$TargetsSuggestionCopyWithImpl<$Res>
+    implements _$TargetsSuggestionCopyWith<$Res> {
+  __$TargetsSuggestionCopyWithImpl(this._self, this._then);
+
+  final _TargetsSuggestion _self;
+  final $Res Function(_TargetsSuggestion) _then;
+
+  /// Create a copy of TargetsSuggestion
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? kcal = null,
+    Object? proteinG = null,
+    Object? carbG = null,
+    Object? fatG = null,
+    Object? fiberG = null,
+  }) {
+    return _then(_TargetsSuggestion(
+      kcal: null == kcal
+          ? _self.kcal
+          : kcal // ignore: cast_nullable_to_non_nullable
+              as int,
+      proteinG: null == proteinG
+          ? _self.proteinG
+          : proteinG // ignore: cast_nullable_to_non_nullable
+              as int,
+      carbG: null == carbG
+          ? _self.carbG
+          : carbG // ignore: cast_nullable_to_non_nullable
+              as int,
+      fatG: null == fatG
+          ? _self.fatG
+          : fatG // ignore: cast_nullable_to_non_nullable
+              as int,
+      fiberG: null == fiberG
+          ? _self.fiberG
+          : fiberG // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$TargetLimits {
+  int get kcalMin;
+  int get kcalMax;
+  int get proteinMinG;
+  int get proteinMaxG;
+
+  /// Create a copy of TargetLimits
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $TargetLimitsCopyWith<TargetLimits> get copyWith =>
+      _$TargetLimitsCopyWithImpl<TargetLimits>(
+          this as TargetLimits, _$identity);
+
+  /// Serializes this TargetLimits to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is TargetLimits &&
+            (identical(other.kcalMin, kcalMin) || other.kcalMin == kcalMin) &&
+            (identical(other.kcalMax, kcalMax) || other.kcalMax == kcalMax) &&
+            (identical(other.proteinMinG, proteinMinG) ||
+                other.proteinMinG == proteinMinG) &&
+            (identical(other.proteinMaxG, proteinMaxG) ||
+                other.proteinMaxG == proteinMaxG));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, kcalMin, kcalMax, proteinMinG, proteinMaxG);
+
+  @override
+  String toString() {
+    return 'TargetLimits(kcalMin: $kcalMin, kcalMax: $kcalMax, proteinMinG: $proteinMinG, proteinMaxG: $proteinMaxG)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $TargetLimitsCopyWith<$Res> {
+  factory $TargetLimitsCopyWith(
+          TargetLimits value, $Res Function(TargetLimits) _then) =
+      _$TargetLimitsCopyWithImpl;
+  @useResult
+  $Res call({int kcalMin, int kcalMax, int proteinMinG, int proteinMaxG});
+}
+
+/// @nodoc
+class _$TargetLimitsCopyWithImpl<$Res> implements $TargetLimitsCopyWith<$Res> {
+  _$TargetLimitsCopyWithImpl(this._self, this._then);
+
+  final TargetLimits _self;
+  final $Res Function(TargetLimits) _then;
+
+  /// Create a copy of TargetLimits
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? kcalMin = null,
+    Object? kcalMax = null,
+    Object? proteinMinG = null,
+    Object? proteinMaxG = null,
+  }) {
+    return _then(_self.copyWith(
+      kcalMin: null == kcalMin
+          ? _self.kcalMin
+          : kcalMin // ignore: cast_nullable_to_non_nullable
+              as int,
+      kcalMax: null == kcalMax
+          ? _self.kcalMax
+          : kcalMax // ignore: cast_nullable_to_non_nullable
+              as int,
+      proteinMinG: null == proteinMinG
+          ? _self.proteinMinG
+          : proteinMinG // ignore: cast_nullable_to_non_nullable
+              as int,
+      proteinMaxG: null == proteinMaxG
+          ? _self.proteinMaxG
+          : proteinMaxG // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// Adds pattern-matching-related methods to [TargetLimits].
+extension TargetLimitsPatterns on TargetLimits {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_TargetLimits value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _TargetLimits() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_TargetLimits value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _TargetLimits():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_TargetLimits value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _TargetLimits() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(
+            int kcalMin, int kcalMax, int proteinMinG, int proteinMaxG)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _TargetLimits() when $default != null:
+        return $default(
+            _that.kcalMin, _that.kcalMax, _that.proteinMinG, _that.proteinMaxG);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(int kcalMin, int kcalMax, int proteinMinG, int proteinMaxG)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _TargetLimits():
+        return $default(
+            _that.kcalMin, _that.kcalMax, _that.proteinMinG, _that.proteinMaxG);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(
+            int kcalMin, int kcalMax, int proteinMinG, int proteinMaxG)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _TargetLimits() when $default != null:
+        return $default(
+            _that.kcalMin, _that.kcalMax, _that.proteinMinG, _that.proteinMaxG);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _TargetLimits implements TargetLimits {
+  const _TargetLimits(
+      {required this.kcalMin,
+      required this.kcalMax,
+      required this.proteinMinG,
+      required this.proteinMaxG});
+  factory _TargetLimits.fromJson(Map<String, dynamic> json) =>
+      _$TargetLimitsFromJson(json);
+
+  @override
+  final int kcalMin;
+  @override
+  final int kcalMax;
+  @override
+  final int proteinMinG;
+  @override
+  final int proteinMaxG;
+
+  /// Create a copy of TargetLimits
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$TargetLimitsCopyWith<_TargetLimits> get copyWith =>
+      __$TargetLimitsCopyWithImpl<_TargetLimits>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$TargetLimitsToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _TargetLimits &&
+            (identical(other.kcalMin, kcalMin) || other.kcalMin == kcalMin) &&
+            (identical(other.kcalMax, kcalMax) || other.kcalMax == kcalMax) &&
+            (identical(other.proteinMinG, proteinMinG) ||
+                other.proteinMinG == proteinMinG) &&
+            (identical(other.proteinMaxG, proteinMaxG) ||
+                other.proteinMaxG == proteinMaxG));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, kcalMin, kcalMax, proteinMinG, proteinMaxG);
+
+  @override
+  String toString() {
+    return 'TargetLimits(kcalMin: $kcalMin, kcalMax: $kcalMax, proteinMinG: $proteinMinG, proteinMaxG: $proteinMaxG)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$TargetLimitsCopyWith<$Res>
+    implements $TargetLimitsCopyWith<$Res> {
+  factory _$TargetLimitsCopyWith(
+          _TargetLimits value, $Res Function(_TargetLimits) _then) =
+      __$TargetLimitsCopyWithImpl;
+  @override
+  @useResult
+  $Res call({int kcalMin, int kcalMax, int proteinMinG, int proteinMaxG});
+}
+
+/// @nodoc
+class __$TargetLimitsCopyWithImpl<$Res>
+    implements _$TargetLimitsCopyWith<$Res> {
+  __$TargetLimitsCopyWithImpl(this._self, this._then);
+
+  final _TargetLimits _self;
+  final $Res Function(_TargetLimits) _then;
+
+  /// Create a copy of TargetLimits
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? kcalMin = null,
+    Object? kcalMax = null,
+    Object? proteinMinG = null,
+    Object? proteinMaxG = null,
+  }) {
+    return _then(_TargetLimits(
+      kcalMin: null == kcalMin
+          ? _self.kcalMin
+          : kcalMin // ignore: cast_nullable_to_non_nullable
+              as int,
+      kcalMax: null == kcalMax
+          ? _self.kcalMax
+          : kcalMax // ignore: cast_nullable_to_non_nullable
+              as int,
+      proteinMinG: null == proteinMinG
+          ? _self.proteinMinG
+          : proteinMinG // ignore: cast_nullable_to_non_nullable
+              as int,
+      proteinMaxG: null == proteinMaxG
+          ? _self.proteinMaxG
+          : proteinMaxG // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$TargetsView {
+  NutritionTargets? get current;
+  TargetsSuggestion? get suggestion;
+  TargetLimits get limits;
+
+  /// Create a copy of TargetsView
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $TargetsViewCopyWith<TargetsView> get copyWith =>
+      _$TargetsViewCopyWithImpl<TargetsView>(this as TargetsView, _$identity);
+
+  /// Serializes this TargetsView to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is TargetsView &&
+            (identical(other.current, current) || other.current == current) &&
+            (identical(other.suggestion, suggestion) ||
+                other.suggestion == suggestion) &&
+            (identical(other.limits, limits) || other.limits == limits));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, current, suggestion, limits);
+
+  @override
+  String toString() {
+    return 'TargetsView(current: $current, suggestion: $suggestion, limits: $limits)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $TargetsViewCopyWith<$Res> {
+  factory $TargetsViewCopyWith(
+          TargetsView value, $Res Function(TargetsView) _then) =
+      _$TargetsViewCopyWithImpl;
+  @useResult
+  $Res call(
+      {NutritionTargets? current,
+      TargetsSuggestion? suggestion,
+      TargetLimits limits});
+
+  $NutritionTargetsCopyWith<$Res>? get current;
+  $TargetsSuggestionCopyWith<$Res>? get suggestion;
+  $TargetLimitsCopyWith<$Res> get limits;
+}
+
+/// @nodoc
+class _$TargetsViewCopyWithImpl<$Res> implements $TargetsViewCopyWith<$Res> {
+  _$TargetsViewCopyWithImpl(this._self, this._then);
+
+  final TargetsView _self;
+  final $Res Function(TargetsView) _then;
+
+  /// Create a copy of TargetsView
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? current = freezed,
+    Object? suggestion = freezed,
+    Object? limits = null,
+  }) {
+    return _then(_self.copyWith(
+      current: freezed == current
+          ? _self.current
+          : current // ignore: cast_nullable_to_non_nullable
+              as NutritionTargets?,
+      suggestion: freezed == suggestion
+          ? _self.suggestion
+          : suggestion // ignore: cast_nullable_to_non_nullable
+              as TargetsSuggestion?,
+      limits: null == limits
+          ? _self.limits
+          : limits // ignore: cast_nullable_to_non_nullable
+              as TargetLimits,
+    ));
+  }
+
+  /// Create a copy of TargetsView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $NutritionTargetsCopyWith<$Res>? get current {
+    if (_self.current == null) {
+      return null;
+    }
+
+    return $NutritionTargetsCopyWith<$Res>(_self.current!, (value) {
+      return _then(_self.copyWith(current: value));
+    });
+  }
+
+  /// Create a copy of TargetsView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $TargetsSuggestionCopyWith<$Res>? get suggestion {
+    if (_self.suggestion == null) {
+      return null;
+    }
+
+    return $TargetsSuggestionCopyWith<$Res>(_self.suggestion!, (value) {
+      return _then(_self.copyWith(suggestion: value));
+    });
+  }
+
+  /// Create a copy of TargetsView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $TargetLimitsCopyWith<$Res> get limits {
+    return $TargetLimitsCopyWith<$Res>(_self.limits, (value) {
+      return _then(_self.copyWith(limits: value));
+    });
+  }
+}
+
+/// Adds pattern-matching-related methods to [TargetsView].
+extension TargetsViewPatterns on TargetsView {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_TargetsView value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _TargetsView() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_TargetsView value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _TargetsView():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_TargetsView value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _TargetsView() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(NutritionTargets? current, TargetsSuggestion? suggestion,
+            TargetLimits limits)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _TargetsView() when $default != null:
+        return $default(_that.current, _that.suggestion, _that.limits);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(NutritionTargets? current, TargetsSuggestion? suggestion,
+            TargetLimits limits)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _TargetsView():
+        return $default(_that.current, _that.suggestion, _that.limits);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(NutritionTargets? current, TargetsSuggestion? suggestion,
+            TargetLimits limits)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _TargetsView() when $default != null:
+        return $default(_that.current, _that.suggestion, _that.limits);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _TargetsView implements TargetsView {
+  const _TargetsView(
+      {required this.current, required this.suggestion, required this.limits});
+  factory _TargetsView.fromJson(Map<String, dynamic> json) =>
+      _$TargetsViewFromJson(json);
+
+  @override
+  final NutritionTargets? current;
+  @override
+  final TargetsSuggestion? suggestion;
+  @override
+  final TargetLimits limits;
+
+  /// Create a copy of TargetsView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$TargetsViewCopyWith<_TargetsView> get copyWith =>
+      __$TargetsViewCopyWithImpl<_TargetsView>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$TargetsViewToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _TargetsView &&
+            (identical(other.current, current) || other.current == current) &&
+            (identical(other.suggestion, suggestion) ||
+                other.suggestion == suggestion) &&
+            (identical(other.limits, limits) || other.limits == limits));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, current, suggestion, limits);
+
+  @override
+  String toString() {
+    return 'TargetsView(current: $current, suggestion: $suggestion, limits: $limits)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$TargetsViewCopyWith<$Res>
+    implements $TargetsViewCopyWith<$Res> {
+  factory _$TargetsViewCopyWith(
+          _TargetsView value, $Res Function(_TargetsView) _then) =
+      __$TargetsViewCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {NutritionTargets? current,
+      TargetsSuggestion? suggestion,
+      TargetLimits limits});
+
+  @override
+  $NutritionTargetsCopyWith<$Res>? get current;
+  @override
+  $TargetsSuggestionCopyWith<$Res>? get suggestion;
+  @override
+  $TargetLimitsCopyWith<$Res> get limits;
+}
+
+/// @nodoc
+class __$TargetsViewCopyWithImpl<$Res> implements _$TargetsViewCopyWith<$Res> {
+  __$TargetsViewCopyWithImpl(this._self, this._then);
+
+  final _TargetsView _self;
+  final $Res Function(_TargetsView) _then;
+
+  /// Create a copy of TargetsView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? current = freezed,
+    Object? suggestion = freezed,
+    Object? limits = null,
+  }) {
+    return _then(_TargetsView(
+      current: freezed == current
+          ? _self.current
+          : current // ignore: cast_nullable_to_non_nullable
+              as NutritionTargets?,
+      suggestion: freezed == suggestion
+          ? _self.suggestion
+          : suggestion // ignore: cast_nullable_to_non_nullable
+              as TargetsSuggestion?,
+      limits: null == limits
+          ? _self.limits
+          : limits // ignore: cast_nullable_to_non_nullable
+              as TargetLimits,
+    ));
+  }
+
+  /// Create a copy of TargetsView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $NutritionTargetsCopyWith<$Res>? get current {
+    if (_self.current == null) {
+      return null;
+    }
+
+    return $NutritionTargetsCopyWith<$Res>(_self.current!, (value) {
+      return _then(_self.copyWith(current: value));
+    });
+  }
+
+  /// Create a copy of TargetsView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $TargetsSuggestionCopyWith<$Res>? get suggestion {
+    if (_self.suggestion == null) {
+      return null;
+    }
+
+    return $TargetsSuggestionCopyWith<$Res>(_self.suggestion!, (value) {
+      return _then(_self.copyWith(suggestion: value));
+    });
+  }
+
+  /// Create a copy of TargetsView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $TargetLimitsCopyWith<$Res> get limits {
+    return $TargetLimitsCopyWith<$Res>(_self.limits, (value) {
+      return _then(_self.copyWith(limits: value));
+    });
+  }
+}
+
+/// @nodoc
+mixin _$CustomTargetsResponse {
+  NutritionTargets get targets;
+  List<String> get warnings;
+
+  /// Create a copy of CustomTargetsResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $CustomTargetsResponseCopyWith<CustomTargetsResponse> get copyWith =>
+      _$CustomTargetsResponseCopyWithImpl<CustomTargetsResponse>(
+          this as CustomTargetsResponse, _$identity);
+
+  /// Serializes this CustomTargetsResponse to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is CustomTargetsResponse &&
+            (identical(other.targets, targets) || other.targets == targets) &&
+            const DeepCollectionEquality().equals(other.warnings, warnings));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, targets, const DeepCollectionEquality().hash(warnings));
+
+  @override
+  String toString() {
+    return 'CustomTargetsResponse(targets: $targets, warnings: $warnings)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $CustomTargetsResponseCopyWith<$Res> {
+  factory $CustomTargetsResponseCopyWith(CustomTargetsResponse value,
+          $Res Function(CustomTargetsResponse) _then) =
+      _$CustomTargetsResponseCopyWithImpl;
+  @useResult
+  $Res call({NutritionTargets targets, List<String> warnings});
+
+  $NutritionTargetsCopyWith<$Res> get targets;
+}
+
+/// @nodoc
+class _$CustomTargetsResponseCopyWithImpl<$Res>
+    implements $CustomTargetsResponseCopyWith<$Res> {
+  _$CustomTargetsResponseCopyWithImpl(this._self, this._then);
+
+  final CustomTargetsResponse _self;
+  final $Res Function(CustomTargetsResponse) _then;
+
+  /// Create a copy of CustomTargetsResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? targets = null,
+    Object? warnings = null,
+  }) {
+    return _then(_self.copyWith(
+      targets: null == targets
+          ? _self.targets
+          : targets // ignore: cast_nullable_to_non_nullable
+              as NutritionTargets,
+      warnings: null == warnings
+          ? _self.warnings
+          : warnings // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+    ));
+  }
+
+  /// Create a copy of CustomTargetsResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $NutritionTargetsCopyWith<$Res> get targets {
+    return $NutritionTargetsCopyWith<$Res>(_self.targets, (value) {
+      return _then(_self.copyWith(targets: value));
+    });
+  }
+}
+
+/// Adds pattern-matching-related methods to [CustomTargetsResponse].
+extension CustomTargetsResponsePatterns on CustomTargetsResponse {
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_CustomTargetsResponse value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _CustomTargetsResponse() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_CustomTargetsResponse value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CustomTargetsResponse():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_CustomTargetsResponse value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CustomTargetsResponse() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
+
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(NutritionTargets targets, List<String> warnings)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _CustomTargetsResponse() when $default != null:
+        return $default(_that.targets, _that.warnings);
+      case _:
+        return orElse();
+    }
+  }
+
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(NutritionTargets targets, List<String> warnings) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CustomTargetsResponse():
+        return $default(_that.targets, _that.warnings);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
+
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(NutritionTargets targets, List<String> warnings)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _CustomTargetsResponse() when $default != null:
+        return $default(_that.targets, _that.warnings);
+      case _:
+        return null;
+    }
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _CustomTargetsResponse implements CustomTargetsResponse {
+  const _CustomTargetsResponse(
+      {required this.targets, required final List<String> warnings})
+      : _warnings = warnings;
+  factory _CustomTargetsResponse.fromJson(Map<String, dynamic> json) =>
+      _$CustomTargetsResponseFromJson(json);
+
+  @override
+  final NutritionTargets targets;
+  final List<String> _warnings;
+  @override
+  List<String> get warnings {
+    if (_warnings is EqualUnmodifiableListView) return _warnings;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_warnings);
+  }
+
+  /// Create a copy of CustomTargetsResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$CustomTargetsResponseCopyWith<_CustomTargetsResponse> get copyWith =>
+      __$CustomTargetsResponseCopyWithImpl<_CustomTargetsResponse>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$CustomTargetsResponseToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _CustomTargetsResponse &&
+            (identical(other.targets, targets) || other.targets == targets) &&
+            const DeepCollectionEquality().equals(other._warnings, _warnings));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, targets, const DeepCollectionEquality().hash(_warnings));
+
+  @override
+  String toString() {
+    return 'CustomTargetsResponse(targets: $targets, warnings: $warnings)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$CustomTargetsResponseCopyWith<$Res>
+    implements $CustomTargetsResponseCopyWith<$Res> {
+  factory _$CustomTargetsResponseCopyWith(_CustomTargetsResponse value,
+          $Res Function(_CustomTargetsResponse) _then) =
+      __$CustomTargetsResponseCopyWithImpl;
+  @override
+  @useResult
+  $Res call({NutritionTargets targets, List<String> warnings});
+
+  @override
+  $NutritionTargetsCopyWith<$Res> get targets;
+}
+
+/// @nodoc
+class __$CustomTargetsResponseCopyWithImpl<$Res>
+    implements _$CustomTargetsResponseCopyWith<$Res> {
+  __$CustomTargetsResponseCopyWithImpl(this._self, this._then);
+
+  final _CustomTargetsResponse _self;
+  final $Res Function(_CustomTargetsResponse) _then;
+
+  /// Create a copy of CustomTargetsResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? targets = null,
+    Object? warnings = null,
+  }) {
+    return _then(_CustomTargetsResponse(
+      targets: null == targets
+          ? _self.targets
+          : targets // ignore: cast_nullable_to_non_nullable
+              as NutritionTargets,
+      warnings: null == warnings
+          ? _self._warnings
+          : warnings // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+    ));
+  }
+
+  /// Create a copy of CustomTargetsResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $NutritionTargetsCopyWith<$Res> get targets {
+    return $NutritionTargetsCopyWith<$Res>(_self.targets, (value) {
+      return _then(_self.copyWith(targets: value));
+    });
   }
 }
 

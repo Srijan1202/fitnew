@@ -128,4 +128,76 @@ class FakeProfileRepository implements ProfileRepository {
     }
     return nextProfile;
   }
+
+  /* ---------------------------------------- your own targets (ADR-031) -- */
+
+  /// The server's answer to a save: these warnings, the targets marked custom.
+  List<String> customWarnings = const <String>[];
+  Failure? failCustom;
+  final customSaves = <(int, int)>[];
+  int resets = 0;
+
+  static const targetLimits = TargetLimits(
+    kcalMin: 1200,
+    kcalMax: 6000,
+    proteinMinG: 35,
+    proteinMaxG: 191,
+  );
+  static const suggestion = TargetsSuggestion(
+    kcal: 2276,
+    proteinG: 106,
+    carbG: 337,
+    fatG: 56,
+    fiberG: 30,
+  );
+
+  NutritionTargets? get _current => switch (nextGoal) {
+        Ok<GoalResponse>(:final value) => value.targets,
+        _ => null,
+      };
+
+  void _setTargets(NutritionTargets t) {
+    final g = nextGoal;
+    if (g is Ok<GoalResponse>) nextGoal = Ok(g.value.copyWith(targets: t));
+  }
+
+  @override
+  Future<Result<TargetsView>> getTargets() async {
+    calls.add('getTargets');
+    return Ok(
+      TargetsView(
+          current: _current, suggestion: suggestion, limits: targetLimits,),
+    );
+  }
+
+  @override
+  Future<Result<CustomTargetsResponse>> setCustomTargets({
+    required int kcal,
+    required int proteinG,
+  }) async {
+    calls.add('setCustomTargets:$kcal:$proteinG');
+    customSaves.add((kcal, proteinG));
+    final f = failCustom;
+    if (f != null) return Err(f);
+    final t = personaCTargets.copyWith(
+      kcal: kcal,
+      proteinG: proteinG,
+      reason: 'custom',
+      source: 'custom',
+    );
+    _setTargets(t);
+    return Ok(CustomTargetsResponse(targets: t, warnings: customWarnings));
+  }
+
+  @override
+  Future<Result<TargetsView>> resetTargets() async {
+    calls.add('resetTargets');
+    resets += 1;
+    const t = personaCTargets;
+    _setTargets(t.copyWith(reason: 'reset-to-fitos'));
+    return Ok(
+      TargetsView(
+          current: _current, suggestion: suggestion, limits: targetLimits,),
+    );
+  }
 }

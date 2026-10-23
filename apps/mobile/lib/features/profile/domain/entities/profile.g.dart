@@ -201,6 +201,7 @@ _NutritionTargets _$NutritionTargetsFromJson(Map<String, dynamic> json) =>
       rationale:
           (json['rationale'] as List<dynamic>).map((e) => e as String).toList(),
       reason: json['reason'] as String,
+      source: json['source'] as String? ?? 'fitos',
     );
 
 Map<String, dynamic> _$NutritionTargetsToJson(_NutritionTargets instance) =>
@@ -215,6 +216,75 @@ Map<String, dynamic> _$NutritionTargetsToJson(_NutritionTargets instance) =>
       'tdeeEstimate': instance.tdeeEstimate,
       'rationale': instance.rationale,
       'reason': instance.reason,
+      'source': instance.source,
+    };
+
+_TargetsSuggestion _$TargetsSuggestionFromJson(Map<String, dynamic> json) =>
+    _TargetsSuggestion(
+      kcal: (json['kcal'] as num).toInt(),
+      proteinG: (json['proteinG'] as num).toInt(),
+      carbG: (json['carbG'] as num).toInt(),
+      fatG: (json['fatG'] as num).toInt(),
+      fiberG: (json['fiberG'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$TargetsSuggestionToJson(_TargetsSuggestion instance) =>
+    <String, dynamic>{
+      'kcal': instance.kcal,
+      'proteinG': instance.proteinG,
+      'carbG': instance.carbG,
+      'fatG': instance.fatG,
+      'fiberG': instance.fiberG,
+    };
+
+_TargetLimits _$TargetLimitsFromJson(Map<String, dynamic> json) =>
+    _TargetLimits(
+      kcalMin: (json['kcalMin'] as num).toInt(),
+      kcalMax: (json['kcalMax'] as num).toInt(),
+      proteinMinG: (json['proteinMinG'] as num).toInt(),
+      proteinMaxG: (json['proteinMaxG'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$TargetLimitsToJson(_TargetLimits instance) =>
+    <String, dynamic>{
+      'kcalMin': instance.kcalMin,
+      'kcalMax': instance.kcalMax,
+      'proteinMinG': instance.proteinMinG,
+      'proteinMaxG': instance.proteinMaxG,
+    };
+
+_TargetsView _$TargetsViewFromJson(Map<String, dynamic> json) => _TargetsView(
+      current: json['current'] == null
+          ? null
+          : NutritionTargets.fromJson(json['current'] as Map<String, dynamic>),
+      suggestion: json['suggestion'] == null
+          ? null
+          : TargetsSuggestion.fromJson(
+              json['suggestion'] as Map<String, dynamic>),
+      limits: TargetLimits.fromJson(json['limits'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$TargetsViewToJson(_TargetsView instance) =>
+    <String, dynamic>{
+      'current': instance.current,
+      'suggestion': instance.suggestion,
+      'limits': instance.limits,
+    };
+
+_CustomTargetsResponse _$CustomTargetsResponseFromJson(
+        Map<String, dynamic> json) =>
+    _CustomTargetsResponse(
+      targets:
+          NutritionTargets.fromJson(json['targets'] as Map<String, dynamic>),
+      warnings:
+          (json['warnings'] as List<dynamic>).map((e) => e as String).toList(),
+    );
+
+Map<String, dynamic> _$CustomTargetsResponseToJson(
+        _CustomTargetsResponse instance) =>
+    <String, dynamic>{
+      'targets': instance.targets,
+      'warnings': instance.warnings,
     };
 
 _GoalResponse _$GoalResponseFromJson(Map<String, dynamic> json) =>

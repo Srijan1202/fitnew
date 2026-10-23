@@ -40,6 +40,18 @@ abstract class ProfileRepository {
   /// Phase 9 (owner D13): `PATCH /user/profile { isVitStudent, mess }`. The
   /// server accepts only a mess it lists; `isVitStudent: false` clears it.
   Future<Result<UserProfileDetail>> setMess(MessRef? mess);
+
+  /// Beta 3.2 (ADR-031): the targets, FITOS's suggestion and the limits.
+  Future<Result<TargetsView>> getTargets();
+
+  /// Your own calories and protein; FITOS splits carbs and fat.
+  Future<Result<CustomTargetsResponse>> setCustomTargets({
+    required int kcal,
+    required int proteinG,
+  });
+
+  /// Back to FITOS's suggestion.
+  Future<Result<TargetsView>> resetTargets();
 }
 
 class DioProfileRepository implements ProfileRepository {
@@ -140,6 +152,31 @@ class DioProfileRepository implements ProfileRepository {
           data: request.toJson()..removeWhere((_, Object? v) => v == null),
         ),
         GoalResponse.fromJson,
+      );
+
+  @override
+  Future<Result<TargetsView>> getTargets() => _guard(
+        () => _dio.get<Map<String, dynamic>>('/v1/user/targets'),
+        TargetsView.fromJson,
+      );
+
+  @override
+  Future<Result<CustomTargetsResponse>> setCustomTargets({
+    required int kcal,
+    required int proteinG,
+  }) =>
+      _guard(
+        () => _dio.put<Map<String, dynamic>>(
+          '/v1/user/targets/custom',
+          data: <String, dynamic>{'kcal': kcal, 'proteinG': proteinG},
+        ),
+        CustomTargetsResponse.fromJson,
+      );
+
+  @override
+  Future<Result<TargetsView>> resetTargets() => _guard(
+        () => _dio.delete<Map<String, dynamic>>('/v1/user/targets/custom'),
+        TargetsView.fromJson,
       );
 }
 
@@ -268,6 +305,19 @@ class ProfileController extends AsyncNotifier<ProfileView> {
         return null;
       },
       err: (f) => f,
+    );
+  }
+
+  /// Beta 3.2 (ADR-031): the targets in state follow a custom target or a
+  /// reset, so Profile shows them without another load.
+  void showTargets(NutritionTargets? targets) {
+    final current = state.value;
+    if (current == null) return;
+    state = AsyncData(
+      ProfileView(
+        profile: current.profile,
+        goal: current.goal.copyWith(targets: targets),
+      ),
     );
   }
 
