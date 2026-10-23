@@ -147,7 +147,8 @@ export class TodayService {
         adjustment: calorieAdjustmentFrom({
           goal: (inputs.goal?.goalType ?? 'general') as Goal,
           weights: weights.filter((w) => w.date <= localDate),
-          targetKcal: targets === null ? null : targets.kcal,
+          // Beta 3.2 (ADR-031): a target the user set is theirs; FITOS offers no adjustment.
+          targetKcal: targets === null || targets.source === 'custom' ? null : targets.kcal,
           daysSinceLastAdjustment: lastAdjustment === null ? null : daysBetween(lastAdjustment, localDate),
         }),
       },
@@ -287,6 +288,9 @@ export class TodayService {
     const values = (rec.payload as { reason: { values: { currentKcal: number; newKcal: number; deltaKcal: number } } }).reason.values;
     const today = localDateOf(at, timeZone);
     const current = await this.logs.targetsOn(userId, today);
+    if (current?.source === 'custom') {
+      throw new AppError('CONFLICT', 'Your calorie target is your own now, so FITOS does not change it.', [{ path: 'event', issue: 'target-custom' }]);
+    }
     if (current === null || current.kcal !== values.currentKcal) {
       throw new AppError('CONFLICT', 'Your calorie target has changed since this suggestion.', [{ path: 'event', issue: 'target-changed' }]);
     }

@@ -4,6 +4,7 @@
 import { sql } from 'drizzle-orm';
 import {
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -67,9 +68,14 @@ export const nutritionTargets = pgTable(
     tdeeEstimate: integer('tdee_estimate').notNull(),
     rationale: jsonb('rationale').notNull().$type<string[]>(),
     reason: text('reason').notNull(),
+    /** Beta 3.2 (ADR-031): `fitos` (computed) or `custom` (the user's own calories and protein). */
+    source: text('source').notNull().default('fitos'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index('nutrition_targets_user_effective_idx').on(t.userId, t.effectiveFrom, t.createdAt)],
+  (t) => [
+    index('nutrition_targets_user_effective_idx').on(t.userId, t.effectiveFrom, t.createdAt),
+    check('nutrition_targets_source', sql`${t.source} in ('fitos', 'custom')`),
+  ],
 );
 
 /**

@@ -72,7 +72,7 @@ function fakeContext(): FitosAiContext {
       displayName: 'Srijan', sex: 'male', ageYears: 22, heightCm: 175, latestWeightKg: 70, experienceLevel: 'intermediate', activityLevel: 'light',
       trainingDaysPerWeek: 4, preferredSessionMinutes: 60, trainingLocation: 'commercial-gym', equipment: ['barbell', 'dumbbell'], timezone: 'Asia/Kolkata',
     },
-    goal: { type: 'muscle-gain', targetWeightKg: null, targets: { kcal: 2276, proteinG: 106, carbG: 250, fatG: 70, fiberG: 30, reason: 'r' } },
+    goal: { type: 'muscle-gain', targetWeightKg: null, targets: { kcal: 2276, proteinG: 106, carbG: 250, fatG: 70, fiberG: 30, reason: 'r', setByUser: false } },
     programme: { name: 'PPL', splitType: 'push-pull-legs', daysPerWeek: 6, mesocycleWeek: 1, days: [] },
     today: {
       date: '2026-09-22', dayOfWeek: 2, isRest: false, sessionName: 'Pull', status: 'ready', mesocycleWeek: 1,

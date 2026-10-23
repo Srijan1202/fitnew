@@ -1612,6 +1612,14 @@
                         },
                         "reason": {
                           "type": "string"
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "fitos",
+                            "custom"
+                          ],
+                          "default": "fitos"
                         }
                       },
                       "required": [
@@ -1964,6 +1972,14 @@
                         },
                         "reason": {
                           "type": "string"
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "fitos",
+                            "custom"
+                          ],
+                          "default": "fitos"
                         }
                       },
                       "required": [
@@ -1984,6 +2000,1077 @@
                   "required": [
                     "goal",
                     "targets"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/targets": {
+      "get": {
+        "summary": "Targets in effect, FITOS's suggestion beside them, and the limits for setting your own",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "current": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "effectiveFrom": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        "kcal": {
+                          "type": "integer"
+                        },
+                        "proteinG": {
+                          "type": "integer"
+                        },
+                        "carbG": {
+                          "type": "integer"
+                        },
+                        "fatG": {
+                          "type": "integer"
+                        },
+                        "fiberG": {
+                          "type": "integer"
+                        },
+                        "bmr": {
+                          "type": "integer"
+                        },
+                        "tdeeEstimate": {
+                          "type": "integer"
+                        },
+                        "rationale": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "reason": {
+                          "type": "string"
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "fitos",
+                            "custom"
+                          ],
+                          "default": "fitos"
+                        }
+                      },
+                      "required": [
+                        "effectiveFrom",
+                        "kcal",
+                        "proteinG",
+                        "carbG",
+                        "fatG",
+                        "fiberG",
+                        "bmr",
+                        "tdeeEstimate",
+                        "rationale",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "suggestion": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "kcal": {
+                          "type": "integer"
+                        },
+                        "proteinG": {
+                          "type": "integer"
+                        },
+                        "carbG": {
+                          "type": "integer"
+                        },
+                        "fatG": {
+                          "type": "integer"
+                        },
+                        "fiberG": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "kcal",
+                        "proteinG",
+                        "carbG",
+                        "fatG",
+                        "fiberG"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "limits": {
+                      "type": "object",
+                      "properties": {
+                        "kcalMin": {
+                          "type": "integer"
+                        },
+                        "kcalMax": {
+                          "type": "integer"
+                        },
+                        "proteinMinG": {
+                          "type": "integer"
+                        },
+                        "proteinMaxG": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "kcalMin",
+                        "kcalMax",
+                        "proteinMinG",
+                        "proteinMaxG"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "current",
+                    "suggestion",
+                    "limits"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/targets/custom": {
+      "put": {
+        "summary": "Set your own calories and protein; FITOS splits carbs and fat. Kept through weight and profile changes; a goal change resets it.",
+        "tags": [
+          "user"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "kcal": {
+                    "type": "integer"
+                  },
+                  "proteinG": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "kcal",
+                  "proteinG"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "targets": {
+                      "type": "object",
+                      "properties": {
+                        "effectiveFrom": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        "kcal": {
+                          "type": "integer"
+                        },
+                        "proteinG": {
+                          "type": "integer"
+                        },
+                        "carbG": {
+                          "type": "integer"
+                        },
+                        "fatG": {
+                          "type": "integer"
+                        },
+                        "fiberG": {
+                          "type": "integer"
+                        },
+                        "bmr": {
+                          "type": "integer"
+                        },
+                        "tdeeEstimate": {
+                          "type": "integer"
+                        },
+                        "rationale": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "reason": {
+                          "type": "string"
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "fitos",
+                            "custom"
+                          ],
+                          "default": "fitos"
+                        }
+                      },
+                      "required": [
+                        "effectiveFrom",
+                        "kcal",
+                        "proteinG",
+                        "carbG",
+                        "fatG",
+                        "fiberG",
+                        "bmr",
+                        "tdeeEstimate",
+                        "rationale",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "warnings": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "targets",
+                    "warnings"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Back to FITOS's suggestion",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "current": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "effectiveFrom": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        "kcal": {
+                          "type": "integer"
+                        },
+                        "proteinG": {
+                          "type": "integer"
+                        },
+                        "carbG": {
+                          "type": "integer"
+                        },
+                        "fatG": {
+                          "type": "integer"
+                        },
+                        "fiberG": {
+                          "type": "integer"
+                        },
+                        "bmr": {
+                          "type": "integer"
+                        },
+                        "tdeeEstimate": {
+                          "type": "integer"
+                        },
+                        "rationale": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "reason": {
+                          "type": "string"
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "fitos",
+                            "custom"
+                          ],
+                          "default": "fitos"
+                        }
+                      },
+                      "required": [
+                        "effectiveFrom",
+                        "kcal",
+                        "proteinG",
+                        "carbG",
+                        "fatG",
+                        "fiberG",
+                        "bmr",
+                        "tdeeEstimate",
+                        "rationale",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "suggestion": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "kcal": {
+                          "type": "integer"
+                        },
+                        "proteinG": {
+                          "type": "integer"
+                        },
+                        "carbG": {
+                          "type": "integer"
+                        },
+                        "fatG": {
+                          "type": "integer"
+                        },
+                        "fiberG": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "kcal",
+                        "proteinG",
+                        "carbG",
+                        "fatG",
+                        "fiberG"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "limits": {
+                      "type": "object",
+                      "properties": {
+                        "kcalMin": {
+                          "type": "integer"
+                        },
+                        "kcalMax": {
+                          "type": "integer"
+                        },
+                        "proteinMinG": {
+                          "type": "integer"
+                        },
+                        "proteinMaxG": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "kcalMin",
+                        "kcalMax",
+                        "proteinMinG",
+                        "proteinMaxG"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "current",
+                    "suggestion",
+                    "limits"
                   ],
                   "additionalProperties": false
                 }
@@ -5085,6 +6172,14 @@
                         },
                         "reason": {
                           "type": "string"
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "fitos",
+                            "custom"
+                          ],
+                          "default": "fitos"
                         }
                       },
                       "required": [
@@ -29045,6 +30140,14 @@
                         },
                         "reason": {
                           "type": "string"
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "fitos",
+                            "custom"
+                          ],
+                          "default": "fitos"
                         }
                       },
                       "required": [
@@ -29854,6 +30957,14 @@
                         },
                         "reason": {
                           "type": "string"
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "fitos",
+                            "custom"
+                          ],
+                          "default": "fitos"
                         }
                       },
                       "required": [
@@ -31240,6 +32351,14 @@
                             },
                             "reason": {
                               "type": "string"
+                            },
+                            "source": {
+                              "type": "string",
+                              "enum": [
+                                "fitos",
+                                "custom"
+                              ],
+                              "default": "fitos"
                             }
                           },
                           "required": [
@@ -32136,6 +33255,14 @@
                             },
                             "reason": {
                               "type": "string"
+                            },
+                            "source": {
+                              "type": "string",
+                              "enum": [
+                                "fitos",
+                                "custom"
+                              ],
+                              "default": "fitos"
                             }
                           },
                           "required": [
@@ -32955,6 +34082,14 @@
                             },
                             "reason": {
                               "type": "string"
+                            },
+                            "source": {
+                              "type": "string",
+                              "enum": [
+                                "fitos",
+                                "custom"
+                              ],
+                              "default": "fitos"
                             }
                           },
                           "required": [

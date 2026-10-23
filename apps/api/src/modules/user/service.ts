@@ -4,6 +4,8 @@
  * feeds the formula changes. No formula lives here (§8.3).
  */
 import type {
+  CustomTargetsRequest,
+  CustomTargetsResponse,
   DietPreferences,
   MessRef,
   Goal,
@@ -12,6 +14,7 @@ import type {
   PatchProfileRequest,
   PutDietPreferencesRequest,
   PutGoalRequest,
+  TargetsView,
   UserPreferences,
   UserProfileDetail,
 } from '@fitos/contracts';
@@ -166,7 +169,8 @@ export class UserService {
     // Recompute only when a formula input changed AND targets already exist:
     // before onboarding completes there is nothing to keep current.
     const touchesTargets = Object.keys(patch).some((k) => TARGET_INPUTS.has(k as keyof PatchProfileRequest));
-    if (touchesTargets && after.targets !== null && !('missing' in targetInputFrom(after))) {
+    // Beta 3.2 (ADR-031): a target the user set stays theirs through profile and weight changes.
+    if (touchesTargets && after.targets !== null && after.targets.source !== 'custom' && !('missing' in targetInputFrom(after))) {
       const onlyWeight = Object.keys(patch).every((k) => k === 'weightKg' || !TARGET_INPUTS.has(k as keyof PatchProfileRequest));
       await this.targets.recompute(userId, after, onlyWeight ? 'weight-change' : 'profile-change');
     }
@@ -194,6 +198,24 @@ export class UserService {
     const targets =
       'missing' in targetInputFrom(after) ? null : await this.targets.recompute(userId, after, 'goal-change');
     return { goal, targets };
+  }
+
+  /** GET /user/targets (ADR-031). */
+  async getTargets(userId: string): Promise<TargetsView> {
+    return this.targets.view(await this.bundleOrThrow(userId));
+  }
+
+  /** PUT /user/targets/custom (ADR-031): the user's own calories and protein. */
+  async setCustomTargets(userId: string, request: CustomTargetsRequest): Promise<CustomTargetsResponse> {
+    return this.targets.setCustom(userId, await this.bundleOrThrow(userId), request.kcal, request.proteinG);
+  }
+
+  /** DELETE /user/targets/custom (ADR-031): back to FITOS's suggestion; a no-op answer when already FITOS's. */
+  async resetTargets(userId: string): Promise<TargetsView> {
+    const bundle = await this.bundleOrThrow(userId);
+    if (bundle.targets?.source !== 'custom') return this.targets.view(bundle);
+    await this.targets.recompute(userId, bundle, 'reset-to-fitos');
+    return this.targets.view(await this.bundleOrThrow(userId));
   }
 
   async getDiet(userId: string): Promise<DietPreferences> {

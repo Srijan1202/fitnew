@@ -5,6 +5,8 @@ import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 import {
+  customTargetsRequestSchema,
+  customTargetsResponseSchema,
   dietPreferencesSchema,
   errorEnvelopeSchema,
   goalResponseSchema,
@@ -12,6 +14,7 @@ import {
   patchProfileRequestSchema,
   putDietPreferencesRequestSchema,
   putGoalRequestSchema,
+  targetsViewSchema,
   userPreferencesSchema,
   userProfileDetailSchema,
 } from '@fitos/contracts';
@@ -70,6 +73,47 @@ export async function userRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request) => service.putGoal(requireUserId(request.userId), request.body),
+  );
+
+  // Beta 3.2 (ADR-031): the targets in effect, FITOS's suggestion, and the user's own.
+  typed.get(
+    '/user/targets',
+    {
+      schema: {
+        summary: "Targets in effect, FITOS's suggestion beside them, and the limits for setting your own",
+        tags: ['user'],
+        security: [{ bearerAuth: [] }],
+        response: { 200: targetsViewSchema, ...errors },
+      },
+    },
+    async (request) => service.getTargets(requireUserId(request.userId)),
+  );
+
+  typed.put(
+    '/user/targets/custom',
+    {
+      schema: {
+        summary: 'Set your own calories and protein; FITOS splits carbs and fat. Kept through weight and profile changes; a goal change resets it.',
+        tags: ['user'],
+        security: [{ bearerAuth: [] }],
+        body: customTargetsRequestSchema,
+        response: { 200: customTargetsResponseSchema, 409: errorEnvelopeSchema, ...errors },
+      },
+    },
+    async (request) => service.setCustomTargets(requireUserId(request.userId), request.body),
+  );
+
+  typed.delete(
+    '/user/targets/custom',
+    {
+      schema: {
+        summary: "Back to FITOS's suggestion",
+        tags: ['user'],
+        security: [{ bearerAuth: [] }],
+        response: { 200: targetsViewSchema, ...errors },
+      },
+    },
+    async (request) => service.resetTargets(requireUserId(request.userId)),
   );
 
   typed.get(

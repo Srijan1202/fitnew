@@ -1,0 +1,2 @@
+ALTER TABLE "nutrition_targets" ADD COLUMN "source" text DEFAULT 'fitos' NOT NULL;--> statement-breakpoint
+ALTER TABLE "nutrition_targets" ADD CONSTRAINT "nutrition_targets_source" CHECK ("nutrition_targets"."source" in ('fitos', 'custom'));

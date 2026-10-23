@@ -33,7 +33,7 @@ describeIfDb('/v1/user (real Postgres)', () => {
     await sql.end({ timeout: 5 });
   });
 
-  const call = (method: 'GET' | 'PUT' | 'PATCH' | 'POST', path: string, payload?: Record<string, unknown>) =>
+  const call = (method: 'GET' | 'PUT' | 'PATCH' | 'POST' | 'DELETE', path: string, payload?: Record<string, unknown>) =>
     // One client address per user, as the session calls do: the API rate-limits by IP.
     app.inject({
       method,
@@ -70,6 +70,87 @@ describeIfDb('/v1/user (real Postgres)', () => {
 
   const targetRows = async () =>
     (await sql<{ n: number }[]>`select count(*)::int as n from nutrition_targets where user_id = (select id from users where firebase_uid = ${'us-uid-' + n})`)[0]?.n;
+
+  describe('your own targets (beta 3.2, ADR-031)', () => {
+    type View = { current: { kcal: number; proteinG: number; carbG: number; fatG: number; source: string; reason: string }; suggestion: { kcal: number; proteinG: number }; limits: Record<string, number> };
+    const view = async () => (await call('GET', '/user/targets')).json() as View;
+
+    it("GET: FITOS's targets in effect, its suggestion beside them, and the limits for this weight (82 kg)", async () => {
+      const v = await view();
+      expect(v.current).toMatchObject({ source: 'fitos', reason: 'onboarding' });
+      expect(v.suggestion).toMatchObject({ kcal: v.current.kcal, proteinG: v.current.proteinG });
+      // Protein 0.6–3.3 g/kg of 82 kg: 50–270 g.
+      expect(v.limits).toEqual({ kcalMin: 1200, kcalMax: 6000, proteinMinG: 50, proteinMaxG: 270 });
+    });
+
+    it('PUT sets calories and protein; FITOS splits the rest; a new history row marked custom, shown wherever targets are', async () => {
+      const before = await targetRows();
+      const r = await call('PUT', '/user/targets/custom', { kcal: 2200, proteinG: 170 });
+      expect(r.statusCode, r.body).toBe(200);
+      // fat = max(0.8 × 82 = 65.6, 2200 × 0.22 / 9 = 53.8) → 66; carbs = (2200 − 680 − 594) / 4 = 231.5 → 232; fibre 30.8 → 31.
+      expect(r.json().targets).toMatchObject({ kcal: 2200, proteinG: 170, fatG: 66, carbG: 232, fiberG: 31, source: 'custom', reason: 'custom' });
+      expect(r.json().warnings).toEqual(expect.any(Array));
+      expect(r.json().targets.rationale[0]).toBe('Your own target: 2200 kcal and 170 g protein.');
+      expect(await targetRows()).toBe(before + 1);
+      expect((await call('GET', '/user/goal')).json().targets).toMatchObject({ kcal: 2200, source: 'custom' });
+      expect((await view()).current).toMatchObject({ kcal: 2200, source: 'custom' });
+    });
+
+    it('limits are refused with the field (422); nothing is written', async () => {
+      const before = await targetRows();
+      const field = async (body: Record<string, unknown>) => {
+        const r = await call('PUT', '/user/targets/custom', body);
+        expect(r.statusCode, JSON.stringify(body)).toBe(422);
+        return (r.json() as { error: { details: { path: string }[] } }).error.details[0]?.path;
+      };
+      expect(await field({ kcal: 1100, proteinG: 150 })).toBe('kcal');
+      expect(await field({ kcal: 6100, proteinG: 150 })).toBe('kcal');
+      expect(await field({ kcal: 2200, proteinG: 49 })).toBe('proteinG');
+      expect(await field({ kcal: 2200, proteinG: 271 })).toBe('proteinG');
+      // 270 g protein (1080 kcal) and the 66 g fat floor (594 kcal) do not fit in 1300 kcal.
+      expect(await field({ kcal: 1300, proteinG: 270 })).toBe('kcal');
+      expect((await call('PUT', '/user/targets/custom', { kcal: 2200, proteinG: 150, carbG: 200 })).statusCode).toBe(422);
+      expect((await call('PUT', '/user/targets/custom', { kcal: 2200.5, proteinG: 150 })).statusCode).toBe(422);
+      expect(await targetRows()).toBe(before);
+    });
+
+    it('far from the suggestion: allowed, with plain warnings', async () => {
+      const s = (await view()).suggestion;
+      const kcal = Math.round(s.kcal * 1.4);
+      const r = await call('PUT', '/user/targets/custom', { kcal, proteinG: 60 });
+      expect(r.statusCode, r.body).toBe(200);
+      expect(r.json().warnings).toEqual([
+        expect.stringMatching(/^4\d % above FITOS's suggestion of \d+ kcal\.$/),
+        '0.7 g protein per kg is below the 1.2–2.2 g that supports training.',
+      ]);
+    });
+
+    it('a weight or profile change keeps your own target; a goal change goes back to FITOS', async () => {
+      await call('PUT', '/user/targets/custom', { kcal: 2200, proteinG: 170 });
+      const rows = await targetRows();
+      expect((await call('PATCH', '/user/profile', { weightKg: 80 })).statusCode).toBe(200);
+      expect((await call('PATCH', '/user/profile', { activityLevel: 'moderate' })).statusCode).toBe(200);
+      expect(await targetRows()).toBe(rows);
+      expect((await view()).current).toMatchObject({ kcal: 2200, proteinG: 170, source: 'custom' });
+      // The suggestion follows the new weight and activity.
+      expect((await view()).limits).toMatchObject({ proteinMinG: 48, proteinMaxG: 264 });
+      const g = await call('PUT', '/user/goal', { goalType: 'muscle-gain' });
+      expect(g.statusCode, g.body).toBe(200);
+      expect(g.json().targets).toMatchObject({ source: 'fitos', reason: 'goal-change' });
+      expect((await view()).current.source).toBe('fitos');
+    });
+
+    it("DELETE goes back to FITOS's suggestion once; again is a no-op", async () => {
+      await call('PUT', '/user/targets/custom', { kcal: 2200, proteinG: 170 });
+      const rows = await targetRows();
+      const r = await call('DELETE', '/user/targets/custom');
+      expect(r.statusCode, r.body).toBe(200);
+      expect(r.json().current).toMatchObject({ source: 'fitos', reason: 'reset-to-fitos', kcal: r.json().suggestion.kcal, proteinG: r.json().suggestion.proteinG });
+      expect(await targetRows()).toBe(rows + 1);
+      expect((await call('DELETE', '/user/targets/custom')).statusCode).toBe(200);
+      expect(await targetRows()).toBe(rows + 1);
+    });
+  });
 
   describe('display name (Phase 6.6)', () => {
     it('is stored by the about step, echoed on the session and the profile, and editable by PATCH', async () => {

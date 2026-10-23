@@ -36,6 +36,8 @@ export interface NutritionTargetsSummary {
   readonly fatG: number;
   readonly fiberG: number;
   readonly reason: string;
+  /** Beta 3.2 (ADR-031): true when the user set calories and protein themselves. */
+  readonly setByUser: boolean;
 }
 
 export interface FitosAiContext {
@@ -136,7 +138,7 @@ export class UserContextAssembler {
     const targets =
       goal.targets === null
         ? null
-        : { kcal: goal.targets.kcal, proteinG: goal.targets.proteinG, carbG: goal.targets.carbG, fatG: goal.targets.fatG, fiberG: goal.targets.fiberG, reason: goal.targets.reason };
+        : { kcal: goal.targets.kcal, proteinG: goal.targets.proteinG, carbG: goal.targets.carbG, fatG: goal.targets.fatG, fiberG: goal.targets.fiberG, reason: goal.targets.reason, setByUser: goal.targets.source === 'custom' };
 
     return {
       generatedAt: this.now().toISOString(),

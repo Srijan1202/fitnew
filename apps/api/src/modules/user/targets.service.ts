@@ -5,8 +5,9 @@
  * that reaches the engine is validated at the boundary; everything that comes
  * back is persisted as a new history row and returned unchanged.
  */
-import { computeTargets, type TargetInput } from '@fitos/core/nutrition/targets';
-import type { NutritionTargets } from '@fitos/contracts';
+import { CUSTOM_TARGET_LIMITS, customTargets, proteinRangeG } from '@fitos/core/nutrition/custom-targets';
+import { computeTargets, type MacroTargets, type TargetInput } from '@fitos/core/nutrition/targets';
+import type { CustomTargetsResponse, NutritionTargets, TargetsView } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
 import type { NutritionTargetsRow } from '../../db/schema.js';
@@ -33,7 +34,7 @@ export function ageYears(birthDate: string, today: string): number {
   return age;
 }
 
-export type TargetsReason = 'onboarding' | 'goal-change' | 'profile-change' | 'weight-change';
+export type TargetsReason = 'onboarding' | 'goal-change' | 'profile-change' | 'weight-change' | 'reset-to-fitos';
 
 /**
  * Assembles the engine input from what is stored. Returns null with the
@@ -80,6 +81,7 @@ export function toContract(row: NutritionTargetsRow): NutritionTargets {
     tdeeEstimate: row.tdeeEstimate,
     rationale: row.rationale,
     reason: row.reason,
+    source: row.source === 'custom' ? 'custom' : 'fitos',
   };
 }
 
@@ -97,6 +99,7 @@ export class TargetsService {
     }
     const t = computeTargets(assembled.input);
     const row = await this.repo.insertTargets({
+      source: 'fitos',
       userId,
       effectiveFrom: todayIn(bundle.user.timezone),
       kcal: t.kcal,
@@ -110,5 +113,60 @@ export class TargetsService {
       reason,
     });
     return toContract(row);
+  }
+
+  /** FITOS's own suggestion from the profile and goal, or null before they are complete. */
+  static suggestion(bundle: ProfileBundle): MacroTargets | null {
+    const assembled = targetInputFrom(bundle);
+    return 'missing' in assembled ? null : computeTargets(assembled.input);
+  }
+
+  /** GET /user/targets: the targets in effect, FITOS's suggestion and the editor's limits. */
+  view(bundle: ProfileBundle): TargetsView {
+    const s = TargetsService.suggestion(bundle);
+    const weight = bundle.latestWeight === null ? null : Number(bundle.latestWeight.weightKg);
+    const protein = weight === null ? { min: CUSTOM_TARGET_LIMITS.proteinMinG, max: CUSTOM_TARGET_LIMITS.proteinMaxG } : proteinRangeG(weight);
+    return {
+      current: bundle.targets === null ? null : toContract(bundle.targets),
+      suggestion: s === null ? null : { kcal: s.kcal, proteinG: s.proteinG, carbG: s.carbG, fatG: s.fatG, fiberG: s.fiberG },
+      limits: { kcalMin: CUSTOM_TARGET_LIMITS.kcalMin, kcalMax: CUSTOM_TARGET_LIMITS.kcalMax, proteinMinG: protein.min, proteinMaxG: protein.max },
+    };
+  }
+
+  /**
+   * Beta 3.2 (ADR-031): the user's own calories and protein, a new history
+   * row with `source: custom`. Fat and carbs follow FITOS's split; the limits
+   * are core's (422 with the field); warnings are returned, not enforced.
+   */
+  async setCustom(userId: string, bundle: ProfileBundle, kcal: number, proteinG: number): Promise<CustomTargetsResponse> {
+    const assembled = targetInputFrom(bundle);
+    if ('missing' in assembled) {
+      throw new AppError('CONFLICT', `Cannot set targets yet: ${assembled.missing} is not set.`);
+    }
+    const s = computeTargets(assembled.input);
+    const check = customTargets({ kcal, proteinG, weightKg: assembled.input.weightKg, suggestion: s });
+    if (!check.ok) {
+      throw new AppError('VALIDATION_FAILED', check.problem, [{ path: check.field, issue: 'out-of-range' }]);
+    }
+    const t = check.targets;
+    const row = await this.repo.insertTargets({
+      userId,
+      effectiveFrom: todayIn(bundle.user.timezone),
+      kcal: t.kcal,
+      proteinG: t.proteinG,
+      carbG: t.carbG,
+      fatG: t.fatG,
+      fiberG: t.fiberG,
+      bmr: s.bmr,
+      tdeeEstimate: s.tdee,
+      rationale: [
+        `Your own target: ${t.kcal} kcal and ${t.proteinG} g protein.`,
+        `Fat ${t.fatG} g (at least 0.8 g per kg or 22 % of calories) and carbs ${t.carbG} g fill the rest, as FITOS splits them.`,
+        `FITOS would suggest ${s.kcal} kcal and ${s.proteinG} g protein.`,
+      ],
+      reason: 'custom',
+      source: 'custom',
+    });
+    return { targets: toContract(row), warnings: [...check.warnings] };
   }
 }

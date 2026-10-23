@@ -799,6 +799,23 @@ describeIfDb('/v1/today (real Postgres, real seed)', { timeout: 60_000 }, () => 
     expect(events!.n).toBe(0);
   });
 
+  it('calorie-adjust (beta 3.2, ADR-031): never offered for a target the user set; an older offer accepted afterwards is refused (409) and writes nothing', async () => {
+    await settleClock();
+    const u = await offPace(zoneAt(12));
+    const adj = find(await today(u), 'calorie-adjust')!;
+    expect((await ev(u, adj.id, 'shown')).statusCode).toBe(201);
+    // The user sets their own target (as PUT /user/targets/custom would).
+    await sql`update nutrition_targets set source = 'custom' where user_id = ${u.id}`;
+    const r = await ev(u, adj.id, 'accepted');
+    expect(r.statusCode).toBe(409);
+    expect((r.json() as { error: { details: { issue: string }[] } }).error.details[0]!.issue).toBe('target-custom');
+    expect(await targetRows(u)).toHaveLength(1);
+    // A fresh user in the same state is never offered one.
+    const v = await offPace(zoneAt(12));
+    await sql`update nutrition_targets set source = 'custom' where user_id = ${v.id}`;
+    expect(find(await today(v), 'calorie-adjust')).toBeUndefined();
+  });
+
   /* ------------------------------------------------------- performance -- */
 
   it('p95 of GET /today under 300 ms for a training user with history, targets and logs', async () => {

@@ -186,10 +186,50 @@ export const nutritionTargetsSchema = z.object({
   bmr: z.number().int(),
   tdeeEstimate: z.number().int(),
   rationale: z.array(z.string()),
-  /** Why this row exists: 'onboarding', 'goal-change', 'profile-change', 'weight-change'. */
+  /** Why this row exists: 'onboarding', 'goal-change', 'profile-change', 'weight-change', 'calorie-adjust', 'custom', 'reset-to-fitos'. */
   reason: z.string(),
+  /** Beta 3.2 (ADR-031): `custom` when the user set calories and protein themselves. */
+  source: z.enum(['fitos', 'custom']).default('fitos'),
 });
 export type NutritionTargets = z.infer<typeof nutritionTargetsSchema>;
+
+/* -------------------------------------------- your own targets (ADR-031) -- */
+
+/** PUT /user/targets/custom: calories and protein; FITOS splits the rest. */
+export const customTargetsRequestSchema = z
+  .object({
+    kcal: z.number().int(),
+    proteinG: z.number().int(),
+  })
+  .strict();
+
+const suggestionSchema = z
+  .object({ kcal: z.number().int(), proteinG: z.number().int(), carbG: z.number().int(), fatG: z.number().int(), fiberG: z.number().int() })
+  .strict();
+
+/** GET /user/targets: what is in effect, FITOS's own suggestion beside it, and the limits for the editor. */
+export const targetsViewSchema = z
+  .object({
+    current: nutritionTargetsSchema.nullable(),
+    /** What FITOS computes from the profile and goal right now (null before onboarding is complete). */
+    suggestion: suggestionSchema.nullable(),
+    limits: z
+      .object({ kcalMin: z.number().int(), kcalMax: z.number().int(), proteinMinG: z.number().int(), proteinMaxG: z.number().int() })
+      .strict(),
+  })
+  .strict();
+
+export const customTargetsResponseSchema = z
+  .object({
+    targets: nutritionTargetsSchema,
+    /** Allowed, but worth knowing: far from FITOS's suggestion, or protein outside 1.2–2.2 g/kg. */
+    warnings: z.array(z.string()),
+  })
+  .strict();
+
+export type CustomTargetsRequest = z.infer<typeof customTargetsRequestSchema>;
+export type TargetsView = z.infer<typeof targetsViewSchema>;
+export type CustomTargetsResponse = z.infer<typeof customTargetsResponseSchema>;
 
 /* ------------------------------------------------------------ write shapes -- */
 
