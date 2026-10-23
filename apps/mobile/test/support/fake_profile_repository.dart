@@ -166,7 +166,10 @@ class FakeProfileRepository implements ProfileRepository {
     calls.add('getTargets');
     return Ok(
       TargetsView(
-          current: _current, suggestion: suggestion, limits: targetLimits,),
+        current: _current,
+        suggestion: suggestion,
+        limits: targetLimits,
+      ),
     );
   }
 
@@ -197,7 +200,10 @@ class FakeProfileRepository implements ProfileRepository {
     _setTargets(t.copyWith(reason: 'reset-to-fitos'));
     return Ok(
       TargetsView(
-          current: _current, suggestion: suggestion, limits: targetLimits,),
+        current: _current,
+        suggestion: suggestion,
+        limits: targetLimits,
+      ),
     );
   }
 }

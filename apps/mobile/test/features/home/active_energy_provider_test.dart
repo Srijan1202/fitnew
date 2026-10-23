@@ -38,8 +38,11 @@ void main() {
         prCount: 0,
       );
 
-  test('only sessions completed today in the user’s zone; each window asked of Health Connect', () async {
-    final health = FakeHealthProvider(connection: HealthConnectionState.disconnected);
+  test(
+      'only sessions completed today in the user’s zone; each window asked of Health Connect',
+      () async {
+    final health =
+        FakeHealthProvider(connection: HealthConnectionState.disconnected);
     final asked = <(DateTime, DateTime)>[];
     health.activeBetween = (s, e) {
       asked.add((s, e));
@@ -50,31 +53,67 @@ void main() {
       location: kolkata,
       sessions: [
         // 19:00–20:00 IST on the 24th: today.
-        session(name: 'Push', start: '2026-10-24T13:30:00.000Z', end: '2026-10-24T14:30:00.000Z', seconds: 3600),
+        session(
+          name: 'Push',
+          start: '2026-10-24T13:30:00.000Z',
+          end: '2026-10-24T14:30:00.000Z',
+          seconds: 3600,
+        ),
         // 04:00 IST on the 25th (22:30 UTC on the 24th): not today in Kolkata.
-        session(name: 'Late', start: '2026-10-24T21:30:00.000Z', end: '2026-10-24T22:30:00.000Z', seconds: 3600),
+        session(
+          name: 'Late',
+          start: '2026-10-24T21:30:00.000Z',
+          end: '2026-10-24T22:30:00.000Z',
+          seconds: 3600,
+        ),
         // Yesterday, an abandoned one, an unfinished one.
-        session(name: 'Pull', start: '2026-10-23T13:30:00.000Z', end: '2026-10-23T14:30:00.000Z', seconds: 3600),
-        session(name: 'Gone', start: '2026-10-24T08:00:00.000Z', end: '2026-10-24T08:30:00.000Z', status: SessionStatus.abandoned),
-        session(name: 'Open', start: '2026-10-24T09:00:00.000Z', end: null, status: SessionStatus.active),
+        session(
+          name: 'Pull',
+          start: '2026-10-23T13:30:00.000Z',
+          end: '2026-10-23T14:30:00.000Z',
+          seconds: 3600,
+        ),
+        session(
+          name: 'Gone',
+          start: '2026-10-24T08:00:00.000Z',
+          end: '2026-10-24T08:30:00.000Z',
+          status: SessionStatus.abandoned,
+        ),
+        session(
+          name: 'Open',
+          start: '2026-10-24T09:00:00.000Z',
+          end: null,
+          status: SessionStatus.active,
+        ),
       ],
       bodyWeightKg: 70,
       healthDayKcal: 280,
       health: health,
     );
     expect(e.workouts.map((w) => w.name), ['Push']);
-    expect(asked, [(DateTime.utc(2026, 10, 24, 13, 30), DateTime.utc(2026, 10, 24, 14, 30))]);
+    expect(asked, [
+      (DateTime.utc(2026, 10, 24, 13, 30), DateTime.utc(2026, 10, 24, 14, 30)),
+    ]);
     // 2.5 × 70 × 1 h = 175; Health Connect saw 40 → +135.
     expect(e.workouts.single.estimateKcal, 175);
     expect(e.fromWorkouts, 135);
     expect(e.total, 415);
   });
 
-  test('no duration stored: the start and finish give it; no Health Connect: the estimate alone', () async {
+  test(
+      'no duration stored: the start and finish give it; no Health Connect: the estimate alone',
+      () async {
     final e = await activeEnergyFor(
       date: '2026-10-24',
       location: kolkata,
-      sessions: [session(name: 'Legs', start: '2026-10-24T10:00:00.000Z', end: '2026-10-24T10:45:00.000Z', sets: 15)],
+      sessions: [
+        session(
+          name: 'Legs',
+          start: '2026-10-24T10:00:00.000Z',
+          end: '2026-10-24T10:45:00.000Z',
+          sets: 15,
+        ),
+      ],
       bodyWeightKg: 80,
       healthDayKcal: null,
       health: FakeHealthProvider(),

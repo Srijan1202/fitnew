@@ -45,8 +45,9 @@ void main() {
           builder: (_, __) => const Scaffold(body: Text('PROFILE')),
           routes: [
             GoRoute(
-                path: 'targets',
-                builder: (_, __) => const TargetsEditorScreen(),),
+              path: 'targets',
+              builder: (_, __) => const TargetsEditorScreen(),
+            ),
             GoRoute(path: 'goal', builder: (_, __) => const GoalEditorScreen()),
           ],
         ),
@@ -84,8 +85,10 @@ void main() {
 
     expect(value(tester, 'targets.kcal'), '2276');
     expect(value(tester, 'targets.protein'), '106');
-    expect(text(tester, 'targets.suggestion'),
-        'FITOS suggests 2276 kcal · 106 g protein',);
+    expect(
+      text(tester, 'targets.suggestion'),
+      'FITOS suggests 2276 kcal · 106 g protein',
+    );
     // fat = max(0.8 × 70 = 56, 2276 × 0.22 / 9 = 55.6) → 56; carbs = (2276 − 424 − 504) / 4 = 337.
     expect(text(tester, 'targets.split'), '≈ 337 g carbs · 56 g fat');
     expect(find.textContaining('Limits: 1200–6000 kcal'), findsOneWidget);
@@ -102,8 +105,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(profile.customSaves, [(2326, 111)]);
     expect(find.byKey(const ValueKey('targets.yours')), findsOneWidget);
-    expect(text(tester, 'targets.warning.0'),
-        '29 % above FITOS\'s suggestion of 2276 kcal.',);
+    expect(
+      text(tester, 'targets.warning.0'),
+      '29 % above FITOS\'s suggestion of 2276 kcal.',
+    );
     // Now custom: the way back is offered.
     expect(find.byKey(const ValueKey('targets.reset')), findsOneWidget);
   });
@@ -118,7 +123,9 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('targets.kcal.value')));
     await tester.pump();
     await tester.enterText(
-        find.byKey(const ValueKey('targets.kcal.field')), '900',);
+      find.byKey(const ValueKey('targets.kcal.field')),
+      '900',
+    );
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pump();
     expect(value(tester, 'targets.kcal'), '1200'); // clamped up to the minimum
@@ -126,21 +133,28 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('targets.protein.value')));
     await tester.pump();
     await tester.enterText(
-        find.byKey(const ValueKey('targets.protein.field')), '500',);
+      find.byKey(const ValueKey('targets.protein.field')),
+      '500',
+    );
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pump();
     expect(
-        value(tester, 'targets.protein'), '191',); // clamped down to the maximum
+      value(tester, 'targets.protein'),
+      '191',
+    ); // clamped down to the maximum
     // 191 g protein (764 kcal) + the 56 g fat floor (504 kcal) > 1200 kcal.
     expect(
-        text(tester, 'targets.split'),
-        startsWith(
-            'That much protein and the minimum fat don’t fit in 1200 kcal',),);
+      text(tester, 'targets.split'),
+      startsWith(
+        'That much protein and the minimum fat don’t fit in 1200 kcal',
+      ),
+    );
     expect(
-        tester
-            .widget<FilledButton>(find.byKey(const ValueKey('targets.save')))
-            .onPressed,
-        isNull,);
+      tester
+          .widget<FilledButton>(find.byKey(const ValueKey('targets.save')))
+          .onPressed,
+      isNull,
+    );
     expect(profile.customSaves, isEmpty);
   });
 

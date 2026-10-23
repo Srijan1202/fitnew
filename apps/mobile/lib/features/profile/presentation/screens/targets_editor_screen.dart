@@ -271,7 +271,8 @@ class _TargetsEditorScreenState extends ConsumerState<TargetsEditorScreen> {
                               Text(
                                 w,
                                 key: ValueKey(
-                                    'targets.warning.${_saved!.warnings.indexOf(w)}',),
+                                  'targets.warning.${_saved!.warnings.indexOf(w)}',
+                                ),
                                 style: textTheme.bodyMedium
                                     ?.copyWith(color: FitColors.amber),
                               ),
@@ -357,8 +358,10 @@ class _NumberStepperState extends State<_NumberStepper> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(widget.label, style: textTheme.titleMedium),
-              Text(widget.unit,
-                  style: textTheme.bodySmall?.copyWith(color: FitColors.ink60),),
+              Text(
+                widget.unit,
+                style: textTheme.bodySmall?.copyWith(color: FitColors.ink60),
+              ),
             ],
           ),
         ),

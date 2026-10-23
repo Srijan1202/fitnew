@@ -84,7 +84,7 @@ describeIfDb('/v1/user (real Postgres)', () => {
     });
 
     it('PUT sets calories and protein; FITOS splits the rest; a new history row marked custom, shown wherever targets are', async () => {
-      const before = await targetRows();
+      const before = (await targetRows()) ?? 0;
       const r = await call('PUT', '/user/targets/custom', { kcal: 2200, proteinG: 170 });
       expect(r.statusCode, r.body).toBe(200);
       // fat = max(0.8 × 82 = 65.6, 2200 × 0.22 / 9 = 53.8) → 66; carbs = (2200 − 680 − 594) / 4 = 231.5 → 232; fibre 30.8 → 31.
@@ -97,7 +97,7 @@ describeIfDb('/v1/user (real Postgres)', () => {
     });
 
     it('limits are refused with the field (422); nothing is written', async () => {
-      const before = await targetRows();
+      const before = (await targetRows()) ?? 0;
       const field = async (body: Record<string, unknown>) => {
         const r = await call('PUT', '/user/targets/custom', body);
         expect(r.statusCode, JSON.stringify(body)).toBe(422);
@@ -127,7 +127,7 @@ describeIfDb('/v1/user (real Postgres)', () => {
 
     it('a weight or profile change keeps your own target; a goal change goes back to FITOS', async () => {
       await call('PUT', '/user/targets/custom', { kcal: 2200, proteinG: 170 });
-      const rows = await targetRows();
+      const rows = (await targetRows()) ?? 0;
       expect((await call('PATCH', '/user/profile', { weightKg: 80 })).statusCode).toBe(200);
       expect((await call('PATCH', '/user/profile', { activityLevel: 'moderate' })).statusCode).toBe(200);
       expect(await targetRows()).toBe(rows);
@@ -142,7 +142,7 @@ describeIfDb('/v1/user (real Postgres)', () => {
 
     it("DELETE goes back to FITOS's suggestion once; again is a no-op", async () => {
       await call('PUT', '/user/targets/custom', { kcal: 2200, proteinG: 170 });
-      const rows = await targetRows();
+      const rows = (await targetRows()) ?? 0;
       const r = await call('DELETE', '/user/targets/custom');
       expect(r.statusCode, r.body).toBe(200);
       expect(r.json().current).toMatchObject({ source: 'fitos', reason: 'reset-to-fitos', kcal: r.json().suggestion.kcal, proteinG: r.json().suggestion.proteinG });

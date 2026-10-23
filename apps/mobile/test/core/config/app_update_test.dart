@@ -92,7 +92,9 @@ void main() {
   }
 
   group('the check', () {
-    test('a newer build: due for the dialog and the banner; the same or an older build: nothing', () async {
+    test(
+        'a newer build: due for the dialog and the banner; the same or an older build: nothing',
+        () async {
       final u = await check();
       expect(u, isNotNull);
       expect(u!.release.label, 'beta 3.2');
@@ -102,7 +104,9 @@ void main() {
       expect(await check(build: 9), isNull);
     });
 
-    test('at most one read every six hours: the cached answer is used in between', () async {
+    test(
+        'at most one read every six hours: the cached answer is used in between',
+        () async {
       await check();
       expect(feed.reads, 1);
       now = now.add(const Duration(hours: 5, minutes: 59));
@@ -114,24 +118,36 @@ void main() {
       expect(feed.reads, 2);
     });
 
-    test('offline or a bad file: nothing new is learnt, nothing is shown, and it is not retried at once', () async {
+    test(
+        'offline or a bad file: nothing new is learnt, nothing is shown, and it is not retried at once',
+        () async {
       feed.release = null;
       expect(await check(), isNull);
       expect(feed.reads, 1);
       expect(await check(), isNull);
       expect(feed.reads, 1);
-      expect(LatestRelease.fromJson(<String, dynamic>{'version': 'x', 'build': '8', 'url': 'u'}), isNull);
+      expect(
+        LatestRelease.fromJson(
+          <String, dynamic>{'version': 'x', 'build': '8', 'url': 'u'},
+        ),
+        isNull,
+      );
       expect(LatestRelease.fromJson('nope'), isNull);
     });
 
-    test('once asked or hidden for a build, it stays so for that build only', () async {
+    test('once asked or hidden for a build, it stays so for that build only',
+        () async {
       prefs
         ..prompted = 8
         ..dismissed = 8;
       final u = await check();
       expect(u!.promptDue, isFalse);
       expect(u.bannerVisible, isFalse);
-      feed.release = const LatestRelease(version: '1.0.0-beta.3.3', build: 9, url: 'https://tryfitos.me/download/');
+      feed.release = const LatestRelease(
+        version: '1.0.0-beta.3.3',
+        build: 9,
+        url: 'https://tryfitos.me/download/',
+      );
       now = now.add(kUpdateCheckEvery);
       final next = await check();
       expect(next!.promptDue, isTrue);
@@ -139,7 +155,10 @@ void main() {
     });
 
     test('only tryfitos.me is ever opened', () {
-      expect(LatestRelease.safe('https://tryfitos.me/download/'), 'https://tryfitos.me/download/');
+      expect(
+        LatestRelease.safe('https://tryfitos.me/download/'),
+        'https://tryfitos.me/download/',
+      );
       expect(LatestRelease.safe('https://evil.example/apk'), kDownloadUrl);
       expect(LatestRelease.safe('http://tryfitos.me/download/'), kDownloadUrl);
       expect(LatestRelease.safe(null), kDownloadUrl);
@@ -152,12 +171,16 @@ void main() {
           child: MaterialApp(
             theme: FitTheme.build(),
             home: const Scaffold(
-              body: Column(children: <Widget>[UpdatePromptHost(), UpdateBanner()]),
+              body: Column(
+                children: <Widget>[UpdatePromptHost(), UpdateBanner()],
+              ),
             ),
           ),
         );
 
-    testWidgets('the dialog once per version; Later leaves the banner; the banner opens the download page or hides for this version', (tester) async {
+    testWidgets(
+        'the dialog once per version; Later leaves the banner; the banner opens the download page or hides for this version',
+        (tester) async {
       await tester.pumpWidget(host());
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('update.dialog')), findsOneWidget);
@@ -199,11 +222,15 @@ void main() {
       expect(opener.opened, ['https://tryfitos.me/download/']);
     });
 
-    testWidgets('the too-old screen has a Download button to the website', (tester) async {
+    testWidgets('the too-old screen has a Download button to the website',
+        (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: overrides(),
-          child: MaterialApp(theme: FitTheme.build(), home: const UpdateRequiredScreen()),
+          child: MaterialApp(
+            theme: FitTheme.build(),
+            home: const UpdateRequiredScreen(),
+          ),
         ),
       );
       await tester.tap(find.byKey(const ValueKey('update.required.download')));

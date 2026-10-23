@@ -247,7 +247,11 @@ void main() {
             (_) async => const ActiveEnergy(
               fromHealth: 280,
               workouts: [
-                WorkoutEnergy(name: 'Push', estimateKcal: 175, healthDuringKcal: 40),
+                WorkoutEnergy(
+                  name: 'Push',
+                  estimateKcal: 175,
+                  healthDuringKcal: 40,
+                ),
               ],
             ),
           ),

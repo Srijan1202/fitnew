@@ -139,7 +139,10 @@ void main() {
     GoRouter.of(tester.element(find.text('ADD EXERCISE'))).pop();
     await tester.pumpAndSettle();
     expect(find.text('LIBRARY'), findsOneWidget);
-    expect(find.byKey(const ValueKey('filters.clear')), findsOneWidget); // still Chest
+    expect(
+      find.byKey(const ValueKey('filters.clear')),
+      findsOneWidget,
+    ); // still Chest
     GoRouter.of(tester.element(find.byType(ExerciseBrowserScreen)))
         .push('/exercises/pick');
     await tester.pumpAndSettle();

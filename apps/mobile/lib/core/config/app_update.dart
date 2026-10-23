@@ -70,7 +70,9 @@ class LatestRelease {
   /// Only FITOS's own site is ever opened; anything else falls back to the
   /// download page.
   static String safe(String? url) =>
-      url != null && url.startsWith('https://tryfitos.me/') ? url : kDownloadUrl;
+      url != null && url.startsWith('https://tryfitos.me/')
+          ? url
+          : kDownloadUrl;
 }
 
 abstract class ReleaseFeed {
@@ -144,7 +146,9 @@ class SharedUpdatePrefs implements UpdatePrefs {
   Future<void> saveCheck(DateTime at, LatestRelease? release) async {
     final p = await _p;
     await p.setInt(_checked, at.millisecondsSinceEpoch);
-    if (release != null) await p.setString(_release, jsonEncode(release.toJson()));
+    if (release != null) {
+      await p.setString(_release, jsonEncode(release.toJson()));
+    }
   }
 
   @override

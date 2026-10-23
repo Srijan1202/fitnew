@@ -64,7 +64,8 @@ class FakeHealthProvider implements HealthDataProvider {
   }
 
   /// Beta 3.2: what Health Connect counted in a window; null = cannot say.
-  double? Function(DateTime start, DateTime end) activeBetween = (_, __) => null;
+  double? Function(DateTime start, DateTime end) activeBetween =
+      (_, __) => null;
 
   @override
   Future<double?> activeCaloriesBetween(DateTime start, DateTime end) async {

@@ -138,7 +138,8 @@ class DeviceFeedbackOutput implements FeedbackOutput {
   }
 
   /// `flutter test` has no audio plugin; a player there only fails late.
-  static final bool _underTest = Platform.environment.containsKey('FLUTTER_TEST');
+  static final bool _underTest =
+      Platform.environment.containsKey('FLUTTER_TEST');
 
   @override
   Future<void> chime(Chime c) async {
@@ -156,10 +157,12 @@ class DeviceFeedbackOutput implements FeedbackOutput {
           ),
         );
       await player.play(
-        AssetSource(switch (c) {
-          Chime.restOver => 'sounds/rest_over.wav',
-          Chime.sessionDone => 'sounds/session_done.wav',
-        },),
+        AssetSource(
+          switch (c) {
+            Chime.restOver => 'sounds/rest_over.wav',
+            Chime.sessionDone => 'sounds/session_done.wav',
+          },
+        ),
       );
     } on Object {
       // No audio (or no plugin, in tests): a silent moment, never an error.

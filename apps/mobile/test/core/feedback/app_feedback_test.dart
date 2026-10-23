@@ -30,7 +30,9 @@ void main() {
 
   setUp(() => out = RecordingOutput());
 
-  ProviderContainer container({FeedbackSettings settings = const FeedbackSettings()}) {
+  ProviderContainer container({
+    FeedbackSettings settings = const FeedbackSettings(),
+  }) {
     final c = ProviderContainer(
       overrides: [
         feedbackOutputProvider.overrideWithValue(out),
@@ -42,13 +44,33 @@ void main() {
     return c;
   }
 
-  test('each moment: chimes only for rest over and session done; haptics light for sets, firmer for records and the end of rest', () {
-    expect(feedbackFor(FeedbackEvent.tap), (haptic: Haptic.selection, chime: null));
-    expect(feedbackFor(FeedbackEvent.setDone), (haptic: Haptic.light, chime: null));
-    expect(feedbackFor(FeedbackEvent.record), (haptic: Haptic.medium, chime: null));
-    expect(feedbackFor(FeedbackEvent.restSoon), (haptic: Haptic.light, chime: null));
-    expect(feedbackFor(FeedbackEvent.restOver), (haptic: Haptic.heavy, chime: Chime.restOver));
-    expect(feedbackFor(FeedbackEvent.sessionDone), (haptic: Haptic.medium, chime: Chime.sessionDone));
+  test(
+      'each moment: chimes only for rest over and session done; haptics light for sets, firmer for records and the end of rest',
+      () {
+    expect(
+      feedbackFor(FeedbackEvent.tap),
+      (haptic: Haptic.selection, chime: null),
+    );
+    expect(
+      feedbackFor(FeedbackEvent.setDone),
+      (haptic: Haptic.light, chime: null),
+    );
+    expect(
+      feedbackFor(FeedbackEvent.record),
+      (haptic: Haptic.medium, chime: null),
+    );
+    expect(
+      feedbackFor(FeedbackEvent.restSoon),
+      (haptic: Haptic.light, chime: null),
+    );
+    expect(
+      feedbackFor(FeedbackEvent.restOver),
+      (haptic: Haptic.heavy, chime: Chime.restOver),
+    );
+    expect(
+      feedbackFor(FeedbackEvent.sessionDone),
+      (haptic: Haptic.medium, chime: Chime.sessionDone),
+    );
   });
 
   test('both on by default; each switch turns off only its half', () async {
@@ -61,19 +83,23 @@ void main() {
     expect(out.chimes, [Chime.restOver]);
 
     out = RecordingOutput();
-    container(settings: const FeedbackSettings(sounds: false)).read(appFeedbackProvider)(FeedbackEvent.restOver);
+    container(settings: const FeedbackSettings(sounds: false))
+        .read(appFeedbackProvider)(FeedbackEvent.restOver);
     await Future<void>.delayed(Duration.zero);
     expect(out.haptics, [Haptic.heavy]);
     expect(out.chimes, isEmpty);
 
     out = RecordingOutput();
-    container(settings: const FeedbackSettings(haptics: false)).read(appFeedbackProvider)(FeedbackEvent.sessionDone);
+    container(settings: const FeedbackSettings(haptics: false))
+        .read(appFeedbackProvider)(FeedbackEvent.sessionDone);
     await Future<void>.delayed(Duration.zero);
     expect(out.haptics, isEmpty);
     expect(out.chimes, [Chime.sessionDone]);
   });
 
-  testWidgets('the rest timer: one tick at 10 s left, one chime and buzz at zero, nothing after', (tester) async {
+  testWidgets(
+      'the rest timer: one tick at 10 s left, one chime and buzz at zero, nothing after',
+      (tester) async {
     final c = container();
     var now = DateTime.utc(2026, 10, 24, 18);
     final timer = c.read(restTimerProvider.notifier)..clock = () => now;

@@ -27,8 +27,9 @@ int workoutActiveKcal({
 }) {
   final kg = bodyWeightKg;
   if (durationMinutes <= 0 || kg == null || kg <= 0) return 0;
-  final minutes =
-      durationMinutes > kWorkoutMinutesCap ? kWorkoutMinutesCap : durationMinutes;
+  final minutes = durationMinutes > kWorkoutMinutesCap
+      ? kWorkoutMinutesCap
+      : durationMinutes;
   final hours = minutes / 60;
   final met = workingSets / hours >= kVigorousSetsPerHour
       ? kWorkoutMetVigorous
