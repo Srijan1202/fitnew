@@ -1,3 +1,4 @@
+import '../../../../core/feedback/app_feedback.dart';
 import '../../../premium/domain/avatars.dart';
 import '../../../premium/presentation/avatar_picker.dart';
 import '../../../premium/presentation/premium_card.dart';
@@ -133,6 +134,35 @@ class ProfileScreen extends ConsumerWidget {
                         icon: Icons.public,
                         title: 'Time zone',
                         value: view.profile.timezone,
+                      ),
+                      // Beta 3.2: subtle sound and haptics, each switchable.
+                      Consumer(
+                        builder: (context, ref, _) => FitRow(
+                          key: const ValueKey('profile.sounds'),
+                          icon: Icons.volume_up_outlined,
+                          title: 'Sounds',
+                          trailing: Switch(
+                            key: const ValueKey('profile.sounds.switch'),
+                            value: ref.watch(feedbackSettingsProvider).sounds,
+                            onChanged: (on) => ref
+                                .read(feedbackSettingsProvider.notifier)
+                                .setSounds(on),
+                          ),
+                        ),
+                      ),
+                      Consumer(
+                        builder: (context, ref, _) => FitRow(
+                          key: const ValueKey('profile.haptics'),
+                          icon: Icons.vibration,
+                          title: 'Haptics',
+                          trailing: Switch(
+                            key: const ValueKey('profile.haptics.switch'),
+                            value: ref.watch(feedbackSettingsProvider).haptics,
+                            onChanged: (on) => ref
+                                .read(feedbackSettingsProvider.notifier)
+                                .setHaptics(on),
+                          ),
+                        ),
                       ),
                     ],
                   ),

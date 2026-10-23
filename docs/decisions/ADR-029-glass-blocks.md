@@ -49,3 +49,24 @@ The owner (2026-10-22):
 **Bad / accepted:**
 - **§6.1's bans on rounded cards, glassmorphism and shadows are lifted for the glass palettes.** Meaning still comes only from pine, amber and oxide.
 - **There is no real blur behind blocks** (cost in long lists); the tab bar keeps its blur.
+
+## Amendment — subtle sound and haptics (beta 3.2, owner 2026-10-23)
+
+The owner asked for subtle sound and vibration, above all when rest is over.
+
+- **One mapping** (`lib/core/feedback/app_feedback.dart`, `feedbackFor`):
+
+  | Moment | Haptic | Sound |
+  |---|---|---|
+  | Stepper or toggle | selection | — |
+  | Set logged | light | — |
+  | Record set | medium (instead of light) | — |
+  | 10 s of rest left | light | — |
+  | Rest over | heavy | two-note chime |
+  | Session finished | medium | three-note chime |
+
+  A rest that ends while the app is in the background is told by its notification; coming back adds no second alert.
+- **The sounds** are two short sine chimes made for FITOS (`tool/sounds.py`, about 0.7 s and 0.9 s, peak about −12 dB, 31 KB and 40 KB). There is nothing to license.
+- They play on the notification stream (`audioplayers` with Android `notificationEvent` / `sonification`, no audio focus): they follow the notification volume, are silent in silent or vibrate mode, and do not interrupt music.
+- **Haptics** go through the platform's own engine and follow the system haptics setting.
+- **Profile → App → Sounds / Haptics:** two switches, both on by default, remembered on the phone.

@@ -78,6 +78,8 @@ dependencies:
   package_info_plus: 10.2.2
   # Beta 3.2 (ADR-026 amendment): "Update" opens the download page.
   url_launcher: 6.3.3
+  # Beta 3.2 (ADR-029 amendment): two short, quiet chimes made for FITOS.
+  audioplayers: 6.8.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -97,6 +99,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Beta 3.2: the rest-over and session-done chimes (tool/sounds.py).
+  assets:
+    - assets/sounds/
 
   # ADR-028 (brand kit): Barlow for all type — the free (SIL OFL,
   # assets/fonts/OFL.txt) equivalent of the kit's Bahnschrift.

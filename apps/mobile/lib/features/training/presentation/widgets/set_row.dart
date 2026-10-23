@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/feedback/app_feedback.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../domain/entities/program.dart';
 
@@ -8,7 +10,7 @@ import '../../domain/entities/program.dart';
 /// 2026-10-22 — a plan keeps its target RIR). Built for a gym: 44 px
 /// targets, −/+ on everything, tap the weight to type it. Nothing here
 /// navigates; every change goes up through [onChanged].
-class SetRow extends StatefulWidget {
+class SetRow extends ConsumerStatefulWidget {
   const SetRow({
     required this.set,
     required this.incrementKg,
@@ -39,10 +41,10 @@ class SetRow extends StatefulWidget {
   final Widget? trailing;
 
   @override
-  State<SetRow> createState() => _SetRowState();
+  ConsumerState<SetRow> createState() => _SetRowState();
 }
 
-class _SetRowState extends State<SetRow> {
+class _SetRowState extends ConsumerState<SetRow> {
   bool _typing = false;
   late final TextEditingController _weight = TextEditingController();
   final _focus = FocusNode();
@@ -68,12 +70,14 @@ class _SetRowState extends State<SetRow> {
   /// The set shows its target (the top of a range: 6–12 opens at 12). A tap
   /// steps that number by one and pins it; only this set changes.
   void _reps(int delta) {
+    ref.read(appFeedbackProvider)(FeedbackEvent.tap);
     final s = widget.set;
     final next = (s.targetReps + delta).clamp(1, 50);
     widget.onChanged(s.copyWith(repsMin: next, repsMax: next));
   }
 
   void _weightStep(int direction) {
+    ref.read(appFeedbackProvider)(FeedbackEvent.tap);
     final current = widget.set.weightKg ?? widget.lastWeightKg ?? 0;
     final next =
         (current + direction * widget.incrementKg).clamp(0.0, 500.0).toDouble();

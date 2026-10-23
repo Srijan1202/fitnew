@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 
+import '../../../../core/feedback/app_feedback.dart';
 import '../../../../core/notifications/local_notifications.dart';
 import '../../domain/entities/workout.dart';
 
@@ -174,17 +175,28 @@ class RestTimer extends Notifier<RestTimerState?> {
     _tick = Timer.periodic(const Duration(seconds: 1), (_) => _refresh());
   }
 
-  void _refresh() {
+  /// Beta 3.2: a light tick at 10 s left, a chime and a buzz at zero.
+  static const _soon = Duration(seconds: 10);
+
+  /// [quiet]: back from the background, where the notification already
+  /// told the user; no second alert.
+  void _refresh({bool quiet = false}) {
     final s = state;
     if (s == null) return;
     final remaining = s.endsAt.difference(_now());
     if (remaining <= Duration.zero) {
       _tick?.cancel();
       state = s.copyWith(remaining: Duration.zero);
+      if (!quiet && !s.done) _feedback(FeedbackEvent.restOver);
       return;
+    }
+    if (!quiet && s.remaining > _soon && remaining <= _soon) {
+      _feedback(FeedbackEvent.restSoon);
     }
     state = s.copyWith(remaining: remaining);
   }
+
+  void _feedback(FeedbackEvent e) => ref.read(appFeedbackProvider)(e);
 
   void adjust(Duration delta) {
     final s = state;
@@ -218,7 +230,7 @@ class RestTimer extends Notifier<RestTimerState?> {
 
   void _onForeground() {
     _notifier.cancel();
-    _refresh();
+    _refresh(quiet: true);
   }
 }
 

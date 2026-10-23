@@ -1,3 +1,4 @@
+import '../../../../core/feedback/app_feedback.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -215,7 +216,12 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
     });
     final rest = ref.read(restDefaultsProvider).forExercise(x);
     ref.read(restTimerProvider.notifier).start(rest, exerciseName: x.name);
-    if (row.setType == SetType.working) _prMoment(x, v, clientSetId);
+    final record =
+        row.setType == SetType.working && _prMoment(x, v, clientSetId);
+    // Beta 3.2: a light tap for a set, a firmer one for a record.
+    ref.read(appFeedbackProvider)(
+      record ? FeedbackEvent.record : FeedbackEvent.setDone,
+    );
   }
 
   /// Phase 6 PR moment (plan §6): a working set that beats the prior best
@@ -224,12 +230,13 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
   /// two server-supplied numbers; the earlier sets of this session count
   /// too, so a tie never celebrates. Records proper are the server's, on
   /// completion.
-  void _prMoment(SessionExercise x, PlannedSet v, String clientSetId) {
+  /// True when this set is a record.
+  bool _prMoment(SessionExercise x, PlannedSet v, String clientSetId) {
     final w = v.weightKg;
-    if (w == null || w <= 0) return;
+    if (w == null || w <= 0) return false;
     var bestW = x.priorBest.weightKg;
     var bestReps = x.priorBest.repsAtBestWeight ?? 0;
-    if (bestW == null) return; // establishing a baseline: nothing to beat
+    if (bestW == null) return false; // establishing a baseline: nothing to beat
     for (final s in x.sets) {
       if (s.setType != SetType.working || s.weightKg == null) continue;
       if (s.clientSetId == clientSetId) continue;
@@ -239,8 +246,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
       }
     }
     final beats = w > bestW! || (w == bestW && v.repsMax > bestReps);
-    if (!beats) return;
+    if (!beats) return false;
     setState(() => _prSets.add(clientSetId));
+    return true;
   }
 
   /// Owner 2026-10-23: the rows open at last time's numbers; this puts the
@@ -294,6 +302,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
     setState(() => _finishing = true);
     ref.read(restTimerProvider.notifier).skip();
     await ref.read(workoutRepositoryProvider).complete(widget.clientSessionId);
+    ref.read(appFeedbackProvider)(FeedbackEvent.sessionDone);
     if (!mounted) return;
     context.go(Routes.sessionSummary(widget.clientSessionId));
   }
