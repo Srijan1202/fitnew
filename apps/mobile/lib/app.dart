@@ -8,6 +8,7 @@ import 'core/routing/router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'core/theme/tokens.dart';
+import 'features/premium/presentation/app_icon_controller.dart';
 import 'features/premium/presentation/premium_providers.dart';
 import 'features/nutrition/presentation/controllers/food_log_providers.dart';
 import 'features/workout/presentation/controllers/workout_providers.dart';
@@ -56,6 +57,10 @@ class FitOSApp extends ConsumerWidget {
         ref
             .read(themeControllerProvider.notifier)
             .choose(FitPalette.current.freeFallback);
+      }
+      // Beta 3.2: and a premium app icon goes back to Standard.
+      if (premium == false) {
+        ref.read(appIconControllerProvider.notifier).keepWithin(premium: false);
       }
     });
 

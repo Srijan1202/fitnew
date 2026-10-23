@@ -105,7 +105,10 @@ const kPremiumPerks = <(String, String)>[
     'Weekly report',
     'Every week on one page: sessions, volume per muscle, records, protein days and your trend weight.'
   ),
-  ('Colour themes', 'Night, Forest and Ocean, beside the paper look.'),
+  (
+    'Themes and app icons',
+    'Night, Forest and Ocean themes, and the Gold, Glow and Lime app icons.'
+  ),
   (
     'Premium pictures',
     'Crown, Flame and Trophy, and a gold rim around your picture.'

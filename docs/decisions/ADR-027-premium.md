@@ -45,7 +45,7 @@ The owner (2026-10-22):
 - **Meal planning for the week** from the mess menus and the targets.
 - **Export a monthly PDF report** to share with a coach.
 - **Exercise video and form cues** in the library.
-- **Custom app icon** (gold).
+- ~~**Custom app icon** (gold).~~ Built in beta 3.2 (amendment below).
 - **Early access** to new features through flags (E18), for premium accounts.
 
 ## Consequences
@@ -64,3 +64,26 @@ The owner (2026-10-22):
 
 - Payment. Premium is free during the beta and approved by hand.
 - Server-side theme preference.
+
+## Amendment — app icons (beta 3.2, owner 2026-10-23)
+
+The owner asked for different app icons: a gold one and more, with Gold and the extras premium and a white one free.
+
+- **Five icons,** each built from the brand kit's own designs (`apps/mobile/tool/app_icons.py`, using `brand/kit_assets.py`). The F is the same size as on the standard launcher icon.
+
+  | Icon | Look | Who |
+  |---|---|---|
+  | Standard | lime F on carbon (the launcher icon until now) | everyone |
+  | White | ink F on white (the kit's minimal-2-white) | everyone |
+  | Gold | gold F on carbon, in the premium rim's gold | premium |
+  | Glow | lime F on graphite with the green glow (the kit's bold-2-glow) | premium |
+  | Lime | carbon F on lime (the kit's bold-3-lime) | premium |
+
+  "The extras" became Glow and Lime because the kit already designed them.
+- **How the icon changes:** Android has one activity-alias per icon (`.IconStandard`, `.IconWhite`, …), each an adaptive icon. MainActivity is no longer the launcher entry. Exactly one alias is enabled; the manifest enables Standard. `AppIcons.kt` enables the chosen alias first and then disables the others, so the launcher never sees an app with no entry (`DONT_KILL_APP`).
+- **The phone keeps the choice.** Nothing is stored in Dart or on the server, the same as the themes (kept per phone).
+- **In the app:** Profile → Appearance → App icon shows the five previews. Premium icons show a lock and open the premium sheet for a free user. A note says the phone may close FITOS once while it changes the icon, because some launchers do. The picker is hidden where the icon can't change (`fitos/device` channel missing).
+- **Losing premium:** a premium icon goes back to Standard as soon as the app knows the user isn't premium, as the premium themes do (D8).
+- **The premium perks** now read "Themes and app icons".
+- **Tests:** a source guard keeps the manifest, `AppIcons.kt`, the generated resources and the `AppIcon` enum in step. There are controller tests (refusal, fallback) and whole-app flows for free, premium and losing premium.
+- **Accepted:** the monochrome (themed) icon is the same F for all five icons. Some launchers drop the home-screen shortcut and add the new icon in the app drawer.

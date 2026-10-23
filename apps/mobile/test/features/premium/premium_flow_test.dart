@@ -4,7 +4,9 @@ import 'package:fitos/core/theme/tokens.dart';
 import 'package:fitos/features/auth/domain/entities/auth_state.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_providers.dart';
 import 'package:fitos/features/onboarding/presentation/controllers/onboarding_controller.dart';
+import 'package:fitos/features/premium/domain/app_icons.dart';
 import 'package:fitos/features/premium/domain/premium.dart';
+import 'package:fitos/features/premium/presentation/app_icon_controller.dart';
 import 'package:fitos/features/premium/presentation/premium_providers.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/fake_ai_api.dart';
+import '../../support/fake_app_icon_switcher.dart';
 import '../../support/fake_auth_repository.dart';
 import '../../support/fake_onboarding_repository.dart';
 import '../../support/fake_premium_api.dart';
@@ -29,6 +32,9 @@ void main() {
   late FakeWeeklyReportApi weekly;
   // FITOS AI switched on on the server (the default fake has it off).
   FakeAiApi? ai;
+  // Beta 3.2: a phone whose launcher icon can change (null: the default
+  // switcher, which finds no Android channel under test).
+  FakeAppIconSwitcher? icons;
 
   setUp(() {
     auth = FakeAuthRepository()
@@ -38,6 +44,7 @@ void main() {
     weekly = FakeWeeklyReportApi();
     FitPalette.current = FitPalette.fitosDark;
     ai = null;
+    icons = null;
   });
   tearDown(() async {
     FitPalette.current = FitPalette.fitosDark;
@@ -58,6 +65,7 @@ void main() {
             weekly: weekly,
             ai: ai,
           ),
+          if (icons != null) appIconSwitcherProvider.overrideWithValue(icons!),
         ],
         child: const FitOSApp(),
       );
@@ -294,10 +302,62 @@ void main() {
     });
   });
 
+  group('app icons (beta 3.2)', () {
+    testWidgets('a phone where the icon cannot change shows no picker',
+        (tester) async {
+      await start(tester);
+      await tap(tester, 'home.profile');
+      expect(find.byKey(const ValueKey('profile.theme')), findsOneWidget);
+      expect(find.byKey(const ValueKey('profile.appIcon')), findsNothing);
+    });
+
+    testWidgets('free: Gold is locked and opens Premium; White is open',
+        (tester) async {
+      icons = FakeAppIconSwitcher();
+      await start(tester);
+      await tap(tester, 'home.profile');
+      expect(find.text('APP ICON'), findsOneWidget);
+      await tap(tester, 'appIcon.gold');
+      expect(find.byKey(const ValueKey('premium.sheet')), findsOneWidget);
+      expect(icons!.chosen, isEmpty);
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
+      await tap(tester, 'appIcon.white');
+      expect(icons!.chosen, [AppIcon.white]);
+    });
+
+    testWidgets('a refusal says so and keeps the icon', (tester) async {
+      icons = FakeAppIconSwitcher()..refuse = true;
+      await start(tester);
+      await tap(tester, 'home.profile');
+      await tap(tester, 'appIcon.white');
+      expect(find.text('Your phone did not change the icon.'), findsOneWidget);
+      expect(icons!.icon, AppIcon.standard);
+    });
+
+    testWidgets('premium: Gold is chosen; losing premium goes back to Standard',
+        (tester) async {
+      premium.premium = true;
+      icons = FakeAppIconSwitcher();
+      await start(tester);
+      await tap(tester, 'home.profile');
+      await tap(tester, 'appIcon.gold');
+      expect(find.byKey(const ValueKey('premium.sheet')), findsNothing);
+      expect(icons!.icon, AppIcon.gold);
+
+      premium.premium = false;
+      final container =
+          ProviderScope.containerOf(tester.element(find.byType(FitOSApp)));
+      container.invalidate(premiumStatusProvider);
+      await tester.pumpAndSettle();
+      expect(icons!.chosen, [AppIcon.gold, AppIcon.standard]);
+    });
+  });
+
   test('perks name the four premium features', () {
     expect(
       kPremiumPerks.map((p) => p.$1),
-      ['FITOS AI', 'Weekly report', 'Colour themes', 'Premium pictures'],
+      ['FITOS AI', 'Weekly report', 'Themes and app icons', 'Premium pictures'],
     );
   });
 }

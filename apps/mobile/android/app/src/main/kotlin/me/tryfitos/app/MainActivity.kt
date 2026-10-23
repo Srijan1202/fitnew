@@ -46,11 +46,25 @@ class MainActivity : FlutterFragmentActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, HealthConnectChannel.NAME)
             .setMethodCallHandler(channel)
         // The phone's IANA time zone for the server's day boundaries (§9.1);
-        // Dart alone only knows an abbreviation such as "IST".
+        // Dart alone only knows an abbreviation such as "IST". Beta 3.2: and
+        // the app icon (AppIcons).
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fitos/device")
             .setMethodCallHandler { call, result ->
-                if (call.method == "timeZone") result.success(java.util.TimeZone.getDefault().id)
-                else result.notImplemented()
+                when (call.method) {
+                    "timeZone" -> result.success(java.util.TimeZone.getDefault().id)
+                    // Beta 3.2 (ADR-027 amendment): the launcher icon.
+                    "appIcon" -> result.success(AppIcons.current(this))
+                    "setAppIcon" -> {
+                        val name = call.arguments as? String
+                        if (name == null || name !in AppIcons.NAMES) {
+                            result.error("bad-icon", "Unknown app icon: $name", null)
+                        } else {
+                            AppIcons.choose(this, name)
+                            result.success(null)
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
             }
     }
 

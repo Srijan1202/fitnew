@@ -1,5 +1,7 @@
 import '../../../../core/feedback/app_feedback.dart';
 import '../../../premium/domain/avatars.dart';
+import '../../../premium/presentation/app_icon_controller.dart';
+import '../../../premium/presentation/app_icon_picker.dart';
 import '../../../premium/presentation/avatar_picker.dart';
 import '../../../premium/presentation/premium_card.dart';
 import '../../../premium/presentation/premium_providers.dart';
@@ -111,6 +113,15 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         child: const ThemePicker(),
                       ),
+                      // Beta 3.2: hidden where the icon cannot change.
+                      if (ref.watch(appIconControllerProvider).value != null)
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: fitGlass ? 14 : 0,
+                            vertical: fitGlass ? 14 : FitSpacing.sm,
+                          ),
+                          child: const AppIconPicker(),
+                        ),
                     ],
                   ),
                   const SizedBox(height: FitSpacing.lg),
