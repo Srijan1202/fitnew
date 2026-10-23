@@ -160,4 +160,13 @@ class FakeFoodRepository implements FoodRepository {
     final f = failMissing;
     return f == null ? const Ok(null) : Err(f);
   }
+
+  /// Beta 3.2: wrong-numbers reports sent, with their notes.
+  final reportedFoods = <(String, String?)>[];
+
+  @override
+  Future<Result<void>> reportFood(String foodId, {String? note}) async {
+    reportedFoods.add((foodId, note));
+    return const Ok(null);
+  }
 }

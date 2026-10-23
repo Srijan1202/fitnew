@@ -68,6 +68,7 @@ _Food _$FoodFromJson(Map<String, dynamic> json) => _Food(
       nutrition: (json['nutrition'] as List<dynamic>)
           .map((e) => FoodNutrition.fromJson(e as Map<String, dynamic>))
           .toList(),
+      community: json['community'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$FoodToJson(_Food instance) => <String, dynamic>{
@@ -82,6 +83,7 @@ Map<String, dynamic> _$FoodToJson(_Food instance) => <String, dynamic>{
       'isCustom': instance.isCustom,
       'aliases': instance.aliases,
       'nutrition': instance.nutrition,
+      'community': instance.community,
     };
 
 const _$FoodSourceEnumMap = {

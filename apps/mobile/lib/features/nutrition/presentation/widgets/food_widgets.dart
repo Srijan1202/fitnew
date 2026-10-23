@@ -48,13 +48,23 @@ class FoodSourceBadge extends StatelessWidget {
         FoodSource.user || FoodSource.userCorrected => FitColors.ink60,
       };
 
+  /// Beta 3.2 (ADR-032): someone else's shared food says Community; your own
+  /// shared food says so too.
+  String get _badge => food.community && !food.isCustom
+      ? 'Community'
+      : food.community
+          ? 'Yours · shared'
+          : food.source.badge;
+
   @override
   Widget build(BuildContext context) {
     final style = Theme.of(context).textTheme.labelSmall?.copyWith(
           color: _colour,
         );
     return Semantics(
-      label: 'Source: ${food.source.label}',
+      label: food.community && !food.isCustom
+          ? 'Community food, unverified'
+          : 'Source: ${food.source.label}',
       excludeSemantics: true,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -62,7 +72,7 @@ class FoodSourceBadge extends StatelessWidget {
           border: Border.all(color: _colour),
           borderRadius: BorderRadius.all(FitRadius.small),
         ),
-        child: Text(food.source.badge.toUpperCase(), style: style),
+        child: Text(_badge.toUpperCase(), style: style),
       ),
     );
   }

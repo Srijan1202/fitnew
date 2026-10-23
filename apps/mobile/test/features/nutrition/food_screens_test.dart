@@ -250,6 +250,50 @@ void main() {
     });
 
     testWidgets(
+        'beta 3.2: someone else\u2019s shared food says Community \u00b7 unverified and can be reported once, with a note',
+        (tester) async {
+      tall(tester);
+      final shared = lassi.copyWith(
+        id: '99999999-0000-4000-8000-000000000001',
+        isCustom: false,
+        community: true,
+      );
+      await tester.pumpWidget(
+        harness(initial: '/nutrition/foods/${shared.id}', extra: shared),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('COMMUNITY'), findsOneWidget);
+      expect(
+        find.textContaining('Community \u00b7 unverified'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byKey(const ValueKey('food.report')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('food.report.note')),
+        'The pack says 120 kcal',
+      );
+      await tester.tap(find.byKey(const ValueKey('food.report.send')));
+      await tester.pumpAndSettle();
+      expect(repo.reportedFoods, [(shared.id, 'The pack says 120 kcal')]);
+      expect(find.byKey(const ValueKey('food.report.done')), findsOneWidget);
+    });
+
+    testWidgets('beta 3.2: your own shared food says so and cannot be reported',
+        (tester) async {
+      tall(tester);
+      final mine = lassi.copyWith(community: true);
+      await tester.pumpWidget(
+        harness(initial: '/nutrition/foods/${mine.id}', extra: mine),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('YOURS \u00b7 SHARED'), findsOneWidget);
+      expect(find.textContaining('shared with everyone'), findsOneWidget);
+      expect(find.byKey(const ValueKey('food.report')), findsNothing);
+    });
+
+    testWidgets(
         'a USDA record: verified, exact values, its FDC record and the attribution',
         (tester) async {
       tall(tester);
@@ -335,6 +379,49 @@ void main() {
       'carb': '20',
       'fat': '2',
     };
+
+    testWidgets(
+        'beta 3.2: off by default; Share with everyone sends shareWithCommunity; a refusal (a FITOS twin) is shown',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(harness(initial: '/nutrition/foods/new'));
+      await tester.pumpAndSettle();
+      await fill(tester, label);
+      expect(
+        tester
+            .widget<Switch>(find.byKey(const ValueKey('food.form.share')))
+            .value,
+        isFalse,
+      );
+      repo.createResults.add(
+        const Err(
+          Conflict(
+            'FITOS already has \u201cProtein lassi\u201d. Search for it instead of sharing a copy.',
+          ),
+        ),
+      );
+      await tester.ensureVisible(find.byKey(const ValueKey('food.form.share')));
+      await tester.tap(find.byKey(const ValueKey('food.form.share')));
+      await tester.pump();
+      await save(tester);
+      expect(repo.created.single.shareWithCommunity, isTrue);
+      expect(repo.created.single.toJson()['shareWithCommunity'], isTrue);
+      expect(find.textContaining('FITOS already has'), findsOneWidget);
+    });
+
+    testWidgets(
+        'beta 3.2: a private food does not send shareWithCommunity at all',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(harness(initial: '/nutrition/foods/new'));
+      await tester.pumpAndSettle();
+      await fill(tester, label);
+      await save(tester);
+      expect(
+        repo.created.single.toJson().containsKey('shareWithCommunity'),
+        isFalse,
+      );
+    });
 
     testWidgets('required fields are asked for; nothing is sent',
         (tester) async {

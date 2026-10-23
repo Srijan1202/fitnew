@@ -1406,6 +1406,8 @@ void main() {
         carbG: 22,
         fatG: 7,
         fibreG: 3,
+        // Beta 3.2 (ADR-032): only sent when on.
+        shareWithCommunity: true,
       );
       expect(full.toJson().keys.toSet(), keysOf(request));
       expect(request['additionalProperties'], isFalse);

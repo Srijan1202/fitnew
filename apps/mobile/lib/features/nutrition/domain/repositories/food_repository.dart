@@ -14,4 +14,8 @@ abstract class FoodRepository {
   /// Beta 3.2 (ADR-032): a search that found nothing, or "Ask us to add it"
   /// ([asked]). Counted anonymously by the server.
   Future<Result<void>> reportMissing(String query, {bool asked = false});
+
+  /// Beta 3.2 (ADR-032): "these numbers look wrong" on someone else's shared
+  /// food; once per person, anonymous.
+  Future<Result<void>> reportFood(String foodId, {String? note});
 }

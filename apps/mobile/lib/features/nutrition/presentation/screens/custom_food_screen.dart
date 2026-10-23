@@ -46,6 +46,9 @@ class _CustomFoodScreenState extends ConsumerState<CustomFoodScreen> {
   bool _saving = false;
   String? _error;
 
+  /// Beta 3.2 (ADR-032): share this food with everyone (off by default).
+  bool _share = false;
+
   @override
   void dispose() {
     for (final c in <TextEditingController>[
@@ -135,6 +138,7 @@ class _CustomFoodScreenState extends ConsumerState<CustomFoodScreen> {
       carbG: _parse(_carb.text)!,
       fatG: _parse(_fat.text)!,
       fibreG: _parse(_fibre.text),
+      shareWithCommunity: _share,
     );
     setState(() => _saving = true);
     final result = await ref.read(foodRepositoryProvider).create(request);
@@ -184,7 +188,8 @@ class _CustomFoodScreenState extends ConsumerState<CustomFoodScreen> {
                 const SizedBox(height: FitSpacing.sm),
                 Text(
                   'Copy the numbers from the nutrition label. Only you will see '
-                  'this food, and FITOS marks it as yours, not verified.',
+                  'this food unless you share it, and FITOS marks it as yours, '
+                  'not verified.',
                   style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
                 ),
                 const SizedBox(height: FitSpacing.lg),
@@ -284,6 +289,46 @@ class _CustomFoodScreenState extends ConsumerState<CustomFoodScreen> {
                   keyboardType: decimal,
                   textInputAction: TextInputAction.done,
                   validator: _amount(required: false, max: 500),
+                ),
+                const SizedBox(height: FitSpacing.lg),
+                FitBlock(
+                  padding: const EdgeInsets.fromLTRB(
+                    FitSpacing.md,
+                    FitSpacing.xs,
+                    FitSpacing.xs,
+                    FitSpacing.sm,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            const SizedBox(height: FitSpacing.sm),
+                            Text(
+                              'Share with everyone',
+                              style: textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: FitSpacing.xs),
+                            Text(
+                              'Other people can find and log it, marked '
+                              'Community \u00b7 unverified. Your name is never '
+                              'shown. Check the numbers: they must add up.',
+                              style: textTheme.bodyMedium
+                                  ?.copyWith(color: FitColors.ink60),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        key: const ValueKey('food.form.share'),
+                        value: _share,
+                        onChanged:
+                            _saving ? null : (v) => setState(() => _share = v),
+                      ),
+                    ],
+                  ),
                 ),
                 if (_error != null) ...<Widget>[
                   gap(),

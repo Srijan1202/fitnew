@@ -700,6 +700,9 @@ mixin _$Food {
   List<String> get aliases;
   List<FoodNutrition> get nutrition;
 
+  /// Beta 3.2 (ADR-032): shared with everyone by the person who added it.
+  bool get community;
+
   /// Create a copy of Food
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -728,7 +731,9 @@ mixin _$Food {
             (identical(other.isCustom, isCustom) ||
                 other.isCustom == isCustom) &&
             const DeepCollectionEquality().equals(other.aliases, aliases) &&
-            const DeepCollectionEquality().equals(other.nutrition, nutrition));
+            const DeepCollectionEquality().equals(other.nutrition, nutrition) &&
+            (identical(other.community, community) ||
+                other.community == community));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -745,11 +750,12 @@ mixin _$Food {
       isVerified,
       isCustom,
       const DeepCollectionEquality().hash(aliases),
-      const DeepCollectionEquality().hash(nutrition));
+      const DeepCollectionEquality().hash(nutrition),
+      community);
 
   @override
   String toString() {
-    return 'Food(id: $id, slug: $slug, name: $name, brand: $brand, barcode: $barcode, source: $source, sourceRef: $sourceRef, isVerified: $isVerified, isCustom: $isCustom, aliases: $aliases, nutrition: $nutrition)';
+    return 'Food(id: $id, slug: $slug, name: $name, brand: $brand, barcode: $barcode, source: $source, sourceRef: $sourceRef, isVerified: $isVerified, isCustom: $isCustom, aliases: $aliases, nutrition: $nutrition, community: $community)';
   }
 }
 
@@ -769,7 +775,8 @@ abstract mixin class $FoodCopyWith<$Res> {
       bool isVerified,
       bool isCustom,
       List<String> aliases,
-      List<FoodNutrition> nutrition});
+      List<FoodNutrition> nutrition,
+      bool community});
 }
 
 /// @nodoc
@@ -795,6 +802,7 @@ class _$FoodCopyWithImpl<$Res> implements $FoodCopyWith<$Res> {
     Object? isCustom = null,
     Object? aliases = null,
     Object? nutrition = null,
+    Object? community = null,
   }) {
     return _then(_self.copyWith(
       id: null == id
@@ -841,6 +849,10 @@ class _$FoodCopyWithImpl<$Res> implements $FoodCopyWith<$Res> {
           ? _self.nutrition
           : nutrition // ignore: cast_nullable_to_non_nullable
               as List<FoodNutrition>,
+      community: null == community
+          ? _self.community
+          : community // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -949,7 +961,8 @@ extension FoodPatterns on Food {
             bool isVerified,
             bool isCustom,
             List<String> aliases,
-            List<FoodNutrition> nutrition)?
+            List<FoodNutrition> nutrition,
+            bool community)?
         $default, {
     required TResult orElse(),
   }) {
@@ -967,7 +980,8 @@ extension FoodPatterns on Food {
             _that.isVerified,
             _that.isCustom,
             _that.aliases,
-            _that.nutrition);
+            _that.nutrition,
+            _that.community);
       case _:
         return orElse();
     }
@@ -999,7 +1013,8 @@ extension FoodPatterns on Food {
             bool isVerified,
             bool isCustom,
             List<String> aliases,
-            List<FoodNutrition> nutrition)
+            List<FoodNutrition> nutrition,
+            bool community)
         $default,
   ) {
     final _that = this;
@@ -1016,7 +1031,8 @@ extension FoodPatterns on Food {
             _that.isVerified,
             _that.isCustom,
             _that.aliases,
-            _that.nutrition);
+            _that.nutrition,
+            _that.community);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -1047,7 +1063,8 @@ extension FoodPatterns on Food {
             bool isVerified,
             bool isCustom,
             List<String> aliases,
-            List<FoodNutrition> nutrition)?
+            List<FoodNutrition> nutrition,
+            bool community)?
         $default,
   ) {
     final _that = this;
@@ -1064,7 +1081,8 @@ extension FoodPatterns on Food {
             _that.isVerified,
             _that.isCustom,
             _that.aliases,
-            _that.nutrition);
+            _that.nutrition,
+            _that.community);
       case _:
         return null;
     }
@@ -1085,7 +1103,8 @@ class _Food extends Food {
       required this.isVerified,
       required this.isCustom,
       required final List<String> aliases,
-      required final List<FoodNutrition> nutrition})
+      required final List<FoodNutrition> nutrition,
+      this.community = false})
       : _aliases = aliases,
         _nutrition = nutrition,
         super._();
@@ -1125,6 +1144,11 @@ class _Food extends Food {
     return EqualUnmodifiableListView(_nutrition);
   }
 
+  /// Beta 3.2 (ADR-032): shared with everyone by the person who added it.
+  @override
+  @JsonKey()
+  final bool community;
+
   /// Create a copy of Food
   /// with the given fields replaced by the non-null parameter values.
   @override
@@ -1159,7 +1183,9 @@ class _Food extends Food {
                 other.isCustom == isCustom) &&
             const DeepCollectionEquality().equals(other._aliases, _aliases) &&
             const DeepCollectionEquality()
-                .equals(other._nutrition, _nutrition));
+                .equals(other._nutrition, _nutrition) &&
+            (identical(other.community, community) ||
+                other.community == community));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1176,11 +1202,12 @@ class _Food extends Food {
       isVerified,
       isCustom,
       const DeepCollectionEquality().hash(_aliases),
-      const DeepCollectionEquality().hash(_nutrition));
+      const DeepCollectionEquality().hash(_nutrition),
+      community);
 
   @override
   String toString() {
-    return 'Food(id: $id, slug: $slug, name: $name, brand: $brand, barcode: $barcode, source: $source, sourceRef: $sourceRef, isVerified: $isVerified, isCustom: $isCustom, aliases: $aliases, nutrition: $nutrition)';
+    return 'Food(id: $id, slug: $slug, name: $name, brand: $brand, barcode: $barcode, source: $source, sourceRef: $sourceRef, isVerified: $isVerified, isCustom: $isCustom, aliases: $aliases, nutrition: $nutrition, community: $community)';
   }
 }
 
@@ -1201,7 +1228,8 @@ abstract mixin class _$FoodCopyWith<$Res> implements $FoodCopyWith<$Res> {
       bool isVerified,
       bool isCustom,
       List<String> aliases,
-      List<FoodNutrition> nutrition});
+      List<FoodNutrition> nutrition,
+      bool community});
 }
 
 /// @nodoc
@@ -1227,6 +1255,7 @@ class __$FoodCopyWithImpl<$Res> implements _$FoodCopyWith<$Res> {
     Object? isCustom = null,
     Object? aliases = null,
     Object? nutrition = null,
+    Object? community = null,
   }) {
     return _then(_Food(
       id: null == id
@@ -1273,6 +1302,10 @@ class __$FoodCopyWithImpl<$Res> implements _$FoodCopyWith<$Res> {
           ? _self._nutrition
           : nutrition // ignore: cast_nullable_to_non_nullable
               as List<FoodNutrition>,
+      community: null == community
+          ? _self.community
+          : community // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }

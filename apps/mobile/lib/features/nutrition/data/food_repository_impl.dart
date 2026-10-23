@@ -50,6 +50,21 @@ class DioFoodRepository implements FoodRepository {
   }
 
   @override
+  Future<Result<void>> reportFood(String foodId, {String? note}) async {
+    try {
+      await _dio.post<void>(
+        '/v1/nutrition/foods/$foodId/report',
+        data: <String, dynamic>{
+          if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+        },
+      );
+      return const Ok(null);
+    } on DioException catch (e) {
+      return Err(ErrorMapper.fromDio(e));
+    }
+  }
+
+  @override
   Future<Result<Food>> create(CreateFoodRequest request) => _guard(
         () => _dio.post<Map<String, dynamic>>(
           '/v1/nutrition/foods',

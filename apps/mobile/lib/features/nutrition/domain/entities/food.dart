@@ -122,6 +122,9 @@ abstract class Food with _$Food {
     required bool isCustom,
     required List<String> aliases,
     required List<FoodNutrition> nutrition,
+
+    /// Beta 3.2 (ADR-032): shared with everyone by the person who added it.
+    @Default(false) bool community,
   }) = _Food;
 
   factory Food.fromJson(Map<String, dynamic> json) => _$FoodFromJson(json);
@@ -194,6 +197,7 @@ class CreateFoodRequest {
     required this.carbG,
     required this.fatG,
     required this.fibreG,
+    this.shareWithCommunity = false,
   });
 
   final String clientFoodId;
@@ -210,6 +214,9 @@ class CreateFoodRequest {
   /// Null when the label does not state fibre — never sent as 0.
   final double? fibreG;
 
+  /// Beta 3.2 (ADR-032): everyone can find it, marked Community · unverified.
+  final bool shareWithCommunity;
+
   Map<String, dynamic> toJson() => <String, dynamic>{
         'clientFoodId': clientFoodId,
         'name': name,
@@ -222,5 +229,6 @@ class CreateFoodRequest {
         'carbG': carbG,
         'fatG': fatG,
         'fibreG': fibreG,
+        if (shareWithCommunity) 'shareWithCommunity': true,
       };
 }

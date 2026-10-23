@@ -11,6 +11,7 @@ import '../../../home/presentation/controllers/home_providers.dart';
 import '../../domain/entities/food.dart';
 import '../../domain/entities/food_log.dart';
 import '../controllers/food_log_providers.dart';
+import '../controllers/food_providers.dart';
 import '../controllers/food_logger.dart';
 import '../widgets/food_widgets.dart';
 import '../widgets/portion_sheet.dart';
@@ -125,6 +126,12 @@ class _Detail extends StatelessWidget {
         FoodSource.usda || FoodSource.ifct || FoodSource.indb => food.isVerified
             ? 'Measured values, exactly as ${food.source.label} publishes them.'
             : 'Values from ${food.source.label}.',
+        FoodSource.user when food.community && !food.isCustom =>
+          'Added from a label by someone using FITOS and shared with everyone. '
+              'Community \u00b7 unverified: FITOS has not checked it.',
+        FoodSource.user when food.community =>
+          'From the label you entered, shared with everyone. FITOS has not '
+              'verified it.',
         FoodSource.user => 'From the label you entered. Only you can see it; '
             'FITOS has not verified it.',
         FoodSource.userCorrected =>
@@ -192,6 +199,10 @@ class _Detail extends StatelessWidget {
             label: Text(justCreated ? 'Log it now' : 'Log this food'),
           ),
         ),
+        if (food.community && !food.isCustom) ...<Widget>[
+          const SizedBox(height: FitSpacing.sm),
+          ReportWrongNumbers(foodId: food.id),
+        ],
         const SizedBox(height: FitSpacing.lg),
         for (final row in food.nutrition) ...<Widget>[
           HairlineSection(
@@ -231,4 +242,104 @@ class _Detail extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Beta 3.2 (ADR-032): "these numbers look wrong" on someone else's shared
+/// food. Once per person, anonymous; an optional note for the admin panel.
+class ReportWrongNumbers extends ConsumerStatefulWidget {
+  const ReportWrongNumbers({required this.foodId, super.key});
+
+  final String foodId;
+
+  @override
+  ConsumerState<ReportWrongNumbers> createState() => _ReportWrongNumbersState();
+}
+
+class _ReportWrongNumbersState extends ConsumerState<ReportWrongNumbers> {
+  bool _sent = false;
+
+  Future<void> _report() async {
+    // Null: cancelled. A string (maybe empty): send, with that note.
+    final note = await showDialog<String>(
+      context: context,
+      builder: (_) => const _ReportDialog(),
+    );
+    if (note == null || !mounted) return;
+    final r = await ref
+        .read(foodRepositoryProvider)
+        .reportFood(widget.foodId, note: note);
+    if (!mounted) return;
+    r.when(
+      ok: (_) => setState(() => _sent = true),
+      err: (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_sent) {
+      return Text(
+        'Thanks. We\u2019ll check this food.',
+        key: const ValueKey('food.report.done'),
+        style: Theme.of(context)
+            .textTheme
+            .bodyMedium
+            ?.copyWith(color: FitColors.pine),
+      );
+    }
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        key: const ValueKey('food.report'),
+        onPressed: _report,
+        icon: const Icon(Icons.flag_outlined, size: 18),
+        label: const Text('Report wrong numbers'),
+      ),
+    );
+  }
+}
+
+/// The note's field lives as long as the dialog, not the button's handler.
+class _ReportDialog extends StatefulWidget {
+  const _ReportDialog();
+
+  @override
+  State<_ReportDialog> createState() => _ReportDialogState();
+}
+
+class _ReportDialogState extends State<_ReportDialog> {
+  final _note = TextEditingController();
+
+  @override
+  void dispose() {
+    _note.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        key: const ValueKey('food.report.dialog'),
+        title: const Text('Report wrong numbers'),
+        content: TextField(
+          key: const ValueKey('food.report.note'),
+          controller: _note,
+          maxLength: 300,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            hintText: 'What looks wrong? (optional)',
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            key: const ValueKey('food.report.send'),
+            onPressed: () => Navigator.of(context).pop(_note.text),
+            child: const Text('Send'),
+          ),
+        ],
+      );
 }
