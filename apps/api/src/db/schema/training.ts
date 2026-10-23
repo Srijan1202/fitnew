@@ -158,3 +158,31 @@ export type ProgramRow = typeof programs.$inferSelect;
 export type PlannedSetRow = typeof plannedSets.$inferSelect;
 export type ProgramDayRow = typeof programDays.$inferSelect;
 export type PlannedExerciseRow = typeof plannedExercises.$inferSelect;
+
+/**
+ * Beta 3.3 (ADR-034): a programme shared as a code. `snapshot` is the
+ * STRUCTURE at the moment of sharing — days, rest days, session names,
+ * exercises in order, sets, rep ranges and target RIR — never weights, logs,
+ * notes or who shared it; later changes to the programme are not in it.
+ * Stopping a code sets `stopped_at` (it then answers 404); the codes go with
+ * the account.
+ */
+export const sharedProgrammes = pgTable(
+  'shared_programmes',
+  {
+    code: text('code').primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    snapshot: jsonb('snapshot').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    stoppedAt: timestamp('stopped_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('shared_programmes_user_idx').on(t.userId, t.createdAt),
+    check('shared_programmes_code_format', sql`${t.code} ~ '^[2-9A-HJKMNP-Z]{6}$'`),
+  ],
+);
+
+export type SharedProgrammeRow = typeof sharedProgrammes.$inferSelect;

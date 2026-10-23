@@ -344,3 +344,53 @@ export const templatePreviewQuerySchema = z
     preferredSessionMinutes: z.coerce.number().int().min(15).max(180).optional(),
   })
   .strict();
+
+/* ------------------------------------------ shared programmes (beta 3.3) -- */
+
+/**
+ * Beta 3.3 (ADR-034): a programme shared as a code such as FIT-K7Q2XM. The
+ * code is 6 characters from an alphabet without look-alikes (no 0/O, 1/I/L).
+ * A shared programme is its STRUCTURE only: never weights, history, notes or
+ * who shared it.
+ */
+export const SHARE_CODE_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+export const shareCodeSchema = z.string().regex(/^[2-9A-HJKMNP-Z]{6}$/, 'a 6-character share code');
+/** New share codes a person may make in a day. */
+export const SHARES_PER_DAY = 10;
+/** Looks at shared programmes per hour per address (the public preview and the app). */
+export const SHARED_LOOKUPS_PER_HOUR = 30;
+/** The website page that previews a code. */
+export const SHARE_PAGE_URL = 'https://tryfitos.me/p/';
+
+export const shareCodeParamsSchema = z.object({ code: shareCodeSchema }).strict();
+
+export const sharedExerciseSchema = z
+  .object({
+    exerciseId: z.string().uuid(),
+    name: z.string(),
+    equipment: z.array(equipmentSchema),
+    setCount: z.number().int().min(1),
+    repMin: z.number().int().min(1),
+    repMax: z.number().int().min(1),
+    targetRir: z.number().int().min(0),
+    /** Equipment this exercise needs that YOUR setting lacks (empty on the public page). */
+    missingEquipment: z.array(equipmentSchema),
+  })
+  .strict();
+
+export const sharedDaySchema = z
+  .object({ dayOfWeek: dayOfWeekSchema, sessionName: z.string(), isRest: z.boolean(), exercises: z.array(sharedExerciseSchema) })
+  .strict();
+
+/** What a code shows before anyone uses it. */
+export const sharedProgrammeSchema = z
+  .object({ code: shareCodeSchema, name: z.string(), daysPerWeek: z.number().int().min(0), days: z.array(sharedDaySchema) })
+  .strict();
+export type SharedProgramme = z.infer<typeof sharedProgrammeSchema>;
+
+/** A code you made. */
+export const myShareSchema = z
+  .object({ code: shareCodeSchema, name: z.string(), url: z.string().url(), createdAt: z.string().datetime({ offset: true }) })
+  .strict();
+export const myShareListSchema = z.object({ items: z.array(myShareSchema) }).strict();
+export type MyShare = z.infer<typeof myShareSchema>;

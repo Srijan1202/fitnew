@@ -29,6 +29,7 @@ import { authRoutes } from './modules/auth/routes.js';
 import { healthRoutes } from './modules/health/routes.js';
 import { exerciseRoutes } from './modules/exercise/routes.js';
 import { onboardingRoutes } from './modules/onboarding/routes.js';
+import { shareRoutes } from './modules/training/shares.js';
 import { trainingRoutes } from './modules/training/routes.js';
 import { workoutRoutes } from './modules/workout/routes.js';
 import { foodRequestRoutes } from './modules/nutrition/food-requests.js';
@@ -191,6 +192,7 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
       await v1.register(onboardingRoutes, { ipSalt: env.CONSENT_IP_SALT });
       await v1.register(exerciseRoutes);
       await v1.register(trainingRoutes);
+      await v1.register(shareRoutes);
       await v1.register(workoutRoutes);
       await v1.register(nutritionRoutes);
       await v1.register(foodRequestRoutes, { salt: env.CONSENT_IP_SALT });

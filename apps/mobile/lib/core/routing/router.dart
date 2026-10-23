@@ -44,6 +44,7 @@ import '../../features/workout/presentation/screens/volume_screen.dart';
 import '../../features/workout/presentation/screens/session_summary_screen.dart';
 import 'app_shell.dart';
 import 'guards.dart';
+import '../../features/training/presentation/screens/shared_programme_screen.dart';
 
 /// Application routes.
 ///
@@ -105,6 +106,9 @@ abstract final class Routes {
   static const String planTemplates = '/plan/templates';
   static String planTemplate(String slug) => '/plan/templates/$slug';
   static const String planCustom = '/plan/custom';
+
+  /// Beta 3.3 (ADR-034): use a programme someone shared.
+  static const String planShared = '/plan/shared';
   static String planDayEdit(String dayId) => '/plan/days/$dayId/edit';
 
   // Workout logging (Phase 5). Sessions are addressed by CLIENT id.
@@ -252,6 +256,12 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
                             const GenerateOptionsScreen(),
                       ),
                     ],
+                  ),
+                  GoRoute(
+                    path: 'shared',
+                    name: 'plan-shared',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const SharedProgrammeScreen(),
                   ),
                   GoRoute(
                     path: 'templates',

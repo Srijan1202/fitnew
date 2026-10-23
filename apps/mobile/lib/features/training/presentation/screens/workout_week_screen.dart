@@ -21,6 +21,8 @@ import '../widgets/day_selector.dart';
 import '../widgets/exercise_card.dart';
 import 'plan_start_screen.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../../../core/config/app_features.dart';
+import 'shared_programme_screen.dart';
 
 /// The training plan, one day at a time (Phase 4 rework). A fixed day
 /// selector on top; below it only the selected day: its name, its muscles,
@@ -282,6 +284,8 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
         final todayDay =
             program.days.firstWhere((d) => d.dayOfWeek == todayDow);
         final canSkip = !skippedToday && !todayDay.isRest;
+        // Beta 3.3 (ADR-034): sharing, behind the admin's switch.
+        final shareOn = ref.watch(featureOnProvider(AppFeature.shareProgramme));
         // Phase 6: the server's view of this day (deload state, per-lift
         // substitutions). Absent offline — the plan still renders.
         final serverDay =
@@ -316,6 +320,10 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
                       _start(program, null);
                     case 'skip':
                       _skip(program, todayDay);
+                    case 'share':
+                      shareProgramme(context, ref);
+                    case 'shared':
+                      context.push(Routes.planShared);
                   }
                 },
                 itemBuilder: (_) => [
@@ -346,6 +354,19 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
                     value: 'change',
                     child: Text('Change programme'),
                   ),
+                  // Beta 3.3 (ADR-034), behind the admin's switch.
+                  if (shareOn) ...[
+                    const PopupMenuItem(
+                      key: ValueKey('plan.share'),
+                      value: 'share',
+                      child: Text('Share programme'),
+                    ),
+                    const PopupMenuItem(
+                      key: ValueKey('plan.useShared'),
+                      value: 'shared',
+                      child: Text('Use a shared programme'),
+                    ),
+                  ],
                 ],
               ),
             ],

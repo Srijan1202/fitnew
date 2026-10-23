@@ -8,10 +8,17 @@ import '../../../exercise/domain/entities/exercise.dart';
 import '../../data/training_repository_impl.dart';
 import '../../domain/entities/program.dart';
 import '../../domain/repositories/training_repository.dart';
+import '../../data/shared_programme_api.dart';
 
 final trainingRepositoryProvider = Provider<TrainingRepository>((ref) {
   return DioTrainingRepository(ref.watch(dioProvider));
 });
+
+/// Beta 3.3 (ADR-034): shared programmes, and the phone's share sheet.
+final sharedProgrammeApiProvider = Provider<SharedProgrammeApi>(
+  (ref) => DioSharedProgrammeApi(ref.watch(dioProvider)),
+);
+final textSharerProvider = Provider<TextSharer>((_) => SystemTextSharer());
 
 /// The active programme, or null before one exists. Every mutation
 /// round-trips and the server's answer replaces state — the client never
@@ -61,6 +68,10 @@ class ProgramController extends AsyncNotifier<Program?> {
       _apply(_repo.patchDay(dayId, request));
 
   Future<Failure?> rename(String name) => _apply(_repo.rename(name));
+
+  /// Beta 3.3 (ADR-034): a copy of a shared programme becomes yours.
+  Future<Failure?> useShared(String code) =>
+      _apply(ref.read(sharedProgrammeApiProvider).use(code));
 
   /// ADR-030: skip today; the week moves one day later.
   Future<Failure?> skipToday() => _apply(_repo.skipToday());

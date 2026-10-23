@@ -5,18 +5,20 @@ import '../../../../core/routing/router.dart';
 import '../../../../core/routing/navigation.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/config/app_features.dart';
 
 /// Three ways to get a programme (Phase 4 rework): three deliberate modes,
 /// each a full-width panel with a number, a name and one honest sentence.
 /// Shown when there is no programme, and from "Change programme".
-class PlanStartScreen extends StatelessWidget {
+class PlanStartScreen extends ConsumerWidget {
   const PlanStartScreen({this.canGoBack = false, super.key});
 
   /// From the plan's menu there is a plan to go back to; on first use there is not.
   final bool canGoBack;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       // A tab root when there is no programme yet (no back); a pushed
@@ -74,6 +76,17 @@ class PlanStartScreen extends StatelessWidget {
                 action: 'Build my own',
                 onTap: () => context.push(Routes.planCustom),
               ),
+              // Beta 3.3 (ADR-034): a friend's programme, by its code.
+              if (ref.watch(featureOnProvider(AppFeature.shareProgramme)))
+                _Mode(
+                  modeKey: const ValueKey('start.shared'),
+                  number: '04',
+                  title: 'Shared',
+                  body:
+                      'A programme a friend shared with you: enter their code, see it, then make it yours. Sets and reps only, never their weights.',
+                  action: 'Enter a code',
+                  onTap: () => context.push(Routes.planShared),
+                ),
             ],
           ),
         ),

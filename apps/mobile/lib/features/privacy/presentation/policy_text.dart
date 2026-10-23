@@ -29,7 +29,10 @@ const kPolicySections = <(String, String)>[
         'it is deleted with your account. A food search that finds nothing is '
         'counted without your name, so missing foods can be added. A thumbs '
         'up or down you give a mess dish is counted in totals everyone sees, '
-        'never with your name, and deleted with your account.',
+        'never with your name, and deleted with your account. A programme you '
+        'share as a code shows its days, exercises, sets and reps to anyone '
+        'with the code, never your weights or your name; you can stop sharing '
+        'it, and the codes are deleted with your account.',
   ),
   (
     'What stays on your phone',
