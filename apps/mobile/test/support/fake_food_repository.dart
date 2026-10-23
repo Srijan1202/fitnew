@@ -149,4 +149,15 @@ class FakeFoodRepository implements FoodRepository {
     if (createResults.isNotEmpty) return createResults.removeAt(0);
     return const Ok(lassi);
   }
+
+  /// Beta 3.2: what was reported as missing, and whether a person asked.
+  final missing = <(String, bool)>[];
+  Failure? failMissing;
+
+  @override
+  Future<Result<void>> reportMissing(String query, {bool asked = false}) async {
+    missing.add((query, asked));
+    final f = failMissing;
+    return f == null ? const Ok(null) : Err(f);
+  }
 }

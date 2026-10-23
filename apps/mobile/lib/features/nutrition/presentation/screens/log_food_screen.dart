@@ -24,6 +24,7 @@ import '../../domain/portion_preview.dart';
 import '../controllers/food_log_providers.dart';
 import '../controllers/food_logger.dart';
 import '../controllers/food_providers.dart';
+import '../widgets/ask_to_add_food.dart';
 import '../widgets/eat_widgets.dart';
 import '../widgets/food_widgets.dart';
 import '../widgets/log_controls.dart';
@@ -50,7 +51,9 @@ final logSearchProvider =
     FutureProvider.autoDispose.family<List<FoodSearchResult>, String>(
   (ref, q) async {
     final r = await ref.read(foodRepositoryProvider).search(q);
-    return r.when(ok: (v) => v, err: (f) => throw f);
+    final items = r.when(ok: (v) => v, err: (f) => throw f);
+    if (items.isEmpty) ref.read(missingFoodReporterProvider).foundNothing(q);
+    return items;
   },
   retry: (_, __) => null,
 );
@@ -464,11 +467,19 @@ class _SectionTitle extends StatelessWidget {
 
 /// A message as a sliver: what happened, what to do (§6.6).
 class _MessageSliver extends StatelessWidget {
-  const _MessageSliver({required this.title, required this.body, this.icon});
+  const _MessageSliver({
+    required this.title,
+    required this.body,
+    this.icon,
+    this.action,
+  });
 
   final String title;
   final String body;
   final IconData? icon;
+
+  /// Beta 3.2: under the body, e.g. "Ask us to add it".
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -494,6 +505,10 @@ class _MessageSliver extends StatelessWidget {
                     style:
                         textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
                   ),
+                  if (action != null) ...<Widget>[
+                    const SizedBox(height: FitSpacing.md),
+                    action!,
+                  ],
                 ],
               ),
             ),
@@ -716,6 +731,7 @@ class _SearchPaneState extends ConsumerState<_SearchPane> {
                   title: 'No food matches “$_q”',
                   body:
                       'Try a shorter name, add it from its label in the Food library, or use Quick add.',
+                  action: AskToAddFood(query: _q),
                 ),
               ],
             AsyncData(:final value) => [

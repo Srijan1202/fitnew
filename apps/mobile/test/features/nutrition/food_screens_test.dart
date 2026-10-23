@@ -157,6 +157,41 @@ void main() {
       expect(find.byType(CustomFoodScreen), findsOneWidget);
     });
 
+    testWidgets(
+        'beta 3.2: nothing found is reported quietly once; "Ask us to add" says a person wants it',
+        (tester) async {
+      tall(tester);
+      repo.results = const [];
+      await tester.pumpWidget(harness());
+      await tester.pumpAndSettle();
+      await type(tester, 'kombucha');
+      expect(repo.missing, [('kombucha', false)]);
+      // Typing it again in the same session: not reported twice.
+      await type(tester, 'kombuch');
+      await type(tester, 'kombucha');
+      expect(repo.missing.where((m) => m.$1 == 'kombucha'), hasLength(1));
+
+      await tester.tap(find.byKey(const ValueKey('food.ask')));
+      await tester.pumpAndSettle();
+      expect(repo.missing.last, ('kombucha', true));
+      expect(find.byKey(const ValueKey('food.ask.done')), findsOneWidget);
+    });
+
+    testWidgets('beta 3.2: asking while offline says so and can be tried again',
+        (tester) async {
+      tall(tester);
+      repo
+        ..results = const []
+        ..failMissing = const Offline();
+      await tester.pumpWidget(harness());
+      await tester.pumpAndSettle();
+      await type(tester, 'natto');
+      await tester.tap(find.byKey(const ValueKey('food.ask')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('food.ask.failed')), findsOneWidget);
+      expect(find.byKey(const ValueKey('food.ask')), findsOneWidget);
+    });
+
     testWidgets('a failed search is shown with Try again, which asks again',
         (tester) async {
       repo.searchFailure = const Offline();

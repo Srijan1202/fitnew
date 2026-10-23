@@ -1,3 +1,4 @@
+import '../widgets/ask_to_add_food.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -217,6 +218,9 @@ class _Results extends StatelessWidget {
               TextButton(onPressed: onClear, child: const Text('Clear')),
             ],
           ),
+          const SizedBox(height: FitSpacing.lg),
+          // Beta 3.2 (ADR-032): the search was already reported quietly.
+          AskToAddFood(query: query),
         ],
       );
     }

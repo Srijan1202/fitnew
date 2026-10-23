@@ -10,4 +10,8 @@ abstract class FoodRepository {
 
   /// Retry-safe: the same `clientFoodId` always returns the same food.
   Future<Result<Food>> create(CreateFoodRequest request);
+
+  /// Beta 3.2 (ADR-032): a search that found nothing, or "Ask us to add it"
+  /// ([asked]). Counted anonymously by the server.
+  Future<Result<void>> reportMissing(String query, {bool asked = false});
 }
