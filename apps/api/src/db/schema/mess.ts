@@ -17,6 +17,7 @@ import {
   jsonb,
   numeric,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -229,3 +230,32 @@ export const messDishNutritionRevisions = pgTable(
     check('mess_dish_nutrition_revisions_reason', sql`length(btrim(${t.reason})) > 0`),
   ],
 );
+
+/**
+ * Beta 3.3 (ADR-014 amendment): a person's thumbs up or down on a dish at a
+ * mess, one per person per dish per mess (the same dish at another mess is
+ * another kitchen), changeable, removed by deleting the row. The voter's own
+ * data: exported, and deleted with the account. Results are shown anonymous.
+ */
+export const messDishRatings = pgTable(
+  'mess_dish_ratings',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    messId: uuid('mess_id')
+      .notNull()
+      .references(() => messes.id, { onDelete: 'cascade' }),
+    dishSlug: text('dish_slug').notNull(),
+    up: boolean('up').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.messId, t.dishSlug] }),
+    index('mess_dish_ratings_dish_idx').on(t.messId, t.dishSlug),
+    check('mess_dish_ratings_slug_format', sql.raw(`"dish_slug" ~ ${SLUG}`)),
+  ],
+);
+
+export type MessDishRatingRow = typeof messDishRatings.$inferSelect;

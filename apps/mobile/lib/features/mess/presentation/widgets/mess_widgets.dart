@@ -134,6 +134,10 @@ class MessDishRow extends StatelessWidget {
                       [
                         MessFormat.dishLine(dish),
                         if (dish.correctionPending) 'report pending',
+                        // Beta 3.3: the share of 👍 once enough people voted.
+                        if (dish.rating case final r?
+                            when r.total >= MessDishRating.minShown)
+                          '👍 ${(100 * r.up / r.total).round()} %',
                       ].join(' · '),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

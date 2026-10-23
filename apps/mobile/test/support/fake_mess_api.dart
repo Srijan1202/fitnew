@@ -49,6 +49,23 @@ class FakeMessApi implements MessApi {
     return Ok(menus['$code/$date'] ?? defaultMenu(code, date));
   }
 
+  /// Beta 3.3: votes sent, and the totals answered.
+  final List<(String, String, String, MessVote?)> votes = [];
+  MessDishRating rated = const MessDishRating(up: 0, total: 0, mine: null);
+
+  @override
+  Future<Result<MessDishRating>> rate(
+    String dishSlug, {
+    required String mess,
+    required String date,
+    required MessVote? vote,
+  }) async {
+    calls.add('rate $dishSlug');
+    if (offline) return const Err(Offline());
+    votes.add((dishSlug, mess, date, vote));
+    return Ok(rated);
+  }
+
   @override
   Future<Result<MessCorrection>> correct(
     String dishSlug,
@@ -392,6 +409,7 @@ class FakeMessApi implements MessApi {
     DietClass diet = DietClass.veg,
     bool ambient = false,
     bool pending = false,
+    MessDishRating? rating,
   }) =>
       MessDish(
         slug: slug,
@@ -403,6 +421,7 @@ class FakeMessApi implements MessApi {
         isAmbient: ambient,
         nutrition: nutrition,
         correctionPending: pending,
+        rating: rating,
       );
 
   /// A full four-meal menu, published for [date].

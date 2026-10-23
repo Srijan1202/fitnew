@@ -83,6 +83,16 @@ export const menuResolutionSchema = z.discriminatedUnion('kind', [
 ]);
 export type MenuResolution = z.infer<typeof menuResolutionSchema>;
 
+/** Beta 3.3 (ADR-014 amendment): a thumbs up or down on a dish. */
+export const messVoteSchema = z.enum(['up', 'down']);
+export type MessVote = z.infer<typeof messVoteSchema>;
+
+/** Anonymous totals for a dish at one mess, and the asker's own vote. */
+export const messDishRatingSchema = z
+  .object({ up: z.number().int().min(0), total: z.number().int().min(0), mine: messVoteSchema.nullable() })
+  .strict();
+export type MessDishRating = z.infer<typeof messDishRatingSchema>;
+
 export const messDishSchema = z.object({
   slug: dishSlugSchema,
   name: z.string().min(1),
@@ -97,6 +107,8 @@ export const messDishSchema = z.object({
   nutrition: messDishNutritionSchema.nullable(),
   /** You reported this dish's nutrition and the report is awaiting review (owner D17). */
   correctionPending: z.boolean(),
+  /** Beta 3.3: how people rated it at this mess, and your vote; null while ratings are switched off. */
+  rating: messDishRatingSchema.nullable(),
 });
 export type MessDish = z.infer<typeof messDishSchema>;
 
@@ -199,3 +211,26 @@ export const messCorrectionSchema = z.object({
   createdAt: z.string().datetime(),
 });
 export type MessCorrection = z.infer<typeof messCorrectionSchema>;
+
+/* ------------------------------------------------- ratings (beta 3.3) -- */
+
+/** Beta 3.3 (ADR-014 amendment): below this many votes the app says "Not enough ratings yet". */
+export const MESS_RATING_MIN_SHOWN = 5;
+/** Votes (and changes) a person may send in an hour. */
+export const MESS_RATINGS_PER_HOUR = 60;
+/** A dish can be rated on the day it was served and up to this many days after. */
+export const MESS_RATING_DAYS_BACK = 7;
+
+/** Rate a dish served at your mess on `date` (today or up to 7 days back); `vote: null` takes it back. */
+export const rateMessDishRequestSchema = z
+  .object({ mess: messCodeSchema, date: isoDateSchema, vote: messVoteSchema.nullable() })
+  .strict();
+export type RateMessDishRequest = z.infer<typeof rateMessDishRequestSchema>;
+
+export const adminMessRatingsQuerySchema = z.object({ mess: messCodeSchema }).strict();
+export const adminMessRatingSchema = z
+  .object({ slug: dishSlugSchema, name: z.string(), up: z.number().int().min(0), down: z.number().int().min(0) })
+  .strict();
+export const adminMessRatingsSchema = z.object({ mess: messCodeSchema, items: z.array(adminMessRatingSchema) }).strict();
+export type AdminMessRating = z.infer<typeof adminMessRatingSchema>;
+export type AdminMessRatings = z.infer<typeof adminMessRatingsSchema>;

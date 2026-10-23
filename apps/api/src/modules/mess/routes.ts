@@ -7,9 +7,15 @@
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { eq } from 'drizzle-orm';
+import type { FastifyRequest } from 'fastify';
 import {
+  MESS_RATINGS_PER_HOUR,
+  adminMessRatingsQuerySchema,
+  adminMessRatingsSchema,
   dishSlugParamsSchema,
   errorEnvelopeSchema,
+  messDishRatingSchema,
+  rateMessDishRequestSchema,
   messCorrectionRequestSchema,
   messCorrectionSchema,
   messMenuQuerySchema,
@@ -25,6 +31,8 @@ import {
 import type { DatabaseHandle } from '../../db/client.js';
 import { userProfiles } from '../../db/schema.js';
 import { AppError } from '../../lib/errors.js';
+import type { FeatureSwitches } from '../../lib/feature-switches.js';
+import { requireAdmin } from '../../plugins/auth.js';
 import { FoodLogRepository } from '../nutrition/log-repository.js';
 import { UserRepository } from '../user/repository.js';
 import { RecommendRepository } from './recommend-repository.js';
@@ -53,13 +61,19 @@ export function configuredMessOf(db: DatabaseHandle['db']) {
   };
 }
 
-export function messServiceFor(db: DatabaseHandle['db']): MessService {
+export function messServiceFor(db: DatabaseHandle['db'], features?: FeatureSwitches): MessService {
   const logs = new FoodLogRepository(db);
-  return new MessService(new MessRepository(db), (id) => logs.timezoneOf(id), configuredMessOf(db));
+  return new MessService(
+    new MessRepository(db),
+    (id) => logs.timezoneOf(id),
+    configuredMessOf(db),
+    undefined,
+    async () => (await features?.isOn('mess-ratings')) ?? true,
+  );
 }
 
 export async function messRoutes(app: FastifyInstance): Promise<void> {
-  const service = messServiceFor(app.database.db);
+  const service = messServiceFor(app.database.db, app.features);
   const recommend = new MessRecommendService(
     service,
     new UserRepository(app.database.db),
@@ -155,5 +169,48 @@ export async function messRoutes(app: FastifyInstance): Promise<void> {
       const { correction, created } = await service.correct(requireUserId(request.userId), request.params.slug, request.body);
       return reply.code(created ? 201 : 200).send(correction);
     },
+  );
+
+  typed.put(
+    '/mess/dishes/:slug/rating',
+    {
+      config: {
+        rateLimit: {
+          max: MESS_RATINGS_PER_HOUR,
+          timeWindow: '1 hour',
+          hook: 'preHandler',
+          keyGenerator: (request: FastifyRequest): string => (request.userId !== null ? `mess-rating:${request.userId}` : `mess-rating-ip:${request.ip}`),
+        },
+      },
+      schema: {
+        summary: 'Rate a dish your mess served (today or up to 7 days back): up, down, or null to take it back (beta 3.3)',
+        description: 'One vote per person per dish per mess, changeable. Results are anonymous: totals and your own vote only.',
+        tags: ['mess'],
+        security,
+        params: dishSlugParamsSchema,
+        body: rateMessDishRequestSchema,
+        response: { 200: messDishRatingSchema, 403: errorEnvelopeSchema, 429: errorEnvelopeSchema, ...errors },
+      },
+    },
+    async (request) => {
+      const userId = requireUserId(request.userId);
+      await app.features.require('mess-ratings');
+      return service.rate(userId, request.params.slug, request.body);
+    },
+  );
+
+  typed.get(
+    '/admin/mess/ratings',
+    {
+      preValidation: requireAdmin,
+      schema: {
+        summary: 'How people rated the dishes at a mess, best liked first (never who voted)',
+        tags: ['admin'],
+        security,
+        querystring: adminMessRatingsQuerySchema,
+        response: { 200: adminMessRatingsSchema, 403: errorEnvelopeSchema, ...errors },
+      },
+    },
+    async (request) => service.ratingTotals(request.query.mess),
   );
 }

@@ -14,6 +14,7 @@ import '../../domain/mess.dart';
 import '../mess_providers.dart';
 import 'mess_widgets.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../../../core/config/app_features.dart';
 
 /// Tap a dish. With an estimate, on a day that can be logged: the Phase 8
 /// portion step, with the estimate's qualifiers and "Report wrong
@@ -37,6 +38,7 @@ Future<bool> openMessDish(
       backgroundColor: FitColors.paper,
       builder: (ctx) => _DishInfoSheet(
         dish: dish,
+        menu: menu,
         reason: row == null
             ? 'FITOS has no estimate for this dish yet, so it cannot be logged from the menu. Use Quick add in Log food, or report what you know.'
             : menu.date.compareTo(today) > 0
@@ -50,7 +52,7 @@ Future<bool> openMessDish(
     context,
     food: dish.asFood(),
     slot: slot,
-    footer: MessEstimateNote(dish: dish),
+    footer: MessEstimateNote(dish: dish, menu: menu),
   );
   if (choice == null) return false;
   await ref.read(foodLoggerProvider).logMessDish(
@@ -69,9 +71,12 @@ Future<bool> openMessDish(
 /// Under the portion preview: what kind of number this is, and a way to say
 /// it is wrong.
 class MessEstimateNote extends ConsumerWidget {
-  const MessEstimateNote({required this.dish, super.key});
+  const MessEstimateNote({required this.dish, this.menu, super.key});
 
   final MessDish dish;
+
+  /// Beta 3.3: the menu the dish is on, for rating it; null shows no votes.
+  final MessMenu? menu;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -102,15 +107,22 @@ class MessEstimateNote extends ConsumerWidget {
             onPressed: () => showCorrectionSheet(context, ref, dish: dish),
             child: const Text('Report wrong nutrition'),
           ),
+        if (menu != null && dish.rating != null)
+          MessDishVote(dish: dish, menu: menu!),
       ],
     );
   }
 }
 
 class _DishInfoSheet extends ConsumerWidget {
-  const _DishInfoSheet({required this.dish, required this.reason});
+  const _DishInfoSheet({
+    required this.dish,
+    required this.menu,
+    required this.reason,
+  });
 
   final MessDish dish;
+  final MessMenu menu;
   final String reason;
 
   @override
@@ -155,7 +167,7 @@ class _DishInfoSheet extends ConsumerWidget {
             const SizedBox(height: FitSpacing.md),
             Text(reason, key: const ValueKey('mess.info.reason')),
             const SizedBox(height: FitSpacing.md),
-            MessEstimateNote(dish: dish),
+            MessEstimateNote(dish: dish, menu: menu),
           ],
         ),
       ),
@@ -489,6 +501,102 @@ class _MessPicker extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Beta 3.3 (ADR-014 amendment): 👍 / 👎 on a dish this mess served, today or
+/// up to 7 days back (never a menu still to come; then only the totals).
+/// Tap your vote again to take it back. Results are anonymous.
+class MessDishVote extends ConsumerStatefulWidget {
+  const MessDishVote({required this.dish, required this.menu, super.key});
+
+  final MessDish dish;
+  final MessMenu menu;
+
+  @override
+  ConsumerState<MessDishVote> createState() => _MessDishVoteState();
+}
+
+class _MessDishVoteState extends ConsumerState<MessDishVote> {
+  late MessDishRating _rating = widget.dish.rating!;
+  bool _busy = false;
+
+  /// Contracts `MESS_RATING_DAYS_BACK`.
+  static const _daysBack = 7;
+
+  Future<void> _vote(MessVote v) async {
+    final next = _rating.mine == v ? null : v;
+    setState(() => _busy = true);
+    final r = await ref.read(messApiProvider).rate(
+          widget.dish.slug,
+          mess: widget.menu.mess.code,
+          date: widget.menu.date,
+          vote: next,
+        );
+    if (!mounted) return;
+    setState(() => _busy = false);
+    r.when(
+      ok: (rating) {
+        setState(() => _rating = rating);
+        ref.invalidate(messMenuProvider);
+      },
+      err: (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!ref.watch(featureOnProvider(AppFeature.messRatings))) {
+      return const SizedBox.shrink();
+    }
+    final textTheme = Theme.of(context).textTheme;
+    final today = ref.read(eatDateProvider.notifier).today;
+    final date = widget.menu.date;
+    final canVote = date.compareTo(today) <= 0 &&
+        date.compareTo(shiftDate(today, -_daysBack)) >= 0;
+    Widget thumb(MessVote v, IconData on, IconData off, String label) {
+      final mine = _rating.mine == v;
+      return IconButton(
+        key: ValueKey('mess.vote.${v.name}'),
+        tooltip: mine ? 'Take back your $label' : label,
+        isSelected: mine,
+        onPressed: _busy ? null : () => _vote(v),
+        icon: Icon(
+          mine ? on : off,
+          color: mine ? FitColors.ink : FitColors.ink60,
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: FitSpacing.sm),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Text(
+              _rating.summary,
+              key: const ValueKey('mess.rating'),
+              style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+            ),
+          ),
+          if (canVote) ...<Widget>[
+            thumb(
+              MessVote.up,
+              Icons.thumb_up,
+              Icons.thumb_up_outlined,
+              'thumbs up',
+            ),
+            thumb(
+              MessVote.down,
+              Icons.thumb_down,
+              Icons.thumb_down_outlined,
+              'thumbs down',
+            ),
+          ],
+        ],
       ),
     );
   }

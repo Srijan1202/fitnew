@@ -20,6 +20,14 @@ abstract class MessApi {
     MessCorrectionRequest request,
   );
 
+  /// Beta 3.3: rate a dish served on [date]; a null [vote] takes it back.
+  Future<Result<MessDishRating>> rate(
+    String dishSlug, {
+    required String mess,
+    required String date,
+    required MessVote? vote,
+  });
+
   /// Phase 10: what to eat at one meal (today or tomorrow). Never cached.
   Future<Result<MessRecommendation>> recommend({
     required String date,
@@ -100,5 +108,24 @@ class DioMessApi implements MessApi {
           data: request.toJson(),
         ),
         MessCorrection.fromJson,
+      );
+
+  @override
+  Future<Result<MessDishRating>> rate(
+    String dishSlug, {
+    required String mess,
+    required String date,
+    required MessVote? vote,
+  }) =>
+      _guard(
+        () => _dio.put<Map<String, dynamic>>(
+          '/v1/mess/dishes/$dishSlug/rating',
+          data: <String, dynamic>{
+            'mess': mess,
+            'date': date,
+            'vote': vote?.name,
+          },
+        ),
+        MessDishRating.fromJson,
       );
 }

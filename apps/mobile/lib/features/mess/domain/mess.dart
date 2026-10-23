@@ -227,6 +227,49 @@ class UnavailableMenu extends MenuResolution {
       };
 }
 
+/// Beta 3.3 (ADR-014 amendment): a thumbs up or down on a mess dish.
+enum MessVote {
+  up,
+  down;
+
+  static MessVote? fromWire(String? s) => switch (s) {
+        'up' => MessVote.up,
+        'down' => MessVote.down,
+        _ => null,
+      };
+}
+
+/// How people rated a dish at this mess (anonymous totals) and your vote.
+class MessDishRating {
+  const MessDishRating({
+    required this.up,
+    required this.total,
+    required this.mine,
+  });
+
+  factory MessDishRating.fromJson(Map<String, dynamic> json) => MessDishRating(
+        up: json['up'] as int,
+        total: json['total'] as int,
+        mine: MessVote.fromWire(json['mine'] as String?),
+      );
+
+  /// Below this many votes the share is not shown (contracts
+  /// `MESS_RATING_MIN_SHOWN`), so one vote never decides it.
+  static const minShown = 5;
+
+  final int up;
+  final int total;
+  final MessVote? mine;
+
+  /// "👍 82 % · 40 ratings", or "Not enough ratings yet".
+  String get summary => total < minShown
+      ? 'Not enough ratings yet'
+      : '👍 ${(100 * up / total).round()} % · $total ratings';
+
+  Map<String, dynamic> toJson() =>
+      <String, dynamic>{'up': up, 'total': total, 'mine': mine?.name};
+}
+
 class MessDish {
   const MessDish({
     required this.slug,
@@ -238,6 +281,7 @@ class MessDish {
     required this.isAmbient,
     required this.nutrition,
     required this.correctionPending,
+    this.rating,
   });
 
   factory MessDish.fromJson(Map<String, dynamic> json) => MessDish(
@@ -252,6 +296,9 @@ class MessDish {
             ? null
             : messRowFromJson(json['nutrition'] as Map<String, dynamic>),
         correctionPending: json['correctionPending'] as bool,
+        rating: json['rating'] == null
+            ? null
+            : MessDishRating.fromJson(json['rating'] as Map<String, dynamic>),
       );
 
   final String slug;
@@ -270,6 +317,10 @@ class MessDish {
 
   /// You reported this dish; the report is awaiting review (owner D17).
   final bool correctionPending;
+
+  /// Beta 3.3: ratings at this mess; null while switched off (or a menu
+  /// saved before 3.3).
+  final MessDishRating? rating;
 
   /// The dish as a food, so the Phase 8 portion step can take it. It is
   /// never stored as a food: logging sends the dish slug.
@@ -297,6 +348,7 @@ class MessDish {
         'isAmbient': isAmbient,
         'nutrition': nutrition == null ? null : messRowToJson(nutrition!),
         'correctionPending': correctionPending,
+        'rating': rating?.toJson(),
       };
 }
 

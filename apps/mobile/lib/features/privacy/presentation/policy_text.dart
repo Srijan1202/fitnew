@@ -27,7 +27,9 @@ const kPolicySections = <(String, String)>[
         'you add from a label; if you share one with everyone, other people '
         'can find and log it, marked Community and never with your name, and '
         'it is deleted with your account. A food search that finds nothing is '
-        'counted without your name, so missing foods can be added.',
+        'counted without your name, so missing foods can be added. A thumbs '
+        'up or down you give a mess dish is counted in totals everyone sees, '
+        'never with your name, and deleted with your account.',
   ),
   (
     'What stays on your phone',

@@ -538,6 +538,71 @@ void main() {
     });
   });
 
+  group('beta 3.3: dish ratings', () {
+    void menuWith(MessDishRating rating) {
+      final base = FakeMessApi.defaultMenu('mens-veg', today);
+      mess.menus['mens-veg/$today'] = MessMenu(
+        mess: base.mess,
+        date: today,
+        today: today,
+        resolution: base.resolution,
+        logged: const [],
+        meals: [
+          MessMeal(
+            slot: MealSlot.lunch,
+            rawMenu: 'Phulka',
+            dishes: [
+              FakeMessApi.dish(
+                'phulka',
+                'Phulka',
+                nutrition: FakeMessApi.phulka,
+                rating: rating,
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
+    testWidgets(
+        'the share on the row; in the sheet, 👍 sends a vote and the new totals show',
+        (tester) async {
+      tall(tester);
+      menuWith(const MessDishRating(up: 8, total: 10, mine: null));
+      mess.rated = const MessDishRating(up: 9, total: 11, mine: MessVote.up);
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      expect(find.text('85–120 kcal · 1 piece · 👍 80 %'), findsOneWidget);
+      await tapDish(tester, 'phulka');
+      expect(
+        tester.widget<Text>(find.byKey(const ValueKey('mess.rating'))).data,
+        '👍 80 % · 10 ratings',
+      );
+      await tester.tap(find.byKey(const ValueKey('mess.vote.up')));
+      await settle(tester);
+      expect(mess.votes.single, ('phulka', 'mens-veg', today, MessVote.up));
+      expect(
+        tester.widget<Text>(find.byKey(const ValueKey('mess.rating'))).data,
+        '👍 82 % · 11 ratings',
+      );
+    });
+
+    testWidgets(
+        'few votes: "Not enough ratings yet"; tapping your vote again takes it back',
+        (tester) async {
+      tall(tester);
+      menuWith(const MessDishRating(up: 1, total: 1, mine: MessVote.up));
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      expect(find.text('85–120 kcal · 1 piece'), findsOneWidget);
+      await tapDish(tester, 'phulka');
+      expect(find.text('Not enough ratings yet'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('mess.vote.up')));
+      await settle(tester);
+      expect(mess.votes.single.$4, isNull);
+    });
+  });
+
   group('EAT and the log sheet', () {
     testWidgets(
         "EAT shows today's mess (the meal of the hour); tapping opens the menu",

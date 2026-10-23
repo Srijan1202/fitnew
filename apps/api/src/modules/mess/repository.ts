@@ -12,6 +12,7 @@ import {
   foodLogs,
   messDishCorrections,
   messDishOverrides,
+  messDishRatings,
   messDishNutrition,
   messMenuSnapshots,
   messProviders,
@@ -228,6 +229,56 @@ export class MessRepository {
       .from(messDishCorrections)
       .where(and(eq(messDishCorrections.userId, userId), eq(messDishCorrections.status, 'pending'), inArray(messDishCorrections.dishSlug, unique)));
     return new Set(rows.map((r) => r.slug));
+  }
+
+  // -------------------------------------------------- ratings (beta 3.3) --
+
+  /** Totals per dish at a mess, and this user's vote. */
+  async ratingsFor(messId: string, userId: string, slugs: readonly string[]): Promise<Map<string, { up: number; total: number; mine: boolean | null }>> {
+    const unique = [...new Set(slugs)];
+    if (unique.length === 0) return new Map();
+    const rows = await this.db
+      .select({
+        slug: messDishRatings.dishSlug,
+        up: sql<number>`count(*) filter (where ${messDishRatings.up})::int`,
+        total: sql<number>`count(*)::int`,
+        mine: sql<boolean | null>`bool_or(${messDishRatings.up}) filter (where ${messDishRatings.userId} = ${userId})`,
+      })
+      .from(messDishRatings)
+      .where(and(eq(messDishRatings.messId, messId), inArray(messDishRatings.dishSlug, unique)))
+      .groupBy(messDishRatings.dishSlug);
+    return new Map(rows.map((r) => [r.slug, { up: Number(r.up), total: Number(r.total), mine: r.mine }]));
+  }
+
+  /** Sets this user's vote (true = up), or takes it back (null). */
+  async setRating(userId: string, messId: string, slug: string, up: boolean | null): Promise<void> {
+    if (up === null) {
+      await this.db
+        .delete(messDishRatings)
+        .where(and(eq(messDishRatings.userId, userId), eq(messDishRatings.messId, messId), eq(messDishRatings.dishSlug, slug)));
+      return;
+    }
+    await this.db
+      .insert(messDishRatings)
+      .values({ userId, messId, dishSlug: slug, up })
+      .onConflictDoUpdate({
+        target: [messDishRatings.userId, messDishRatings.messId, messDishRatings.dishSlug],
+        set: { up, updatedAt: sql`now()` },
+      });
+  }
+
+  /** Every rated dish at a mess with its up and down counts (admin). */
+  async ratingTotals(messId: string): Promise<{ slug: string; up: number; down: number }[]> {
+    const rows = await this.db
+      .select({
+        slug: messDishRatings.dishSlug,
+        up: sql<number>`count(*) filter (where ${messDishRatings.up})::int`,
+        down: sql<number>`count(*) filter (where not ${messDishRatings.up})::int`,
+      })
+      .from(messDishRatings)
+      .where(eq(messDishRatings.messId, messId))
+      .groupBy(messDishRatings.dishSlug);
+    return rows.map((r) => ({ slug: r.slug, up: Number(r.up), down: Number(r.down) }));
   }
 
   // ------------------------------------------------------------ user logs --

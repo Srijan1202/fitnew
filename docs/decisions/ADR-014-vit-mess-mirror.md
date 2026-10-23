@@ -167,3 +167,19 @@ amendment for the owner to confirm.
 - Deferred: Cloud Scheduler (deployment); correction review and provider
   health dashboard (Phase 16); plate recommendations (Phase 10); IFCT/INDB;
   the redistribution question (§36 Q6, before Phase 19).
+
+## Amendment — dish ratings (beta 3.3, owner 2026-10-23)
+
+- **👍 / 👎 on a dish a mess served:** today or up to 7 days back, never a menu still to come. You can change a vote, or tap it again to take it back.
+- **One vote per person per dish per mess.** The same dish at another mess is another kitchen, so it is rated separately.
+- **The data:** `mess_dish_ratings`, keyed by (user, mess, dish slug), with `up`. Migration 0028 and its down migration. The rows cascade with the user and with the mess.
+- **Everyone sees the totals, anonymous.**
+  - Each dish on a menu carries `rating: { up, total, mine }`.
+  - The app shows "👍 82 % · 40 ratings" in the dish sheet and "👍 82 %" on the menu row, but only from **5** votes on (`MESS_RATING_MIN_SHOWN`); below that, "Not enough ratings yet".
+  - Who voted is never shown, not even in the admin panel.
+- **The API:**
+  - `PUT /v1/mess/dishes/:slug/rating {mess, date, vote}`, 60 an hour per person. A future date answers 422 `not-served-yet`, an older one 422 `too-old`, and a dish not on that day's menu 404.
+  - The admin panel's **Mess ratings** page (`GET /v1/admin/mess/ratings?mess=`) lists every rated dish per mess, best liked first, plus those with fewer than 5 votes.
+- **The voter's own data:** it is in the export (found through the user foreign key) and deleted with the account. The privacy policy says so.
+- **Behind the `mess-ratings` switch** (ADR-033): while it is off, voting answers 403 `feature-off` and menus carry `rating: null`.
+- **Not yet:** ratings do not weigh the meal recommendations. That is a later idea.

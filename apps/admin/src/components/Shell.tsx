@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from '@/lib/auth';
 const NAV = [
   { href: '/', label: 'Overview' },
   { href: '/mess', label: 'Mess corrections' },
+  { href: '/mess-ratings', label: 'Mess ratings' },
   { href: '/foods', label: 'Foods' },
   { href: '/missing-foods', label: 'Missing foods' },
   { href: '/community-foods', label: 'Community foods' },

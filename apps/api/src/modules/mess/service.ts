@@ -8,18 +8,22 @@ import { isMirrorStale } from '@fitos/core/mess/freshness';
 import { capMessConfidence } from '@fitos/core/mess/nutrition';
 import { applyDietOverrides } from '@fitos/core/admin/admin';
 import { resolveDayFromSnapshots, type MenuSnapshot, type SnapshotDay } from '@fitos/core/mess/snapshots';
-import { localDateOf } from '@fitos/core/nutrition/log';
+import { addDays, localDateOf } from '@fitos/core/nutrition/log';
+import { MESS_RATING_DAYS_BACK } from '@fitos/contracts';
 import type {
+  AdminMessRatings,
   Mess,
   MessCorrection,
   MessCorrectionRequest,
   MessDish,
   MessDishNutrition,
+  MessDishRating,
   MessMenu,
   MessMenuQuery,
   MessProviderInfo,
   MessesResponse,
   MessRef,
+  RateMessDishRequest,
 } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
@@ -67,6 +71,11 @@ function correctionFrom(r: MessDishCorrectionRow): MessCorrection {
   };
 }
 
+function ratingFrom(r: { up: number; total: number; mine: boolean | null } | undefined): MessDishRating {
+  if (r === undefined) return { up: 0, total: 0, mine: null };
+  return { up: r.up, total: r.total, mine: r.mine === null ? null : r.mine ? 'up' : 'down' };
+}
+
 export class MessService {
   constructor(
     private readonly repo: MessRepository,
@@ -75,6 +84,8 @@ export class MessService {
     /** The user's configured mess, if any. */
     private readonly configuredMess: (userId: string) => Promise<MessRef | null>,
     private readonly now: () => Date = () => new Date(),
+    /** Beta 3.3 (ADR-033): whether dish ratings are switched on. */
+    private readonly ratingsOn: () => Promise<boolean> = async () => true,
   ) {}
 
   private messFrom(m: MessRow, providerSlug: string, latestPublished: string | null): Mess {
@@ -190,10 +201,11 @@ export class MessService {
 
     const [{ day }, latest] = await Promise.all([this.resolveDay(mess, date), this.repo.latestPublishedDates([mess.id])]);
     const slugs = day.meals.flatMap((m) => m.dishes.map((d) => d.id)).filter((id) => id !== '');
-    const [nutrition, pending, logged] = await Promise.all([
+    const [nutrition, pending, logged, ratings] = await Promise.all([
       this.repo.nutritionFor(slugs),
       this.repo.pendingCorrectionSlugs(userId, slugs),
       this.repo.loggedDishes(userId, date),
+      this.ratingsOn().then((on) => (on ? this.repo.ratingsFor(mess.id, userId, slugs) : null)),
     ]);
 
     return {
@@ -218,11 +230,47 @@ export class MessService {
               isAmbient: d.isAmbient,
               nutrition: row === undefined ? null : nutritionFromRow(row),
               correctionPending: pending.has(d.id),
+              rating: ratings === null ? null : ratingFrom(ratings.get(d.id)),
             };
           }),
       })),
       logged,
     };
+  }
+
+  /**
+   * Beta 3.3 (ADR-014 amendment): a thumbs up or down on a dish this mess
+   * served on `date`, today or up to MESS_RATING_DAYS_BACK days back (never
+   * a menu still to come). `vote: null` takes the vote back.
+   */
+  async rate(userId: string, slug: string, body: RateMessDishRequest): Promise<MessDishRating> {
+    const mess = await this.repo.messByCode(body.mess);
+    if (mess === null) throw new AppError('NOT_FOUND', 'No such mess.', [{ path: 'mess', issue: body.mess }]);
+    const today = localDateOf(this.now(), await this.timezoneOf(userId));
+    if (body.date > today) {
+      throw new AppError('VALIDATION_FAILED', 'Rate a dish once it has been served.', [{ path: 'date', issue: 'not-served-yet' }]);
+    }
+    if (body.date < addDays(today, -MESS_RATING_DAYS_BACK)) {
+      throw new AppError('VALIDATION_FAILED', `Dishes can be rated up to ${MESS_RATING_DAYS_BACK} days after they were served.`, [{ path: 'date', issue: 'too-old' }]);
+    }
+    if (!(await this.dishesOnMenu(mess, body.date)).has(slug)) {
+      throw new AppError('NOT_FOUND', 'That dish was not on this mess menu that day.', [{ path: 'slug', issue: slug }]);
+    }
+    await this.repo.setRating(userId, mess.id, slug, body.vote === null ? null : body.vote === 'up');
+    return ratingFrom((await this.repo.ratingsFor(mess.id, userId, [slug])).get(slug));
+  }
+
+  /** Admin: every rated dish at a mess, best liked first (ties: more votes first). */
+  async ratingTotals(code: string): Promise<AdminMessRatings> {
+    const mess = await this.repo.messByCode(code);
+    if (mess === null) throw new AppError('NOT_FOUND', 'No such mess.', [{ path: 'mess', issue: code }]);
+    const totals = await this.repo.ratingTotals(mess.id);
+    const names = await this.repo.nutritionFor(totals.map((t) => t.slug));
+    const share = (t: { up: number; down: number }): number => t.up / (t.up + t.down);
+    const items = totals
+      .map((t) => ({ slug: t.slug, name: names.get(t.slug)?.name ?? t.slug.replace(/-/g, ' '), up: t.up, down: t.down }))
+      .sort((a, b) => share(b) - share(a) || b.up + b.down - (a.up + a.down) || a.slug.localeCompare(b.slug));
+    return { mess: mess.code, items };
   }
 
   /**

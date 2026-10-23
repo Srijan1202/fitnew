@@ -505,6 +505,60 @@ describeIfDb('/v1/mess (real Postgres, scripted MessIT)', { timeout: 30_000 }, (
     expect(ok.statusCode, ok.body).toBe(200);
   });
 
+  // ---------------------------------------------------- ratings (3.3) --
+
+  it('beta 3.3: a served dish is rated up or down, changed or taken back; totals are anonymous; never a future or old menu', async () => {
+    const a = await user();
+    const b = await user();
+    const today = await menu(a);
+    const slug = today.meals.flatMap((m) => m.dishes)[0]!.slug;
+    const put = (u: TestUser, body: Record<string, unknown>, dish = slug) =>
+      app.inject({ method: 'PUT', url: `/v1/mess/dishes/${dish}/rating`, headers: headers(u.token), payload: body });
+    const at = { mess: 'mens-veg', date: today.today };
+    const ratingOf = async (u: TestUser) => (await menu(u)).meals.flatMap((m) => m.dishes).find((d) => d.slug === slug)!.rating;
+
+    expect(await ratingOf(a)).toEqual({ up: 0, total: 0, mine: null });
+    const up = await put(a, { ...at, vote: 'up' });
+    expect(up.statusCode, up.body).toBe(200);
+    expect(up.json()).toEqual({ up: 1, total: 1, mine: 'up' });
+    expect((await put(b, { ...at, vote: 'down' })).json()).toEqual({ up: 1, total: 2, mine: 'down' });
+    expect(await ratingOf(a)).toEqual({ up: 1, total: 2, mine: 'up' });
+    // Changed, then taken back: still one vote per person.
+    expect((await put(a, { ...at, vote: 'down' })).json()).toEqual({ up: 0, total: 2, mine: 'down' });
+    expect((await put(a, { ...at, vote: null })).json()).toEqual({ up: 0, total: 1, mine: null });
+
+    const issue = (r: { json(): unknown }) => (r.json() as { error: { details: { issue: string }[] } }).error.details[0]?.issue;
+    const tomorrow = new Date(Date.parse(`${today.today}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
+    const longAgo = new Date(Date.parse(`${today.today}T00:00:00Z`) - 8 * 86_400_000).toISOString().slice(0, 10);
+    expect(issue(await put(a, { mess: 'mens-veg', date: tomorrow, vote: 'up' }))).toBe('not-served-yet');
+    expect(issue(await put(a, { mess: 'mens-veg', date: longAgo, vote: 'up' }))).toBe('too-old');
+    expect((await put(a, { ...at, vote: 'up' }, 'not-on-any-menu')).statusCode).toBe(404);
+    expect((await put(a, { mess: 'nowhere', date: today.today, vote: 'up' })).statusCode).toBe(404);
+    expect((await put(a, { ...at, vote: 'meh' })).statusCode).toBe(422);
+
+    // The voter's own data: in the export, gone with the account.
+    const exported = await app.inject({ method: 'POST', url: '/v1/user/export', headers: headers(b.token), payload: {} });
+    expect((exported.json() as { tables: Record<string, unknown[]> }).tables['mess_dish_ratings']).toHaveLength(1);
+
+    // The admin sees totals per dish, never who voted.
+    verifier.accept('mess-admin-tok', { uid: 'mess-uid-admin', email: 'mess-admin@vit.ac.in', claims: { role: 'admin' } });
+    await app.inject({ method: 'POST', url: '/v1/auth/session', headers: headers('mess-admin-tok'), payload: {} });
+    expect((await get(a, '/admin/mess/ratings?mess=mens-veg')).statusCode).toBe(403);
+    const list = await app.inject({ method: 'GET', url: '/v1/admin/mess/ratings?mess=mens-veg', headers: headers('mess-admin-tok') });
+    expect(list.statusCode, list.body).toBe(200);
+    expect(list.json()).toEqual({ mess: 'mens-veg', items: [expect.objectContaining({ slug, up: 0, down: 1 })] });
+    expect(JSON.stringify(list.json())).not.toContain(b.id);
+
+    // Switched off: no voting, and menus carry no ratings.
+    const off = await app.inject({ method: 'PUT', url: '/v1/admin/flags/mess-ratings', headers: headers('mess-admin-tok'), payload: { enabled: false } });
+    expect(off.statusCode).toBe(200);
+    expect(issue(await put(a, { ...at, vote: 'up' }))).toBe('feature-off');
+    expect(await ratingOf(a)).toBeNull();
+    await sql`delete from feature_flags where key = 'mess-ratings'`;
+    await sql`delete from audit_logs where action = 'flag.set'`;
+    app.features.invalidate();
+  });
+
   // ---------------------------------------------------------- latency --
 
   it('GET /mess/menu p95 under 200 ms', async () => {
