@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import postgres from 'postgres';
-import type { MessMenu } from '@fitos/contracts';
+import { APP_FEATURE_KEYS, type MessMenu } from '@fitos/contracts';
 import { VIT_ENDPOINTS } from '@fitos/core/mess/providers/vit/config';
 
 import { createDatabase, type DatabaseHandle } from '../../db/client.js';
@@ -319,19 +319,31 @@ describeIfDb('/v1/admin (real Postgres)', { timeout: 60_000 }, () => {
 
   /* ---------------------------------------------------------------- flags -- */
 
-  it('flags: set by an admin, audited, served by the public /meta/config (§10.1)', async () => {
+  it('flags: set by an admin, audited, served by the public /meta/config (§10.1); the app switches are listed and on by default (ADR-033)', async () => {
     const plain = await user();
-    expect((await call(plain, 'GET', '/meta/config')).json()).toEqual({ flags: {}, minimumBuild: 0 });
+    await sql`delete from feature_flags`;
+    app.features.invalidate();
+    const allOn = { 'share-programme': true, 'mess-ratings': true, streaks: true, 'community-foods': true, 'food-requests': true, 'weekly-report': true };
+    expect((await call(plain, 'GET', '/meta/config')).json()).toEqual({ flags: allOn, minimumBuild: 0 });
     expect((await call(null, 'GET', '/meta/config')).statusCode).toBe(200);
     expect((await call(admin, 'PUT', '/admin/flags/Bad Key', { enabled: true })).statusCode).toBeGreaterThanOrEqual(400);
     const put = await call(admin, 'PUT', '/admin/flags/describe-meal', { enabled: false, description: 'FITOS AI meal parsing' });
     expect(put.statusCode, put.body).toBe(200);
     await call(admin, 'PUT', '/admin/flags/describe-meal', { enabled: true });
-    expect((await call(plain, 'GET', '/meta/config')).json()).toEqual({ flags: { 'describe-meal': true }, minimumBuild: 0 });
-    expect((await call(null, 'GET', '/meta/config')).json()).toEqual({ flags: { 'describe-meal': true }, minimumBuild: 0 });
-    const list = (await call(admin, 'GET', '/admin/flags')).json() as { items: { key: string; description: string }[] };
-    expect(list.items).toEqual([expect.objectContaining({ key: 'describe-meal', description: 'FITOS AI meal parsing' })]);
-    expect((await audits('flag.set')).map((a) => a.metadata['enabled'])).toEqual([false, true]);
+    expect((await call(plain, 'GET', '/meta/config')).json()).toEqual({ flags: { ...allOn, 'describe-meal': true }, minimumBuild: 0 });
+    expect((await call(null, 'GET', '/meta/config')).json()).toEqual({ flags: { ...allOn, 'describe-meal': true }, minimumBuild: 0 });
+    const list = (await call(admin, 'GET', '/admin/flags')).json() as { items: { key: string; name: string | null; description: string; updatedAt: string | null }[] };
+    expect(list.items.map((i) => i.key)).toEqual([...APP_FEATURE_KEYS, 'describe-meal']);
+    expect(list.items[0]).toMatchObject({ key: 'share-programme', name: 'Share your programme', updatedAt: null });
+    expect(list.items.at(-1)).toMatchObject({ key: 'describe-meal', name: null, description: 'FITOS AI meal parsing' });
+
+    // Switching one off reaches /meta/config at once, and the admin list shows when.
+    expect((await call(admin, 'PUT', '/admin/flags/streaks', { enabled: false })).json()).toMatchObject({ key: 'streaks', name: 'Streak and goal ring', enabled: false });
+    expect(((await call(null, 'GET', '/meta/config')).json() as { flags: Record<string, boolean> }).flags['streaks']).toBe(false);
+    await call(admin, 'PUT', '/admin/flags/streaks', { enabled: true });
+    await sql`delete from feature_flags where key = 'streaks'`;
+    app.features.invalidate();
+    expect((await audits('flag.set')).map((a) => a.metadata['enabled'])).toEqual([false, true, false, true]);
   });
 
   /* -------------------------------------------------------------- support -- */

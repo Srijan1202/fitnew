@@ -16,6 +16,7 @@ import '../controllers/food_logger.dart';
 import '../widgets/food_widgets.dart';
 import '../widgets/portion_sheet.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../../../core/config/app_features.dart';
 
 /// One food: what it contains, per 100 g and per serving, and where every
 /// number comes from. Estimates are ranges and say so; a verified USDA
@@ -278,6 +279,10 @@ class _ReportWrongNumbersState extends ConsumerState<ReportWrongNumbers> {
 
   @override
   Widget build(BuildContext context) {
+    // Beta 3.3 (ADR-033): hidden while community foods are switched off.
+    if (!ref.watch(featureOnProvider(AppFeature.communityFoods))) {
+      return const SizedBox.shrink();
+    }
     if (_sent) {
       return Text(
         'Thanks. We\u2019ll check this food.',

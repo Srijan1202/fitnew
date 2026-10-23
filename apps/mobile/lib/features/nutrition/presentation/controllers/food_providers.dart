@@ -6,6 +6,7 @@ import '../../../auth/presentation/controllers/auth_providers.dart';
 import '../../data/food_repository_impl.dart';
 import '../../domain/entities/food.dart';
 import '../../domain/repositories/food_repository.dart';
+import '../../../../core/config/app_features.dart';
 
 final foodRepositoryProvider = Provider<FoodRepository>((ref) {
   return DioFoodRepository(ref.watch(dioProvider));
@@ -44,16 +45,20 @@ final foodSearchProvider = FutureProvider<List<FoodSearchResult>?>(
 /// day). Each text is reported once per app session, quietly: a failure is
 /// never shown.
 class MissingFoodReporter {
-  MissingFoodReporter(this._repo);
+  MissingFoodReporter(this._repo, {bool Function()? enabled})
+      : _enabled = enabled ?? (() => true);
 
   final FoodRepository _repo;
+
+  /// Beta 3.3 (ADR-033): the admin's `food-requests` switch.
+  final bool Function() _enabled;
   final Set<String> _sent = <String>{};
 
   static String _key(String q) => q.trim().toLowerCase();
 
   void foundNothing(String query) {
     final key = _key(query);
-    if (key.length < 2 || !_sent.add(key)) return;
+    if (!_enabled() || key.length < 2 || !_sent.add(key)) return;
     unawaited(_repo.reportMissing(query.trim()));
   }
 
@@ -65,5 +70,8 @@ class MissingFoodReporter {
 }
 
 final missingFoodReporterProvider = Provider<MissingFoodReporter>(
-  (ref) => MissingFoodReporter(ref.watch(foodRepositoryProvider)),
+  (ref) => MissingFoodReporter(
+    ref.watch(foodRepositoryProvider),
+    enabled: () => ref.read(featureOnProvider(AppFeature.foodRequests)),
+  ),
 );

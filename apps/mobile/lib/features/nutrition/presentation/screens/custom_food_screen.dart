@@ -13,6 +13,7 @@ import '../../domain/entities/food.dart';
 import '../controllers/food_providers.dart';
 import 'food_detail_screen.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../../../core/config/app_features.dart';
 
 /// Add a food from its label (Phase 7). The numbers are the user's, stored
 /// exactly as typed and marked as theirs: private, unverified. Checks mirror
@@ -138,7 +139,9 @@ class _CustomFoodScreenState extends ConsumerState<CustomFoodScreen> {
       carbG: _parse(_carb.text)!,
       fatG: _parse(_fat.text)!,
       fibreG: _parse(_fibre.text),
-      shareWithCommunity: _share,
+      // Beta 3.3 (ADR-033): never shared while community foods are off.
+      shareWithCommunity:
+          _share && ref.read(featureOnProvider(AppFeature.communityFoods)),
     );
     setState(() => _saving = true);
     final result = await ref.read(foodRepositoryProvider).create(request);
@@ -162,6 +165,7 @@ class _CustomFoodScreenState extends ConsumerState<CustomFoodScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final perServing = _basis == NutritionBasis.perServing;
+    final shareOn = ref.watch(featureOnProvider(AppFeature.communityFoods));
     const decimal = TextInputType.numberWithOptions(decimal: true);
     Widget gap() => const SizedBox(height: FitSpacing.md);
 
@@ -290,46 +294,49 @@ class _CustomFoodScreenState extends ConsumerState<CustomFoodScreen> {
                   textInputAction: TextInputAction.done,
                   validator: _amount(required: false, max: 500),
                 ),
-                const SizedBox(height: FitSpacing.lg),
-                FitBlock(
-                  padding: const EdgeInsets.fromLTRB(
-                    FitSpacing.md,
-                    FitSpacing.xs,
-                    FitSpacing.xs,
-                    FitSpacing.sm,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            const SizedBox(height: FitSpacing.sm),
-                            Text(
-                              'Share with everyone',
-                              style: textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: FitSpacing.xs),
-                            Text(
-                              'Other people can find and log it, marked '
-                              'Community \u00b7 unverified. Your name is never '
-                              'shown. Check the numbers: they must add up.',
-                              style: textTheme.bodyMedium
-                                  ?.copyWith(color: FitColors.ink60),
-                            ),
-                          ],
+                if (shareOn) ...<Widget>[
+                  const SizedBox(height: FitSpacing.lg),
+                  FitBlock(
+                    padding: const EdgeInsets.fromLTRB(
+                      FitSpacing.md,
+                      FitSpacing.xs,
+                      FitSpacing.xs,
+                      FitSpacing.sm,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              const SizedBox(height: FitSpacing.sm),
+                              Text(
+                                'Share with everyone',
+                                style: textTheme.titleMedium,
+                              ),
+                              const SizedBox(height: FitSpacing.xs),
+                              Text(
+                                'Other people can find and log it, marked '
+                                'Community \u00b7 unverified. Your name is never '
+                                'shown. Check the numbers: they must add up.',
+                                style: textTheme.bodyMedium
+                                    ?.copyWith(color: FitColors.ink60),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Switch(
-                        key: const ValueKey('food.form.share'),
-                        value: _share,
-                        onChanged:
-                            _saving ? null : (v) => setState(() => _share = v),
-                      ),
-                    ],
+                        Switch(
+                          key: const ValueKey('food.form.share'),
+                          value: _share,
+                          onChanged: _saving
+                              ? null
+                              : (v) => setState(() => _share = v),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
                 if (_error != null) ...<Widget>[
                   gap(),
                   AuthFeedback.error(_error!),

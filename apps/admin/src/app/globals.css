@@ -150,3 +150,6 @@ tr.p-green td:first-child { box-shadow: inset 4px 0 #2e9d5b; padding-left: 10px;
 .fb-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .fb-colours .prio { width: 26px; height: 26px; }
 .fb-done { font-weight: 600; }
+
+/* App feature switches (beta 3.3, ADR-033). */
+.switch-row { display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--rule); padding: 12px 0; }

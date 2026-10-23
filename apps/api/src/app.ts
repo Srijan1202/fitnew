@@ -17,6 +17,7 @@ import type { DatabaseHandle } from './db/client.js';
 import { FirebaseAccountDeleter, RecordingAccountDeleter, type AccountDeleter } from './lib/account-deleter.js';
 import { loggerOptions } from './lib/logger.js';
 import { FirebaseAdminDirectory, InMemoryAdminDirectory, type AdminDirectory } from './lib/admin-directory.js';
+import { FeatureSwitches } from './lib/feature-switches.js';
 import { FirebaseTokenVerifier, type TokenVerifier } from './lib/token-verifier.js';
 import aiPlugin from './plugins/ai.js';
 import authPlugin, { PROTECTED_PREFIX } from './plugins/auth.js';
@@ -172,6 +173,9 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
         ? new InMemoryAdminDirectory()
         : new FirebaseAdminDirectory({ projectId: env.FIREBASE_PROJECT_ID, credentialsPath: env.GOOGLE_APPLICATION_CREDENTIALS })),
   );
+
+  // Beta 3.3 (ADR-033): the admin panel's feature switches.
+  app.decorate('features', new FeatureSwitches(() => app.database.db));
 
   await app.register(aiPlugin, options.aiProvider !== undefined ? { provider: options.aiProvider, env } : { env });
 

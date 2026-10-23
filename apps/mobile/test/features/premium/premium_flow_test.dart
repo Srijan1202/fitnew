@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/fake_ai_api.dart';
+import '../../support/fake_feedback_api.dart';
 import '../../support/fake_app_icon_switcher.dart';
 import '../../support/fake_auth_repository.dart';
 import '../../support/fake_onboarding_repository.dart';
@@ -35,6 +36,8 @@ void main() {
   // Beta 3.2: a phone whose launcher icon can change (null: the default
   // switcher, which finds no Android channel under test).
   FakeAppIconSwitcher? icons;
+  // Beta 3.3 (ADR-033): the server's feature switches.
+  FakeMetaApi? meta;
 
   setUp(() {
     auth = FakeAuthRepository()
@@ -45,6 +48,7 @@ void main() {
     FitPalette.current = FitPalette.fitosDark;
     ai = null;
     icons = null;
+    meta = null;
   });
   tearDown(() async {
     FitPalette.current = FitPalette.fitosDark;
@@ -64,6 +68,7 @@ void main() {
             premium: premium,
             weekly: weekly,
             ai: ai,
+            meta: meta,
           ),
           if (icons != null) appIconSwitcherProvider.overrideWithValue(icons!),
         ],
@@ -199,6 +204,15 @@ void main() {
   });
 
   group('the weekly report', () {
+    testWidgets('switched off by the admin: no entry on Progress (ADR-033)',
+        (tester) async {
+      premium.premium = true;
+      meta = FakeMetaApi(flags: {'weekly-report': false});
+      await start(tester);
+      await tap(tester, 'nav.Progress');
+      expect(find.byKey(const ValueKey('progress.weekly')), findsNothing);
+    });
+
     testWidgets('free: locked on Progress, and the report screen shows Premium',
         (tester) async {
       await start(tester);

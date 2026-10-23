@@ -180,7 +180,28 @@ export const editExerciseRequestSchema = exerciseInputSchema.omit({ slug: true }
 /* ------------------------------------------------------------------ flags -- */
 
 export const flagKeySchema = z.string().regex(/^[a-z][a-z0-9-]{1,48}$/, 'lower-case words joined by hyphens');
-export const featureFlagSchema = z.object({ key: z.string(), enabled: z.boolean(), description: z.string(), updatedAt: iso }).strict();
+
+/**
+ * Beta 3.3 (ADR-033): the app features the admin panel can switch off. Each
+ * is ON unless its flag row says otherwise; the app hides what is off and the
+ * server refuses it (403 `feature-off`). The app keeps the same list
+ * (lib/core/config/app_features.dart), checked by a test.
+ */
+export const APP_FEATURES = {
+  'share-programme': { name: 'Share your programme', description: 'Sharing a programme as a code, and using a shared one.' },
+  'mess-ratings': { name: 'Mess ratings', description: 'Rating mess dishes up or down and seeing the results.' },
+  streaks: { name: 'Streak and goal ring', description: 'The streak and the weekly goal ring on Home.' },
+  'community-foods': { name: 'Community foods', description: "Sharing a food with everyone, reporting one, and other people's shared foods in search." },
+  'food-requests': { name: 'Missing-food requests', description: 'Counting searches that find nothing, and "Ask us to add it".' },
+  'weekly-report': { name: 'Weekly report', description: 'The premium weekly report on Progress.' },
+} as const;
+export type AppFeature = keyof typeof APP_FEATURES;
+export const APP_FEATURE_KEYS = Object.keys(APP_FEATURES) as AppFeature[];
+
+/** A flag; an app feature carries its plain `name`, and `updatedAt` is null while it was never changed (on). */
+export const featureFlagSchema = z
+  .object({ key: z.string(), name: z.string().nullable(), enabled: z.boolean(), description: z.string(), updatedAt: isoOrNull })
+  .strict();
 export const featureFlagListSchema = z.object({ items: z.array(featureFlagSchema) }).strict();
 export const putFlagRequestSchema = z.object({ enabled: z.boolean(), description: z.string().trim().max(300).optional() }).strict();
 export const flagParamsSchema = z.object({ key: flagKeySchema }).strict();

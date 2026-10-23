@@ -71,7 +71,7 @@ export async function adminRoutes(app: FastifyInstance, opts: { minimumAppBuild:
       tags: ['meta'],
       response: { 200: metaConfigSchema },
     },
-  }, async () => service.metaConfig(opts.minimumAppBuild));
+  }, async () => ({ flags: await app.features.config(), minimumBuild: opts.minimumAppBuild }));
 
   typed.get('/admin/me', { ...admin, schema: { summary: 'Am I an administrator? (403 if not)', tags, security, response: { 200: adminMeSchema, ...errors } } }, async (request) => ({
     userId: request.userId,
@@ -184,7 +184,11 @@ export async function adminRoutes(app: FastifyInstance, opts: { minimumAppBuild:
   typed.put('/admin/flags/:key', {
     ...admin,
     schema: { summary: 'Create or change a feature flag', tags, security, params: flagParamsSchema, body: putFlagRequestSchema, response: { 200: featureFlagSchema, ...errors } },
-  }, async (request) => service.putFlag(request.userId, request.params.key, request.body.enabled, request.body.description));
+  }, async (request) => {
+    const flag = await service.putFlag(request.userId, request.params.key, request.body.enabled, request.body.description);
+    app.features.invalidate();
+    return flag;
+  });
 
   /* ------------------------------------------------------------ support -- */
 

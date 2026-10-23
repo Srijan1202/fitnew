@@ -55945,6 +55945,12 @@
                           "key": {
                             "type": "string"
                           },
+                          "name": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
                           "enabled": {
                             "type": "boolean"
                           },
@@ -55952,12 +55958,16 @@
                             "type": "string"
                           },
                           "updatedAt": {
-                            "type": "string",
+                            "type": [
+                              "string",
+                              "null"
+                            ],
                             "format": "date-time"
                           }
                         },
                         "required": [
                           "key",
+                          "name",
                           "enabled",
                           "description",
                           "updatedAt"
@@ -56358,6 +56368,12 @@
                     "key": {
                       "type": "string"
                     },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
                     "enabled": {
                       "type": "boolean"
                     },
@@ -56365,12 +56381,16 @@
                       "type": "string"
                     },
                     "updatedAt": {
-                      "type": "string",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
                       "format": "date-time"
                     }
                   },
                   "required": [
                     "key",
+                    "name",
                     "enabled",
                     "description",
                     "updatedAt"

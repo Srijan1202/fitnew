@@ -59,7 +59,8 @@ export class FoodRepository {
   constructor(private readonly db: Db) {}
 
   /** `q` is already normalised (core `normaliseFoodText`): only a-z, 0-9 and single spaces. */
-  async search(q: string, userId: string, limit: number): Promise<SearchHit[]> {
+  /** `community` false (switched off, ADR-033) leaves other people's shared foods out. */
+  async search(q: string, userId: string, limit: number, community = true): Promise<SearchHit[]> {
     const aliasEquals = sql`exists (select 1 from ${foodAliases} a where a.food_id = f.id and a.alias = ${q})`;
     const aliasStarts = sql`exists (select 1 from ${foodAliases} a where a.food_id = f.id and a.alias like ${q} || '%')`;
     const aliasWord = sql`exists (select 1 from ${foodAliases} a where a.food_id = f.id and a.alias like '% ' || ${q} || '%')`;
@@ -81,7 +82,7 @@ export class FoodRepository {
           -- Beta 3.2 (ADR-032): someone else's shared food comes after FITOS's and your own.
           (f.owner_user_id is not null and f.owner_user_id <> ${userId}) as others
         from ${foods} f
-        where f.owner_user_id is null or f.owner_user_id = ${userId} or f.visibility = 'community'
+        where f.owner_user_id is null or f.owner_user_id = ${userId} or (${community} and f.visibility = 'community')
       ) c
       where c.tier < 4 or c.sim >= ${FUZZY_THRESHOLD}
       order by c.others, c.tier, c.sim desc, c.source_rank, length(c.search_name), c.search_name, c.id

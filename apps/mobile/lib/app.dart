@@ -15,6 +15,7 @@ import 'features/workout/presentation/controllers/workout_providers.dart';
 import 'features/health/presentation/controllers/health_providers.dart';
 import 'features/notifications/presentation/notification_coordinator.dart';
 import 'features/today/presentation/today_providers.dart';
+import 'core/config/app_features.dart';
 
 /// Root widget. Owns the theme; the router comes from Riverpod so the auth
 /// guard can read the same provider the screens do.
@@ -37,6 +38,8 @@ class FitOSApp extends ConsumerWidget {
     ref.watch(notificationCoordinatorProvider);
     // Beta 3.2: re-check for a newer beta when the app comes back.
     ref.watch(updateCheckCoordinatorProvider);
+    // Beta 3.3 (ADR-033): the admin's feature switches, re-read on return.
+    ref.watch(configRefreshCoordinatorProvider);
     // Phase 19 (E1): a build below the server's minimum shows only
     // "Update FITOS". Unknown (offline) never blocks.
     final updateRequired = ref.watch(updateRequiredProvider);

@@ -264,7 +264,9 @@ export async function foodRequestRoutes(app: FastifyInstance, opts: { salt: stri
       response: { 204: z.null(), ...errors },
     },
   }, async (request, reply) => {
-    await service.report(requireUserId(request.userId), request.body.query, request.body.asked);
+    const userId = requireUserId(request.userId);
+    await app.features.require('food-requests');
+    await service.report(userId, request.body.query, request.body.asked);
     return reply.code(204).send(null);
   });
 
@@ -312,7 +314,9 @@ export async function foodRequestRoutes(app: FastifyInstance, opts: { salt: stri
       response: { 204: z.null(), ...errors },
     },
   }, async (request, reply) => {
-    await community.report(requireUserId(request.userId), request.params.id, request.body.note);
+    const userId = requireUserId(request.userId);
+    await app.features.require('community-foods');
+    await community.report(userId, request.params.id, request.body.note);
     return reply.code(204).send(null);
   });
 

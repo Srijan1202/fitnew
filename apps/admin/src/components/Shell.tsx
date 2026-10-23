@@ -16,7 +16,7 @@ const NAV = [
   { href: '/exercises', label: 'Exercises' },
   { href: '/premium', label: 'Premium' },
   { href: '/feedback', label: 'Feedback' },
-  { href: '/flags', label: 'Flags' },
+  { href: '/flags', label: 'App features' },
   { href: '/users', label: 'Support' },
   { href: '/admins', label: 'Admins' },
   { href: '/audit', label: 'Audit log' },

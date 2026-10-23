@@ -7,6 +7,7 @@ import '../../../core/theme/tokens.dart';
 import '../../../shared/widgets/fit_glass.dart';
 import '../../premium/domain/avatars.dart';
 import '../../premium/presentation/premium_providers.dart';
+import '../../../core/config/app_features.dart';
 
 /// Phase 19 (ADR-027): the way into the weekly report from Progress — with a
 /// lock for a free user (the screen then shows what premium is).
@@ -15,6 +16,10 @@ class WeeklyReportEntry extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Beta 3.3 (ADR-033): hidden while the admin has switched it off.
+    if (!ref.watch(featureOnProvider(AppFeature.weeklyReport))) {
+      return const SizedBox.shrink();
+    }
     final textTheme = Theme.of(context).textTheme;
     final locked = ref.watch(isPremiumProvider) == false;
     return InkWell(

@@ -12,6 +12,7 @@ import {
 import type { CreateFoodRequest, Food, FoodMatchKind, FoodNutrition, FoodSearchQuery, FoodSearchResponse } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
+import type { FeatureSwitches } from '../../lib/feature-switches.js';
 import type { FoodNutritionRow } from '../../db/schema.js';
 import type { FoodDetailRows, FoodRepository, SearchTier } from './repository.js';
 
@@ -63,12 +64,17 @@ export function foodFrom(d: FoodDetailRows, userId: string): Food {
 }
 
 export class FoodService {
-  constructor(private readonly repo: FoodRepository) {}
+  constructor(
+    private readonly repo: FoodRepository,
+    /** Beta 3.3 (ADR-033): the admin's switches; everything on when not given (AI parsing, tests). */
+    private readonly features?: FeatureSwitches,
+  ) {}
 
   async search(userId: string, query: FoodSearchQuery): Promise<FoodSearchResponse> {
     const q = normaliseFoodText(query.q);
     if (q === '') return { items: [] };
-    const hits = await this.repo.search(q, userId, query.limit);
+    const community = (await this.features?.isOn('community-foods')) ?? true;
+    const hits = await this.repo.search(q, userId, query.limit, community);
     const details = await this.repo.details(
       hits.map((h) => h.id),
       userId,
@@ -99,7 +105,10 @@ export class FoodService {
         issues.map((i) => ({ path: i.field, issue: i.problem })),
       );
     }
-    if (body.shareWithCommunity === true) await this.checkShareable(body);
+    if (body.shareWithCommunity === true) {
+      await this.features?.require('community-foods');
+      await this.checkShareable(body);
+    }
     const m = values.macros;
     const { id, created } = await this.repo.createCustom({
       ownerUserId: userId,

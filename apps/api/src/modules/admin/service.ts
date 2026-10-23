@@ -8,6 +8,7 @@ import type {
   ExerciseInput,
   NotifySettings,
 } from '@fitos/contracts';
+import { APP_FEATURES, APP_FEATURE_KEYS } from '@fitos/contracts';
 import { applyCorrection, endpointHealth, notificationRates, recommendationRates, type MacroField, type MacroRanges } from '@fitos/core/admin/admin';
 import { normaliseFoodText } from '@fitos/core/nutrition/food';
 import type { z } from 'zod';
@@ -23,6 +24,7 @@ import type {
 
 import { uniqueViolationOf } from '../../db/errors.js';
 import { AppError } from '../../lib/errors.js';
+import { isAppFeature } from '../../lib/feature-switches.js';
 import { settingsFrom } from '../notifications/service.js';
 import type { TrainingRepository } from '../training/repository.js';
 import type { AdminRepository } from './repository.js';
@@ -310,8 +312,18 @@ export class AdminService {
 
   /* -------------------------------------------------------------- flags -- */
 
+  /** The app's switches first (ADR-033; on unless stored off), then any other flag. */
   async flags() {
-    return (await this.repo.flags()).map((f) => ({ key: f.key, enabled: f.enabled, description: f.description, updatedAt: f.updatedAt.toISOString() }));
+    const rows = await this.repo.flags();
+    const byKey = new Map(rows.map((r) => [r.key, r]));
+    const switches = APP_FEATURE_KEYS.map((key) => {
+      const r = byKey.get(key);
+      return { key, name: APP_FEATURES[key].name, enabled: r?.enabled ?? true, description: APP_FEATURES[key].description, updatedAt: r?.updatedAt.toISOString() ?? null };
+    });
+    const others = rows
+      .filter((r) => !isAppFeature(r.key))
+      .map((f) => ({ key: f.key, name: null, enabled: f.enabled, description: f.description, updatedAt: f.updatedAt.toISOString() }));
+    return [...switches, ...others];
   }
 
   async putFlag(actor: string | null, key: string, enabled: boolean, description?: string) {
@@ -320,11 +332,14 @@ export class AdminService {
       await tx.audit({ actorUserId: actor, action: 'flag.set', entity: 'feature_flag', entityId: key, metadata: { enabled, description: description ?? null } });
       return r;
     });
-    return { key: row.key, enabled: row.enabled, description: row.description, updatedAt: row.updatedAt.toISOString() };
-  }
-
-  async metaConfig(minimumBuild: number): Promise<{ flags: Record<string, boolean>; minimumBuild: number }> {
-    return { flags: Object.fromEntries((await this.repo.flags()).map((f) => [f.key, f.enabled])), minimumBuild };
+    const feature = isAppFeature(row.key) ? APP_FEATURES[row.key] : null;
+    return {
+      key: row.key,
+      name: feature?.name ?? null,
+      enabled: row.enabled,
+      description: feature?.description ?? row.description,
+      updatedAt: row.updatedAt.toISOString(),
+    };
   }
 
   /* ------------------------------------------------------------ support -- */

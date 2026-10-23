@@ -24,7 +24,7 @@ function requireUserId(userId: string | null): string {
 }
 
 export async function nutritionRoutes(app: FastifyInstance): Promise<void> {
-  const service = new FoodService(new FoodRepository(app.database.db));
+  const service = new FoodService(new FoodRepository(app.database.db), app.features);
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const errors = { 401: errorEnvelopeSchema, 422: errorEnvelopeSchema };
   const security = [{ bearerAuth: [] }];

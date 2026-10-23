@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/tokens.dart';
 import '../controllers/food_providers.dart';
+import '../../../../core/config/app_features.dart';
 
 /// Beta 3.2 (ADR-032): "Ask us to add it" under a search that found nothing.
 /// The search itself was already reported quietly; this says a person wants
@@ -38,6 +39,10 @@ class _AskToAddFoodState extends ConsumerState<AskToAddFood> {
 
   @override
   Widget build(BuildContext context) {
+    // Beta 3.3 (ADR-033): hidden while the admin has switched requests off.
+    if (!ref.watch(featureOnProvider(AppFeature.foodRequests))) {
+      return const SizedBox.shrink();
+    }
     final textTheme = Theme.of(context).textTheme;
     if (_sent ?? false) {
       return Text(
