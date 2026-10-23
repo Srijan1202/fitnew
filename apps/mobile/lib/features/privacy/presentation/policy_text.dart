@@ -23,7 +23,11 @@ const kPolicySections = <(String, String)>[
         'send from the app, with the app\'s version. Your profile picture '
         'choice, and any request for Premium with the answer to it. A count of '
         'FITOS AI uses (not what was said). Your consent records, with a one-'
-        'way scrambled form of the network address you consented from.',
+        'way scrambled form of the network address you consented from. Foods '
+        'you add from a label; if you share one with everyone, other people '
+        'can find and log it, marked Community and never with your name, and '
+        'it is deleted with your account. A food search that finds nothing is '
+        'counted without your name, so missing foods can be added.',
   ),
   (
     'What stays on your phone',
