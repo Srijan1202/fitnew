@@ -41897,6 +41897,7 @@
             "schema": {
               "type": "string",
               "enum": [
+                "7d",
                 "30d",
                 "90d"
               ],
@@ -41923,6 +41924,7 @@
                     "window": {
                       "type": "string",
                       "enum": [
+                        "7d",
                         "30d",
                         "90d"
                       ]
@@ -41992,7 +41994,7 @@
                             "integer",
                             "null"
                           ],
-                          "minimum": 7
+                          "minimum": 6
                         }
                       },
                       "required": [
@@ -42049,7 +42051,7 @@
                               "integer",
                               "null"
                             ],
-                            "minimum": 7
+                            "minimum": 6
                           }
                         },
                         "required": [

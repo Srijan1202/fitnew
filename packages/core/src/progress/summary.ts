@@ -14,12 +14,21 @@ import { isoWeekKey } from '../training/mesocycle.js';
 import { estimate1RM } from '../training/progression.js';
 
 /** The summary windows (owner D8). */
-export const PROGRESS_WINDOWS = ['30d', '90d'] as const;
+export const PROGRESS_WINDOWS = ['7d', '30d', '90d'] as const;
 export type ProgressWindow = (typeof PROGRESS_WINDOWS)[number];
-export const WINDOW_DAYS: Readonly<Record<ProgressWindow, number>> = { '30d': 30, '90d': 90 };
+export const WINDOW_DAYS: Readonly<Record<ProgressWindow, number>> = { '7d': 7, '30d': 30, '90d': 90 };
 
 /** §17 rule 2: a change is reported only over at least this many days. */
 export const MIN_CHANGE_DAYS = 7;
+
+/**
+ * Beta 3.2 (owner: 1W · 1M · 3M, ADR-018 amendment): in the one-week window
+ * the first and last day are 6 days apart, so a change there needs the whole
+ * week (6 days); every longer window keeps §17's 7.
+ */
+export function minChangeDays(window: ProgressWindow): number {
+  return window === '7d' ? WINDOW_DAYS['7d'] - 1 : MIN_CHANGE_DAYS;
+}
 
 /** Owner D6: calories are "on target" when the day's range overlaps target ± 10 %. */
 export const CALORIE_TOLERANCE = 0.1;
@@ -73,7 +82,7 @@ export function weightProgress(entries: readonly WeightEntry[], today: string, w
   let windowChangeDays: number | null = null;
   if (first !== undefined && last !== undefined) {
     const span = daysBetween(first.date, last.date);
-    if (span >= MIN_CHANGE_DAYS) {
+    if (span >= minChangeDays(window)) {
       windowChangeKg = Number((last.trendKg - first.trendKg).toFixed(2));
       windowChangeDays = span;
     }
@@ -125,7 +134,7 @@ export function measurementProgress(
     let changeDays: number | null = null;
     if (earliest !== undefined && earliest !== latest) {
       const span = daysBetween(earliest.date, latest.date);
-      if (span >= MIN_CHANGE_DAYS) {
+      if (span >= minChangeDays(window)) {
         changeCm = round1(latest.valueCm - earliest.valueCm);
         changeDays = span;
       }

@@ -4,9 +4,11 @@
 /// Hand-written (ADR-004); the conformance test keeps them in step.
 library;
 
+/// Beta 3.2 (owner): 1W · 1M · 3M, one week by default.
 enum ProgressWindow {
-  d30('30d', '30 days'),
-  d90('90d', '90 days');
+  d7('7d', '1W'),
+  d30('30d', '1M'),
+  d90('90d', '3M');
 
   const ProgressWindow(this.wire, this.label);
   final String wire;

@@ -198,7 +198,7 @@ describeIfDb('/v1/progress (real Postgres)', { timeout: 60_000 }, () => {
     expect((await summary(lone)).weight.windowChangeKg).toBeNull();
   });
 
-  it('windows: 30d and 90d cut the same whole-history trend; a year of readings stays fast', async () => {
+  it('windows: 7d (beta 3.2), 30d and 90d cut the same whole-history trend; a year of readings stays fast', async () => {
     const u = await user();
     await seedWeights(u, 365, (i) => 85 - i * 0.02 + ((i * 7) % 5) * 0.2);
     const s30 = await summary(u, '30d');
@@ -208,7 +208,13 @@ describeIfDb('/v1/progress (real Postgres)', { timeout: 60_000 }, () => {
     expect(s90.from).toBe(addDays(today(u), -89));
     // The same trend value on the same day in both windows (smoothed over the whole history).
     expect(s30.weight.points[0]).toEqual(s90.weight.points.find((p) => p.date === s30.weight.points[0]!.date));
-    expect((await app.inject({ method: 'GET', url: '/v1/progress/summary?window=7d', headers: auth(u.token) })).statusCode).toBe(422);
+    // Beta 3.2: one week, the last 7 days, with its change across the whole week.
+    const s7 = await summary(u, '7d');
+    expect(s7.weight.points).toHaveLength(7);
+    expect(s7.from).toBe(addDays(today(u), -6));
+    expect(s7.weight.windowChangeDays).toBe(6);
+    expect(s7.weight.points[0]).toEqual(s90.weight.points.find((p) => p.date === s7.weight.points[0]!.date));
+    expect((await app.inject({ method: 'GET', url: '/v1/progress/summary?window=14d', headers: auth(u.token) })).statusCode).toBe(422);
   });
 
   /* ------------------------------------------------------- measurements -- */

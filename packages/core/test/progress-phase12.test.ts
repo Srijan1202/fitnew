@@ -10,7 +10,7 @@ import {
   measurementProgress,
   targetOn,
   weightProgress,
-  windowStart,
+  minChangeDays, windowStart,
 } from '../src/progress/summary.js';
 import { ENGINE_VERSION, PRIORITIES, buildActions, wordReason } from '../src/recommend/engine.js';
 import { COMPLETION_EVIDENCE, checkTransition } from '../src/recommend/events.js';
@@ -76,6 +76,21 @@ describe('Phase 12 — weight trend (EWMA, §13.2, §17)', () => {
     expect(one.windowChangeKg).toBeNull();
   });
 
+  it('beta 3.2 one-week window: the last 7 days; a change needs the whole week (6 days apart), never less', () => {
+    expect(windowStart(TODAY, '7d')).toBe(addDays(TODAY, -6));
+    expect(minChangeDays('7d')).toBe(6);
+    expect(minChangeDays('30d')).toBe(7);
+    expect(minChangeDays('90d')).toBe(7);
+    const week = weightProgress(series(7, (i) => 80 - i * 0.2), TODAY, '7d');
+    expect(week.points).toHaveLength(7);
+    expect(week.windowChangeDays).toBe(6);
+    expect(week.windowChangeKg).toBeLessThan(0);
+    const fiveDays = weightProgress(series(6, (i) => 80 - i * 0.2), TODAY, '7d'); // 5 days apart
+    expect(fiveDays.windowChangeKg).toBeNull();
+    // The same six days in the 30-day window still need seven.
+    expect(weightProgress(series(7, (i) => 80 - i * 0.2), TODAY, '30d').windowChangeKg).toBeNull();
+  });
+
   it('the trend is smoothed over the whole history, then cut to the window; future readings are ignored', () => {
     const history = [...series(60, () => 90, addDays(TODAY, -30)), ...series(30, () => 80)];
     const w = weightProgress([...history, { date: addDays(TODAY, 1), kg: 10 }], TODAY, '30d');
@@ -107,6 +122,21 @@ describe('Phase 12 — measurements', () => {
     const arm = m.find((x) => x.site === 'arm')!;
     expect(arm.changeCm).toBeNull(); // 3 days: too short
     expect(m.map((x) => x.site)).toEqual(['waist', 'arm']);
+  });
+
+  it('beta 3.2 one-week window: a measurement change across the whole week (6 days)', () => {
+    const m = measurementProgress(
+      [
+        { date: addDays(TODAY, -6), site: 'waist', valueCm: 85 },
+        { date: TODAY, site: 'waist', valueCm: 84.5 },
+        { date: addDays(TODAY, -5), site: 'arm', valueCm: 35 },
+        { date: TODAY, site: 'arm', valueCm: 35.5 },
+      ],
+      TODAY,
+      '7d',
+    );
+    expect(m.find((x) => x.site === 'waist')).toMatchObject({ changeCm: -0.5, changeDays: 6 });
+    expect(m.find((x) => x.site === 'arm')!.changeCm).toBeNull(); // 5 days
   });
 });
 

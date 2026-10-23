@@ -52,3 +52,9 @@ What already existed and is reused:
 - **Home loses nothing.** Its Body block is only relabelled.
 - **`rebuild-derived`** proves the three §9.4 caches are reproducible: `daily_nutrition`, every `muscle_volume_weekly` week (the Phase 6 script covered four), and `exercise_prs` with `set_logs.is_pr`, replayed in completion order through the same `detectPRs`. A set added to a session after it was completed is not re-scored by the live path, so a rebuild could differ there; the replay follows the completed-session order.
 - **The engine version changed** (`today-2`), so every TODAY content hash changes once: existing actions become new rows on the next GET (rows are immutable; nothing is lost).
+
+## Amendment — one week, one month, three months (beta 3.2, owner 2026-10-23)
+
+- **Windows:** `PROGRESS_WINDOWS` is `7d`, `30d` and `90d`. The app labels them **1W · 1M · 3M** and opens on **1W**; the last choice is remembered on the phone. The server's default stays `30d`, so older apps are unchanged.
+- **§17 rule 2 in the one-week window:** the first and last day of a week are 6 days apart, so a weight or measurement change there needs readings across the whole week (≥ 6 days, `minChangeDays('7d')`). Every longer window keeps ≥ 7 days. Never a day-over-day figure.
+- Profile's trend weight still reads the 30-day summary.

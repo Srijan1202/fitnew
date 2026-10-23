@@ -1,5 +1,9 @@
-import '../../../core/notifications/activity_signal.dart';
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../core/notifications/activity_signal.dart';
 
 import '../../../core/errors/failure.dart';
 import '../../../core/errors/result.dart';
@@ -24,12 +28,38 @@ final progressRepositoryProvider = Provider<ProgressRepository>((ref) {
   );
 });
 
-/// The window the Progress page shows (owner D8): 30 days by default.
+/// The window the Progress page shows. Beta 3.2 (owner): one week by
+/// default; the last choice is remembered on the phone (a trivial flag).
 class ProgressWindowChoice extends Notifier<ProgressWindow> {
-  @override
-  ProgressWindow build() => ProgressWindow.d30;
+  static const _key = 'progress.window';
 
-  void set(ProgressWindow w) => state = w;
+  @override
+  ProgressWindow build() {
+    unawaited(_restore());
+    return ProgressWindow.d7;
+  }
+
+  Future<void> _restore() async {
+    try {
+      final saved = (await SharedPreferences.getInstance()).getString(_key);
+      if (saved != null) state = ProgressWindow.fromWire(saved);
+    } on Object {
+      // No stored choice (or no storage): the default stands.
+    }
+  }
+
+  void set(ProgressWindow w) {
+    state = w;
+    unawaited(_save(w));
+  }
+
+  Future<void> _save(ProgressWindow w) async {
+    try {
+      await (await SharedPreferences.getInstance()).setString(_key, w.wire);
+    } on Object {
+      // Not remembered this time; nothing else depends on it.
+    }
+  }
 }
 
 final progressWindowProvider =

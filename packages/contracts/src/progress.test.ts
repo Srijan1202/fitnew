@@ -24,11 +24,12 @@ const summary = {
 };
 
 describe('Progress contracts (Phase 12)', () => {
-  it('vocabularies: two windows (30d default), five measurement sites', () => {
-    expect([...PROGRESS_WINDOWS]).toEqual(['30d', '90d']);
+  it('vocabularies: three windows (beta 3.2 adds 7d; 30d stays the server default for older apps), five measurement sites', () => {
+    expect([...PROGRESS_WINDOWS]).toEqual(['7d', '30d', '90d']);
     expect([...MEASUREMENT_SITES]).toEqual(['waist', 'chest', 'arm', 'thigh', 'hip']);
     expect(progressSummaryQuerySchema.parse({})).toEqual({ window: '30d' });
-    expect(progressSummaryQuerySchema.safeParse({ window: '7d' }).success).toBe(false);
+    expect(progressSummaryQuerySchema.safeParse({ window: '7d' }).success).toBe(true);
+    expect(progressSummaryQuerySchema.safeParse({ window: '14d' }).success).toBe(false);
     expect(progressSummaryQuerySchema.safeParse({ window: '30d', since: 'yesterday' }).success).toBe(false);
   });
 

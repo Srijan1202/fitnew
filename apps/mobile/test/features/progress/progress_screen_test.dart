@@ -203,7 +203,7 @@ void main() {
   testWidgets(
       'the header and every section; the trend is the headline, the raw reading small below it',
       (tester) async {
-    progress.summaries[ProgressWindow.d30] = rich();
+    progress.summaries[ProgressWindow.d7] = rich();
     await tester.pumpWidget(app());
     await settle(tester);
     expect(textOf(tester, 'progress.title'), 'Progress & Recovery');
@@ -236,7 +236,7 @@ void main() {
 
   testWidgets('before 10 days of readings there is no weekly rate — it says so',
       (tester) async {
-    progress.summaries[ProgressWindow.d30] = rich(weekly: null, days: 6);
+    progress.summaries[ProgressWindow.d7] = rich(weekly: null, days: 6);
     await tester.pumpWidget(app());
     await settle(tester);
     expect(textOf(tester, 'progress.weight.rate'), 'After 10 days of readings');
@@ -246,7 +246,7 @@ void main() {
   testWidgets(
       'one reading: no squeezed chart and no "not yet" tiles — a panel says the line starts with the next reading',
       (tester) async {
-    progress.summaries[ProgressWindow.d30] = rich(weekly: null, days: 1);
+    progress.summaries[ProgressWindow.d7] = rich(weekly: null, days: 1);
     await tester.pumpWidget(app());
     await settle(tester);
     expect(textOf(tester, 'progress.weight.trend'), '74.1 kg');
@@ -258,7 +258,7 @@ void main() {
 
   testWidgets('the chart: kg on the right, the window\'s dates below',
       (tester) async {
-    progress.summaries[ProgressWindow.d30] = rich();
+    progress.summaries[ProgressWindow.d7] = rich();
     await tester.pumpWidget(app());
     await settle(tester);
     expect(key('progress.chart'), findsOneWidget);
@@ -287,7 +287,7 @@ void main() {
 
   testWidgets('no day-over-day figure and no red anywhere on the page (§17)',
       (tester) async {
-    progress.summaries[ProgressWindow.d30] = rich();
+    progress.summaries[ProgressWindow.d7] = rich();
     await tester.pumpWidget(app());
     await settle(tester);
     await reveal(tester, key('progress.recovery.note'));
@@ -306,7 +306,7 @@ void main() {
   testWidgets(
       'measurements, strength, adherence and consistency say exactly the server\'s numbers',
       (tester) async {
-    progress.summaries[ProgressWindow.d30] = rich();
+    progress.summaries[ProgressWindow.d7] = rich();
     await tester.pumpWidget(app());
     await settle(tester);
     await reveal(tester, key('progress.measurement.arm'));
@@ -355,7 +355,7 @@ void main() {
       ..devicePixelRatio = 3;
     addTearDown(tester.view.reset);
     final base = rich();
-    progress.summaries[ProgressWindow.d30] = ProgressSummary(
+    progress.summaries[ProgressWindow.d7] = ProgressSummary(
       window: base.window,
       today: base.today,
       from: base.from,
@@ -389,7 +389,7 @@ void main() {
   testWidgets(
       'records sit at the bottom, collapsed: counted, opened on a tap, closed again',
       (tester) async {
-    progress.summaries[ProgressWindow.d30] = rich();
+    progress.summaries[ProgressWindow.d7] = rich();
     await tester.pumpWidget(app());
     await settle(tester);
     await reveal(tester, key('progress.records.toggle'));
@@ -431,7 +431,7 @@ void main() {
   testWidgets('loading shows a quiet bar; the window switch fetches 90 days',
       (tester) async {
     progress
-      ..summaries[ProgressWindow.d30] = rich()
+      ..summaries[ProgressWindow.d7] = rich()
       ..delay = const Duration(milliseconds: 300);
     await tester.pumpWidget(app());
     await tester.pump(const Duration(milliseconds: 50));
@@ -442,6 +442,20 @@ void main() {
     await tester.tap(key('progress.window.90d'));
     await settle(tester);
     expect(progress.calls, contains('summary 90d'));
+  });
+
+  testWidgets('beta 3.2: the window reads 1W · 1M · 3M and opens on one week',
+      (tester) async {
+    progress.summaries[ProgressWindow.d7] = rich();
+    await tester.pumpWidget(app());
+    await settle(tester);
+    expect(progress.calls.first, 'summary 7d');
+    expect(find.text('1W'), findsOneWidget);
+    expect(find.text('1M'), findsOneWidget);
+    expect(find.text('3M'), findsOneWidget);
+    await tester.tap(key('progress.window.30d'));
+    await settle(tester);
+    expect(progress.calls.last, 'summary 30d');
   });
 
   testWidgets('unavailable with nothing cached: says why (offline vs server)',
@@ -465,7 +479,7 @@ void main() {
   testWidgets(
       'offline with a cached summary: shown, labelled with its time; readings fail clearly and nothing is queued',
       (tester) async {
-    progress.summaries[ProgressWindow.d30] = rich();
+    progress.summaries[ProgressWindow.d7] = rich();
     await tester.pumpWidget(app());
     await settle(tester);
     expect(key('progress.cached'), findsNothing);
@@ -623,7 +637,7 @@ void main() {
             metricOf(HealthMetricKind.restingHeartRate, 58, unit: 'bpm'),
         weight: metricOf(HealthMetricKind.weight, 73.2, unit: 'kg'),
       );
-    progress.summaries[ProgressWindow.d30] = rich();
+    progress.summaries[ProgressWindow.d7] = rich();
     await tester.pumpWidget(app());
     await settle(tester);
     // Health Connect weight: a separate line, never the trend.
@@ -689,7 +703,7 @@ void main() {
       addTearDown(tester.view.reset);
       tester.platformDispatcher.textScaleFactorTestValue = textScale;
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-      progress.summaries[ProgressWindow.d30] = rich();
+      progress.summaries[ProgressWindow.d7] = rich();
       await tester.pumpWidget(app());
       await settle(tester);
       expect(tester.takeException(), isNull);

@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { isoDateSchema, weightKgSchema } from './profile.js';
 import { prTypeSchema } from './workout.js';
 
-export const PROGRESS_WINDOWS = ['30d', '90d'] as const;
+export const PROGRESS_WINDOWS = ['7d', '30d', '90d'] as const;
 export const progressWindowSchema = z.enum(PROGRESS_WINDOWS);
 export type ProgressWindow = z.infer<typeof progressWindowSchema>;
 
@@ -50,7 +50,7 @@ export const progressSummarySchema = z
         isReliable: z.boolean(),
         /** The trend's change across the window, only when its readings are ≥ 7 days apart. */
         windowChangeKg: kg.nullable(),
-        windowChangeDays: z.number().int().min(7).nullable(),
+        windowChangeDays: z.number().int().min(6).nullable(),
       })
       .strict(),
     /** The latest reading per site that has one, with its change over ≥ 7 days in the window. */
@@ -60,7 +60,7 @@ export const progressSummarySchema = z
           site: measurementSiteSchema,
           latest: z.object({ date: isoDateSchema, valueCm: z.number() }).strict(),
           changeCm: z.number().nullable(),
-          changeDays: z.number().int().min(7).nullable(),
+          changeDays: z.number().int().min(6).nullable(),
         })
         .strict(),
     ),
