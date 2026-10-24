@@ -11,6 +11,10 @@ export const NOTIFY_KINDS = [
   'recovery-checkin',
   'weekly-recap',
   'comeback',
+  // Beta 3.5 (owner): a reminder per meal the person usually logs.
+  'meal-breakfast',
+  'meal-lunch',
+  'meal-dinner',
 ] as const;
 export type NotifyKind = (typeof NOTIFY_KINDS)[number];
 
@@ -53,15 +57,21 @@ export const DEFAULT_NOTIFY_SETTINGS: NotifySettings = {
     'recovery-checkin': false,
     'weekly-recap': true,
     comeback: true,
+    'meal-breakfast': true,
+    'meal-lunch': true,
+    'meal-dinner': true,
   },
   quietStart: '22:30',
   quietEnd: '07:30',
 };
 
-/** §21: at most two push notifications a day (the in-session rest timer is not one). */
-export const DAILY_CAP = 2;
-/** Two notifications on one day are at least this far apart. */
-export const MIN_GAP_MINUTES = 180;
+/**
+ * §21 said two a day; beta 3.5 (owner 2026-10-24) raised it to four, to make
+ * room for meal reminders. The in-session rest timer is not one.
+ */
+export const DAILY_CAP = 4;
+/** Two notifications on one day are at least this far apart (was 180 with two a day). */
+export const MIN_GAP_MINUTES = 120;
 /** How far ahead the phone is given a plan; it is rebuilt every time the app syncs. */
 export const HORIZON_DAYS = 7;
 /** Protein-gap fires only below this share of the target (§21: < 75 %). */

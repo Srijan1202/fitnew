@@ -16,11 +16,14 @@ enum ActivityKind {
 }
 
 class Activity {
-  const Activity(this.kind, this.at);
+  const Activity(this.kind, this.at, {this.slot});
   final ActivityKind kind;
 
   /// When it happened (its local day decides which reminders it cancels).
   final DateTime at;
+
+  /// food-logged (beta 3.5): the meal, so only that meal's reminder goes.
+  final String? slot;
 }
 
 /// A broadcast of [Activity]. Reporting with nobody listening is a no-op,
@@ -31,6 +34,6 @@ abstract final class ActivitySignal {
 
   static Stream<Activity> get stream => _controller.stream;
 
-  static void report(ActivityKind kind, {DateTime? at}) =>
-      _controller.add(Activity(kind, at ?? DateTime.now()));
+  static void report(ActivityKind kind, {DateTime? at, String? slot}) =>
+      _controller.add(Activity(kind, at ?? DateTime.now(), slot: slot));
 }

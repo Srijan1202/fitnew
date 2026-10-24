@@ -21,6 +21,10 @@ export const NOTIFY_KINDS = [
   'recovery-checkin',
   'weekly-recap',
   'comeback',
+  // Beta 3.5 (owner): a reminder per meal the person usually logs.
+  'meal-breakfast',
+  'meal-lunch',
+  'meal-dinner',
 ] as const;
 export const notifyKindSchema = z.enum(NOTIFY_KINDS);
 export type NotifyKind = z.infer<typeof notifyKindSchema>;
@@ -64,6 +68,8 @@ export const cancelRuleSchema = z
     localDate: isoDateSchema,
     /** protein-reached only: today's protein (high end) that makes the nudge pointless. */
     grams: z.number().nonnegative().nullable(),
+    /** food-logged only (beta 3.5): just this meal; absent = any meal. */
+    slot: z.enum(['breakfast', 'lunch', 'snacks', 'dinner']).optional(),
   })
   .strict();
 
@@ -81,7 +87,7 @@ export const plannedNotificationSchema = z
     tone: notifyToneSchema,
     /** Where a tap goes; `slot` for food-log. */
     screen: z.enum(NOTIFY_SCREENS),
-    slot: z.enum(['dinner']).nullable(),
+    slot: z.enum(['breakfast', 'lunch', 'snacks', 'dinner']).nullable(),
     actions: z.array(z.enum(['snooze'])),
     cancelOn: z.array(cancelRuleSchema),
     /** Why this time — shown in settings. */

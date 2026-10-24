@@ -95,12 +95,14 @@ describe('notification planner', () => {
     const sent = (kind: NotifyHistoryItem['kind']): NotifyHistoryItem[] => [{ kind, localDate: '2026-10-18', variant: 'x', at: ist('2026-10-18', '19:00'), status: 'delivered' }];
     const sets = {
       completed: new Set(['2026-10-18']),
+      started: new Set(['2026-10-18']),
+      meals: new Set(['breakfast|2026-10-18', 'lunch|2026-10-18', 'dinner|2026-10-18']),
       proteinMet: new Set(['2026-10-18']),
       active: new Set(['2026-10-18']),
       weighed: new Set(['2026-10-18']),
       checkedIn: new Set(['2026-10-18']),
     };
-    for (const kind of ['workout-reminder', 'missed-session', 'protein-gap', 'streak-at-risk', 'weigh-in', 'recovery-checkin'] as const) {
+    for (const kind of ['workout-reminder', 'missed-session', 'protein-gap', 'streak-at-risk', 'weigh-in', 'recovery-checkin', 'meal-breakfast', 'meal-lunch', 'meal-dinner'] as const) {
       expect(ignoredInARow(kind, sent(kind), sets).count, kind).toBe(0);
     }
     for (const kind of ['weekly-recap', 'comeback'] as const) expect(ignoredInARow(kind, sent(kind), sets).count, kind).toBe(1);

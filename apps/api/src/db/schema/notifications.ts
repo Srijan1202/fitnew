@@ -24,6 +24,9 @@ export const notifyKindEnum = pgEnum('notify_kind', [
   'recovery-checkin',
   'weekly-recap',
   'comeback',
+  'meal-breakfast',
+  'meal-lunch',
+  'meal-dinner',
 ]);
 /** planned → delivered → opened, or planned → cancelled (its point was gone, on the phone). */
 export const notifyStatusEnum = pgEnum('notify_status', ['planned', 'delivered', 'opened', 'cancelled']);

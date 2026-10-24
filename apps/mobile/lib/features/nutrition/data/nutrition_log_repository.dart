@@ -184,6 +184,7 @@ class NutritionLogRepository {
     ActivitySignal.report(
       ActivityKind.foodLogged,
       at: DateTime.tryParse(request.loggedAt),
+      slot: request.mealSlot.wire,
     );
   }
 

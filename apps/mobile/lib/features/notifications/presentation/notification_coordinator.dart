@@ -67,10 +67,12 @@ class _Stored {
     Set<String>? cancelled,
     Set<String>? reported,
     List<NotifyEvent>? pending,
+    Set<String>? happened,
     this.permitted = false,
   })  : cancelled = cancelled ?? <String>{},
         reported = reported ?? <String>{},
-        pending = pending ?? <NotifyEvent>[];
+        pending = pending ?? <NotifyEvent>[],
+        happened = happened ?? <String>{};
 
   factory _Stored.fromJson(Map<String, dynamic> j) => _Stored(
         items: [
@@ -83,6 +85,9 @@ class _Stored {
           for (final e in j['pending'] as List<dynamic>)
             NotifyEvent.fromJson(e as Map<String, dynamic>),
         ],
+        happened: {
+          ...(j['happened'] as List<dynamic>? ?? const []).cast<String>(),
+        },
         permitted: j['permitted'] as bool? ?? false,
       );
 
@@ -90,6 +95,11 @@ class _Stored {
   final Set<String> cancelled;
   final Set<String> reported;
   final List<NotifyEvent> pending;
+
+  /// Beta 3.5: what the user did ("event|day" and "event|day|slot"), so a
+  /// plan fetched before the server knows (a session not yet synced) never
+  /// brings back a reminder it made pointless. Kept for a few days.
+  final Set<String> happened;
 
   /// Whether the items were put on the device (so a past one was shown).
   bool permitted;
@@ -99,6 +109,7 @@ class _Stored {
         'cancelled': [...cancelled],
         'reported': [...reported],
         'pending': [for (final e in pending) e.toJson()],
+        'happened': [...happened],
         'permitted': permitted,
       };
 }
@@ -256,17 +267,32 @@ class NotificationCoordinator extends Notifier<NotifyState> {
           for (final old in _stored.items) {
             if (old.at.isAfter(now)) await _scheduler.cancel(old);
           }
+          // Beta 3.5: never re-schedule what the user already did today, even
+          // if the server has not heard of it yet (it is told as cancelled).
+          final met = <String>{
+            for (final item in value.items)
+              if (item.cancelOn.any(_alreadyMet)) item.id,
+          };
+          final told = {
+            for (final e in sent)
+              if (e.event == 'cancelled') e.id,
+          };
           if (permitted) {
             for (final item in value.items) {
-              await _scheduler.schedule(item);
+              if (!met.contains(item.id)) await _scheduler.schedule(item);
             }
           }
           _stored = _Stored(
             items: value.items,
             permitted: permitted,
+            cancelled: met,
+            happened: _stored.happened,
             pending: [
               for (final e in _stored.pending)
                 if (!sent.contains(e)) e,
+              for (final id in met)
+                if (!told.contains(id))
+                  NotifyEvent(id: id, event: 'cancelled', at: _now()),
             ],
           );
           _cancelledNow.clear();
@@ -355,14 +381,37 @@ class NotificationCoordinator extends Notifier<NotifyState> {
     }
   }
 
+  /// Whether [r] is already met by something the user did on its day.
+  bool _alreadyMet(CancelRule r) =>
+      _stored.happened.contains('${r.event}|${r.localDate}') ||
+      (r.event == 'food-logged' &&
+          r.slot != null &&
+          _stored.happened.contains('food-logged|${r.localDate}|${r.slot}')) ||
+      (r.event == 'any-activity' &&
+          _stored.happened.any((h) => h.split('|')[1] == r.localDate));
+
   /// Something the user did: cancel the reminders it makes pointless.
   Future<void> onActivity(Activity a) async {
     if (_userId == null) return;
     final day = _dayOf(a.at);
+    // Beta 3.5: remembered, so a later plan cannot re-schedule them. A meal
+    // log only meets its own meal's rule.
+    final slot = a.kind == ActivityKind.foodLogged ? a.slot : null;
+    _stored.happened
+      ..removeWhere(
+        (h) =>
+            h
+                .split('|')[1]
+                .compareTo(_dayOf(_now().subtract(const Duration(days: 3)))) <
+            0,
+      )
+      ..add(slot == null ? '${a.kind.wire}|$day' : '${a.kind.wire}|$day|$slot');
     await _cancelWhere(
       (r) =>
           r.localDate == day &&
-          (r.event == a.kind.wire || r.event == 'any-activity'),
+          (r.event == 'any-activity' ||
+              (r.event == a.kind.wire &&
+                  (r.slot == null || slot == null || r.slot == slot))),
     );
     if (a.kind == ActivityKind.foodLogged) unawaited(checkProtein());
     // A fresh plan (a weigh-in moves the next one, a session the streak…).

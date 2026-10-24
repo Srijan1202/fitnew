@@ -89,6 +89,23 @@ export const TEMPLATES: readonly Template[] = [
   t('sr-g2', 'streak-at-risk', 'gentle', 'Nothing logged today yet', 'If you ate or trained, a quick log keeps your picture complete.'),
 
   // ----------------------------------------------------------- weigh-in --
+  // Beta 3.5 (owner): meal reminders at the person's own times. Never about
+  // eating less or what was eaten: only about writing it down.
+  t('mb-c1', 'meal-breakfast', 'cheeky', 'Breakfast happened?', 'Your log has not heard about it yet. Ten seconds, {name}.'),
+  t('mb-c2', 'meal-breakfast', 'cheeky', 'Morning, food logger', 'Breakfast goes in the log, not in the memory hole. One tap.'),
+  t('mb-c3', 'meal-breakfast', 'cheeky', 'The log is waiting', 'Breakfast first, everything else later. Quick log?'),
+  t('mb-g1', 'meal-breakfast', 'gentle', 'Log your breakfast?', 'When you have a moment, add what you had this morning.'),
+  t('mb-g2', 'meal-breakfast', 'gentle', 'Breakfast check', 'A quick log now keeps today easy to follow.'),
+  t('ml-c1', 'meal-lunch', 'cheeky', 'Lunch: logged or legend?', 'If it is not in the log, did it even happen? One tap, {name}.'),
+  t('ml-c2', 'meal-lunch', 'cheeky', 'Midday check-in', 'Lunch is done, the log is not. Quick fix.'),
+  t('ml-c3', 'meal-lunch', 'cheeky', 'Your log is hungry', 'Feed it your lunch. Mess menu, saved meal or quick add.'),
+  t('ml-g1', 'meal-lunch', 'gentle', 'Log your lunch?', 'Add lunch when it suits you. It only takes a moment.'),
+  t('ml-g2', 'meal-lunch', 'gentle', 'Lunch check', 'A quick log keeps your day on track.'),
+  t('md-c1', 'meal-dinner', 'cheeky', 'Dinner, then the log', 'The last meal of the day deserves a mention. One tap, {name}.'),
+  t('md-c2', 'meal-dinner', 'cheeky', 'One more for today', 'Dinner is not in the log yet. Close the day properly.'),
+  t('md-c3', 'meal-dinner', 'cheeky', 'Almost a full day logged', 'Just dinner to go. Mess, saved meal or quick add.'),
+  t('md-g1', 'meal-dinner', 'gentle', 'Log your dinner?', 'Add dinner when you are ready, and today is complete.'),
+  t('md-g2', 'meal-dinner', 'gentle', 'Dinner check', 'A quick log rounds off your day.'),
   t('wi-c1', 'weigh-in', 'cheeky', "Scale o'clock", 'A couple of days without a reading. The trend line is getting curious.'),
   t('wi-c2', 'weigh-in', 'cheeky', 'Your trend wants data', "Step on, step off, done. Single numbers don't matter; the trend does."),
   t('wi-c3', 'weigh-in', 'cheeky', 'Quick weigh-in?', 'Morning, before breakfast, same as always. The graph will thank you.'),

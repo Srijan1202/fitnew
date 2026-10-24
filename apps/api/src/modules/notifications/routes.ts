@@ -70,7 +70,7 @@ export async function notificationRoutes(app: FastifyInstance): Promise<void> {
       schema: {
         summary: "The next days' notifications for the phone to schedule; takes its reports on earlier ones",
         description:
-          'Planned from your own records in your stored timezone (§21): at most 2 a day, 3 hours apart, outside quiet hours, ' +
+          'Planned from your own records in your stored timezone (§21): at most 4 a day, 2 hours apart, outside quiet hours, ' +
           'timed from your habits, every kind switchable. Each item says what cancels it on the phone (`cancelOn`). ' +
           'The words are FITOS templates, never generated. Reports are replay-safe.',
         tags: ['notifications'],

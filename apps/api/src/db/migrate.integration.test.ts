@@ -70,7 +70,7 @@ describeIfDb('migrations (real Postgres)', () => {
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
   const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
   const PHASE6_TABLES = ['muscle_volume_weekly', 'exercise_rejections'];
-  const TOTAL_MIGRATIONS = 31;
+  const TOTAL_MIGRATIONS = 32;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -476,6 +476,21 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`delete from mess_providers where id = ${prov!.id}`;
   });
 
+  it('0031: meal reminders (beta 3.5) — three new notification kinds; down removes their rows and the kinds', async () => {
+    await client`insert into users (firebase_uid) values ('mig-meals')`;
+    const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-meals'`;
+    await client`insert into notifications (user_id, kind, local_date, scheduled_for, variant, title, body)
+      values (${u!.id}, 'meal-lunch', '2026-10-24', now(), 'ml-c1', 'T', 'B'), (${u!.id}, 'weekly-recap', '2026-10-25', now(), 'wr-c1', 'T', 'B')`;
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
+    const kinds = await client<{ kind: string }[]>`select kind::text as kind from notifications where user_id = ${u!.id}`;
+    expect(kinds.map((k) => k.kind)).toEqual(['weekly-recap']);
+    await expect(client`insert into notifications (user_id, kind, local_date, scheduled_for, variant, title, body)
+      values (${u!.id}, 'meal-dinner', '2026-10-26', now(), 'md-c1', 'T', 'B')`).rejects.toThrow(/notify_kind/);
+    await migrateUp(connectionString);
+    expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
+    await client`delete from users where id = ${u!.id}`;
+  });
+
   it('0030: streak rewards (beta 3.4, ADR-027 amendment) — once per person and reward, known rewards only, gone with the person; the streak pictures; down undoes both', async () => {
     await client`insert into users (firebase_uid) values ('mig-rewarded')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-rewarded'`;
@@ -483,6 +498,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await expect(client`insert into user_rewards (user_id, reward) values (${u!.id}, 'spark')`).rejects.toThrow(/user_rewards_user_id_reward_pk/);
     await expect(client`insert into user_rewards (user_id, reward) values (${u!.id}, 'gold-bar')`).rejects.toThrow(/user_rewards_reward/);
     await client`update users set avatar_id = 'century' where id = ${u!.id}`;
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await tableExists(client, 'user_rewards')).toBe(false);
     const [after] = await client<{ avatar_id: string | null }[]>`select avatar_id from users where id = ${u!.id}`;
@@ -505,6 +521,7 @@ describeIfDb('migrations (real Postgres)', () => {
     }
     await client`delete from users where id = ${u!.id}`;
     expect((await client`select 1 from shared_programmes where code = 'K7Q2XM'`).length).toBe(0);
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await tableExists(client, 'shared_programmes')).toBe(false);
@@ -524,6 +541,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await expect(client`insert into mess_dish_ratings (user_id, mess_id, dish_slug, up) values (${u!.id}, ${mess!.id}, 'Not A Slug', true)`).rejects.toThrow(/mess_dish_ratings_slug_format/);
     await client`delete from users where id = ${u!.id}`;
     expect((await client`select 1 from mess_dish_ratings where mess_id = ${mess!.id}`).length).toBe(0);
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -551,6 +569,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await expect(client`insert into food_reports (food_id, mark) values (${own!.id}, 'mig-mark')`).rejects.toThrow(/food_reports_mark/);
     await client`delete from foods where id = ${own!.id}`;
     expect((await client`select 1 from food_reports where mark = 'mig-mark'`).length).toBe(0);
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -574,6 +593,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`insert into food_request_marks (mark, request_id) values ('m1', ${r!.id})`;
     await client`delete from food_requests where id = ${r!.id}`;
     expect((await client`select 1 from food_request_marks where mark = 'm1'`).length).toBe(0);
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -595,6 +615,7 @@ describeIfDb('migrations (real Postgres)', () => {
     expect(plain!.source).toBe('fitos');
     expect((await row('custom'))[0]!.source).toBe('custom');
     await expect(row('mine')).rejects.toThrow(/nutrition_targets_source/);
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -618,6 +639,7 @@ describeIfDb('migrations (real Postgres)', () => {
     expect(f!.priority).toBeNull();
     for (const p of ['red', 'yellow', 'green']) await client`update feedback set priority = ${p} where id = ${f!.id}`;
     await expect(client`update feedback set priority = 'blue' where id = ${f!.id}`).rejects.toThrow(/feedback_priority/);
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -653,6 +675,7 @@ describeIfDb('migrations (real Postgres)', () => {
     const rows = await client<{ day_of_week: number; session_name: string }[]>`
       select day_of_week, session_name from program_days where program_id = ${p!.id} order by day_of_week`;
     expect(rows.map((r) => r.session_name)).toEqual(['S7', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6']);
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -680,6 +703,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`update premium_requests set status = 'denied' where user_id = ${u!.id}`;
     await client`insert into premium_requests (user_id) values (${u!.id})`;
     await expect(client`insert into premium_requests (user_id, status) values (${u!.id}, 'maybe')`).rejects.toThrow(/premium_requests_status/);
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -708,6 +732,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await expect(client`insert into feedback (user_id, category, message, app_version, status) values (${u!.id}, 'bug', 'x', '1', 'lost')`).rejects.toThrow(/feedback_status/);
     await client`delete from users where id = ${u!.id}`;
     expect((await client`select 1 from feedback where user_id = ${u!.id}`).length).toBe(0);
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -728,6 +753,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`insert into users (firebase_uid) values ('mig-consent')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-consent'`;
     await client`insert into consent_records (user_id, consent_type, granted, policy_version) values (${u!.id}, 'privacy-policy', true, 'v'), (${u!.id}, 'ai-processing', true, 'v')`;
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -748,6 +774,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0019: audit_logs, feature_flags, mess_dish_overrides and the admin marks on foods/exercises — Phase 16; down drops them', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -788,6 +815,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0018: notifications (one per user, kind and local date; status; cascade) and push_tokens (unique token, android) — Phase 15; down drops them', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -807,7 +835,8 @@ describeIfDb('migrations (real Postgres)', () => {
     await migrateUp(connectionString);
     expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
 
-    expect(await enumLabels(client, 'notify_kind')).toEqual(['workout-reminder', 'missed-session', 'protein-gap', 'streak-at-risk', 'weigh-in', 'recovery-checkin', 'weekly-recap', 'comeback']);
+    // 0031 (beta 3.5) adds the three meal reminders.
+    expect(await enumLabels(client, 'notify_kind')).toEqual(['workout-reminder', 'missed-session', 'protein-gap', 'streak-at-risk', 'weigh-in', 'recovery-checkin', 'weekly-recap', 'comeback', 'meal-breakfast', 'meal-lunch', 'meal-dinner']);
     expect(await enumLabels(client, 'notify_status')).toEqual(['planned', 'delivered', 'opened', 'cancelled']);
     const cols = await client<{ column_name: string }[]>`
       select column_name from information_schema.columns where table_name = 'notifications' order by ordinal_position`;
@@ -832,6 +861,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0017: ai_usage (per user, route, model, tokens, outcome; tokens non-negative; cascade) — the §19.3 cost ledger; down drops it (Phase 14)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -865,6 +895,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await expect(client`insert into ai_usage (user_id, route, model, input_tokens, output_tokens, outcome) values (${u!.id}, 'parse', 'm', -1, 0, 'ok')`).rejects.toThrow(/ai_usage_tokens/);
     await expect(client.unsafe(`insert into ai_usage (user_id, route, model, outcome) values ('${u!.id}', 'photo', 'm', 'ok')`)).rejects.toThrow(/invalid input value for enum ai_route/);
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -889,6 +920,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0016: recovery_logs (one per user and local date; optional values, at least one; ranges; cascade; hard delete) and low-readiness in today_action_kind; down rebuilds the enum (Phase 13)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -945,6 +977,7 @@ describeIfDb('migrations (real Postgres)', () => {
     );
 
     // Down with data: the table and type go; the enum is rebuilt without the value; other rows keep their kind.
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -978,6 +1011,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0015: body_measurements (one per user, day and site; checks; cascade), the PR window index, and calorie-adjust in today_action_kind; down rebuilds the enum (Phase 12)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -1030,6 +1064,7 @@ describeIfDb('migrations (real Postgres)', () => {
     );
 
     // Down with data: the table and type go; the enum is rebuilt without the value; other rows keep their kind.
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -1066,6 +1101,7 @@ describeIfDb('migrations (real Postgres)', () => {
 
   it('0014: every deload activation is kept by a trigger on programs (Phase 6 code untouched); backfill; down drops it (Phase 11)', async () => {
     // Down, then a deload week already running when 0014 applies: the backfill records it.
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -1114,6 +1150,7 @@ describeIfDb('migrations (real Postgres)', () => {
     expect((await client`select 1 from deload_activations where program_id = ${q!.id}`).length).toBe(0);
 
     // Down removes the trigger, its function and the table; programs keeps working as in Phase 6.
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -1141,6 +1178,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0013: TODAY recommendations and events — identity, checks, event rules, cascades; down drops them (Phase 11, ADR-017)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -1239,6 +1277,7 @@ describeIfDb('migrations (real Postgres)', () => {
       `insert into recommendations (user_id, generated_for, kind, subject_key, rank, priority, basis, target, payload, engine_version, input_digest, headline, detail, content_hash)
        values ('${d!.id}', '2026-09-24', 'log-weight', '', 1, 45, 'calculated', 'progress', '{}'::jsonb, 'today-1', '${H}', 'h', 'd', '${H}')`,
     );
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -1264,6 +1303,7 @@ describeIfDb('migrations (real Postgres)', () => {
   });
 
   it('0012: four Phase 9 estimates corrected with provenance, only where still wrong; down restores them (Phase 10 Amendment B)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -1316,6 +1356,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await expect(client`insert into mess_dish_nutrition_revisions (dish_slug, reason, previous, current) values ('curd-rice', ' ', '{}', '{}')`).rejects.toThrow(/revisions_reason/);
 
     // Down puts the recorded previous values back and drops the provenance table.
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');
@@ -1341,7 +1382,7 @@ describeIfDb('migrations (real Postgres)', () => {
 
     await migrateUp(connectionString);
     await client`delete from mess_dish_nutrition where dish_slug in ('curd-rice', 'rice-papad', 'chole-bhatura', 'dahi-vada')`;
-  });
+  }, 20_000); // rolls back twenty migrations; slow under the full suite
 
   it('one active goal per user is a database fact', async () => {
     await client`insert into users (firebase_uid) values ('mig-goal')`;
@@ -1416,6 +1457,7 @@ describeIfDb('migrations (real Postgres)', () => {
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Mess lunch', '[{"kind":"mess","dishSlug":"dal","name":"Dal","servings":1}]'::jsonb)`;
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Plain', '[{"kind":"quick-add","name":"X","kcal":1,"proteinG":0,"carbG":0,"fatG":0,"fibreG":null}]'::jsonb)`;
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0031_meal_reminders');
     expect(await rollbackLastMigration(connectionString)).toBe('0030_streak_rewards');
     expect(await rollbackLastMigration(connectionString)).toBe('0029_shared_programmes');
     expect(await rollbackLastMigration(connectionString)).toBe('0028_mess_ratings');

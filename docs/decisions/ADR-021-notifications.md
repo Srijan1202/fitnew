@@ -86,3 +86,16 @@
 - Reminders work on the alpha's real setup (PC sometimes off, phone often offline).
 - The cheeky tone is a deliberate product choice by the owner. Gentle is one tap away, and automatic on low-readiness days.
 - A plan is only as fresh as the last time the app reached the server. A user who stops opening the app gets the week already planned, then the comeback nudges, then silence. That is the intended Duolingo-style arc.
+
+## Amendment — beta 3.5 (owner, 2026-10-24)
+
+1. **No workout reminder once a workout has started that day.** The owner got the 8:30 reminder after training at 8. The plan only knew *completed* sessions that had reached the server, so a plan rebuilt while the session was still running (or not yet synced) put the reminder back.
+   - The planner now counts a session *started* that day as trained, for both the workout reminder and the missed-session nudge (today's nudge goes too once today's workout has started).
+   - The phone remembers what the user did (`happened`, kept 3 days). An item in a newly fetched plan whose cancel rule is already met is never scheduled; it is reported as cancelled, once.
+2. **Meal reminders that learn the person's own times** (`meal-breakfast`, `meal-lunch`, `meal-dinner`, each switchable):
+   - While fewer than 7 days have any food logged: every meal at its default (9:00, 14:00, 21:00).
+   - After that, only a meal logged on at least half those days gets a reminder, 30 minutes after the median time they log it, so it follows their habits as they change. A meal they usually skip gets none.
+   - Never when that meal is already logged that day. Logging lunch cancels only the lunch reminder (`cancelOn` carries the meal `slot`).
+   - Priority 65; the weekly recap moves up to 67 so meal reminders never crowd it out.
+3. **The cap is 4 a day, at least 2 hours apart** (was 2 a day, 3 hours apart), to make room for the meals.
+

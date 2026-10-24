@@ -187,6 +187,73 @@ void main() {
     );
   });
 
+  test(
+      'beta 3.5: a plan fetched after the workout started (the server not yet told) never brings its reminder back',
+      () async {
+    api.nextItems = [workout, protein];
+    final n = await started(container());
+    await n.onActivity(
+      Activity(ActivityKind.workoutStarted, DateTime.utc(2026, 10, 19, 4)),
+    );
+    expect(device.scheduled.keys, {protein.id});
+    // The server still plans today's workout reminder (a new id).
+    final again = plannedItem(
+      'e5555555-5555-4555-8555-555555555555',
+      at: DateTime.utc(2026, 10, 19, 11, 30),
+      cancelOn: const [
+        CancelRule(event: 'workout-started', localDate: '2026-10-19'),
+      ],
+    );
+    api.nextItems = [again, protein];
+    await n.refresh();
+    expect(device.scheduled.keys, {protein.id});
+    await n.refresh();
+    expect(
+      api.planCalls.last.map((e) => '${e.id}:${e.event}'),
+      contains('${again.id}:cancelled'),
+    );
+  });
+
+  test('beta 3.5: logging lunch cancels the lunch reminder only', () async {
+    final lunch = plannedItem(
+      'f6666666-6666-4666-8666-666666666666',
+      kind: 'meal-lunch',
+      screen: 'food-log',
+      at: DateTime.utc(2026, 10, 19, 8, 20),
+      cancelOn: const [
+        CancelRule(
+          event: 'food-logged',
+          localDate: '2026-10-19',
+          slot: 'lunch',
+        ),
+      ],
+    );
+    final dinner = plannedItem(
+      'a7777777-7777-4777-8777-777777777777',
+      kind: 'meal-dinner',
+      screen: 'food-log',
+      at: DateTime.utc(2026, 10, 19, 15, 15),
+      cancelOn: const [
+        CancelRule(
+          event: 'food-logged',
+          localDate: '2026-10-19',
+          slot: 'dinner',
+        ),
+      ],
+    );
+    api.nextItems = [lunch, dinner];
+    final n = await started(container());
+    expect(NotifyKind.of('meal-lunch'), NotifyKind.mealLunch);
+    await n.onActivity(
+      Activity(
+        ActivityKind.foodLogged,
+        DateTime.utc(2026, 10, 19, 7, 50),
+        slot: 'lunch',
+      ),
+    );
+    expect(device.scheduled.keys, {dinner.id});
+  });
+
   test('protein on track: once the food queue delivers, the protein nudge goes',
       () async {
     api.nextItems = [protein];
@@ -283,7 +350,9 @@ void main() {
     );
     api.planFailure = null;
     final third = await started(container());
-    expect(third.cancelled, isEmpty, reason: 'a new plan replaced it');
+    // Beta 3.5: the server planned it again before hearing; it stays off.
+    expect(third.cancelled, {workout.id});
+    expect(device.scheduled, isEmpty);
     expect(
       api.planCalls.last.map((e) => '${e.id}:${e.event}'),
       ['${workout.id}:cancelled'],

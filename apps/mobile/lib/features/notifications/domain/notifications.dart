@@ -1,7 +1,7 @@
 /// Wire shapes of `@fitos/contracts` notifications.ts (Phase 15, ADR-021).
 /// Hand-written (ADR-004); the conformance test keeps them in step.
 ///
-/// The server plans (timing, the 2-a-day cap, the words); the phone
+/// The server plans (timing, the 4-a-day cap, the words); the phone
 /// schedules what it is given and cancels an item the moment its point is
 /// gone. Nothing here decides what to send.
 library;
@@ -42,6 +42,22 @@ enum NotifyKind {
     'comeback',
     'Come back',
     "Only if FITOS isn't opened for a few days. Stops after a week.",
+  ),
+  // Beta 3.5 (owner): at the person's own meal times, learned from their logs.
+  mealBreakfast(
+    'meal-breakfast',
+    'Breakfast reminder',
+    "About half an hour after you usually log breakfast, if it isn't logged yet. Not if you rarely log it.",
+  ),
+  mealLunch(
+    'meal-lunch',
+    'Lunch reminder',
+    "About half an hour after you usually log lunch, if it isn't logged yet. Not if you rarely log it.",
+  ),
+  mealDinner(
+    'meal-dinner',
+    'Dinner reminder',
+    "About half an hour after you usually log dinner, if it isn't logged yet. Not if you rarely log it.",
   );
 
   const NotifyKind(this.wire, this.label, this.description);
@@ -115,12 +131,14 @@ class CancelRule {
     required this.event,
     required this.localDate,
     this.grams,
+    this.slot,
   });
 
   factory CancelRule.fromJson(Map<String, dynamic> json) => CancelRule(
         event: json['event'] as String,
         localDate: json['localDate'] as String,
         grams: (json['grams'] as num?)?.toDouble(),
+        slot: json['slot'] as String?,
       );
 
   /// A contracts `CANCEL_EVENTS` value.
@@ -130,8 +148,15 @@ class CancelRule {
   /// protein-reached only.
   final double? grams;
 
-  Map<String, dynamic> toJson() =>
-      {'event': event, 'localDate': localDate, 'grams': grams};
+  /// food-logged only (beta 3.5): just this meal; null = any meal.
+  final String? slot;
+
+  Map<String, dynamic> toJson() => {
+        'event': event,
+        'localDate': localDate,
+        'grams': grams,
+        if (slot != null) 'slot': slot,
+      };
 }
 
 class PlannedNotification {

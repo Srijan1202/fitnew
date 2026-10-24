@@ -50214,6 +50214,15 @@
                         },
                         "comeback": {
                           "type": "boolean"
+                        },
+                        "meal-breakfast": {
+                          "type": "boolean"
+                        },
+                        "meal-lunch": {
+                          "type": "boolean"
+                        },
+                        "meal-dinner": {
+                          "type": "boolean"
                         }
                       },
                       "required": [
@@ -50224,7 +50233,10 @@
                         "weigh-in",
                         "recovery-checkin",
                         "weekly-recap",
-                        "comeback"
+                        "comeback",
+                        "meal-breakfast",
+                        "meal-lunch",
+                        "meal-dinner"
                       ],
                       "additionalProperties": false
                     },
@@ -50429,6 +50441,15 @@
                       },
                       "comeback": {
                         "type": "boolean"
+                      },
+                      "meal-breakfast": {
+                        "type": "boolean"
+                      },
+                      "meal-lunch": {
+                        "type": "boolean"
+                      },
+                      "meal-dinner": {
+                        "type": "boolean"
                       }
                     },
                     "additionalProperties": false
@@ -50496,6 +50517,15 @@
                         },
                         "comeback": {
                           "type": "boolean"
+                        },
+                        "meal-breakfast": {
+                          "type": "boolean"
+                        },
+                        "meal-lunch": {
+                          "type": "boolean"
+                        },
+                        "meal-dinner": {
+                          "type": "boolean"
                         }
                       },
                       "required": [
@@ -50506,7 +50536,10 @@
                         "weigh-in",
                         "recovery-checkin",
                         "weekly-recap",
-                        "comeback"
+                        "comeback",
+                        "meal-breakfast",
+                        "meal-lunch",
+                        "meal-dinner"
                       ],
                       "additionalProperties": false
                     },
@@ -50670,7 +50703,7 @@
         "tags": [
           "notifications"
         ],
-        "description": "Planned from your own records in your stored timezone (§21): at most 2 a day, 3 hours apart, outside quiet hours, timed from your habits, every kind switchable. Each item says what cancels it on the phone (`cancelOn`). The words are FITOS templates, never generated. Reports are replay-safe.",
+        "description": "Planned from your own records in your stored timezone (§21): at most 4 a day, 2 hours apart, outside quiet hours, timed from your habits, every kind switchable. Each item says what cancels it on the phone (`cancelOn`). The words are FITOS templates, never generated. Reports are replay-safe.",
         "requestBody": {
           "required": true,
           "content": {
@@ -50775,6 +50808,15 @@
                             },
                             "comeback": {
                               "type": "boolean"
+                            },
+                            "meal-breakfast": {
+                              "type": "boolean"
+                            },
+                            "meal-lunch": {
+                              "type": "boolean"
+                            },
+                            "meal-dinner": {
+                              "type": "boolean"
                             }
                           },
                           "required": [
@@ -50785,7 +50827,10 @@
                             "weigh-in",
                             "recovery-checkin",
                             "weekly-recap",
-                            "comeback"
+                            "comeback",
+                            "meal-breakfast",
+                            "meal-lunch",
+                            "meal-dinner"
                           ],
                           "additionalProperties": false
                         },
@@ -50826,7 +50871,10 @@
                               "weigh-in",
                               "recovery-checkin",
                               "weekly-recap",
-                              "comeback"
+                              "comeback",
+                              "meal-breakfast",
+                              "meal-lunch",
+                              "meal-dinner"
                             ]
                           },
                           "localDate": {
@@ -50871,6 +50919,9 @@
                               "null"
                             ],
                             "enum": [
+                              "breakfast",
+                              "lunch",
+                              "snacks",
                               "dinner"
                             ]
                           },
@@ -50911,6 +50962,15 @@
                                     "null"
                                   ],
                                   "minimum": 0
+                                },
+                                "slot": {
+                                  "type": "string",
+                                  "enum": [
+                                    "breakfast",
+                                    "lunch",
+                                    "snacks",
+                                    "dinner"
+                                  ]
                                 }
                               },
                               "required": [
@@ -51112,7 +51172,10 @@
                       "weigh-in",
                       "recovery-checkin",
                       "weekly-recap",
-                      "comeback"
+                      "comeback",
+                      "meal-breakfast",
+                      "meal-lunch",
+                      "meal-dinner"
                     ]
                   }
                 },

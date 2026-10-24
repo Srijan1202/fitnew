@@ -68,7 +68,7 @@ export interface PlanFacts {
   readonly sessionStarts: readonly Date[];
   /** Local dates with a completed session (about five weeks). */
   readonly completedDates: readonly string[];
-  readonly foodLogs: readonly { readonly at: Date; readonly slot: 'breakfast' | 'lunch' | 'snacks' | 'dinner'; readonly localDate: string }[];
+  readonly foodLogs: readonly { readonly at: Date; readonly slot: MealSlot; readonly localDate: string }[];
   readonly weighIns: readonly { readonly at: Date; readonly localDate: string }[];
   readonly checkIns: readonly { readonly at: Date; readonly localDate: string }[];
   /** Local dates whose protein reached PROTEIN_GAP_SHARE of the target. */
@@ -86,7 +86,11 @@ export interface CancelRule {
   readonly localDate: string;
   /** protein-reached only: the grams that make the nudge pointless. */
   readonly grams: number | null;
+  /** food-logged only (beta 3.5): just this meal; absent = any meal. */
+  readonly slot?: MealSlot;
 }
+
+export type MealSlot = 'breakfast' | 'lunch' | 'snacks' | 'dinner';
 
 export interface PlannedNotification {
   readonly kind: NotifyKind;
@@ -97,7 +101,7 @@ export interface PlannedNotification {
   readonly variant: string;
   readonly tone: NotifyTone;
   readonly screen: NotifyScreen;
-  readonly slot: 'dinner' | null;
+  readonly slot: MealSlot | null;
   readonly actions: readonly 'snooze'[];
   readonly cancelOn: readonly CancelRule[];
   /** Why this, why now — shown in settings so the timing is never a mystery. */
@@ -125,9 +129,13 @@ const PRIORITY: Readonly<Record<NotifyKind, number>> = {
   'missed-session': 80,
   'protein-gap': 70,
   'streak-at-risk': 60,
-  'weekly-recap': 50,
+  // Beta 3.5: once a week, so above the daily meal reminders.
+  'weekly-recap': 67,
   'weigh-in': 40,
   'recovery-checkin': 35,
+  'meal-breakfast': 65,
+  'meal-lunch': 65,
+  'meal-dinner': 65,
 };
 
 /** Kinds moved to the end of quiet hours (mornings); the rest move before their start. */
@@ -169,6 +177,67 @@ export function learnHabits(facts: Pick<PlanFacts, 'timeZone' | 'sessionStarts' 
   };
 }
 
+/** Beta 3.5: the meal a meal reminder is about. */
+const MEAL_OF = { 'meal-breakfast': 'breakfast', 'meal-lunch': 'lunch', 'meal-dinner': 'dinner' } as const;
+type MealKind = keyof typeof MEAL_OF;
+
+/** Reminder times while FITOS is still learning someone's meals (owner). */
+export const MEAL_DEFAULT_MINUTES: Readonly<Record<MealKind, number>> = {
+  'meal-breakfast': 9 * 60,
+  'meal-lunch': 14 * 60,
+  'meal-dinner': 21 * 60,
+};
+/** Days with any food logged before the meals count as learned. */
+export const MEAL_LEARNING_DAYS = 7;
+/** A meal logged on at least this share of those days gets a reminder. */
+export const MEAL_USUAL_SHARE = 0.5;
+/** The reminder comes this long after the usual time. */
+export const MEAL_AFTER_MINUTES = 30;
+
+export interface MealReminder {
+  readonly kind: MealKind;
+  readonly slot: 'breakfast' | 'lunch' | 'dinner';
+  /** Minute of the day; null when this meal gets no reminder. */
+  readonly minute: number | null;
+  readonly why: string;
+}
+
+/**
+ * Beta 3.5 (owner 2026-10-24): when to remind about each meal, from this
+ * person's own logs. While fewer than MEAL_LEARNING_DAYS days have a log,
+ * every meal at its default time. After that, only a meal they log on at
+ * least half those days, half an hour after its usual time (the median of
+ * when they log it, so it follows their habits as they change); a meal they
+ * usually skip gets none.
+ */
+export function learnMeals(facts: Pick<PlanFacts, 'timeZone' | 'foodLogs'>): MealReminder[] {
+  const tz = facts.timeZone;
+  const days = new Set(facts.foodLogs.map((f) => f.localDate));
+  const learning = days.size < MEAL_LEARNING_DAYS;
+  return (Object.keys(MEAL_OF) as MealKind[]).map((kind) => {
+    const slot = MEAL_OF[kind];
+    const label = slot === 'breakfast' ? 'breakfast' : slot === 'lunch' ? 'lunch' : 'dinner';
+    const fallback = MEAL_DEFAULT_MINUTES[kind];
+    if (learning) {
+      return { kind, slot, minute: fallback, why: `At ${at(fallback)} while FITOS learns when you usually log ${label}, only if it isn't logged yet.` };
+    }
+    const logs = facts.foodLogs.filter((f) => f.slot === slot);
+    const share = new Set(logs.map((f) => f.localDate)).size / days.size;
+    if (share < MEAL_USUAL_SHARE) {
+      return { kind, slot, minute: null, why: `No reminder: you log ${label} on fewer than half your days.` };
+    }
+    const usual = usualMinute(logs.map((f) => minuteOfDay(f.at, tz)));
+    /* v8 ignore next -- @preserve half of ≥ 7 days is ≥ 4 logs, so the median exists */
+    const base = usual ?? fallback;
+    return {
+      kind,
+      slot,
+      minute: base + MEAL_AFTER_MINUTES,
+      why: `About half an hour after you usually log ${label} (around ${at(base)}), only if it isn't logged yet.`,
+    };
+  });
+}
+
 /** Consecutive active days ending on `date` (0 when `date` was not active). */
 export function streakEnding(active: ReadonlySet<string>, date: string): number {
   let n = 0;
@@ -193,11 +262,19 @@ function goalMet(kind: NotifyKind, date: string, sets: FactSets): boolean {
     case 'weekly-recap':
     case 'comeback':
       return false;
+    case 'meal-breakfast':
+    case 'meal-lunch':
+    case 'meal-dinner':
+      return sets.meals.has(`${MEAL_OF[kind]}|${date}`);
   }
 }
 
 interface FactSets {
   readonly completed: ReadonlySet<string>;
+  /** Beta 3.5: days a session was started (finished or not). */
+  readonly started: ReadonlySet<string>;
+  /** Beta 3.5: "slot|date" for each meal logged. */
+  readonly meals: ReadonlySet<string>;
   readonly proteinMet: ReadonlySet<string>;
   readonly active: ReadonlySet<string>;
   readonly weighed: ReadonlySet<string>;
@@ -223,7 +300,7 @@ interface Candidate {
   readonly data: CopyData;
   readonly stage?: 2 | 4 | 7;
   readonly screen: NotifyScreen;
-  readonly slot: 'dinner' | null;
+  readonly slot: MealSlot | null;
   readonly cancelOn: readonly CancelRule[];
   readonly why: string;
 }
@@ -270,9 +347,12 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
   const quietStart = parseClock(s.quietStart) ?? 22 * 60 + 30;
   const quietEnd = parseClock(s.quietEnd) ?? 7 * 60 + 30;
   const habits = learnHabits(facts);
+  const meals = learnMeals(facts);
 
   const sets: FactSets = {
     completed: new Set(facts.completedDates),
+    started: new Set(facts.sessionStarts.map((d) => localDateOf(d, tz))),
+    meals: new Set(facts.foodLogs.map((f) => `${f.slot}|${f.localDate}`)),
     proteinMet: new Set(facts.proteinMetDates),
     weighed: new Set(facts.weighIns.map((w) => w.localDate)),
     checkedIn: new Set(facts.checkIns.map((c) => c.localDate)),
@@ -322,7 +402,10 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
     const silentAfterStop = i === HORIZON_DAYS;
 
     const session = skipped.has(d) ? null : (facts.programme?.[weekday] ?? null);
-    if (!silentAfterStop && session !== null && !sets.completed.has(d) && !(i === 0 && facts.readinessBand === 'rest')) {
+    // Beta 3.5 (owner): a workout STARTED that day is enough — the session
+    // may still be running, or not yet synced, when the plan is rebuilt.
+    const trained = (day: string): boolean => sets.completed.has(day) || sets.started.has(day);
+    if (!silentAfterStop && session !== null && !trained(d) && !(i === 0 && facts.readinessBand === 'rest')) {
       const learned = habits.training(weekday);
       candidates.push({
         kind: 'workout-reminder',
@@ -337,7 +420,7 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
 
     const prev = addDays(d, -1);
     const missed = skipped.has(prev) ? null : (facts.programme?.[isoWeekday(prev)] ?? null);
-    if (!silentAfterStop && missed !== null && !sets.completed.has(prev)) {
+    if (!silentAfterStop && missed !== null && !trained(prev) && !(i === 0 && trained(d))) {
       candidates.push({
         kind: 'missed-session',
         minute: clamp(habits.breakfast ?? DEFAULT_MINUTES.morning, 7 * 60, 11 * 60),
@@ -422,6 +505,21 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
         slot: null,
         cancelOn: [],
         why: 'Sunday afternoon: the week in one screen.',
+      });
+    }
+
+    // Beta 3.5 (owner): a reminder per meal the person usually logs, about
+    // half an hour after their own usual time; defaults while learning.
+    for (const meal of meals) {
+      if (silentAfterStop || meal.minute === null || (i === 0 && sets.meals.has(`${meal.slot}|${d}`))) continue;
+      candidates.push({
+        kind: meal.kind,
+        minute: meal.minute,
+        data: { name: facts.name },
+        screen: 'food-log',
+        slot: meal.slot,
+        cancelOn: [{ event: 'food-logged', localDate: d, grams: null, slot: meal.slot }],
+        why: meal.why,
       });
     }
 

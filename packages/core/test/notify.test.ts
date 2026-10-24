@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { BANNED, TEMPLATES, fits, nameFor, render } from '../src/notify/copy.js';
-import { chooseVariant, ignoredInARow, planNotifications, streakEnding, type NotifyHistoryItem, type PlanFacts } from '../src/notify/planner.js';
+import { chooseVariant, ignoredInARow, learnMeals, planNotifications, streakEnding, type NotifyHistoryItem, type PlanFacts } from '../src/notify/planner.js';
 import { formatClock, inWindow, instantAt, isoWeekday, minuteOfDay, parseClock, usualMinute } from '../src/notify/time.js';
 import { DAILY_CAP, DEFAULT_NOTIFY_SETTINGS, MIN_GAP_MINUTES, NOTIFY_KINDS, NOTIFY_TONES } from '../src/notify/types.js';
 import { addDays, localDateOf } from '../src/nutrition/log.js';
@@ -152,7 +152,7 @@ describe('notify/planner', () => {
     const sent: NotifyHistoryItem = { kind: 'missed-session', localDate: '2026-10-19', variant: 'ms-c4', at: ist('2026-10-19', '08:30'), status: 'delivered' };
     const now = ist('2026-10-19', '09:00');
     const plan = planNotifications(facts({ now, programme: PPL, proteinTargetG: 120, history: [sent] })).filter((p) => p.localDate === '2026-10-19');
-    expect(plan.length).toBeLessThanOrEqual(1);
+    expect(plan.length).toBeLessThanOrEqual(DAILY_CAP - 1);
     expect(plan.every((p) => p.kind !== 'missed-session')).toBe(true);
     for (const p of plan) expect(minuteOfDay(p.at, TZ) - 8 * 60 - 30).toBeGreaterThanOrEqual(MIN_GAP_MINUTES);
   });
@@ -245,7 +245,7 @@ describe('notify/planner', () => {
     expect(days(sent(3))).toEqual(['2026-10-20', '2026-10-22', '2026-10-24']);
     expect(days(sent(6))).toEqual(['2026-10-25']);
     expect(days([{ ...sent(1, 'opened')[0]!, localDate: '2026-10-18' }, ...sent(6).slice(1)])).toHaveLength(7);
-    const sets = { completed: new Set<string>(), proteinMet: new Set<string>(), active: new Set(['2026-10-18']), weighed: new Set<string>(), checkedIn: new Set<string>() };
+    const sets = { completed: new Set<string>(), started: new Set<string>(), meals: new Set<string>(), proteinMet: new Set<string>(), active: new Set(['2026-10-18']), weighed: new Set<string>(), checkedIn: new Set<string>() };
     expect(ignoredInARow('streak-at-risk', sent(6), sets).count).toBe(0);
   });
 
@@ -284,14 +284,69 @@ describe('notify/planner', () => {
     expect(recap.actions).toEqual([]);
   });
 
-  it('found in the sample week: on Sunday the recap and the protein nudge both fit (3 h apart)', () => {
+  it('found in the sample week: on Sunday the recap and the protein nudge both fit, with meal reminders, within the cap', () => {
     const plan = planNotifications(facts({ programme: PPL, proteinTargetG: 120 })).filter((p) => p.localDate === '2026-10-25');
-    expect(plan.map((p) => p.kind).sort()).toEqual(['protein-gap', 'weekly-recap']);
+    const kinds = plan.map((p) => p.kind);
+    expect(kinds).toEqual(expect.arrayContaining(['protein-gap', 'weekly-recap']));
+    expect(kinds.some((k) => k.startsWith('meal-'))).toBe(true);
+    expect(plan.length).toBeLessThanOrEqual(DAILY_CAP);
   });
 
   it('a kind already handled today (cancelled because done, or sent) is not planned again', () => {
     const cancelled: NotifyHistoryItem = { kind: 'workout-reminder', localDate: '2026-10-19', variant: 'wr-c1', at: ist('2026-10-19', '17:00'), status: 'cancelled' };
     const plan = planNotifications(facts({ programme: { 1: 'Push' }, settings: onlyKinds('workout-reminder'), history: [cancelled] }));
     expect(plan.some((p) => p.localDate === '2026-10-19')).toBe(false);
+  });
+
+  /* ------------------------------------------------- beta 3.5 (owner) -- */
+
+  it('a workout started today (still running, or not yet synced) means no workout reminder, and no missed-session nudge', () => {
+    const now = ist('2026-10-19', '07:00');
+    const started = ist('2026-10-19', '06:30');
+    const settings = onlyKinds('workout-reminder', 'missed-session');
+    const plan = planNotifications(facts({ now, programme: { 1: 'Push', 7: 'Legs' }, settings, sessionStarts: [started] }));
+    expect(plan.some((p) => p.localDate === '2026-10-19')).toBe(false);
+    const without = planNotifications(facts({ now, programme: { 1: 'Push', 7: 'Legs' }, settings }));
+    expect(without.filter((p) => p.localDate === '2026-10-19').map((p) => p.kind).sort()).toEqual(['missed-session', 'workout-reminder']);
+  });
+
+  it('meals while learning (fewer than 7 days logged): every meal at its default, 9:00 / 14:00 / 21:00', () => {
+    const meals = learnMeals({ timeZone: TZ, foodLogs: [] });
+    expect(meals.map((m) => [m.kind, m.minute === null ? null : formatClock(m.minute)])).toEqual([
+      ['meal-breakfast', '09:00'],
+      ['meal-lunch', '14:00'],
+      ['meal-dinner', '21:00'],
+    ]);
+    expect(meals[0]!.why).toContain('learns');
+  });
+
+  it("meals once learned: half an hour after this person's usual time; a meal they usually skip gets none", () => {
+    const days = Array.from({ length: 10 }, (_, i) => addDays('2026-10-18', -i));
+    const foodLogs = days.flatMap((d, i) => [
+      { slot: 'lunch' as const, localDate: d, at: ist(d, i % 2 === 0 ? '13:10' : '13:30') },
+      { slot: 'dinner' as const, localDate: d, at: ist(d, '20:15') },
+      ...(i < 3 ? [{ slot: 'breakfast' as const, localDate: d, at: ist(d, '08:00') }] : []),
+    ]);
+    const meals = learnMeals({ timeZone: TZ, foodLogs });
+    const byKind = Object.fromEntries(meals.map((m) => [m.kind, m]));
+    expect(byKind['meal-breakfast']!.minute).toBeNull();
+    expect(byKind['meal-breakfast']!.why).toContain('fewer than half');
+    expect(formatClock(byKind['meal-lunch']!.minute!)).toBe('13:50');
+    expect(formatClock(byKind['meal-dinner']!.minute!)).toBe('20:45');
+    expect(byKind['meal-dinner']!.why).toContain('20:15');
+
+    const plan = planNotifications(facts({ settings: onlyKinds('meal-breakfast', 'meal-lunch', 'meal-dinner'), foodLogs }));
+    const tomorrow = plan.filter((p) => p.localDate === '2026-10-20');
+    expect(tomorrow.map((p) => p.kind)).toEqual(['meal-lunch', 'meal-dinner']);
+    expect(tomorrow[0]!.slot).toBe('lunch');
+    expect(tomorrow[0]!.screen).toBe('food-log');
+    expect(tomorrow[0]!.cancelOn).toEqual([{ event: 'food-logged', localDate: '2026-10-20', grams: null, slot: 'lunch' }]);
+  });
+
+  it('a meal already logged today gets no reminder today', () => {
+    const now = ist('2026-10-19', '10:00');
+    const lunch = { slot: 'lunch' as const, localDate: '2026-10-19', at: ist('2026-10-19', '09:45') };
+    const today = planNotifications(facts({ now, settings: onlyKinds('meal-lunch', 'meal-dinner'), foodLogs: [lunch] })).filter((p) => p.localDate === '2026-10-19');
+    expect(today.map((p) => p.kind)).toEqual(['meal-dinner']);
   });
 });

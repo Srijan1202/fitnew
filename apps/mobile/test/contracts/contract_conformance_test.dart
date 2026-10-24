@@ -2693,7 +2693,21 @@ void main() {
       expect(item.toJson().keys.toSet(), keysOf(itemSchema));
       final rule =
           prop(itemSchema, 'cancelOn')['items'] as Map<String, dynamic>;
-      expect(item.cancelOn.single.toJson().keys.toSet(), keysOf(rule));
+      // Beta 3.5: slot is optional, sent only on a meal's rule.
+      const meal = CancelRule(
+        event: 'food-logged',
+        localDate: '2026-10-19',
+        slot: 'lunch',
+      );
+      expect(meal.toJson().keys.toSet(), keysOf(rule));
+      expect(
+        item.cancelOn.single.toJson().keys.toSet(),
+        keysOf(rule).difference({'slot'}),
+      );
+      expect(
+        CancelRule.fromJson(meal.toJson()).slot,
+        enumOf(prop(rule, 'slot'))[1],
+      );
       expect(
         NotifyKind.values.map((k) => k.wire).toList(),
         enumOf(prop(itemSchema, 'kind')),

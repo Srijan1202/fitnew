@@ -173,7 +173,7 @@ class _NotificationSettingsScreenState
                           title:
                               Text('Reminders', style: textTheme.titleMedium),
                           subtitle: const Text(
-                            'At most two a day, three hours apart. FITOS learns when '
+                            'At most four a day, two hours apart. FITOS learns when '
                             'you usually train and eat, and times them around that.',
                           ),
                           value: s.enabled,

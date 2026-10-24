@@ -23,7 +23,7 @@ abstract final class FitNotifications {
     'fitos-reminders',
     'Reminders',
     channelDescription:
-        'Workout, protein, streak and weekly reminders — at most two a day.',
+        'Workout, meal, protein, streak and weekly reminders — at most four a day.',
     importance: Importance.high,
     priority: Priority.high,
     styleInformation: BigTextStyleInformation(''),

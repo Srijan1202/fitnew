@@ -108,7 +108,7 @@ describeIfDb('/v1/notifications (real Postgres)', { timeout: 60_000 }, () => {
     expect((await settings(u)).json()).toMatchObject({ tone: 'cheeky', quietEnd: '06:00', kinds: { comeback: true } });
   });
 
-  it('the plan: FITOS words only, ≤ 2 a day and 3 h apart, ahead of now, each with its cancel rule; the ledger holds it', async () => {
+  it('the plan: FITOS words only, ≤ 4 a day and 2 h apart, ahead of now, each with its cancel rule; the ledger holds it', async () => {
     const u = await user();
     const p = await plan(u);
     expect(p.timeZone).toBe('Asia/Kolkata');
@@ -121,7 +121,8 @@ describeIfDb('/v1/notifications (real Postgres)', { timeout: 60_000 }, () => {
     }
     for (const [, minutes] of byDay) {
       expect(minutes.length).toBeLessThanOrEqual(DAILY_CAP);
-      if (minutes.length === 2) expect(Math.abs(minutes[0]! - minutes[1]!)).toBeGreaterThanOrEqual(MIN_GAP_MINUTES);
+      const sorted = [...minutes].sort((a, b) => a - b);
+      for (let k = 1; k < sorted.length; k++) expect(sorted[k]! - sorted[k - 1]!).toBeGreaterThanOrEqual(MIN_GAP_MINUTES);
     }
     const protein = p.items.find((i) => i.kind === 'protein-gap');
     if (protein !== undefined) {

@@ -65,6 +65,8 @@ Not scheduled. When picked, they get a phase plan for approval first. Suggested 
 | F11 | **Exercise demo animations** | M–L | Short loops for the ~30 most-used lifts; mostly a content job (licensing) |
 | F12 | **Friends / VIT leaderboard** | L | Weekly sessions among friends. Needs a privacy design (opt-in, what is shown) before any code |
 | F13 | **Streak rewards** (owner, 2026-10-23) — beta 3.4 (ADR-027 amendment) | M | A long enough streak unlocks rewards: a theme, a profile picture and the like, kept once earned. Builds on beta 3.3's streak (F5) and the premium themes and pictures (ADR-027/028). Needs a decision on which rewards, at what streak lengths, and whether they stay premium-only otherwise |
+| F14 | **Feedback with pictures, and more** (owner, 2026-10-24) | M | Attach screenshots to feedback; the owner will say what else. Needs storage, size limits and a privacy note |
+| F15 | **AI food guide** (from beta feedback, 2026-10-24) | M | Asks what you have and what you feel like, then says what to eat for your targets. AI is premium-only (ADR-028); builds on the mess menu and food database |
 
 ## Later phases (already in MASTER-SPEC, listed so nothing is lost)
 
