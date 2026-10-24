@@ -85,3 +85,19 @@ The beta is sideloaded, so testers never hear about a new build. The owner chose
 - **Update** opens the download page in the browser (`url_launcher`, an Android `<queries>` entry for https). Only `https://tryfitos.me/…` is ever opened; anything else falls back to the download page.
 - The minimum-build screen (E1, D5) gets the same **Download the latest FITOS** button.
 - Beta 3.1 has no check. 3.2 is the last version testers must be told about by hand; from 3.2 on, the app tells them.
+
+## Amendment — update prompt at every open, an update push, and the feedback limit (owner 2026-10-24)
+
+The owner asked for the update pop-up every time the app is opened, on top, and for a notification too.
+
+- **The dialog shows at every open** while a newer build exists. That means a launch, or a return after **5 minutes** or more in the background (`kUpdatePromptAfterAway`). A quick switch such as the camera or a share sheet doesn't count.
+- **It shows over any screen:** it is hosted at the app root and opened on the root navigator. It is **never shown during a workout** (`/plan/session/…`); it waits for the next open.
+- **The banner sits at the very top of Home,** above the greeting. Its × hides it only until the next open. The "asked once" and "hidden for this build" flags are gone.
+- **The website is read at most hourly** (was 6 hours).
+- **An update push (backlog F9, first use):**
+  - Admin → **Announce update** shows the website's latest beta (read by the server from `/version.json`, so the version is never typed) and how many phones can be told.
+  - It sends "FITOS beta N is out. Tap to update." through FCM to every registered token (`push_tokens`, registered since Phase 15).
+  - **Once per build**: a second send answers 409 `already-sent`. Each send is audited (`push.update`). Tokens FCM no longer knows are removed.
+  - Android shows it while the app is closed, and **older APKs receive it too**. Tapping it opens FITOS, which shows the dialog.
+  - New seams follow the token verifier's pattern: `PushSender` (Firebase, or recording in tests) and `ReleaseFeed` (the website, or scripted in tests).
+- **The feedback limit** goes from 5 to **20 an hour per person**, and **admins are not limited**. A tester who reaches it is told kindly and keeps their text.

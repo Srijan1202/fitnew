@@ -18,6 +18,7 @@ const NAV = [
   { href: '/premium', label: 'Premium' },
   { href: '/feedback', label: 'Feedback' },
   { href: '/flags', label: 'App features' },
+  { href: '/announce', label: 'Announce update' },
   { href: '/users', label: 'Support' },
   { href: '/admins', label: 'Admins' },
   { href: '/audit', label: 'Audit log' },

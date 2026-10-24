@@ -87,6 +87,11 @@ describeIfDb('/v1/feedback and /v1/admin/feedback (real Postgres)', { timeout: 6
     expect((await send(await user(), 'mine')).statusCode).toBe(201);
   });
 
+  it('an admin is not limited (the owner tests feedback freely)', async () => {
+    const admin = await user(true);
+    for (let i = 0; i < FEEDBACK_PER_HOUR + 3; i++) expect((await send(admin, `admin note ${i}`)).statusCode).toBe(201);
+  });
+
   it('only an admin reads it (403 before validation for anyone else); newest first, filtered by status, paged', async () => {
     const plain = await user();
     const admin = await user(true);

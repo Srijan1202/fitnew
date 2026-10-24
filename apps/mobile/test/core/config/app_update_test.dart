@@ -25,8 +25,6 @@ class FakeFeed implements ReleaseFeed {
 class MemoryPrefs implements UpdatePrefs {
   DateTime? checked;
   LatestRelease? release;
-  int? prompted;
-  int? dismissed;
 
   @override
   Future<DateTime?> lastChecked() async => checked;
@@ -37,15 +35,6 @@ class MemoryPrefs implements UpdatePrefs {
     checked = at;
     if (r != null) release = r;
   }
-
-  @override
-  Future<int?> promptedBuild() async => prompted;
-  @override
-  Future<void> setPromptedBuild(int build) async => prompted = build;
-  @override
-  Future<int?> dismissedBuild() async => dismissed;
-  @override
-  Future<void> setDismissedBuild(int build) async => dismissed = build;
 }
 
 class FakeOpener implements LinkOpener {
@@ -104,12 +93,11 @@ void main() {
       expect(await check(build: 9), isNull);
     });
 
-    test(
-        'at most one read every six hours: the cached answer is used in between',
+    test('at most one read an hour: the cached answer is used in between',
         () async {
       await check();
       expect(feed.reads, 1);
-      now = now.add(const Duration(hours: 5, minutes: 59));
+      now = now.add(const Duration(minutes: 59));
       feed.release = null; // would hide it if read
       expect(await check(), isNotNull);
       expect(feed.reads, 1);
@@ -135,23 +123,13 @@ void main() {
       expect(LatestRelease.fromJson('nope'), isNull);
     });
 
-    test('once asked or hidden for a build, it stays so for that build only',
+    test('every open asks again: the dialog and the banner are due each time',
         () async {
-      prefs
-        ..prompted = 8
-        ..dismissed = 8;
-      final u = await check();
-      expect(u!.promptDue, isFalse);
-      expect(u.bannerVisible, isFalse);
-      feed.release = const LatestRelease(
-        version: '1.0.0-beta.3.3',
-        build: 9,
-        url: 'https://tryfitos.me/download/',
-      );
-      now = now.add(kUpdateCheckEvery);
-      final next = await check();
-      expect(next!.promptDue, isTrue);
-      expect(next.bannerVisible, isTrue);
+      expect((await check())!.promptDue, isTrue);
+      now = now.add(const Duration(minutes: 1));
+      final again = await check();
+      expect(again!.promptDue, isTrue);
+      expect(again.bannerVisible, isTrue);
     });
 
     test('only tryfitos.me is ever opened', () {
@@ -179,7 +157,7 @@ void main() {
         );
 
     testWidgets(
-        'the dialog once per version; Later leaves the banner; the banner opens the download page or hides for this version',
+        'the dialog at every open; Later leaves the banner; the banner opens the download page or hides until the next open',
         (tester) async {
       await tester.pumpWidget(host());
       await tester.pumpAndSettle();
@@ -193,7 +171,7 @@ void main() {
       );
       await tester.tap(find.byKey(const ValueKey('update.later')));
       await tester.pumpAndSettle();
-      expect(prefs.prompted, 8);
+      expect(find.byKey(const ValueKey('update.dialog')), findsNothing);
       expect(find.byKey(const ValueKey('update.banner')), findsOneWidget);
       expect(opener.opened, isEmpty);
 
@@ -203,15 +181,50 @@ void main() {
 
       await tester.tap(find.byKey(const ValueKey('update.banner.hide')));
       await tester.pump();
-      expect(prefs.dismissed, 8);
       expect(find.byKey(const ValueKey('update.banner')), findsNothing);
 
-      // The next launch: no dialog, no banner for this build.
+      // The next open: asked again, banner back.
       await tester.pumpWidget(Container());
       await tester.pumpWidget(host());
       await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('update.dialog')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('update.later')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('update.banner')), findsOneWidget);
+    });
+
+    testWidgets('waits while a workout is in progress', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: overrides(),
+          child: MaterialApp(
+            theme: FitTheme.build(),
+            home: Scaffold(
+              body: UpdatePromptHost(suppressed: () => true),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('update.dialog')), findsNothing);
-      expect(find.byKey(const ValueKey('update.banner')), findsNothing);
+    });
+
+    test('a return after 5 minutes away is a new open; a quick switch is not',
+        () {
+      var clock = DateTime(2026, 10, 24, 9);
+      var reopened = 0;
+      final c = UpdateCheckCoordinator(() => reopened++, now: () => clock);
+      addTearDown(c.dispose);
+      c.hidden();
+      clock = clock.add(const Duration(minutes: 2));
+      c.resumed();
+      expect(reopened, 0);
+      c.hidden();
+      clock = clock.add(kUpdatePromptAfterAway);
+      c.resumed();
+      expect(reopened, 1);
+      c.resumed(); // a resume without a hide changes nothing
+      expect(reopened, 1);
     });
 
     testWidgets('Update in the dialog opens the download page', (tester) async {

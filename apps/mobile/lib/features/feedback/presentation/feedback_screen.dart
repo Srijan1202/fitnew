@@ -62,9 +62,14 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
           _message = 'Sent. Thank you: the developer reads every one.';
         case Err(:final failure):
           _sent = false;
-          _message = failure is Offline
-              ? 'Feedback needs a connection. Your text is still here.'
-              : failure.message;
+          _message = switch (failure) {
+            Offline() =>
+              'Feedback needs a connection. Your text is still here.',
+            // The server's hourly limit against spam (20 an hour).
+            RateLimited() =>
+              'That is a lot of feedback in one hour, thank you! Please send this one a little later. Your text is still here.',
+            _ => failure.message,
+          };
       }
     });
   }

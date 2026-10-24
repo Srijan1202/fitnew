@@ -15,14 +15,20 @@ import 'app_config.dart';
 ///
 /// The website publishes the latest beta at [kReleaseFeedUrl], built from the
 /// same file that describes the APK, so every website deploy with a new APK
-/// updates it. The app reads it at most every [kUpdateCheckEvery], compares
-/// the build number with its own, then asks once per new version (a dialog)
-/// and keeps a Home banner until the user updates or hides it. Nothing about
-/// the user is sent: it is a plain GET of a public file. Offline, or a bad
-/// file, shows nothing.
+/// updates it. The app reads it at most every [kUpdateCheckEvery] and compares
+/// the build number with its own. Beta 3.5 (owner 2026-10-24): while a newer
+/// build exists, the dialog shows over whatever screen is open EVERY time the
+/// app is opened, and again when it comes back after
+/// [kUpdatePromptAfterAway] in the background (never in the middle of a
+/// workout); the banner sits at the very top of Home and × hides it only
+/// until the next open. Nothing about the user is sent: it is a plain GET of
+/// a public file. Offline, or a bad file, shows nothing.
 const kReleaseFeedUrl = 'https://tryfitos.me/version.json';
 const kDownloadUrl = 'https://tryfitos.me/download/';
-const kUpdateCheckEvery = Duration(hours: 6);
+const kUpdateCheckEvery = Duration(hours: 1);
+
+/// Back in the app after at least this long away counts as opening it again.
+const kUpdatePromptAfterAway = Duration(minutes: 5);
 
 /// The latest beta as the website describes it.
 class LatestRelease {
@@ -111,17 +117,11 @@ abstract class UpdatePrefs {
   Future<DateTime?> lastChecked();
   Future<LatestRelease?> cached();
   Future<void> saveCheck(DateTime at, LatestRelease? release);
-  Future<int?> promptedBuild();
-  Future<void> setPromptedBuild(int build);
-  Future<int?> dismissedBuild();
-  Future<void> setDismissedBuild(int build);
 }
 
 class SharedUpdatePrefs implements UpdatePrefs {
   static const _checked = 'update.checkedAt';
   static const _release = 'update.release';
-  static const _prompted = 'update.promptedBuild';
-  static const _dismissed = 'update.dismissedBuild';
 
   Future<SharedPreferences> get _p => SharedPreferences.getInstance();
 
@@ -150,20 +150,6 @@ class SharedUpdatePrefs implements UpdatePrefs {
       await p.setString(_release, jsonEncode(release.toJson()));
     }
   }
-
-  @override
-  Future<int?> promptedBuild() async => (await _p).getInt(_prompted);
-
-  @override
-  Future<void> setPromptedBuild(int build) async =>
-      (await _p).setInt(_prompted, build);
-
-  @override
-  Future<int?> dismissedBuild() async => (await _p).getInt(_dismissed);
-
-  @override
-  Future<void> setDismissedBuild(int build) async =>
-      (await _p).setInt(_dismissed, build);
 }
 
 abstract class LinkOpener {
@@ -231,24 +217,26 @@ class UpdateController extends AsyncNotifier<AvailableUpdate?> {
       await _prefs.saveCheck(now, fresh);
     }
     if (release == null || release.build <= own) return null;
+    // Every open asks again: the dialog and the banner are due afresh each
+    // time this is built (a launch, or a return after being away).
     return AvailableUpdate(
       release: release,
-      promptDue: await _prefs.promptedBuild() != release.build,
-      bannerVisible: await _prefs.dismissedBuild() != release.build,
+      promptDue: true,
+      bannerVisible: true,
     );
   }
 
-  Future<void> markPrompted() async {
+  /// Shown for this open; it asks again the next time the app is opened.
+  void markPrompted() {
     final u = state.value;
     if (u == null) return;
-    await _prefs.setPromptedBuild(u.release.build);
     state = AsyncData(u.copyWith(promptDue: false));
   }
 
-  Future<void> hideBanner() async {
+  /// Hidden until the next open.
+  void hideBanner() {
     final u = state.value;
     if (u == null) return;
-    await _prefs.setDismissedBuild(u.release.build);
     state = AsyncData(u.copyWith(bannerVisible: false));
   }
 
@@ -267,14 +255,32 @@ final updateControllerProvider =
   retry: (_, __) => null,
 );
 
-/// Re-checks when the app comes back to the foreground (still at most every
-/// [kUpdateCheckEvery]). Watched once from the app root.
+/// Coming back after [kUpdatePromptAfterAway] in the background is a new
+/// open: the check runs again (the feed itself still at most every
+/// [kUpdateCheckEvery]) and the dialog is due again. A quick switch — the
+/// camera, a share sheet — is not. Watched once from the app root.
 class UpdateCheckCoordinator {
-  UpdateCheckCoordinator(VoidCallback onResume) {
-    _lifecycle = AppLifecycleListener(onResume: onResume);
+  UpdateCheckCoordinator(this._reopened, {DateTime Function()? now})
+      : _now = now ?? DateTime.now {
+    _lifecycle = AppLifecycleListener(onHide: hidden, onResume: resumed);
   }
 
+  final VoidCallback _reopened;
+  final DateTime Function() _now;
+  DateTime? _hiddenAt;
   late final AppLifecycleListener _lifecycle;
+
+  @visibleForTesting
+  void hidden() => _hiddenAt ??= _now();
+
+  @visibleForTesting
+  void resumed() {
+    final since = _hiddenAt;
+    _hiddenAt = null;
+    if (since != null && _now().difference(since) >= kUpdatePromptAfterAway) {
+      _reopened();
+    }
+  }
 
   void dispose() => _lifecycle.dispose();
 }
@@ -289,9 +295,17 @@ final updateCheckCoordinatorProvider = Provider<UpdateCheckCoordinator>((ref) {
 
 /* ------------------------------------------------------------------ UI -- */
 
-/// Shows the once-per-version dialog when one is due. Renders nothing.
+/// Shows the dialog when one is due, over whatever screen is open: it sits
+/// at the app's root and opens the dialog on the root navigator. Not while
+/// [suppressed] says so (a workout in progress). Renders nothing.
 class UpdatePromptHost extends ConsumerStatefulWidget {
-  const UpdatePromptHost({super.key});
+  const UpdatePromptHost({this.navigatorContext, this.suppressed, super.key});
+
+  /// The root navigator's context; this widget's own context when null.
+  final BuildContext? Function()? navigatorContext;
+
+  /// True while the dialog must wait (it is tried again on the next build).
+  final bool Function()? suppressed;
 
   @override
   ConsumerState<UpdatePromptHost> createState() => _UpdatePromptHostState();
@@ -304,12 +318,17 @@ class _UpdatePromptHostState extends ConsumerState<UpdatePromptHost> {
     if (u == null || !u.promptDue || _showing) return;
     _showing = true;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
-      final controller = ref.read(updateControllerProvider.notifier);
-      await controller.markPrompted();
-      if (!mounted) return;
+      final dialogContext = widget.navigatorContext?.call() ?? context;
+      if (!mounted ||
+          !dialogContext.mounted ||
+          (widget.suppressed?.call() ?? false)) {
+        _showing = false;
+        return;
+      }
+      final controller = ref.read(updateControllerProvider.notifier)
+        ..markPrompted();
       final update = await showDialog<bool>(
-        context: context,
+        context: dialogContext,
         builder: (ctx) => AlertDialog(
           key: const ValueKey('update.dialog'),
           title: Text('FITOS ${u.release.label} is out'),
@@ -342,7 +361,8 @@ class _UpdatePromptHostState extends ConsumerState<UpdatePromptHost> {
   }
 }
 
-/// The slim Home banner after the dialog: until the user updates or hides it.
+/// The slim banner at the very top of Home after the dialog; × hides it until
+/// the next open.
 class UpdateBanner extends ConsumerWidget {
   const UpdateBanner({super.key});
 
@@ -375,7 +395,7 @@ class UpdateBanner extends ConsumerWidget {
           ),
           IconButton(
             key: const ValueKey('update.banner.hide'),
-            tooltip: 'Hide until the next version',
+            tooltip: 'Hide for now',
             onPressed: controller.hideBanner,
             icon: Icon(Icons.close, size: 18, color: FitColors.ink60),
           ),

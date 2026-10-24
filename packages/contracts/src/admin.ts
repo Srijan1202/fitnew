@@ -206,6 +206,22 @@ export const featureFlagSchema = z
 export const featureFlagListSchema = z.object({ items: z.array(featureFlagSchema) }).strict();
 export const putFlagRequestSchema = z.object({ enabled: z.boolean(), description: z.string().trim().max(300).optional() }).strict();
 export const flagParamsSchema = z.object({ key: flagKeySchema }).strict();
+/** Beta 3.5: "a new version is out" as a push, once per build. */
+export const adminUpdatePushStatusSchema = z
+  .object({
+    latest: z.object({ version: z.string(), build: z.number().int(), label: z.string() }).strict().nullable(),
+    /** Phones with a push token (notifications on). */
+    devices: z.number().int().min(0),
+    /** When everyone was told about this build; null when not yet. */
+    sentAt: isoOrNull,
+  })
+  .strict();
+export const adminUpdatePushResultSchema = z
+  .object({ build: z.number().int(), label: z.string(), devices: z.number().int(), sent: z.number().int(), removed: z.number().int() })
+  .strict();
+export type AdminUpdatePushStatus = z.infer<typeof adminUpdatePushStatusSchema>;
+export type AdminUpdatePushResult = z.infer<typeof adminUpdatePushResultSchema>;
+
 /** GET /meta/config (§10.1, public): what the app may switch on. The minimum app version is not served yet (BACKLOG E1). */
 /**
  * The app's start-up config (public, §10.1). `minimumBuild` (Phase 19, E1): a

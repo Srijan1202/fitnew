@@ -18,6 +18,7 @@ import { FirebaseAccountDeleter, RecordingAccountDeleter, type AccountDeleter } 
 import { loggerOptions } from './lib/logger.js';
 import { FirebaseAdminDirectory, InMemoryAdminDirectory, type AdminDirectory } from './lib/admin-directory.js';
 import { FeatureSwitches } from './lib/feature-switches.js';
+import { FirebasePushSender, RecordingPushSender, ScriptedReleaseFeed, WebsiteReleaseFeed, type PushSender, type ReleaseFeed } from './lib/push.js';
 import { FirebaseTokenVerifier, type TokenVerifier } from './lib/token-verifier.js';
 import aiPlugin from './plugins/ai.js';
 import authPlugin, { PROTECTED_PREFIX } from './plugins/auth.js';
@@ -40,6 +41,7 @@ import { progressRoutes } from './modules/progress/routes.js';
 import { recoveryRoutes } from './modules/recovery/routes.js';
 import { notificationRoutes } from './modules/notifications/routes.js';
 import { adminRoutes } from './modules/admin/routes.js';
+import { updatePushRoutes } from './modules/admin/update-push.js';
 import { privacyRoutes } from './modules/privacy/routes.js';
 import { feedbackRoutes } from './modules/feedback/routes.js';
 import { premiumRoutes } from './modules/premium/routes.js';
@@ -66,6 +68,9 @@ export interface BuildAppOptions {
   readonly accountDeleter?: AccountDeleter;
   /** Who is an administrator (ADR-022): test apps get an in-memory directory. */
   readonly adminDirectory?: AdminDirectory;
+  /** Beta 3.5: push sending (tests record) and the website's latest beta (tests script it). */
+  readonly pushSender?: PushSender;
+  readonly releaseFeed?: ReleaseFeed;
   /** Phase 17: where log lines go (the redaction test reads them). */
   readonly logStream?: { write(line: string): void };
 }
@@ -175,6 +180,16 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
         : new FirebaseAdminDirectory({ projectId: env.FIREBASE_PROJECT_ID, credentialsPath: env.GOOGLE_APPLICATION_CREDENTIALS })),
   );
 
+  // Beta 3.5: server push and the website's latest beta.
+  app.decorate(
+    'push',
+    options.pushSender ??
+      (options.tokenVerifier !== undefined
+        ? new RecordingPushSender()
+        : new FirebasePushSender({ projectId: env.FIREBASE_PROJECT_ID, credentialsPath: env.GOOGLE_APPLICATION_CREDENTIALS })),
+  );
+  app.decorate('releaseFeed', options.releaseFeed ?? (options.tokenVerifier !== undefined ? new ScriptedReleaseFeed() : new WebsiteReleaseFeed()));
+
   // Beta 3.3 (ADR-033): the admin panel's feature switches.
   app.decorate('features', new FeatureSwitches(() => app.database.db));
 
@@ -203,6 +218,7 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
       await v1.register(recoveryRoutes);
       await v1.register(notificationRoutes);
       await v1.register(adminRoutes, { minimumAppBuild: env.MIN_APP_BUILD });
+      await v1.register(updatePushRoutes);
       await v1.register(privacyRoutes, { ipSalt: env.CONSENT_IP_SALT });
       await v1.register(feedbackRoutes);
       await v1.register(premiumRoutes);

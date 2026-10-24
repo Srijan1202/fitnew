@@ -45,6 +45,8 @@ export async function feedbackRoutes(app: FastifyInstance): Promise<void> {
         timeWindow: '1 hour',
         hook: 'preHandler',
         keyGenerator: (request: FastifyRequest): string => (request.userId !== null ? `feedback:${request.userId}` : `feedback-ip:${request.ip}`),
+        // The owner and other admins test feedback freely.
+        allowList: (request: FastifyRequest): boolean => request.identity?.claims['role'] === 'admin',
       },
     },
     schema: {

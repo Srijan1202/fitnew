@@ -100,7 +100,22 @@ class FitOSApp extends ConsumerWidget {
               ),
               child: updateRequired
                   ? const UpdateRequiredScreen()
-                  : child ?? const SizedBox.shrink(),
+                  : Stack(
+                      children: <Widget>[
+                        Positioned.fill(
+                          child: child ?? const SizedBox.shrink(),
+                        ),
+                        // Beta 3.5: a newer beta, asked over any screen at
+                        // every open — never in the middle of a workout.
+                        UpdatePromptHost(
+                          navigatorContext: () =>
+                              router.routerDelegate.navigatorKey.currentContext,
+                          suppressed: () => router
+                              .routerDelegate.currentConfiguration.uri.path
+                              .startsWith('/plan/session'),
+                        ),
+                      ],
+                    ),
             );
           },
         ),

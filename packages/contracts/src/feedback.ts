@@ -15,7 +15,8 @@ export const FEEDBACK_STATUSES = ['new', 'read', 'done'] as const;
 export const FEEDBACK_PRIORITIES = ['red', 'yellow', 'green'] as const;
 export const FEEDBACK_MAX_LENGTH = 2000;
 /** Per user per hour: enough for a tester, too few for a flood. */
-export const FEEDBACK_PER_HOUR = 5;
+/** Per person per hour (owner 2026-10-24: 5 stopped a keen tester); admins are not limited. */
+export const FEEDBACK_PER_HOUR = 20;
 
 export const feedbackCategorySchema = z.enum(FEEDBACK_CATEGORIES);
 export const feedbackStatusSchema = z.enum(FEEDBACK_STATUSES);

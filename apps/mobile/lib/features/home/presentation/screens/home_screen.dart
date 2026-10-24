@@ -197,14 +197,14 @@ class HomeScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
+                  // Beta 3.5: a newer beta, on top of Home (the dialog is at
+                  // the app root).
+                  const UpdateBanner(),
                   HomeHeader(
                     hour: c.hourOfDay,
                     date: c.date,
                     name: c.displayName,
                   ),
-                  // Beta 3.2: a newer beta, asked once, then a banner.
-                  const UpdatePromptHost(),
-                  const UpdateBanner(),
                   if (ref.watch(askForNameProvider)) const NamePrompt(),
                   // Beta 3.4: new streak rewards, celebrated once.
                   const _RewardsCelebration(),
