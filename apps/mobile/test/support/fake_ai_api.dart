@@ -3,6 +3,7 @@ import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/features/ai/data/ai_api.dart';
 import 'package:fitos/features/ai/domain/entities/ai.dart';
 import 'package:fitos/features/ai/domain/entities/ai_draft.dart';
+import 'package:fitos/features/ai/domain/entities/food_guide.dart';
 
 /// A scripted FITOS AI server: status as set; every chat answers from
 /// `nextAnswer` (or fails with `nextFailure`) and records the request.
@@ -79,5 +80,20 @@ class FakeAiApi implements AiApi {
     explained.add(actionId);
     final f = explainFailure;
     return f == null ? Ok(nextExplain) : Err(f);
+  }
+
+  /// Beta 3.6: the next food guide answer (or failure), and every request.
+  FoodGuideResponse? nextGuide;
+  Failure? guideFailure;
+  final guided = <FoodGuideRequest>[];
+
+  @override
+  Future<Result<FoodGuideResponse>> foodGuide(FoodGuideRequest request) async {
+    calls.add('guide');
+    guided.add(request);
+    final f = guideFailure;
+    if (f != null) return Err(f);
+    final g = nextGuide;
+    return g == null ? const Err(Unknown()) : Ok(g);
   }
 }

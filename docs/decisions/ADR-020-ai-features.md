@@ -97,3 +97,19 @@
 - A meal can be logged from one sentence. The numbers are the food database's wherever FITOS knows the food, and the user sees and edits everything before anything is stored.
 - Free-tier quotas limit how much the alpha can use AI. The ledger shows real token use for sizing the paid tier.
 - Adding a purpose means a new `ai_route` enum value (a migration) and a limit setting.
+
+## Amendment — the AI food guide (beta 3.6, owner 2026-10-24, F15)
+
+**`POST /nutrition/guide`, "What should I eat?":** up to 3 plates for one meal of today. Eat → *Ask FITOS AI what to eat*.
+
+1. **What it picks from:**
+   - **What the person has**, ticked or typed. Each item is matched to the food database (exact, alias or prefix; never fuzzy).
+     - Unknown ones are listed as *not in FITOS yet*, never guessed.
+     - One whose name breaks their diet, or contains or likely contains one of their allergens, is left out and said so (core `haveAllowed`).
+     - An allergen the name cannot rule out becomes *"Check the label for: …"* on the plate.
+   - **Their mess's menu**, through Phase 10's hard rules (`isDietAllowed`, allergens confirmed free, excluded dishes), with the stored estimates.
+2. **What the model does:** it answers with candidate ids and servings in quarters (0.25–4) only. Core `readGuideAnswer` drops unknown ids and repeats, and caps the answer at 3 plates of 5 items.
+3. **The numbers:** every one is the database's (`snapshotNutrition`) or the mess table's (stored macros × servings). Each plate shows how it fits what is left of today's calories and protein.
+4. **What the model sees:** the meal, the candidates' names, servings and rough numbers, what is left of today, and what they feel like. Never their name, weight or history.
+5. **Logging:** nothing is stored by the call. **Log this** logs the plate as one search log (foods) and one mess log (dishes), through the queue.
+6. **Limits:** premium, the FITOS AI consent, its own purpose in `ai_usage` (`guide`, migration 0033), `AI_GUIDE_PER_HOUR` (default 10) and `MODEL_FOOD_GUIDE`, and the `food-guide` switch (ADR-033). The privacy policy says what is sent.

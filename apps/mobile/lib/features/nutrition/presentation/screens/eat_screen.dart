@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../../core/config/app_features.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/errors/result.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
+import '../../../ai/presentation/controllers/ai_providers.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../../home/presentation/controllers/home_providers.dart';
 import '../../../mess/presentation/widgets/mess_widgets.dart';
@@ -16,6 +18,7 @@ import '../controllers/food_log_providers.dart';
 import '../controllers/food_logger.dart';
 import '../widgets/eat_widgets.dart';
 import '../widgets/log_controls.dart';
+import 'food_guide_screen.dart';
 import '../../../../shared/widgets/fit_glass.dart';
 
 /// The Nutrition tab (Phase 8): EAT.
@@ -171,6 +174,22 @@ class EatScreen extends ConsumerWidget {
       ],
       const SizedBox(height: FitSpacing.md),
       if (loggable) _LogButton(date: v.date),
+      // Beta 3.6 (F15): FITOS AI suggests a plate (today only).
+      if (v.date == today &&
+          ref.watch(aiAvailableProvider) &&
+          ref.watch(featureOnProvider(AppFeature.foodGuide)))
+        Padding(
+          padding: const EdgeInsets.only(top: FitSpacing.sm),
+          child: OutlinedButton.icon(
+            key: const ValueKey('eat.guide'),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(44),
+            ),
+            onPressed: () => showFoodGuide(context),
+            icon: const Icon(Icons.auto_awesome),
+            label: const Text('Ask FITOS AI what to eat'),
+          ),
+        ),
       // Phase 9: today's mess menu, for anyone with a mess (hidden otherwise).
       if (v.date == today) TodaysMessStrip(today: today),
       const SizedBox(height: FitSpacing.md),

@@ -57,7 +57,9 @@ const kPolicySections = <(String, String)>[
     'FITOS AI',
     'Only if you allow it. FITOS AI answers with Google\'s Gemini, so what '
         'you ask is sent to Google: for chat, your message and the FITOS data '
-        'it needs; for describing a meal, only your words; for "Explain '
+        'it needs; for describing a meal, only your words; for "What should I '
+        'eat?", the meal, the foods you have and the mess menu, what is left '
+        'of today\'s calories and protein, and what you feel like; for "Explain '
         'simply", that one suggestion. While FITOS uses Google\'s free tier, '
         'Google may use what is sent to improve its products; this will change '
         'before a public release. You can withdraw this any time in Privacy & '

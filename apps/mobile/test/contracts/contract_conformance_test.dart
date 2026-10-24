@@ -11,6 +11,7 @@ import 'package:fitos/features/feedback/data/feedback_api.dart';
 import 'package:fitos/features/ai/data/ai_api.dart';
 import 'package:fitos/features/ai/domain/entities/ai.dart';
 import 'package:fitos/features/ai/domain/entities/ai_draft.dart';
+import 'package:fitos/features/ai/domain/entities/food_guide.dart';
 import 'package:fitos/features/auth/domain/entities/user_profile.dart';
 import 'package:fitos/features/exercise/domain/entities/exercise.dart';
 import 'package:fitos/features/mess/domain/mess.dart';
@@ -2825,6 +2826,99 @@ void main() {
         properties(schema)[key] as Map<String, dynamic>;
     Map<String, dynamic> itemsOf(Map<String, dynamic> schema) =>
         schema['items'] as Map<String, dynamic>;
+
+    test('beta 3.6: the food guide request and response, every nested shape',
+        () {
+      final request = schemaOf('/nutrition/guide', 'post', request: true);
+      const r = FoodGuideRequest(
+        slot: MealSlot.dinner,
+        fromMess: true,
+        have: ['curd'],
+        feel: null,
+      );
+      expect(r.toJson().keys.toSet(), keysOf(request));
+      expect(
+        (properties(request)['have'] as Map<String, dynamic>)['maxItems'],
+        kGuideHaveMax,
+      );
+      final response = schemaOf('/nutrition/guide', 'post');
+      expect(keysOf(response), {
+        'slot',
+        'date',
+        'mess',
+        'remaining',
+        'options',
+        'unknown',
+        'refused',
+        'messNote',
+        'model',
+      });
+      final option = itemsOf(prop(response, 'options'));
+      expect(keysOf(option), {'title', 'why', 'items', 'totals', 'caution'});
+      expect(
+        keysOf(itemsOf(prop(option, 'items'))),
+        {
+          'source',
+          'name',
+          'servings',
+          'servingLabel',
+          'macros',
+          'food',
+          'dishSlug',
+        },
+      );
+      final parsed = FoodGuideResponse.fromJson({
+        'slot': 'dinner',
+        'date': '2026-10-24',
+        'mess': {'code': 'mens-veg', 'menuDate': '2026-10-24'},
+        'remaining': {'kcal': 700, 'proteinG': 40},
+        'options': [
+          {
+            'title': 'Dal and rice',
+            'why': '',
+            'items': [
+              {
+                'source': 'mess',
+                'name': 'Dal tadka',
+                'servings': 1.5,
+                'servingLabel': '1 katori',
+                'macros': {
+                  'kcalLow': 150,
+                  'kcalHigh': 210,
+                  'proteinLow': 8,
+                  'proteinHigh': 11,
+                  'carbLow': 20,
+                  'carbHigh': 26,
+                  'fatLow': 4,
+                  'fatHigh': 7,
+                },
+                'food': null,
+                'dishSlug': 'dal-tadka',
+              },
+            ],
+            'totals': {
+              'kcalLow': 150,
+              'kcalHigh': 210,
+              'proteinLow': 8,
+              'proteinHigh': 11,
+              'carbLow': 20,
+              'carbHigh': 26,
+              'fatLow': 4,
+              'fatHigh': 7,
+            },
+            'caution': <String>[],
+          },
+        ],
+        'unknown': <String>[],
+        'refused': <String>[],
+        'messNote': null,
+        'model': 'm',
+      });
+      expect(parsed.messCode, 'mens-veg');
+      expect(parsed.options.single.items.single.fromMess, isTrue);
+      expect(parsed.options.single.totals.kcal, 180);
+      expect(parsed.remainingProteinG, 40);
+    });
 
     test('parse request and the AiDraft response, every nested shape', () {
       expect(

@@ -1,5 +1,7 @@
+import 'package:fitos/core/config/app_config.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fitos/features/ai/domain/entities/ai_draft.dart';
+import 'package:fitos/features/ai/domain/entities/food_guide.dart';
 import 'package:fitos/features/ai/presentation/controllers/ai_providers.dart';
 import 'package:fitos/features/privacy/presentation/privacy_providers.dart';
 import 'package:fitos/core/db/app_database.dart';
@@ -16,6 +18,7 @@ import 'package:fitos/features/nutrition/presentation/controllers/food_log_provi
 import 'package:fitos/features/nutrition/presentation/controllers/food_logger.dart';
 import 'package:fitos/features/nutrition/presentation/controllers/food_providers.dart';
 import 'package:fitos/features/nutrition/presentation/screens/eat_screen.dart';
+import 'package:fitos/features/nutrition/presentation/screens/food_guide_screen.dart';
 import 'package:fitos/features/nutrition/presentation/screens/log_food_screen.dart';
 import 'package:fitos/features/profile/domain/entities/profile.dart';
 import 'package:fitos/features/workout/presentation/controllers/workout_providers.dart';
@@ -25,6 +28,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../support/ai_drafts.dart';
+import '../../support/fake_feedback_api.dart';
 import '../../support/fake_ai_api.dart';
 import '../../support/fake_privacy_api.dart';
 import '../../support/fake_food_log_api.dart';
@@ -105,7 +109,7 @@ void main() {
   /// 13:00 IST on the test's today.
   final noonIst = DateTime.utc(2026, 9, 24, 7, 30);
 
-  Widget harness() {
+  Widget harness({FakeMetaApi? meta}) {
     final router = GoRouter(
       initialLocation: '/nutrition',
       routes: [
@@ -145,6 +149,7 @@ void main() {
         localTodayProvider.overrideWithValue(today),
         localHourProvider.overrideWithValue(13),
         userTimezoneProvider.overrideWithValue('Asia/Kolkata'),
+        if (meta != null) metaApiProvider.overrideWithValue(meta),
         foodLoggerProvider.overrideWith(
           (ref) => FoodLogger(
             ref.watch(nutritionLogRepositoryProvider),
@@ -886,6 +891,211 @@ void main() {
         ),
       );
       expect(add.onPressed, isNull);
+    });
+  });
+
+  /// Beta 3.6 (owner, F15): "What should I eat?" — FITOS AI suggests a
+  /// plate from what you have; the numbers are the database's; Log this
+  /// logs exactly that plate through the queue.
+  group('the food guide (FITOS AI)', () {
+    FoodGuideResponse answer() => const FoodGuideResponse(
+          slot: MealSlot.lunch,
+          date: today,
+          messCode: null,
+          menuDate: null,
+          remainingKcal: 700,
+          remainingProteinG: 40,
+          options: [
+            GuideOption(
+              title: 'Chapati plate',
+              why: 'Simple and filling.',
+              items: [
+                GuideItem(
+                  source: 'have',
+                  name: 'Chapati',
+                  servings: 2,
+                  servingLabel: '1 piece',
+                  macros: GuideMacros({
+                    'kcalLow': 170,
+                    'kcalHigh': 240,
+                    'proteinLow': 5,
+                    'proteinHigh': 8,
+                    'carbLow': 30,
+                    'carbHigh': 40,
+                    'fatLow': 1,
+                    'fatHigh': 7,
+                  }),
+                  food: chapatiMatch,
+                  dishSlug: null,
+                ),
+              ],
+              totals: GuideMacros({
+                'kcalLow': 170,
+                'kcalHigh': 240,
+                'proteinLow': 5,
+                'proteinHigh': 8,
+                'carbLow': 30,
+                'carbHigh': 40,
+                'fatLow': 1,
+                'fatHigh': 7,
+              }),
+              caution: ['wheat'],
+            ),
+          ],
+          unknown: ['zzqx'],
+          refused: [],
+          messNote: null,
+          model: 'fake-1',
+        );
+
+    setUp(() {
+      ai = FakeAiApi()..nextGuide = answer();
+      // The server's numbers for chapati, taken when the log arrives.
+      api.snapshot[chapati.id] = serverSnapshot(chapati);
+    });
+
+    Future<void> openGuide(WidgetTester tester) async {
+      final open = find.byKey(const ValueKey('eat.guide'));
+      await tester.ensureVisible(open);
+      await tester.tap(open);
+      await settle(tester);
+    }
+
+    testWidgets(
+        'from Eat: tick and type what you have, Suggest; the plate with its fit; Log this logs it as ONE search log',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await openGuide(tester);
+      final ask = find.byKey(const ValueKey('guide.ask'));
+      expect(
+        tester
+            .widget<ButtonStyleButton>(
+              find.ancestor(
+                of: find.text('Suggest'),
+                matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+              ),
+            )
+            .onPressed,
+        isNull,
+        reason: 'nothing chosen yet (no mess here)',
+      );
+      expect(find.byKey(const ValueKey('guide.mess')), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('guide.have.Curd')));
+      await tester.enterText(find.byKey(const ValueKey('guide.other')), 'zzqx');
+      await tester.tap(find.byKey(const ValueKey('guide.other.add')));
+      await tester.enterText(
+        find.byKey(const ValueKey('guide.feel')),
+        'something warm',
+      );
+      await tester.pump();
+      await tester.ensureVisible(ask);
+      await tester.tap(ask);
+      await settle(tester);
+      final sent = ai.guided.single;
+      expect(sent.slot, MealSlot.lunch, reason: '13:00 is lunch');
+      expect(sent.fromMess, isFalse);
+      expect(sent.have, ['Curd', 'zzqx']);
+      expect(sent.feel, 'something warm');
+      expect(sent.toJson().keys.toSet(), {'slot', 'fromMess', 'have', 'feel'});
+
+      expect(find.text('Chapati plate'), findsOneWidget);
+      expect(
+        textOf(tester, 'guide.option.0.totals').data,
+        'About 205 kcal · 7 g protein',
+      );
+      expect(
+        textOf(tester, 'guide.option.0.fit').data,
+        'Fills 7 of your 40 g protein left · about 205 of 700 kcal left',
+      );
+      expect(
+        textOf(tester, 'guide.option.0.caution').data,
+        'Check the label for: wheat',
+      );
+      expect(
+        find.textContaining('Not in FITOS yet, so not used: zzqx.'),
+        findsOneWidget,
+      );
+      expect(api.logs, isEmpty, reason: 'nothing logged before Log this');
+
+      final log = find.byKey(const ValueKey('guide.option.0.log'));
+      await tester.ensureVisible(log);
+      await tester.tap(log);
+      await settle(tester);
+      expect(
+        find.byType(FoodGuideScreen),
+        findsNothing,
+        reason: 'closed after logging',
+      );
+      expect(find.byType(EatScreen), findsOneWidget);
+      final logs = api.logs.values.toList();
+      expect(logs, hasLength(1));
+      expect(logs.single.entryMethod, EntryMethod.search);
+      expect(logs.single.items.single.foodId, chapati.id);
+      expect(logs.single.items.single.servings, 2);
+      expect(logs.single.mealSlot, MealSlot.lunch);
+    });
+
+    testWidgets(
+        'no plate from FITOS AI: says so; a refusal shows the server words',
+        (tester) async {
+      tall(tester);
+      ai.nextGuide = const FoodGuideResponse(
+        slot: MealSlot.lunch,
+        date: today,
+        messCode: null,
+        menuDate: null,
+        remainingKcal: null,
+        remainingProteinG: null,
+        options: [],
+        unknown: [],
+        refused: ['Chicken 65'],
+        messNote: null,
+        model: 'fake-1',
+      );
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await openGuide(tester);
+      await tester.tap(find.byKey(const ValueKey('guide.have.Bread')));
+      await tester.pump();
+      final ask = find.byKey(const ValueKey('guide.ask'));
+      await tester.ensureVisible(ask);
+      await tester.tap(ask);
+      await settle(tester);
+      expect(find.byKey(const ValueKey('guide.none')), findsOneWidget);
+      expect(
+        find.textContaining(
+          'Left out for your diet or allergies: Chicken 65.',
+        ),
+        findsOneWidget,
+      );
+
+      ai.guideFailure =
+          const ServiceUnavailable('FITOS AI is switched off on this server.');
+      await tester.ensureVisible(ask);
+      await tester.tap(ask);
+      await settle(tester);
+      expect(
+        textOf(tester, 'guide.error').data,
+        'FITOS AI is switched off on this server.',
+      );
+    });
+
+    testWidgets('AI off, or the food-guide switch off: no way in',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(
+        harness(meta: FakeMetaApi(flags: {'food-guide': false})),
+      );
+      await settle(tester);
+      expect(find.byKey(const ValueKey('eat.guide')), findsNothing);
+
+      ai = FakeAiApi.off();
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      expect(find.byKey(const ValueKey('eat.guide')), findsNothing);
     });
   });
 }

@@ -5,6 +5,7 @@ import '../../../core/errors/failure.dart';
 import '../../../core/errors/result.dart';
 import '../domain/entities/ai.dart';
 import '../domain/entities/ai_draft.dart';
+import '../domain/entities/food_guide.dart';
 
 /// `/v1/ai/*` — FITOS AI lives on the server (owner B2); the phone asks and
 /// shows. No model key exists on the phone, by design.
@@ -18,6 +19,10 @@ abstract class AiApi {
 
   /// Phase 14: a TODAY action's reason in plainer words, or the engine's own.
   Future<Result<ExplainResponse>> explain(String actionId);
+
+  /// Beta 3.6: "What should I eat?" — plates for one meal of today. Nothing
+  /// is logged by this call.
+  Future<Result<FoodGuideResponse>> foodGuide(FoodGuideRequest request);
 }
 
 class DioAiApi implements AiApi {
@@ -82,5 +87,16 @@ class DioAiApi implements AiApi {
           options: Options(receiveTimeout: const Duration(seconds: 30)),
         ),
         ExplainResponse.fromJson,
+      );
+
+  @override
+  Future<Result<FoodGuideResponse>> foodGuide(FoodGuideRequest request) =>
+      _guard(
+        () => _dio.post<Map<String, dynamic>>(
+          '/v1/nutrition/guide',
+          data: request.toJson(),
+          options: Options(receiveTimeout: const Duration(seconds: 45)),
+        ),
+        FoodGuideResponse.fromJson,
       );
 }

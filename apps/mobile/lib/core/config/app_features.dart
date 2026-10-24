@@ -13,7 +13,9 @@ enum AppFeature {
   communityFoods('community-foods'),
   foodRequests('food-requests'),
   weeklyReport('weekly-report'),
-  progressPhotos('progress-photos');
+  progressPhotos('progress-photos'),
+  // Beta 3.6 (F15): "What should I eat?" from FITOS AI.
+  foodGuide('food-guide');
 
   const AppFeature(this.key);
 

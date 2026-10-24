@@ -23,3 +23,7 @@ Phase 16 built `feature_flags`, the admin **Flags** page and the public `GET /me
 **Good:** the owner can stop a misbehaving feature in seconds without an APK, and old APKs are covered by the server.
 
 **Accepted:** a phone that stays in the foreground keeps its old switches until it next comes back or restarts. The server still refuses what is off.
+
+## Amendment — beta 3.6
+
+A new switch, **`food-guide`** (the AI food guide, ADR-020 amendment): on by default. When off, the Eat entry is hidden and `POST /nutrition/guide` answers 403 `feature-off`.

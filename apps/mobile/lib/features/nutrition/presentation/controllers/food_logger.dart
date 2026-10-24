@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../health/presentation/controllers/health_providers.dart';
 import '../../data/nutrition_log_repository.dart';
+import '../../../ai/domain/entities/food_guide.dart';
 import '../../domain/entities/food.dart';
 import '../../domain/entities/food_log.dart';
 import '../../domain/portion_preview.dart';
@@ -197,6 +198,64 @@ class FoodLogger {
           ],
         ),
       );
+
+  /// Beta 3.6: a plate from FITOS AI's food guide — the database foods as
+  /// ONE search log (as servings of their rows, no numbers: the server
+  /// snapshots them) and the mess dishes as ONE mess log for today's menu.
+  /// Through the ordinary queue, like any other log.
+  Future<void> logGuidePlate({
+    required GuideOption option,
+    required String? messCode,
+    required String? menuDate,
+    required LogTarget target,
+  }) async {
+    final foods = [
+      for (final i in option.items)
+        if (i.food case final f?)
+          (foodId: f.foodId, name: f.name, row: f.row, servings: f.servings),
+    ];
+    await logDraft(foods: foods, estimates: const [], target: target);
+    final dishes = [
+      for (final i in option.items)
+        if (i.dishSlug != null) i,
+    ];
+    if (dishes.isEmpty || messCode == null || menuDate == null) return;
+    await _repo.log(
+      CreateLogRequest.mess(
+        clientLogId: _uuid.v4(),
+        loggedAt: loggedAtFor(target),
+        mealSlot: target.slot,
+        mess: messCode,
+        menuDate: menuDate,
+        messItems: [
+          for (final d in dishes)
+            LogMessDishRequest(dishSlug: d.dishSlug!, servings: d.servings),
+        ],
+      ),
+      localDate: target.date,
+      preview: PendingPreview(
+        items: [
+          for (final d in dishes)
+            PendingItem(
+              name: d.name,
+              portion: '${FoodFormat.number(d.servings)} × ${d.servingLabel}',
+              preview: PreviewNutrition(
+                kcalLow: d.macros.kcalLow,
+                kcalHigh: d.macros.kcalHigh,
+                proteinLow: d.macros.proteinLow,
+                proteinHigh: d.macros.proteinHigh,
+                carbLow: d.macros.values['carbLow']!,
+                carbHigh: d.macros.values['carbHigh']!,
+                fatLow: d.macros.values['fatLow']!,
+                fatHigh: d.macros.values['fatHigh']!,
+                fibreLow: null,
+                fibreHigh: null,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 
   /// "1.5 × 1 katori", "150 g": a draft food's portion as servings of its row.
   static String servingsText(FoodNutrition row, double servings) =>
