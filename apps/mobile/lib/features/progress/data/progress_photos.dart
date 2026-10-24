@@ -68,6 +68,10 @@ class ProgressPhoto {
 abstract class PhotoSource {
   /// A resized JPEG's path, or null when the person cancelled.
   Future<String?> pick({required bool camera});
+
+  /// Beta 3.6: a photo taken while Android closed FITOS (the camera app used
+  /// the memory), handed back on the next start; null when there is none.
+  Future<String?> recoverLost();
 }
 
 class DevicePhotoSource implements PhotoSource {
@@ -83,6 +87,18 @@ class DevicePhotoSource implements PhotoSource {
       requestFullMetadata: false,
     );
     return file?.path;
+  }
+
+  @override
+  Future<String?> recoverLost() async {
+    if (!Platform.isAndroid) return null;
+    try {
+      final lost = await ImagePicker().retrieveLostData();
+      if (lost.isEmpty) return null;
+      return lost.file?.path;
+    } on Object {
+      return null;
+    }
   }
 }
 

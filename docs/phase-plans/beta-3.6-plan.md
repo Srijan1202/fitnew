@@ -1,6 +1,6 @@
 # Beta 3.6 — plan
 
-**Date** 2026-10-24 · **Branch** `phase-19` · **Status: awaiting the owner's approval.**
+**Date** 2026-10-24 · **Branch** `phase-19` · **Status: approved by the owner 2026-10-24.**
 
 The owner chose 3.6 on 2026-10-24: four fixes from using 3.5, weekly steps, and two backlog items, and answered four questions.
 

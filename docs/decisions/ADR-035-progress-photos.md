@@ -23,3 +23,14 @@ Backlog F8. The owner chose: **free** for everyone, and kept **inside FITOS only
 
 - No storage cost and no new personal data on the server.
 - Losing the phone loses the photos. That is accepted and stated on the screen.
+
+## Amendment — beta 3.6 (owner, 2026-10-24)
+
+1. **Hidden until shown.** Photos never appear on their own.
+   - The Progress card says *"N photos · hidden"* with **Show photos**.
+   - The Photos screen opens hidden, and Compare appears only once the photos are shown.
+   - Both hide again whenever FITOS goes to the background, so nobody sees them over a shoulder.
+2. **Camera photos are no longer lost.** The owner's camera photos were not added; gallery photos were.
+   - **Cause:** the camera sends FITOS to the background. On return, the screen that asked for the photo can be rebuilt (fresh switches, health, sync), and the photo was dropped with it.
+   - **Fix:** once a photo is picked, the pose and day are asked on the app's root navigator and saved through the app's provider container, never through that screen.
+   - **If Android closes FITOS while the camera is open**, the photo it keeps is handed back on the next start (`retrieveLostData`), and a dialog offers **Add photo** or **Discard**. Never during a workout.

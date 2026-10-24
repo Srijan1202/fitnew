@@ -17,6 +17,7 @@ import 'features/notifications/presentation/notification_coordinator.dart';
 import 'features/today/presentation/today_providers.dart';
 import 'core/config/app_features.dart';
 import 'features/premium/presentation/rewards_providers.dart';
+import 'features/progress/presentation/photos/progress_photos_screen.dart';
 
 /// Root widget. Owns the theme; the router comes from Riverpod so the auth
 /// guard can read the same provider the screens do.
@@ -108,6 +109,14 @@ class FitOSApp extends ConsumerWidget {
                         // Beta 3.5: a newer beta, asked over any screen at
                         // every open — never in the middle of a workout.
                         UpdatePromptHost(
+                          navigatorContext: () =>
+                              router.routerDelegate.navigatorKey.currentContext,
+                          suppressed: () => router
+                              .routerDelegate.currentConfiguration.uri.path
+                              .startsWith('/plan/session'),
+                        ),
+                        // Beta 3.6: a camera photo Android kept for us.
+                        LostPhotoHost(
                           navigatorContext: () =>
                               router.routerDelegate.navigatorKey.currentContext,
                           suppressed: () => router

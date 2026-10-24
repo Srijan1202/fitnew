@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:fitos/core/db/app_database.dart';
@@ -32,14 +33,28 @@ class FakePhotoSource implements PhotoSource {
   bool? lastCamera;
   bool cancel = false;
 
+  /// When set, the pick waits for it (the camera app is open).
+  Completer<void>? hold;
+
   @override
   Future<String?> pick({required bool camera}) async {
     lastCamera = camera;
+    if (hold != null) await hold!.future;
     if (cancel) return null;
     n++;
     final f = File('${dir.path}/picked-$n.jpg')
       ..writeAsBytesSync([0xFF, 0xD8, 0xFF, n]);
     return f.path;
+  }
+
+  /// A photo Android kept after closing FITOS (beta 3.6), handed back once.
+  String? lost;
+
+  @override
+  Future<String?> recoverLost() async {
+    final l = lost;
+    lost = null;
+    return l;
   }
 }
 
@@ -162,6 +177,7 @@ void main() {
     late AppDatabase db;
     late FakePhotoSource source;
     late FakeMetaApi meta;
+    late GoRouter router;
 
     setUp(() {
       db = AppDatabase.inMemory();
@@ -170,10 +186,14 @@ void main() {
     });
     tearDown(() => db.close());
 
-    Widget app() {
-      final router = GoRouter(
+    Widget app({bool lostPhotoHost = false}) {
+      router = GoRouter(
         initialLocation: Routes.progress,
         routes: [
+          GoRoute(
+            path: '/elsewhere',
+            builder: (_, __) => const Scaffold(body: Text('elsewhere')),
+          ),
           GoRoute(
             path: Routes.progress,
             builder: (_, __) => const ProgressScreen(),
@@ -199,10 +219,26 @@ void main() {
           ),
           ...workoutOverrides(db, FakeWorkoutApi(), meta: meta),
         ],
-        child:
-            MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
+        child: MaterialApp.router(
+          theme: FitTheme.build(),
+          routerConfig: router,
+          builder: lostPhotoHost
+              ? (context, child) => Stack(
+                    children: <Widget>[
+                      Positioned.fill(child: child ?? const SizedBox.shrink()),
+                      LostPhotoHost(
+                        navigatorContext: () =>
+                            router.routerDelegate.navigatorKey.currentContext,
+                      ),
+                    ],
+                  )
+              : null,
+        ),
       );
     }
+
+    Future<List<ProgressPhoto>> stored() =>
+        PhotoStore(Directory('${tmp.path}/store/acc-1')).list();
 
     Future<void> tall(WidgetTester tester) async {
       tester.view.physicalSize = const Size(1080, 4800);
@@ -301,6 +337,10 @@ void main() {
       await tester.tap(all);
       await tester.pumpAndSettle();
       expect(find.byType(ProgressPhotosScreen), findsOneWidget);
+      expect(find.byType(Image), findsNothing, reason: 'hidden until shown');
+      expect(find.byKey(const ValueKey('photos.compare')), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('photos.show')));
+      await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('photos.filter.side')), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('photos.filter.side')));
       await tester.pumpAndSettle();
@@ -317,6 +357,94 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('compare.mode')));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('compare.slider')), findsOneWidget);
+    });
+
+    testWidgets(
+        'beta 3.6: hidden until "Show photos", and hidden again when FITOS goes to the background',
+        (tester) async {
+      await tall(tester);
+      final store = PhotoStore(Directory('${tmp.path}/store/acc-1'));
+      for (var i = 1; i <= 2; i++) {
+        await store.add(
+          source: (File('${tmp.path}/h$i.jpg')..writeAsBytesSync([i])).path,
+          date: '2026-10-0$i',
+          pose: PhotoPose.front,
+        );
+      }
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      expect(find.text('2 photos · hidden'), findsOneWidget);
+      expect(find.byType(Image), findsNothing);
+      final show = find.byKey(const ValueKey('photos.show'));
+      await tester.ensureVisible(show);
+      await tester.tap(show);
+      await tester.pumpAndSettle();
+      expect(find.byType(Image), findsNWidgets(2));
+      expect(find.byKey(const ValueKey('photos.hidden')), findsNothing);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      await tester.pump();
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(find.byType(Image), findsNothing);
+      expect(find.text('2 photos · hidden'), findsOneWidget);
+    });
+
+    testWidgets(
+        'beta 3.6: a camera photo is kept even when the screen that asked for it was rebuilt meanwhile',
+        (tester) async {
+      await tall(tester);
+      source.hold = Completer<void>();
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      final button = find.byKey(const ValueKey('photos.add'));
+      await tester.ensureVisible(button);
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('photos.source.camera')));
+      await tester.pump();
+      // The camera app is open; FITOS returns to a rebuilt screen.
+      router.go('/elsewhere');
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('photos.card')), findsNothing);
+      source.hold!.complete();
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('photos.details')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('photos.save')));
+      await tester.pumpAndSettle();
+      expect(await stored(), hasLength(1));
+    });
+
+    testWidgets(
+        'beta 3.6: a photo Android kept after closing FITOS is offered on the next start; Add saves it, once',
+        (tester) async {
+      await tall(tester);
+      source.lost = (File('${tmp.path}/lost.jpg')..writeAsBytesSync([9])).path;
+      await tester.pumpWidget(app(lostPhotoHost: true));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('photos.lost')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('photos.lost.add')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('photos.pose.side')));
+      await tester.tap(find.byKey(const ValueKey('photos.save')));
+      await tester.pumpAndSettle();
+      expect((await stored()).single.pose, PhotoPose.side);
+      await tester.pumpWidget(app(lostPhotoHost: true));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('photos.lost')), findsNothing);
+    });
+
+    testWidgets('beta 3.6: Discard leaves the lost photo out', (tester) async {
+      await tall(tester);
+      source.lost = (File('${tmp.path}/lost.jpg')..writeAsBytesSync([9])).path;
+      await tester.pumpWidget(app(lostPhotoHost: true));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('photos.lost.discard')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('photos.details')), findsNothing);
+      expect(await stored(), isEmpty);
     });
 
     testWidgets('switched off by the admin: no Photos section', (tester) async {

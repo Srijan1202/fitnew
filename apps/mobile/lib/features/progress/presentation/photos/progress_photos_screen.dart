@@ -6,10 +6,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../../core/config/app_features.dart';
 import '../../../../core/routing/navigation.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../nutrition/presentation/controllers/food_log_providers.dart';
 import '../../data/progress_photos.dart';
 import 'progress_photos_providers.dart';
@@ -36,12 +38,46 @@ String _shortDate(String d) {
   return '${t.day} ${months[t.month - 1]} ${t.year}';
 }
 
-/// Progress → Photos: the newest few, and ways in.
-class ProgressPhotosCard extends ConsumerWidget {
+/// Beta 3.6 (owner): photos stay hidden until asked for, and hide again when
+/// FITOS goes to the background, so nobody sees them over a shoulder.
+mixin _HiddenUntilShown<T extends StatefulWidget> on State<T> {
+  bool shown = false;
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(onHide: hide);
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  void hide() {
+    if (shown && mounted) setState(() => shown = false);
+  }
+
+  void show() => setState(() => shown = true);
+}
+
+String _hiddenLabel(int n) =>
+    n == 1 ? '1 photo · hidden' : '$n photos · hidden';
+
+/// Progress → Photos: the newest few (once shown), and ways in.
+class ProgressPhotosCard extends ConsumerStatefulWidget {
   const ProgressPhotosCard({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProgressPhotosCard> createState() => _ProgressPhotosCardState();
+}
+
+class _ProgressPhotosCardState extends ConsumerState<ProgressPhotosCard>
+    with _HiddenUntilShown {
+  @override
+  Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final photos = ref.watch(progressPhotosProvider).value ?? const [];
     return Column(
@@ -52,6 +88,25 @@ class ProgressPhotosCard extends ConsumerWidget {
           Text(
             'Take a photo now and another in a few weeks: the change is easier to see than to weigh.',
             style: textTheme.bodyMedium,
+          )
+        else if (!shown)
+          Row(
+            children: <Widget>[
+              Icon(Icons.visibility_off_outlined, color: FitColors.ink60),
+              const SizedBox(width: FitSpacing.sm),
+              Expanded(
+                child: Text(
+                  _hiddenLabel(photos.length),
+                  key: const ValueKey('photos.hidden'),
+                  style: textTheme.bodyMedium,
+                ),
+              ),
+              TextButton(
+                key: const ValueKey('photos.show'),
+                onPressed: show,
+                child: const Text('Show photos'),
+              ),
+            ],
           )
         else
           SizedBox(
@@ -99,6 +154,11 @@ class ProgressPhotosCard extends ConsumerWidget {
 }
 
 /// Camera or gallery, then the pose and the day; saved on the phone.
+///
+/// Beta 3.6: the camera sends FITOS to the background, and on return the
+/// screen that asked may be rebuilt (fresh switches, health, sync). So once
+/// the photo is picked, the rest runs on the app's own navigator and
+/// provider container, never on that screen: the photo is not dropped.
 Future<void> addProgressPhoto(BuildContext context, WidgetRef ref) async {
   final camera = await showModalBottomSheet<bool>(
     context: context,
@@ -124,19 +184,98 @@ Future<void> addProgressPhoto(BuildContext context, WidgetRef ref) async {
     ),
   );
   if (camera == null || !context.mounted) return;
-  final source = await ref.read(photoSourceProvider).pick(camera: camera);
-  if (source == null || !context.mounted) return;
-  final today = ref.read(eatDateProvider.notifier).today;
+  final container = ProviderScope.containerOf(context, listen: false);
+  final navigator = Navigator.of(context, rootNavigator: true);
+  final source = await container.read(photoSourceProvider).pick(camera: camera);
+  if (source == null || !navigator.mounted) return;
+  await finishProgressPhoto(navigator.context, container, source);
+}
+
+/// The pose and the day for a picked photo, then saved.
+Future<void> finishProgressPhoto(
+  BuildContext context,
+  ProviderContainer container,
+  String source,
+) async {
+  final today = container.read(eatDateProvider.notifier).today;
   final details = await showDialog<(PhotoPose, String)>(
     context: context,
     builder: (_) => _DetailsDialog(today: today),
   );
   if (details == null) return;
-  await ref.read(progressPhotosProvider.notifier).add(
+  await container.read(progressPhotosProvider.notifier).add(
         source: source,
         date: details.$2,
         pose: details.$1,
       );
+}
+
+/// Beta 3.6: if Android closed FITOS while the camera was open, the photo is
+/// handed back on the next start; this offers to finish adding it. Once per
+/// start, signed in, with photos switched on, never during a workout.
+class LostPhotoHost extends ConsumerStatefulWidget {
+  const LostPhotoHost({this.navigatorContext, this.suppressed, super.key});
+
+  /// The root navigator's context; this widget's own context when null.
+  final BuildContext? Function()? navigatorContext;
+
+  /// True while the question must wait (tried again on the next build).
+  final bool Function()? suppressed;
+
+  @override
+  ConsumerState<LostPhotoHost> createState() => _LostPhotoHostState();
+}
+
+class _LostPhotoHostState extends ConsumerState<LostPhotoHost> {
+  bool _asked = false;
+
+  void _maybeAsk() {
+    if (_asked) return;
+    _asked = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final container = ProviderScope.containerOf(context, listen: false);
+      final source = await container.read(photoSourceProvider).recoverLost();
+      if (source == null || !mounted) return;
+      final dialogContext = widget.navigatorContext?.call() ?? context;
+      if (!dialogContext.mounted || (widget.suppressed?.call() ?? false)) {
+        _asked = false; // try again on a later build
+        return;
+      }
+      final finish = await showDialog<bool>(
+        context: dialogContext,
+        builder: (ctx) => AlertDialog(
+          key: const ValueKey('photos.lost'),
+          title: const Text('Finish adding your progress photo?'),
+          content: const Text(
+            'FITOS was closed while the camera was open. Your photo was kept.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              key: const ValueKey('photos.lost.discard'),
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Discard'),
+            ),
+            FilledButton(
+              key: const ValueKey('photos.lost.add'),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Add photo'),
+            ),
+          ],
+        ),
+      );
+      if ((finish ?? false) && dialogContext.mounted) {
+        await finishProgressPhoto(dialogContext, container, source);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final signedIn = ref.watch(sessionUserIdProvider) != null;
+    final on = ref.watch(featureOnProvider(AppFeature.progressPhotos));
+    if (signedIn && on) _maybeAsk();
+    return const SizedBox.shrink();
+  }
 }
 
 class _DetailsDialog extends StatefulWidget {
@@ -258,7 +397,8 @@ class ProgressPhotosScreen extends ConsumerStatefulWidget {
       _ProgressPhotosScreenState();
 }
 
-class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen> {
+class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
+    with _HiddenUntilShown {
   PhotoPose? _pose;
 
   void _compare(List<ProgressPhoto> photos) {
@@ -286,14 +426,14 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final all = ref.watch(progressPhotosProvider).value ?? const [];
-    final shown =
+    final visible =
         _pose == null ? all : all.where((x) => x.pose == _pose).toList();
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.popOrHome()),
         title: const Text('Progress photos'),
         actions: <Widget>[
-          if (all.length >= 2)
+          if (shown && all.length >= 2)
             TextButton(
               key: const ValueKey('photos.compare'),
               onPressed: () => _compare(all),
@@ -335,8 +475,33 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen> {
                 style: textTheme.bodySmall?.copyWith(color: FitColors.ink60),
               ),
               const SizedBox(height: FitSpacing.md),
-              if (shown.isEmpty)
+              if (visible.isEmpty)
                 Text('No photos here yet.', style: textTheme.bodyMedium)
+              else if (!shown)
+                Column(
+                  children: <Widget>[
+                    const SizedBox(height: FitSpacing.lg),
+                    Icon(
+                      Icons.visibility_off_outlined,
+                      size: 40,
+                      color: FitColors.ink60,
+                    ),
+                    const SizedBox(height: FitSpacing.sm),
+                    Text(
+                      _hiddenLabel(visible.length),
+                      key: const ValueKey('photos.hidden'),
+                      style: textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: FitSpacing.sm),
+                    FilledButton.icon(
+                      key: const ValueKey('photos.show'),
+                      onPressed: show,
+                      icon: const Icon(Icons.visibility_outlined),
+                      label: const Text('Show photos'),
+                    ),
+                  ],
+                )
               else
                 GridView.count(
                   crossAxisCount: 3,
@@ -346,7 +511,7 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen> {
                   crossAxisSpacing: FitSpacing.sm,
                   childAspectRatio: 3 / 4,
                   children: <Widget>[
-                    for (final x in shown)
+                    for (final x in visible)
                       LayoutBuilder(
                         builder: (context, c) => _Thumb(
                           photo: x,
