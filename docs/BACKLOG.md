@@ -42,6 +42,7 @@
 | E16 | `tsx` "module.register() is deprecated" warning | S | Upgrade tsx when convenient |
 | E22 | More premium features (ADR-027 "More premium ideas") | M | AI programme builder, weekly meal plan from the mess, monthly PDF report, exercise videos, gold app icon, early access via flags. Owner to choose |
 | E23 | Theme choice per account, not per phone | S | ADR-027 keeps it on the phone |
+| E24 | Plain milk and plain paneer in the food database | S | Found in beta 3.6: only dishes and condensed milk exist, so the food guide's common items leave them out (`GUIDE_STAPLES`), and a typed "milk" is "not in FITOS yet". Add them through the food-sources pipeline (ADR-032), then pin them |
 | E20 | Golden tests for `MetricDisplay`, `EstimateRange`, `LedgerRow`, `ConfidenceBar` (§26.4) | S | The components do not exist yet; write the goldens with the design-system pass (O4, ADR-024 D4) |
 | E21 | Re-run the load test against the hosted API | S | Phase 19, after O1; `load:test` measures the local stack (ADR-024 D5) |
 | E17 | Name a high-protein dish from tonight's mess menu in the protein nudge | M | Phase 10 suggestions exist on the Eat tab; the planner would need that day's menu at plan time (ADR-021 "Not in Phase 15") |
@@ -65,8 +66,8 @@ Not scheduled. When picked, they get a phase plan for approval first. Suggested 
 | F11 | **Exercise demo animations** | M–L | Short loops for the ~30 most-used lifts; mostly a content job (licensing) |
 | F12 | **Friends / VIT leaderboard** | L | Weekly sessions among friends. Needs a privacy design (opt-in, what is shown) before any code |
 | F13 | **Streak rewards** (owner, 2026-10-23) — beta 3.4 (ADR-027 amendment) | M | A long enough streak unlocks rewards: a theme, a profile picture and the like, kept once earned. Builds on beta 3.3's streak (F5) and the premium themes and pictures (ADR-027/028). Needs a decision on which rewards, at what streak lengths, and whether they stay premium-only otherwise |
-| F14 | **Feedback with pictures, and more** (owner, 2026-10-24) | M | Attach screenshots to feedback; the owner will say what else. Needs storage, size limits and a privacy note |
-| F15 | **AI food guide** (from beta feedback, 2026-10-24) | M | Asks what you have and what you feel like, then says what to eat for your targets. AI is premium-only (ADR-028); builds on the mess menu and food database |
+| F14 | **Feedback with pictures, and more** (owner, 2026-10-24) — beta 3.6 (ADR-026 amendment) | M | Attach screenshots to feedback; the owner will say what else. Needs storage, size limits and a privacy note |
+| F15 | **AI food guide** (from beta feedback, 2026-10-24) — beta 3.6 (ADR-020 amendment) | M | Asks what you have and what you feel like, then says what to eat for your targets. AI is premium-only (ADR-028); builds on the mess menu and food database |
 
 ## Later phases (already in MASTER-SPEC, listed so nothing is lost)
 

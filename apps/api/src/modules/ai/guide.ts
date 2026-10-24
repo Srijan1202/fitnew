@@ -50,6 +50,37 @@ import type { AiBudget } from './usage.js';
 
 type FoodHit = Awaited<ReturnType<FoodService['search']>>['items'][number];
 
+const APPLE = "Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)";
+const WHEY = 'Beverages, Protein powder whey based';
+/**
+ * Things a student often has, pinned to the plain food in the seed: the
+ * search's first hit is often a dish or a product ("banana" → "Banana shake",
+ * "milk" → condensed milk), so the app's common items never go through it.
+ * A test checks that every name here is still in the seed.
+ */
+export const GUIDE_STAPLES: Readonly<Record<string, string>> = {
+  bread: 'Bread, whole-wheat, commercially prepared',
+  egg: 'Boiled eggs',
+  eggs: 'Boiled eggs',
+  curd: 'Curd',
+  dahi: 'Curd',
+  'peanut butter': 'Peanut butter, smooth style, without salt',
+  oats: 'Oats, whole grain, rolled, old fashioned',
+  banana: 'Bananas, raw',
+  bananas: 'Bananas, raw',
+  apple: APPLE,
+  apples: APPLE,
+  'whey protein': WHEY,
+  whey: WHEY,
+  'protein powder': WHEY,
+  'roasted chana': 'Roasted chana',
+  almond: 'Nuts, almonds, whole, raw',
+  almonds: 'Nuts, almonds, whole, raw',
+  sprouts: 'Green gram sprouts',
+  'instant noodles': 'Instant noodles (masala)',
+  maggi: 'Instant noodles (masala)',
+};
+
 /** "2 eggs", "1 cup curd": the food without the amount, for the search. */
 export function foodWords(said: string): string {
   return said
@@ -115,7 +146,11 @@ export class FoodGuideService {
     const said = [...new Set(body.have.map((h) => h.trim()).filter((h) => h !== ''))].slice(0, GUIDE_MAX_HAVE);
     for (const s of said) {
       const words = foodWords(s);
-      const hit = words === '' ? undefined : (await this.deps.foods.search(userId, { q: words, limit: 1 })).items.find((h) => h.match !== 'fuzzy');
+      // A staple by its pinned name; anything else must match a food's own
+      // name or alias: a loose prefix hit ("milk" → condensed milk) is worse
+      // than saying FITOS does not know it.
+      const q = GUIDE_STAPLES[words.toLowerCase()] ?? words;
+      const hit = words === '' ? undefined : (await this.deps.foods.search(userId, { q, limit: 3 })).items.find((h) => h.match === 'exact' || h.match === 'alias');
       const row = hit === undefined ? null : rowOf(hit);
       if (hit === undefined || row === null) {
         unknown.push(s);

@@ -26,13 +26,13 @@ Future<bool> showFoodGuide(BuildContext context) async =>
     ) ??
     false;
 
-/// Things a hostel student often has to hand (the owner's list, F15).
+/// Things a hostel student often has to hand (the owner's list, F15), each
+/// pinned to its plain food on the server (GUIDE_STAPLES). Milk and paneer
+/// wait for plain entries in the food database (BACKLOG E24).
 const kGuideCommonItems = <String>[
   'Bread',
   'Eggs',
-  'Milk',
   'Curd',
-  'Paneer',
   'Peanut butter',
   'Oats',
   'Banana',

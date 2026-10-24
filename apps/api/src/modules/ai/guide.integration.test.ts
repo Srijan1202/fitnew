@@ -22,7 +22,9 @@ import { databaseUrl, testEnv } from '../../test/build-test-app.js';
 import { FakeTokenVerifier } from '../../test/fake-token-verifier.js';
 import { runMirror, type FetchOutcome, type MirrorFetcher } from '../mess/mirror.js';
 import { FakeAiProvider } from './fake-provider.js';
-import { foodWords } from './guide.js';
+import { FoodRepository } from '../nutrition/repository.js';
+import { FoodService } from '../nutrition/service.js';
+import { GUIDE_STAPLES, foodWords } from './guide.js';
 import type { AiResponse } from './provider.js';
 
 const describeIfDb = databaseUrl !== undefined ? describe : describe.skip;
@@ -124,7 +126,25 @@ describeIfDb('POST /v1/nutrition/guide (real Postgres, real food seed, a mirrore
   const guide = (u: U, body: Record<string, unknown>) => app.inject({ method: 'POST', url: '/v1/nutrition/guide', headers: auth(u.token), payload: body });
   const usage = (u: U) => sql<{ route: string; outcome: string }[]>`select route::text as route, outcome::text as outcome from ai_usage where user_id = ${u.id} order by created_at, id`;
 
+  it('every pinned staple is still a food in the seed, found by its exact name', async () => {
+    const u = await user();
+    const foods = new FoodService(new FoodRepository(handle.db));
+    for (const [said, name] of Object.entries(GUIDE_STAPLES)) {
+      const hits = (await foods.search(u.id, { q: name, limit: 3 })).items;
+      expect(hits.some((h) => h.match === 'exact' && h.name === name), `${said} → ${name}`).toBe(true);
+    }
+  });
+
+  it('a staple is the plain food (banana is a banana, not a shake); a loose prefix match is not taken', async () => {
+    const u = await user({ diet: 'non-vegetarian' });
+    ai.script = [said({ options: [{ title: 'Snack', items: [{ id: 'H1', servings: 1 }, { id: 'H2', servings: 1 }] }] })];
+    const g = foodGuideResponseSchema.parse((await guide(u, { slot: 'snacks', fromMess: false, have: ['Banana', 'Apple', 'milk'], feel: null })).json());
+    expect(g.options[0]!.items.map((i) => i.name)).toEqual(['Bananas, raw', "Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)"]);
+    expect(g.unknown).toEqual(['milk']);
+  });
+
   it('401 signed out; premium only; the AI consent; something to choose from (422)', async () => {
+    const before = ai.requests.length;
     expect((await app.inject({ method: 'POST', url: '/v1/nutrition/guide', payload: { slot: 'lunch', fromMess: false, have: ['curd'], feel: null } })).statusCode).toBe(401);
     const free = await user({ premium: false });
     expect((await guide(free, { slot: 'lunch', fromMess: false, have: ['curd'], feel: null })).statusCode).toBe(403);
@@ -133,7 +153,7 @@ describeIfDb('POST /v1/nutrition/guide (real Postgres, real food seed, a mirrore
     const u = await user();
     expect((await guide(u, { slot: 'lunch', fromMess: false, have: [], feel: null })).statusCode).toBe(422);
     expect((await guide(u, { slot: 'brunch', fromMess: false, have: ['curd'], feel: null })).statusCode).toBe(422);
-    expect(ai.requests).toHaveLength(0);
+    expect(ai.requests).toHaveLength(before);
   });
 
   it('what they have: known foods only, diet and allergens respected, the numbers the database\'s; the model never sees who they are', async () => {
