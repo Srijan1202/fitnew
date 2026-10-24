@@ -217,7 +217,18 @@ export const adminUpdatePushStatusSchema = z
   })
   .strict();
 export const adminUpdatePushResultSchema = z
-  .object({ build: z.number().int(), label: z.string(), devices: z.number().int(), sent: z.number().int(), removed: z.number().int() })
+  .object({
+    build: z.number().int(),
+    label: z.string(),
+    devices: z.number().int(),
+    sent: z.number().int(),
+    removed: z.number().int(),
+    /** Phones not reached, and why (FCM's error codes with their counts). */
+    failed: z.number().int(),
+    errors: z.record(z.string(), z.number().int()),
+    /** The first failure's own words (an uninstalled phone is not one). */
+    detail: z.string().nullable(),
+  })
   .strict();
 export type AdminUpdatePushStatus = z.infer<typeof adminUpdatePushStatusSchema>;
 export type AdminUpdatePushResult = z.infer<typeof adminUpdatePushResultSchema>;

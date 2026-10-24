@@ -6,6 +6,16 @@ import { useState } from 'react';
 import { Badge, Header, Status, useGet, when } from '@/components/ui';
 import { api, errorText } from '@/lib/api';
 
+/** FCM codes that mean the server itself was refused (credentials, permission). */
+const REFUSED = new Set([
+  'messaging/third-party-auth-error',
+  'messaging/authentication-error',
+  'messaging/mismatched-credential',
+  'messaging/unknown-error',
+  'app/invalid-credential',
+  'send-failed',
+]);
+
 /**
  * Beta 3.5: after a release, tell every phone with notifications on that the
  * new beta is out. The version is the website's own; once per build.
@@ -59,10 +69,30 @@ export default function Announce() {
         </div>
       )}
       {result !== null && (
-        <p className="card">
-          Sent to {result.sent} of {result.devices} phones for {result.label}
-          {result.removed > 0 ? `; ${result.removed} uninstalled ones removed` : ''}.
-        </p>
+        <div className="card">
+          <p>
+            Sent to {result.sent} of {result.devices} phones for {result.label}
+            {result.removed > 0 ? `; ${result.removed} uninstalled ones removed` : ''}.
+          </p>
+          {result.failed > 0 && (
+            <>
+              <p className={result.sent === 0 ? 'error' : 'muted'}>
+                Not reached: {result.failed}.{' '}
+                {Object.entries(result.errors)
+                  .map(([code, n]) => `${code} × ${n}`)
+                  .join(', ')}
+              </p>
+              {result.detail !== null && <p className="muted">Firebase said: {result.detail}</p>}
+              {Object.keys(result.errors).some((c) => REFUSED.has(c)) && (
+                <p className="muted">
+                  Firebase refused the server. In Google Cloud (the Firebase project), give the API&apos;s service account the
+                  &ldquo;Firebase Cloud Messaging API Admin&rdquo; role and check the Firebase Cloud Messaging API is enabled.
+                </p>
+              )}
+              {result.sent === 0 && <p className="muted">Nothing reached a phone, so this build can be announced again.</p>}
+            </>
+          )}
+        </div>
       )}
     </>
   );

@@ -28,6 +28,10 @@ export interface PushResult {
   readonly sent: number;
   /** Tokens FCM no longer knows (uninstalled, signed out): to be removed. */
   readonly invalid: readonly string[];
+  /** Every failed send by FCM's error code, so a refusal is never silent. */
+  readonly errors: Readonly<Record<string, number>>;
+  /** The first failure's own words (FCM's message), for the admin and the log. */
+  readonly detail: string | null;
 }
 
 export interface PushSender {
@@ -43,33 +47,56 @@ export class FirebasePushSender implements PushSender {
     const messaging = getMessaging(firebaseApp(this.options));
     let sent = 0;
     const invalid: string[] = [];
+    const errors: Record<string, number> = {};
+    let detail: string | null = null;
+    const failed = (code: string, message: string | undefined, n = 1) => {
+      errors[code] = (errors[code] ?? 0) + n;
+      if (detail === null && !GONE.has(code)) detail = (message ?? code).slice(0, 300);
+    };
     // FCM takes at most 500 tokens per call.
     for (let i = 0; i < tokens.length; i += 500) {
       const batch = tokens.slice(i, i + 500);
-      const r = await messaging.sendEachForMulticast({
-        tokens: [...batch],
-        notification: { title: message.title, body: message.body },
-        data: { ...message.data },
-        android: { priority: 'high' },
-      });
+      let r;
+      try {
+        r = await messaging.sendEachForMulticast({
+          tokens: [...batch],
+          notification: { title: message.title, body: message.body },
+          data: { ...message.data },
+          android: { priority: 'high' },
+        });
+      } catch (e) {
+        // Credentials or permission: the whole batch is refused.
+        const err = e as { code?: string; message?: string };
+        failed(err.code ?? 'send-failed', err.message, batch.length);
+        continue;
+      }
       sent += r.successCount;
       r.responses.forEach((res, k) => {
-        if (!res.success && res.error !== undefined && GONE.has(res.error.code)) invalid.push(batch[k]!);
+        if (res.success) return;
+        const code = res.error?.code ?? 'unknown';
+        failed(code, res.error?.message);
+        if (GONE.has(code)) invalid.push(batch[k]!);
       });
     }
-    return { sent, invalid };
+    return { sent, invalid, errors, detail };
   }
 }
 
-/** Test apps: records every send; tokens in [gone] answer as uninstalled. */
+/**
+ * Test apps: records every send; tokens in [gone] answer as uninstalled;
+ * [refusal] (an FCM code) refuses every token, as missing permission does.
+ */
 export class RecordingPushSender implements PushSender {
   readonly sends: { tokens: readonly string[]; message: PushMessage }[] = [];
   readonly gone = new Set<string>();
+  refusal: string | null = null;
 
   async send(tokens: readonly string[], message: PushMessage): Promise<PushResult> {
     this.sends.push({ tokens: [...tokens], message });
+    if (this.refusal !== null) return { sent: 0, invalid: [], errors: { [this.refusal]: tokens.length }, detail: `refused: ${this.refusal}` };
     const invalid = tokens.filter((t) => this.gone.has(t));
-    return { sent: tokens.length - invalid.length, invalid };
+    const errors = invalid.length > 0 ? { 'messaging/registration-token-not-registered': invalid.length } : {};
+    return { sent: tokens.length - invalid.length, invalid, errors, detail: null };
   }
 }
 

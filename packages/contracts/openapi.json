@@ -63161,6 +63161,21 @@
                     },
                     "removed": {
                       "type": "integer"
+                    },
+                    "failed": {
+                      "type": "integer"
+                    },
+                    "errors": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "integer"
+                      }
+                    },
+                    "detail": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
                     }
                   },
                   "required": [
@@ -63168,7 +63183,10 @@
                     "label",
                     "devices",
                     "sent",
-                    "removed"
+                    "removed",
+                    "failed",
+                    "errors",
+                    "detail"
                   ],
                   "additionalProperties": false
                 }

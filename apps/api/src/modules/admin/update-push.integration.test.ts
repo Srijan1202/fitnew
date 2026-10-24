@@ -82,7 +82,16 @@ describeIfDb('/v1/admin/push/update (real Postgres)', () => {
 
     const sent = await call(admin, 'POST');
     expect(sent.statusCode, sent.body).toBe(200);
-    expect(sent.json()).toEqual({ build: 11, label: 'beta 3.5', devices: 3, sent: 2, removed: 1 });
+    expect(sent.json()).toEqual({
+      build: 11,
+      label: 'beta 3.5',
+      devices: 3,
+      sent: 2,
+      removed: 1,
+      failed: 1,
+      errors: { 'messaging/registration-token-not-registered': 1 },
+      detail: null,
+    });
     expect(push.sends).toHaveLength(1);
     expect(push.sends[0]!.message).toMatchObject({
       title: 'FITOS beta 3.5 is out',
@@ -100,10 +109,46 @@ describeIfDb('/v1/admin/push/update (real Postgres)', () => {
 
     const [audit] = await sql<{ actor_user_id: string; entity_id: string; metadata: Record<string, unknown> }[]>`
       select actor_user_id, entity_id, metadata from audit_logs where action = 'push.update'`;
-    expect(audit).toEqual({ actor_user_id: admin.id, entity_id: '11', metadata: { version: '1.0.0-beta.3.5', devices: 3, sent: 2, removed: 1 } });
+    expect(audit).toEqual({
+      actor_user_id: admin.id,
+      entity_id: '11',
+      metadata: { version: '1.0.0-beta.3.5', devices: 3, sent: 2, removed: 1, errors: { 'messaging/registration-token-not-registered': 1 }, detail: null },
+    });
 
     // The next build can be announced.
     feed.release = { version: '1.0.0-beta.3.6', build: 12 };
     expect((await call(admin, 'POST')).statusCode).toBe(200);
+  });
+
+  it('a send FCM refuses entirely (no permission) says why, keeps the tokens, and may be tried again once fixed', async () => {
+    const admin = await user(true);
+    const push = app.push as RecordingPushSender;
+    const feed = app.releaseFeed as ScriptedReleaseFeed;
+    await sql`delete from push_tokens`;
+    await sql`delete from audit_logs where action = 'push.update'`;
+    await sql`insert into push_tokens (user_id, token, platform) values (${admin.id}, 'tok-r1', 'android'), (${admin.id}, 'tok-r2', 'android')`;
+    feed.release = { version: '1.0.0-beta.3.7', build: 13 };
+    push.refusal = 'messaging/third-party-auth-error';
+    try {
+      const refused = await call(admin, 'POST');
+      expect(refused.statusCode, refused.body).toBe(200);
+      expect(refused.json()).toEqual({
+        build: 13,
+        label: 'beta 3.7',
+        devices: 2,
+        sent: 0,
+        removed: 0,
+        failed: 2,
+        errors: { 'messaging/third-party-auth-error': 2 },
+        detail: 'refused: messaging/third-party-auth-error',
+      });
+      expect((await sql<{ n: number }[]>`select count(*)::int n from push_tokens`)[0]!.n).toBe(2);
+      expect(((await call(admin, 'GET')).json() as { sentAt: string | null }).sentAt).toBeNull();
+    } finally {
+      push.refusal = null;
+    }
+    const retried = await call(admin, 'POST');
+    expect(retried.json()).toMatchObject({ sent: 2, failed: 0, errors: {} });
+    expect((await call(admin, 'POST')).statusCode).toBe(409);
   });
 });
