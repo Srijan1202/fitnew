@@ -3900,6 +3900,10 @@ mixin _$SessionExercise {
   List<PlannedSet>? get originalTargets;
   List<SetLog> get sets;
 
+  /// Beta 3.6, on the phone only: rows added with "+ Add set" (positive)
+  /// or removed (negative) against the plan's targets, for this workout.
+  int get extraRows;
+
   /// Create a copy of SessionExercise
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -3950,7 +3954,9 @@ mixin _$SessionExercise {
                 other.priorBest == priorBest) &&
             const DeepCollectionEquality()
                 .equals(other.originalTargets, originalTargets) &&
-            const DeepCollectionEquality().equals(other.sets, sets));
+            const DeepCollectionEquality().equals(other.sets, sets) &&
+            (identical(other.extraRows, extraRows) ||
+                other.extraRows == extraRows));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -3977,12 +3983,13 @@ mixin _$SessionExercise {
         recommendation,
         priorBest,
         const DeepCollectionEquality().hash(originalTargets),
-        const DeepCollectionEquality().hash(sets)
+        const DeepCollectionEquality().hash(sets),
+        extraRows
       ]);
 
   @override
   String toString() {
-    return 'SessionExercise(id: $id, clientExerciseId: $clientExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, incrementKg: $incrementKg, orderIndex: $orderIndex, supersetGroup: $supersetGroup, plannedExerciseId: $plannedExerciseId, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance, recommendation: $recommendation, priorBest: $priorBest, originalTargets: $originalTargets, sets: $sets)';
+    return 'SessionExercise(id: $id, clientExerciseId: $clientExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, incrementKg: $incrementKg, orderIndex: $orderIndex, supersetGroup: $supersetGroup, plannedExerciseId: $plannedExerciseId, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance, recommendation: $recommendation, priorBest: $priorBest, originalTargets: $originalTargets, sets: $sets, extraRows: $extraRows)';
   }
 }
 
@@ -4013,7 +4020,8 @@ abstract mixin class $SessionExerciseCopyWith<$Res> {
       ProgressionRecommendation? recommendation,
       PriorBest priorBest,
       List<PlannedSet>? originalTargets,
-      List<SetLog> sets});
+      List<SetLog> sets,
+      int extraRows});
 
   $LastPerformanceCopyWith<$Res>? get lastPerformance;
   $ProgressionRecommendationCopyWith<$Res>? get recommendation;
@@ -4054,6 +4062,7 @@ class _$SessionExerciseCopyWithImpl<$Res>
     Object? priorBest = null,
     Object? originalTargets = freezed,
     Object? sets = null,
+    Object? extraRows = null,
   }) {
     return _then(_self.copyWith(
       id: null == id
@@ -4140,6 +4149,10 @@ class _$SessionExerciseCopyWithImpl<$Res>
           ? _self.sets
           : sets // ignore: cast_nullable_to_non_nullable
               as List<SetLog>,
+      extraRows: null == extraRows
+          ? _self.extraRows
+          : extraRows // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 
@@ -4297,7 +4310,8 @@ extension SessionExercisePatterns on SessionExercise {
             ProgressionRecommendation? recommendation,
             PriorBest priorBest,
             List<PlannedSet>? originalTargets,
-            List<SetLog> sets)?
+            List<SetLog> sets,
+            int extraRows)?
         $default, {
     required TResult orElse(),
   }) {
@@ -4325,7 +4339,8 @@ extension SessionExercisePatterns on SessionExercise {
             _that.recommendation,
             _that.priorBest,
             _that.originalTargets,
-            _that.sets);
+            _that.sets,
+            _that.extraRows);
       case _:
         return orElse();
     }
@@ -4367,7 +4382,8 @@ extension SessionExercisePatterns on SessionExercise {
             ProgressionRecommendation? recommendation,
             PriorBest priorBest,
             List<PlannedSet>? originalTargets,
-            List<SetLog> sets)
+            List<SetLog> sets,
+            int extraRows)
         $default,
   ) {
     final _that = this;
@@ -4394,7 +4410,8 @@ extension SessionExercisePatterns on SessionExercise {
             _that.recommendation,
             _that.priorBest,
             _that.originalTargets,
-            _that.sets);
+            _that.sets,
+            _that.extraRows);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -4435,7 +4452,8 @@ extension SessionExercisePatterns on SessionExercise {
             ProgressionRecommendation? recommendation,
             PriorBest priorBest,
             List<PlannedSet>? originalTargets,
-            List<SetLog> sets)?
+            List<SetLog> sets,
+            int extraRows)?
         $default,
   ) {
     final _that = this;
@@ -4462,7 +4480,8 @@ extension SessionExercisePatterns on SessionExercise {
             _that.recommendation,
             _that.priorBest,
             _that.originalTargets,
-            _that.sets);
+            _that.sets,
+            _that.extraRows);
       case _:
         return null;
     }
@@ -4493,7 +4512,8 @@ class _SessionExercise extends SessionExercise {
       this.recommendation = null,
       this.priorBest = PriorBest.none,
       final List<PlannedSet>? originalTargets = null,
-      required final List<SetLog> sets})
+      required final List<SetLog> sets,
+      this.extraRows = 0})
       : _equipment = equipment,
         _primaryMuscles = primaryMuscles,
         _secondaryMuscles = secondaryMuscles,
@@ -4596,6 +4616,12 @@ class _SessionExercise extends SessionExercise {
     return EqualUnmodifiableListView(_sets);
   }
 
+  /// Beta 3.6, on the phone only: rows added with "+ Add set" (positive)
+  /// or removed (negative) against the plan's targets, for this workout.
+  @override
+  @JsonKey()
+  final int extraRows;
+
   /// Create a copy of SessionExercise
   /// with the given fields replaced by the non-null parameter values.
   @override
@@ -4651,7 +4677,9 @@ class _SessionExercise extends SessionExercise {
                 other.priorBest == priorBest) &&
             const DeepCollectionEquality()
                 .equals(other._originalTargets, _originalTargets) &&
-            const DeepCollectionEquality().equals(other._sets, _sets));
+            const DeepCollectionEquality().equals(other._sets, _sets) &&
+            (identical(other.extraRows, extraRows) ||
+                other.extraRows == extraRows));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -4678,12 +4706,13 @@ class _SessionExercise extends SessionExercise {
         recommendation,
         priorBest,
         const DeepCollectionEquality().hash(_originalTargets),
-        const DeepCollectionEquality().hash(_sets)
+        const DeepCollectionEquality().hash(_sets),
+        extraRows
       ]);
 
   @override
   String toString() {
-    return 'SessionExercise(id: $id, clientExerciseId: $clientExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, incrementKg: $incrementKg, orderIndex: $orderIndex, supersetGroup: $supersetGroup, plannedExerciseId: $plannedExerciseId, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance, recommendation: $recommendation, priorBest: $priorBest, originalTargets: $originalTargets, sets: $sets)';
+    return 'SessionExercise(id: $id, clientExerciseId: $clientExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, incrementKg: $incrementKg, orderIndex: $orderIndex, supersetGroup: $supersetGroup, plannedExerciseId: $plannedExerciseId, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance, recommendation: $recommendation, priorBest: $priorBest, originalTargets: $originalTargets, sets: $sets, extraRows: $extraRows)';
   }
 }
 
@@ -4716,7 +4745,8 @@ abstract mixin class _$SessionExerciseCopyWith<$Res>
       ProgressionRecommendation? recommendation,
       PriorBest priorBest,
       List<PlannedSet>? originalTargets,
-      List<SetLog> sets});
+      List<SetLog> sets,
+      int extraRows});
 
   @override
   $LastPerformanceCopyWith<$Res>? get lastPerformance;
@@ -4760,6 +4790,7 @@ class __$SessionExerciseCopyWithImpl<$Res>
     Object? priorBest = null,
     Object? originalTargets = freezed,
     Object? sets = null,
+    Object? extraRows = null,
   }) {
     return _then(_SessionExercise(
       id: null == id
@@ -4846,6 +4877,10 @@ class __$SessionExerciseCopyWithImpl<$Res>
           ? _self._sets
           : sets // ignore: cast_nullable_to_non_nullable
               as List<SetLog>,
+      extraRows: null == extraRows
+          ? _self.extraRows
+          : extraRows // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 

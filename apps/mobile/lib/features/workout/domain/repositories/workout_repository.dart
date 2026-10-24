@@ -73,6 +73,14 @@ abstract class WorkoutRepository {
 
   Future<void> deleteSet(String clientSessionId, String clientSetId);
 
+  /// Beta 3.6: how many rows an exercise has against its plan in this
+  /// workout ([SessionExercise.extraRows]); kept on the phone, never synced.
+  Future<void> setExtraRows(
+    String clientSessionId,
+    String clientExerciseId,
+    int extraRows,
+  );
+
   Future<String> addExercise(
     String clientSessionId,
     ExerciseSummary exercise, {

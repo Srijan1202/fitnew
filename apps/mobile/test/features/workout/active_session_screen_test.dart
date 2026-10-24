@@ -415,4 +415,118 @@ void main() {
     expect(FitColors.pine, isNotNull);
     stopRest();
   });
+
+  /* -------------------------------------------- beta 3.6: removing sets -- */
+
+  Future<SessionExercise> squatNow(WorkoutSession s) async => (await container
+          .read(workoutRepositoryProvider)
+          .session(s.clientSessionId))!
+      .exercises
+      .first;
+
+  testWidgets(
+      'beta 3.6: "− Remove set" drops the last set to do; Undo brings it back; it survives leaving',
+      (tester) async {
+    final s = await pumpSession(tester, offline: true);
+    final k = squatKey(s);
+    expect(find.byKey(ValueKey('$k.set.3')), findsOneWidget);
+    await reveal(tester, find.byKey(ValueKey('$k.removeSet')));
+    await tester.tap(find.byKey(ValueKey('$k.removeSet')));
+    await settle(tester);
+    expect(find.byKey(ValueKey('$k.set.3')), findsNothing);
+    expect((await squatNow(s)).extraRows, -1);
+    expect(find.text('Set 3 removed'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('session.undo')));
+    await settle(tester);
+    expect(find.byKey(ValueKey('$k.set.3')), findsOneWidget);
+    expect((await squatNow(s)).extraRows, 0);
+
+    // Removed again, then the screen is left and opened again.
+    await reveal(tester, find.byKey(ValueKey('$k.removeSet')));
+    await tester.tap(find.byKey(ValueKey('$k.removeSet')));
+    await settle(tester);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(harness(s.clientSessionId));
+    await settle(tester);
+    expect(find.byKey(ValueKey('$k.set.2')), findsOneWidget);
+    expect(find.byKey(ValueKey('$k.set.3')), findsNothing);
+    // The programme's plan is untouched: the session still has 3 targets.
+    expect((await squatNow(s)).targets, hasLength(3));
+  });
+
+  testWidgets(
+      'beta 3.6: swiping a set to do removes it; a logged last set is deleted and its row goes',
+      (tester) async {
+    final s = await pumpSession(tester, offline: true);
+    final k = squatKey(s);
+    await tester.tap(find.byKey(ValueKey('$k.set.1.done')));
+    await settle(tester);
+    stopRest();
+
+    // Set 2 (to do) swiped: set 3 moves up, two rows left.
+    await reveal(tester, find.byKey(ValueKey('$k.set.2')));
+    await tester.drag(find.byKey(ValueKey('$k.set.2')), const Offset(-600, 0));
+    await settle(tester);
+    expect(find.byKey(ValueKey('$k.set.3')), findsNothing);
+    expect(find.byKey(ValueKey('$k.set.2')), findsOneWidget);
+
+    // Set 2 logged, then swiped away: deleted, and the row goes too.
+    await tester.tap(find.byKey(ValueKey('$k.set.2.done')));
+    await settle(tester);
+    stopRest();
+    expect((await squatNow(s)).sets, hasLength(2));
+    await tester.drag(find.byKey(ValueKey('$k.set.2')), const Offset(-600, 0));
+    await settle(tester);
+    expect((await squatNow(s)).sets, hasLength(1));
+    expect(find.byKey(ValueKey('$k.set.2')), findsNothing);
+
+    // Undo logs it again (once the message has slid in).
+    await settle(tester);
+    await tester.tap(find.byKey(const ValueKey('session.undo')));
+    await settle(tester);
+    expect((await squatNow(s)).sets, hasLength(2));
+    expect(find.byKey(ValueKey('$k.set.2')), findsOneWidget);
+    stopRest();
+  });
+
+  testWidgets(
+      'beta 3.6: a set to do between logged ones cannot be swiped, and the only row always stays',
+      (tester) async {
+    final s = await pumpSession(tester, offline: true);
+    final k = squatKey(s);
+    // Log set 3 first: set 2 (to do) sits between logged sets.
+    await reveal(tester, find.byKey(ValueKey('$k.set.3.done')));
+    await tester.tap(find.byKey(ValueKey('$k.set.3.done')));
+    await settle(tester);
+    stopRest();
+    expect(
+      find.ancestor(
+        of: find.byKey(ValueKey('$k.set.2')),
+        matching: find.byType(Dismissible),
+      ),
+      findsNothing,
+    );
+    expect(
+      tester.widget<TextButton>(find.byKey(ValueKey('$k.removeSet'))).onPressed,
+      isNull,
+      reason: 'no set to do after the last logged one',
+    );
+
+    // Un-log set 3 and remove down to one row: the button then stops.
+    await tester.tap(find.byKey(ValueKey('$k.set.3.done')));
+    await settle(tester);
+    for (var i = 0; i < 2; i++) {
+      await reveal(tester, find.byKey(ValueKey('$k.removeSet')));
+      await tester.tap(find.byKey(ValueKey('$k.removeSet')));
+      await settle(tester);
+    }
+    expect(find.byKey(ValueKey('$k.set.1')), findsOneWidget);
+    expect(find.byKey(ValueKey('$k.set.2')), findsNothing);
+    expect(
+      tester.widget<TextButton>(find.byKey(ValueKey('$k.removeSet'))).onPressed,
+      isNull,
+    );
+    stopRest();
+  });
 }

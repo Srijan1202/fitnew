@@ -9,7 +9,8 @@ import '../../../../shared/widgets/fit_glass.dart';
 /// One exercise in the session in progress. Collapsed: number, name,
 /// "done / planned sets". Expanded: every set as a row — logged sets in
 /// pine with a check, the next one pre-filled with a **done** tap — then
-/// "+ Add set", "Drop set", "Superset with next", Replace, Remove.
+/// "+ Add set", "− Remove set", "Drop set", "Superset with next", Replace,
+/// Remove. Beta 3.6: a set row swiped left is removed for this workout.
 ///
 /// Nothing here decides a number: pending values come from the server's
 /// prefill (what you did last time, a deload's lighter load, or the plan)
@@ -30,6 +31,8 @@ class SessionExerciseCard extends StatelessWidget {
     required this.onLoggedChanged,
     required this.onDeleteLogged,
     required this.onAddSet,
+    required this.onRemoveRow,
+    required this.onRemoveSet,
     required this.onDropSet,
     required this.onSupersetToggle,
     required this.onReplace,
@@ -54,6 +57,13 @@ class SessionExerciseCard extends StatelessWidget {
   final void Function(SetLog set, PlannedSet values) onLoggedChanged;
   final void Function(SetLog set) onDeleteLogged;
   final VoidCallback onAddSet;
+
+  /// Beta 3.6: removes a swiped row; null for a row that cannot go (a set
+  /// still to do with logged sets after it, or the only row).
+  final VoidCallback? Function(SessionSetRow row) onRemoveRow;
+
+  /// Beta 3.6: removes the last set still to do; null when there is none.
+  final VoidCallback? onRemoveSet;
   final VoidCallback? onDropSet;
   final VoidCallback onSupersetToggle;
   final VoidCallback onReplace;
@@ -293,6 +303,11 @@ class SessionExerciseCard extends StatelessWidget {
                       child: const Text('+ Add set'),
                     ),
                     TextButton(
+                      key: ValueKey('$key.removeSet'),
+                      onPressed: onRemoveSet,
+                      child: const Text('− Remove set'),
+                    ),
+                    TextButton(
                       key: ValueKey('$key.dropSet'),
                       onPressed: onDropSet,
                       child: const Text('Drop set'),
@@ -343,6 +358,40 @@ class SessionExerciseCard extends StatelessWidget {
     final logged = row.logged;
     final rowKey =
         '$key.set.${row.setIndex}${row.setType == SetType.drop ? '.drop' : ''}';
+    final remove = onRemoveRow(row);
+    final content = _rowContent(context, rowKey, row);
+    if (remove == null) return content;
+    // The swipe only asks; the row goes (or turns back into a set to do)
+    // when the session changes, so the slide never outlives it.
+    return Dismissible(
+      key: ValueKey(
+        '$rowKey.swipe.${logged?.clientSetId ?? exercise.extraRows}',
+      ),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (_) async {
+        remove();
+        return false;
+      },
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: FitSpacing.md),
+        color: FitColors.amber.withValues(alpha: 0.18),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(Icons.delete_outline, color: FitColors.ink),
+            const SizedBox(width: FitSpacing.xs),
+            Text('Remove', style: textTheme.labelLarge),
+          ],
+        ),
+      ),
+      child: content,
+    );
+  }
+
+  Widget _rowContent(BuildContext context, String rowKey, SessionSetRow row) {
+    final textTheme = Theme.of(context).textTheme;
+    final logged = row.logged;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[

@@ -299,6 +299,10 @@ abstract class SessionExercise with _$SessionExercise {
     @Default(PriorBest.none) PriorBest priorBest,
     @Default(null) List<PlannedSet>? originalTargets,
     required List<SetLog> sets,
+
+    /// Beta 3.6, on the phone only: rows added with "+ Add set" (positive)
+    /// or removed (negative) against the plan's targets, for this workout.
+    @Default(0) int extraRows,
   }) = _SessionExercise;
 
   factory SessionExercise.fromJson(Map<String, dynamic> json) =>

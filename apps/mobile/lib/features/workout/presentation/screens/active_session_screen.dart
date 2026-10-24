@@ -45,9 +45,6 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
   /// Pending (not yet logged) values per exercise + row key.
   final Map<String, PlannedSet> _pending = {};
 
-  /// Extra rows added with "+ Add set" beyond the plan, per exercise.
-  final Map<String, int> _extraRows = {};
-
   /// Pending drop sets per exercise, keyed by the working set they follow.
   final Map<String, Set<int>> _pendingDrops = {};
 
@@ -90,7 +87,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
     };
     final maxLoggedIndex = logged.keys.fold(0, (m, i) => i > m ? i : m);
     final count = [
-      x.targets.length + (_extraRows[x.clientExerciseId] ?? 0),
+      x.targets.length + x.extraRows,
       maxLoggedIndex,
       1,
     ].reduce((a, b) => a > b ? a : b);
@@ -193,6 +190,131 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
   }
 
   /* --------------------------------------------------------- actions -- */
+
+  /// Beta 3.6: the highest logged working set (0 when none).
+  static int _lastLogged(SessionExercise x) => x.sets
+      .where((s) => s.setType == SetType.working)
+      .fold<int>(0, (m, s) => s.setIndex > m ? s.setIndex : m);
+
+  Future<void> _setRows(SessionExercise x, int extraRows) =>
+      ref.read(workoutRepositoryProvider).setExtraRows(
+            widget.clientSessionId,
+            x.clientExerciseId,
+            extraRows,
+          );
+
+  /// Beta 3.6 (owner): what removing [row] does, or null when it cannot go.
+  /// The last row goes; a set still to do after the last logged one goes
+  /// and the ones below move up; a logged set is deleted (and, if it was
+  /// not the last row, is a set to do again, as un-logging is). Undo.
+  VoidCallback? _removal(
+    SessionExercise x,
+    List<SessionSetRow> rows,
+    SessionSetRow row,
+  ) {
+    final working = rows.where((r) => r.setType == SetType.working).toList();
+    final lastIndex = working.isEmpty ? 0 : working.last.setIndex;
+    final id = x.clientExerciseId;
+    if (row.setType == SetType.drop) {
+      final logged = row.logged;
+      if (logged == null) {
+        return () {
+          final before = _pending['$id.${row.key}'];
+          setState(() {
+            _pendingDrops[id]?.remove(row.setIndex);
+            _pending.remove('$id.${row.key}');
+          });
+          _undo('Drop set removed', () {
+            setState(() {
+              (_pendingDrops[id] ??= <int>{}).add(row.setIndex);
+              if (before != null) _pending['$id.${row.key}'] = before;
+            });
+          });
+        };
+      }
+      return () => _removeLogged(x, logged, rows: x.extraRows);
+    }
+    if (working.length <= 1) return null;
+    final logged = row.logged;
+    final shrinks = row.setIndex == lastIndex;
+    if (logged != null) {
+      return () => _removeLogged(
+            x,
+            logged,
+            rows: shrinks ? x.extraRows - 1 : x.extraRows,
+          );
+    }
+    if (row.setIndex <= _lastLogged(x)) return null;
+    return () {
+      // The sets to do below this one move up a place.
+      final saved = Map<String, PlannedSet>.of(_pending);
+      setState(() {
+        for (var i = row.setIndex; i < lastIndex; i++) {
+          final next = _pending.remove('$id.${i + 1}.working');
+          if (next == null) {
+            _pending.remove('$id.$i.working');
+          } else {
+            _pending['$id.$i.working'] = next.copyWith(setIndex: i);
+          }
+        }
+        _pending.remove('$id.$lastIndex.working');
+      });
+      final previous = x.extraRows;
+      unawaited(_setRows(x, previous - 1));
+      _undo('Set ${row.setIndex} removed', () async {
+        setState(() {
+          _pending
+            ..clear()
+            ..addAll(saved);
+        });
+        await _setRows(x, previous);
+      });
+    };
+  }
+
+  Future<void> _removeLogged(
+    SessionExercise x,
+    SetLog set, {
+    required int rows,
+  }) async {
+    final repo = ref.read(workoutRepositoryProvider);
+    final previous = x.extraRows;
+    await repo.deleteSet(widget.clientSessionId, set.clientSetId);
+    if (rows != previous) await _setRows(x, rows);
+    _undo('Set ${set.setIndex} removed', () async {
+      await repo.logSet(
+        widget.clientSessionId,
+        LogSetInput(
+          clientSetId: _uuid.v4(),
+          clientExerciseId: x.clientExerciseId,
+          setIndex: set.setIndex,
+          setType: set.setType,
+          weightKg: set.weightKg,
+          reps: set.reps,
+          rir: set.rir,
+          loggedAt: set.loggedAt,
+          plannedSetId: set.plannedSetId,
+        ),
+      );
+      if (rows != previous) await _setRows(x, previous);
+    });
+  }
+
+  void _undo(String message, FutureOr<void> Function() undo) {
+    final messenger = ScaffoldMessenger.of(context)..removeCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        key: const ValueKey('session.removed'),
+        content: Text(message),
+        duration: const Duration(seconds: 4),
+        action: SnackBarAction(
+          key: const ValueKey('session.undo'),
+          label: 'Undo',
+          onPressed: () => undo(),
+        ),
+      ),
+    );
+  }
 
   Future<void> _log(SessionExercise x, SessionSetRow row) async {
     final repo = ref.read(workoutRepositoryProvider);
@@ -564,6 +686,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
 
   Widget _card(WorkoutSession session, int i, dynamic repo) {
     final x = session.exercises[i];
+    final rows = _rowsFor(x);
     final next =
         i + 1 < session.exercises.length ? session.exercises[i + 1] : null;
     final supersetWithNext =
@@ -575,7 +698,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
       key: ValueKey('card.${x.clientExerciseId}'),
       index: i + 1,
       exercise: x,
-      rows: _rowsFor(x),
+      rows: rows,
       expanded: _expanded.contains(x.clientExerciseId),
       supersetWithNext: supersetWithNext,
       canSuperset: next != null,
@@ -598,10 +721,18 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
       onDeleteLogged: (set) => ref
           .read(workoutRepositoryProvider)
           .deleteSet(widget.clientSessionId, set.clientSetId),
-      onAddSet: () => setState(
-        () => _extraRows[x.clientExerciseId] =
-            (_extraRows[x.clientExerciseId] ?? 0) + 1,
-      ),
+      onAddSet: () => _setRows(x, x.extraRows + 1),
+      onRemoveRow: (row) => _removal(x, rows, row),
+      onRemoveSet: () {
+        // The last set still to do, if it may go.
+        final todo = rows.lastWhere(
+          (r) => r.setType == SetType.working && r.logged == null,
+          orElse: () => rows.first,
+        );
+        return todo.logged == null && todo.setType == SetType.working
+            ? _removal(x, rows, todo)
+            : null;
+      }(),
       onDropSet: lastWorking == 0
           ? null
           : () => setState(

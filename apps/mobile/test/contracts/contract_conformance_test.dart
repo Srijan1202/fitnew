@@ -770,7 +770,20 @@ void main() {
         'session, exercise, set, last performance, prefill, summary and record shapes',
         () {
       expect(sampleSession.toJson().keys.toSet(), keysOf(session));
-      expect(sampleExercise.toJson().keys.toSet(), keysOf(sessionExercise));
+      // Beta 3.6: extraRows is the phone's own (rows added or removed in
+      // this workout); the server never sends or reads it.
+      expect(
+        sampleExercise.toJson().keys.toSet().difference({'extraRows'}),
+        keysOf(sessionExercise),
+      );
+      expect(
+        SessionExercise.fromJson(
+          (jsonDecode(jsonEncode(sampleExercise.toJson()))
+              as Map<String, dynamic>)
+            ..remove('extraRows'),
+        ).extraRows,
+        0,
+      );
       expect(
         sampleSet.toJson().keys.toSet(),
         keysOf(items(sessionExercise, 'sets')),

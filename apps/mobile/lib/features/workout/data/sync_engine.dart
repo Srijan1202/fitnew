@@ -748,7 +748,16 @@ class SyncEngine {
           final row = await (_db.select(_db.localSessionExercises)
                 ..where((t) => t.clientExerciseId.equals(x.clientExerciseId)))
               .getSingleOrNull();
-          final meta = jsonEncode(x.copyWith(sets: const []).toJson());
+          // Beta 3.6: the rows added or removed in this workout are the
+          // phone's own; the server's copy never carries them.
+          final kept = row == null
+              ? 0
+              : SessionExercise.fromJson(
+                  jsonDecode(row.exerciseJson) as Map<String, dynamic>,
+                ).extraRows;
+          final meta = jsonEncode(
+            x.copyWith(sets: const [], extraRows: kept).toJson(),
+          );
           if (row == null) {
             await _db.into(_db.localSessionExercises).insert(
                   LocalSessionExercisesCompanion.insert(

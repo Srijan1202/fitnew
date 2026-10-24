@@ -287,6 +287,7 @@ _SessionExercise _$SessionExerciseFromJson(Map<String, dynamic> json) =>
       sets: (json['sets'] as List<dynamic>)
           .map((e) => SetLog.fromJson(e as Map<String, dynamic>))
           .toList(),
+      extraRows: (json['extraRows'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$SessionExerciseToJson(_SessionExercise instance) =>
@@ -316,6 +317,7 @@ Map<String, dynamic> _$SessionExerciseToJson(_SessionExercise instance) =>
       'priorBest': instance.priorBest,
       'originalTargets': instance.originalTargets,
       'sets': instance.sets,
+      'extraRows': instance.extraRows,
     };
 
 const _$MovementPatternEnumMap = {

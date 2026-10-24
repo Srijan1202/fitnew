@@ -499,6 +499,32 @@ class LocalWorkoutRepository implements WorkoutRepository {
     _sync.kick();
   }
 
+  @override
+  Future<void> setExtraRows(
+    String clientSessionId,
+    String clientExerciseId,
+    int extraRows,
+  ) async {
+    await _db.transaction(() async {
+      final row = await (_db.select(_db.localSessionExercises)
+            ..where((t) => t.clientExerciseId.equals(clientExerciseId)))
+          .getSingle();
+      final meta = SessionExercise.fromJson(
+        jsonDecode(row.exerciseJson) as Map<String, dynamic>,
+      );
+      await (_db.update(_db.localSessionExercises)
+            ..where((t) => t.clientExerciseId.equals(clientExerciseId)))
+          .write(
+        LocalSessionExercisesCompanion(
+          exerciseJson: Value(
+            jsonEncode(meta.copyWith(extraRows: extraRows).toJson()),
+          ),
+        ),
+      );
+      await _touch(clientSessionId);
+    });
+  }
+
   static SessionExercise _fromSummary(
     ExerciseSummary e, {
     required String clientExerciseId,
