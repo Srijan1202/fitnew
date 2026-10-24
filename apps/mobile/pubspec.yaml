@@ -81,6 +81,8 @@ dependencies:
   # Beta 3.2 (ADR-029 amendment): two short, quiet chimes made for FITOS.
   audioplayers: 6.8.1
   image_picker: 1.2.4
+  # Beta 3.6 (F14): the phone's model and Android version with feedback.
+  device_info_plus: 13.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -441,12 +441,24 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
       ),
     ];
 
+/// Beta 3.6: the last screen outside Profile, sent with feedback as "the
+/// screen you came from" (Send feedback lives under Profile).
+class LastScreen extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void set(String path) => state = path;
+}
+
+final lastScreenProvider =
+    NotifierProvider<LastScreen, String?>(LastScreen.new);
+
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = AuthRefresh(ref);
   ref.onDispose(refresh.dispose);
   final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
-  return GoRouter(
+  final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: Routes.splash,
     refreshListenable: refresh,
@@ -454,4 +466,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         authRedirect(ref.read(authControllerProvider), state.matchedLocation),
     routes: buildRoutes(rootNavigatorKey),
   );
+  void track() {
+    final path = router.routerDelegate.currentConfiguration.uri.path;
+    if (path.isNotEmpty &&
+        path != Routes.splash &&
+        !path.startsWith(Routes.profile)) {
+      ref.read(lastScreenProvider.notifier).set(path);
+    }
+  }
+
+  router.routerDelegate.addListener(track);
+  ref.onDispose(() => router.routerDelegate.removeListener(track));
+  return router;
 });

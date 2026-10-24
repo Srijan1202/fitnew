@@ -101,3 +101,20 @@ The owner asked for the update pop-up every time the app is opened, on top, and 
   - Android shows it while the app is closed, and **older APKs receive it too**. Tapping it opens FITOS, which shows the dialog.
   - New seams follow the token verifier's pattern: `PushSender` (Firebase, or recording in tests) and `ReleaseFeed` (the website, or scripted in tests).
 - **The feedback limit** goes from 5 to **20 an hour per person**, and **admins are not limited**. A tester who reaches it is told kindly and keeps their text.
+
+## Amendment — feedback with pictures, the phone and replies (beta 3.6, owner 2026-10-24)
+
+1. **Pictures:** up to 3 per message, resized on the phone (≤ 1600 px, JPEG at quality 80). The server checks each one by its first bytes (JPEG, PNG or WebP only) and refuses one over 1 MB. The body limit is 4.6 MB on `POST /feedback` only.
+   - They are kept in the database, so they are in its backups and move with it if hosting changes (ADR-025).
+   - **Deleted after 180 days** by a daily clean-up (the text stays), and with the message or the account. They are part of the data export.
+   - Only an admin fetches them, never cached (`private, no-store`). The panel shows thumbnails; a click opens one full size.
+2. **The phone:** model, Android version and the last screen outside Profile ("the screen you came from").
+   - The form shows them before sending, and a switch leaves them out.
+   - A new dependency, `device_info_plus`.
+3. **Replies:** an admin replies on the card, audited as `feedback.reply`.
+   - The sender's phones get *"FITOS replied to your feedback"* (FCM, as the update notice). Tapping it opens Send feedback.
+   - **Your messages** (`GET /feedback/mine`) shows each message's status (Received, Seen, Done) and the replies. They are marked read when seen (`POST /feedback/mine/read`), and Profile says *"1 new reply"* until then.
+   - The sender answers by sending new feedback; there is no thread in 3.6.
+   - A failed push never fails the reply.
+4. **Type filter** in the admin panel (the categories already existed).
+5. Migration 0032 (`feedback_pictures`, `feedback_replies`, three device columns) with its down file. The privacy policy (app and website) says all of this.

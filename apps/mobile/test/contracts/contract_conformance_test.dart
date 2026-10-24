@@ -2542,6 +2542,74 @@ void main() {
       );
     });
 
+    test(
+        'beta 3.6: the pictures and the phone as the server takes them; GET /feedback/mine read field by field',
+        () {
+      Map<String, dynamic> items(Map<String, dynamic> schema, String key) =>
+          (properties(schema)[key] as Map<String, dynamic>)['items']
+              as Map<String, dynamic>;
+      final request = schemaOf('/feedback', 'post', request: true);
+      final device = properties(request)['device'] as Map<String, dynamic>;
+      const d = FeedbackDevice(model: 'M', os: 'Android 15', screen: '/');
+      // device is nullable: its object is the first of anyOf/oneOf, or itself.
+      final deviceObject = ((device['anyOf'] ?? device['oneOf']) as List?)
+              ?.cast<Map<String, dynamic>>()
+              .firstWhere((s) => s['type'] == 'object') ??
+          device;
+      expect(d.toJson().keys.toSet(), keysOf(deviceObject));
+      final picture = items(request, 'pictures');
+      expect(keysOf(picture), {'type', 'data'});
+      expect(
+        enumOf(properties(picture)['type'] as Map<String, dynamic>),
+        ['image/jpeg', 'image/png', 'image/webp'],
+      );
+      expect(
+        (properties(request)['pictures'] as Map<String, dynamic>)['maxItems'],
+        kFeedbackMaxPictures,
+      );
+
+      final mine = schemaOf('/feedback/mine', 'get');
+      expect(keysOf(mine), {'items', 'unread'});
+      final item = items(mine, 'items');
+      expect(keysOf(item), {
+        'id',
+        'category',
+        'message',
+        'status',
+        'createdAt',
+        'pictures',
+        'replies',
+      });
+      expect(
+        keysOf(items(item, 'replies')),
+        {'id', 'message', 'createdAt', 'readAt'},
+      );
+      final parsed = MyFeedbackList.fromJson({
+        'items': [
+          {
+            'id': 'f',
+            'category': 'idea',
+            'message': 'm',
+            'status': 'done',
+            'createdAt': '2026-10-24T10:00:00.000Z',
+            'pictures': 2,
+            'replies': [
+              {
+                'id': 'r',
+                'message': 'Thanks',
+                'createdAt': '2026-10-24T11:00:00.000Z',
+                'readAt': null,
+              },
+            ],
+          },
+        ],
+        'unread': 1,
+      });
+      expect(parsed.items.single.statusLabel, 'Done');
+      expect(parsed.items.single.replies.single.readAt, isNull);
+      expect(parsed.unread, 1);
+    });
+
     test('GET /meta/config: the flags and the minimum build', () {
       const c = AppConfig(flags: {'describe-meal': true}, minimumBuild: 3);
       expect(c.toJson().keys.toSet(), keysOf(schemaOf('/meta/config', 'get')));

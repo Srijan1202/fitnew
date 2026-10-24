@@ -1,4 +1,5 @@
 import '../../../../core/feedback/app_feedback.dart';
+import '../../../feedback/presentation/feedback_screen.dart';
 import '../../../premium/domain/avatars.dart';
 import '../../../premium/presentation/app_icon_controller.dart';
 import '../../../premium/presentation/app_icon_picker.dart';
@@ -232,6 +233,14 @@ class ProfileScreen extends ConsumerWidget {
                         key: const ValueKey('profile.feedback'),
                         icon: Icons.chat_bubble_outline,
                         title: 'Send feedback',
+                        // Beta 3.6: a reply from the FITOS team is waiting.
+                        value: switch (
+                            ref.watch(feedbackUnreadProvider).value ?? 0) {
+                          0 => null,
+                          1 => '1 new reply',
+                          final n => '$n new replies',
+                        },
+                        valueKey: const ValueKey('profile.feedback.unread'),
                         onTap: () => context.push(Routes.feedback),
                       ),
                     ],

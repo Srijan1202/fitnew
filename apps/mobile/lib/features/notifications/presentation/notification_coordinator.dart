@@ -60,6 +60,18 @@ final pushTokenSourceProvider = Provider<Future<String?> Function()>(
   },
 );
 
+/// Beta 3.6: the data of server pushes the person tapped (the one that
+/// opened FITOS first, then any while it runs); nothing without Firebase.
+final pushOpensProvider = Provider<Stream<Map<String, dynamic>>>((_) async* {
+  try {
+    final first = await FirebaseMessaging.instance.getInitialMessage();
+    if (first != null) yield first.data;
+    yield* FirebaseMessaging.onMessageOpenedApp.map((m) => m.data);
+  } on Object {
+    // No Firebase (tests, or no Play services): no pushes to open.
+  }
+});
+
 /// What the phone remembers about the plan between launches.
 class _Stored {
   _Stored({
@@ -175,9 +187,16 @@ class NotificationCoordinator extends Notifier<NotifyState> {
     final lifecycle =
         AppLifecycleListener(onResume: () => unawaited(refresh()));
     FitNotifications.onTap = (r) => unawaited(onTap(r.payload));
+    // Beta 3.6: "FITOS replied to your feedback" opens the messages.
+    final pushes = ref.read(pushOpensProvider).listen((data) {
+      if (data['type'] == 'feedback-reply' && ref.mounted) {
+        ref.read(routerProvider).push(Routes.feedback);
+      }
+    });
     ref.onDispose(() {
       activity.cancel();
       drained.cancel();
+      pushes.cancel();
       lifecycle.dispose();
       _debounce?.cancel();
       if (FitNotifications.onTap != null) FitNotifications.onTap = null;
