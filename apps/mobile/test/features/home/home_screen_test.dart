@@ -625,7 +625,8 @@ void main() {
     // Revoked in Health Connect while FITOS was in the background.
     health.connection_ = available;
     health.snapshot_ = null;
-    await tester.tap(find.byKey(const ValueKey('home.steps')));
+    // Beta 3.6: Steps opens the steps by day; Active calories opens Health.
+    await tester.tap(find.byKey(const ValueKey('home.activeCalories')));
     await tester.pumpAndSettle();
     await reveal(tester, find.byKey(const ValueKey('health.refresh')));
     await tester.tap(find.byKey(const ValueKey('health.refresh')));

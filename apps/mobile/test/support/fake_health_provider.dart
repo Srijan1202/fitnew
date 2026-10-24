@@ -63,6 +63,24 @@ class FakeHealthProvider implements HealthDataProvider {
     return true;
   }
 
+  /// Beta 3.6: steps per day, oldest first, ending today; null = cannot read.
+  List<double?>? stepsByDay;
+
+  @override
+  Future<List<double?>?> dailySteps({
+    required String endDate,
+    required String timezone,
+    required int days,
+  }) async {
+    calls.add('dailySteps:$endDate:$days');
+    final all = stepsByDay;
+    if (all == null) return null;
+    return [
+      for (var i = 0; i < days; i++)
+        i - (days - all.length) >= 0 ? all[i - (days - all.length)] : null,
+    ];
+  }
+
   /// Beta 3.2: what Health Connect counted in a window; null = cannot say.
   double? Function(DateTime start, DateTime end) activeBetween =
       (_, __) => null;

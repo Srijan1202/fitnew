@@ -419,7 +419,8 @@ class TodayMetrics extends StatelessWidget {
           line: stepsLine,
           valueKey: const ValueKey('home.steps'),
           muted: stepsMuted,
-          onTap: () => buildContext.push(Routes.healthData),
+          // Beta 3.6: the week day by day.
+          onTap: () => buildContext.push(Routes.steps),
         ),
         _Block(
           label: 'Active calories',

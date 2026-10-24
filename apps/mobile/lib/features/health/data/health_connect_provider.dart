@@ -91,6 +91,32 @@ class HealthConnectProvider implements HealthDataProvider {
     return a.values[HealthMetricKind.activeCalories.wire] ?? 0;
   }
 
+  @override
+  Future<List<double?>?> dailySteps({
+    required String endDate,
+    required String timezone,
+    required int days,
+  }) async {
+    final conn = await connection();
+    if (conn.sdk != HealthSdkStatus.available ||
+        !conn.granted.contains(HealthMetricKind.steps)) {
+      return null;
+    }
+    final end = _Calendar(timezone, endDate);
+    return Future.wait([
+      for (var i = days - 1; i >= 0; i--)
+        () async {
+          final d = end.shift(-i);
+          final a = await _aggregate(
+            d.dayStart,
+            d.dayEnd,
+            const [HealthMetricKind.steps],
+          );
+          return a.values['steps'];
+        }(),
+    ]);
+  }
+
   /* ---------------------------------------------------------- snapshot -- */
 
   @override
@@ -443,6 +469,14 @@ class _Calendar {
   DateTime get dayEnd => _at(1, 0);
   DateTime get nightStart => _at(-1, HealthConnectProvider.nightStartHour);
   DateTime get nightEnd => _at(0, HealthConnectProvider.nightEndHour);
+
+  /// The day [days] away from this one (negative = earlier).
+  _Calendar shift(int days) {
+    final day = tz.TZDateTime(location, y, m, d + days);
+    final mm = day.month.toString().padLeft(2, '0');
+    final dd = day.day.toString().padLeft(2, '0');
+    return _Calendar(location.name, '${day.year}-$mm-$dd');
+  }
 
   /// The i-th day (0 = Monday) of this date's local week.
   _Calendar weekDay(int i) {

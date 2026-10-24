@@ -1,8 +1,10 @@
 import '../../../home/presentation/controllers/home_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/navigation.dart';
+import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/hairline_section.dart';
 import '../../domain/entities/health.dart';
@@ -67,6 +69,13 @@ class HealthDataScreen extends ConsumerWidget {
                       ref.read(healthConnectionProvider.notifier).refresh(),
                 ),
                 data: (c) => _Body(state: c, snapshot: snapshot),
+              ),
+              const SizedBox(height: FitSpacing.lg),
+              OutlinedButton.icon(
+                key: const ValueKey('health.steps'),
+                onPressed: () => context.push(Routes.steps),
+                icon: const Icon(Icons.bar_chart),
+                label: const Text('Steps day by day'),
               ),
               const SizedBox(height: FitSpacing.xl),
               HairlineSection(

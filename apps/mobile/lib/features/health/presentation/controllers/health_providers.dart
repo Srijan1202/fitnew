@@ -17,6 +17,7 @@ import '../../data/health_connect_channel.dart';
 import '../../data/health_connect_provider.dart';
 import '../../domain/entities/health.dart';
 import '../../domain/health_data_provider.dart';
+import '../../domain/steps_history.dart';
 
 /// Phase 6.5 — health state for the Home screen. The provider is Health
 /// Connect on Android and honest `unsupported` elsewhere; the snapshot is
@@ -222,3 +223,19 @@ class StepGoal extends Notifier<int> {
 }
 
 final stepGoalProvider = NotifierProvider<StepGoal, int>(StepGoal.new);
+
+/// Beta 3.6: steps day by day for this week and the three before (the
+/// Steps screen); null when steps cannot be read. Read when the screen
+/// opens and again on pull to refresh.
+final stepsHistoryProvider = FutureProvider.autoDispose<StepsHistory?>((
+  ref,
+) async {
+  final today = StepsHistory.dateOf(ref.watch(localTodayProvider));
+  final days = StepsHistory.daysFor(today);
+  final steps = await ref.watch(healthDataProviderProvider).dailySteps(
+        endDate: ref.read(localTodayProvider),
+        timezone: ref.read(userTimezoneProvider),
+        days: days,
+      );
+  return steps == null ? null : StepsHistory(today: today, steps: steps);
+});

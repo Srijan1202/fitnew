@@ -29,6 +29,15 @@ abstract class HealthDataProvider {
   /// FITOS workout's window). 0 when granted but nothing was recorded; null
   /// when it cannot say (not connected, not granted, an error). Never throws.
   Future<double?> activeCaloriesBetween(DateTime start, DateTime end);
+
+  /// Beta 3.6: steps per local day for the [days] days ending on [endDate]
+  /// (yyyy-mm-dd, in [timezone]), oldest first; a null day had no data.
+  /// Null when steps cannot be read (no source, not granted). Never throws.
+  Future<List<double?>?> dailySteps({
+    required String endDate,
+    required String timezone,
+    required int days,
+  });
 }
 
 /// The provider for platforms with no health source: honest
@@ -65,5 +74,13 @@ class UnsupportedHealthProvider implements HealthDataProvider {
 
   @override
   Future<double?> activeCaloriesBetween(DateTime start, DateTime end) async =>
+      null;
+
+  @override
+  Future<List<double?>?> dailySteps({
+    required String endDate,
+    required String timezone,
+    required int days,
+  }) async =>
       null;
 }

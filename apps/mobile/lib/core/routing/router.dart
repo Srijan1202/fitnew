@@ -39,6 +39,7 @@ import '../../features/training/presentation/screens/workout_week_screen.dart';
 import '../../features/workout/presentation/screens/active_session_screen.dart';
 import '../../features/ai/presentation/screens/ai_chat_screen.dart';
 import '../../features/health/presentation/screens/health_data_screen.dart';
+import '../../features/health/presentation/screens/steps_screen.dart';
 import '../../features/workout/presentation/screens/history_screen.dart';
 import '../../features/workout/presentation/screens/volume_screen.dart';
 import '../../features/workout/presentation/screens/session_summary_screen.dart';
@@ -68,6 +69,9 @@ abstract final class Routes {
   /// Phase 10: diet and allergies, the hard rules for food suggestions.
   static const String profileFood = '/profile/food';
   static const String healthData = '/profile/health';
+
+  /// Beta 3.6: steps day by day (week and 4 weeks).
+  static const String steps = '/profile/health/steps';
 
   /// Phase 15: reminders — each kind, the tone, quiet hours.
   static const String notifications = '/profile/notifications';
@@ -178,6 +182,13 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
             path: 'health',
             name: 'health-data',
             builder: (context, state) => const HealthDataScreen(),
+            routes: [
+              GoRoute(
+                path: 'steps',
+                name: 'steps',
+                builder: (context, state) => const StepsScreen(),
+              ),
+            ],
           ),
           GoRoute(
             path: 'details',
