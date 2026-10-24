@@ -324,6 +324,19 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('LOG 2026-10-19 dinner'), findsOneWidget);
+    // Beta 3.6: a meal reminder opens its own meal.
+    final lunch = plannedItem(
+      'b8888888-8888-4888-8888-888888888888',
+      kind: 'meal-lunch',
+      screen: 'food-log',
+      slot: 'lunch',
+      at: DateTime.utc(2026, 10, 19, 8, 20),
+    );
+    await tester.runAsync(
+      () => n.onTap(NotificationScheduler.payloadOf(lunch)),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('LOG 2026-10-19 lunch'), findsOneWidget);
     await tester.runAsync(
       () => n.onTap(NotificationScheduler.payloadOf(workout)),
     );
@@ -336,7 +349,11 @@ void main() {
     await tester.runAsync(n.refresh);
     expect(
       api.planCalls.last.map((e) => '${e.id}:${e.event}').toSet(),
-      {'${protein.id}:opened', '${workout.id}:opened'},
+      {
+        '${protein.id}:opened',
+        '${workout.id}:opened',
+        'b8888888-8888-4888-8888-888888888888:opened',
+      },
     );
   });
 

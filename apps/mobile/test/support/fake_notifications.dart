@@ -23,6 +23,7 @@ PlannedNotification plannedItem(
   String screen = 'plan',
   List<CancelRule> cancelOn = const [],
   String title = 'Push in an hour',
+  String? slot,
 }) =>
     PlannedNotification(
       id: id,
@@ -34,7 +35,7 @@ PlannedNotification plannedItem(
       variant: 'wr-c6',
       tone: 'cheeky',
       screen: screen,
-      slot: screen == 'food-log' ? 'dinner' : null,
+      slot: slot ?? (screen == 'food-log' ? 'dinner' : null),
       actions: const ['snooze'],
       cancelOn: cancelOn,
       why: 'About an hour before you usually train.',

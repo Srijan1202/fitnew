@@ -464,7 +464,11 @@ class NotificationCoordinator extends Notifier<NotifyState> {
             Routes.foodLog,
             extra: LogTarget(
               date: p['localDate'] as String? ?? _dayOf(_now()),
-              slot: MealSlot.dinner,
+              // Beta 3.6: a meal reminder opens its own meal (the protein
+              // nudge is about dinner).
+              slot: p['slot'] is String
+                  ? MealSlot.fromWire(p['slot'] as String)
+                  : MealSlot.dinner,
             ),
           );
       default:
