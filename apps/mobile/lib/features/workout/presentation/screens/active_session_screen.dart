@@ -19,6 +19,7 @@ import '../widgets/recommendation_sheet.dart';
 import '../widgets/session_exercise_card.dart';
 import '../widgets/sync_pill.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../../../shared/widgets/tap_through_scroll.dart';
 
 /// The workout in progress (Phase 5). Reads from the phone's database and
 /// writes to it; nothing here waits for the network. One tap logs a set
@@ -61,6 +62,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
   Timer? _clock;
   bool _finishing = false;
 
+  /// Beta 3.6: a tap on "+ Add set" right after scrolling lands first time.
+  final _scroll = TapThroughScrollController(debugLabel: 'session');
+
   @override
   void initState() {
     super.initState();
@@ -70,6 +74,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
   @override
   void dispose() {
     _clock?.cancel();
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -476,6 +481,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
           child: SafeArea(
             child: ListView(
               key: const ValueKey('session.list'),
+              controller: _scroll,
               padding: EdgeInsets.only(
                 top: fitGlass ? FitSpacing.sm : 0,
                 bottom: FitSpacing.xl,

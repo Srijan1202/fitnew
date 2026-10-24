@@ -21,6 +21,7 @@ import '../widgets/day_selector.dart';
 import '../widgets/exercise_card.dart';
 import 'plan_start_screen.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../../../shared/widgets/tap_through_scroll.dart';
 import '../../../../core/config/app_features.dart';
 import 'shared_programme_screen.dart';
 
@@ -673,8 +674,9 @@ class _DayView extends StatelessWidget {
       );
     }
 
-    return ListView(
-      key: const ValueKey('day.list'),
+    // Beta 3.6: "+ Add set" right after scrolling lands first time.
+    return TapThroughListView(
+      listKey: const ValueKey('day.list'),
       padding: const EdgeInsets.only(bottom: FitSpacing.xl),
       children: <Widget>[
         FitBlock(
