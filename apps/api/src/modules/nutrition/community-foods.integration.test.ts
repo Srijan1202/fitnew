@@ -150,7 +150,8 @@ describeIfDb('community foods (real Postgres, real seed)', () => {
     const row = (list.json() as { items: Record<string, unknown>[] }).items.find((i) => i['id'] === food.id)!;
     expect(row).toMatchObject({ name: 'Ragi choco bar', visibility: 'community', reports: 1, notes: ['Carbs look low'], kcal: 200, proteinG: 20 });
     expect(JSON.stringify(row)).not.toContain(owner.id);
-    expect(JSON.stringify(row)).not.toContain('cf');
+    // Never the owner's sign-in id or email (not just "cf": random hex ids contain it).
+    expect(JSON.stringify(row)).not.toMatch(/cf-uid-|cf\d+@example\.com/);
 
     const hid = await call(admin, 'PATCH', `/admin/foods/community/${food.id}`, { visibility: 'hidden' });
     expect(hid.statusCode, hid.body).toBe(200);

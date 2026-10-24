@@ -38,4 +38,14 @@ export async function api<T>(method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   return json as T;
 }
 
+/** Beta 3.6: a file the API serves (a feedback picture), with the same sign-in. */
+export async function apiBlob(path: string): Promise<Blob> {
+  const user = firebaseAuth().currentUser;
+  if (user === null) throw new ApiError(401, 'UNAUTHENTICATED', 'Sign in to continue.');
+  const token = await user.getIdToken();
+  const res = await fetch(`/api/v1${path}`, { headers: { authorization: `Bearer ${token}` }, cache: 'no-store' });
+  if (!res.ok) throw new ApiError(res.status, 'UNKNOWN', `The API answered ${res.status}.`);
+  return res.blob();
+}
+
 export const errorText = (e: unknown): string => (e instanceof Error ? e.message : 'Something went wrong.');

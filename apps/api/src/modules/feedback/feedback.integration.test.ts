@@ -6,9 +6,21 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import postgres from 'postgres';
-import { FEEDBACK_MAX_LENGTH, FEEDBACK_PER_HOUR, adminFeedbackCountsSchema, adminFeedbackListSchema, type AdminFeedbackList } from '@fitos/contracts';
+import {
+  FEEDBACK_MAX_LENGTH,
+  FEEDBACK_PER_HOUR,
+  adminFeedbackCountsSchema,
+  adminFeedbackListSchema,
+  myFeedbackListSchema,
+  type AdminFeedbackList,
+  type MyFeedbackList,
+} from '@fitos/contracts';
 
+import { createDatabase } from '../../db/client.js';
 import { migrateUp } from '../../db/migrate.js';
+import type { RecordingPushSender } from '../../lib/push.js';
+import { FeedbackRepository } from './repository.js';
+import { FeedbackService } from './service.js';
 import type { FakeTokenVerifier } from '../../test/fake-token-verifier.js';
 import { buildDbApp, databaseUrl } from '../../test/build-test-app.js';
 
@@ -37,7 +49,7 @@ describeIfDb('/v1/feedback and /v1/admin/feedback (real Postgres)', { timeout: 6
     return { token, id: row!.id };
   }
 
-  const call = (u: U | null, method: 'GET' | 'POST' | 'PATCH', path: string, payload?: unknown) =>
+  const call = (u: U | null, method: 'GET' | 'POST' | 'PATCH' | 'DELETE', path: string, payload?: unknown) =>
     app.inject({
       method,
       url: `/v1${path}`,
@@ -55,7 +67,7 @@ describeIfDb('/v1/feedback and /v1/admin/feedback (real Postgres)', { timeout: 6
 
   afterAll(async () => {
     await sql`delete from users where firebase_uid like 'fb-uid-%'`;
-    await sql`delete from audit_logs where action in ('feedback.status', 'feedback.priority')`;
+    await sql`delete from audit_logs where action in ('feedback.status', 'feedback.priority', 'feedback.reply')`;
     await app.close();
     await sql.end({ timeout: 5 });
   });
@@ -225,5 +237,142 @@ describeIfDb('/v1/feedback and /v1/admin/feedback (real Postgres)', { timeout: 6
     } finally {
       await strict.app.close();
     }
+  });
+
+  /* ------------------------------------------------------------ beta 3.6 -- */
+
+  const jpeg = (size = 64) => {
+    const b = Buffer.alloc(size, 7);
+    b[0] = 0xff;
+    b[1] = 0xd8;
+    b[2] = 0xff;
+    return b.toString('base64');
+  };
+  const png = () => Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(20, 1)]).toString('base64');
+  const device = { model: 'Samsung SM-S921B', os: 'Android 15', screen: '/plan/session' };
+  const sendWith = (u: U, extra: Record<string, unknown>) =>
+    call(u, 'POST', '/feedback', { category: 'bug', message: 'With a picture', appVersion: '1.0.0-beta.3.6+12', ...extra });
+
+  it('beta 3.6: up to 3 pictures and the phone; the admin sees them (and only an admin fetches a picture, uncached)', async () => {
+    const u = await user();
+    const admin = await user(true);
+    const r = await sendWith(u, { device, pictures: [{ type: 'image/jpeg', data: jpeg() }, { type: 'image/png', data: png() }] });
+    expect(r.statusCode, r.body).toBe(201);
+    const id = (r.json() as { id: string }).id;
+
+    const list = adminFeedbackListSchema.parse((await call(admin, 'GET', '/admin/feedback?limit=200')).json());
+    const it = list.items.find((x) => x.id === id)!;
+    expect(it.device).toEqual(device);
+    expect(it.pictures.map((p) => [p.type, p.bytes])).toEqual([
+      ['image/jpeg', 64],
+      ['image/png', 28],
+    ]);
+    expect(it.replies).toEqual([]);
+
+    const pic = await call(admin, 'GET', `/admin/feedback/${id}/pictures/${it.pictures[0]!.id}`);
+    expect(pic.statusCode).toBe(200);
+    expect(pic.headers['content-type']).toBe('image/jpeg');
+    expect(pic.headers['cache-control']).toBe('private, no-store');
+    expect(pic.rawPayload.subarray(0, 3)).toEqual(Buffer.from([0xff, 0xd8, 0xff]));
+    expect(pic.rawPayload.length).toBe(64);
+    expect((await call(u, 'GET', `/admin/feedback/${id}/pictures/${it.pictures[0]!.id}`)).statusCode).toBe(403);
+    expect((await call(admin, 'GET', `/admin/feedback/${id}/pictures/00000000-0000-4000-8000-000000000000`)).statusCode).toBe(404);
+
+    // Left out: no phone details.
+    const plain = await sendWith(u, { device: null });
+    const again = adminFeedbackListSchema.parse((await call(admin, 'GET', '/admin/feedback?limit=200')).json());
+    expect(again.items.find((x) => x.id === (plain.json() as { id: string }).id)!.device).toBeNull();
+  });
+
+  it('beta 3.6: a 4th picture, one over 1 MB, or one that is not an image is refused (422), and nothing is stored', async () => {
+    const u = await user();
+    const before = (await sql<{ n: number }[]>`select count(*)::int as n from feedback where user_id = ${u.id}`)[0]!.n;
+    const four = await sendWith(u, { pictures: Array.from({ length: 4 }, () => ({ type: 'image/jpeg', data: jpeg() })) });
+    expect(four.statusCode).toBe(422);
+    const big = await sendWith(u, { pictures: [{ type: 'image/jpeg', data: jpeg(1_000_001) }] });
+    expect(big.statusCode).toBe(422);
+    const fake = await sendWith(u, { pictures: [{ type: 'image/jpeg', data: Buffer.from('not a picture at all').toString('base64') }] });
+    expect(fake.statusCode).toBe(422);
+    expect((fake.json() as { error: { details: { path: string; issue: string }[] } }).error.details[0]).toEqual({ path: 'pictures.0', issue: 'not-an-image' });
+    const gif = await sendWith(u, { pictures: [{ type: 'image/gif', data: jpeg() }] });
+    expect(gif.statusCode).toBe(422);
+    expect((await sql<{ n: number }[]>`select count(*)::int as n from feedback where user_id = ${u.id}`)[0]!.n).toBe(before);
+    // Three near-1 MB pictures fit the route's body limit.
+    const three = await sendWith(u, { pictures: Array.from({ length: 3 }, () => ({ type: 'image/jpeg', data: jpeg(990_000) })) });
+    expect(three.statusCode, three.body).toBe(201);
+  });
+
+  it('beta 3.6: an admin replies (audited, the sender\'s phones told once); the sender reads it under their messages, unread until opened', async () => {
+    const u = await user();
+    const other = await user();
+    const admin = await user(true);
+    const push = app.push as RecordingPushSender;
+    await sql`insert into push_tokens (user_id, token, platform) values (${u.id}, ${`reply-tok-${u.id}`}, 'android')`;
+    const id = ((await send(u, 'The timer froze')).json() as { id: string }).id;
+    await send(other, 'Not mine');
+
+    expect((await call(u, 'POST', `/admin/feedback/${id}/replies`, { message: 'x' })).statusCode).toBe(403);
+    expect((await call(admin, 'POST', `/admin/feedback/00000000-0000-4000-8000-000000000000/replies`, { message: 'x' })).statusCode).toBe(404);
+    expect((await call(admin, 'POST', `/admin/feedback/${id}/replies`, { message: '   ' })).statusCode).toBe(422);
+
+    const sendsBefore = push.sends.length;
+    const r = await call(admin, 'POST', `/admin/feedback/${id}/replies`, { message: ' Fixed in 3.7, thank you! ' });
+    expect(r.statusCode, r.body).toBe(201);
+    expect(r.json()).toMatchObject({ message: 'Fixed in 3.7, thank you!', readAt: null });
+    expect(push.sends.length).toBe(sendsBefore + 1);
+    expect(push.sends.at(-1)).toMatchObject({
+      tokens: [`reply-tok-${u.id}`],
+      message: { title: 'FITOS replied to your feedback', body: 'Fixed in 3.7, thank you!', data: { type: 'feedback-reply', feedbackId: id } },
+    });
+    const [audit] = await sql<{ actor_user_id: string; entity_id: string }[]>`
+      select actor_user_id, entity_id from audit_logs where action = 'feedback.reply' and entity_id = ${id}`;
+    expect(audit).toEqual({ actor_user_id: admin.id, entity_id: id });
+
+    const mine = myFeedbackListSchema.parse((await call(u, 'GET', '/feedback/mine')).json()) as MyFeedbackList;
+    expect(mine.unread).toBe(1);
+    expect(mine.items.map((x) => x.message)).toEqual(['The timer froze']);
+    expect(mine.items[0]!.replies.map((x) => x.message)).toEqual(['Fixed in 3.7, thank you!']);
+    expect(myFeedbackListSchema.parse((await call(other, 'GET', '/feedback/mine')).json()).unread).toBe(0);
+
+    expect((await call(u, 'POST', '/feedback/mine/read')).json()).toEqual({ unread: 0 });
+    const read = myFeedbackListSchema.parse((await call(u, 'GET', '/feedback/mine')).json());
+    expect(read.unread).toBe(0);
+    expect(read.items[0]!.replies[0]!.readAt).not.toBeNull();
+    // The admin list shows the reply too.
+    const list = adminFeedbackListSchema.parse((await call(admin, 'GET', '/admin/feedback?limit=200')).json());
+    expect(list.items.find((x) => x.id === id)!.replies).toHaveLength(1);
+    expect((await call(null, 'GET', '/feedback/mine')).statusCode).toBe(401);
+  });
+
+  it('beta 3.6: the admin filters by type', async () => {
+    const u = await user();
+    const admin = await user(true);
+    await send(u, 'An idea', 'idea');
+    await send(u, 'A food', 'food');
+    const ideas = adminFeedbackListSchema.parse((await call(admin, 'GET', '/admin/feedback?category=idea&limit=200')).json());
+    expect(ideas.items.length).toBeGreaterThan(0);
+    expect(ideas.items.every((x) => x.category === 'idea')).toBe(true);
+  });
+
+  it('beta 3.6: pictures older than six months are deleted, the message stays; all of it goes with the account', async () => {
+    const u = await user();
+    const id = ((await sendWith(u, { pictures: [{ type: 'image/jpeg', data: jpeg() }] })).json() as { id: string }).id;
+    await sql`update feedback_pictures set created_at = now() - interval '181 days' where feedback_id = ${id}`;
+    const db = createDatabase(url);
+    try {
+      const service = new FeedbackService(new FeedbackRepository(db.db), app.push);
+      expect(await service.purgeOldPictures()).toBeGreaterThanOrEqual(1);
+    } finally {
+      await db.client.end({ timeout: 5 });
+    }
+    expect((await sql`select id from feedback_pictures where feedback_id = ${id}`).length).toBe(0);
+    expect((await sql`select id from feedback where id = ${id}`).length).toBe(1);
+
+    const id2 = ((await sendWith(u, { pictures: [{ type: 'image/jpeg', data: jpeg() }] })).json() as { id: string }).id;
+    const admin = await user(true);
+    await call(admin, 'POST', `/admin/feedback/${id2}/replies`, { message: 'Thanks' });
+    await sql`delete from users where id = ${u.id}`;
+    expect((await sql`select id from feedback_pictures where feedback_id = ${id2}`).length).toBe(0);
+    expect((await sql`select id from feedback_replies where feedback_id = ${id2}`).length).toBe(0);
   });
 });
