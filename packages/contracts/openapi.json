@@ -74008,6 +74008,948 @@
           }
         }
       }
+    },
+    "/nutrition/guide": {
+      "post": {
+        "summary": "Beta 3.6: \"What should I eat?\" — up to 3 plates for one meal of today, from what you have and your mess menu (nothing is stored)",
+        "tags": [
+          "nutrition",
+          "ai"
+        ],
+        "description": "What you have is matched to the FITOS food database (unknown things are listed, never guessed); the mess menu is filtered by Phase 10's diet and allergen rules. The model picks plates from those only; every number is the database's or the mess table's. Sent to the model: the meal, the foods' names and rough numbers, what is left of today's calories and protein, and what you feel like. Premium; needs the FITOS AI consent; behind the food-guide switch.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "slot": {
+                    "type": "string",
+                    "enum": [
+                      "breakfast",
+                      "lunch",
+                      "snacks",
+                      "dinner"
+                    ]
+                  },
+                  "fromMess": {
+                    "type": "boolean"
+                  },
+                  "have": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 40
+                    },
+                    "maxItems": 20
+                  },
+                  "feel": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                },
+                "required": [
+                  "slot",
+                  "fromMess",
+                  "have",
+                  "feel"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "slot": {
+                      "type": "string",
+                      "enum": [
+                        "breakfast",
+                        "lunch",
+                        "snacks",
+                        "dinner"
+                      ]
+                    },
+                    "date": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "mess": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "maxLength": 40,
+                          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                        },
+                        "menuDate": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "menuDate"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "remaining": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "kcal": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "proteinG": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "kcal",
+                        "proteinG"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          },
+                          "why": {
+                            "type": "string",
+                            "maxLength": 200
+                          },
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "source": {
+                                  "type": "string",
+                                  "enum": [
+                                    "mess",
+                                    "have"
+                                  ]
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "servings": {
+                                  "type": "number",
+                                  "minimum": 0.25,
+                                  "maximum": 4
+                                },
+                                "servingLabel": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "macros": {
+                                  "type": "object",
+                                  "properties": {
+                                    "kcalLow": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "kcalHigh": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "proteinLow": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "proteinHigh": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "carbLow": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "carbHigh": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "fatLow": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "fatHigh": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    }
+                                  },
+                                  "required": [
+                                    "kcalLow",
+                                    "kcalHigh",
+                                    "proteinLow",
+                                    "proteinHigh",
+                                    "carbLow",
+                                    "carbHigh",
+                                    "fatLow",
+                                    "fatHigh"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "food": {
+                                  "type": [
+                                    "object",
+                                    "null"
+                                  ],
+                                  "properties": {
+                                    "foodId": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "name": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "matchKind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "exact",
+                                        "alias",
+                                        "prefix",
+                                        "fuzzy"
+                                      ]
+                                    },
+                                    "basis": {
+                                      "type": "string",
+                                      "enum": [
+                                        "per_100g",
+                                        "per_serving"
+                                      ]
+                                    },
+                                    "servingLabel": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 60
+                                    },
+                                    "servings": {
+                                      "type": "number",
+                                      "minimum": 0.1,
+                                      "maximum": 20
+                                    },
+                                    "row": {
+                                      "type": "object",
+                                      "properties": {
+                                        "basis": {
+                                          "type": "string",
+                                          "enum": [
+                                            "per_100g",
+                                            "per_serving"
+                                          ]
+                                        },
+                                        "servingLabel": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 60
+                                        },
+                                        "servingGrams": {
+                                          "type": [
+                                            "number",
+                                            "null"
+                                          ],
+                                          "exclusiveMinimum": true,
+                                          "minimum": 0,
+                                          "maximum": 5000
+                                        },
+                                        "kcalLow": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "kcalHigh": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "proteinLow": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "proteinHigh": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "carbLow": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "carbHigh": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "fatLow": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "fatHigh": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "fibreLow": {
+                                          "type": [
+                                            "number",
+                                            "null"
+                                          ],
+                                          "minimum": 0
+                                        },
+                                        "fibreHigh": {
+                                          "type": [
+                                            "number",
+                                            "null"
+                                          ],
+                                          "minimum": 0
+                                        },
+                                        "confidence": {
+                                          "type": "string",
+                                          "enum": [
+                                            "high",
+                                            "medium",
+                                            "low"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "basis",
+                                        "servingLabel",
+                                        "servingGrams",
+                                        "kcalLow",
+                                        "kcalHigh",
+                                        "proteinLow",
+                                        "proteinHigh",
+                                        "carbLow",
+                                        "carbHigh",
+                                        "fatLow",
+                                        "fatHigh",
+                                        "fibreLow",
+                                        "fibreHigh",
+                                        "confidence"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "snapshot": {
+                                      "type": "object",
+                                      "properties": {
+                                        "kcalLow": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "kcalHigh": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "proteinLow": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "proteinHigh": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "carbLow": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "carbHigh": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "fatLow": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        "fatHigh": {
+                                          "type": "number",
+                                          "minimum": 0
+                                        }
+                                      },
+                                      "required": [
+                                        "kcalLow",
+                                        "kcalHigh",
+                                        "proteinLow",
+                                        "proteinHigh",
+                                        "carbLow",
+                                        "carbHigh",
+                                        "fatLow",
+                                        "fatHigh"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "foodId",
+                                    "name",
+                                    "matchKind",
+                                    "basis",
+                                    "servingLabel",
+                                    "servings",
+                                    "row",
+                                    "snapshot"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "dishSlug": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "maxLength": 120,
+                                  "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                                }
+                              },
+                              "required": [
+                                "source",
+                                "name",
+                                "servings",
+                                "servingLabel",
+                                "macros",
+                                "food",
+                                "dishSlug"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "minItems": 1,
+                            "maxItems": 5
+                          },
+                          "totals": {
+                            "type": "object",
+                            "properties": {
+                              "kcalLow": {
+                                "type": "number",
+                                "minimum": 0
+                              },
+                              "kcalHigh": {
+                                "type": "number",
+                                "minimum": 0
+                              },
+                              "proteinLow": {
+                                "type": "number",
+                                "minimum": 0
+                              },
+                              "proteinHigh": {
+                                "type": "number",
+                                "minimum": 0
+                              },
+                              "carbLow": {
+                                "type": "number",
+                                "minimum": 0
+                              },
+                              "carbHigh": {
+                                "type": "number",
+                                "minimum": 0
+                              },
+                              "fatLow": {
+                                "type": "number",
+                                "minimum": 0
+                              },
+                              "fatHigh": {
+                                "type": "number",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "kcalLow",
+                              "kcalHigh",
+                              "proteinLow",
+                              "proteinHigh",
+                              "carbLow",
+                              "carbHigh",
+                              "fatLow",
+                              "fatHigh"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "caution": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "peanut",
+                                "tree-nut",
+                                "milk",
+                                "egg",
+                                "soy",
+                                "wheat",
+                                "fish",
+                                "shellfish",
+                                "sesame",
+                                "mustard"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "title",
+                          "why",
+                          "items",
+                          "totals",
+                          "caution"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 3
+                    },
+                    "unknown": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "refused": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "messNote": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "model": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "slot",
+                    "date",
+                    "mess",
+                    "remaining",
+                    "options",
+                    "unknown",
+                    "refused",
+                    "messNote",
+                    "model"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "servers": [

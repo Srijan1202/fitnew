@@ -55,8 +55,8 @@ export class MessRecommendService {
     private readonly now: () => Date = () => new Date(),
   ) {}
 
-  /** The menu for the date with every dish's estimate replaced by the stored one (ADR-014/015). */
-  private async storedMenu(mess: MessRow, date: string): Promise<MessDay> {
+  /** The menu for the date with every dish's estimate replaced by the stored one (ADR-014/015); also the food guide's (beta 3.6). */
+  async storedMenu(mess: MessRow, date: string): Promise<MessDay> {
     const { day } = await this.mess.resolveDay(mess, date);
     const slugs = day.meals.flatMap((m) => m.dishes.map((d) => d.id)).filter((id) => id !== '');
     const rows = await this.mess.nutritionFor(slugs);

@@ -152,5 +152,5 @@ export function checkEstimate(e: AiFoodEstimate): EstimateCheck {
 /* ------------------------------------------------------------ limits -- */
 
 /** §19.3 cost control: per user per hour, by route (owner D4). */
-export const AI_ROUTES = ['chat', 'parse', 'explain'] as const;
+export const AI_ROUTES = ['chat', 'parse', 'explain', 'guide'] as const;
 export type AiRoute = (typeof AI_ROUTES)[number];

@@ -58,7 +58,7 @@ export const PARSE_SYSTEM = [
   '- If nothing edible is described, answer {"items":[]}.',
 ].join('\n');
 
-function rangeOf(row: Food['nutrition'][number]): FoodNutritionRange {
+export function rangeOf(row: Food['nutrition'][number]): FoodNutritionRange {
   return {
     macros: {
       kcalLow: row.kcalLow, kcalHigh: row.kcalHigh,

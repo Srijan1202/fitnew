@@ -8,6 +8,9 @@
  * never stored) and POST /ai/explain (a TODAY reason reworded, numbers
  * checked). Every AI route sits behind the kill switch and the per-user
  * hourly limit and daily token budget, counted from `ai_usage`.
+ *
+ * Beta 3.6 (F15): POST /nutrition/guide, "What should I eat?" from what the
+ * person has and the mess menu, behind the `food-guide` switch.
  */
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
@@ -19,6 +22,8 @@ import {
   errorEnvelopeSchema,
   explainRequestSchema,
   explainResponseSchema,
+  foodGuideRequestSchema,
+  foodGuideResponseSchema,
   parseFoodRequestSchema,
   parseFoodResponseSchema,
 } from '@fitos/contracts';
@@ -39,7 +44,11 @@ import { WorkoutRepository } from '../workout/repository.js';
 import { WorkoutService } from '../workout/service.js';
 import { UserContextAssembler } from './context-assembler.js';
 import { ExplainService } from './explain.js';
+import { FoodGuideService } from './guide.js';
 import { FoodParseService } from './parse.js';
+import { FoodLogRepository } from '../nutrition/log-repository.js';
+import { MessRecommendService } from '../mess/recommend-service.js';
+import { RecommendRepository } from '../mess/recommend-repository.js';
 import { AiService } from './service.js';
 import { ToolRegistry } from './tools.js';
 import { PrivacyRepository } from '../privacy/repository.js';
@@ -98,6 +107,20 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
   );
   const parser = new FoodParseService(app.ai, new FoodService(new FoodRepository(db)), budget, app.aiConfig, app.log);
   const explainer = new ExplainService(app.ai, new TodayRepository(db), budget, app.aiConfig, app.log);
+  const messes = messServiceFor(db);
+  const guide = new FoodGuideService(
+    app.ai,
+    {
+      foods: new FoodService(new FoodRepository(db)),
+      users: new UserRepository(db),
+      logs: new FoodLogRepository(db),
+      mess: messes,
+      menus: new MessRecommendService(messes, new UserRepository(db), new FoodLogRepository(db), new RecommendRepository(db)),
+    },
+    budget,
+    app.aiConfig,
+    app.log,
+  );
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const errors = { 401: errorEnvelopeSchema, 422: errorEnvelopeSchema, 429: errorEnvelopeSchema, 503: errorEnvelopeSchema };
 
@@ -165,5 +188,28 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request) => explainer.explain(requireUserId(request.userId), request.body.actionId, await premiumOf(request)),
+  );
+
+  typed.post(
+    '/nutrition/guide',
+    {
+      config: { rateLimit: AI_CHAT_RATE_LIMIT },
+      schema: {
+        summary: 'Beta 3.6: "What should I eat?" — up to 3 plates for one meal of today, from what you have and your mess menu (nothing is stored)',
+        description:
+          'What you have is matched to the FITOS food database (unknown things are listed, never guessed); the mess menu is ' +
+          "filtered by Phase 10's diet and allergen rules. The model picks plates from those only; every number is the " +
+          "database's or the mess table's. Sent to the model: the meal, the foods' names and rough numbers, what is left of " +
+          "today's calories and protein, and what you feel like. Premium; needs the FITOS AI consent; behind the food-guide switch.",
+        tags: ['nutrition', 'ai'],
+        security: [{ bearerAuth: [] }],
+        body: foodGuideRequestSchema,
+        response: { 200: foodGuideResponseSchema, 403: errorEnvelopeSchema, 404: errorEnvelopeSchema, ...errors },
+      },
+    },
+    async (request) => {
+      await app.features.require('food-guide');
+      return guide.guide(requireUserId(request.userId), request.body, await premiumOf(request));
+    },
   );
 }

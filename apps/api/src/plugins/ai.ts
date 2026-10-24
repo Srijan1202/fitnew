@@ -18,9 +18,9 @@ export interface AiConfig {
   /** The kill switch: false turns every AI route off (503). */
   readonly enabled: boolean;
   /** Per-purpose models; null = the provider's own. */
-  readonly models: { readonly parse: string | null; readonly explain: string | null };
+  readonly models: { readonly parse: string | null; readonly explain: string | null; readonly guide: string | null };
   /** Calls per user per hour, by purpose. */
-  readonly perHour: { readonly chat: number; readonly parse: number; readonly explain: number };
+  readonly perHour: { readonly chat: number; readonly parse: number; readonly explain: number; readonly guide: number };
   /** Tokens a user may spend in 24 hours, across every purpose. */
   readonly dailyTokens: number;
   /** Phase 19 (ADR-027): premium users' limits are the ones above times this. */
@@ -53,8 +53,13 @@ export function providerFromEnv(env: Env): AiProvider {
 export function aiConfigFromEnv(env: Env | undefined): AiConfig {
   return {
     enabled: env?.AI_ENABLED ?? true,
-    models: { parse: env?.MODEL_FOOD_PARSE ?? null, explain: env?.MODEL_EXPLAIN ?? null },
-    perHour: { chat: env?.AI_CHAT_PER_HOUR ?? 60, parse: env?.AI_PARSE_PER_HOUR ?? 20, explain: env?.AI_EXPLAIN_PER_HOUR ?? 20 },
+    models: { parse: env?.MODEL_FOOD_PARSE ?? null, explain: env?.MODEL_EXPLAIN ?? null, guide: env?.MODEL_FOOD_GUIDE ?? null },
+    perHour: {
+      chat: env?.AI_CHAT_PER_HOUR ?? 60,
+      parse: env?.AI_PARSE_PER_HOUR ?? 20,
+      explain: env?.AI_EXPLAIN_PER_HOUR ?? 20,
+      guide: env?.AI_GUIDE_PER_HOUR ?? 10,
+    },
     dailyTokens: env?.AI_DAILY_TOKEN_BUDGET ?? 200_000,
     premiumMultiplier: env?.AI_PREMIUM_LIMIT_MULTIPLIER ?? 2,
   };

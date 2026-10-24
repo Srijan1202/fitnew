@@ -101,10 +101,14 @@ const envSchema = z.object({
   // Per-purpose models; unset means GEMINI_MODEL. A model name is configuration, never code.
   MODEL_FOOD_PARSE: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
   MODEL_EXPLAIN: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
+  // Beta 3.6: the food guide's model; unset means GEMINI_MODEL.
+  MODEL_FOOD_GUIDE: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
   // Calls per user per hour, by purpose (§19.3: 20; chat 60 — owner D4), and
   // the tokens a user may spend in 24 hours across all of them.
   AI_PARSE_PER_HOUR: z.coerce.number().int().min(1).default(20),
   AI_EXPLAIN_PER_HOUR: z.coerce.number().int().min(1).default(20),
+  // Beta 3.6: "What should I eat?" — each one is a bigger prompt than a parse.
+  AI_GUIDE_PER_HOUR: z.coerce.number().int().min(1).default(10),
   AI_CHAT_PER_HOUR: z.coerce.number().int().min(1).default(60),
   AI_DAILY_TOKEN_BUDGET: z.coerce.number().int().min(1000).default(200_000),
   // Phase 19 (ADR-027): FITOS AI is premium; premium users get the limits

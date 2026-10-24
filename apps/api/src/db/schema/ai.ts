@@ -12,7 +12,7 @@ import { check, index, integer, pgEnum, pgTable, text, timestamp, uuid } from 'd
 
 import { users } from './users.js';
 
-export const aiRouteEnum = pgEnum('ai_route', ['chat', 'parse', 'explain']);
+export const aiRouteEnum = pgEnum('ai_route', ['chat', 'parse', 'explain', 'guide']);
 /** `discarded`: the model answered but a guard threw it away (§19.2). */
 export const aiOutcomeEnum = pgEnum('ai_outcome', ['ok', 'discarded', 'failed']);
 

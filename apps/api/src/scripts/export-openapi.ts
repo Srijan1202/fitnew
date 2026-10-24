@@ -29,6 +29,7 @@ const env: Env = {
     AI_ENABLED: true,
     AI_PARSE_PER_HOUR: 20,
     AI_EXPLAIN_PER_HOUR: 20,
+    AI_GUIDE_PER_HOUR: 10,
     AI_CHAT_PER_HOUR: 60,
     AI_DAILY_TOKEN_BUDGET: 200_000,
 };
