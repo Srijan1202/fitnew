@@ -91,6 +91,7 @@ const _$FoodSourceEnumMap = {
   FoodSource.usda: 'usda',
   FoodSource.ifct: 'ifct',
   FoodSource.indb: 'indb',
+  FoodSource.cofid: 'cofid',
   FoodSource.user: 'user',
   FoodSource.userCorrected: 'user-corrected',
 };

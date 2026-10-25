@@ -115,6 +115,22 @@ void main() {
       tester.widget<FilledButton>(find.byKey(const ValueKey('feedback.send')));
 
   testWidgets(
+      'beta 3.7 (ADR-036): Profile → About → Food data sources opens the cited sources',
+      (tester) async {
+    tall(tester);
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('home.profile')));
+    await tester.pumpAndSettle();
+    final row = find.byKey(const ValueKey('profile.foodSources'));
+    await tester.ensureVisible(row);
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('foodSources.list')), findsOneWidget);
+    expect(find.text('IFCT 2017 (NIN-ICMR)'), findsOneWidget);
+  });
+
+  testWidgets(
       'Send is off until a category and a message are given; sent with the app version, then cleared',
       (tester) async {
     await openFeedback(tester);

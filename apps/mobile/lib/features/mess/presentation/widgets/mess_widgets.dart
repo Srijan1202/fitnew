@@ -16,7 +16,7 @@ import '../mess_providers.dart';
 
 /// Words for the mess screens. Every number is the server's.
 abstract final class MessFormat {
-  /// "120–185 kcal · 1 katori", or "No estimate yet".
+  /// "about 150 kcal · 1 katori", or "No estimate yet".
   static String dishLine(MessDish d) {
     final n = d.nutrition;
     if (n == null) return 'No estimate yet';

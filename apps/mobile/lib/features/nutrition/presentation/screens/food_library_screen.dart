@@ -163,8 +163,9 @@ class _Intro extends StatelessWidget {
         const SizedBox(height: FitSpacing.sm),
         Text(
           'Search by name — Indian spellings work too: dhal, roti, idly, '
-          'sambhar. Measured values come from USDA; Indian dishes are FITOS '
-          'estimates, shown as a range.',
+          'sambhar. Measured values come from IFCT 2017 (India), UK CoFID and '
+          'USDA; Indian dishes from INDB recipes or FITOS estimates. Each '
+          'number is the middle of a range; a food\'s page shows the range.',
           style: textTheme.bodyLarge,
         ),
         const SizedBox(height: FitSpacing.sm),

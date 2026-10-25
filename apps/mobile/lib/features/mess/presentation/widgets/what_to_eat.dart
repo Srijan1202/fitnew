@@ -506,14 +506,14 @@ class _Shortfall extends StatelessWidget {
           ),
           if (p != null)
             Text(
-              '${g(p.gapLow)}–${g(p.gapHigh)} g protein below this meal\'s ${g(p.target)} g.'
+              '${FoodFormat.capitalised(FoodFormat.about(p.gapLow, p.gapHigh))} g protein below this meal\'s ${g(p.target)} g.'
               '${p.menuCanMeet ? '' : ' No plate from this menu reaches it (at most ${g(p.menuMax)} g).'}',
               key: const ValueKey('rec.shortfall.protein'),
               style: textTheme.bodyMedium,
             ),
           if (k != null)
             Text(
-              '${g(k.gapLow)}–${g(k.gapHigh)} kcal below this meal\'s ${g(k.target)} kcal.'
+              '${FoodFormat.capitalised(FoodFormat.about(k.gapLow, k.gapHigh))} kcal below this meal\'s ${g(k.target)} kcal.'
               '${k.menuCanMeet ? '' : ' No plate from this menu reaches it (at most ${g(k.menuMax)} kcal).'}',
               key: const ValueKey('rec.shortfall.kcal'),
               style: textTheme.bodyMedium,

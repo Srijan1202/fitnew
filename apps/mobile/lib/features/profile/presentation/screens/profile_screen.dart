@@ -247,6 +247,18 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: FitSpacing.lg),
                   FitGroup(
+                    label: 'About',
+                    children: <Widget>[
+                      FitRow(
+                        key: const ValueKey('profile.foodSources'),
+                        icon: Icons.menu_book_outlined,
+                        title: 'Food data sources',
+                        onTap: () => context.push(Routes.foodSources),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: FitSpacing.lg),
+                  FitGroup(
                     children: <Widget>[
                       FitRow(
                         key: const ValueKey('profile.signOut'),

@@ -22,6 +22,7 @@ import '../../features/nutrition/presentation/screens/food_detail_screen.dart';
 import '../../features/nutrition/presentation/controllers/food_logger.dart';
 import '../../features/nutrition/presentation/screens/eat_screen.dart';
 import '../../features/nutrition/presentation/screens/food_library_screen.dart';
+import '../../features/nutrition/presentation/screens/food_sources_screen.dart';
 import '../../features/nutrition/presentation/screens/log_food_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_flow_screen.dart';
 import '../../features/profile/presentation/screens/goal_editor_screen.dart';
@@ -78,6 +79,9 @@ abstract final class Routes {
 
   /// Phase 17: consents, download my data, delete my account, the policy.
   static const String privacy = '/profile/privacy';
+
+  /// Beta 3.7 (ADR-036): where FITOS's food numbers come from.
+  static const String foodSources = '/profile/food-sources';
   static const String feedback = '/profile/feedback';
   static const String exercises = '/exercises';
   static String exerciseDetail(String id) => '/exercises/$id';
@@ -214,6 +218,11 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
             path: 'feedback',
             name: 'feedback',
             builder: (context, state) => const FeedbackScreen(),
+          ),
+          GoRoute(
+            path: 'food-sources',
+            name: 'food-sources',
+            builder: (context, state) => const FoodSourcesScreen(),
           ),
         ],
       ),

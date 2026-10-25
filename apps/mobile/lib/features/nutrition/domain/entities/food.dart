@@ -17,9 +17,13 @@ enum FoodSource {
   @JsonValue('usda')
   usda('usda', 'USDA FoodData Central', 'USDA'),
   @JsonValue('ifct')
-  ifct('ifct', 'IFCT 2017', 'IFCT'),
+  ifct('ifct', 'IFCT 2017 (NIN-ICMR)', 'IFCT'),
   @JsonValue('indb')
-  indb('indb', 'Indian Nutrient Databank', 'INDB'),
+  indb('indb', 'Indian Nutrient Databank (INDB 2024)', 'INDB'),
+
+  /// Beta 3.7 (ADR-036): UK CoFID 2021, measured as eaten.
+  @JsonValue('cofid')
+  cofid('cofid', 'UK CoFID 2021', 'CoFID'),
   @JsonValue('user')
   user('user', 'Your food, from a label', 'Yours'),
   @JsonValue('user-corrected')

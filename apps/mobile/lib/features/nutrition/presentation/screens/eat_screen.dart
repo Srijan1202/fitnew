@@ -17,6 +17,7 @@ import '../../domain/entities/food_log.dart';
 import '../controllers/food_log_providers.dart';
 import '../controllers/food_logger.dart';
 import '../widgets/eat_widgets.dart';
+import '../widgets/food_widgets.dart';
 import '../widgets/log_controls.dart';
 import 'food_guide_screen.dart';
 import '../../../../shared/widgets/fit_glass.dart';
@@ -410,7 +411,8 @@ class _Hero extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: FitSpacing.xs),
             child: Text(
-              'Includes estimates, so totals are ranges.',
+              'Includes estimates, so these numbers are about right. Tap an '
+              'item to see its range.',
               key: const ValueKey('eat.estimated'),
               style: textTheme.bodyMedium?.copyWith(color: FitColors.amber),
             ),
@@ -573,28 +575,72 @@ Future<bool> _confirmDelete(BuildContext context) async =>
 
 /// One logged food, compact: name over portion; kcal over protein on the
 /// right. A range stays a range.
-class _ItemLine extends StatelessWidget {
+/// Beta 3.7: an estimate's line opens its range ([range]) on a tap.
+class _ItemLine extends StatefulWidget {
   const _ItemLine({
     required this.name,
     required this.portion,
     required this.kcal,
     required this.protein,
+    this.range,
     this.muted = false,
     this.struck = false,
+    super.key,
   });
 
   final String name;
   final String portion;
   final String kcal;
   final String? protein;
+  final String? range;
   final bool muted;
   final bool struck;
+
+  @override
+  State<_ItemLine> createState() => _ItemLineState();
+}
+
+class _ItemLineState extends State<_ItemLine> {
+  bool _open = false;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final dim = textTheme.bodyMedium?.copyWith(color: FitColors.ink60);
-    final deco = struck ? TextDecoration.lineThrough : null;
+    final range = widget.range;
+    final line = _line(textTheme, dim);
+    if (range == null || widget.muted) return line;
+    return Semantics(
+      button: true,
+      hint: _open ? 'Hide the range' : 'Show the range',
+      child: InkWell(
+        onTap: () => setState(() => _open = !_open),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            line,
+            if (_open)
+              Padding(
+                padding: const EdgeInsets.only(bottom: FitSpacing.xs),
+                child: Text(
+                  range,
+                  key: const ValueKey('log.item.range'),
+                  style: dim,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _line(TextTheme textTheme, TextStyle? dim) {
+    final name = widget.name;
+    final portion = widget.portion;
+    final kcal = widget.kcal;
+    final protein = widget.protein;
+    final muted = widget.muted;
+    final deco = widget.struck ? TextDecoration.lineThrough : null;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: FitSpacing.xs),
       child: Row(
@@ -636,7 +682,7 @@ class _ItemLine extends StatelessWidget {
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerRight,
-                    child: Text(protein!, maxLines: 1, style: dim),
+                    child: Text(protein, maxLines: 1, style: dim),
                   ),
               ],
             ),
@@ -667,11 +713,19 @@ class _LogEntry extends ConsumerWidget {
             children: <Widget>[
               for (final item in log.items)
                 _ItemLine(
+                  key: ValueKey('log.item.${item.id}'),
                   name: item.foodName,
                   portion: EatFormat.portion(item),
                   kcal: '${EatFormat.kcal(item.kcalLow, item.kcalHigh)} kcal',
                   protein:
                       '${EatFormat.grams(item.proteinLow, item.proteinHigh)} protein',
+                  range: FoodFormat.rangeLine(
+                    kcalLow: item.kcalLow,
+                    kcalHigh: item.kcalHigh,
+                    proteinLow: item.proteinLow,
+                    proteinHigh: item.proteinHigh,
+                    source: item.foodSource,
+                  ),
                   muted: deleting,
                   struck: deleting,
                 ),
@@ -729,7 +783,7 @@ class _PendingEntry extends ConsumerWidget {
                   portion: item.portion,
                   kcal: item.preview == null
                       ? ''
-                      : '≈ ${EatFormat.kcal(item.preview!.kcalLow, item.preview!.kcalHigh)} kcal',
+                      : '${EatFormat.kcal(item.preview!.kcalLow, item.preview!.kcalHigh)} kcal',
                   protein: null,
                   muted: true,
                 ),

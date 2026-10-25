@@ -9,8 +9,10 @@ import 'food_widgets.dart';
 /// Words for the EAT screen. Every number here is the SERVER's (its
 /// snapshots, its totals, its "remaining"); these functions only format.
 abstract final class EatFormat {
-  static String kcal(double low, double high) =>
-      '${_grouped(low)}${low == high ? '' : '–${_grouped(high)}'}';
+  /// Beta 3.7: one number — "1,850", or "about 1,850" for an estimate.
+  static String kcal(double low, double high) => low == high
+      ? _grouped(low)
+      : 'about ${_grouped(FoodFormat.middle(low, high))}';
 
   static String _grouped(double v) {
     final s = FoodFormat.number(v);
@@ -25,7 +27,7 @@ abstract final class EatFormat {
   }
 
   static String grams(double low, double high) =>
-      '${FoodFormat.range(low, high)} g';
+      '${FoodFormat.about(low, high)} g';
 
   static const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   static const _months = [
@@ -50,7 +52,7 @@ abstract final class EatFormat {
     return date == yesterday ? 'Yesterday' : shortDate(date);
   }
 
-  /// Protein for the macro strip: "38–45 g left", "10 g over", "at target".
+  /// Protein for the macro strip: "about 41 g left", "10 g over", "at target".
   static String proteinShort(RemainingRange r) => switch (r.state) {
         RemainingState.under => '${grams(r.low, r.high)} left',
         RemainingState.over => '${grams(-r.high, -r.low)} over',
@@ -95,13 +97,13 @@ abstract final class EatFormat {
   ) =>
       target == null
           ? '$name ${grams(low, high)}'
-          : '$name ${FoodFormat.range(low, high)} / $target g';
+          : '$name ${FoodFormat.about(low, high)} / $target g';
 
   /// Unknown fibre is never 0 (owner J15): the known part, then what is unknown.
   static String fibre(NutritionTotals t, NutritionTargets? targets) {
     final known = t.itemCount > t.fibreUnknownItems;
     final target = targets == null ? '' : ' / ${targets.fiberG} g';
-    final knownText = FoodFormat.range(t.fibreKnownLow, t.fibreKnownHigh);
+    final knownText = FoodFormat.about(t.fibreKnownLow, t.fibreKnownHigh);
     if (t.fibreUnknownItems == 0) {
       return targets == null ? 'Fibre $knownText g' : 'Fibre $knownText$target';
     }

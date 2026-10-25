@@ -6,6 +6,7 @@ import 'package:fitos/features/nutrition/presentation/controllers/food_providers
 import 'package:fitos/features/nutrition/presentation/screens/custom_food_screen.dart';
 import 'package:fitos/features/nutrition/presentation/screens/food_detail_screen.dart';
 import 'package:fitos/features/nutrition/presentation/screens/food_library_screen.dart';
+import 'package:fitos/features/nutrition/presentation/screens/food_sources_screen.dart';
 import 'package:fitos/features/nutrition/presentation/widgets/food_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,6 +51,10 @@ void main() {
               ),
             ),
           ],
+        ),
+        GoRoute(
+          path: '/profile/food-sources',
+          builder: (_, __) => const FoodSourcesScreen(),
         ),
       ],
     );
@@ -122,7 +127,7 @@ void main() {
       expect(names.indexOf('Dal tadka'), lessThan(names.indexOf('Honey')));
       // An estimate's row shows its range and serving; a USDA row its
       // first USDA portion. Each carries its source.
-      expect(find.text('120–185 kcal · 1 katori'), findsOneWidget);
+      expect(find.text('about 153 kcal · 1 katori'), findsOneWidget);
       expect(find.text('64 kcal · 1 tbsp'), findsOneWidget);
       expect(find.text('ESTIMATE'), findsOneWidget);
       expect(find.text('USDA'), findsOneWidget);
@@ -231,7 +236,10 @@ void main() {
 
       expect(find.text('ESTIMATE'), findsOneWidget);
       expect(find.text('Medium confidence'), findsOneWidget);
-      expect(find.textContaining('shown as a range'), findsOneWidget);
+      expect(
+        find.textContaining('the middle of the range below'),
+        findsOneWidget,
+      );
       expect(find.text('PER 1 KATORI (150 G)'), findsOneWidget);
       expect(find.text('120–185 kcal'), findsOneWidget);
       expect(find.text('6–9 g'), findsOneWidget);
@@ -315,6 +323,80 @@ void main() {
       expect(find.textContaining('FDC 169640'), findsOneWidget);
       expect(find.byKey(const ValueKey('usda.attribution')), findsOneWidget);
       expect(find.text('Log this food'), findsOneWidget);
+    });
+
+    testWidgets(
+        'beta 3.7: a CoFID food — its badge, its small range, the licence '
+        'statement, and the way to the food data sources page', (tester) async {
+      tall(tester);
+      final milk = honey.copyWith(
+        id: '35555555-5555-4555-8555-555555555555',
+        slug: 'milk-whole-pasteurised',
+        name: 'Milk, whole, pasteurised (3.6% fat)',
+        source: FoodSource.cofid,
+        sourceRef: 'UK CoFID 2021 · food 12-596',
+        aliases: ['toned milk'],
+        nutrition: [
+          honey.nutrition.first.copyWith(
+            kcalLow: 61,
+            kcalHigh: 65,
+            proteinLow: 3.2,
+            proteinHigh: 3.6,
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        harness(initial: '/nutrition/foods/${milk.id}', extra: milk),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('COFID'), findsOneWidget);
+      expect(
+        find.textContaining('Measured values from UK CoFID 2021'),
+        findsOneWidget,
+      );
+      // The food's page is where the range shows.
+      expect(find.text('61–65 kcal'), findsOneWidget);
+      expect(find.byKey(const ValueKey('cofid.attribution')), findsOneWidget);
+      expect(find.byKey(const ValueKey('usda.attribution')), findsNothing);
+
+      await tester.tap(find.byKey(const ValueKey('food.sources')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('foodSources.list')), findsOneWidget);
+    });
+
+    testWidgets(
+        'beta 3.7: the food data sources page names and cites every source, '
+        'and reads at 200 % text', (tester) async {
+      tall(tester);
+      await tester.pumpWidget(
+        MediaQuery(
+          data: const MediaQueryData(textScaler: TextScaler.linear(2)),
+          child: MaterialApp(
+            theme: FitTheme.build(),
+            home: const FoodSourcesScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      for (final s in kFoodDataSources) {
+        await tester.scrollUntilVisible(
+          find.text(s.name.toUpperCase()),
+          300,
+          scrollable: find.byType(Scrollable).first,
+        );
+        expect(find.text(s.name.toUpperCase()), findsOneWidget);
+      }
+      expect(
+        kFoodDataSources.map((s) => s.citation).join(' '),
+        allOf(
+          contains('Longvah'),
+          contains('Jaacks'),
+          contains('Open Government Licence v3.0'),
+          contains('FoodData Central'),
+        ),
+      );
     });
 
     testWidgets('an estimate composed from USDA ingredients credits USDA too',
@@ -551,6 +633,39 @@ void main() {
       expect(FoodFormat.serving(honey.nutrition[0]), 'Per 100 g');
       expect(FoodFormat.serving(honey.nutrition[1]), 'Per 1 tbsp (21 g)');
       expect(FoodFormat.serving(lassi.nutrition[0]), 'Per 1 bottle (200 ml)');
+    });
+
+    test(
+        'beta 3.7: an estimate shows its middle ("about"), whole from 10 up; '
+        'exact values stay themselves; the tap line names the range and source',
+        () {
+      expect(FoodFormat.about(130, 130), '130');
+      expect(FoodFormat.about(120, 185), 'about 153');
+      expect(FoodFormat.about(6, 9), 'about 7.5');
+      expect(FoodFormat.about(9, 13.5), 'about 11');
+      expect(FoodFormat.kcal(dalTadka.nutrition.first), 'about 153 kcal');
+      expect(FoodFormat.kcal(honey.nutrition.first), '304 kcal');
+      expect(FoodFormat.capitalised('about 53'), 'About 53');
+      expect(
+        FoodFormat.rangeLine(
+          kcalLow: 300,
+          kcalHigh: 360,
+          proteinLow: 9,
+          proteinHigh: 11,
+          source: FoodSource.indb,
+        ),
+        'Range 300–360 kcal · 9–11 g protein · Indian Nutrient Databank (INDB 2024)',
+      );
+      expect(
+        FoodFormat.rangeLine(
+          kcalLow: 64,
+          kcalHigh: 64,
+          proteinLow: 0.1,
+          proteinHigh: 0.1,
+          source: FoodSource.usda,
+        ),
+        isNull,
+      );
     });
 
     test('the headline row is the first serving, else per 100 g', () {

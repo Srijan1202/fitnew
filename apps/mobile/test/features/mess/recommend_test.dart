@@ -191,8 +191,8 @@ void main() {
       expect(find.byKey(const ValueKey('rec.thali.1')), findsOneWidget);
       expect(find.byKey(const ValueKey('rec.item.phulka')), findsOneWidget);
       expect(find.text('3 × 1 piece'), findsOneWidget);
-      expect(text(tester, 'rec.kcal'), '435–620 kcal');
-      expect(text(tester, 'rec.protein'), '14.5–20.8 g');
+      expect(text(tester, 'rec.kcal'), 'about 528 kcal');
+      expect(text(tester, 'rec.protein'), 'about 18 g');
       expect(
         text(tester, 'rec.confidence'),
         'Estimate · medium confidence · fibre not known',
@@ -403,7 +403,7 @@ void main() {
       await settle(tester);
       expect(
         text(tester, 'rec.shortfall.protein'),
-        '45.3–60 g protein below this meal\'s 85 g. No plate from this menu reaches it (at most 46 g).',
+        'About 53 g protein below this meal\'s 85 g. No plate from this menu reaches it (at most 46 g).',
       );
     });
 

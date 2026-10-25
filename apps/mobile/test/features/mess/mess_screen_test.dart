@@ -197,7 +197,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byKey(const ValueKey('mess.dish.phulka')),
-          matching: find.text('85–120 kcal · 1 piece'),
+          matching: find.text('about 103 kcal · 1 piece'),
         ),
         findsOneWidget,
       );
@@ -367,7 +367,7 @@ void main() {
         tester
             .widget<Text>(find.byKey(const ValueKey('portion.preview.kcal')))
             .data,
-        '255–360 kcal',
+        'about 308 kcal',
       );
       await tester.tap(find.byKey(const ValueKey('portion.log')));
       await settle(tester);
@@ -529,7 +529,7 @@ void main() {
       await tester.pumpWidget(harness());
       await settle(tester);
       expect(
-        find.text('85–120 kcal · 1 piece · report pending'),
+        find.text('about 103 kcal · 1 piece · report pending'),
         findsOneWidget,
       );
       await tapDish(tester, 'phulka');
@@ -572,7 +572,7 @@ void main() {
       mess.rated = const MessDishRating(up: 9, total: 11, mine: MessVote.up);
       await tester.pumpWidget(harness());
       await settle(tester);
-      expect(find.text('85–120 kcal · 1 piece · 👍 80 %'), findsOneWidget);
+      expect(find.text('about 103 kcal · 1 piece · 👍 80 %'), findsOneWidget);
       await tapDish(tester, 'phulka');
       expect(
         tester.widget<Text>(find.byKey(const ValueKey('mess.rating'))).data,
@@ -594,7 +594,7 @@ void main() {
       menuWith(const MessDishRating(up: 1, total: 1, mine: MessVote.up));
       await tester.pumpWidget(harness());
       await settle(tester);
-      expect(find.text('85–120 kcal · 1 piece'), findsOneWidget);
+      expect(find.text('about 103 kcal · 1 piece'), findsOneWidget);
       await tapDish(tester, 'phulka');
       expect(find.text('Not enough ratings yet'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('mess.vote.up')));
@@ -698,7 +698,7 @@ void main() {
       await settle(tester);
       await tester.tap(find.byKey(const ValueKey('log.source.Saved meals')));
       await settle(tester);
-      expect(find.textContaining('360–520 kcal'), findsWidgets);
+      expect(find.textContaining('about 440 kcal'), findsWidgets);
       await tester.tap(find.byKey(const ValueKey('saved.m1.log')));
       await settle(tester);
       final item = api.logs.values.single.items.single;

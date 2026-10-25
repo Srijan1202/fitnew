@@ -27,12 +27,13 @@ Future<bool> showFoodGuide(BuildContext context) async =>
     false;
 
 /// Things a hostel student often has to hand (the owner's list, F15), each
-/// pinned to its plain food on the server (GUIDE_STAPLES). Milk and paneer
-/// wait for plain entries in the food database (BACKLOG E24).
+/// pinned to its plain food on the server (GUIDE_STAPLES).
 const kGuideCommonItems = <String>[
   'Bread',
   'Eggs',
+  'Milk',
   'Curd',
+  'Paneer',
   'Peanut butter',
   'Oats',
   'Banana',
@@ -363,7 +364,7 @@ class _OptionCard extends StatelessWidget {
               child: Text(
                 '${FoodFormat.number(item.servings)} × ${item.servingLabel} '
                 '${item.name}${item.fromMess ? ' (mess)' : ''} · '
-                '${item.macros.kcal} kcal · ${item.macros.proteinG} g protein',
+                'about ${item.macros.kcal} kcal · ${item.macros.proteinG} g protein',
                 style: textTheme.bodySmall,
               ),
             ),

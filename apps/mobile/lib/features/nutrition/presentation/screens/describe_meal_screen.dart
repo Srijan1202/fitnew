@@ -285,7 +285,7 @@ class _DescribeMealScreenState extends ConsumerState<DescribeMealScreen> {
                 if (total != null) ...<Widget>[
                   const SizedBox(height: FitSpacing.md),
                   Text(
-                    'About ${EatFormat.kcal(total.kcalLow, total.kcalHigh)} kcal · '
+                    '${FoodFormat.capitalised(EatFormat.kcal(total.kcalLow, total.kcalHigh))} kcal · '
                     '${EatFormat.grams(total.proteinLow, total.proteinHigh)} protein',
                     key: const ValueKey('describe.total'),
                     style: textTheme.titleMedium,

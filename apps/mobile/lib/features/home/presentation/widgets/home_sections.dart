@@ -358,15 +358,15 @@ class TodayMetrics extends StatelessWidget {
       kcalMuted = true;
     }
 
-    // Food — the server's day (Phase 8), as a range when it holds estimates;
-    // never a zero for "not logged".
+    // Food — the server's day (Phase 8), "about N" when it holds estimates
+    // (beta 3.7); never a zero for "not logged".
     final t = c.targets;
     final n = c.nutrition;
     String span(int? low, int? high, {bool group = false}) {
       String f(int v) => group ? HomeSections.group(v) : '$v';
       final hi = high ?? 0;
       final lo = low ?? hi;
-      return lo == hi ? f(hi) : '${f(lo)}–${f(hi)}';
+      return lo == hi ? f(hi) : 'about ${f(((lo + hi) / 2).round())}';
     }
 
     final kcalEaten = span(n.kcalLow, n.kcal, group: true);

@@ -9,6 +9,15 @@ import '../../domain/recommendation.dart';
 abstract final class ReasonText {
   static String _n(num? v) => v == null ? '?' : FoodFormat.number(v.toDouble());
 
+  /// Beta 3.7: the one number of a reason's low–high, its middle.
+  static String _mid(Reason r) {
+    final lo = r.n('low');
+    final hi = r.n('high');
+    return lo == null || hi == null
+        ? '?'
+        : _n(FoodFormat.middle(lo.toDouble(), hi.toDouble()));
+  }
+
   static String _allergen(String? wire) =>
       Allergen.values
           .where((a) => a.wire == wire)
@@ -74,21 +83,19 @@ abstract final class ReasonText {
       'protein-covers' =>
         'Covers your ${_n(r.n('target'))} g protein for this meal — at least ${_n(r.n('low'))} g.',
       'protein-may-fall-short' =>
-        '${_n(r.n('low'))}–${_n(r.n('high'))} g protein against ${_n(r.n('target'))} g — it may fall a little short.',
+        'About ${_mid(r)} g protein against ${_n(r.n('target'))} g — it may fall a little short.',
       'protein-short' =>
         'At most ${_n(r.n('high'))} g protein against the ${_n(r.n('target'))} g this meal needs.',
       'kcal-within' =>
         'Within this meal\'s ${_n(r.n('target'))} kcal — at most ${_n(r.n('high'))}.',
       'kcal-may-exceed' =>
-        '${_n(r.n('low'))}–${_n(r.n('high'))} kcal against ${_n(r.n('target'))} — it may go over.',
+        'About ${_mid(r)} kcal against ${_n(r.n('target'))} — it may go over.',
       'kcal-over' =>
         'At least ${_n(r.n('low'))} kcal — over this meal\'s ${_n(r.n('target'))}.',
       'carb-within' => 'Carbs within ${_n(r.n('target'))} g.',
-      'carb-over' =>
-        'Carbs ${_n(r.n('low'))}–${_n(r.n('high'))} g, above ${_n(r.n('target'))} g.',
+      'carb-over' => 'Carbs about ${_mid(r)} g, above ${_n(r.n('target'))} g.',
       'fat-within' => 'Fat within ${_n(r.n('target'))} g.',
-      'fat-over' =>
-        'Fat ${_n(r.n('low'))}–${_n(r.n('high'))} g, above ${_n(r.n('target'))} g.',
+      'fat-over' => 'Fat about ${_mid(r)} g, above ${_n(r.n('target'))} g.',
       'goal-weighting' => switch (r.s('goal')) {
           'muscle-gain' =>
             'Weighted for muscle gain: falling short on calories counts more than going over a little.',
@@ -120,7 +127,7 @@ abstract final class ReasonText {
       'top-protein-dish' =>
         '${name()} is the most protein-dense dish on this plate.',
       'post-workout-carbs' =>
-        'After your workout: ${_n(r.n('low'))}–${_n(r.n('high'))} g carbs toward ${_n(r.n('target'))} g.',
+        'After your workout: about ${_mid(r)} g carbs toward ${_n(r.n('target'))} g.',
       'repeat' =>
         '${name()}: you had it on ${_n(r.n('days'))} of the last 3 days.',
       'low-confidence-dish' => '${name()}\'s estimate is low confidence.',

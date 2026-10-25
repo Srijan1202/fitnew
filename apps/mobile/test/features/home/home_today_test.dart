@@ -323,8 +323,9 @@ void main() {
     expect(key('today.why'), findsOneWidget);
     expect(textOf(tester, 'today.why.headline'), '98–106 g protein to go');
     expect(textOf(tester, 'today.why.fact.Meal'), 'Lunch');
-    expect(textOf(tester, 'today.why.fact.Protein so far'), '0–8 of 106 g');
-    expect(textOf(tester, 'today.why.fact.Left today'), '2100–2276 kcal');
+    // Beta 3.7 (ADR-036): one number, the middle of the range.
+    expect(textOf(tester, 'today.why.fact.Protein so far'), 'about 4 of 106 g');
+    expect(textOf(tester, 'today.why.fact.Left today'), 'about 2188 kcal');
     expect(
       textOf(tester, 'today.why.basis'),
       'Why this was suggested: calculated from your plan and logs.',

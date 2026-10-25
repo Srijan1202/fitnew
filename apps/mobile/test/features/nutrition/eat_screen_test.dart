@@ -275,8 +275,8 @@ void main() {
       );
       await tester.pumpWidget(harness());
       await settle(tester);
-      expect(textOf(tester, 'eat.hero.value').data, '1,872–1,970');
-      expect(textOf(tester, 'eat.eaten').data, 'Eaten 430–528 kcal');
+      expect(textOf(tester, 'eat.hero.value').data, 'about 1,921');
+      expect(textOf(tester, 'eat.eaten').data, 'Eaten about 479 kcal');
       expect(find.byKey(const ValueKey('eat.estimated')), findsOneWidget);
       expect(
         textOf(tester, 'eat.fibre').data,
@@ -284,8 +284,21 @@ void main() {
       );
       expect(find.text('Dal tadka'), findsOneWidget);
       expect(find.text('1.5 × 1 katori (225 g)'), findsOneWidget);
-      expect(find.text('9–13.5 g protein'), findsOneWidget);
-      expect(find.text('180–278 kcal'), findsOneWidget);
+      expect(find.text('about 11 g protein'), findsOneWidget);
+      expect(find.text('about 229 kcal'), findsOneWidget);
+
+      // Beta 3.7 (ADR-036): one number on the line; a tap shows the range
+      // and where it comes from, a second tap hides it.
+      expect(find.byKey(const ValueKey('log.item.range')), findsNothing);
+      await tester.tap(find.text('Dal tadka'));
+      await tester.pumpAndSettle();
+      expect(
+        textOf(tester, 'log.item.range').data,
+        'Range 180–278 kcal · 9–13.5 g protein · FITOS estimate',
+      );
+      await tester.tap(find.text('Dal tadka'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('log.item.range')), findsNothing);
     });
 
     testWidgets('over target: shown as over, never "0 left"', (tester) async {
@@ -400,8 +413,8 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('food.dal-tadka')));
       await settle(tester);
       expect(find.byKey(const ValueKey('portion.sheet')), findsOneWidget);
-      expect(textOf(tester, 'portion.preview.kcal').data, '120–185 kcal');
-      expect(textOf(tester, 'portion.preview.protein').data, '6–9 g');
+      expect(textOf(tester, 'portion.preview.kcal').data, 'about 153 kcal');
+      expect(textOf(tester, 'portion.preview.protein').data, 'about 7.5 g');
       expect(textOf(tester, 'portion.grams').data, '150 g');
       expect(textOf(tester, 'portion.preview.fibre').data, 'Not known');
       expect(
@@ -428,8 +441,8 @@ void main() {
         '1.5',
       );
       await tester.pump();
-      expect(textOf(tester, 'portion.preview.kcal').data, '180–278 kcal');
-      expect(textOf(tester, 'portion.preview.protein').data, '9–13.5 g');
+      expect(textOf(tester, 'portion.preview.kcal').data, 'about 229 kcal');
+      expect(textOf(tester, 'portion.preview.protein').data, 'about 11 g');
       expect(textOf(tester, 'portion.grams').data, '225 g');
       await tester.tap(find.byKey(const ValueKey('portion.slot.Dinner')));
       await tester.pump();
@@ -532,14 +545,14 @@ void main() {
       await tester.pumpWidget(harness());
       await settle(tester);
       await openLog(tester, 'Saved meals');
-      expect(find.text('≈ 180–245 kcal · preview'), findsOneWidget);
+      expect(find.text('about 213 kcal · preview'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('saved.meal-1.log')));
       await settle(tester);
       final log = api.logs.values.single;
       expect(log.entryMethod, EntryMethod.savedMeal);
       expect(log.savedMealId, 'meal-1');
       expect(log.items.map((i) => i.foodName), ['Dal tadka', 'Curd']);
-      expect(textOf(tester, 'eat.eaten').data, 'Eaten 180–245 kcal');
+      expect(textOf(tester, 'eat.eaten').data, 'Eaten about 213 kcal');
     });
 
     testWidgets('"Save as meal" saves the slot\'s logs by their client ids',
@@ -572,7 +585,7 @@ void main() {
       await quickAdd(tester);
       final pending = find.textContaining('Not synced yet');
       expect(pending, findsOneWidget);
-      expect(find.textContaining('≈ 250 kcal'), findsOneWidget);
+      expect(find.text('250 kcal'), findsOneWidget);
       expect(
         textOf(tester, 'eat.hero.value').data,
         '2,400',
@@ -786,7 +799,7 @@ void main() {
       expect(textOf(tester, 'describe.item.0.portion').data, '2 × 1 piece');
       expect(
         textOf(tester, 'describe.item.0.kcal').data,
-        '170–240 kcal · 5–8 g protein',
+        'about 205 kcal · about 6.5 g protein',
       );
       expect(
         find.byKey(const ValueKey('describe.item.0.unsure')),
@@ -814,7 +827,7 @@ void main() {
       );
       expect(
         textOf(tester, 'describe.total').data,
-        'About 470–605 kcal · 19–25 g protein',
+        'About 538 kcal · about 22 g protein',
       );
       expect(find.text('Add 3 to Lunch'), findsOneWidget);
 

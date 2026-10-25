@@ -380,7 +380,7 @@ class LogFoodRow extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final row = food.headline;
     final summary = '${FoodFormat.kcal(row)} · '
-        '${FoodFormat.range(row.proteinLow, row.proteinHigh)} g protein · '
+        '${FoodFormat.about(row.proteinLow, row.proteinHigh)} g protein · '
         '${FoodFormat.servingShort(row)}';
     return InkWell(
       onTap: onTap,
@@ -873,7 +873,7 @@ class _SavedMealTile extends ConsumerWidget {
                 Text(
                   unavailable
                       ? 'A food in this meal is no longer available.'
-                      : '≈ ${EatFormat.kcal(preview.kcalLow, preview.kcalHigh)} kcal · preview',
+                      : '${EatFormat.kcal(preview.kcalLow, preview.kcalHigh)} kcal · preview',
                   style: textTheme.bodyMedium?.copyWith(
                     color: unavailable ? FitColors.oxide : FitColors.ink60,
                   ),

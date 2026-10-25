@@ -56,8 +56,12 @@ abstract final class TodayWords {
   static String _num(num v) =>
       v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
 
-  static String _range(num lo, num hi) =>
-      _num(lo) == _num(hi) ? _num(lo) : '${_num(lo)}–${_num(hi)}';
+  /// Beta 3.7: one number, "about 41" for an estimate.
+  static String _range(num lo, num hi) {
+    if (_num(lo) == _num(hi)) return _num(lo);
+    final m = (lo + hi) / 2;
+    return 'about ${_num(m.abs() >= 10 ? m.round() : (m * 10).round() / 10)}';
+  }
 
   static String _label(String s) => s.replaceAll('-', ' ');
 

@@ -13,11 +13,42 @@ abstract final class FoodFormat {
     return fixed.endsWith('.0') ? fixed.substring(0, fixed.length - 2) : fixed;
   }
 
-  /// An exact value is one number; an estimate is "low–high".
+  /// An exact value is one number; an estimate is "low–high". Beta 3.7: only
+  /// where a range is asked for (a food's page, a tapped logged item).
   static String range(double low, double high) =>
       low == high ? number(low) : '${number(low)}–${number(high)}';
 
-  static String kcal(FoodNutrition n) => '${range(n.kcalLow, n.kcalHigh)} kcal';
+  /// Beta 3.7 (ADR-036, owner: "one number, range in details"): the one
+  /// number an estimate shows, the middle of its range — whole from 10 up,
+  /// one decimal below.
+  static double middle(double low, double high) {
+    final m = (low + high) / 2;
+    return m.abs() >= 10 ? m.roundToDouble() : (m * 10).roundToDouble() / 10;
+  }
+
+  /// An exact value is itself ("130"); an estimate is "about 330".
+  static String about(double low, double high) =>
+      low == high ? number(low) : 'about ${number(middle(low, high))}';
+
+  static String kcal(FoodNutrition n) => '${about(n.kcalLow, n.kcalHigh)} kcal';
+
+  /// "about 520" → "About 520", for the start of a sentence.
+  static String capitalised(String s) =>
+      s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
+
+  /// What a tap on an estimate shows: "Range 300–360 kcal · 9–11 g protein ·
+  /// INDB"; null for exact values.
+  static String? rangeLine({
+    required double kcalLow,
+    required double kcalHigh,
+    required double proteinLow,
+    required double proteinHigh,
+    required FoodSource source,
+  }) =>
+      kcalLow == kcalHigh && proteinLow == proteinHigh
+          ? null
+          : 'Range ${range(kcalLow, kcalHigh)} kcal · '
+              '${range(proteinLow, proteinHigh)} g protein · ${source.label}';
 
   /// "Per 100 g", "Per 1 katori (150 g)", "Per 1 bar".
   static String serving(FoodNutrition n) {
@@ -32,7 +63,8 @@ abstract final class FoodFormat {
       n.basis == NutritionBasis.per100g ? '100 g' : n.servingLabel;
 }
 
-/// The one-word provenance a row carries: USDA (verified), Estimate, Yours.
+/// The one-word provenance a row carries: USDA, IFCT, INDB, CoFID, Estimate,
+/// Yours.
 /// Colour follows the token meanings: pine for measured, amber for estimated.
 class FoodSourceBadge extends StatelessWidget {
   const FoodSourceBadge({required this.food, super.key});
@@ -43,7 +75,8 @@ class FoodSourceBadge extends StatelessWidget {
         FoodSource.estimated => FitColors.amber,
         FoodSource.usda ||
         FoodSource.ifct ||
-        FoodSource.indb =>
+        FoodSource.indb ||
+        FoodSource.cofid =>
           food.isVerified ? FitColors.pine : FitColors.ink60,
         FoodSource.user || FoodSource.userCorrected => FitColors.ink60,
       };
@@ -79,7 +112,8 @@ class FoodSourceBadge extends StatelessWidget {
 }
 
 /// One nutrition row as a small table: energy, protein, carbs, fat, fibre.
-/// Ranges stay ranges; unknown fibre says so.
+/// The food's page is where the ranges show (beta 3.7); unknown fibre says
+/// so.
 class NutritionTable extends StatelessWidget {
   const NutritionTable({required this.row, super.key});
 
@@ -106,7 +140,7 @@ class NutritionTable extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        line('Energy', FoodFormat.kcal(r)),
+        line('Energy', '${FoodFormat.range(r.kcalLow, r.kcalHigh)} kcal'),
         line('Protein', '${FoodFormat.range(r.proteinLow, r.proteinHigh)} g'),
         line('Carbohydrate', '${FoodFormat.range(r.carbLow, r.carbHigh)} g'),
         line('Fat', '${FoodFormat.range(r.fatLow, r.fatHigh)} g'),
@@ -120,6 +154,28 @@ class NutritionTable extends StatelessWidget {
             colour: FitColors.ink60,
           ),
       ],
+    );
+  }
+}
+
+/// UK CoFID's licence (OGL v3.0) asks for this statement wherever it is used.
+class CofidAttribution extends StatelessWidget {
+  const CofidAttribution({super.key});
+
+  static const text = "Includes McCance and Widdowson's Composition of Foods "
+      'Integrated Dataset 2021 (Public Health England). Crown copyright. '
+      'Contains public sector information licensed under the Open '
+      'Government Licence v3.0.';
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      key: const ValueKey('cofid.attribution'),
+      style: Theme.of(context)
+          .textTheme
+          .bodyMedium
+          ?.copyWith(color: FitColors.ink60),
     );
   }
 }

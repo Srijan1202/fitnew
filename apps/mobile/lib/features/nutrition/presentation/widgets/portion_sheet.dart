@@ -152,7 +152,7 @@ class _PortionSheetState extends State<PortionSheet> {
     final preview =
         portion.ok ? PortionPreview.scale(_row, portion.servings!) : null;
     final rows = widget.food.nutrition;
-    String g(double lo, double hi) => '${FoodFormat.range(lo, hi)} g';
+    String g(double lo, double hi) => '${FoodFormat.about(lo, hi)} g';
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -273,7 +273,7 @@ class _PortionSheetState extends State<PortionSheet> {
                   MacroCell(
                     label: 'Calories',
                     value:
-                        '${FoodFormat.range(preview!.kcalLow, preview.kcalHigh)} kcal',
+                        '${FoodFormat.about(preview!.kcalLow, preview.kcalHigh)} kcal',
                     valueKey: const ValueKey('portion.preview.kcal'),
                   ),
                   MacroCell(

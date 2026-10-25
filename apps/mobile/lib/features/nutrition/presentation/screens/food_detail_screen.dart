@@ -122,11 +122,19 @@ class _Detail extends StatelessWidget {
 
   String get _explainer => switch (food.source) {
         FoodSource.estimated =>
-          'A FITOS estimate, shown as a range: the real value depends on the '
-              'recipe, the oil and the portion. Not a measured value.',
-        FoodSource.usda || FoodSource.ifct || FoodSource.indb => food.isVerified
-            ? 'Measured values, exactly as ${food.source.label} publishes them.'
-            : 'Values from ${food.source.label}.',
+          'A FITOS estimate: the real value depends on the recipe, the oil '
+              'and the portion, so FITOS shows the middle of the range below. '
+              'Not a measured value.',
+        FoodSource.indb =>
+          'From an Indian Nutrient Databank recipe. Recipes vary, so FITOS '
+              'shows the middle of the range below.',
+        FoodSource.usda ||
+        FoodSource.ifct ||
+        FoodSource.cofid =>
+          food.isVerified
+              ? 'Measured values from ${food.source.label}. The small range '
+                  'below is how much they vary.'
+              : 'Values from ${food.source.label}.',
         FoodSource.user when food.community && !food.isCustom =>
           'Added from a label by someone using FITOS and shared with everyone. '
               'Community \u00b7 unverified: FITOS has not checked it.',
@@ -143,9 +151,12 @@ class _Detail extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final confidence = food.nutrition.first.confidence;
-    // USDA records, and estimates composed from USDA ingredients, credit USDA.
+    // USDA records, and estimates composed from USDA ingredients, credit USDA;
+    // CoFID foods, and mess estimates calibrated to CoFID, credit CoFID.
     final creditsUsda = food.source == FoodSource.usda ||
         (food.sourceRef?.contains('USDA') ?? false);
+    final creditsCofid = food.source == FoodSource.cofid ||
+        (food.sourceRef?.contains('CoFID') ?? false);
     return ListView(
       key: const ValueKey('food.detail'),
       padding: const EdgeInsets.fromLTRB(
@@ -237,6 +248,16 @@ class _Detail extends StatelessWidget {
                 const SizedBox(height: FitSpacing.sm),
                 const UsdaAttribution(),
               ],
+              if (creditsCofid) ...<Widget>[
+                const SizedBox(height: FitSpacing.sm),
+                const CofidAttribution(),
+              ],
+              const SizedBox(height: FitSpacing.sm),
+              TextButton(
+                key: const ValueKey('food.sources'),
+                onPressed: () => context.push(Routes.foodSources),
+                child: const Text('About the food data sources'),
+              ),
             ],
           ),
         ),
