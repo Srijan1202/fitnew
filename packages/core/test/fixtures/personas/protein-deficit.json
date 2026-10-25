@@ -23,38 +23,38 @@
         "poriyal x1 [veg]"
       ],
       "macros": {
-        "kcalLow": 595,
-        "kcalHigh": 895,
-        "proteinLow": 22.7,
-        "proteinHigh": 36.5,
-        "carbLow": 90,
-        "carbHigh": 125,
-        "fatLow": 13.3,
-        "fatHigh": 30.7
+        "kcalLow": 639,
+        "kcalHigh": 874,
+        "proteinLow": 26.2,
+        "proteinHigh": 36.3,
+        "carbLow": 99.5,
+        "carbHigh": 128.6,
+        "fatLow": 17.4,
+        "fatHigh": 25
       },
       "confidence": "medium",
       "reasons": [
         {
           "code": "protein-short",
           "target": 120,
-          "high": 36.5
+          "high": 36.3
         },
         {
           "code": "kcal-within",
           "target": 900,
-          "high": 895
+          "high": 874
         },
         {
           "code": "carb-over",
           "target": 60,
-          "low": 90,
-          "high": 125
+          "low": 99.5,
+          "high": 128.6
         },
         {
           "code": "fat-over",
           "target": 22,
-          "low": 13.3,
-          "high": 30.7
+          "low": 17.4,
+          "high": 25
         },
         {
           "code": "goal-weighting",
@@ -97,42 +97,42 @@
       "items": [
         "jeera-rice x1 [staple]",
         "chenna-masala x1 [protein]",
-        "loose-curd x1 [dairy]",
+        "sambar x2 [pulse-gravy]",
         "poriyal x1 [veg]"
       ],
       "macros": {
-        "kcalLow": 530,
-        "kcalHigh": 830,
-        "proteinLow": 17.5,
-        "proteinHigh": 30,
-        "carbLow": 77,
-        "carbHigh": 111,
-        "fatLow": 15,
-        "fatHigh": 33.5
+        "kcalLow": 614,
+        "kcalHigh": 870,
+        "proteinLow": 23,
+        "proteinHigh": 32.1,
+        "carbLow": 94.2,
+        "carbHigh": 127,
+        "fatLow": 18.4,
+        "fatHigh": 27
       },
       "confidence": "low",
       "reasons": [
         {
           "code": "protein-short",
           "target": 120,
-          "high": 30
+          "high": 32.1
         },
         {
           "code": "kcal-within",
           "target": 900,
-          "high": 830
+          "high": 870
         },
         {
           "code": "carb-over",
           "target": 60,
-          "low": 77,
-          "high": 111
+          "low": 94.2,
+          "high": 127
         },
         {
           "code": "fat-over",
           "target": 22,
-          "low": 15,
-          "high": 33.5
+          "low": 18.4,
+          "high": 27
         },
         {
           "code": "goal-weighting",
@@ -153,7 +153,7 @@
         },
         {
           "code": "protein-anchor",
-          "dishSlug": "loose-curd",
+          "dishSlug": "sambar",
           "strength": "weak"
         },
         {
@@ -162,7 +162,7 @@
         },
         {
           "code": "top-protein-dish",
-          "dishSlug": "loose-curd"
+          "dishSlug": "sambar"
         },
         {
           "code": "low-confidence-dish",
@@ -179,42 +179,42 @@
       "items": [
         "poori x1 [staple]",
         "chenna-masala x1 [protein]",
-        "poriyal x1 [veg]",
-        "rasam x1 [soup]"
+        "sambar x1 [pulse-gravy]",
+        "poriyal x1 [veg]"
       ],
       "macros": {
-        "kcalLow": 465,
-        "kcalHigh": 730,
-        "proteinLow": 13.5,
-        "proteinHigh": 23,
-        "carbLow": 59,
-        "carbHigh": 88,
-        "fatLow": 18,
-        "fatHigh": 35.5
+        "kcalLow": 556,
+        "kcalHigh": 727,
+        "proteinLow": 18.4,
+        "proteinHigh": 24.9,
+        "carbLow": 65.4,
+        "carbHigh": 84.1,
+        "fatLow": 26,
+        "fatHigh": 33.4
       },
       "confidence": "low",
       "reasons": [
         {
           "code": "protein-short",
           "target": 120,
-          "high": 23
+          "high": 24.9
         },
         {
           "code": "kcal-within",
           "target": 900,
-          "high": 730
+          "high": 727
         },
         {
           "code": "carb-over",
           "target": 60,
-          "low": 59,
-          "high": 88
+          "low": 65.4,
+          "high": 84.1
         },
         {
           "code": "fat-over",
           "target": 22,
-          "low": 18,
-          "high": 35.5
+          "low": 26,
+          "high": 33.4
         },
         {
           "code": "goal-weighting",
@@ -234,16 +234,17 @@
           "strength": "strong"
         },
         {
+          "code": "protein-anchor",
+          "dishSlug": "sambar",
+          "strength": "weak"
+        },
+        {
           "code": "vegetable-component",
           "dishSlug": "poriyal"
         },
         {
-          "code": "supporting-side",
-          "dishSlug": "rasam"
-        },
-        {
           "code": "top-protein-dish",
-          "dishSlug": "chenna-masala"
+          "dishSlug": "sambar"
         },
         {
           "code": "low-confidence-dish",
@@ -255,16 +256,16 @@
   "shortfall": {
     "protein": {
       "target": 120,
-      "gapLow": 83.5,
-      "gapHigh": 97.3,
-      "menuMax": 65.5,
+      "gapLow": 83.7,
+      "gapHigh": 93.8,
+      "menuMax": 62.3,
       "menuCanMeet": false
     },
     "kcal": {
       "target": 900,
-      "gapLow": 5,
-      "gapHigh": 305,
-      "menuMax": 2010,
+      "gapLow": 26,
+      "gapHigh": 261,
+      "menuMax": 1847,
       "menuCanMeet": true
     }
   },
@@ -339,7 +340,11 @@
       "diet": "veg",
       "reasons": [
         {
-          "code": "not-chosen"
+          "code": "on-plate",
+          "ranks": [
+            2,
+            3
+          ]
         }
       ]
     },
@@ -348,10 +353,7 @@
       "diet": "veg",
       "reasons": [
         {
-          "code": "on-plate",
-          "ranks": [
-            3
-          ]
+          "code": "not-chosen"
         }
       ]
     },
@@ -362,8 +364,7 @@
         {
           "code": "on-plate",
           "ranks": [
-            1,
-            2
+            1
           ]
         }
       ]

@@ -23,36 +23,36 @@
         "white-rice x2 [staple]"
       ],
       "macros": {
-        "kcalLow": 350,
-        "kcalHigh": 430,
-        "proteinLow": 6.4,
-        "proteinHigh": 9,
-        "carbLow": 76,
-        "carbHigh": 96,
-        "fatLow": 0.6,
-        "fatHigh": 2.4
+        "kcalLow": 360,
+        "kcalHigh": 426,
+        "proteinLow": 7.6,
+        "proteinHigh": 9.2,
+        "carbLow": 85.8,
+        "carbHigh": 100.8,
+        "fatLow": 1,
+        "fatHigh": 1.4
       },
       "confidence": "medium",
       "reasons": [
         {
           "code": "protein-short",
           "target": 65.3,
-          "high": 9
+          "high": 9.2
         },
         {
           "code": "kcal-within",
           "target": 1120,
-          "high": 430
+          "high": 426
         },
         {
           "code": "carb-within",
           "target": 135.3,
-          "high": 96
+          "high": 100.8
         },
         {
           "code": "fat-within",
           "target": 32.7,
-          "high": 2.4
+          "high": 1.4
         },
         {
           "code": "goal-weighting",
@@ -83,16 +83,16 @@
   "shortfall": {
     "protein": {
       "target": 65.3,
-      "gapLow": 56.3,
-      "gapHigh": 58.9,
-      "menuMax": 9,
+      "gapLow": 56.1,
+      "gapHigh": 57.7,
+      "menuMax": 9.2,
       "menuCanMeet": false
     },
     "kcal": {
       "target": 1120,
-      "gapLow": 690,
-      "gapHigh": 770,
-      "menuMax": 430,
+      "gapLow": 694,
+      "gapHigh": 760,
+      "menuMax": 426,
       "menuCanMeet": false
     }
   },

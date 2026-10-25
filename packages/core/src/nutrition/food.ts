@@ -18,7 +18,8 @@ import type { Confidence, MacroRange, NutritionSource } from '../mess/types.js';
 // ---------------------------------------------------------------- sources --
 
 /** Where a food's numbers came from (API / database vocabulary). */
-export const FOOD_SOURCES = ['estimated', 'usda', 'ifct', 'indb', 'user', 'user-corrected'] as const;
+/** Beta 3.7: `cofid` — the UK's Composition of Foods Integrated Dataset 2021 (Open Government Licence v3.0). */
+export const FOOD_SOURCES = ['estimated', 'usda', 'ifct', 'indb', 'cofid', 'user', 'user-corrected'] as const;
 export type FoodSource = (typeof FOOD_SOURCES)[number];
 
 export const CONFIDENCE_LEVELS = ['high', 'medium', 'low'] as const satisfies readonly Confidence[];
@@ -47,6 +48,7 @@ const SOURCE_RANK: Readonly<Record<FoodSource, number>> = {
   'user-corrected': 0,
   ifct: 1,
   indb: 1,
+  cofid: 1,
   usda: 2,
   user: 3,
   estimated: 4,

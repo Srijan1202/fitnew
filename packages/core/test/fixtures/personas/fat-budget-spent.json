@@ -19,43 +19,41 @@
       "items": [
         "white-rice x1 [staple]",
         "dhal x1 [protein]",
-        "brinjal-fry x1 [veg]",
-        "seasonal-fruit x1 [fruit]"
+        "brinjal-fry x1 [veg]"
       ],
       "macros": {
-        "kcalLow": 450,
-        "kcalHigh": 690,
-        "proteinLow": 12.2,
-        "proteinHigh": 20,
-        "carbLow": 76,
-        "carbHigh": 111,
-        "fatLow": 8.4,
-        "fatHigh": 20.8
+        "kcalLow": 464,
+        "kcalHigh": 587,
+        "proteinLow": 13.1,
+        "proteinHigh": 16.6,
+        "carbLow": 74.3,
+        "carbHigh": 91.5,
+        "fatLow": 14.8,
+        "fatHigh": 19.9
       },
       "confidence": "low",
       "reasons": [
         {
           "code": "protein-short",
           "target": 96.3,
-          "high": 20
+          "high": 16.6
         },
         {
           "code": "kcal-may-exceed",
           "target": 561,
-          "low": 450,
-          "high": 690
+          "low": 464,
+          "high": 587
         },
         {
-          "code": "carb-over",
+          "code": "carb-within",
           "target": 94,
-          "low": 76,
-          "high": 111
+          "high": 91.5
         },
         {
           "code": "fat-over",
           "target": 0,
-          "low": 8.4,
-          "high": 20.8
+          "low": 14.8,
+          "high": 19.9
         },
         {
           "code": "goal-weighting",
@@ -79,10 +77,6 @@
           "dishSlug": "brinjal-fry"
         },
         {
-          "code": "supporting-side",
-          "dishSlug": "seasonal-fruit"
-        },
-        {
           "code": "top-protein-dish",
           "dishSlug": "dhal"
         },
@@ -101,42 +95,42 @@
       "items": [
         "phulka x1 [staple]",
         "dhal x1 [protein]",
-        "brinjal-fry x1 [veg]",
-        "seasonal-fruit x1 [fruit]"
+        "sambar x1 [pulse-gravy]",
+        "brinjal-fry x1 [veg]"
       ],
       "macros": {
-        "kcalLow": 360,
-        "kcalHigh": 595,
-        "proteinLow": 11.5,
-        "proteinHigh": 19.1,
-        "carbLow": 54,
-        "carbHigh": 85,
-        "fatLow": 8.9,
-        "fatHigh": 22.6
+        "kcalLow": 436,
+        "kcalHigh": 574,
+        "proteinLow": 16,
+        "proteinHigh": 20.7,
+        "carbLow": 58,
+        "carbHigh": 75.6,
+        "fatLow": 17,
+        "fatHigh": 23
       },
       "confidence": "low",
       "reasons": [
         {
           "code": "protein-short",
           "target": 96.3,
-          "high": 19.1
+          "high": 20.7
         },
         {
           "code": "kcal-may-exceed",
           "target": 561,
-          "low": 360,
-          "high": 595
+          "low": 436,
+          "high": 574
         },
         {
           "code": "carb-within",
           "target": 94,
-          "high": 85
+          "high": 75.6
         },
         {
           "code": "fat-over",
           "target": 0,
-          "low": 8.9,
-          "high": 22.6
+          "low": 17,
+          "high": 23
         },
         {
           "code": "goal-weighting",
@@ -156,16 +150,17 @@
           "strength": "strong"
         },
         {
+          "code": "protein-anchor",
+          "dishSlug": "sambar",
+          "strength": "weak"
+        },
+        {
           "code": "vegetable-component",
           "dishSlug": "brinjal-fry"
         },
         {
-          "code": "supporting-side",
-          "dishSlug": "seasonal-fruit"
-        },
-        {
           "code": "top-protein-dish",
-          "dishSlug": "dhal"
+          "dishSlug": "sambar"
         },
         {
           "code": "low-confidence-dish",
@@ -185,38 +180,38 @@
         "brinjal-fry x1 [veg]"
       ],
       "macros": {
-        "kcalLow": 380,
-        "kcalHigh": 685,
-        "proteinLow": 11.5,
-        "proteinHigh": 21,
-        "carbLow": 56,
-        "carbHigh": 93,
-        "fatLow": 10,
-        "fatHigh": 29
+        "kcalLow": 434,
+        "kcalHigh": 674,
+        "proteinLow": 12.3,
+        "proteinHigh": 19,
+        "carbLow": 59.4,
+        "carbHigh": 91.1,
+        "fatLow": 16.3,
+        "fatHigh": 29.2
       },
       "confidence": "low",
       "reasons": [
         {
           "code": "protein-short",
           "target": 96.3,
-          "high": 21
+          "high": 19
         },
         {
           "code": "kcal-may-exceed",
           "target": 561,
-          "low": 380,
-          "high": 685
+          "low": 434,
+          "high": 674
         },
         {
           "code": "carb-within",
           "target": 94,
-          "high": 93
+          "high": 91.1
         },
         {
           "code": "fat-over",
           "target": 0,
-          "low": 10,
-          "high": 29
+          "low": 16.3,
+          "high": 29.2
         },
         {
           "code": "goal-weighting",
@@ -257,9 +252,9 @@
   "shortfall": {
     "protein": {
       "target": 96.3,
-      "gapLow": 76.3,
-      "gapHigh": 84.1,
-      "menuMax": 54.5,
+      "gapLow": 79.7,
+      "gapHigh": 83.2,
+      "menuMax": 46.6,
       "menuCanMeet": false
     },
     "kcal": null
@@ -332,7 +327,10 @@
       "diet": "veg",
       "reasons": [
         {
-          "code": "not-chosen"
+          "code": "on-plate",
+          "ranks": [
+            2
+          ]
         }
       ]
     },
@@ -389,11 +387,7 @@
       "diet": "veg",
       "reasons": [
         {
-          "code": "on-plate",
-          "ranks": [
-            1,
-            2
-          ]
+          "code": "not-chosen"
         }
       ]
     }

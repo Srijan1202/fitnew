@@ -23,36 +23,36 @@
         "bhindi-do-pyaza x1 [veg]"
       ],
       "macros": {
-        "kcalLow": 1110,
-        "kcalHigh": 1830,
-        "proteinLow": 32.5,
-        "proteinHigh": 56,
-        "carbLow": 175,
-        "carbHigh": 264,
-        "fatLow": 28,
-        "fatHigh": 69
+        "kcalLow": 1232,
+        "kcalHigh": 1794,
+        "proteinLow": 35.3,
+        "proteinHigh": 50.8,
+        "carbLow": 183.2,
+        "carbHigh": 258.8,
+        "fatLow": 43.4,
+        "fatHigh": 66.6
       },
       "confidence": "low",
       "reasons": [
         {
           "code": "protein-short",
           "target": 140,
-          "high": 56
+          "high": 50.8
         },
         {
           "code": "kcal-within",
           "target": 2400,
-          "high": 1830
+          "high": 1794
         },
         {
           "code": "carb-within",
           "target": 290,
-          "high": 264
+          "high": 258.8
         },
         {
           "code": "fat-within",
           "target": 70,
-          "high": 69
+          "high": 66.6
         },
         {
           "code": "goal-weighting",
@@ -110,36 +110,36 @@
         "bhindi-do-pyaza x1 [veg]"
       ],
       "macros": {
-        "kcalLow": 830,
-        "kcalHigh": 1290,
-        "proteinLow": 28.5,
-        "proteinHigh": 45.2,
-        "carbLow": 132,
-        "carbHigh": 188,
-        "fatLow": 17.6,
-        "fatHigh": 45
+        "kcalLow": 910,
+        "kcalHigh": 1296,
+        "proteinLow": 29.5,
+        "proteinHigh": 41.8,
+        "carbLow": 137.2,
+        "carbHigh": 185.8,
+        "fatLow": 29.6,
+        "fatHigh": 46
       },
       "confidence": "low",
       "reasons": [
         {
           "code": "protein-short",
           "target": 140,
-          "high": 45.2
+          "high": 41.8
         },
         {
           "code": "kcal-within",
           "target": 2400,
-          "high": 1290
+          "high": 1296
         },
         {
           "code": "carb-within",
           "target": 290,
-          "high": 188
+          "high": 185.8
         },
         {
           "code": "fat-within",
           "target": 70,
-          "high": 45
+          "high": 46
         },
         {
           "code": "goal-weighting",
@@ -193,36 +193,36 @@
         "bhindi-do-pyaza x1 [veg]"
       ],
       "macros": {
-        "kcalLow": 835,
-        "kcalHigh": 1430,
-        "proteinLow": 25,
-        "proteinHigh": 43.6,
-        "carbLow": 131,
-        "carbHigh": 206,
-        "fatLow": 20.8,
-        "fatHigh": 56
+        "kcalLow": 957,
+        "kcalHigh": 1394,
+        "proteinLow": 27.4,
+        "proteinHigh": 38.8,
+        "carbLow": 139.2,
+        "carbHigh": 200.8,
+        "fatLow": 35.3,
+        "fatHigh": 54.5
       },
       "confidence": "low",
       "reasons": [
         {
           "code": "protein-short",
           "target": 140,
-          "high": 43.6
+          "high": 38.8
         },
         {
           "code": "kcal-within",
           "target": 2400,
-          "high": 1430
+          "high": 1394
         },
         {
           "code": "carb-within",
           "target": 290,
-          "high": 206
+          "high": 200.8
         },
         {
           "code": "fat-within",
           "target": 70,
-          "high": 56
+          "high": 54.5
         },
         {
           "code": "goal-weighting",
@@ -271,16 +271,16 @@
   "shortfall": {
     "protein": {
       "target": 140,
-      "gapLow": 84,
-      "gapHigh": 107.5,
-      "menuMax": 58,
+      "gapLow": 89.2,
+      "gapHigh": 104.7,
+      "menuMax": 51.9,
       "menuCanMeet": false
     },
     "kcal": {
       "target": 2400,
-      "gapLow": 570,
-      "gapHigh": 1290,
-      "menuMax": 1830,
+      "gapLow": 606,
+      "gapHigh": 1168,
+      "menuMax": 1794,
       "menuCanMeet": false
     }
   },

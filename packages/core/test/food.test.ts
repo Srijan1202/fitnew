@@ -26,8 +26,8 @@ const rice = exactFoodNutrition({ kcal: 130, protein: 2.7, carb: 28.2, fat: 0.3,
 const noFibre = exactFoodNutrition({ kcal: 60, protein: 3.3, carb: 4.6, fat: 3.2, fibre: null });
 
 describe('source vocabulary (Phase 7, D3)', () => {
-  it('is exactly the six approved values', () => {
-    expect([...FOOD_SOURCES]).toEqual(['estimated', 'usda', 'ifct', 'indb', 'user', 'user-corrected']);
+  it('is exactly the seven approved values (cofid from beta 3.7, ADR-036)', () => {
+    expect([...FOOD_SOURCES]).toEqual(['estimated', 'usda', 'ifct', 'indb', 'cofid', 'user', 'user-corrected']);
   });
 
   it("maps the mess module's NutritionSource without changing it", () => {

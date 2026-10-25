@@ -20,43 +20,42 @@
       },
       "items": [
         "roti x2 [staple]",
+        "white-rice x1 [staple]",
         "dhal x2 [protein]",
-        "sambar x2 [pulse-gravy]",
-        "rasam x1 [soup]"
+        "sambar x2 [pulse-gravy]"
       ],
       "macros": {
-        "kcalLow": 610,
-        "kcalHigh": 965,
-        "proteinLow": 25,
-        "proteinHigh": 39.7,
-        "carbLow": 92,
-        "carbHigh": 137,
-        "fatLow": 12.6,
-        "fatHigh": 32.5
+        "kcalLow": 804,
+        "kcalHigh": 989,
+        "proteinLow": 29.8,
+        "proteinHigh": 37,
+        "carbLow": 133.3,
+        "carbHigh": 163.2,
+        "fatLow": 20.9,
+        "fatHigh": 26.3
       },
       "confidence": "medium",
       "reasons": [
         {
           "code": "protein-short",
           "target": 85,
-          "high": 39.7
+          "high": 37
         },
         {
           "code": "kcal-within",
           "target": 1100,
-          "high": 965
+          "high": 989
         },
         {
           "code": "carb-over",
           "target": 120,
-          "low": 92,
-          "high": 137
+          "low": 133.3,
+          "high": 163.2
         },
         {
-          "code": "fat-over",
+          "code": "fat-within",
           "target": 30,
-          "low": 12.6,
-          "high": 32.5
+          "high": 26.3
         },
         {
           "code": "goal-weighting",
@@ -69,88 +68,6 @@
         {
           "code": "staple-anchor",
           "dishSlug": "roti"
-        },
-        {
-          "code": "protein-anchor",
-          "dishSlug": "dhal",
-          "strength": "strong"
-        },
-        {
-          "code": "protein-anchor",
-          "dishSlug": "sambar",
-          "strength": "weak"
-        },
-        {
-          "code": "supporting-side",
-          "dishSlug": "rasam"
-        },
-        {
-          "code": "limited-menu",
-          "missing": [
-            "vegetable"
-          ]
-        },
-        {
-          "code": "top-protein-dish",
-          "dishSlug": "dhal"
-        }
-      ]
-    },
-    {
-      "rank": 2,
-      "structure": {
-        "kind": "meal",
-        "missing": [
-          "vegetable"
-        ]
-      },
-      "items": [
-        "white-rice x2 [staple]",
-        "dhal x2 [protein]",
-        "sambar x2 [pulse-gravy]",
-        "rasam x1 [soup]"
-      ],
-      "macros": {
-        "kcalLow": 790,
-        "kcalHigh": 1155,
-        "proteinLow": 26.4,
-        "proteinHigh": 41.5,
-        "carbLow": 136,
-        "carbHigh": 189,
-        "fatLow": 11.6,
-        "fatHigh": 28.9
-      },
-      "confidence": "medium",
-      "reasons": [
-        {
-          "code": "protein-short",
-          "target": 85,
-          "high": 41.5
-        },
-        {
-          "code": "kcal-may-exceed",
-          "target": 1100,
-          "low": 790,
-          "high": 1155
-        },
-        {
-          "code": "carb-over",
-          "target": 120,
-          "low": 136,
-          "high": 189
-        },
-        {
-          "code": "fat-within",
-          "target": 30,
-          "high": 28.9
-        },
-        {
-          "code": "goal-weighting",
-          "goal": "muscle-gain"
-        },
-        {
-          "code": "meal-structure",
-          "kind": "meal"
         },
         {
           "code": "staple-anchor",
@@ -167,10 +84,6 @@
           "strength": "weak"
         },
         {
-          "code": "supporting-side",
-          "dishSlug": "rasam"
-        },
-        {
           "code": "limited-menu",
           "missing": [
             "vegetable"
@@ -178,7 +91,7 @@
         },
         {
           "code": "top-protein-dish",
-          "dishSlug": "dhal"
+          "dishSlug": "sambar"
         }
       ]
     }
@@ -186,16 +99,16 @@
   "shortfall": {
     "protein": {
       "target": 85,
-      "gapLow": 45.3,
-      "gapHigh": 60,
-      "menuMax": 46.2,
+      "gapLow": 48,
+      "gapHigh": 55.2,
+      "menuMax": 41.6,
       "menuCanMeet": false
     },
     "kcal": {
       "target": 1100,
-      "gapLow": 135,
-      "gapHigh": 490,
-      "menuMax": 1330,
+      "gapLow": 111,
+      "gapHigh": 296,
+      "menuMax": 1277,
       "menuCanMeet": true
     }
   },
@@ -220,8 +133,7 @@
         {
           "code": "on-plate",
           "ranks": [
-            1,
-            2
+            1
           ]
         }
       ]
@@ -253,7 +165,7 @@
         {
           "code": "on-plate",
           "ranks": [
-            2
+            1
           ]
         }
       ]
@@ -265,8 +177,7 @@
         {
           "code": "on-plate",
           "ranks": [
-            1,
-            2
+            1
           ]
         }
       ]
@@ -276,11 +187,7 @@
       "diet": "veg",
       "reasons": [
         {
-          "code": "on-plate",
-          "ranks": [
-            1,
-            2
-          ]
+          "code": "not-chosen"
         }
       ]
     },

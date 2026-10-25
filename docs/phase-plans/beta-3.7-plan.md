@@ -1,6 +1,6 @@
 # Beta 3.7 — plan: better food data
 
-**Date** 2026-10-25 · **Branch** `phase-19` · **Status: awaiting the owner's approval.**
+**Date** 2026-10-25 · **Branch** `phase-19` · **Status: approved by the owner 2026-10-25 ("yes go").**
 
 The owner chose 3.7 on 2026-10-25: better food data.
 

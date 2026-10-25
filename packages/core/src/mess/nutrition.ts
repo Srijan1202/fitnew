@@ -16,6 +16,15 @@
  * Mess cooking adds uncounted oil and varies serving-to-serving, which is the
  * dominant error term. Ranges are widened accordingly rather than pretending to
  * a precision we do not have.
+ *
+ * Beta 3.7 (owner 2026-10-25, ADR-036):
+ * - Where a dish matches one measured as eaten in the UK's Composition of
+ *   Foods Integrated Dataset 2021 (CoFID, Open Government Licence v3.0), the
+ *   entry is that measurement x the mess serving, +-8 % (`measured`). The
+ *   source stays `estimated-table`: the serving is still an unweighed mess
+ *   portion.
+ * - Every other entry's ranges are at most +-20 % around their middle (they
+ *   were up to +-35 %). The role fallback for an unrecognised dish stays wide.
  */
 
 import type { Confidence, DishNutrition, DishRole, MacroRange, MessDish } from './types.js';
@@ -29,6 +38,53 @@ interface TableEntry {
   readonly carb: readonly [number, number];
   readonly fat: readonly [number, number];
   readonly confidence: Confidence;
+  /** Beta 3.7: the CoFID 2021 food the numbers come from. */
+  readonly measured?: MessMeasurement;
+}
+
+/** A CoFID 2021 food measured as eaten: per 100 g kcal, protein, carb, fat. */
+export interface MessMeasurement {
+  readonly code: string;
+  readonly name: string;
+  readonly per100g: readonly [number, number, number, number];
+}
+
+/** How far a measured dish may differ at a mess (+-8 %). */
+export const MEASURED_SPREAD = 0.08;
+/** The widest an estimate may be around its middle (+-20 %). */
+export const ESTIMATE_SPREAD = 0.2;
+
+const down = (v: number, d: number): number => Math.floor(v * 10 ** d) / 10 ** d;
+const up = (v: number, d: number): number => Math.ceil(v * 10 ** d) / 10 ** d;
+
+/** A table entry from a CoFID measurement at the mess serving, +-MEASURED_SPREAD, rounded outward. */
+function measured(
+  terms: readonly string[],
+  servingLabel: string,
+  servingGrams: number,
+  confidence: Confidence,
+  m: MessMeasurement,
+): TableEntry {
+  const at = (i: number, d: number): [number, number] => {
+    const v = (m.per100g[i]! * servingGrams) / 100;
+    return [down(v * (1 - MEASURED_SPREAD), d), up(v * (1 + MEASURED_SPREAD), d)];
+  };
+  return { terms, servingLabel, servingGrams, kcal: at(0, 0), protein: at(1, 1), carb: at(2, 1), fat: at(3, 1), confidence, measured: m };
+}
+
+/** A range at most +-ESTIMATE_SPREAD around its middle (kcal whole, grams to 0.1). */
+export function capSpread(range: readonly [number, number], decimals: number): [number, number] {
+  const [low, high] = range;
+  const mid = (low + high) / 2;
+  if (mid <= 0 || (high - low) / 2 <= mid * ESTIMATE_SPREAD) return [low, high];
+  const f = 10 ** decimals;
+  return [Math.round(mid * (1 - ESTIMATE_SPREAD) * f) / f, Math.round(mid * (1 + ESTIMATE_SPREAD) * f) / f];
+}
+
+/** An estimate entry with every range capped (a measured one is already narrow). */
+function capped(e: TableEntry): TableEntry {
+  if (e.measured !== undefined) return e;
+  return { ...e, kcal: capSpread(e.kcal, 0), protein: capSpread(e.protein, 1), carb: capSpread(e.carb, 1), fat: capSpread(e.fat, 1) };
 }
 
 function has(name: string, terms: readonly string[]): boolean {
@@ -40,18 +96,18 @@ function has(name: string, terms: readonly string[]): boolean {
  * Ordered most-specific first. "Chicken Biryani" must match before "Biryani",
  * and "Paneer Butter Masala" before "Paneer".
  */
-const BASE_TABLE: readonly TableEntry[] = [
+const RAW_BASE_TABLE: readonly TableEntry[] = [
   // ---- animal protein -----------------------------------------------------
-  { terms: ['chicken biryani', 'chicken dum biriyani', 'chicken biriyani', 'chicken hyderabadi biryani', 'chicken malliga biryani'], servingLabel: '1 plate', servingGrams: 300, kcal: [450, 650], protein: [22, 30], carb: [55, 75], fat: [14, 24], confidence: 'low' },
-  { terms: ['butter chicken', 'chicken tikka masala', 'chicken rogan josh', 'chicken tikka lababdar'], servingLabel: '1 serving', servingGrams: 130, kcal: [270, 370], protein: [19, 26], carb: [5, 11], fat: [18, 27], confidence: 'medium' },
+  measured(['chicken biryani', 'chicken dum biriyani', 'chicken biriyani', 'chicken hyderabadi biryani', 'chicken malliga biryani'], '1 plate', 300, 'low', { code: '19-454', name: 'Biryani, chicken, takeaway', per100g: [163, 8.5, 16.6, 7.4] }),
+  measured(['butter chicken', 'chicken tikka masala', 'chicken rogan josh', 'chicken tikka lababdar'], '1 serving', 130, 'medium', { code: '19-296', name: 'Curry, chicken tikka masala, retail, reheated', per100g: [156, 12.4, 4.9, 9.8] }),
   { terms: ['tandoori chicken', 'chicken 65', 'chicken hariyali', 'dragon chicken', 'kadai chicken', 'pepper chicken gravy', 'chilli chicken'], servingLabel: '1 serving', servingGrams: 120, kcal: [200, 300], protein: [20, 28], carb: [3, 9], fat: [10, 18], confidence: 'medium' },
-  { terms: ['chicken gravy', 'chicken'], servingLabel: '1 serving', servingGrams: 120, kcal: [180, 270], protein: [18, 25], carb: [4, 9], fat: [9, 17], confidence: 'medium' },
+  measured(['chicken gravy', 'chicken'], '1 serving', 120, 'medium', { code: '19-322', name: 'Curry, chicken, average, takeaway', per100g: [145, 11.7, 2.5, 9.8] }),
   { terms: ['fish fry', 'masala fried fish', 'fish'], servingLabel: '1 piece', servingGrams: 100, kcal: [170, 260], protein: [17, 24], carb: [3, 9], fat: [8, 16], confidence: 'medium' },
-  { terms: ['egg fried rice', 'egg rice', 'egg chow mein'], servingLabel: '1 plate', servingGrams: 250, kcal: [300, 420], protein: [9, 15], carb: [45, 60], fat: [8, 16], confidence: 'low' },
+  measured(['egg fried rice', 'egg rice', 'egg chow mein'], '1 plate', 250, 'low', { code: '11-444', name: 'Rice, egg fried, takeaway', per100g: [186, 4.3, 33.3, 4.9] }),
   { terms: ['egg manchurian', 'egg puffs', 'egg puff'], servingLabel: '1 serving', servingGrams: 110, kcal: [200, 300], protein: [7, 12], carb: [18, 28], fat: [10, 18], confidence: 'low' },
-  { terms: ['omelette', 'omlette', 'masala omelette', 'cheese omelette'], servingLabel: '2 eggs', servingGrams: 120, kcal: [180, 250], protein: [11, 15], carb: [1, 4], fat: [13, 19], confidence: 'medium' },
+  measured(['omelette', 'omlette', 'masala omelette', 'cheese omelette'], '2 eggs', 120, 'medium', { code: '12-946', name: 'Omelette, plain, homemade', per100g: [191, 10.9, 0, 16.4] }),
   { terms: ['egg burji', 'egg bhurji', 'scrambled egg', 'boiled egg masala', 'fried egg masala'], servingLabel: '2 eggs', servingGrams: 120, kcal: [160, 230], protein: [11, 14], carb: [2, 5], fat: [11, 17], confidence: 'medium' },
-  { terms: ['boiled egg', 'boiled eggs', 'fried egg', 'fried eggs', 'boiled fried eggs', 'egg'], servingLabel: '2 eggs', servingGrams: 110, kcal: [140, 190], protein: [12, 14], carb: [1, 2], fat: [10, 14], confidence: 'high' },
+  measured(['boiled egg', 'boiled eggs', 'fried egg', 'fried eggs', 'boiled fried eggs', 'egg'], '2 eggs', 110, 'high', { code: '12-940', name: 'Eggs, chicken, whole, boiled', per100g: [143, 14.1, 0, 9.6] }),
   { terms: ['french toast'], servingLabel: '2 slices', servingGrams: 100, kcal: [180, 260], protein: [7, 10], carb: [22, 30], fat: [7, 12], confidence: 'low' },
 
   // ---- vegetarian protein -------------------------------------------------
@@ -62,24 +118,26 @@ const BASE_TABLE: readonly TableEntry[] = [
 
   // ---- legumes ------------------------------------------------------------
   { terms: ['dal makhani', 'dhal makani', 'dhal makhani', 'dal maharani'], servingLabel: '1 katori', servingGrams: 150, kcal: [180, 260], protein: [7, 10], carb: [18, 25], fat: [8, 15], confidence: 'medium' },
-  { terms: ['dal tadka', 'dhal tadka', 'dal fry', 'dhal fry', 'toor dal', 'toor dhal', 'yellow dhal', 'mix dhal', 'masoor dhal', 'urad dhal', 'green gram dhal', 'dal', 'dhal'], servingLabel: '1 katori', servingGrams: 150, kcal: [120, 185], protein: [6, 9], carb: [16, 23], fat: [3, 7], confidence: 'medium' },
-  { terms: ['sambar', 'sambhar'], servingLabel: '1 katori', servingGrams: 150, kcal: [85, 145], protein: [3.5, 6], carb: [12, 19], fat: [2, 5], confidence: 'medium' },
+  measured(['dal tadka', 'dhal tadka', 'dal fry', 'dhal fry', 'toor dal', 'toor dhal', 'yellow dhal', 'mix dhal', 'masoor dhal', 'urad dhal', 'green gram dhal', 'dal', 'dhal'], '1 katori', 150, 'medium', { code: '15-780', name: 'Curry, pigeon pea dahl, with vegetable oil, homemade', per100g: [116, 4.6, 13.5, 5.5] }),
+  measured(['sambar', 'sambhar'], '1 katori', 150, 'medium', { code: '12-467', name: 'Sambar, homemade', per100g: [49, 3.1, 7.7, 0.9] }),
   { terms: ['rasam'], servingLabel: '1 katori', servingGrams: 150, kcal: [30, 65], protein: [1, 2.5], carb: [4, 9], fat: [1, 2.5], confidence: 'medium' },
   { terms: ['kootu', 'kuttu', 'kadhi pakoda', 'kadi pakora'], servingLabel: '1 katori', servingGrams: 130, kcal: [90, 150], protein: [3, 5.5], carb: [11, 18], fat: [3, 7], confidence: 'low' },
 
   // ---- dairy --------------------------------------------------------------
-  { terms: ['cup curd', 'loose curd', 'curd', 'dahi'], servingLabel: '1 cup', servingGrams: 120, kcal: [65, 105], protein: [4, 7], carb: [5, 8], fat: [3, 5.5], confidence: 'high' },
-  { terms: ['butter milk', 'buttermilk', 'sweet lassi', 'lassi'], servingLabel: '1 glass', servingGrams: 200, kcal: [45, 90], protein: [2, 4], carb: [5, 10], fat: [1, 3], confidence: 'medium' },
-  { terms: ['onion raitha', 'cucumber raitha', 'raitha', 'raita'], servingLabel: '1 katori', servingGrams: 100, kcal: [50, 90], protein: [2.5, 4.5], carb: [4, 8], fat: [2, 4.5], confidence: 'medium' },
+  measured(['cup curd', 'loose curd', 'curd', 'dahi'], '1 cup', 120, 'high', { code: '12-184', name: 'Yogurt, whole milk, plain', per100g: [79, 5.7, 7.8, 3.0] }),
+  // Beta 3.7: buttermilk (chaas) and sweet lassi were one entry at 45-90 kcal a glass; a sweet lassi is ~130.
+  measured(['sweet lassi', 'lassi'], '1 glass', 200, 'medium', { code: '12-373', name: 'Lassi, sweetened', per100g: [65, 2.6, 12.3, 0.9] }),
+  { terms: ['butter milk', 'buttermilk'], servingLabel: '1 glass', servingGrams: 200, kcal: [45, 90], protein: [2, 4], carb: [5, 10], fat: [1, 3], confidence: 'medium' },
+  measured(['onion raitha', 'cucumber raitha', 'raitha', 'raita'], '1 katori', 100, 'medium', { code: '17-832', name: 'Raita, homemade', per100g: [57, 4.4, 5.8, 2.4] }),
 
   // ---- staples ------------------------------------------------------------
   { terms: ['curd rice'], servingLabel: '1 katori', servingGrams: 180, kcal: [180, 260], protein: [5, 8], carb: [30, 40], fat: [4, 8], confidence: 'medium' },
   { terms: ['veg biryani', 'vegetable dum biriyani', 'chettinad veg biriyani', 'malliga veg biryani', 'veg hyderabadi biryani', 'biryani', 'biriyani'], servingLabel: '1 plate', servingGrams: 280, kcal: [380, 520], protein: [8, 13], carb: [60, 80], fat: [10, 18], confidence: 'low' },
   { terms: ['veg fried rice', 'fried rice', 'thai fried rice', 'peas pulao', 'peas pulav', 'jeera rice', 'ghee rice', 'tomato rice', 'lemon rice', 'coconut rice', 'tamarind rice', 'carrot rice', 'mint pulav', 'veg pulao', 'pulav', 'pulao', 'bisibela bath', 'bisi bele bath', 'vangi bath', 'mushroom rice'], servingLabel: '1 plate', servingGrams: 220, kcal: [260, 380], protein: [5, 9], carb: [45, 62], fat: [6, 13], confidence: 'low' },
-  { terms: ['white rice', 'rice'], servingLabel: '1 katori', servingGrams: 150, kcal: [175, 215], protein: [3.2, 4.5], carb: [38, 48], fat: [0.3, 1.2], confidence: 'high' },
+  measured(['white rice', 'rice'], '1 katori', 150, 'high', { code: '11-862', name: 'Rice, white, long grain, boiled in unsalted water', per100g: [131, 2.8, 31.1, 0.4] }),
   { terms: ['phulka', 'pulka', 'roti', 'chapathi', 'chapati', 'methi chapathi', 'diamond chapathi', 'methi roti', 'triangle chapathi'], servingLabel: '1 piece', servingGrams: 40, kcal: [85, 120], protein: [2.5, 3.6], carb: [16, 22], fat: [0.8, 3], confidence: 'high' },
   { terms: ['lachha parota', 'parota', 'paratha', 'chole bhatura', 'bhatura'], servingLabel: '1 piece', servingGrams: 90, kcal: [220, 320], protein: [5, 8], carb: [30, 42], fat: [8, 16], confidence: 'low' },
-  { terms: ['poori', 'puri'], servingLabel: '2 pieces', servingGrams: 80, kcal: [230, 320], protein: [4, 6.5], carb: [28, 38], fat: [11, 18], confidence: 'low' },
+  measured(['poori', 'puri'], '2 pieces', 80, 'low', { code: '11-911', name: 'Puri, homemade', per100g: [366, 7.2, 36.5, 22.3] }),
   { terms: ['masala dosai', 'masala dosa', 'podi dosa', 'set dosai', 'set dosa', 'plain dosa', 'thin dosa', 'kal dosa', 'dosa', 'dosai'], servingLabel: '1 piece', servingGrams: 110, kcal: [150, 260], protein: [3, 6], carb: [25, 40], fat: [4, 10], confidence: 'low' },
   { terms: ['podi idly', 'idly', 'idli'], servingLabel: '2 pieces', servingGrams: 110, kcal: [120, 165], protein: [3.5, 5.5], carb: [24, 33], fat: [0.5, 3], confidence: 'high' },
   { terms: ['onion uthappam', 'masala uthappam', 'uthappam'], servingLabel: '1 piece', servingGrams: 120, kcal: [160, 240], protein: [4, 6.5], carb: [28, 38], fat: [3, 8], confidence: 'low' },
@@ -89,7 +147,7 @@ const BASE_TABLE: readonly TableEntry[] = [
   // ---- vegetables ---------------------------------------------------------
   { terms: ['poriyal', 'sabji', 'subji', 'sabzi', 'foogath', 'podimas', 'thokku'], servingLabel: '1 katori', servingGrams: 100, kcal: [55, 115], protein: [1.5, 3], carb: [7, 13], fat: [2, 6], confidence: 'medium' },
   { terms: ['manchurian', 'jalfrezi', 'jal frezi', 'kurma', 'korma', 'kofta', 'kolhapuri', 'kholapuri', 'mixed veg gravy', 'veg gravy', 'masala', 'gravy', 'fry'], servingLabel: '1 katori', servingGrams: 120, kcal: [110, 200], protein: [2.5, 5], carb: [12, 20], fat: [5, 12], confidence: 'low' },
-  { terms: ['soup'], servingLabel: '1 bowl', servingGrams: 200, kcal: [55, 110], protein: [1.5, 4], carb: [7, 14], fat: [1.5, 4.5], confidence: 'low' },
+  measured(['soup'], '1 bowl', 200, 'low', { code: '17-684', name: 'Soup, vegetable, homemade', per100g: [55, 1.0, 3.7, 4.2] }),
   { terms: ['salad'], servingLabel: '1 katori', servingGrams: 80, kcal: [25, 70], protein: [1, 4], carb: [4, 10], fat: [0.3, 2], confidence: 'medium' },
 
   // ---- fried / snacks -----------------------------------------------------
@@ -115,6 +173,8 @@ const BASE_TABLE: readonly TableEntry[] = [
   { terms: ['corn flakes', 'chocos'], servingLabel: '1 bowl', servingGrams: 40, kcal: [140, 190], protein: [2.5, 4.5], carb: [30, 40], fat: [0.5, 2], confidence: 'medium' },
 ];
 
+const BASE_TABLE: readonly TableEntry[] = RAW_BASE_TABLE.map(capped);
+
 /** The base entry that owns `term` — for spelling variants that share its estimate. */
 function entryWithTerm(term: string): Omit<TableEntry, 'terms'> {
   const entry = BASE_TABLE.find((e) => e.terms.includes(term));
@@ -136,7 +196,7 @@ function entryWithTerm(term: string): Omit<TableEntry, 'terms'> {
  * an entry placed earlier could capture one of its terms and change a frozen
  * Phase 7 food. Terms here match nothing the base table already matches.
  */
-const PHASE9_ADDITIONS: readonly TableEntry[] = [
+const RAW_PHASE9_ADDITIONS: readonly TableEntry[] = [
   // Spelling variants of dishes already estimated above — the same estimate, not a new one.
   { terms: ['subzi', 'green veg subzi'], ...entryWithTerm('subji') }, // "Subzi" = sabji
   { terms: ['jamoon', 'dry jamoon'], ...entryWithTerm('jamun') }, // "Dry Jamoon" = (dry) gulab jamun
@@ -156,7 +216,14 @@ const PHASE9_ADDITIONS: readonly TableEntry[] = [
   { terms: ['stew', 'veg stew'], servingLabel: '1 katori', servingGrams: 150, kcal: [110, 200], protein: [2, 4.5], carb: [9, 18], fat: [6, 14], confidence: 'low' },
 ];
 
+const PHASE9_ADDITIONS: readonly TableEntry[] = RAW_PHASE9_ADDITIONS.map(capped);
+
 const TABLE: readonly TableEntry[] = [...BASE_TABLE, ...PHASE9_ADDITIONS];
+
+/** Beta 3.7: the CoFID measurement a term's estimate is calibrated to, if any (the food seed cites it). */
+export function measurementOf(term: string): MessMeasurement | null {
+  return TABLE.find((e) => has(term, e.terms))?.measured ?? null;
+}
 
 /* ------------------------------------------- Phase 10 mess corrections -- */
 

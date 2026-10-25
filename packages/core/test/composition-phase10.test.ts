@@ -324,10 +324,12 @@ describe('snacks, alternatives, statuses', () => {
     const fits = recommendMeal(input({ menu: day, slot: 'lunch', eaten: { ...NOTHING_EATEN, kcalLow: 2200, kcalHigh: 2300 }, loggedSlots: ['breakfast'] }));
     expect(fits.status).toBe('nothing-fits');
     expect(fits.target!.dayRemainingKcal).toBe(100);
-    expect(fits.smallestMealKcal).toBe(175 + 120);
+    // Beta 3.7: rice and dal are CoFID-calibrated (180 and 160 kcal at the low end).
+    expect(fits.smallestMealKcal).toBe(180 + 160);
     expect(fits.plates).toEqual([]);
-    // 400 kcal left today: over this meal's share, but within the day → the meal, with an honest kcal reason.
-    const over = recommendMeal(input({ menu: day, slot: 'lunch', eaten: { ...NOTHING_EATEN, kcalLow: 1900, kcalHigh: 2000 }, loggedSlots: ['breakfast'] }));
+    // 450 kcal left today (beta 3.7: the complete meal starts at 408): over this meal's share, but within the
+    // day → the meal, with an honest kcal reason.
+    const over = recommendMeal(input({ menu: day, slot: 'lunch', eaten: { ...NOTHING_EATEN, kcalLow: 1850, kcalHigh: 1950 }, loggedSlots: ['breakfast'] }));
     expect(over.status).toBe('ok');
     expect(over.plates[0]!.structure.kind).toBe('complete-meal');
     expect(over.plates[0]!.reasons.some((r) => r.code === 'kcal-over' || r.code === 'kcal-may-exceed')).toBe(true);
@@ -491,7 +493,8 @@ describe('17. the four Phase 9 estimate corrections (Amendment B)', () => {
 
   it('each is an existing entry or a sum of existing entries', () => {
     expect(estimateMessDish('Curd Rice', 'dairy')).toMatchObject({ servingLabel: '1 katori', servingGrams: 180, confidence: 'medium' });
-    expect(macros('Curd Rice')).toEqual({ kcalLow: 180, kcalHigh: 260, proteinLow: 5, proteinHigh: 8, carbLow: 30, carbHigh: 40, fatLow: 4, fatHigh: 8 });
+    // Beta 3.7: every estimate is at most +-20 % around its middle.
+    expect(macros('Curd Rice')).toEqual({ kcalLow: 180, kcalHigh: 260, proteinLow: 5.2, proteinHigh: 7.8, carbLow: 30, carbHigh: 40, fatLow: 4.8, fatHigh: 7.2 });
     expect(estimateMessDish('Rice Papad', 'fried')).toMatchObject({ servingLabel: '1 small portion', servingGrams: 25, confidence: 'low' });
     expect(macros('Rice Papad')).toEqual(estimateNutrition('Papad', 'other')!.macros);
     expect(estimateMessDish('Chole Bhatura', 'legume')).toMatchObject({ servingLabel: '1 plate (2 bhatura + chole)', servingGrams: 330, confidence: 'low' });
@@ -503,15 +506,16 @@ describe('17. the four Phase 9 estimate corrections (Amendment B)', () => {
       carbLow: chole.carbLow + 2 * bhatura.carbLow, carbHigh: chole.carbHigh + 2 * bhatura.carbHigh,
       fatLow: chole.fatLow + 2 * bhatura.fatLow, fatHigh: chole.fatHigh + 2 * bhatura.fatHigh,
     });
-    expect(macros('Chole Bhatura')).toEqual({ kcalLow: 590, kcalHigh: 870, proteinLow: 17, proteinHigh: 27, carbLow: 80, carbHigh: 112, fatLow: 20, fatHigh: 41 });
+    expect(macros('Chole Bhatura')).toEqual({ kcalLow: 592, kcalHigh: 868, proteinLow: 17.6, proteinHigh: 26.4, carbLow: 80, carbHigh: 112, fatLow: 24.4, fatHigh: 36.6 });
     expect(estimateMessDish('Dahi Vada', 'dairy')).toMatchObject({ servingLabel: '2 pieces in curd', servingGrams: 230, confidence: 'low' });
-    expect(macros('Dahi Vada')).toEqual({ kcalLow: 305, kcalHigh: 485, proteinLow: 10, proteinHigh: 18, carbLow: 31, carbHigh: 48, fatLow: 15, fatHigh: 29.5 });
+    expect(macros('Dahi Vada')).toEqual({ kcalLow: 335, kcalHigh: 475, proteinLow: 13, proteinHigh: 17.6, carbLow: 35, carbHigh: 49.8, fatLow: 17.7, fatHigh: 25.5 });
     expect(MESS_ESTIMATE_CORRECTIONS.map((c) => c.terms)).toEqual([['curd rice'], ['rice papad'], ['chole bhatura'], ['dahi vada']]);
   });
 
   it('mess path only: the Phase 7 path (estimateNutrition) is unchanged', () => {
-    expect(estimateNutrition('Curd Rice', 'other')!.macros.kcalHigh).toBe(105);
-    expect(estimateNutrition('Rice Papad', 'other')!.macros.kcalHigh).toBe(215);
+    // Beta 3.7: "curd" (CoFID-calibrated) and "rice"'s capped papad entry; still the old first-match terms.
+    expect(estimateNutrition('Curd Rice', 'other')!.macros.kcalHigh).toBe(103);
+    expect(estimateNutrition('Rice Papad', 'other')!.macros.kcalHigh).toBe(213);
     expect(estimateNutrition('White Rice', 'other')).toEqual(estimateMessDish('White Rice', 'staple'));
   });
 
