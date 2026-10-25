@@ -23,6 +23,7 @@
     "food-seed:build": "pnpm run deps:build && tsx src/scripts/build-food-seed.ts",
     "openapi:export": "pnpm run deps:build && tsx src/scripts/export-openapi.ts",
     "admin:grant": "tsx --env-file-if-exists=.env src/scripts/admin-grant.ts",
+    "announce:update": "tsx --env-file-if-exists=.env src/scripts/announce-update.ts",
     "load:test": "pnpm run deps:build && tsx src/scripts/load-test.ts"
   },
   "dependencies": {

@@ -6,6 +6,10 @@
  * phone (FCM refused it all), so it can be tried again once fixed. Tokens
  * FCM no longer knows are removed. Every failure is counted by its FCM code,
  * shown to the admin and logged. Audited.
+ *
+ * Beta 3.7 (owner): the website's deploy (deploy.ps1 -Apk) sends it too,
+ * once the new APK is served (scripts/announce-update.ts); the audit says
+ * `via: 'website-deploy'` and has no actor.
  */
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
@@ -21,6 +25,9 @@ import { requireAdmin } from '../../plugins/auth.js';
 type Db = DatabaseHandle['db'];
 
 const ACTION = 'push.update';
+
+/** Who asked: an admin in the panel, or the website's deploy. */
+export type UpdatePushVia = 'admin' | 'website-deploy';
 const DOWNLOAD = 'https://tryfitos.me/download/';
 
 export class UpdatePushService {
@@ -51,7 +58,7 @@ export class UpdatePushService {
     };
   }
 
-  async send(actor: string | null): Promise<AdminUpdatePushResult> {
+  async send(actor: string | null, via: UpdatePushVia = 'admin'): Promise<AdminUpdatePushResult> {
     const latest = await this.feed.latest();
     if (latest === null) throw new AppError('NOT_FOUND', 'Could not read the website\'s latest version.', [{ path: 'release', issue: 'unknown' }]);
     if ((await this.sentAt(latest.build)) !== null) {
@@ -73,7 +80,7 @@ export class UpdatePushService {
       action: ACTION,
       entity: 'release',
       entityId: String(latest.build),
-      metadata: { version: latest.version, devices: tokens.length, sent: result.sent, removed: result.invalid.length, errors: result.errors, detail: result.detail },
+      metadata: { via, version: latest.version, devices: tokens.length, sent: result.sent, removed: result.invalid.length, errors: result.errors, detail: result.detail },
     });
     const failed = Object.values(result.errors).reduce((a, b) => a + b, 0);
     return { build: latest.build, label, devices: tokens.length, sent: result.sent, removed: result.invalid.length, failed, errors: { ...result.errors }, detail: result.detail };

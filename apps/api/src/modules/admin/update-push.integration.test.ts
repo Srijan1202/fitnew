@@ -11,6 +11,7 @@ import type { RecordingPushSender, ScriptedReleaseFeed } from '../../lib/push.js
 import { releaseLabel } from '../../lib/push.js';
 import type { FakeTokenVerifier } from '../../test/fake-token-verifier.js';
 import { buildDbApp, databaseUrl } from '../../test/build-test-app.js';
+import { UpdatePushService } from './update-push.js';
 
 const describeIfDb = databaseUrl !== undefined ? describe : describe.skip;
 
@@ -112,7 +113,7 @@ describeIfDb('/v1/admin/push/update (real Postgres)', () => {
     expect(audit).toEqual({
       actor_user_id: admin.id,
       entity_id: '11',
-      metadata: { version: '1.0.0-beta.3.5', devices: 3, sent: 2, removed: 1, errors: { 'messaging/registration-token-not-registered': 1 }, detail: null },
+      metadata: { via: 'admin', version: '1.0.0-beta.3.5', devices: 3, sent: 2, removed: 1, errors: { 'messaging/registration-token-not-registered': 1 }, detail: null },
     });
 
     // The next build can be announced.
@@ -150,5 +151,29 @@ describeIfDb('/v1/admin/push/update (real Postgres)', () => {
     const retried = await call(admin, 'POST');
     expect(retried.json()).toMatchObject({ sent: 2, failed: 0, errors: {} });
     expect((await call(admin, 'POST')).statusCode).toBe(409);
+  });
+
+  it('beta 3.7: the website deploy announces a new build the same way, audited with no actor; the button then finds it sent', async () => {
+    const admin = await user(true);
+    const push = app.push as RecordingPushSender;
+    const feed = app.releaseFeed as ScriptedReleaseFeed;
+    await sql`delete from push_tokens`;
+    await sql`delete from audit_logs where action = 'push.update'`;
+    await sql`insert into push_tokens (user_id, token, platform) values (${admin.id}, 'tok-w1', 'android')`;
+    feed.release = { version: '1.0.0-beta.3.8', build: 14 };
+    const before = push.sends.length;
+    const service = new UpdatePushService(app.database.db, app.push, app.releaseFeed);
+
+    expect(await service.send(null, 'website-deploy')).toMatchObject({ build: 14, label: 'beta 3.8', devices: 1, sent: 1, failed: 0 });
+    expect(push.sends).toHaveLength(before + 1);
+    const [audit] = await sql<{ actor_user_id: string | null; metadata: Record<string, unknown> }[]>`
+      select actor_user_id, metadata from audit_logs where action = 'push.update' and entity_id = '14'`;
+    expect(audit).toMatchObject({ actor_user_id: null, metadata: { via: 'website-deploy', sent: 1 } });
+
+    // Once per build, whoever sends: a second deploy and the panel's button are refused.
+    await expect(service.send(null, 'website-deploy')).rejects.toMatchObject({ code: 'CONFLICT' });
+    expect((await call(admin, 'POST')).statusCode).toBe(409);
+    expect(((await call(admin, 'GET')).json() as { sentAt: string | null }).sentAt).not.toBeNull();
+    expect(push.sends).toHaveLength(before + 1);
   });
 });

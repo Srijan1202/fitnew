@@ -100,6 +100,10 @@ The owner asked for the update pop-up every time the app is opened, on top, and 
   - **Once per build**: a second send answers 409 `already-sent`. Each send is audited (`push.update`). Tokens FCM no longer knows are removed.
   - Android shows it while the app is closed, and **older APKs receive it too**. Tapping it opens FITOS, which shows the dialog.
   - New seams follow the token verifier's pattern: `PushSender` (Firebase, or recording in tests) and `ReleaseFeed` (the website, or scripted in tests).
+  - `AMENDED 2026-10-25 (owner: "automatic announcement when we publish")`: the website's `deploy.ps1 -Apk` sends the same push itself once the new APK is served and every public check passes. It runs `apps/api/dist/scripts/announce-update.js` in the API container.
+    - The rules are unchanged: once per build, audited (`via: 'website-deploy'`, no actor).
+    - `-NoAnnounce` skips it.
+    - If it fails, the site stays published and the button still works.
 - **The feedback limit** goes from 5 to **20 an hour per person**, and **admins are not limited**. A tester who reaches it is told kindly and keeps their text.
 
 ## Amendment — feedback with pictures, the phone and replies (beta 3.6, owner 2026-10-24)
