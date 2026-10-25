@@ -1,0 +1,1 @@
+ALTER TYPE "public"."food_source" ADD VALUE 'cofid' BEFORE 'user';

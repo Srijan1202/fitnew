@@ -11,7 +11,7 @@ import { z } from 'zod';
 import { slugSchema } from './exercise.js';
 
 /** Where a food's numbers came from. Mirrors packages/core `FOOD_SOURCES` (API test keeps them equal). */
-export const FOOD_SOURCES = ['estimated', 'usda', 'ifct', 'indb', 'user', 'user-corrected'] as const;
+export const FOOD_SOURCES = ['estimated', 'usda', 'ifct', 'indb', 'cofid', 'user', 'user-corrected'] as const;
 export const foodSourceSchema = z.enum(FOOD_SOURCES);
 export type FoodSource = z.infer<typeof foodSourceSchema>;
 
@@ -154,7 +154,8 @@ export const foodSeedSchema = z
     name: z.string().min(1).max(160),
     brand: z.null(),
     barcode: z.null(),
-    source: z.enum(['usda', 'estimated']),
+    // Beta 3.7 (ADR-036): the measured sources too.
+    source: z.enum(['usda', 'estimated', 'ifct', 'indb', 'cofid']),
     sourceRef: z.string().min(1),
     isVerified: z.boolean(),
     aliases: z.array(z.string().min(1)),
@@ -162,6 +163,8 @@ export const foodSeedSchema = z
   })
   .strict()
   .superRefine((f, ctx) => {
+    // An INDB recipe is computed from ingredients, never a measurement of the dish.
+    if (f.source === 'indb' && f.isVerified) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['isVerified'], message: 'an INDB recipe is never verified' });
     if (f.source === 'estimated') {
       if (f.isVerified) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['isVerified'], message: 'an estimate is never verified' });
       if (f.nutrition.some((n) => n.confidence === 'high')) {

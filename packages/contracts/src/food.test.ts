@@ -26,8 +26,8 @@ const row = {
 };
 
 describe('source vocabulary', () => {
-  it('is the six approved values (D3)', () => {
-    expect([...FOOD_SOURCES]).toEqual(['estimated', 'usda', 'ifct', 'indb', 'user', 'user-corrected']);
+  it('is the seven approved values (D3; cofid from beta 3.7, ADR-036)', () => {
+    expect([...FOOD_SOURCES]).toEqual(['estimated', 'usda', 'ifct', 'indb', 'cofid', 'user', 'user-corrected']);
   });
 });
 
