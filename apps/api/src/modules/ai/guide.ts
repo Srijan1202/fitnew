@@ -52,6 +52,7 @@ type FoodHit = Awaited<ReturnType<FoodService['search']>>['items'][number];
 
 const APPLE = "Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)";
 const WHEY = 'Beverages, Protein powder whey based';
+const MILK = 'Milk, whole, pasteurised (3.6% fat)';
 /**
  * Things a student often has, pinned to the plain food in the seed: the
  * search's first hit is often a dish or a product ("banana" → "Banana shake",
@@ -79,6 +80,10 @@ export const GUIDE_STAPLES: Readonly<Record<string, string>> = {
   sprouts: 'Green gram sprouts',
   'instant noodles': 'Instant noodles (masala)',
   maggi: 'Instant noodles (masala)',
+  // Beta 3.7 (backlog E24): plain ones exist now. Milk is CoFID's whole milk
+  // (its alias is "toned milk", and it has a glass); paneer is IFCT's.
+  milk: MILK,
+  paneer: 'Paneer',
 };
 
 /** "2 eggs", "1 cup curd": the food without the amount, for the search. */

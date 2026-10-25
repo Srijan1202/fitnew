@@ -138,9 +138,20 @@ describeIfDb('POST /v1/nutrition/guide (real Postgres, real food seed, a mirrore
   it('a staple is the plain food (banana is a banana, not a shake); a loose prefix match is not taken', async () => {
     const u = await user({ diet: 'non-vegetarian' });
     ai.script = [said({ options: [{ title: 'Snack', items: [{ id: 'H1', servings: 1 }, { id: 'H2', servings: 1 }] }] })];
-    const g = foodGuideResponseSchema.parse((await guide(u, { slot: 'snacks', fromMess: false, have: ['Banana', 'Apple', 'milk'], feel: null })).json());
+    const g = foodGuideResponseSchema.parse((await guide(u, { slot: 'snacks', fromMess: false, have: ['Banana', 'Apple', 'quokkaberry'], feel: null })).json());
     expect(g.options[0]!.items.map((i) => i.name)).toEqual(['Bananas, raw', "Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)"]);
-    expect(g.unknown).toEqual(['milk']);
+    expect(g.unknown).toEqual(['quokkaberry']);
+  });
+
+  it('milk and paneer are the plain foods (beta 3.7, backlog E24): a glass of whole milk, paneer per 100 g', async () => {
+    const u = await user({ diet: 'vegetarian' });
+    ai.script = [said({ options: [{ title: 'Snack', items: [{ id: 'H1', servings: 1 }, { id: 'H2', servings: 1 }] }] })];
+    const g = foodGuideResponseSchema.parse((await guide(u, { slot: 'snacks', fromMess: false, have: ['Milk', 'paneer'], feel: null })).json());
+    expect(g.options[0]!.items.map((i) => [i.name, i.servingLabel])).toEqual([
+      ['Milk, whole, pasteurised (3.6% fat)', '1 glass (200 ml)'],
+      ['Paneer', '100 g'],
+    ]);
+    expect(g.unknown).toEqual([]);
   });
 
   it('401 signed out; premium only; the AI consent; something to choose from (422)', async () => {
