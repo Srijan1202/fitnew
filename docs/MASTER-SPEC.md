@@ -637,9 +637,9 @@ Triggered by: equipment unavailable, `user_limitations` match, or user rejects a
 
 Priority order: `user-corrected` → `ifct`/`indb` → `usda` → `estimated`.
 
-`OPEN QUESTION` — **IFCT 2017 and INDB licensing must be confirmed by a human before Phase 7.** Do not bulk-import either dataset until redistribution terms are verified in writing. Until then, ship the curated estimate table (already in `packages/core`) with `source: 'estimated-table'`. This is a legal gate, not a technical one.
+~~`OPEN QUESTION` — **IFCT 2017 and INDB licensing must be confirmed by a human before Phase 7.** Do not bulk-import either dataset until redistribution terms are verified in writing. Until then, ship the curated estimate table (already in `packages/core`) with `source: 'estimated-table'`. This is a legal gate, not a technical one.~~ `DECIDED BY THE OWNER 2026-10-25 (beta 3.7, ADR-036)`: IFCT 2017 and INDB are used without written permission, the risk accepted by the owner; UK CoFID 2021 (OGL v3.0) is added as `cofid`. Every source is credited in the app.
 
-**Every nutrition row carries low/high bounds and a confidence.** Verified foods set `low == high`.
+**Every nutrition row carries low/high bounds and a confidence.** Verified foods set `low == high`. `AMENDED 2026-10-25 (ADR-036)`: USDA's verified foods stay exact. Verified IFCT and CoFID foods carry their source's variation as a narrow range: IFCT ± its regional SD (3–10 %), CoFID ±3 % (±8 % for dishes). No row is wider than ±20 %.
 
 ### 13.4 Logging methods
 
@@ -1780,7 +1780,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 ### Open Questions (human decision required)
 
-1. **IFCT 2017 / INDB licensing** — blocks Phase 7 bulk import. *Needed before Phase 7.*
+1. ~~**IFCT 2017 / INDB licensing**~~ — **DECIDED BY THE OWNER 2026-10-25:** used without written permission, the risk accepted (ADR-036, beta 3.7).
 2. **Cloud Run free tier in `asia-south1`** — verify before deploying. *Phase 0.*
 3. ~~**iOS in V1?**~~ — **RESOLVED 2026-09-20: no.** V1 is Android only (ADR-003). Apple Sign-In is out of Phase 1 scope and the ~₹8,000/yr Apple Developer cost is not incurred. iOS moves to the V2 roadmap (§37).
 4. **Open Food Facts Indian barcode coverage** — determines whether barcode logging is worth V1.5. *Before V1.5.*
