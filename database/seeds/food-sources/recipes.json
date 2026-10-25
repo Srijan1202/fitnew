@@ -1,10 +1,10 @@
 {
-  "version": 2,
-  "note": "Declared recipes for FITOS composite estimates (Phase 7, N2). Each lists the RAW ingredients of ONE serving as USDA FoodData Central records (Foundation 2026-04-30 or SR Legacy 2018-04), the cooking fat as a range, and a widening fraction for recipe-to-recipe variation. The builder computes every number with core composeRecipe(): sum the ingredients, span least-to-most oil, widen, round outward. Spices under ~2 g, salt and water are omitted (negligible energy). Result: source estimated, never verified, confidence medium or low. 'proxy' notes name an ingredient that stands in for one USDA does not have.",
+  "version": 3,
+  "note": "Declared recipes for FITOS composite estimates (Phase 7, N2). Each lists the RAW ingredients of ONE serving as USDA FoodData Central records (Foundation 2026-04-30 or SR Legacy 2018-04), the cooking fat as a range, and a widening fraction for recipe-to-recipe variation. The builder computes every number with core composeRecipe(): sum the ingredients, span least-to-most oil, widen, round outward. Spices under ~2 g, salt and water are omitted (negligible energy). Result: source estimated, never verified, confidence medium or low. 'proxy' notes name an ingredient that stands in for one USDA does not have. Beta 3.7 (owner 2026-10-25, ADR-036): every widening is at most 0.10 (it was up to 0.25, which roughly doubled the spread), and an oil range wider than 1.5x is its midpoint +-18 % (a \"0 to N g\" range is N/2 to N g); each changed recipe's version is bumped. Nine where oil is most of the energy (dry sabzis, fried snacks) have oil at its midpoint +-10 % and widening 0.08, to stay within +-20 %.",
   "recipes": [
     {
       "id": "aloo-paratha",
-      "version": 1,
+      "version": 2,
       "name": "Aloo paratha",
       "aliases": [
         "alu paratha",
@@ -13,7 +13,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 110,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168893,
@@ -38,13 +38,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "gobi-paratha",
-      "version": 1,
+      "version": 2,
       "name": "Gobi paratha",
       "aliases": [
         "cauliflower paratha"
@@ -52,7 +52,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 105,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168893,
@@ -77,13 +77,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "naan",
-      "version": 1,
+      "version": 2,
       "name": "Naan",
       "aliases": [
         "nan"
@@ -91,7 +91,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 90,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -112,19 +112,19 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 3,
-        "gramsHigh": 6
+        "gramsLow": 3.7,
+        "gramsHigh": 5.3
       }
     },
     {
       "id": "kulcha",
-      "version": 1,
+      "version": 2,
       "name": "Kulcha",
       "aliases": [],
       "servingLabel": "1 piece",
       "servingGrams": 85,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -141,19 +141,19 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "missi-roti",
-      "version": 1,
+      "version": 2,
       "name": "Missi roti",
       "aliases": [],
       "servingLabel": "1 piece",
       "servingGrams": 55,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168893,
@@ -174,13 +174,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 3,
-        "gramsHigh": 6
+        "gramsLow": 3.7,
+        "gramsHigh": 5.3
       }
     },
     {
       "id": "bajra-roti",
-      "version": 1,
+      "version": 2,
       "name": "Bajra roti",
       "aliases": [
         "bajre ki roti",
@@ -189,7 +189,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 60,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: USDA 'Millet flour' (species unspecified) stands in for pearl-millet (bajra) flour",
       "ingredients": [
         {
@@ -199,13 +199,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 2,
-        "gramsHigh": 5
+        "gramsLow": 2.9,
+        "gramsHigh": 4.1
       }
     },
     {
       "id": "jowar-roti",
-      "version": 1,
+      "version": 2,
       "name": "Jowar roti",
       "aliases": [
         "jowar bhakri",
@@ -214,7 +214,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 60,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168943,
@@ -223,13 +223,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 0,
+        "gramsLow": 1.5,
         "gramsHigh": 3
       }
     },
     {
       "id": "makki-di-roti",
-      "version": 1,
+      "version": 2,
       "name": "Makki di roti",
       "aliases": [
         "makki ki roti",
@@ -238,7 +238,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 70,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170290,
@@ -247,19 +247,19 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 3,
-        "gramsHigh": 8
+        "gramsLow": 4.5,
+        "gramsHigh": 6.5
       }
     },
     {
       "id": "tandoori-roti",
-      "version": 1,
+      "version": 2,
       "name": "Tandoori roti",
       "aliases": [],
       "servingLabel": "1 piece",
       "servingGrams": 55,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168893,
@@ -268,13 +268,13 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 0,
+        "gramsLow": 2.0,
         "gramsHigh": 4
       }
     },
     {
       "id": "rava-dosa",
-      "version": 1,
+      "version": 2,
       "name": "Rava dosa",
       "aliases": [
         "rava dosai",
@@ -283,7 +283,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 90,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168933,
@@ -304,13 +304,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "pesarattu",
-      "version": 1,
+      "version": 2,
       "name": "Pesarattu",
       "aliases": [
         "moong dosa",
@@ -319,7 +319,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 100,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174256,
@@ -344,13 +344,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "appam",
-      "version": 1,
+      "version": 2,
       "name": "Appam",
       "aliases": [
         "palappam"
@@ -358,7 +358,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 120,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -375,13 +375,13 @@
       ],
       "oil": {
         "fdcId": 171412,
-        "gramsLow": 1,
-        "gramsHigh": 3
+        "gramsLow": 1.6,
+        "gramsHigh": 2.4
       }
     },
     {
       "id": "adai",
-      "version": 1,
+      "version": 2,
       "name": "Adai",
       "aliases": [
         "adai dosa"
@@ -389,7 +389,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 100,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: whole chickpeas stand in for split bengal gram (chana dal)",
       "ingredients": [
         {
@@ -419,13 +419,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "besan-chilla",
-      "version": 1,
+      "version": 2,
       "name": "Besan chilla",
       "aliases": [
         "besan cheela",
@@ -434,7 +434,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 100,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174288,
@@ -459,13 +459,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "moong-dal-chilla",
-      "version": 1,
+      "version": 2,
       "name": "Moong dal chilla",
       "aliases": [
         "moong dal cheela"
@@ -473,7 +473,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 100,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: whole mung beans stand in for split yellow moong dal",
       "ingredients": [
         {
@@ -491,13 +491,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "sabudana-khichdi",
-      "version": 1,
+      "version": 2,
       "name": "Sabudana khichdi",
       "aliases": [
         "sabudana khichadi"
@@ -505,7 +505,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169717,
@@ -526,13 +526,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "rava-idli",
-      "version": 1,
+      "version": 2,
       "name": "Rava idli",
       "aliases": [
         "rava idly",
@@ -541,7 +541,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 120,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168933,
@@ -558,13 +558,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 2,
-        "gramsHigh": 4
+        "gramsLow": 2.5,
+        "gramsHigh": 3.5
       }
     },
     {
       "id": "moong-dal",
-      "version": 1,
+      "version": 2,
       "name": "Moong dal",
       "aliases": [
         "moong dhal",
@@ -573,7 +573,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: whole mung beans stand in for split yellow moong dal",
       "ingredients": [
         {
@@ -591,13 +591,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 3,
-        "gramsHigh": 7
+        "gramsLow": 4.1,
+        "gramsHigh": 5.9
       }
     },
     {
       "id": "masoor-dal-cooked",
-      "version": 1,
+      "version": 2,
       "name": "Masoor dal (cooked)",
       "aliases": [
         "masoor dhal"
@@ -605,7 +605,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174284,
@@ -622,13 +622,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 3,
-        "gramsHigh": 7
+        "gramsLow": 4.1,
+        "gramsHigh": 5.9
       }
     },
     {
       "id": "dal-palak",
-      "version": 1,
+      "version": 2,
       "name": "Dal palak",
       "aliases": [
         "palak dal",
@@ -637,7 +637,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 172436,
@@ -658,13 +658,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 3,
-        "gramsHigh": 7
+        "gramsLow": 4.1,
+        "gramsHigh": 5.9
       }
     },
     {
       "id": "aloo-gobi",
-      "version": 1,
+      "version": 2,
       "name": "Aloo gobi",
       "aliases": [
         "alu gobi"
@@ -672,7 +672,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170026,
@@ -693,13 +693,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 7,
-        "gramsHigh": 12
+        "gramsLow": 7.8,
+        "gramsHigh": 11.2
       }
     },
     {
       "id": "aloo-matar",
-      "version": 1,
+      "version": 2,
       "name": "Aloo matar",
       "aliases": [
         "alu matar",
@@ -708,7 +708,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 170,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170026,
@@ -729,13 +729,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "bhindi-masala",
-      "version": 1,
+      "version": 3,
       "name": "Bhindi masala",
       "aliases": [
         "okra masala",
@@ -744,7 +744,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 140,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.08,
       "ingredients": [
         {
           "fdcId": 169260,
@@ -761,13 +761,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 8,
-        "gramsHigh": 15
+        "gramsLow": 10.3,
+        "gramsHigh": 12.7
       }
     },
     {
       "id": "baingan-bharta",
-      "version": 1,
+      "version": 3,
       "name": "Baingan bharta",
       "aliases": [
         "baingan ka bharta",
@@ -776,7 +776,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 160,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.08,
       "ingredients": [
         {
           "fdcId": 169228,
@@ -793,13 +793,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 8.1,
+        "gramsHigh": 9.9
       }
     },
     {
       "id": "aloo-jeera",
-      "version": 1,
+      "version": 2,
       "name": "Aloo jeera",
       "aliases": [
         "jeera aloo"
@@ -807,7 +807,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 130,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170440,
@@ -820,13 +820,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 10
+        "gramsLow": 6.6,
+        "gramsHigh": 9.4
       }
     },
     {
       "id": "avial",
-      "version": 1,
+      "version": 2,
       "name": "Avial",
       "aliases": [
         "aviyal"
@@ -834,7 +834,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 170,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170393,
@@ -863,13 +863,13 @@
       ],
       "oil": {
         "fdcId": 171412,
-        "gramsLow": 3,
-        "gramsHigh": 6
+        "gramsLow": 3.7,
+        "gramsHigh": 5.3
       }
     },
     {
       "id": "egg-curry",
-      "version": 1,
+      "version": 2,
       "name": "Egg curry",
       "aliases": [
         "anda curry"
@@ -877,7 +877,7 @@
       "servingLabel": "1 serving (2 eggs)",
       "servingGrams": 200,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171287,
@@ -894,13 +894,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 7,
-        "gramsHigh": 12
+        "gramsLow": 7.8,
+        "gramsHigh": 11.2
       }
     },
     {
       "id": "mutton-curry",
-      "version": 1,
+      "version": 2,
       "name": "Mutton curry",
       "aliases": [
         "goat curry",
@@ -909,7 +909,7 @@
       "servingLabel": "1 serving",
       "servingGrams": 200,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 175303,
@@ -930,13 +930,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 8,
-        "gramsHigh": 15
+        "gramsLow": 9.4,
+        "gramsHigh": 13.6
       }
     },
     {
       "id": "keema",
-      "version": 1,
+      "version": 2,
       "name": "Keema (lamb mince)",
       "aliases": [
         "keema matar",
@@ -945,7 +945,7 @@
       "servingLabel": "1 serving",
       "servingGrams": 170,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174370,
@@ -966,13 +966,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "fish-curry",
-      "version": 1,
+      "version": 2,
       "name": "Fish curry",
       "aliases": [
         "meen curry",
@@ -981,7 +981,7 @@
       "servingLabel": "1 serving",
       "servingGrams": 200,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: tilapia stands in for the local fish (rohu, seer, etc.) a curry is made with",
       "ingredients": [
         {
@@ -1003,13 +1003,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "prawn-masala",
-      "version": 1,
+      "version": 2,
       "name": "Prawn masala",
       "aliases": [
         "prawn curry",
@@ -1018,7 +1018,7 @@
       "servingLabel": "1 serving",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 175179,
@@ -1035,13 +1035,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "sarson-ka-saag",
-      "version": 1,
+      "version": 2,
       "name": "Sarson ka saag",
       "aliases": [
         "sarson da saag",
@@ -1050,7 +1050,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 170,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169256,
@@ -1067,13 +1067,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "lauki-sabzi",
-      "version": 1,
+      "version": 3,
       "name": "Lauki sabzi",
       "aliases": [
         "lauki ki sabzi",
@@ -1083,7 +1083,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 160,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.08,
       "ingredients": [
         {
           "fdcId": 169232,
@@ -1100,13 +1100,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 5.4,
+        "gramsHigh": 6.6
       }
     },
     {
       "id": "karela-sabzi",
-      "version": 1,
+      "version": 3,
       "name": "Karela sabzi",
       "aliases": [
         "karela fry",
@@ -1115,7 +1115,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 110,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.08,
       "ingredients": [
         {
           "fdcId": 168393,
@@ -1128,13 +1128,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.9,
+        "gramsHigh": 12.1
       }
     },
     {
       "id": "mushroom-masala",
-      "version": 1,
+      "version": 2,
       "name": "Mushroom masala",
       "aliases": [
         "mushroom curry"
@@ -1142,7 +1142,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 170,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169251,
@@ -1163,13 +1163,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 10
+        "gramsLow": 6.6,
+        "gramsHigh": 9.4
       }
     },
     {
       "id": "dhokla",
-      "version": 1,
+      "version": 2,
       "name": "Dhokla",
       "aliases": [
         "khaman dhokla",
@@ -1178,7 +1178,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 100,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174288,
@@ -1195,13 +1195,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 2,
-        "gramsHigh": 5
+        "gramsLow": 2.9,
+        "gramsHigh": 4.1
       }
     },
     {
       "id": "aloo-tikki",
-      "version": 1,
+      "version": 2,
       "name": "Aloo tikki",
       "aliases": [
         "alu tikki",
@@ -1210,7 +1210,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 100,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170440,
@@ -1227,13 +1227,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 15
+        "gramsLow": 8.6,
+        "gramsHigh": 12.4
       }
     },
     {
       "id": "kachori",
-      "version": 1,
+      "version": 2,
       "name": "Kachori",
       "aliases": [
         "moong dal kachori",
@@ -1242,7 +1242,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 60,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -1255,13 +1255,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 10,
-        "gramsHigh": 18
+        "gramsLow": 11.5,
+        "gramsHigh": 16.5
       }
     },
     {
       "id": "pani-puri",
-      "version": 1,
+      "version": 2,
       "name": "Pani puri",
       "aliases": [
         "golgappa",
@@ -1271,7 +1271,7 @@
       "servingLabel": "1 plate (6 pieces)",
       "servingGrams": 110,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168933,
@@ -1292,13 +1292,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "murukku",
-      "version": 1,
+      "version": 2,
       "name": "Murukku",
       "aliases": [
         "chakli",
@@ -1307,7 +1307,7 @@
       "servingLabel": "1 small portion",
       "servingGrams": 30,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169714,
@@ -1324,13 +1324,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 7,
-        "gramsHigh": 11
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "mathri",
-      "version": 1,
+      "version": 2,
       "name": "Mathri",
       "aliases": [
         "mathiya"
@@ -1338,7 +1338,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 30,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -1347,13 +1347,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 6,
-        "gramsHigh": 10
+        "gramsLow": 6.6,
+        "gramsHigh": 9.4
       }
     },
     {
       "id": "masala-sweet-corn",
-      "version": 1,
+      "version": 2,
       "name": "Masala sweet corn",
       "aliases": [
         "butter sweet corn",
@@ -1362,7 +1362,7 @@
       "servingLabel": "1 cup",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169998,
@@ -1375,13 +1375,13 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 3,
-        "gramsHigh": 8
+        "gramsLow": 4.5,
+        "gramsHigh": 6.5
       }
     },
     {
       "id": "aloo-chaat",
-      "version": 1,
+      "version": 2,
       "name": "Aloo chaat",
       "aliases": [
         "alu chaat",
@@ -1390,7 +1390,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 150,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170440,
@@ -1407,13 +1407,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "besan-ladoo",
-      "version": 1,
+      "version": 2,
       "name": "Besan ladoo",
       "aliases": [
         "besan laddu",
@@ -1422,7 +1422,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 35,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174288,
@@ -1441,7 +1441,7 @@
     },
     {
       "id": "gajar-halwa",
-      "version": 1,
+      "version": 2,
       "name": "Gajar halwa",
       "aliases": [
         "gajar ka halwa",
@@ -1450,7 +1450,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170393,
@@ -1471,19 +1471,19 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 8,
-        "gramsHigh": 15
+        "gramsLow": 9.4,
+        "gramsHigh": 13.6
       }
     },
     {
       "id": "shrikhand",
-      "version": 1,
+      "version": 2,
       "name": "Shrikhand",
       "aliases": [],
       "servingLabel": "1 katori",
       "servingGrams": 100,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "made from 150 g whole-milk yogurt strained to about 100 g; the whey lost in straining is not modelled, so the range is widened",
       "ingredients": [
         {
@@ -1499,13 +1499,13 @@
     },
     {
       "id": "mango-lassi",
-      "version": 1,
+      "version": 2,
       "name": "Mango lassi",
       "aliases": [],
       "servingLabel": "1 glass",
       "servingGrams": 250,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171284,
@@ -1528,7 +1528,7 @@
     },
     {
       "id": "chicken-tikka",
-      "version": 1,
+      "version": 2,
       "name": "Chicken tikka",
       "aliases": [
         "chicken tikka kebab"
@@ -1536,7 +1536,7 @@
       "servingLabel": "1 serving (6 pieces)",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171077,
@@ -1549,8 +1549,8 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
@@ -1643,7 +1643,7 @@
     },
     {
       "id": "idiyappam",
-      "version": 1,
+      "version": 2,
       "name": "Idiyappam",
       "aliases": [
         "string hoppers",
@@ -1652,7 +1652,7 @@
       "servingLabel": "3 pieces",
       "servingGrams": 120,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169714,
@@ -1663,13 +1663,13 @@
     },
     {
       "id": "puttu",
-      "version": 1,
+      "version": 2,
       "name": "Puttu",
       "aliases": [],
       "servingLabel": "1 serving",
       "servingGrams": 120,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169714,
@@ -1684,7 +1684,7 @@
     },
     {
       "id": "neer-dosa",
-      "version": 1,
+      "version": 2,
       "name": "Neer dosa",
       "aliases": [
         "neer dosai"
@@ -1692,7 +1692,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 100,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -1705,13 +1705,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 2,
-        "gramsHigh": 4
+        "gramsLow": 2.5,
+        "gramsHigh": 3.5
       }
     },
     {
       "id": "methi-thepla",
-      "version": 1,
+      "version": 2,
       "name": "Methi thepla",
       "aliases": [
         "thepla"
@@ -1719,7 +1719,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 50,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: spinach stands in for fenugreek (methi) leaves, which USDA does not have",
       "ingredients": [
         {
@@ -1741,13 +1741,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 3,
-        "gramsHigh": 5
+        "gramsLow": 3.3,
+        "gramsHigh": 4.7
       }
     },
     {
       "id": "lachha-paratha",
-      "version": 1,
+      "version": 2,
       "name": "Lachha paratha",
       "aliases": [
         "laccha paratha"
@@ -1755,7 +1755,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 90,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168893,
@@ -1764,19 +1764,19 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "paneer-paratha",
-      "version": 1,
+      "version": 2,
       "name": "Paneer paratha",
       "aliases": [],
       "servingLabel": "1 piece",
       "servingGrams": 130,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: USDA queso blanco (a fresh, unripened white cheese) stands in for paneer",
       "ingredients": [
         {
@@ -1802,13 +1802,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "mooli-paratha",
-      "version": 1,
+      "version": 2,
       "name": "Mooli paratha",
       "aliases": [
         "radish paratha"
@@ -1816,7 +1816,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 115,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168893,
@@ -1837,13 +1837,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "anda-paratha",
-      "version": 1,
+      "version": 2,
       "name": "Anda paratha",
       "aliases": [
         "egg paratha"
@@ -1851,7 +1851,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 130,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168893,
@@ -1868,13 +1868,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "rumali-roti",
-      "version": 1,
+      "version": 2,
       "name": "Rumali roti",
       "aliases": [
         "roomali roti"
@@ -1882,7 +1882,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 50,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -1895,19 +1895,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 0,
+        "gramsLow": 1.0,
         "gramsHigh": 2
       }
     },
     {
       "id": "butter-naan",
-      "version": 1,
+      "version": 2,
       "name": "Butter naan",
       "aliases": [],
       "servingLabel": "1 piece",
       "servingGrams": 100,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -1928,19 +1928,19 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "garlic-naan",
-      "version": 1,
+      "version": 2,
       "name": "Garlic naan",
       "aliases": [],
       "servingLabel": "1 piece",
       "servingGrams": 100,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -1965,13 +1965,13 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "akki-roti",
-      "version": 1,
+      "version": 2,
       "name": "Akki roti",
       "aliases": [
         "rice roti"
@@ -1979,7 +1979,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 80,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169714,
@@ -2000,19 +2000,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 3,
-        "gramsHigh": 6
+        "gramsLow": 3.7,
+        "gramsHigh": 5.3
       }
     },
     {
       "id": "thalipeeth",
-      "version": 1,
+      "version": 2,
       "name": "Thalipeeth",
       "aliases": [],
       "servingLabel": "1 piece",
       "servingGrams": 80,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168943,
@@ -2037,13 +2037,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "pav",
-      "version": 1,
+      "version": 2,
       "name": "Pav",
       "aliases": [
         "ladi pav",
@@ -2052,7 +2052,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 80,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -2069,13 +2069,13 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 2,
-        "gramsHigh": 4
+        "gramsLow": 2.5,
+        "gramsHigh": 3.5
       }
     },
     {
       "id": "puran-poli",
-      "version": 1,
+      "version": 2,
       "name": "Puran poli",
       "aliases": [
         "holige",
@@ -2084,7 +2084,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 90,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: whole chickpeas stand in for split bengal gram (chana dal); proxy: brown sugar stands in for jaggery",
       "ingredients": [
         {
@@ -2106,13 +2106,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 3,
-        "gramsHigh": 8
+        "gramsLow": 4.5,
+        "gramsHigh": 6.5
       }
     },
     {
       "id": "litti-chokha",
-      "version": 1,
+      "version": 2,
       "name": "Litti chokha",
       "aliases": [
         "litti"
@@ -2120,7 +2120,7 @@
       "servingLabel": "1 plate (2 litti + chokha)",
       "servingGrams": 250,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: chickpea flour (besan) stands in for sattu (roasted gram flour)",
       "ingredients": [
         {
@@ -2150,13 +2150,13 @@
       ],
       "oil": {
         "fdcId": 172337,
-        "gramsLow": 8,
-        "gramsHigh": 18
+        "gramsLow": 10.7,
+        "gramsHigh": 15.3
       }
     },
     {
       "id": "dal-baati",
-      "version": 1,
+      "version": 2,
       "name": "Dal baati",
       "aliases": [
         "dal bati"
@@ -2164,7 +2164,7 @@
       "servingLabel": "1 plate (2 baati + dal)",
       "servingGrams": 300,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168893,
@@ -2185,19 +2185,19 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 15,
-        "gramsHigh": 30
+        "gramsLow": 18.4,
+        "gramsHigh": 26.5
       }
     },
     {
       "id": "jeera-rice",
-      "version": 1,
+      "version": 2,
       "name": "Jeera rice",
       "aliases": [],
       "servingLabel": "1 plate",
       "servingGrams": 200,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2210,13 +2210,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "ghee-rice",
-      "version": 1,
+      "version": 2,
       "name": "Ghee rice",
       "aliases": [
         "neychoru"
@@ -2224,7 +2224,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 200,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2241,13 +2241,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "coconut-rice",
-      "version": 1,
+      "version": 2,
       "name": "Coconut rice",
       "aliases": [
         "thengai sadam"
@@ -2255,7 +2255,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 200,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2276,13 +2276,13 @@
       ],
       "oil": {
         "fdcId": 171412,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "tomato-rice",
-      "version": 1,
+      "version": 2,
       "name": "Tomato rice",
       "aliases": [
         "thakkali sadam"
@@ -2290,7 +2290,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 220,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2307,13 +2307,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 10
+        "gramsLow": 6.6,
+        "gramsHigh": 9.4
       }
     },
     {
       "id": "bisi-bele-bath",
-      "version": 1,
+      "version": 2,
       "name": "Bisi bele bath",
       "aliases": [
         "bisibelebath"
@@ -2321,7 +2321,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 250,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2354,13 +2354,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "mutton-biryani",
-      "version": 1,
+      "version": 2,
       "name": "Mutton biryani",
       "aliases": [
         "mutton biriyani"
@@ -2368,7 +2368,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 300,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2393,13 +2393,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 10,
-        "gramsHigh": 18
+        "gramsLow": 11.5,
+        "gramsHigh": 16.5
       }
     },
     {
       "id": "egg-biryani",
-      "version": 1,
+      "version": 2,
       "name": "Egg biryani",
       "aliases": [
         "egg biriyani",
@@ -2408,7 +2408,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 300,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2433,13 +2433,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 10,
-        "gramsHigh": 16
+        "gramsLow": 10.7,
+        "gramsHigh": 15.3
       }
     },
     {
       "id": "chicken-pulao",
-      "version": 1,
+      "version": 2,
       "name": "Chicken pulao",
       "aliases": [
         "chicken pulav"
@@ -2447,7 +2447,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 280,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2468,13 +2468,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "matar-pulao",
-      "version": 1,
+      "version": 2,
       "name": "Matar pulao",
       "aliases": [
         "peas pulao",
@@ -2483,7 +2483,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 220,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2500,19 +2500,19 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "chicken-fried-rice",
-      "version": 1,
+      "version": 2,
       "name": "Chicken fried rice",
       "aliases": [],
       "servingLabel": "1 plate",
       "servingGrams": 300,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2549,13 +2549,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 10,
-        "gramsHigh": 16
+        "gramsLow": 10.7,
+        "gramsHigh": 15.3
       }
     },
     {
       "id": "schezwan-fried-rice",
-      "version": 1,
+      "version": 2,
       "name": "Schezwan fried rice",
       "aliases": [
         "szechuan fried rice"
@@ -2563,7 +2563,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 300,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2602,7 +2602,7 @@
     },
     {
       "id": "rajma-chawal",
-      "version": 1,
+      "version": 2,
       "name": "Rajma chawal",
       "aliases": [
         "rajma rice"
@@ -2610,7 +2610,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 350,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2631,13 +2631,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "dal-chawal",
-      "version": 1,
+      "version": 2,
       "name": "Dal chawal",
       "aliases": [
         "dal rice"
@@ -2645,7 +2645,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 350,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2666,13 +2666,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "chole-chawal",
-      "version": 1,
+      "version": 2,
       "name": "Chole chawal",
       "aliases": [
         "chole rice"
@@ -2680,7 +2680,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 350,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2701,13 +2701,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "kadhi-chawal",
-      "version": 1,
+      "version": 2,
       "name": "Kadhi chawal",
       "aliases": [
         "kadhi rice"
@@ -2715,7 +2715,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 350,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2732,13 +2732,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "sambar-rice",
-      "version": 1,
+      "version": 2,
       "name": "Sambar rice",
       "aliases": [
         "sambar sadam"
@@ -2746,7 +2746,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 300,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -2779,13 +2779,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "sakkarai-pongal",
-      "version": 1,
+      "version": 2,
       "name": "Sakkarai pongal",
       "aliases": [
         "sweet pongal",
@@ -2794,7 +2794,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 150,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: brown sugar stands in for jaggery",
       "ingredients": [
         {
@@ -2820,13 +2820,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "chana-dal",
-      "version": 1,
+      "version": 2,
       "name": "Chana dal",
       "aliases": [
         "chane ki dal",
@@ -2835,7 +2835,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: whole chickpeas stand in for split bengal gram (chana dal)",
       "ingredients": [
         {
@@ -2853,13 +2853,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 3,
-        "gramsHigh": 7
+        "gramsLow": 4.1,
+        "gramsHigh": 5.9
       }
     },
     {
       "id": "urad-dal",
-      "version": 1,
+      "version": 2,
       "name": "Urad dal",
       "aliases": [
         "dhuli urad dal"
@@ -2867,7 +2867,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174259,
@@ -2884,13 +2884,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 3,
-        "gramsHigh": 7
+        "gramsLow": 4.1,
+        "gramsHigh": 5.9
       }
     },
     {
       "id": "panchmel-dal",
-      "version": 1,
+      "version": 2,
       "name": "Panchmel dal",
       "aliases": [
         "panchratna dal"
@@ -2898,7 +2898,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: whole chickpeas stand in for split bengal gram (chana dal)",
       "ingredients": [
         {
@@ -2932,13 +2932,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "kala-chana-curry",
-      "version": 1,
+      "version": 2,
       "name": "Kala chana curry",
       "aliases": [
         "kala chana masala",
@@ -2947,7 +2947,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: USDA chickpeas stand in for the smaller desi (kala) chana",
       "ingredients": [
         {
@@ -2965,13 +2965,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "lobia-curry",
-      "version": 1,
+      "version": 2,
       "name": "Lobia curry",
       "aliases": [
         "black eyed peas curry",
@@ -2980,7 +2980,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 173758,
@@ -2997,13 +2997,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "matki-usal",
-      "version": 1,
+      "version": 2,
       "name": "Matki usal",
       "aliases": [
         "usal"
@@ -3011,7 +3011,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 170,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 172425,
@@ -3032,19 +3032,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "gujarati-kadhi",
-      "version": 1,
+      "version": 2,
       "name": "Gujarati kadhi",
       "aliases": [],
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171284,
@@ -3061,13 +3061,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 3,
-        "gramsHigh": 6
+        "gramsLow": 3.7,
+        "gramsHigh": 5.3
       }
     },
     {
       "id": "matar-paneer",
-      "version": 1,
+      "version": 2,
       "name": "Matar paneer",
       "aliases": [
         "mutter paneer"
@@ -3075,7 +3075,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: USDA queso blanco (a fresh, unripened white cheese) stands in for paneer",
       "ingredients": [
         {
@@ -3097,13 +3097,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "palak-paneer",
-      "version": 1,
+      "version": 2,
       "name": "Palak paneer",
       "aliases": [
         "saag paneer"
@@ -3111,7 +3111,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: USDA queso blanco (a fresh, unripened white cheese) stands in for paneer",
       "ingredients": [
         {
@@ -3137,19 +3137,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "shahi-paneer",
-      "version": 1,
+      "version": 2,
       "name": "Shahi paneer",
       "aliases": [],
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: USDA queso blanco (a fresh, unripened white cheese) stands in for paneer",
       "ingredients": [
         {
@@ -3175,19 +3175,19 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "paneer-bhurji",
-      "version": 1,
+      "version": 2,
       "name": "Paneer bhurji",
       "aliases": [],
       "servingLabel": "1 katori",
       "servingGrams": 130,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: USDA queso blanco (a fresh, unripened white cheese) stands in for paneer",
       "ingredients": [
         {
@@ -3209,19 +3209,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "paneer-tikka",
-      "version": 1,
+      "version": 2,
       "name": "Paneer tikka",
       "aliases": [],
       "servingLabel": "1 serving (6 pieces)",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: USDA queso blanco (a fresh, unripened white cheese) stands in for paneer",
       "ingredients": [
         {
@@ -3247,19 +3247,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "paneer-tikka-masala",
-      "version": 1,
+      "version": 2,
       "name": "Paneer tikka masala",
       "aliases": [],
       "servingLabel": "1 serving",
       "servingGrams": 220,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: USDA queso blanco (a fresh, unripened white cheese) stands in for paneer",
       "ingredients": [
         {
@@ -3285,19 +3285,19 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "malai-kofta",
-      "version": 1,
+      "version": 2,
       "name": "Malai kofta",
       "aliases": [],
       "servingLabel": "1 serving (2 kofta + gravy)",
       "servingGrams": 220,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: USDA queso blanco (a fresh, unripened white cheese) stands in for paneer",
       "ingredients": [
         {
@@ -3331,13 +3331,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 12,
-        "gramsHigh": 22
+        "gramsLow": 13.9,
+        "gramsHigh": 20.1
       }
     },
     {
       "id": "dum-aloo",
-      "version": 1,
+      "version": 2,
       "name": "Dum aloo",
       "aliases": [
         "dum alu"
@@ -3345,7 +3345,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 170,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170440,
@@ -3366,13 +3366,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "aloo-methi",
-      "version": 1,
+      "version": 2,
       "name": "Aloo methi",
       "aliases": [
         "alu methi"
@@ -3380,7 +3380,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 140,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: spinach stands in for fenugreek (methi) leaves, which USDA does not have",
       "ingredients": [
         {
@@ -3394,13 +3394,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 10
+        "gramsLow": 6.6,
+        "gramsHigh": 9.4
       }
     },
     {
       "id": "aloo-baingan",
-      "version": 1,
+      "version": 2,
       "name": "Aloo baingan",
       "aliases": [
         "alu baingan",
@@ -3409,7 +3409,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 160,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170026,
@@ -3430,13 +3430,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 7,
-        "gramsHigh": 12
+        "gramsLow": 7.8,
+        "gramsHigh": 11.2
       }
     },
     {
       "id": "aloo-palak",
-      "version": 1,
+      "version": 2,
       "name": "Aloo palak",
       "aliases": [
         "alu palak"
@@ -3444,7 +3444,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 160,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168462,
@@ -3461,13 +3461,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 9
+        "gramsLow": 5.7,
+        "gramsHigh": 8.3
       }
     },
     {
       "id": "aloo-shimla-mirch",
-      "version": 1,
+      "version": 2,
       "name": "Aloo shimla mirch",
       "aliases": [
         "aloo capsicum"
@@ -3475,7 +3475,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170026,
@@ -3488,13 +3488,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 10
+        "gramsLow": 6.6,
+        "gramsHigh": 9.4
       }
     },
     {
       "id": "cabbage-sabzi",
-      "version": 1,
+      "version": 3,
       "name": "Cabbage sabzi",
       "aliases": [
         "band gobhi sabzi",
@@ -3504,7 +3504,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 140,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.08,
       "ingredients": [
         {
           "fdcId": 169975,
@@ -3521,13 +3521,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 9
+        "gramsLow": 6.3,
+        "gramsHigh": 7.7
       }
     },
     {
       "id": "gajar-matar",
-      "version": 1,
+      "version": 2,
       "name": "Gajar matar",
       "aliases": [
         "carrot peas sabzi"
@@ -3535,7 +3535,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170393,
@@ -3548,13 +3548,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 9
+        "gramsLow": 5.7,
+        "gramsHigh": 8.3
       }
     },
     {
       "id": "turai-sabzi",
-      "version": 1,
+      "version": 3,
       "name": "Turai sabzi",
       "aliases": [
         "tori sabzi",
@@ -3563,7 +3563,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 150,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.08,
       "notes": "proxy: sponge gourd stands in for ridge gourd, which USDA does not have",
       "ingredients": [
         {
@@ -3581,13 +3581,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 5.4,
+        "gramsHigh": 6.6
       }
     },
     {
       "id": "kaddu-ki-sabzi",
-      "version": 1,
+      "version": 2,
       "name": "Kaddu ki sabzi",
       "aliases": [
         "pumpkin sabzi",
@@ -3596,7 +3596,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: brown sugar stands in for jaggery",
       "ingredients": [
         {
@@ -3610,13 +3610,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "arbi-masala",
-      "version": 1,
+      "version": 2,
       "name": "Arbi masala",
       "aliases": [
         "arbi fry",
@@ -3625,7 +3625,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 140,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169308,
@@ -3638,19 +3638,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "matar-mushroom",
-      "version": 1,
+      "version": 2,
       "name": "Matar mushroom",
       "aliases": [],
       "servingLabel": "1 katori",
       "servingGrams": 170,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169251,
@@ -3671,19 +3671,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 10
+        "gramsLow": 6.6,
+        "gramsHigh": 9.4
       }
     },
     {
       "id": "methi-malai-matar",
-      "version": 1,
+      "version": 2,
       "name": "Methi malai matar",
       "aliases": [],
       "servingLabel": "1 katori",
       "servingGrams": 170,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: spinach stands in for fenugreek (methi) leaves, which USDA does not have",
       "ingredients": [
         {
@@ -3709,13 +3709,13 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "gatte-ki-sabzi",
-      "version": 1,
+      "version": 2,
       "name": "Gatte ki sabzi",
       "aliases": [
         "gatte ki sabji"
@@ -3723,7 +3723,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 160,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174288,
@@ -3736,13 +3736,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "thoran",
-      "version": 1,
+      "version": 2,
       "name": "Thoran",
       "aliases": [
         "cabbage thoran",
@@ -3751,7 +3751,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 120,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169975,
@@ -3764,13 +3764,13 @@
       ],
       "oil": {
         "fdcId": 171412,
-        "gramsLow": 4,
-        "gramsHigh": 7
+        "gramsLow": 4.5,
+        "gramsHigh": 6.5
       }
     },
     {
       "id": "kerala-veg-stew",
-      "version": 1,
+      "version": 2,
       "name": "Kerala vegetable stew",
       "aliases": [
         "veg stew",
@@ -3779,7 +3779,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170026,
@@ -3808,13 +3808,13 @@
       ],
       "oil": {
         "fdcId": 171412,
-        "gramsLow": 3,
-        "gramsHigh": 6
+        "gramsLow": 3.7,
+        "gramsHigh": 5.3
       }
     },
     {
       "id": "soya-chunk-curry",
-      "version": 1,
+      "version": 2,
       "name": "Soya chunk curry",
       "aliases": [
         "soya chunks curry",
@@ -3823,7 +3823,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: defatted soy flour stands in for soya chunks (extruded defatted soy flour)",
       "ingredients": [
         {
@@ -3841,8 +3841,8 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 10
+        "gramsLow": 6.6,
+        "gramsHigh": 9.4
       }
     },
     {
@@ -3868,7 +3868,7 @@
     },
     {
       "id": "kerala-egg-roast",
-      "version": 1,
+      "version": 2,
       "name": "Kerala egg roast",
       "aliases": [
         "egg roast",
@@ -3877,7 +3877,7 @@
       "servingLabel": "1 serving (2 eggs)",
       "servingGrams": 200,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171287,
@@ -3894,19 +3894,19 @@
       ],
       "oil": {
         "fdcId": 171412,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "chicken-korma",
-      "version": 1,
+      "version": 2,
       "name": "Chicken korma",
       "aliases": [],
       "servingLabel": "1 serving",
       "servingGrams": 220,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 173627,
@@ -3931,13 +3931,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "kadai-chicken",
-      "version": 1,
+      "version": 2,
       "name": "Kadai chicken",
       "aliases": [
         "karahi chicken"
@@ -3945,7 +3945,7 @@
       "servingLabel": "1 serving",
       "servingGrams": 220,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 173627,
@@ -3966,13 +3966,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "pepper-chicken",
-      "version": 1,
+      "version": 2,
       "name": "Pepper chicken",
       "aliases": [
         "chicken pepper fry"
@@ -3980,7 +3980,7 @@
       "servingLabel": "1 serving",
       "servingGrams": 170,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 173627,
@@ -3993,19 +3993,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "chicken-chettinad",
-      "version": 1,
+      "version": 2,
       "name": "Chicken chettinad",
       "aliases": [],
       "servingLabel": "1 serving",
       "servingGrams": 220,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 173627,
@@ -4026,13 +4026,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "chicken-keema",
-      "version": 1,
+      "version": 2,
       "name": "Chicken keema",
       "aliases": [
         "chicken kheema"
@@ -4040,7 +4040,7 @@
       "servingLabel": "1 serving",
       "servingGrams": 170,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171116,
@@ -4061,13 +4061,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 10
+        "gramsLow": 6.6,
+        "gramsHigh": 9.4
       }
     },
     {
       "id": "chicken-seekh-kebab",
-      "version": 1,
+      "version": 2,
       "name": "Chicken seekh kebab",
       "aliases": [
         "chicken seekh"
@@ -4075,7 +4075,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 120,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171116,
@@ -4088,13 +4088,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 2,
-        "gramsHigh": 5
+        "gramsLow": 2.9,
+        "gramsHigh": 4.1
       }
     },
     {
       "id": "mutton-seekh-kebab",
-      "version": 1,
+      "version": 2,
       "name": "Mutton seekh kebab",
       "aliases": [
         "mutton seekh"
@@ -4102,7 +4102,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 120,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174370,
@@ -4115,13 +4115,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 0,
+        "gramsLow": 1.5,
         "gramsHigh": 3
       }
     },
     {
       "id": "chilli-chicken",
-      "version": 1,
+      "version": 2,
       "name": "Chilli chicken",
       "aliases": [
         "chili chicken"
@@ -4129,7 +4129,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 200,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 173627,
@@ -4162,19 +4162,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 12,
-        "gramsHigh": 22
+        "gramsLow": 13.9,
+        "gramsHigh": 20.1
       }
     },
     {
       "id": "chicken-lollipop",
-      "version": 1,
+      "version": 2,
       "name": "Chicken lollipop",
       "aliases": [],
       "servingLabel": "4 pieces",
       "servingGrams": 160,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 173627,
@@ -4195,13 +4195,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 14,
-        "gramsHigh": 22
+        "gramsLow": 14.8,
+        "gramsHigh": 21.2
       }
     },
     {
       "id": "chicken-liver-fry",
-      "version": 1,
+      "version": 2,
       "name": "Chicken liver fry",
       "aliases": [
         "kaleji fry"
@@ -4209,7 +4209,7 @@
       "servingLabel": "1 serving",
       "servingGrams": 130,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171060,
@@ -4222,19 +4222,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 10
+        "gramsLow": 6.6,
+        "gramsHigh": 9.4
       }
     },
     {
       "id": "fish-tikka",
-      "version": 1,
+      "version": 2,
       "name": "Fish tikka",
       "aliases": [],
       "servingLabel": "1 serving",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: tilapia stands in for the firm fish a tikka is made with",
       "ingredients": [
         {
@@ -4252,19 +4252,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "set-dosa",
-      "version": 1,
+      "version": 2,
       "name": "Set dosa",
       "aliases": [],
       "servingLabel": "2 pieces",
       "servingGrams": 140,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -4277,19 +4277,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "onion-dosa",
-      "version": 1,
+      "version": 2,
       "name": "Onion dosa",
       "aliases": [],
       "servingLabel": "1 piece",
       "servingGrams": 120,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -4306,19 +4306,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 9
+        "gramsLow": 5.7,
+        "gramsHigh": 8.3
       }
     },
     {
       "id": "mysore-masala-dosa",
-      "version": 1,
+      "version": 2,
       "name": "Mysore masala dosa",
       "aliases": [],
       "servingLabel": "1 piece",
       "servingGrams": 220,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -4343,13 +4343,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "egg-dosa",
-      "version": 1,
+      "version": 2,
       "name": "Egg dosa",
       "aliases": [
         "muttai dosa"
@@ -4357,7 +4357,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -4374,13 +4374,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 9
+        "gramsLow": 5.7,
+        "gramsHigh": 8.3
       }
     },
     {
       "id": "ghee-roast-dosa",
-      "version": 1,
+      "version": 2,
       "name": "Ghee roast dosa",
       "aliases": [
         "ghee dosa"
@@ -4388,7 +4388,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 110,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -4401,13 +4401,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "semiya-upma",
-      "version": 1,
+      "version": 2,
       "name": "Semiya upma",
       "aliases": [
         "vermicelli upma"
@@ -4415,7 +4415,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: dry enriched pasta stands in for wheat vermicelli",
       "ingredients": [
         {
@@ -4437,19 +4437,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 9
+        "gramsLow": 5.7,
+        "gramsHigh": 8.3
       }
     },
     {
       "id": "sabudana-vada",
-      "version": 1,
+      "version": 2,
       "name": "Sabudana vada",
       "aliases": [],
       "servingLabel": "2 pieces",
       "servingGrams": 100,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169717,
@@ -4466,19 +4466,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 10,
-        "gramsHigh": 16
+        "gramsLow": 10.7,
+        "gramsHigh": 15.3
       }
     },
     {
       "id": "idli-sambar",
-      "version": 1,
+      "version": 2,
       "name": "Idli sambar",
       "aliases": [],
       "servingLabel": "1 plate (2 idli + sambar)",
       "servingGrams": 300,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -4515,13 +4515,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 2,
-        "gramsHigh": 5
+        "gramsLow": 2.9,
+        "gramsHigh": 4.1
       }
     },
     {
       "id": "vada-sambar",
-      "version": 1,
+      "version": 2,
       "name": "Vada sambar",
       "aliases": [
         "medu vada sambar"
@@ -4529,7 +4529,7 @@
       "servingLabel": "1 plate (2 vada + sambar)",
       "servingGrams": 280,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174259,
@@ -4558,13 +4558,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 14,
-        "gramsHigh": 24
+        "gramsLow": 15.6,
+        "gramsHigh": 22.4
       }
     },
     {
       "id": "paniyaram",
-      "version": 1,
+      "version": 2,
       "name": "Paniyaram",
       "aliases": [
         "kuzhi paniyaram",
@@ -4574,7 +4574,7 @@
       "servingLabel": "6 pieces",
       "servingGrams": 120,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -4591,13 +4591,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "namkeen-dalia",
-      "version": 1,
+      "version": 2,
       "name": "Namkeen dalia",
       "aliases": [
         "vegetable dalia",
@@ -4606,7 +4606,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: bulgur stands in for broken wheat (dalia)",
       "ingredients": [
         {
@@ -4628,13 +4628,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 3,
-        "gramsHigh": 6
+        "gramsLow": 3.7,
+        "gramsHigh": 5.3
       }
     },
     {
       "id": "sweet-dalia",
-      "version": 1,
+      "version": 2,
       "name": "Sweet dalia",
       "aliases": [
         "meetha dalia",
@@ -4643,7 +4643,7 @@
       "servingLabel": "1 bowl",
       "servingGrams": 220,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: bulgur stands in for broken wheat (dalia)",
       "ingredients": [
         {
@@ -4663,7 +4663,7 @@
     },
     {
       "id": "khandvi",
-      "version": 1,
+      "version": 2,
       "name": "Khandvi",
       "aliases": [
         "suralichi vadi"
@@ -4671,7 +4671,7 @@
       "servingLabel": "6 pieces",
       "servingGrams": 100,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174288,
@@ -4692,19 +4692,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 3,
-        "gramsHigh": 6
+        "gramsLow": 3.7,
+        "gramsHigh": 5.3
       }
     },
     {
       "id": "handvo",
-      "version": 1,
+      "version": 2,
       "name": "Handvo",
       "aliases": [],
       "servingLabel": "1 piece",
       "servingGrams": 120,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: whole chickpeas stand in for split bengal gram (chana dal)",
       "ingredients": [
         {
@@ -4730,19 +4730,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 10
+        "gramsLow": 6.6,
+        "gramsHigh": 9.4
       }
     },
     {
       "id": "khakhra",
-      "version": 1,
+      "version": 2,
       "name": "Khakhra",
       "aliases": [],
       "servingLabel": "2 pieces",
       "servingGrams": 30,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168893,
@@ -4751,19 +4751,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 2,
-        "gramsHigh": 4
+        "gramsLow": 2.5,
+        "gramsHigh": 3.5
       }
     },
     {
       "id": "fafda",
-      "version": 1,
+      "version": 3,
       "name": "Fafda",
       "aliases": [],
       "servingLabel": "1 serving",
       "servingGrams": 50,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.08,
       "ingredients": [
         {
           "fdcId": 174288,
@@ -4772,13 +4772,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 12,
-        "gramsHigh": 18
+        "gramsLow": 13.5,
+        "gramsHigh": 16.5
       }
     },
     {
       "id": "dahi-vada",
-      "version": 1,
+      "version": 2,
       "name": "Dahi vada",
       "aliases": [
         "dahi bhalla",
@@ -4788,7 +4788,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 200,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174259,
@@ -4805,13 +4805,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 10,
-        "gramsHigh": 16
+        "gramsLow": 10.7,
+        "gramsHigh": 15.3
       }
     },
     {
       "id": "bread-pakora",
-      "version": 1,
+      "version": 2,
       "name": "Bread pakora",
       "aliases": [
         "bread pakoda"
@@ -4819,7 +4819,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 90,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174924,
@@ -4836,13 +4836,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 10,
-        "gramsHigh": 16
+        "gramsLow": 10.7,
+        "gramsHigh": 15.3
       }
     },
     {
       "id": "mirchi-bajji",
-      "version": 1,
+      "version": 3,
       "name": "Mirchi bajji",
       "aliases": [
         "mirchi bhaji",
@@ -4852,7 +4852,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 100,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.08,
       "notes": "proxy: green bell pepper stands in for the large mild chillies used",
       "ingredients": [
         {
@@ -4866,13 +4866,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 12,
-        "gramsHigh": 18
+        "gramsLow": 13.5,
+        "gramsHigh": 16.5
       }
     },
     {
       "id": "paneer-pakora",
-      "version": 1,
+      "version": 2,
       "name": "Paneer pakora",
       "aliases": [
         "paneer pakoda"
@@ -4880,7 +4880,7 @@
       "servingLabel": "4 pieces",
       "servingGrams": 120,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: USDA queso blanco (a fresh, unripened white cheese) stands in for paneer",
       "ingredients": [
         {
@@ -4900,7 +4900,7 @@
     },
     {
       "id": "chana-chaat",
-      "version": 1,
+      "version": 2,
       "name": "Chana chaat",
       "aliases": [
         "chole chaat"
@@ -4908,7 +4908,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 173757,
@@ -4931,7 +4931,7 @@
     },
     {
       "id": "sprouts-chaat",
-      "version": 1,
+      "version": 2,
       "name": "Sprouts chaat",
       "aliases": [
         "moong sprouts chaat",
@@ -4940,7 +4940,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169957,
@@ -4967,7 +4967,7 @@
     },
     {
       "id": "peanut-chaat",
-      "version": 1,
+      "version": 2,
       "name": "Peanut chaat",
       "aliases": [
         "moongphali chaat"
@@ -4975,7 +4975,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 100,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 172430,
@@ -4998,7 +4998,7 @@
     },
     {
       "id": "namak-para",
-      "version": 1,
+      "version": 2,
       "name": "Namak para",
       "aliases": [
         "namak pare"
@@ -5006,7 +5006,7 @@
       "servingLabel": "1 small bowl",
       "servingGrams": 40,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -5021,7 +5021,7 @@
     },
     {
       "id": "shakarpara",
-      "version": 1,
+      "version": 2,
       "name": "Shakarpara",
       "aliases": [
         "shakkar pare"
@@ -5029,7 +5029,7 @@
       "servingLabel": "1 small bowl",
       "servingGrams": 40,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -5048,7 +5048,7 @@
     },
     {
       "id": "poha-chivda",
-      "version": 1,
+      "version": 2,
       "name": "Poha chivda",
       "aliases": [
         "chivda",
@@ -5057,7 +5057,7 @@
       "servingLabel": "1 small bowl",
       "servingGrams": 40,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: raw white rice stands in for flattened rice (poha)",
       "ingredients": [
         {
@@ -5077,7 +5077,7 @@
     },
     {
       "id": "aloo-bhujia",
-      "version": 1,
+      "version": 2,
       "name": "Aloo bhujia",
       "aliases": [
         "bhujia",
@@ -5086,7 +5086,7 @@
       "servingLabel": "1 small bowl",
       "servingGrams": 30,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174288,
@@ -5105,7 +5105,7 @@
     },
     {
       "id": "namkeen-mixture",
-      "version": 1,
+      "version": 2,
       "name": "Namkeen mixture",
       "aliases": [
         "mixture",
@@ -5114,7 +5114,7 @@
       "servingLabel": "1 small bowl",
       "servingGrams": 30,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174288,
@@ -5159,7 +5159,7 @@
     },
     {
       "id": "roasted-makhana",
-      "version": 1,
+      "version": 2,
       "name": "Roasted makhana",
       "aliases": [
         "makhana",
@@ -5169,7 +5169,7 @@
       "servingLabel": "1 bowl",
       "servingGrams": 25,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: dried lotus seeds stand in for fox nuts (makhana), a similar starchy seed USDA does not have",
       "ingredients": [
         {
@@ -5179,13 +5179,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 2,
-        "gramsHigh": 5
+        "gramsLow": 2.9,
+        "gramsHigh": 4.1
       }
     },
     {
       "id": "rasmalai",
-      "version": 1,
+      "version": 2,
       "name": "Rasmalai",
       "aliases": [
         "ras malai"
@@ -5193,7 +5193,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 140,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: USDA queso blanco (a fresh, unripened white cheese) stands in for paneer (chhena)",
       "ingredients": [
         {
@@ -5217,7 +5217,7 @@
     },
     {
       "id": "kaju-katli",
-      "version": 1,
+      "version": 2,
       "name": "Kaju katli",
       "aliases": [
         "kaju barfi"
@@ -5225,7 +5225,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 30,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170162,
@@ -5238,13 +5238,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 0,
+        "gramsLow": 0.5,
         "gramsHigh": 1
       }
     },
     {
       "id": "milk-barfi",
-      "version": 1,
+      "version": 2,
       "name": "Milk barfi",
       "aliases": [
         "barfi",
@@ -5253,7 +5253,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 50,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: whole milk powder stands in for khoya (milk solids)",
       "ingredients": [
         {
@@ -5267,13 +5267,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 2,
-        "gramsHigh": 4
+        "gramsLow": 2.5,
+        "gramsHigh": 3.5
       }
     },
     {
       "id": "peda",
-      "version": 1,
+      "version": 2,
       "name": "Peda",
       "aliases": [
         "pedha"
@@ -5281,7 +5281,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 40,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: whole milk powder stands in for khoya (milk solids)",
       "ingredients": [
         {
@@ -5295,19 +5295,19 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 1,
-        "gramsHigh": 3
+        "gramsLow": 1.6,
+        "gramsHigh": 2.4
       }
     },
     {
       "id": "sandesh",
-      "version": 1,
+      "version": 2,
       "name": "Sandesh",
       "aliases": [],
       "servingLabel": "2 pieces",
       "servingGrams": 60,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: USDA queso blanco (a fresh, unripened white cheese) stands in for paneer (chhena)",
       "ingredients": [
         {
@@ -5323,13 +5323,13 @@
     },
     {
       "id": "mysore-pak",
-      "version": 1,
+      "version": 2,
       "name": "Mysore pak",
       "aliases": [],
       "servingLabel": "1 piece",
       "servingGrams": 40,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174288,
@@ -5348,7 +5348,7 @@
     },
     {
       "id": "coconut-ladoo",
-      "version": 1,
+      "version": 2,
       "name": "Coconut ladoo",
       "aliases": [
         "nariyal ladoo"
@@ -5356,7 +5356,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 40,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170170,
@@ -5371,7 +5371,7 @@
     },
     {
       "id": "rava-ladoo",
-      "version": 1,
+      "version": 2,
       "name": "Rava ladoo",
       "aliases": [
         "rava laddu",
@@ -5380,7 +5380,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 50,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168933,
@@ -5397,19 +5397,19 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 5,
-        "gramsHigh": 9
+        "gramsLow": 5.7,
+        "gramsHigh": 8.3
       }
     },
     {
       "id": "moong-dal-halwa",
-      "version": 1,
+      "version": 2,
       "name": "Moong dal halwa",
       "aliases": [],
       "servingLabel": "1 katori",
       "servingGrams": 100,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174256,
@@ -5432,7 +5432,7 @@
     },
     {
       "id": "kulfi",
-      "version": 1,
+      "version": 2,
       "name": "Kulfi",
       "aliases": [
         "malai kulfi"
@@ -5440,7 +5440,7 @@
       "servingLabel": "1 stick",
       "servingGrams": 80,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171265,
@@ -5463,7 +5463,7 @@
     },
     {
       "id": "phirni",
-      "version": 1,
+      "version": 2,
       "name": "Phirni",
       "aliases": [
         "firni"
@@ -5471,7 +5471,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 120,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171265,
@@ -5490,7 +5490,7 @@
     },
     {
       "id": "seviyan-kheer",
-      "version": 1,
+      "version": 2,
       "name": "Seviyan kheer",
       "aliases": [
         "semiya payasam",
@@ -5499,7 +5499,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: dry enriched pasta stands in for wheat vermicelli",
       "ingredients": [
         {
@@ -5517,19 +5517,19 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 2,
-        "gramsHigh": 4
+        "gramsLow": 2.5,
+        "gramsHigh": 3.5
       }
     },
     {
       "id": "malpua",
-      "version": 1,
+      "version": 2,
       "name": "Malpua",
       "aliases": [],
       "servingLabel": "2 pieces",
       "servingGrams": 100,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -5546,13 +5546,13 @@
       ],
       "oil": {
         "fdcId": 173412,
-        "gramsLow": 10,
-        "gramsHigh": 16
+        "gramsLow": 10.7,
+        "gramsHigh": 15.3
       }
     },
     {
       "id": "gujiya",
-      "version": 1,
+      "version": 2,
       "name": "Gujiya",
       "aliases": [
         "karanji"
@@ -5560,7 +5560,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 45,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: whole milk powder stands in for khoya (milk solids)",
       "ingredients": [
         {
@@ -5588,13 +5588,13 @@
     },
     {
       "id": "kalakand",
-      "version": 1,
+      "version": 2,
       "name": "Kalakand",
       "aliases": [],
       "servingLabel": "2 pieces",
       "servingGrams": 60,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: USDA queso blanco (a fresh, unripened white cheese) stands in for paneer (chhena)",
       "ingredients": [
         {
@@ -5610,7 +5610,7 @@
     },
     {
       "id": "peanut-chikki",
-      "version": 1,
+      "version": 2,
       "name": "Peanut chikki",
       "aliases": [
         "chikki",
@@ -5619,7 +5619,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 25,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "notes": "proxy: brown sugar stands in for jaggery",
       "ingredients": [
         {
@@ -5635,7 +5635,7 @@
     },
     {
       "id": "til-ladoo",
-      "version": 1,
+      "version": 2,
       "name": "Til ladoo",
       "aliases": [
         "til laddu",
@@ -5644,7 +5644,7 @@
       "servingLabel": "2 pieces",
       "servingGrams": 30,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "notes": "proxy: brown sugar stands in for jaggery",
       "ingredients": [
         {
@@ -5660,13 +5660,13 @@
     },
     {
       "id": "basundi",
-      "version": 1,
+      "version": 2,
       "name": "Basundi",
       "aliases": [],
       "servingLabel": "1 katori",
       "servingGrams": 120,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "milk reduced to about 120 g",
       "ingredients": [
         {
@@ -5686,7 +5686,7 @@
     },
     {
       "id": "rabri",
-      "version": 1,
+      "version": 2,
       "name": "Rabri",
       "aliases": [
         "rabdi"
@@ -5694,7 +5694,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 100,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "milk reduced to about 100 g",
       "ingredients": [
         {
@@ -5710,7 +5710,7 @@
     },
     {
       "id": "rava-kesari",
-      "version": 1,
+      "version": 2,
       "name": "Rava kesari",
       "aliases": [
         "kesari bath",
@@ -5719,7 +5719,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 120,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168933,
@@ -5746,7 +5746,7 @@
     },
     {
       "id": "mishti-doi",
-      "version": 1,
+      "version": 2,
       "name": "Mishti doi",
       "aliases": [
         "sweet curd",
@@ -5755,7 +5755,7 @@
       "servingLabel": "1 katori",
       "servingGrams": 100,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: brown sugar stands in for jaggery",
       "ingredients": [
         {
@@ -5771,13 +5771,13 @@
     },
     {
       "id": "cold-coffee",
-      "version": 1,
+      "version": 2,
       "name": "Cold coffee",
       "aliases": [],
       "servingLabel": "1 glass",
       "servingGrams": 250,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171265,
@@ -5796,13 +5796,13 @@
     },
     {
       "id": "cold-coffee-ice-cream",
-      "version": 1,
+      "version": 2,
       "name": "Cold coffee with ice cream",
       "aliases": [],
       "servingLabel": "1 glass",
       "servingGrams": 300,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171265,
@@ -5825,7 +5825,7 @@
     },
     {
       "id": "hot-chocolate",
-      "version": 1,
+      "version": 2,
       "name": "Hot chocolate",
       "aliases": [
         "hot cocoa"
@@ -5833,7 +5833,7 @@
       "servingLabel": "1 cup",
       "servingGrams": 200,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171265,
@@ -5852,13 +5852,13 @@
     },
     {
       "id": "rose-milk",
-      "version": 1,
+      "version": 2,
       "name": "Rose milk",
       "aliases": [],
       "servingLabel": "1 glass",
       "servingGrams": 250,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "notes": "rose syrup counted as sugar",
       "ingredients": [
         {
@@ -5874,7 +5874,7 @@
     },
     {
       "id": "chocolate-milkshake",
-      "version": 1,
+      "version": 2,
       "name": "Chocolate milkshake",
       "aliases": [
         "chocolate shake"
@@ -5882,7 +5882,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 300,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171265,
@@ -5905,7 +5905,7 @@
     },
     {
       "id": "banana-shake",
-      "version": 1,
+      "version": 2,
       "name": "Banana shake",
       "aliases": [
         "banana milkshake"
@@ -5913,7 +5913,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 300,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171265,
@@ -5932,7 +5932,7 @@
     },
     {
       "id": "strawberry-shake",
-      "version": 1,
+      "version": 2,
       "name": "Strawberry shake",
       "aliases": [
         "strawberry milkshake"
@@ -5940,7 +5940,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 300,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171265,
@@ -5959,7 +5959,7 @@
     },
     {
       "id": "mango-shake",
-      "version": 1,
+      "version": 2,
       "name": "Mango shake",
       "aliases": [
         "mango milkshake"
@@ -5967,7 +5967,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 300,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171265,
@@ -5986,7 +5986,7 @@
     },
     {
       "id": "chikoo-shake",
-      "version": 1,
+      "version": 2,
       "name": "Chikoo shake",
       "aliases": [
         "chikoo milkshake",
@@ -5995,7 +5995,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 300,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171265,
@@ -6014,7 +6014,7 @@
     },
     {
       "id": "date-shake",
-      "version": 1,
+      "version": 2,
       "name": "Date shake",
       "aliases": [
         "dates milkshake",
@@ -6023,7 +6023,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 280,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171265,
@@ -6038,7 +6038,7 @@
     },
     {
       "id": "falooda",
-      "version": 1,
+      "version": 2,
       "name": "Falooda",
       "aliases": [
         "faluda"
@@ -6046,7 +6046,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 350,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: cornstarch stands in for falooda sev and chia for sabja (basil) seeds; rose syrup counted as sugar",
       "ingredients": [
         {
@@ -6074,7 +6074,7 @@
     },
     {
       "id": "jaljeera",
-      "version": 1,
+      "version": 2,
       "name": "Jaljeera",
       "aliases": [
         "jal jeera"
@@ -6082,7 +6082,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 250,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 167747,
@@ -6105,7 +6105,7 @@
     },
     {
       "id": "aam-panna",
-      "version": 1,
+      "version": 2,
       "name": "Aam panna",
       "aliases": [
         "aam ka panna"
@@ -6113,7 +6113,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 250,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: ripe mango stands in for the raw green mango",
       "ingredients": [
         {
@@ -6129,7 +6129,7 @@
     },
     {
       "id": "salted-lassi",
-      "version": 1,
+      "version": 2,
       "name": "Salted lassi",
       "aliases": [
         "namkeen lassi"
@@ -6137,7 +6137,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 250,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171284,
@@ -6148,7 +6148,7 @@
     },
     {
       "id": "mosambi-juice",
-      "version": 1,
+      "version": 2,
       "name": "Mosambi juice",
       "aliases": [
         "sweet lime juice",
@@ -6157,7 +6157,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 250,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: orange juice stands in for sweet lime juice, which USDA does not have",
       "ingredients": [
         {
@@ -6169,7 +6169,7 @@
     },
     {
       "id": "watermelon-juice",
-      "version": 1,
+      "version": 2,
       "name": "Watermelon juice",
       "aliases": [
         "tarbooz juice"
@@ -6177,7 +6177,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 250,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 167765,
@@ -6192,7 +6192,7 @@
     },
     {
       "id": "abc-juice",
-      "version": 1,
+      "version": 2,
       "name": "ABC juice",
       "aliases": [
         "apple beetroot carrot juice"
@@ -6200,7 +6200,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 250,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "notes": "blended with the pulp",
       "ingredients": [
         {
@@ -6220,7 +6220,7 @@
     },
     {
       "id": "sugarcane-juice",
-      "version": 1,
+      "version": 2,
       "name": "Sugarcane juice",
       "aliases": [
         "ganne ka ras",
@@ -6229,7 +6229,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 250,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: granulated sugar stands in for the cane sugars of the juice",
       "ingredients": [
         {
@@ -6249,7 +6249,7 @@
     },
     {
       "id": "nimbu-soda",
-      "version": 1,
+      "version": 2,
       "name": "Nimbu soda",
       "aliases": [
         "lemon soda",
@@ -6258,7 +6258,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 250,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 167747,
@@ -6273,13 +6273,13 @@
     },
     {
       "id": "thandai",
-      "version": 1,
+      "version": 2,
       "name": "Thandai",
       "aliases": [],
       "servingLabel": "1 glass",
       "servingGrams": 250,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171265,
@@ -6302,13 +6302,13 @@
     },
     {
       "id": "lemon-tea",
-      "version": 1,
+      "version": 2,
       "name": "Lemon tea",
       "aliases": [],
       "servingLabel": "1 cup",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 173227,
@@ -6327,7 +6327,7 @@
     },
     {
       "id": "malted-milk",
-      "version": 1,
+      "version": 2,
       "name": "Malted milk drink",
       "aliases": [
         "malt drink"
@@ -6335,7 +6335,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 250,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171265,
@@ -6350,13 +6350,13 @@
     },
     {
       "id": "cappuccino",
-      "version": 1,
+      "version": 2,
       "name": "Cappuccino",
       "aliases": [],
       "servingLabel": "1 cup",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171891,
@@ -6371,7 +6371,7 @@
     },
     {
       "id": "caffe-latte",
-      "version": 1,
+      "version": 2,
       "name": "Caffe latte",
       "aliases": [
         "latte"
@@ -6379,7 +6379,7 @@
       "servingLabel": "1 cup",
       "servingGrams": 300,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171891,
@@ -6394,7 +6394,7 @@
     },
     {
       "id": "sattu-sharbat",
-      "version": 1,
+      "version": 2,
       "name": "Sattu sharbat",
       "aliases": [
         "sattu drink"
@@ -6402,7 +6402,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 250,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "proxy: chickpea flour (besan) stands in for sattu (roasted gram flour)",
       "ingredients": [
         {
@@ -6418,7 +6418,7 @@
     },
     {
       "id": "bhel-puri",
-      "version": 1,
+      "version": 2,
       "name": "Bhel puri",
       "aliases": [
         "bhel"
@@ -6426,7 +6426,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 150,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: brown sugar stands in for jaggery",
       "ingredients": [
         {
@@ -6468,19 +6468,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "sev-puri",
-      "version": 1,
+      "version": 2,
       "name": "Sev puri",
       "aliases": [],
       "servingLabel": "6 pieces",
       "servingGrams": 150,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: brown sugar stands in for jaggery",
       "ingredients": [
         {
@@ -6514,19 +6514,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 10,
-        "gramsHigh": 16
+        "gramsLow": 10.7,
+        "gramsHigh": 15.3
       }
     },
     {
       "id": "dahi-puri",
-      "version": 1,
+      "version": 2,
       "name": "Dahi puri",
       "aliases": [],
       "servingLabel": "6 pieces",
       "servingGrams": 180,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: brown sugar stands in for jaggery",
       "ingredients": [
         {
@@ -6570,7 +6570,7 @@
     },
     {
       "id": "papdi-chaat",
-      "version": 1,
+      "version": 2,
       "name": "Papdi chaat",
       "aliases": [
         "papri chaat"
@@ -6578,7 +6578,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 200,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: brown sugar stands in for jaggery",
       "ingredients": [
         {
@@ -6608,13 +6608,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 10,
-        "gramsHigh": 16
+        "gramsLow": 10.7,
+        "gramsHigh": 15.3
       }
     },
     {
       "id": "ragda-pattice",
-      "version": 1,
+      "version": 2,
       "name": "Ragda pattice",
       "aliases": [
         "ragda patties"
@@ -6622,7 +6622,7 @@
       "servingLabel": "1 plate (2 pattice)",
       "servingGrams": 250,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: boiled split peas stand in for dried white peas; proxy: brown sugar stands in for jaggery",
       "ingredients": [
         {
@@ -6648,19 +6648,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "samosa-chaat",
-      "version": 1,
+      "version": 2,
       "name": "Samosa chaat",
       "aliases": [],
       "servingLabel": "1 plate",
       "servingGrams": 250,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: brown sugar stands in for jaggery",
       "ingredients": [
         {
@@ -6694,13 +6694,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 15,
-        "gramsHigh": 25
+        "gramsLow": 16.4,
+        "gramsHigh": 23.6
       }
     },
     {
       "id": "misal-pav",
-      "version": 1,
+      "version": 2,
       "name": "Misal pav",
       "aliases": [
         "misal"
@@ -6708,7 +6708,7 @@
       "servingLabel": "1 plate (misal + 2 pav)",
       "servingGrams": 350,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 172425,
@@ -6741,13 +6741,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 12,
-        "gramsHigh": 22
+        "gramsLow": 13.9,
+        "gramsHigh": 20.1
       }
     },
     {
       "id": "dabeli",
-      "version": 1,
+      "version": 2,
       "name": "Dabeli",
       "aliases": [
         "kutchi dabeli"
@@ -6755,7 +6755,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 120,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: brown sugar stands in for jaggery",
       "ingredients": [
         {
@@ -6789,13 +6789,13 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "chicken-kathi-roll",
-      "version": 1,
+      "version": 2,
       "name": "Chicken kathi roll",
       "aliases": [
         "chicken roll",
@@ -6804,7 +6804,7 @@
       "servingLabel": "1 roll",
       "servingGrams": 220,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -6833,13 +6833,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 10,
-        "gramsHigh": 16
+        "gramsLow": 10.7,
+        "gramsHigh": 15.3
       }
     },
     {
       "id": "egg-roll",
-      "version": 1,
+      "version": 2,
       "name": "Egg roll",
       "aliases": [
         "egg kathi roll",
@@ -6848,7 +6848,7 @@
       "servingLabel": "1 roll",
       "servingGrams": 200,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -6869,13 +6869,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 10,
-        "gramsHigh": 16
+        "gramsLow": 10.7,
+        "gramsHigh": 15.3
       }
     },
     {
       "id": "paneer-kathi-roll",
-      "version": 1,
+      "version": 2,
       "name": "Paneer kathi roll",
       "aliases": [
         "paneer roll",
@@ -6884,7 +6884,7 @@
       "servingLabel": "1 roll",
       "servingGrams": 220,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: USDA queso blanco (a fresh, unripened white cheese) stands in for paneer",
       "ingredients": [
         {
@@ -6910,13 +6910,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 10,
-        "gramsHigh": 16
+        "gramsLow": 10.7,
+        "gramsHigh": 15.3
       }
     },
     {
       "id": "veg-frankie",
-      "version": 1,
+      "version": 2,
       "name": "Veg frankie",
       "aliases": [
         "veg roll",
@@ -6925,7 +6925,7 @@
       "servingLabel": "1 roll",
       "servingGrams": 200,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -6950,13 +6950,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "veg-momos",
-      "version": 1,
+      "version": 2,
       "name": "Veg momos",
       "aliases": [
         "steamed momos",
@@ -6965,7 +6965,7 @@
       "servingLabel": "6 pieces",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -6990,13 +6990,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 2,
-        "gramsHigh": 5
+        "gramsLow": 2.9,
+        "gramsHigh": 4.1
       }
     },
     {
       "id": "chicken-momos",
-      "version": 1,
+      "version": 2,
       "name": "Chicken momos",
       "aliases": [
         "chicken dumplings"
@@ -7004,7 +7004,7 @@
       "servingLabel": "6 pieces",
       "servingGrams": 170,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -7025,13 +7025,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 2,
-        "gramsHigh": 5
+        "gramsLow": 2.9,
+        "gramsHigh": 4.1
       }
     },
     {
       "id": "fried-momos",
-      "version": 1,
+      "version": 2,
       "name": "Fried momos",
       "aliases": [
         "fried veg momos"
@@ -7039,7 +7039,7 @@
       "servingLabel": "6 pieces",
       "servingGrams": 160,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -7060,13 +7060,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 12,
-        "gramsHigh": 20
+        "gramsLow": 13.1,
+        "gramsHigh": 18.9
       }
     },
     {
       "id": "veg-spring-roll",
-      "version": 1,
+      "version": 2,
       "name": "Veg spring roll",
       "aliases": [
         "spring roll"
@@ -7074,7 +7074,7 @@
       "servingLabel": "2 rolls",
       "servingGrams": 120,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -7095,13 +7095,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 10,
-        "gramsHigh": 16
+        "gramsLow": 10.7,
+        "gramsHigh": 15.3
       }
     },
     {
       "id": "veg-hakka-noodles",
-      "version": 1,
+      "version": 2,
       "name": "Veg hakka noodles",
       "aliases": [
         "hakka noodles",
@@ -7111,7 +7111,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 250,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: dry enriched pasta stands in for wheat hakka noodles",
       "ingredients": [
         {
@@ -7141,13 +7141,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 10,
-        "gramsHigh": 16
+        "gramsLow": 10.7,
+        "gramsHigh": 15.3
       }
     },
     {
       "id": "chicken-hakka-noodles",
-      "version": 1,
+      "version": 2,
       "name": "Chicken hakka noodles",
       "aliases": [
         "chicken chowmein",
@@ -7156,7 +7156,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 280,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: dry enriched pasta stands in for wheat hakka noodles",
       "ingredients": [
         {
@@ -7190,13 +7190,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 10,
-        "gramsHigh": 16
+        "gramsLow": 10.7,
+        "gramsHigh": 15.3
       }
     },
     {
       "id": "veg-manchurian",
-      "version": 1,
+      "version": 2,
       "name": "Veg manchurian",
       "aliases": [
         "manchurian",
@@ -7205,7 +7205,7 @@
       "servingLabel": "1 plate (6 balls + gravy)",
       "servingGrams": 220,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169975,
@@ -7242,13 +7242,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 14,
-        "gramsHigh": 24
+        "gramsLow": 15.6,
+        "gramsHigh": 22.4
       }
     },
     {
       "id": "gobi-manchurian",
-      "version": 1,
+      "version": 2,
       "name": "Gobi manchurian",
       "aliases": [
         "cauliflower manchurian"
@@ -7256,7 +7256,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 200,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169986,
@@ -7289,13 +7289,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 15,
-        "gramsHigh": 25
+        "gramsLow": 16.4,
+        "gramsHigh": 23.6
       }
     },
     {
       "id": "chilli-paneer",
-      "version": 1,
+      "version": 2,
       "name": "Chilli paneer",
       "aliases": [
         "chili paneer"
@@ -7303,7 +7303,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 200,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "notes": "proxy: USDA queso blanco (a fresh, unripened white cheese) stands in for paneer",
       "ingredients": [
         {
@@ -7333,8 +7333,8 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 12,
-        "gramsHigh": 20
+        "gramsLow": 13.1,
+        "gramsHigh": 18.9
       }
     },
     {
@@ -7361,7 +7361,7 @@
     },
     {
       "id": "veg-instant-noodles",
-      "version": 1,
+      "version": 2,
       "name": "Vegetable instant noodles",
       "aliases": [
         "veg maggi",
@@ -7370,7 +7370,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 300,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "notes": "USDA \"ramen noodle, any flavor, dry\" (instant noodles with their seasoning) as one 70 g packet",
       "ingredients": [
         {
@@ -7396,13 +7396,13 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 0,
+        "gramsLow": 2.5,
         "gramsHigh": 5
       }
     },
     {
       "id": "egg-instant-noodles",
-      "version": 1,
+      "version": 2,
       "name": "Egg instant noodles",
       "aliases": [
         "egg maggi"
@@ -7410,7 +7410,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 300,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "notes": "USDA \"ramen noodle, any flavor, dry\" (instant noodles with their seasoning) as one 70 g packet",
       "ingredients": [
         {
@@ -7424,13 +7424,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 2,
-        "gramsHigh": 5
+        "gramsLow": 2.9,
+        "gramsHigh": 4.1
       }
     },
     {
       "id": "veg-sandwich",
-      "version": 1,
+      "version": 2,
       "name": "Veg sandwich",
       "aliases": [
         "vegetable sandwich",
@@ -7439,7 +7439,7 @@
       "servingLabel": "1 sandwich",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174924,
@@ -7464,13 +7464,13 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "cheese-grilled-sandwich",
-      "version": 1,
+      "version": 2,
       "name": "Cheese grilled sandwich",
       "aliases": [
         "grilled sandwich",
@@ -7479,7 +7479,7 @@
       "servingLabel": "1 sandwich",
       "servingGrams": 140,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174924,
@@ -7500,19 +7500,19 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 6,
-        "gramsHigh": 12
+        "gramsLow": 7.4,
+        "gramsHigh": 10.6
       }
     },
     {
       "id": "egg-sandwich",
-      "version": 1,
+      "version": 2,
       "name": "Egg sandwich",
       "aliases": [],
       "servingLabel": "1 sandwich",
       "servingGrams": 160,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174924,
@@ -7533,19 +7533,19 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 0,
+        "gramsLow": 2.5,
         "gramsHigh": 5
       }
     },
     {
       "id": "chicken-sandwich",
-      "version": 1,
+      "version": 2,
       "name": "Chicken sandwich",
       "aliases": [],
       "servingLabel": "1 sandwich",
       "servingGrams": 180,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174924,
@@ -7566,19 +7566,19 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 0,
+        "gramsLow": 2.0,
         "gramsHigh": 4
       }
     },
     {
       "id": "bread-omelette",
-      "version": 1,
+      "version": 2,
       "name": "Bread omelette",
       "aliases": [],
       "servingLabel": "1 plate",
       "servingGrams": 170,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 174924,
@@ -7595,13 +7595,13 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 6,
-        "gramsHigh": 10
+        "gramsLow": 6.6,
+        "gramsHigh": 9.4
       }
     },
     {
       "id": "bun-maska",
-      "version": 1,
+      "version": 2,
       "name": "Bun maska",
       "aliases": [
         "bun butter"
@@ -7609,7 +7609,7 @@
       "servingLabel": "1 bun",
       "servingGrams": 75,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 172793,
@@ -7624,7 +7624,7 @@
     },
     {
       "id": "aloo-tikki-burger",
-      "version": 1,
+      "version": 2,
       "name": "Aloo tikki burger",
       "aliases": [
         "veg burger"
@@ -7632,7 +7632,7 @@
       "servingLabel": "1 burger",
       "servingGrams": 170,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 172796,
@@ -7665,19 +7665,19 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "chicken-burger",
-      "version": 1,
+      "version": 2,
       "name": "Chicken burger",
       "aliases": [],
       "servingLabel": "1 burger",
       "servingGrams": 200,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 172796,
@@ -7702,13 +7702,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 8,
-        "gramsHigh": 14
+        "gramsLow": 9.0,
+        "gramsHigh": 13.0
       }
     },
     {
       "id": "chicken-shawarma",
-      "version": 1,
+      "version": 2,
       "name": "Chicken shawarma",
       "aliases": [
         "shawarma",
@@ -7717,7 +7717,7 @@
       "servingLabel": "1 roll",
       "servingGrams": 250,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 172816,
@@ -7738,13 +7738,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 4,
-        "gramsHigh": 8
+        "gramsLow": 4.9,
+        "gramsHigh": 7.1
       }
     },
     {
       "id": "french-fries",
-      "version": 1,
+      "version": 3,
       "name": "French fries",
       "aliases": [
         "fries",
@@ -7753,7 +7753,7 @@
       "servingLabel": "1 medium portion",
       "servingGrams": 120,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.08,
       "notes": "raw potato fried; water lost in frying is not modelled",
       "ingredients": [
         {
@@ -7763,13 +7763,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 18,
-        "gramsHigh": 26
+        "gramsLow": 19.8,
+        "gramsHigh": 24.2
       }
     },
     {
       "id": "chole-bhature",
-      "version": 1,
+      "version": 2,
       "name": "Chole bhature",
       "aliases": [
         "chole bhatura"
@@ -7777,7 +7777,7 @@
       "servingLabel": "1 plate (2 bhature + chole)",
       "servingGrams": 350,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -7808,7 +7808,7 @@
     },
     {
       "id": "chole-kulche",
-      "version": 1,
+      "version": 2,
       "name": "Chole kulche",
       "aliases": [
         "matar kulcha"
@@ -7816,7 +7816,7 @@
       "servingLabel": "1 plate (2 kulche)",
       "servingGrams": 330,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -7841,13 +7841,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 10,
-        "gramsHigh": 20
+        "gramsLow": 12.3,
+        "gramsHigh": 17.7
       }
     },
     {
       "id": "puri-bhaji",
-      "version": 1,
+      "version": 2,
       "name": "Puri bhaji",
       "aliases": [
         "poori masala",
@@ -7857,7 +7857,7 @@
       "servingLabel": "1 plate (4 puri + bhaji)",
       "servingGrams": 280,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 168893,
@@ -7878,13 +7878,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 22,
-        "gramsHigh": 34
+        "gramsLow": 23.0,
+        "gramsHigh": 33.0
       }
     },
     {
       "id": "kachori-sabzi",
-      "version": 1,
+      "version": 2,
       "name": "Kachori sabzi",
       "aliases": [
         "kachori aloo"
@@ -7892,7 +7892,7 @@
       "servingLabel": "1 plate (2 kachori + aloo)",
       "servingGrams": 260,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169761,
@@ -7919,7 +7919,7 @@
     },
     {
       "id": "white-sauce-pasta",
-      "version": 1,
+      "version": 2,
       "name": "White sauce pasta",
       "aliases": [
         "pasta in white sauce"
@@ -7927,7 +7927,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 250,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169736,
@@ -7954,7 +7954,7 @@
     },
     {
       "id": "red-sauce-pasta",
-      "version": 1,
+      "version": 2,
       "name": "Red sauce pasta",
       "aliases": [
         "pasta in red sauce"
@@ -7962,7 +7962,7 @@
       "servingLabel": "1 plate",
       "servingGrams": 250,
       "confidence": "low",
-      "widening": 0.25,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169736,
@@ -7987,8 +7987,8 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 6,
-        "gramsHigh": 10
+        "gramsLow": 6.6,
+        "gramsHigh": 9.4
       }
     },
     {
@@ -8038,13 +8038,13 @@
     },
     {
       "id": "banana-protein-shake",
-      "version": 1,
+      "version": 2,
       "name": "Banana protein shake",
       "aliases": [],
       "servingLabel": "1 glass",
       "servingGrams": 400,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "notes": "a generic whey-based protein powder (USDA SR Legacy); real labels differ, check yours",
       "ingredients": [
         {
@@ -8064,7 +8064,7 @@
     },
     {
       "id": "peanut-butter-banana-shake",
-      "version": 1,
+      "version": 2,
       "name": "Peanut butter banana shake",
       "aliases": [
         "pb banana shake"
@@ -8072,7 +8072,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 380,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171265,
@@ -8091,7 +8091,7 @@
     },
     {
       "id": "mass-gainer-shake",
-      "version": 1,
+      "version": 2,
       "name": "Homemade mass gainer shake",
       "aliases": [
         "mass gainer",
@@ -8100,7 +8100,7 @@
       "servingLabel": "1 glass",
       "servingGrams": 500,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "notes": "a generic whey-based protein powder (USDA SR Legacy); real labels differ, check yours",
       "ingredients": [
         {
@@ -8132,13 +8132,13 @@
     },
     {
       "id": "protein-oats",
-      "version": 1,
+      "version": 2,
       "name": "Protein oats",
       "aliases": [],
       "servingLabel": "1 bowl",
       "servingGrams": 300,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "notes": "a generic whey-based protein powder (USDA SR Legacy); real labels differ, check yours",
       "ingredients": [
         {
@@ -8158,13 +8158,13 @@
     },
     {
       "id": "overnight-oats",
-      "version": 1,
+      "version": 2,
       "name": "Overnight oats",
       "aliases": [],
       "servingLabel": "1 jar",
       "servingGrams": 250,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169705,
@@ -8214,13 +8214,13 @@
     },
     {
       "id": "egg-white-omelette",
-      "version": 1,
+      "version": 2,
       "name": "Egg white omelette",
       "aliases": [],
       "servingLabel": "1 omelette (4 whites)",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 172183,
@@ -8237,8 +8237,8 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 2,
-        "gramsHigh": 5
+        "gramsLow": 2.9,
+        "gramsHigh": 4.1
       }
     },
     {
@@ -8262,13 +8262,13 @@
     },
     {
       "id": "chicken-rice-bowl",
-      "version": 1,
+      "version": 2,
       "name": "Chicken rice bowl",
       "aliases": [],
       "servingLabel": "1 bowl",
       "servingGrams": 400,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169756,
@@ -8289,13 +8289,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
       "id": "grilled-chicken-salad",
-      "version": 1,
+      "version": 2,
       "name": "Grilled chicken salad",
       "aliases": [
         "chicken salad"
@@ -8303,7 +8303,7 @@
       "servingLabel": "1 bowl",
       "servingGrams": 300,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 171077,
@@ -8328,8 +8328,8 @@
       ],
       "oil": {
         "fdcId": 171413,
-        "gramsLow": 5,
-        "gramsHigh": 10
+        "gramsLow": 6.1,
+        "gramsHigh": 8.8
       }
     },
     {
@@ -8357,7 +8357,7 @@
     },
     {
       "id": "greek-yogurt-bowl",
-      "version": 1,
+      "version": 2,
       "name": "Greek yogurt bowl",
       "aliases": [
         "yogurt parfait"
@@ -8365,7 +8365,7 @@
       "servingLabel": "1 bowl",
       "servingGrams": 250,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170903,
@@ -8388,7 +8388,7 @@
     },
     {
       "id": "muesli-milk",
-      "version": 1,
+      "version": 2,
       "name": "Muesli with milk",
       "aliases": [
         "muesli"
@@ -8396,7 +8396,7 @@
       "servingLabel": "1 bowl",
       "servingGrams": 250,
       "confidence": "low",
-      "widening": 0.2,
+      "widening": 0.1,
       "notes": "a plain muesli of oats, raisins, almonds and puffed wheat; packs differ",
       "ingredients": [
         {
@@ -8424,7 +8424,7 @@
     },
     {
       "id": "dry-fruit-mix",
-      "version": 1,
+      "version": 2,
       "name": "Dry fruit mix",
       "aliases": [
         "dry fruits",
@@ -8433,7 +8433,7 @@
       "servingLabel": "1 handful",
       "servingGrams": 30,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 170567,
@@ -8479,13 +8479,13 @@
     },
     {
       "id": "tuna-sandwich",
-      "version": 1,
+      "version": 2,
       "name": "Tuna sandwich",
       "aliases": [],
       "servingLabel": "1 sandwich",
       "servingGrams": 170,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 172688,
@@ -8508,7 +8508,7 @@
     },
     {
       "id": "oats-chilla",
-      "version": 1,
+      "version": 2,
       "name": "Oats chilla",
       "aliases": [
         "oats cheela"
@@ -8516,7 +8516,7 @@
       "servingLabel": "1 piece",
       "servingGrams": 100,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169705,
@@ -8537,13 +8537,13 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 3,
-        "gramsHigh": 6
+        "gramsLow": 3.7,
+        "gramsHigh": 5.3
       }
     },
     {
       "id": "banana-oats-pancake",
-      "version": 1,
+      "version": 2,
       "name": "Banana oats pancakes",
       "aliases": [
         "oats pancakes"
@@ -8551,7 +8551,7 @@
       "servingLabel": "2 pancakes",
       "servingGrams": 150,
       "confidence": "medium",
-      "widening": 0.15,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 169705,
@@ -8568,19 +8568,19 @@
       ],
       "oil": {
         "fdcId": 173410,
-        "gramsLow": 2,
-        "gramsHigh": 5
+        "gramsLow": 2.9,
+        "gramsHigh": 4.1
       }
     },
     {
       "id": "chicken-wrap",
-      "version": 1,
+      "version": 2,
       "name": "Chicken wrap",
       "aliases": [],
       "servingLabel": "1 wrap",
       "servingGrams": 220,
       "confidence": "medium",
-      "widening": 0.2,
+      "widening": 0.1,
       "ingredients": [
         {
           "fdcId": 167535,
@@ -8605,8 +8605,8 @@
       ],
       "oil": {
         "fdcId": 171017,
-        "gramsLow": 3,
-        "gramsHigh": 6
+        "gramsLow": 3.7,
+        "gramsHigh": 5.3
       }
     }
   ]

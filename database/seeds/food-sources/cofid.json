@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "source": "CoFID 2021",
+  "citation": "Public Health England (2021). McCance and Widdowson's The Composition of Foods Integrated Dataset 2021. gov.uk/government/publications/composition-of-foods-integrated-dataset-cofid. Contains public sector information licensed under the Open Government Licence v3.0.",
+  "terms": "Open Government Licence v3.0 (gov.uk copy): reuse, including commercial, with attribution. Crown copyright.",
+  "raw": [
+    {
+      "file": "cofid/CoFID_2021.xlsx",
+      "sha256": "436e9445ef2adb2a75f3d7edd51302de3adad25385f9795fc94ba58bd030e97d"
+    }
+  ],
+  "foods": [
+    {
+      "code": "11-912",
+      "name": "Mooli paratha, homemade",
+      "kcal": 171.0,
+      "protein": 5.9,
+      "carb": 33.8,
+      "fat": 2.3,
+      "fibre": 4.8
+    },
+    {
+      "code": "11-973",
+      "name": "Bread, naan, retail",
+      "kcal": 285.0,
+      "protein": 7.8,
+      "carb": 50.2,
+      "fat": 7.3,
+      "fibre": 2.9
+    },
+    {
+      "code": "12-184",
+      "name": "Yogurt, whole milk, plain",
+      "kcal": 79.0,
+      "protein": 5.7,
+      "carb": 7.8,
+      "fat": 3.0,
+      "fibre": 0.0
+    },
+    {
+      "code": "12-313",
+      "name": "Milk, semi-skimmed, pasteurised, average",
+      "kcal": 46.0,
+      "protein": 3.5,
+      "carb": 4.7,
+      "fat": 1.7,
+      "fibre": 0.0
+    },
+    {
+      "code": "12-468",
+      "name": "Urad dahl, homemade",
+      "kcal": 81.0,
+      "protein": 4.8,
+      "carb": 8.7,
+      "fat": 3.2,
+      "fibre": 2.7
+    },
+    {
+      "code": "12-596",
+      "name": "Milk, whole, pasteurised, average",
+      "kcal": 63.0,
+      "protein": 3.4,
+      "carb": 4.6,
+      "fat": 3.6,
+      "fibre": 0.0
+    },
+    {
+      "code": "15-628",
+      "name": "Methi aloo, homemade",
+      "kcal": 142.0,
+      "protein": 2.7,
+      "carb": 10.1,
+      "fat": 10.4,
+      "fibre": 2.9
+    },
+    {
+      "code": "15-754",
+      "name": "Curry, egg, with rapeseed oil, homemade",
+      "kcal": 149.0,
+      "protein": 5.3,
+      "carb": 4.7,
+      "fat": 12.2,
+      "fibre": 1.4
+    },
+    {
+      "code": "15-843",
+      "name": "Pilaf, rice with tomato, homemade",
+      "kcal": 147.0,
+      "protein": 2.9,
+      "carb": 27.9,
+      "fat": 2.6,
+      "fibre": 0.7
+    },
+    {
+      "code": "15-876",
+      "name": "Salad, tomato and onion",
+      "kcal": 45.0,
+      "protein": 0.6,
+      "carb": 4.9,
+      "fat": 2.7,
+      "fibre": 1.3
+    },
+    {
+      "code": "16-333",
+      "name": "Curry, prawn, takeaway",
+      "kcal": 118.0,
+      "protein": 8.2,
+      "carb": 2.3,
+      "fat": 8.5,
+      "fibre": 2.5
+    },
+    {
+      "code": "16-364",
+      "name": "Curry, fish, homemade",
+      "kcal": 139.0,
+      "protein": 11.3,
+      "carb": 1.9,
+      "fat": 9.6,
+      "fibre": 2.1
+    },
+    {
+      "code": "19-565",
+      "name": "Curry, chicken korma, homemade",
+      "kcal": 127.0,
+      "protein": 14.6,
+      "carb": 4.6,
+      "fat": 5.1,
+      "fibre": 0.7
+    }
+  ]
+}

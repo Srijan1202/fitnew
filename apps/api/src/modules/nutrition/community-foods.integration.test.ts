@@ -64,8 +64,9 @@ describeIfDb('community foods (real Postgres, real seed)', () => {
   });
 
   type Item = { id: string; name: string; isCustom: boolean; community: boolean; source: string };
+  // Beta 3.7: 1,800 foods — the community one can sit beyond the default 20, so ask for 50.
   const search = async (u: U, q: string) =>
-    ((await call(u, 'GET', `/nutrition/foods/search?q=${encodeURIComponent(q)}`)).json() as { items: Item[] }).items;
+    ((await call(u, 'GET', `/nutrition/foods/search?q=${encodeURIComponent(q)}&limit=50`)).json() as { items: Item[] }).items;
 
   beforeAll(async () => {
     await migrateUp(url);

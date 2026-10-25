@@ -168,6 +168,16 @@ describeIfDb('/v1/nutrition/foods (real Postgres, real seed)', () => {
     expect((await search(token, 'tadka')).map((i) => i.slug)).toContain('dal-tadka');
   });
 
+  it('among prefix hits the plain food comes first: "Milk, …" before Milk cake, "Bananas, …" before Banana cake (beta 3.7)', async () => {
+    const token = await user();
+    const first = async (q: string) => (await search(token, q, 3)).map((i) => i.name);
+    for (const q of ['milk', 'banana', 'egg', 'chicken', 'apple']) {
+      for (const name of await first(q)) expect(name.toLowerCase(), q).toMatch(new RegExp(`^${q}s?(,| \\()`));
+    }
+    // IFCT's local names are English and Hindi only: Telugu "dosakaya" (cucumber) no longer answers "dosa".
+    expect((await search(token, 'dosa')).map((i) => i.name.toLowerCase()).filter((n) => n.includes('cucumber'))).toEqual([]);
+  });
+
   it('a misspelling still finds the food, labelled fuzzy, after every better match', async () => {
     const token = await user();
     const items = await search(token, 'chapatii');
@@ -374,5 +384,6 @@ describeIfDb('/v1/nutrition/foods (real Postgres, real seed)', () => {
     const p95 = samples[Math.ceil(samples.length * 0.95) - 1] as number;
     console.info(`food search latency over ${samples.length} requests: p50 ${samples[Math.floor(samples.length / 2)]!.toFixed(1)} ms, p95 ${p95.toFixed(1)} ms`);
     expect(p95).toBeLessThan(200);
-  });
+    // 72 timed searches plus warm-up: more than the default 5 s on a slow machine (beta 3.7: 1,800 foods).
+  }, 30_000);
 });

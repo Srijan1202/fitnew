@@ -6,6 +6,10 @@
  *   database/seeds/food-sources/usda-picks.json  which USDA records, plus aliases
  *   database/seeds/food-sources/carried.json     which core-table estimates
  *   database/seeds/food-sources/recipes.json     declared composite recipes
+ *   database/seeds/food-sources/ifct2017.json    IFCT 2017 raw foods (beta 3.7, converted)
+ *   database/seeds/food-sources/indb.json        INDB 2024 recipes (beta 3.7, converted)
+ *   database/seeds/food-sources/cofid-picks.json which CoFID 2021 foods, and what they replace (beta 3.7)
+ *   database/seeds/food-sources/cofid.json       those CoFID foods' values (beta 3.7, converted)
  *   database/seeds/foods.json                    the generated seed (committed)
  *   database/seeds/foods.manifest.json           provenance + checksums (committed)
  */
@@ -22,7 +26,7 @@ export const FOOD_SEED_FILE = `${SEEDS_DIR}foods.json`;
 export const FOOD_MANIFEST_FILE = `${SEEDS_DIR}foods.manifest.json`;
 
 /** Bumped when the builder's output rules change (rounding, portion choice, ordering). */
-export const BUILDER_VERSION = '1.0.0';
+export const BUILDER_VERSION = '2.0.0';
 
 /** The original MASTER-SPEC target (~500 common Indian foods). Reported against, never padded to. */
 export const SEED_TARGET_APPROX = 500;
@@ -58,8 +62,9 @@ export const USDA_CITATION = 'U.S. Department of Agriculture, Agricultural Resea
 export function usdaSourceRef(fdcId: number, dataset: UsdaDatasetKey): string {
   return `USDA FoodData Central · ${USDA_DATASETS[dataset].label} · FDC ${fdcId}`;
 }
-export function carriedSourceRef(coreTerm: string): string {
-  return `FITOS estimate · core estimate table (packages/core mess/nutrition.ts) · "${coreTerm}"`;
+export function carriedSourceRef(coreTerm: string, calibration: { code: string; name: string } | null = null): string {
+  const base = `FITOS estimate · core estimate table (packages/core mess/nutrition.ts) · "${coreTerm}"`;
+  return calibration === null ? base : `${base} · calibrated to UK CoFID 2021 ${calibration.code} ${calibration.name}`;
 }
 export function compositeSourceRef(recipeId: string, recipeVersion: number): string {
   return `FITOS estimate · composed from USDA ingredients · recipe ${recipeId} v${recipeVersion}`;
@@ -127,6 +132,112 @@ export const recipesFileSchema = z
 export type Recipe = z.infer<typeof recipeSchema>;
 export type RecipesFile = z.infer<typeof recipesFileSchema>;
 
+// ------------------------------------------- beta 3.7: measured sources --
+
+const sha256Field = z.string().regex(/^[0-9a-f]{64}$/);
+const rawFileSchema = z.object({ file: z.string(), sha256: sha256Field }).strict();
+const n0 = z.number().nullable();
+
+export const ifctFileSchema = z
+  .object({
+    version: z.number().int().positive(),
+    source: z.literal('IFCT 2017'),
+    citation: z.string(),
+    terms: z.string(),
+    raw: z.array(rawFileSchema),
+    foods: z.array(
+      z
+        .object({
+          code: z.string().regex(/^[A-Z]\d{3}$/),
+          name: z.string().min(1),
+          group: z.string(),
+          scientific: z.string().nullable(),
+          localNames: z.array(z.string()),
+          energyKj: n0,
+          energyKjSd: n0,
+          protein: n0,
+          proteinSd: n0,
+          fat: n0,
+          fatSd: n0,
+          carb: n0,
+          carbSd: n0,
+          fibre: n0,
+          fibreSd: n0,
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+export type IfctFile = z.infer<typeof ifctFileSchema>;
+export type IfctFood = IfctFile['foods'][number];
+
+const macroSchema = z.object({ kcal: z.number(), protein: z.number(), carb: z.number(), fat: z.number(), fibre: n0 }).strict();
+export const indbFileSchema = z
+  .object({
+    version: z.number().int().positive(),
+    source: z.literal('INDB 2024'),
+    citation: z.string(),
+    terms: z.string(),
+    raw: z.array(rawFileSchema),
+    recipes: z.array(
+      z
+        .object({
+          code: z.string().min(1),
+          name: z.string().min(1),
+          origin: z.string().nullable(),
+          per100gRaw: macroSchema,
+          perUnit: macroSchema.extend({ unit: z.string().min(1), unitsInRecipe: z.number().positive() }).strict().nullable(),
+          deepFry: z.object({ oilGrams: z.number(), solidsGrams: z.number(), rawGrams: z.number() }).strict().nullable(),
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+export type IndbFile = z.infer<typeof indbFileSchema>;
+export type IndbRecipe = IndbFile['recipes'][number];
+
+export const cofidFileSchema = z
+  .object({
+    version: z.number().int().positive(),
+    source: z.literal('CoFID 2021'),
+    citation: z.string(),
+    terms: z.string(),
+    raw: z.array(rawFileSchema),
+    foods: z.array(
+      z
+        .object({ code: z.string().regex(/^\d{2}-\d{3,4}$/), name: z.string(), kcal: z.number(), protein: z.number(), carb: z.number(), fat: z.number(), fibre: n0 })
+        .strict(),
+    ),
+  })
+  .strict();
+export type CofidFile = z.infer<typeof cofidFileSchema>;
+export type CofidFood = CofidFile['foods'][number];
+
+export const cofidPicksFileSchema = z
+  .object({
+    version: z.number().int().positive(),
+    note: z.string(),
+    replace: z.array(z.object({ slug: z.string().min(1), code: z.string() }).strict()),
+    foods: z.array(
+      z
+        .object({
+          code: z.string(),
+          slug: z.string().min(1),
+          name: z.string().min(1),
+          aliases: z.array(z.string().min(1)),
+          servings: z.array(z.object({ label: z.string().min(1), grams: z.number().positive() }).strict()),
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+export type CofidPicksFile = z.infer<typeof cofidPicksFileSchema>;
+
+export const IFCT_SOURCE_REF = (code: string): string => `IFCT 2017 (NIN-ICMR) · food ${code}`;
+export const INDB_SOURCE_REF = (code: string): string => `INDB 2024 · recipe ${code}`;
+export const COFID_SOURCE_REF = (code: string, name: string, grams: number | null): string =>
+  `UK CoFID 2021 · ${code} ${name}${grams === null ? '' : ` · at FITOS's ${grams} g serving`}`;
+
 // --------------------------------------------------------------- manifest --
 
 const per100gSchema = z
@@ -144,7 +255,7 @@ export const manifestSchema = z
     datasets: z.array(
       z
         .object({
-          key: usdaDatasetKeySchema,
+          key: z.union([usdaDatasetKeySchema, z.enum(['ifct2017', 'indb', 'cofid2021'])]),
           name: z.string(),
           release: z.string(),
           releaseDate: z.string(),
@@ -161,6 +272,10 @@ export const manifestSchema = z
         usdaPicks: z.object({ file: z.string(), version: z.number(), sha256: sha256Schema }).strict(),
         carried: z.object({ file: z.string(), version: z.number(), sha256: sha256Schema }).strict(),
         recipes: z.object({ file: z.string(), version: z.number(), sha256: sha256Schema }).strict(),
+        ifct: z.object({ file: z.string(), version: z.number(), sha256: sha256Schema }).strict(),
+        indb: z.object({ file: z.string(), version: z.number(), sha256: sha256Schema }).strict(),
+        cofid: z.object({ file: z.string(), version: z.number(), sha256: sha256Schema }).strict(),
+        cofidPicks: z.object({ file: z.string(), version: z.number(), sha256: sha256Schema }).strict(),
       })
       .strict(),
     seed: z.object({ file: z.string(), sha256: sha256Schema }).strict(),
@@ -173,6 +288,11 @@ export const manifestSchema = z
         nutritionRows: z.number().int(),
         aliases: z.number().int(),
         usdaPicksDropped: z.number().int(),
+        ifct: z.number().int(),
+        indb: z.number().int(),
+        indbSkipped: z.number().int(),
+        cofidNew: z.number().int(),
+        cofidReplaced: z.number().int(),
         targetApprox: z.number().int(),
         gapToTarget: z.number().int(),
       })
@@ -186,6 +306,10 @@ export const manifestSchema = z
         wideningRule: z.string(),
         fibre: z.string(),
         carriedConfidence: z.string(),
+        ifct: z.string(),
+        indb: z.string(),
+        cofid: z.string(),
+        names: z.string(),
       })
       .strict(),
     usdaFoods: z.array(
@@ -229,6 +353,10 @@ export const manifestSchema = z
         })
         .strict(),
     ),
+    ifctFoods: z.array(z.object({ slug: z.string(), code: z.string() }).strict()),
+    indbFoods: z.array(z.object({ slug: z.string(), code: z.string() }).strict()),
+    indbSkipped: z.array(z.object({ code: z.string(), name: z.string(), reason: z.string() }).strict()),
+    cofidFoods: z.array(z.object({ slug: z.string(), code: z.string(), replaced: z.boolean() }).strict()),
     /** The exact per-100 g USDA values every composite was computed from. */
     compositeInputs: z.record(
       z.string().regex(/^\d+$/),

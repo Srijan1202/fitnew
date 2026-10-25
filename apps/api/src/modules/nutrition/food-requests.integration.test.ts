@@ -71,18 +71,18 @@ describeIfDb('/v1/nutrition/foods/requests (real Postgres, real seed)', () => {
   it('an empty search is counted once per person a day and once per person; "Ask us" once per person', async () => {
     const a = await user();
     const b = await user();
-    expect((await report(a, '  KOMBUCHA  ')).statusCode).toBe(204);
-    expect(await row('kombucha')).toEqual({ searches: 1, people: 1, asked: 0, status: 'open' });
+    expect((await report(a, '  QUOKKABERRY  ')).statusCode).toBe(204);
+    expect(await row('quokkaberry')).toEqual({ searches: 1, people: 1, asked: 0, status: 'open' });
     // The same person again today: nothing more.
-    await report(a, 'kombucha');
-    expect(await row('kombucha')).toMatchObject({ searches: 1, people: 1 });
+    await report(a, 'quokkaberry');
+    expect(await row('quokkaberry')).toMatchObject({ searches: 1, people: 1 });
     // They ask for it: once.
-    await report(a, 'Kombucha', true);
-    await report(a, 'Kombucha', true);
-    expect(await row('kombucha')).toMatchObject({ searches: 1, people: 1, asked: 1 });
+    await report(a, 'Quokkaberry', true);
+    await report(a, 'Quokkaberry', true);
+    expect(await row('quokkaberry')).toMatchObject({ searches: 1, people: 1, asked: 1 });
     // Someone else.
-    await report(b, 'kombucha');
-    expect(await row('kombucha')).toMatchObject({ searches: 2, people: 2, asked: 1 });
+    await report(b, 'quokkaberry');
+    expect(await row('quokkaberry')).toMatchObject({ searches: 2, people: 2, asked: 1 });
   });
 
   it('text that does find a food is never counted', async () => {
@@ -121,14 +121,14 @@ describeIfDb('/v1/nutrition/foods/requests (real Postgres, real seed)', () => {
     const plain = await user();
     const people = [await user(), await user(), await user()];
     for (const p of people) await report(p, 'jicama');
-    await report(people[0]!, 'natto');
+    await report(people[0]!, 'zibbleroot');
 
     expect((await call(plain, 'GET', '/admin/foods/requests')).statusCode).toBe(403);
     const list = await call(admin, 'GET', '/admin/foods/requests');
     expect(list.statusCode, list.body).toBe(200);
     const items = (list.json() as { items: { id: string; query: string; people: number }[] }).items;
     const order = items.map((i) => i.query);
-    expect(order.indexOf('jicama')).toBeLessThan(order.indexOf('natto'));
+    expect(order.indexOf('jicama')).toBeLessThan(order.indexOf('zibbleroot'));
     const jicama = items.find((i) => i.query === 'jicama')!;
     expect(jicama.people).toBe(3);
 

@@ -172,17 +172,18 @@ describeIfDb('/v1/nutrition logging (real Postgres, real food seed)', () => {
       servingGrams: 150,
       servings: 1.5,
       grams: 225,
-      kcalLow: 180,
-      kcalHigh: 278,
-      proteinLow: 9,
-      proteinHigh: 13.5,
+      // Beta 3.7: dal tadka is calibrated to CoFID (160-188 kcal a katori).
+      kcalLow: 240,
+      kcalHigh: 282,
+      proteinLow: 9.4,
+      proteinHigh: 11.3,
       fibreLow: null,
       fibreHigh: null,
       confidence: 'medium',
     });
     expect(r.log).toMatchObject({ localDate: today(), mealSlot: 'lunch', entryMethod: 'search', savedMealId: null });
-    expect(r.day.totals).toMatchObject({ kcalLow: 180, kcalHigh: 278, fibreUnknownItems: 1, itemCount: 1 });
-    expect(r.day.remaining!.kcal).toEqual({ target: 2400, low: 2122, high: 2220, state: 'under' });
+    expect(r.day.totals).toMatchObject({ kcalLow: 240, kcalHigh: 282, fibreUnknownItems: 1, itemCount: 1 });
+    expect(r.day.remaining!.kcal).toEqual({ target: 2400, low: 2118, high: 2160, state: 'under' });
     expect(r.day.logs.map((l) => l.clientLogId)).toEqual([r.log.clientLogId]);
   });
 
@@ -473,7 +474,7 @@ describeIfDb('/v1/nutrition logging (real Postgres, real food seed)', () => {
       ['food', 'Chapati', 2],
       ['quick-add', 'Curd', 60],
     ]);
-    expect(meal.items[0]!.kind === 'food' && meal.items[0]!.row).toMatchObject({ servingLabel: '1 katori', kcalLow: 120 });
+    expect(meal.items[0]!.kind === 'food' && meal.items[0]!.row).toMatchObject({ servingLabel: '1 katori', kcalLow: 160 });
     const list: SavedMealsResponse = (await get(u, '/nutrition/saved-meals')).json();
     expect(list.items.map((m) => m.id)).toEqual([meal.id]);
 
@@ -482,7 +483,7 @@ describeIfDb('/v1/nutrition logging (real Postgres, real food seed)', () => {
     const again = await logOk(u, { clientLogId: randomUUID(), mealSlot: 'dinner', entryMethod: 'saved-meal', savedMealId: meal.id });
     expect(again.log).toMatchObject({ entryMethod: 'saved-meal', savedMealId: meal.id });
     expect(again.log.items.map((i) => [i.foodName, i.kcalLow, i.kcalHigh])).toEqual([
-      ['Dal tadka', 120, 185],
+      ['Dal tadka', 160, 188],
       ['Chapati', 200, 200],
       ['Curd', 60, 60],
     ]);

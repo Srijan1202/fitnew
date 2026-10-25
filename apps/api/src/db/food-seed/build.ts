@@ -5,7 +5,7 @@
  * file I/O, and the CI checks reuse `compositeNutrition` / `carriedNutrition`
  * to prove the committed seed is exactly what these rules produce.
  */
-import { estimateNutrition } from '@fitos/core/mess/nutrition';
+import { estimateNutrition, measurementOf } from '@fitos/core/mess/nutrition';
 import {
   composeRecipe,
   exactFoodNutrition,
@@ -25,18 +25,26 @@ import {
   USDA_CITATION,
   USDA_DATASETS,
   USDA_LICENSE,
+  COFID_SOURCE_REF,
+  IFCT_SOURCE_REF,
+  INDB_SOURCE_REF,
   carriedSourceRef,
   compositeSourceRef,
   orderFoods,
   usdaSourceRef,
   type CarriedFile,
+  type CofidFile,
+  type CofidPicksFile,
   type FoodSeedManifest,
+  type IfctFile,
+  type IndbFile,
   type Per100g,
   type Recipe,
   type RecipesFile,
   type UsdaDatasetKey,
   type UsdaPicksFile,
 } from './format.js';
+import { cofidNutrition, ifctAliases, ifctNutrition, indbNames, indbNutrition, slugOf } from './sources.js';
 import { usableValues, usdaKey, type UsdaRecord } from './usda.js';
 
 type Confidence = FoodNutrition['confidence'];
@@ -119,6 +127,11 @@ export interface BuildInputs {
   readonly carried: CarriedFile;
   readonly recipes: RecipesFile;
   readonly usda: ReadonlyMap<string, UsdaRecord>;
+  /** Beta 3.7 (ADR-036). */
+  readonly ifct: IfctFile;
+  readonly indb: IndbFile;
+  readonly cofid: CofidFile;
+  readonly cofidPicks: CofidPicksFile;
 }
 
 export interface BuildResult {
@@ -139,7 +152,7 @@ function findRecord(usda: ReadonlyMap<string, UsdaRecord>, fdcId: number): UsdaR
   throw new Error(`FDC ${fdcId} is in neither permitted dataset`);
 }
 
-export function buildFoodSeed({ picks, carried, recipes, usda }: BuildInputs): BuildResult {
+export function buildFoodSeed({ picks, carried, recipes, usda, ifct, indb, cofid, cofidPicks }: BuildInputs): BuildResult {
   const foods: FoodSeed[] = [];
   const usdaFoods: FoodSeedManifest['usdaFoods'] = [];
   const droppedPicks: FoodSeedManifest['droppedPicks'] = [];
@@ -188,7 +201,7 @@ export function buildFoodSeed({ picks, carried, recipes, usda }: BuildInputs): B
       brand: null,
       barcode: null,
       source: 'estimated',
-      sourceRef: carriedSourceRef(c.coreTerm),
+      sourceRef: carriedSourceRef(c.coreTerm, measurementOf(c.coreTerm)),
       isVerified: false,
       aliases: normaliseAliases(c.name, c.aliases),
       nutrition: [carriedNutrition(c.coreTerm)],
@@ -237,7 +250,127 @@ export function buildFoodSeed({ picks, carried, recipes, usda }: BuildInputs): B
     });
   }
 
-  // 4. Whole-seed rules: the contract schema, unique slugs and names, valid ranges, no alias that is
+  // 4. Beta 3.7 (ADR-036): CoFID — a FITOS composite of the same dish takes CoFID's measured values
+  //    at FITOS's own serving (slug, name and aliases kept); then CoFID's plain foods.
+  const cofidByCode = new Map(cofid.foods.map((f) => [f.code, f]));
+  const cofidOf = (code: string) => {
+    const f = cofidByCode.get(code);
+    if (f === undefined) throw new Error(`CoFID ${code} is not in cofid.json`);
+    return f;
+  };
+  const cofidFoods: FoodSeedManifest['cofidFoods'] = [];
+  const compositeSlugs = new Set(compositeFoods.map((c) => c.slug));
+  for (const r of cofidPicks.replace) {
+    const i = foods.findIndex((f) => f.slug === r.slug);
+    if (i === -1 || !compositeSlugs.has(r.slug)) throw new Error(`CoFID replace: ${r.slug} is not a composite estimate`);
+    const old = foods[i]!;
+    const serving = old.nutrition[0]!;
+    if (serving.servingGrams === null) throw new Error(`CoFID replace: ${r.slug} has no serving weight`);
+    const c = cofidOf(r.code);
+    foods[i] = {
+      ...old,
+      source: 'cofid',
+      sourceRef: COFID_SOURCE_REF(c.code, c.name, serving.servingGrams),
+      isVerified: true,
+      nutrition: [cofidNutrition(c, serving.servingGrams, 'dish', serving.servingLabel), cofidNutrition(c, 100, 'dish', '100 g')],
+    };
+    cofidFoods.push({ slug: r.slug, code: r.code, replaced: true });
+  }
+  for (const p of cofidPicks.foods) {
+    const c = cofidOf(p.code);
+    foods.push({
+      slug: p.slug,
+      name: p.name,
+      brand: null,
+      barcode: null,
+      source: 'cofid',
+      sourceRef: COFID_SOURCE_REF(c.code, c.name, null),
+      isVerified: true,
+      aliases: normaliseAliases(p.name, p.aliases),
+      nutrition: [cofidNutrition(c, 100, 'food', '100 g'), ...p.servings.map((s) => cofidNutrition(c, s.grams, 'food', s.label))],
+    });
+    cofidFoods.push({ slug: p.slug, code: p.code, replaced: false });
+  }
+
+  // Names already taken (a food's name or alias), and slugs: the measured sources never duplicate a food.
+  const taken = new Set<string>();
+  const slugsTaken = new Set<string>();
+  const claim = (f: FoodSeed) => {
+    slugsTaken.add(f.slug);
+    taken.add(normaliseFoodText(f.name));
+    for (const a of f.aliases) taken.add(a);
+  };
+  foods.forEach(claim);
+  const freeSlug = (name: string, suffix: string): string => {
+    const base = slugOf(name) || suffix;
+    for (const s of [base, `${base}-${suffix}`, `${base}-${suffix}-2`, `${base}-${suffix}-3`]) if (!slugsTaken.has(s)) return s;
+    throw new Error(`no free slug for ${name}`);
+  };
+
+  // 5. IFCT 2017 raw foods (measured), per 100 g. A name FITOS already uses gets "(IFCT)".
+  const ifctFoods: FoodSeedManifest['ifctFoods'] = [];
+  for (const f of ifct.foods) {
+    const n = ifctNutrition(f);
+    if (n === null) continue;
+    // IFCT itself repeats a few names (two "Crab"s): the code tells them apart.
+    const name = [f.name, `${f.name} (IFCT)`, `${f.name} (IFCT ${f.code})`].find((n) => !taken.has(normaliseFoodText(n)))!;
+    const food: FoodSeed = {
+      slug: freeSlug(name, 'ifct'),
+      name,
+      brand: null,
+      barcode: null,
+      source: 'ifct',
+      sourceRef: IFCT_SOURCE_REF(f.code),
+      isVerified: true,
+      aliases: normaliseAliases(name, ifctAliases(f)),
+      nutrition: [n],
+    };
+    foods.push(food);
+    claim(food);
+    ifctFoods.push({ slug: food.slug, code: f.code });
+  }
+
+  // 6. INDB 2024 recipes FITOS does not have (by name or alias), per piece / bowl.
+  const indbFoods: FoodSeedManifest['indbFoods'] = [];
+  const indbSkipped: FoodSeedManifest['indbSkipped'] = [];
+  for (const r of indb.recipes) {
+    const names = indbNames(r.name);
+    const keys = [names.name, ...names.aliases].map(normaliseFoodText);
+    const clash = keys.find((k) => taken.has(k));
+    if (clash !== undefined) {
+      indbSkipped.push({ code: r.code, name: r.name, reason: `FITOS already has "${clash}"` });
+      continue;
+    }
+    const result = indbNutrition(r);
+    if ('skip' in result) {
+      indbSkipped.push({ code: r.code, name: r.name, reason: result.skip });
+      continue;
+    }
+    const food: FoodSeed = {
+      slug: freeSlug(names.name, 'indb'),
+      name: names.name,
+      brand: null,
+      barcode: null,
+      source: 'indb',
+      sourceRef: INDB_SOURCE_REF(r.code),
+      isVerified: false,
+      aliases: normaliseAliases(names.name, names.aliases),
+      nutrition: [result.nutrition],
+    };
+    foods.push(food);
+    claim(food);
+    indbFoods.push({ slug: food.slug, code: r.code });
+  }
+
+  // An alias that is another food's name is dropped (a later source's local name can be an earlier food's name).
+  const nameOwner = new Map(foods.map((f) => [normaliseFoodText(f.name), f.slug]));
+  for (let i = 0; i < foods.length; i++) {
+    const f = foods[i]!;
+    const kept = f.aliases.filter((a) => (nameOwner.get(a) ?? f.slug) === f.slug);
+    if (kept.length !== f.aliases.length) foods[i] = { ...f, aliases: kept };
+  }
+
+  // 7. Whole-seed rules: the contract schema, unique slugs and names, valid ranges, no alias that is
   //    another food's name. A seed that breaks any of them is never written.
   const ordered = orderFoods(foods);
   foodSeedFileSchema.parse(ordered);
@@ -255,6 +388,11 @@ export function buildFoodSeed({ picks, carried, recipes, usda }: BuildInputs): B
     nutritionRows: ordered.reduce((n, f) => n + f.nutrition.length, 0),
     aliases: ordered.reduce((n, f) => n + f.aliases.length, 0),
     usdaPicksDropped: droppedPicks.length,
+    ifct: ifctFoods.length,
+    indb: indbFoods.length,
+    indbSkipped: indbSkipped.length,
+    cofidNew: cofidFoods.filter((c) => !c.replaced).length,
+    cofidReplaced: cofidFoods.filter((c) => c.replaced).length,
     targetApprox: SEED_TARGET_APPROX,
     gapToTarget: Math.max(0, SEED_TARGET_APPROX - ordered.length),
   };
@@ -268,8 +406,6 @@ export function buildFoodSeed({ picks, carried, recipes, usda }: BuildInputs): B
         'USDA FoodData Central — Branded Foods (industry-provided label data)',
         'USDA FoodData Central — FNDDS / Survey Foods',
         'USDA FoodData Central — Experimental Foods',
-        'IFCT 2017 (licensing not confirmed in writing)',
-        'INDB (licensing not confirmed in writing)',
       ],
       counts,
       rules: {
@@ -280,11 +416,19 @@ export function buildFoodSeed({ picks, carried, recipes, usda }: BuildInputs): B
         wideningRule: 'sum ingredients (per-100 g × grams / 100); low end with the least oil, high end with the most; then low × (1 − w), high × (1 + w) with the recipe\'s w',
         fibre: 'null (unknown) when the source does not report it — never 0; a composite is unknown if any ingredient is',
         carriedConfidence: 'carried-over core estimates keep their numbers unchanged; a core confidence of high is seeded as medium (a FITOS estimate is never high)',
+        ifct: 'IFCT 2017 per 100 g; kcal = kJ / 4.184; each value +- the SD IFCT reports, kept within 3-10 %, rounded outward; verified, high confidence; used by the owner\'s decision of 2026-10-25 without NIN\'s written permission (ADR-036)',
+        indb: 'INDB 2024 per piece / bowl as INDB serves it (its per 100 g is of the raw ingredients, so unused); +-10 %; left out: deep-fried recipes (INDB counts the whole pan of oil), whole dishes, portions outside 5-900 kcal, and a recipe FITOS already has (by name or alias); never verified (ADR-036)',
+        cofid: 'UK CoFID 2021 (gov.uk, Open Government Licence v3.0) measured as eaten: plain foods +-3 %, dishes +-8 %; a replaced FITOS composite keeps its slug, name, aliases and serving (ADR-036)',
+        names: 'a measured food never repeats a name: an IFCT name FITOS already uses gets "(IFCT)", an INDB recipe FITOS already has is skipped; an alias that is another food\'s name is dropped',
       },
       usdaFoods: [...usdaFoods].sort((a, b) => (a.slug < b.slug ? -1 : 1)),
       droppedPicks,
       carriedFoods: [...carriedFoods].sort((a, b) => (a.slug < b.slug ? -1 : 1)),
       compositeFoods: [...compositeFoods].sort((a, b) => (a.slug < b.slug ? -1 : 1)),
+      ifctFoods: [...ifctFoods].sort((a, b) => (a.slug < b.slug ? -1 : 1)),
+      indbFoods: [...indbFoods].sort((a, b) => (a.slug < b.slug ? -1 : 1)),
+      indbSkipped,
+      cofidFoods: [...cofidFoods].sort((a, b) => (a.slug < b.slug ? -1 : 1)),
       compositeInputs: sortedInputs,
     },
   };

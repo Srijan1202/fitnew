@@ -12,6 +12,7 @@ import { estimateNutrition } from '@fitos/core/mess/nutrition';
 import { FOOD_SOURCES as CORE_FOOD_SOURCES, normaliseFoodText } from '@fitos/core/nutrition/food';
 
 import { assertSeedRules, carriedNutrition, compositeNutrition } from './build.js';
+import { cofidNutrition, ifctNutrition, indbNames, indbNutrition } from './sources.js';
 import {
   FOOD_MANIFEST_FILE,
   FOOD_SEED_FILE,
@@ -19,6 +20,10 @@ import {
   SEED_TARGET_APPROX,
   USDA_DATASETS,
   carriedFileSchema,
+  cofidFileSchema,
+  cofidPicksFileSchema,
+  ifctFileSchema,
+  indbFileSchema,
   manifestSchema,
   orderFoods,
   parseSeedFile,
@@ -39,6 +44,11 @@ const inputs = {
 const picks = usdaPicksFileSchema.parse(JSON.parse(inputs.usdaPicks));
 const carried = carriedFileSchema.parse(JSON.parse(inputs.carried));
 const recipes = recipesFileSchema.parse(JSON.parse(inputs.recipes));
+const ifct = ifctFileSchema.parse(JSON.parse(readFileSync(`${FOOD_SOURCES_DIR}ifct2017.json`, 'utf8')));
+const indb = indbFileSchema.parse(JSON.parse(readFileSync(`${FOOD_SOURCES_DIR}indb.json`, 'utf8')));
+const cofid = cofidFileSchema.parse(JSON.parse(readFileSync(`${FOOD_SOURCES_DIR}cofid.json`, 'utf8')));
+const cofidPicks = cofidPicksFileSchema.parse(JSON.parse(readFileSync(`${FOOD_SOURCES_DIR}cofid-picks.json`, 'utf8')));
+const replaced = new Set(cofidPicks.replace.map((r) => r.slug));
 
 const bySlug = new Map(foods.map((f) => [f.slug, f]));
 
@@ -62,32 +72,39 @@ describe('manifest integrity', () => {
     expect(manifest.inputs.recipes.version).toBe(recipes.version);
   });
 
-  it('pins exactly the two permitted USDA datasets and their releases', () => {
-    expect(manifest.datasets.map((d) => [d.key, d.release, d.file])).toEqual([
+  it('pins exactly the two permitted USDA datasets and, from beta 3.7, the measured sources\' downloads', () => {
+    expect(manifest.datasets.filter((d) => d.key === 'foundation' || d.key === 'sr_legacy').map((d) => [d.key, d.release, d.file])).toEqual([
       ['foundation', '2026-04-30', USDA_DATASETS.foundation.file],
       ['sr_legacy', '2018-04', USDA_DATASETS.sr_legacy.file],
     ]);
     for (const d of manifest.datasets) expect(d.sha256).toMatch(/^[0-9a-f]{64}$/);
+    const measured = (key: string) => manifest.datasets.filter((d) => d.key === key).map((d) => [d.file, d.sha256]);
+    expect(measured('ifct2017')).toEqual(ifct.raw.map((r) => [r.file, r.sha256]));
+    expect(measured('indb')).toEqual(indb.raw.map((r) => [r.file, r.sha256]));
+    expect(measured('cofid2021')).toEqual(cofid.raw.map((r) => [r.file, r.sha256]));
     expect(manifest.excludedSources.join(' ')).toMatch(/Branded Foods/);
-    expect(manifest.excludedSources.join(' ')).toMatch(/IFCT/);
-    expect(manifest.excludedSources.join(' ')).toMatch(/INDB/);
   });
 
   it('counts are the seed as it is — no padding toward the ~500 target', () => {
     const usda = foods.filter((f) => f.source === 'usda').length;
     const carriedN = foods.filter((f) => f.sourceRef.includes('core estimate table')).length;
     const composite = foods.filter((f) => f.sourceRef.includes('composed from USDA ingredients')).length;
+    const of = (s: string) => foods.filter((f) => f.source === s).length;
     expect(manifest.counts).toMatchObject({
       total: foods.length,
       usda,
       estimatedCarried: carriedN,
-      estimatedComposite: composite,
+      estimatedComposite: composite + replaced.size,
+      ifct: of('ifct'),
+      indb: of('indb'),
+      cofidNew: cofidPicks.foods.length,
+      cofidReplaced: replaced.size,
       nutritionRows: foods.reduce((n, f) => n + f.nutrition.length, 0),
       aliases: foods.reduce((n, f) => n + f.aliases.length, 0),
       targetApprox: SEED_TARGET_APPROX,
       gapToTarget: Math.max(0, SEED_TARGET_APPROX - foods.length),
     });
-    expect(usda + carriedN + composite).toBe(foods.length);
+    expect(usda + carriedN + composite + of('ifct') + of('indb') + of('cofid')).toBe(foods.length);
     expect(manifest.counts.usda + manifest.counts.usdaPicksDropped).toBe(picks.picks.length);
   });
 });
@@ -107,7 +124,7 @@ describe('seed rules', () => {
 
   it('every food carries a source, provenance and a confidence on every row', () => {
     for (const f of foods) {
-      expect(['usda', 'estimated']).toContain(f.source);
+      expect(['usda', 'estimated', 'ifct', 'indb', 'cofid']).toContain(f.source);
       expect(f.sourceRef.length).toBeGreaterThan(0);
       for (const n of f.nutrition) expect(['high', 'medium', 'low']).toContain(n.confidence);
     }
@@ -196,6 +213,8 @@ describe('composite estimates', () => {
     };
     expect(manifest.compositeFoods).toHaveLength(recipes.recipes.length);
     for (const r of recipes.recipes) {
+      // Beta 3.7: a recipe CoFID measured is checked under "measured sources".
+      if (replaced.has(r.id)) continue;
       const f = bySlug.get(r.id);
       expect(f, r.id).toBeDefined();
       expect(f!.source).toBe('estimated');
@@ -214,5 +233,73 @@ describe('composite estimates', () => {
       const n = bySlug.get(r.id)!.nutrition[0]!;
       expect(n.kcalLow).toBeLessThan(n.kcalHigh);
     }
+  });
+});
+
+describe('measured sources (beta 3.7, ADR-036)', () => {
+  it('every IFCT food recomputes exactly from ifct2017.json: per 100 g, verified, cited by code', () => {
+    const byRef = new Map(foods.filter((f) => f.source === 'ifct').map((f) => [f.sourceRef, f]));
+    expect(manifest.ifctFoods).toHaveLength(byRef.size);
+    for (const i of ifct.foods) {
+      const f = byRef.get(`IFCT 2017 (NIN-ICMR) · food ${i.code}`);
+      const n = ifctNutrition(i);
+      if (n === null) {
+        expect(f).toBeUndefined();
+        continue;
+      }
+      expect(f, i.code).toBeDefined();
+      expect(f!.isVerified).toBe(true);
+      expect(f!.nutrition).toEqual([n]);
+    }
+  });
+
+  it('every INDB food recomputes exactly from indb.json; no deep-fried recipe, no whole dish; never verified', () => {
+    const byRef = new Map(foods.filter((f) => f.source === 'indb').map((f) => [f.sourceRef, f]));
+    for (const r of indb.recipes) {
+      const f = byRef.get(`INDB 2024 · recipe ${r.code}`);
+      if (f === undefined) {
+        expect(manifest.indbSkipped.some((s) => s.code === r.code), r.code).toBe(true);
+        continue;
+      }
+      const result = indbNutrition(r);
+      expect('nutrition' in result, r.code).toBe(true);
+      expect(r.deepFry).toBeNull();
+      expect(f.isVerified).toBe(false);
+      expect(f.name).toBe(indbNames(r.name).name);
+      expect(f.nutrition).toEqual([(result as { nutrition: unknown }).nutrition]);
+    }
+    expect(manifest.indbSkipped.filter((s) => s.reason.startsWith('deep-fried'))).toHaveLength(indb.recipes.filter((r) => r.perUnit !== null && r.deepFry !== null && !manifest.indbSkipped.find((s) => s.code === r.code)?.reason.startsWith('FITOS already')).length);
+  });
+
+  it('CoFID: a replaced FITOS dish keeps its slug, name and serving with CoFID\'s numbers; the plain foods are added', () => {
+    const c = new Map(cofid.foods.map((f) => [f.code, f]));
+    for (const r of cofidPicks.replace) {
+      const f = bySlug.get(r.slug)!;
+      const recipe = recipes.recipes.find((x) => x.id === r.slug)!;
+      expect(f.source).toBe('cofid');
+      expect(f.name).toBe(recipe.name);
+      expect(f.nutrition).toEqual([
+        cofidNutrition(c.get(r.code)!, recipe.servingGrams, 'dish', recipe.servingLabel),
+        cofidNutrition(c.get(r.code)!, 100, 'dish', '100 g'),
+      ]);
+    }
+    for (const p of cofidPicks.foods) expect(bySlug.get(p.slug)?.source).toBe('cofid');
+  });
+
+  it('every range is at most +-20 % around its middle (the owner\'s "too wide"), apart from tiny amounts', () => {
+    for (const f of foods) {
+      for (const n of f.nutrition) {
+        const mid = (n.kcalLow + n.kcalHigh) / 2;
+        if (mid < 20) continue;
+        expect((n.kcalHigh - n.kcalLow) / 2, `${f.slug} ${n.servingLabel} ${n.kcalLow}-${n.kcalHigh}`).toBeLessThanOrEqual(mid * 0.2 + 1);
+      }
+    }
+  });
+
+  it('plain milk and paneer are foods now (backlog E24)', () => {
+    expect(bySlug.get('paneer')).toMatchObject({ source: 'ifct', name: 'Paneer' });
+    expect(bySlug.get('milk-whole-cow')).toMatchObject({ source: 'ifct' });
+    expect(bySlug.get('milk-whole-buffalo')).toMatchObject({ source: 'ifct' });
+    expect(bySlug.get('milk-semi-skimmed')?.aliases).toContain('double toned milk');
   });
 });

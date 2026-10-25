@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "note": "Beta 3.7 (owner 2026-10-25, ADR-036): which foods come from the UK's Composition of Foods Integrated Dataset 2021 (CoFID, gov.uk copy, Open Government Licence v3.0). `replace`: a FITOS composite estimate of the same dish takes CoFID's measured-as-eaten values per 100 g at FITOS's own serving (the food keeps its slug, name, serving and aliases); a dish carried from the mess estimate table is never listed here, so the food and the mess menu always agree (those are calibrated in packages/core mess/nutrition.ts instead). `foods`: plain foods FITOS did not have. Matches were reviewed by hand: a UK dish that is cooked differently (baked samosa, cream kulfi) is not used.",
+  "replace": [
+    { "slug": "aloo-methi", "code": "15-628" },
+    { "slug": "chicken-korma", "code": "19-565" },
+    { "slug": "egg-curry", "code": "15-754" },
+    { "slug": "fish-curry", "code": "16-364" },
+    { "slug": "kachumber-salad", "code": "15-876" },
+    { "slug": "mooli-paratha", "code": "11-912" },
+    { "slug": "naan", "code": "11-973" },
+    { "slug": "prawn-masala", "code": "16-333" },
+    { "slug": "tomato-rice", "code": "15-843" },
+    { "slug": "urad-dal", "code": "12-468" }
+  ],
+  "foods": [
+    {
+      "code": "12-596",
+      "slug": "milk-whole-pasteurised",
+      "name": "Milk, whole, pasteurised (3.6% fat)",
+      "aliases": ["toned milk", "packet milk"],
+      "servings": [{ "label": "1 glass (200 ml)", "grams": 206 }]
+    },
+    {
+      "code": "12-313",
+      "slug": "milk-semi-skimmed",
+      "name": "Milk, semi-skimmed (1.7% fat)",
+      "aliases": ["double toned milk", "low fat milk"],
+      "servings": [{ "label": "1 glass (200 ml)", "grams": 206 }]
+    },
+    {
+      "code": "12-184",
+      "slug": "yogurt-whole-milk-plain",
+      "name": "Yogurt, whole milk, plain",
+      "aliases": ["plain yogurt", "plain yoghurt"],
+      "servings": [{ "label": "1 katori", "grams": 120 }]
+    }
+  ]
+}

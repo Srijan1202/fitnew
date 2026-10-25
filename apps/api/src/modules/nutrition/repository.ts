@@ -75,6 +75,12 @@ export class FoodRepository {
             when f.search_name like '% ' || ${q} || '%' or ${aliasWord} then 3
             else 4
           end as tier,
+          -- Beta 3.7: the plain food first among prefix hits — "Milk, whole, Cow" before
+          -- "Milk cake", "Bananas, raw" before "Banana cake" (how USDA, IFCT and CoFID name one).
+          case
+            when lower(f.name) like ${q} || ',%' or lower(f.name) like ${q} || 's,%' or lower(f.name) like ${q} || ' (%' then 0
+            else 1
+          end as plain,
           greatest(
             word_similarity(${q}, f.search_name),
             coalesce((select max(word_similarity(${q}, a.alias)) from ${foodAliases} a where a.food_id = f.id), 0)
@@ -85,7 +91,7 @@ export class FoodRepository {
         where f.owner_user_id is null or f.owner_user_id = ${userId} or (${community} and f.visibility = 'community')
       ) c
       where c.tier < 4 or c.sim >= ${FUZZY_THRESHOLD}
-      order by c.others, c.tier, c.sim desc, c.source_rank, length(c.search_name), c.search_name, c.id
+      order by c.others, c.tier, c.plain, c.sim desc, c.source_rank, length(c.search_name), c.search_name, c.id
       limit ${limit}
     `);
     return rows.map((r) => ({ id: r.id, tier: Number(r.tier) as SearchTier }));

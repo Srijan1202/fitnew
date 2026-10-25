@@ -436,7 +436,8 @@ describeIfDb('/v1/mess/menu/recommend (real Postgres)', { timeout: 30_000 }, () 
   it('Amendment B: the mirror stores the corrected estimates; the recommender and a log use them', async () => {
     const [papad] = await sql<{ serving_label: string; kcal_low: string; kcal_high: string; confidence: string }[]>`
       select serving_label, kcal_low, kcal_high, confidence from mess_dish_nutrition where dish_slug = 'rice-papad'`;
-    expect(papad).toEqual({ serving_label: '1 small portion', kcal_low: '95.00', kcal_high: '155.00', confidence: 'low' });
+    // Beta 3.7: every estimate is at most +-20 % around its middle (95-155 → 100-150).
+    expect(papad).toEqual({ serving_label: '1 small portion', kcal_low: '100.00', kcal_high: '150.00', confidence: 'low' });
     const [curdRice] = await sql<{ kcal_low: string; kcal_high: string }[]>`select kcal_low, kcal_high from mess_dish_nutrition where dish_slug = 'curd-rice'`;
     expect(curdRice).toEqual({ kcal_low: '180.00', kcal_high: '260.00' });
 
@@ -453,7 +454,7 @@ describeIfDb('/v1/mess/menu/recommend (real Postgres)', { timeout: 30_000 }, () 
     });
     expect(logged.statusCode, logged.body).toBe(201);
     const item = (logged.json() as CreateLogResponse).log.items[0]!;
-    expect([item.servingLabel, item.kcalLow, item.kcalHigh]).toEqual(['1 small portion', 95, 155]);
+    expect([item.servingLabel, item.kcalLow, item.kcalHigh]).toEqual(['1 small portion', 100, 150]);
   });
 
   it('deterministic and fast: the same request twice is identical; p95 under 200 ms', async () => {

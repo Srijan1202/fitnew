@@ -169,7 +169,7 @@ describeIfDb('Phase 14 AI features (real Postgres, real food seed, scripted mode
     expect(chapati!.confidence).toBe('high');
     expect(chapati!.estimate).toBeNull();
     expect(dal!.match).toMatchObject({ name: 'Dal tadka', servingLabel: '1 katori', servings: 1 });
-    expect(dal!.match!.snapshot).toMatchObject({ kcalLow: 120, kcalHigh: 185 });
+    expect(dal!.match!.snapshot).toMatchObject({ kcalLow: 160, kcalHigh: 188 }); // beta 3.7: CoFID-calibrated
 
     // Not in FITOS: the model's estimate, always low confidence.
     expect(bar!.match).toBeNull();
