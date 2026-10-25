@@ -437,36 +437,6 @@
     ]
   },
   {
-    "slug": "almond-soup",
-    "name": "Almond soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe BFP087",
-    "isVerified": false,
-    "aliases": [
-      "badam ka soup"
-    ],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 bowl",
-        "servingGrams": null,
-        "kcalLow": 337,
-        "kcalHigh": 413,
-        "proteinLow": 43.4,
-        "proteinHigh": 53.2,
-        "carbLow": 15.8,
-        "carbHigh": 19.4,
-        "fatLow": 59.2,
-        "fatHigh": 72.5,
-        "fibreLow": 3.8,
-        "fibreHigh": 4.8,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
     "slug": "almonds-dry-roasted",
     "name": "Nuts, almonds, dry roasted, without salt added",
     "brand": null,
@@ -11199,34 +11169,6 @@
     ]
   },
   {
-    "slug": "cheese-soup",
-    "name": "Cheese soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe BFP075",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 bowl",
-        "servingGrams": null,
-        "kcalLow": 164,
-        "kcalHigh": 202,
-        "proteinLow": 49.5,
-        "proteinHigh": 60.7,
-        "carbLow": 7.4,
-        "carbHigh": 9.2,
-        "fatLow": 68.3,
-        "fatHigh": 83.6,
-        "fibreLow": 7.1,
-        "fibreHigh": 8.8,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
     "slug": "cheese-straws",
     "name": "Cheese straws",
     "brand": null,
@@ -12021,36 +11963,6 @@
     ]
   },
   {
-    "slug": "chicken-consomme",
-    "name": "Chicken consomme",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe ASC081",
-    "isVerified": false,
-    "aliases": [
-      "clear chicken soup"
-    ],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 soup bowl",
-        "servingGrams": null,
-        "kcalLow": 97,
-        "kcalHigh": 120,
-        "proteinLow": 23.3,
-        "proteinHigh": 28.6,
-        "carbLow": 2.4,
-        "carbHigh": 3,
-        "fatLow": 24.4,
-        "fatHigh": 29.9,
-        "fibreLow": 3.1,
-        "fibreHigh": 3.9,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
     "slug": "chicken-curry",
     "name": "Chicken curry",
     "brand": null,
@@ -12585,36 +12497,6 @@
     ]
   },
   {
-    "slug": "chicken-poultry-leg-skinless",
-    "name": "Chicken, poultry, leg, skinless",
-    "brand": null,
-    "barcode": null,
-    "source": "ifct",
-    "sourceRef": "IFCT 2017 (NIN-ICMR) · food N001",
-    "isVerified": true,
-    "aliases": [
-      "murga tang murgi ki raan"
-    ],
-    "nutrition": [
-      {
-        "basis": "per_100g",
-        "servingLabel": "100 g",
-        "servingGrams": 100,
-        "kcalLow": 372,
-        "kcalHigh": 396,
-        "proteinLow": 18.6,
-        "proteinHigh": 20.3,
-        "carbLow": 0,
-        "carbHigh": 0,
-        "fatLow": 12.1,
-        "fatHigh": 13.2,
-        "fibreLow": 0,
-        "fibreHigh": 0,
-        "confidence": "high"
-      }
-    ]
-  },
-  {
     "slug": "chicken-poultry-thigh-skinless",
     "name": "Chicken, poultry, thigh, skinless",
     "brand": null,
@@ -12873,34 +12755,6 @@
         "fatHigh": 6.3,
         "fibreLow": 0.3,
         "fibreHigh": 0.5,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
-    "slug": "chicken-sweet-corn-soup",
-    "name": "Chicken sweet corn soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe ASC087",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 soup bowl",
-        "servingGrams": null,
-        "kcalLow": 61,
-        "kcalHigh": 76,
-        "proteinLow": 31.4,
-        "proteinHigh": 38.5,
-        "carbLow": 3.5,
-        "carbHigh": 4.4,
-        "fatLow": 27.3,
-        "fatHigh": 33.5,
-        "fibreLow": 1,
-        "fibreHigh": 1.3,
         "confidence": "medium"
       }
     ]
@@ -14865,34 +14719,6 @@
     ]
   },
   {
-    "slug": "classic-seasoned-black-beans",
-    "name": "Classic seasoned black beans",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe OSR154",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 bowl",
-        "servingGrams": null,
-        "kcalLow": 45,
-        "kcalHigh": 56,
-        "proteinLow": 12.6,
-        "proteinHigh": 15.6,
-        "carbLow": 12.1,
-        "carbHigh": 14.9,
-        "fatLow": 13.1,
-        "fatHigh": 16.1,
-        "fibreLow": 5.5,
-        "fibreHigh": 6.8,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
     "slug": "cloves",
     "name": "Cloves",
     "brand": null,
@@ -15464,8 +15290,8 @@
         "basis": "per_100g",
         "servingLabel": "100 g",
         "servingGrams": 100,
-        "kcalLow": 0,
-        "kcalHigh": 0,
+        "kcalLow": 857,
+        "kcalHigh": 900,
         "proteinLow": 0,
         "proteinHigh": 0,
         "carbLow": 0,
@@ -15952,34 +15778,6 @@
     ]
   },
   {
-    "slug": "cold-summer-garden-soup",
-    "name": "Cold summer garden soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe ASC095",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 soup bowl",
-        "servingGrams": null,
-        "kcalLow": 135,
-        "kcalHigh": 167,
-        "proteinLow": 23.6,
-        "proteinHigh": 29,
-        "carbLow": 7.3,
-        "carbHigh": 9,
-        "fatLow": 38.9,
-        "fatHigh": 47.6,
-        "fibreLow": 5.1,
-        "fibreHigh": 6.3,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
     "slug": "cold-tomato-soup",
     "name": "Cold tomato soup",
     "brand": null,
@@ -16215,62 +16013,6 @@
         "fibreLow": 0,
         "fibreHigh": 0,
         "confidence": "high"
-      }
-    ]
-  },
-  {
-    "slug": "consomme-au-julienne",
-    "name": "Consomme au julienne",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe BFP066",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 bowl",
-        "servingGrams": null,
-        "kcalLow": 192,
-        "kcalHigh": 236,
-        "proteinLow": 86.5,
-        "proteinHigh": 105.8,
-        "carbLow": 10.3,
-        "carbHigh": 12.7,
-        "fatLow": 73.8,
-        "fatHigh": 90.3,
-        "fibreLow": 9.5,
-        "fibreHigh": 11.8,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
-    "slug": "consomme-au-vermicelli",
-    "name": "Consomme au vermicelli",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe BFP067",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 bowl",
-        "servingGrams": null,
-        "kcalLow": 168,
-        "kcalHigh": 207,
-        "proteinLow": 85.9,
-        "proteinHigh": 105.1,
-        "carbLow": 7.3,
-        "carbHigh": 9,
-        "fatLow": 73.2,
-        "fatHigh": 89.6,
-        "fibreLow": 4.5,
-        "fibreHigh": 5.6,
-        "confidence": "medium"
       }
     ]
   },
@@ -16646,8 +16388,8 @@
         "basis": "per_100g",
         "servingLabel": "100 g",
         "servingGrams": 100,
-        "kcalLow": 0,
-        "kcalHigh": 0,
+        "kcalLow": 857,
+        "kcalHigh": 900,
         "proteinLow": 0,
         "proteinHigh": 0,
         "carbLow": 0,
@@ -16812,8 +16554,8 @@
         "basis": "per_100g",
         "servingLabel": "100 g",
         "servingGrams": 100,
-        "kcalLow": 0,
-        "kcalHigh": 0,
+        "kcalLow": 857,
+        "kcalHigh": 900,
         "proteinLow": 0,
         "proteinHigh": 0,
         "carbLow": 0,
@@ -17231,37 +16973,6 @@
     "brand": null,
     "barcode": null,
     "source": "ifct",
-    "sourceRef": "IFCT 2017 (NIN-ICMR) · food Q001",
-    "isVerified": true,
-    "aliases": [
-      "florida stone crab",
-      "kekda"
-    ],
-    "nutrition": [
-      {
-        "basis": "per_100g",
-        "servingLabel": "100 g",
-        "servingGrams": 100,
-        "kcalLow": 79,
-        "kcalHigh": 85,
-        "proteinLow": 9.9,
-        "proteinHigh": 10.6,
-        "carbLow": 0,
-        "carbHigh": 0,
-        "fatLow": 1.3,
-        "fatHigh": 1.5,
-        "fibreLow": 0,
-        "fibreHigh": 0,
-        "confidence": "high"
-      }
-    ]
-  },
-  {
-    "slug": "crab-ifct-s007",
-    "name": "Crab (IFCT S007)",
-    "brand": null,
-    "barcode": null,
-    "source": "ifct",
     "sourceRef": "IFCT 2017 (NIN-ICMR) · food S007",
     "isVerified": true,
     "aliases": [
@@ -17595,118 +17306,6 @@
         "fatHigh": 42.5,
         "fibreLow": 0.6,
         "fibreHigh": 0.8,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
-    "slug": "cream-of-broccoli-soup",
-    "name": "Cream of broccoli soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe BFP080",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 bowl",
-        "servingGrams": null,
-        "kcalLow": 232,
-        "kcalHigh": 285,
-        "proteinLow": 37.1,
-        "proteinHigh": 45.5,
-        "carbLow": 15.4,
-        "carbHigh": 18.9,
-        "fatLow": 52.8,
-        "fatHigh": 64.6,
-        "fibreLow": 7.8,
-        "fibreHigh": 9.6,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
-    "slug": "cream-of-carrot-soup",
-    "name": "Cream of carrot soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe BFP079",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 bowl",
-        "servingGrams": null,
-        "kcalLow": 250,
-        "kcalHigh": 307,
-        "proteinLow": 34.6,
-        "proteinHigh": 42.4,
-        "carbLow": 23.8,
-        "carbHigh": 29.2,
-        "fatLow": 51.7,
-        "fatHigh": 63.3,
-        "fibreLow": 8.2,
-        "fibreHigh": 10.2,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
-    "slug": "cream-of-mixed-vegetable-soup",
-    "name": "Cream of mixed vegetable soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe ASC085",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 soup bowl",
-        "servingGrams": null,
-        "kcalLow": 194,
-        "kcalHigh": 238,
-        "proteinLow": 22.3,
-        "proteinHigh": 27.3,
-        "carbLow": 16,
-        "carbHigh": 19.7,
-        "fatLow": 29.5,
-        "fatHigh": 36.1,
-        "fibreLow": 6.9,
-        "fibreHigh": 8.6,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
-    "slug": "cream-of-potato-soup",
-    "name": "Cream of potato soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe BFP082",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 bowl",
-        "servingGrams": null,
-        "kcalLow": 257,
-        "kcalHigh": 316,
-        "proteinLow": 34.6,
-        "proteinHigh": 42.4,
-        "carbLow": 26.2,
-        "carbHigh": 32.2,
-        "fatLow": 51.5,
-        "fatHigh": 63.1,
-        "fibreLow": 6.4,
-        "fibreHigh": 8,
         "confidence": "medium"
       }
     ]
@@ -18515,34 +18114,6 @@
         "fibreLow": 3.9,
         "fibreHigh": 4.2,
         "confidence": "high"
-      }
-    ]
-  },
-  {
-    "slug": "curried-cauliflower-soup",
-    "name": "Curried Cauliflower soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe OSR135",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 cup",
-        "servingGrams": null,
-        "kcalLow": 116,
-        "kcalHigh": 143,
-        "proteinLow": 21,
-        "proteinHigh": 25.7,
-        "carbLow": 9.7,
-        "carbHigh": 12,
-        "fatLow": 30.6,
-        "fatHigh": 37.4,
-        "fibreLow": 7.3,
-        "fibreHigh": 9,
-        "confidence": "medium"
       }
     ]
   },
@@ -20411,34 +19982,6 @@
         "fatHigh": 14.9,
         "fibreLow": 2.1,
         "fibreHigh": 2.7,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
-    "slug": "egg-drop-soup",
-    "name": "Egg drop soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe ASC089",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 soup bowl",
-        "servingGrams": null,
-        "kcalLow": 76,
-        "kcalHigh": 94,
-        "proteinLow": 36.9,
-        "proteinHigh": 45.2,
-        "carbLow": 3.1,
-        "carbHigh": 3.9,
-        "fatLow": 38.6,
-        "fatHigh": 47.3,
-        "fibreLow": 2.3,
-        "fibreHigh": 2.9,
         "confidence": "medium"
       }
     ]
@@ -23511,34 +23054,6 @@
     ]
   },
   {
-    "slug": "french-onion-soup",
-    "name": "French onion soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe ASC091",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 soup bowl",
-        "servingGrams": null,
-        "kcalLow": 176,
-        "kcalHigh": 216,
-        "proteinLow": 36.1,
-        "proteinHigh": 44.2,
-        "carbLow": 13.5,
-        "carbHigh": 16.6,
-        "fatLow": 45.5,
-        "fatHigh": 55.8,
-        "fibreLow": 3.2,
-        "fibreHigh": 4,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
     "slug": "french-toast",
     "name": "French toast",
     "brand": null,
@@ -24233,8 +23748,8 @@
         "basis": "per_100g",
         "servingLabel": "100 g",
         "servingGrams": 100,
-        "kcalLow": 0,
-        "kcalHigh": 0,
+        "kcalLow": 857,
+        "kcalHigh": 900,
         "proteinLow": 0,
         "proteinHigh": 0,
         "carbLow": 0,
@@ -24323,8 +23838,8 @@
         "basis": "per_100g",
         "servingLabel": "100 g",
         "servingGrams": 100,
-        "kcalLow": 0,
-        "kcalHigh": 0,
+        "kcalLow": 857,
+        "kcalHigh": 900,
         "proteinLow": 0,
         "proteinHigh": 0,
         "carbLow": 0,
@@ -26613,36 +26128,6 @@
     ]
   },
   {
-    "slug": "green-pea-soup",
-    "name": "Green pea soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe BFP072",
-    "isVerified": false,
-    "aliases": [
-      "matar ka soup"
-    ],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 bowl",
-        "servingGrams": null,
-        "kcalLow": 199,
-        "kcalHigh": 244,
-        "proteinLow": 55.3,
-        "proteinHigh": 67.7,
-        "carbLow": 18.1,
-        "carbHigh": 22.3,
-        "fatLow": 64.5,
-        "fatHigh": 78.9,
-        "fibreLow": 12.4,
-        "fibreHigh": 15.3,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
     "slug": "green-salad",
     "name": "Green salad",
     "brand": null,
@@ -26777,8 +26262,8 @@
         "basis": "per_100g",
         "servingLabel": "100 g",
         "servingGrams": 100,
-        "kcalLow": 0,
-        "kcalHigh": 0,
+        "kcalLow": 857,
+        "kcalHigh": 900,
         "proteinLow": 0,
         "proteinHigh": 0,
         "carbLow": 0,
@@ -31552,36 +31037,6 @@
     ]
   },
   {
-    "slug": "lemon-juice",
-    "name": "Lemon, juice",
-    "brand": null,
-    "barcode": null,
-    "source": "ifct",
-    "sourceRef": "IFCT 2017 (NIN-ICMR) · food E033",
-    "isVerified": true,
-    "aliases": [
-      "nimbhu"
-    ],
-    "nutrition": [
-      {
-        "basis": "per_100g",
-        "servingLabel": "100 g",
-        "servingGrams": 100,
-        "kcalLow": 34,
-        "kcalHigh": 39,
-        "proteinLow": 0.3,
-        "proteinHigh": 0.5,
-        "carbLow": 0,
-        "carbHigh": 0,
-        "fatLow": 0.7,
-        "fatHigh": 0.8,
-        "fibreLow": 0,
-        "fibreHigh": 0,
-        "confidence": "high"
-      }
-    ]
-  },
-  {
     "slug": "lemon-juice-raw",
     "name": "Lemon juice, raw",
     "brand": null,
@@ -31896,34 +31351,6 @@
         "fibreLow": 10,
         "fibreHigh": 10.9,
         "confidence": "high"
-      }
-    ]
-  },
-  {
-    "slug": "lentil-soup",
-    "name": "Lentil soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe ASC080",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 soup bowl",
-        "servingGrams": null,
-        "kcalLow": 109,
-        "kcalHigh": 134,
-        "proteinLow": 33.8,
-        "proteinHigh": 41.4,
-        "carbLow": 13.8,
-        "carbHigh": 16.9,
-        "fatLow": 40.9,
-        "fatHigh": 50.1,
-        "fibreLow": 9,
-        "fibreHigh": 11.1,
-        "confidence": "medium"
       }
     ]
   },
@@ -34465,36 +33892,6 @@
     ]
   },
   {
-    "slug": "meat-consomme",
-    "name": "Meat consomme",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe BFP065",
-    "isVerified": false,
-    "aliases": [
-      "with mutton"
-    ],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 bowl",
-        "servingGrams": null,
-        "kcalLow": 166,
-        "kcalHigh": 203,
-        "proteinLow": 82.8,
-        "proteinHigh": 101.4,
-        "carbLow": 2.8,
-        "carbHigh": 3.5,
-        "fatLow": 76.3,
-        "fatHigh": 93.3,
-        "fibreLow": 3.9,
-        "fibreHigh": 4.9,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
     "slug": "meat-stock",
     "name": "Meat stock",
     "brand": null,
@@ -35493,34 +34890,6 @@
     ]
   },
   {
-    "slug": "millet-soup",
-    "name": "Millet soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe OSR136",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 bowl",
-        "servingGrams": null,
-        "kcalLow": 116,
-        "kcalHigh": 143,
-        "proteinLow": 23.4,
-        "proteinHigh": 28.7,
-        "carbLow": 17.1,
-        "carbHigh": 21,
-        "fatLow": 26.1,
-        "fatHigh": 32.1,
-        "fibreLow": 5.8,
-        "fibreHigh": 7.2,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
     "slug": "minced-meat-ball-curry",
     "name": "Minced meat ball curry",
     "brand": null,
@@ -35549,36 +34918,6 @@
     ]
   },
   {
-    "slug": "minced-meat-pancake",
-    "name": "Minced meat pancake",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe BFP127",
-    "isVerified": false,
-    "aliases": [
-      "with chicken"
-    ],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 pancake",
-        "servingGrams": null,
-        "kcalLow": 140,
-        "kcalHigh": 172,
-        "proteinLow": 14.5,
-        "proteinHigh": 17.8,
-        "carbLow": 9.8,
-        "carbHigh": 12.1,
-        "fatLow": 12.6,
-        "fatHigh": 15.5,
-        "fibreLow": 0.8,
-        "fibreHigh": 1.1,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
     "slug": "minced-meat-patties",
     "name": "Minced meat patties",
     "brand": null,
@@ -35602,34 +34941,6 @@
         "fatHigh": 28,
         "fibreLow": 0.9,
         "fibreHigh": 1.1,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
-    "slug": "minestrone-soup",
-    "name": "Minestrone soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe ASC088",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 soup bowl",
-        "servingGrams": null,
-        "kcalLow": 88,
-        "kcalHigh": 109,
-        "proteinLow": 19.2,
-        "proteinHigh": 23.6,
-        "carbLow": 7.6,
-        "carbHigh": 9.5,
-        "fatLow": 22.9,
-        "fatHigh": 28.1,
-        "fibreLow": 3.9,
-        "fibreHigh": 4.9,
         "confidence": "medium"
       }
     ]
@@ -36286,34 +35597,6 @@
     ]
   },
   {
-    "slug": "mixed-vegetable-soup",
-    "name": "Mixed vegetable soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe BFP074",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 bowl",
-        "servingGrams": null,
-        "kcalLow": 141,
-        "kcalHigh": 174,
-        "proteinLow": 32.5,
-        "proteinHigh": 39.9,
-        "carbLow": 11.6,
-        "carbHigh": 14.3,
-        "fatLow": 46.2,
-        "fatHigh": 56.6,
-        "fibreLow": 6.4,
-        "fibreHigh": 8,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
     "slug": "mooli-bhujia",
     "name": "Mooli bhujia",
     "brand": null,
@@ -36930,34 +36213,6 @@
         "fibreLow": 0,
         "fibreHigh": 0,
         "confidence": "high"
-      }
-    ]
-  },
-  {
-    "slug": "mulligatawny-soup",
-    "name": "Mulligatawny soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe BFP076",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 bowl",
-        "servingGrams": null,
-        "kcalLow": 170,
-        "kcalHigh": 209,
-        "proteinLow": 35.3,
-        "proteinHigh": 43.3,
-        "carbLow": 25.8,
-        "carbHigh": 31.7,
-        "fatLow": 41.6,
-        "fatHigh": 51,
-        "fibreLow": 8.1,
-        "fibreHigh": 10,
-        "confidence": "medium"
       }
     ]
   },
@@ -37783,8 +37038,8 @@
         "basis": "per_100g",
         "servingLabel": "100 g",
         "servingGrams": 100,
-        "kcalLow": 0,
-        "kcalHigh": 0,
+        "kcalLow": 857,
+        "kcalHigh": 900,
         "proteinLow": 0,
         "proteinHigh": 0,
         "carbLow": 0,
@@ -37940,34 +37195,6 @@
         "fatHigh": 34.5,
         "fibreLow": 2.5,
         "fibreHigh": 3.2,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
-    "slug": "mutton-pulao",
-    "name": "Mutton pulao",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe BFP141",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 plate",
-        "servingGrams": null,
-        "kcalLow": 779,
-        "kcalHigh": 954,
-        "proteinLow": 38.8,
-        "proteinHigh": 47.6,
-        "carbLow": 67.1,
-        "carbHigh": 82.1,
-        "fatLow": 64.2,
-        "fatHigh": 78.6,
-        "fibreLow": 9.8,
-        "fibreHigh": 12.1,
         "confidence": "medium"
       }
     ]
@@ -40464,8 +39691,8 @@
         "basis": "per_100g",
         "servingLabel": "100 g",
         "servingGrams": 100,
-        "kcalLow": 0,
-        "kcalHigh": 0,
+        "kcalLow": 857,
+        "kcalHigh": 900,
         "proteinLow": 0,
         "proteinHigh": 0,
         "carbLow": 0,
@@ -49376,8 +48603,8 @@
         "basis": "per_100g",
         "servingLabel": "100 g",
         "servingGrams": 100,
-        "kcalLow": 0,
-        "kcalHigh": 0,
+        "kcalLow": 857,
+        "kcalHigh": 900,
         "proteinLow": 0,
         "proteinHigh": 0,
         "carbLow": 0,
@@ -50585,8 +49812,8 @@
         "basis": "per_100g",
         "servingLabel": "100 g",
         "servingGrams": 100,
-        "kcalLow": 0,
-        "kcalHigh": 0,
+        "kcalLow": 857,
+        "kcalHigh": 900,
         "proteinLow": 0,
         "proteinHigh": 0,
         "carbLow": 0,
@@ -50613,8 +49840,8 @@
         "basis": "per_100g",
         "servingLabel": "100 g",
         "servingGrams": 100,
-        "kcalLow": 0,
-        "kcalHigh": 0,
+        "kcalLow": 857,
+        "kcalHigh": 900,
         "proteinLow": 0,
         "proteinHigh": 0,
         "carbLow": 0,
@@ -53574,8 +52801,8 @@
         "basis": "per_100g",
         "servingLabel": "100 g",
         "servingGrams": 100,
-        "kcalLow": 0,
-        "kcalHigh": 0,
+        "kcalLow": 857,
+        "kcalHigh": 900,
         "proteinLow": 0,
         "proteinHigh": 0,
         "carbLow": 0,
@@ -53797,34 +53024,6 @@
         "fibreLow": 0.2,
         "fibreHigh": 0.2,
         "confidence": "high"
-      }
-    ]
-  },
-  {
-    "slug": "spaghetti-bolognese",
-    "name": "Spaghetti bolognese",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe BFP155",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 shallow dish",
-        "servingGrams": null,
-        "kcalLow": 328,
-        "kcalHigh": 402,
-        "proteinLow": 31.5,
-        "proteinHigh": 38.5,
-        "carbLow": 33.8,
-        "carbHigh": 41.4,
-        "fatLow": 32,
-        "fatHigh": 39.2,
-        "fibreLow": 3.6,
-        "fibreHigh": 4.5,
-        "confidence": "medium"
       }
     ]
   },
@@ -54343,36 +53542,6 @@
         "fatHigh": 23.2,
         "fibreLow": 2.5,
         "fibreHigh": 3.2,
-        "confidence": "medium"
-      }
-    ]
-  },
-  {
-    "slug": "spinach-soup",
-    "name": "Spinach soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe BFP073",
-    "isVerified": false,
-    "aliases": [
-      "palak ka soup"
-    ],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 bowl",
-        "servingGrams": null,
-        "kcalLow": 147,
-        "kcalHigh": 181,
-        "proteinLow": 47.6,
-        "proteinHigh": 58.3,
-        "carbLow": 13.6,
-        "carbHigh": 16.8,
-        "fatLow": 64.5,
-        "fatHigh": 78.9,
-        "fibreLow": 8.9,
-        "fibreHigh": 11,
         "confidence": "medium"
       }
     ]
@@ -56090,8 +55259,8 @@
         "basis": "per_100g",
         "servingLabel": "100 g",
         "servingGrams": 100,
-        "kcalLow": 0,
-        "kcalHigh": 0,
+        "kcalLow": 857,
+        "kcalHigh": 900,
         "proteinLow": 0,
         "proteinHigh": 0,
         "carbLow": 0,
@@ -56979,34 +56148,6 @@
         "fibreLow": 0.7,
         "fibreHigh": 0.7,
         "confidence": "high"
-      }
-    ]
-  },
-  {
-    "slug": "talaumein-soup",
-    "name": "Talaumein soup",
-    "brand": null,
-    "barcode": null,
-    "source": "indb",
-    "sourceRef": "INDB 2024 · recipe ASC093",
-    "isVerified": false,
-    "aliases": [],
-    "nutrition": [
-      {
-        "basis": "per_serving",
-        "servingLabel": "1 soup bowl",
-        "servingGrams": null,
-        "kcalLow": 118,
-        "kcalHigh": 145,
-        "proteinLow": 33.6,
-        "proteinHigh": 41.1,
-        "carbLow": 13.8,
-        "carbHigh": 17,
-        "fatLow": 42.4,
-        "fatHigh": 51.9,
-        "fibreLow": 6.4,
-        "fibreHigh": 7.9,
-        "confidence": "medium"
       }
     ]
   },
@@ -59600,8 +58741,8 @@
         "basis": "per_100g",
         "servingLabel": "100 g",
         "servingGrams": 100,
-        "kcalLow": 0,
-        "kcalHigh": 0,
+        "kcalLow": 857,
+        "kcalHigh": 900,
         "proteinLow": 0,
         "proteinHigh": 0,
         "carbLow": 0,

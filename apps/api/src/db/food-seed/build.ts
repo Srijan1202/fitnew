@@ -309,9 +309,13 @@ export function buildFoodSeed({ picks, carried, recipes, usda, ifct, indb, cofid
 
   // 5. IFCT 2017 raw foods (measured), per 100 g. A name FITOS already uses gets "(IFCT)".
   const ifctFoods: FoodSeedManifest['ifctFoods'] = [];
+  const ifctSkipped: FoodSeedManifest['ifctSkipped'] = [];
   for (const f of ifct.foods) {
-    const n = ifctNutrition(f);
-    if (n === null) continue;
+    const result = ifctNutrition(f);
+    if ('skip' in result) {
+      ifctSkipped.push({ code: f.code, name: f.name, reason: result.skip });
+      continue;
+    }
     // IFCT itself repeats a few names (two "Crab"s): the code tells them apart.
     const name = [f.name, `${f.name} (IFCT)`, `${f.name} (IFCT ${f.code})`].find((n) => !taken.has(normaliseFoodText(n)))!;
     const food: FoodSeed = {
@@ -323,7 +327,7 @@ export function buildFoodSeed({ picks, carried, recipes, usda, ifct, indb, cofid
       sourceRef: IFCT_SOURCE_REF(f.code),
       isVerified: true,
       aliases: normaliseAliases(name, ifctAliases(f)),
-      nutrition: [n],
+      nutrition: [result.nutrition],
     };
     foods.push(food);
     claim(food);
@@ -389,6 +393,7 @@ export function buildFoodSeed({ picks, carried, recipes, usda, ifct, indb, cofid
     aliases: ordered.reduce((n, f) => n + f.aliases.length, 0),
     usdaPicksDropped: droppedPicks.length,
     ifct: ifctFoods.length,
+    ifctSkipped: ifctSkipped.length,
     indb: indbFoods.length,
     indbSkipped: indbSkipped.length,
     cofidNew: cofidFoods.filter((c) => !c.replaced).length,
@@ -416,8 +421,8 @@ export function buildFoodSeed({ picks, carried, recipes, usda, ifct, indb, cofid
         wideningRule: 'sum ingredients (per-100 g × grams / 100); low end with the least oil, high end with the most; then low × (1 − w), high × (1 + w) with the recipe\'s w',
         fibre: 'null (unknown) when the source does not report it — never 0; a composite is unknown if any ingredient is',
         carriedConfidence: 'carried-over core estimates keep their numbers unchanged; a core confidence of high is seeded as medium (a FITOS estimate is never high)',
-        ifct: 'IFCT 2017 per 100 g; kcal = kJ / 4.184; each value +- the SD IFCT reports, kept within 3-10 %, rounded outward; verified, high confidence; used by the owner\'s decision of 2026-10-25 without NIN\'s written permission (ADR-036)',
-        indb: 'INDB 2024 per piece / bowl as INDB serves it (its per 100 g is of the raw ingredients, so unused); +-10 %; left out: deep-fried recipes (INDB counts the whole pan of oil), whole dishes, portions outside 5-900 kcal, and a recipe FITOS already has (by name or alias); never verified (ADR-036)',
+        ifct: 'IFCT 2017 per 100 g; kcal = kJ / 4.184 (IFCT\'s 0 kJ for its oils and ghee is computed with IFCT\'s own factors 17/37/17/8 kJ per g); each value +- the SD IFCT reports, kept within 3-10 %, rounded outward; left out: a missing value, and energy more than 25 % from 4/4/9 of its macros; verified, high confidence; used by the owner\'s decision of 2026-10-25 without NIN\'s written permission (ADR-036)',
+        indb: 'INDB 2024 per piece / bowl as INDB serves it (its per 100 g is of the raw ingredients, so unused); +-10 %; left out: deep-fried recipes (INDB counts the whole pan of oil), whole dishes, portions outside 5-900 kcal, energy more than 25 % from 4/4/9 of its macros, and a recipe FITOS already has (by name or alias); never verified (ADR-036)',
         cofid: 'UK CoFID 2021 (gov.uk, Open Government Licence v3.0) measured as eaten: plain foods +-3 %, dishes +-8 %; a replaced FITOS composite keeps its slug, name, aliases and serving (ADR-036)',
         names: 'a measured food never repeats a name: an IFCT name FITOS already uses gets "(IFCT)", an INDB recipe FITOS already has is skipped; an alias that is another food\'s name is dropped',
       },
@@ -426,6 +431,7 @@ export function buildFoodSeed({ picks, carried, recipes, usda, ifct, indb, cofid
       carriedFoods: [...carriedFoods].sort((a, b) => (a.slug < b.slug ? -1 : 1)),
       compositeFoods: [...compositeFoods].sort((a, b) => (a.slug < b.slug ? -1 : 1)),
       ifctFoods: [...ifctFoods].sort((a, b) => (a.slug < b.slug ? -1 : 1)),
+      ifctSkipped,
       indbFoods: [...indbFoods].sort((a, b) => (a.slug < b.slug ? -1 : 1)),
       indbSkipped,
       cofidFoods: [...cofidFoods].sort((a, b) => (a.slug < b.slug ? -1 : 1)),

@@ -118,19 +118,20 @@
   },
   "seed": {
     "file": "database/seeds/foods.json",
-    "sha256": "8e1ce3892695685043d5d33ce1398a409350c47c62087ee6c21593be953a514d"
+    "sha256": "b2443116c3e354396ce66062ac31c2f7ac5b7375b8bd09bd559ecffdd560df3b"
   },
   "counts": {
-    "total": 1805,
+    "total": 1775,
     "usda": 326,
     "estimatedCarried": 76,
     "estimatedComposite": 265,
-    "nutritionRows": 2351,
-    "aliases": 2056,
+    "nutritionRows": 2321,
+    "aliases": 2046,
     "usdaPicksDropped": 0,
-    "ifct": 542,
-    "indb": 593,
-    "indbSkipped": 421,
+    "ifct": 539,
+    "ifctSkipped": 3,
+    "indb": 566,
+    "indbSkipped": 448,
     "cofidNew": 3,
     "cofidReplaced": 10,
     "targetApprox": 500,
@@ -144,8 +145,8 @@
     "wideningRule": "sum ingredients (per-100 g × grams / 100); low end with the least oil, high end with the most; then low × (1 − w), high × (1 + w) with the recipe's w",
     "fibre": "null (unknown) when the source does not report it — never 0; a composite is unknown if any ingredient is",
     "carriedConfidence": "carried-over core estimates keep their numbers unchanged; a core confidence of high is seeded as medium (a FITOS estimate is never high)",
-    "ifct": "IFCT 2017 per 100 g; kcal = kJ / 4.184; each value +- the SD IFCT reports, kept within 3-10 %, rounded outward; verified, high confidence; used by the owner's decision of 2026-10-25 without NIN's written permission (ADR-036)",
-    "indb": "INDB 2024 per piece / bowl as INDB serves it (its per 100 g is of the raw ingredients, so unused); +-10 %; left out: deep-fried recipes (INDB counts the whole pan of oil), whole dishes, portions outside 5-900 kcal, and a recipe FITOS already has (by name or alias); never verified (ADR-036)",
+    "ifct": "IFCT 2017 per 100 g; kcal = kJ / 4.184 (IFCT's 0 kJ for its oils and ghee is computed with IFCT's own factors 17/37/17/8 kJ per g); each value +- the SD IFCT reports, kept within 3-10 %, rounded outward; left out: a missing value, and energy more than 25 % from 4/4/9 of its macros; verified, high confidence; used by the owner's decision of 2026-10-25 without NIN's written permission (ADR-036)",
+    "indb": "INDB 2024 per piece / bowl as INDB serves it (its per 100 g is of the raw ingredients, so unused); +-10 %; left out: deep-fried recipes (INDB counts the whole pan of oil), whole dishes, portions outside 5-900 kcal, energy more than 25 % from 4/4/9 of its macros, and a recipe FITOS already has (by name or alias); never verified (ADR-036)",
     "cofid": "UK CoFID 2021 (gov.uk, Open Government Licence v3.0) measured as eaten: plain foods +-3 %, dishes +-8 %; a replaced FITOS composite keeps its slug, name, aliases and serving (ADR-036)",
     "names": "a measured food never repeats a name: an IFCT name FITOS already uses gets \"(IFCT)\", an INDB recipe FITOS already has is skipped; an alias that is another food's name is dropped"
   },
@@ -13140,10 +13141,6 @@
       "code": "N003"
     },
     {
-      "slug": "chicken-poultry-leg-skinless",
-      "code": "N001"
-    },
-    {
       "slug": "chicken-poultry-thigh-skinless",
       "code": "N002"
     },
@@ -13285,10 +13282,6 @@
     },
     {
       "slug": "crab-ifct",
-      "code": "Q001"
-    },
-    {
-      "slug": "crab-ifct-s007",
       "code": "S007"
     },
     {
@@ -13766,10 +13759,6 @@
     {
       "slug": "ladies-finger-ifct",
       "code": "D056"
-    },
-    {
-      "slug": "lemon-juice",
-      "code": "E033"
     },
     {
       "slug": "lentil-dal",
@@ -14808,6 +14797,23 @@
       "code": "D078"
     }
   ],
+  "ifctSkipped": [
+    {
+      "code": "E033",
+      "name": "Lemon, juice",
+      "reason": "energy 37 kcal but its macros give 8"
+    },
+    {
+      "code": "N001",
+      "name": "Chicken, poultry, leg, skinless",
+      "reason": "energy 384 kcal but its macros give 192"
+    },
+    {
+      "code": "Q001",
+      "name": "Crab",
+      "reason": "energy 82 kcal but its macros give 54"
+    }
+  ],
   "indbFoods": [
     {
       "slug": "afghani-chicken",
@@ -14824,10 +14830,6 @@
     {
       "slug": "almond-cardamom-cake",
       "code": "OSR126"
-    },
-    {
-      "slug": "almond-soup",
-      "code": "BFP087"
     },
     {
       "slug": "amaranth-ladoo",
@@ -15190,10 +15192,6 @@
       "code": "ASC324"
     },
     {
-      "slug": "cheese-soup",
-      "code": "BFP075"
-    },
-    {
       "slug": "cheese-straws",
       "code": "BFP518"
     },
@@ -15218,10 +15216,6 @@
       "code": "BFP305"
     },
     {
-      "slug": "chicken-consomme",
-      "code": "ASC081"
-    },
-    {
       "slug": "chicken-manchurian",
       "code": "OSR065"
     },
@@ -15232,10 +15226,6 @@
     {
       "slug": "chicken-stock",
       "code": "ASC070"
-    },
-    {
-      "slug": "chicken-sweet-corn-soup",
-      "code": "ASC087"
     },
     {
       "slug": "chicken-walnut-sandwich",
@@ -15378,10 +15368,6 @@
       "code": "ASC045"
     },
     {
-      "slug": "classic-seasoned-black-beans",
-      "code": "OSR154"
-    },
-    {
       "slug": "club-sandwich",
       "code": "ASC031"
     },
@@ -15426,24 +15412,12 @@
       "code": "ASC094"
     },
     {
-      "slug": "cold-summer-garden-soup",
-      "code": "ASC095"
-    },
-    {
       "slug": "cold-tomato-soup",
       "code": "BFP089"
     },
     {
       "slug": "coleslaw",
       "code": "ASC264"
-    },
-    {
-      "slug": "consomme-au-julienne",
-      "code": "BFP066"
-    },
-    {
-      "slug": "consomme-au-vermicelli",
-      "code": "BFP067"
     },
     {
       "slug": "coriander-chutney",
@@ -15468,22 +15442,6 @@
     {
       "slug": "cream-horns",
       "code": "BFP541"
-    },
-    {
-      "slug": "cream-of-broccoli-soup",
-      "code": "BFP080"
-    },
-    {
-      "slug": "cream-of-carrot-soup",
-      "code": "BFP079"
-    },
-    {
-      "slug": "cream-of-mixed-vegetable-soup",
-      "code": "ASC085"
-    },
-    {
-      "slug": "cream-of-potato-soup",
-      "code": "BFP082"
     },
     {
       "slug": "cream-puffs",
@@ -15536,10 +15494,6 @@
     {
       "slug": "curd-with-potatoes",
       "code": "BFP242"
-    },
-    {
-      "slug": "curried-cauliflower-soup",
-      "code": "OSR135"
     },
     {
       "slug": "custard-tart",
@@ -15622,10 +15576,6 @@
       "code": "ASC037"
     },
     {
-      "slug": "egg-drop-soup",
-      "code": "ASC089"
-    },
-    {
       "slug": "egg-halwa",
       "code": "ASC296"
     },
@@ -15668,10 +15618,6 @@
     {
       "slug": "flavoured-milkshake",
       "code": "BFP019"
-    },
-    {
-      "slug": "french-onion-soup",
-      "code": "ASC091"
     },
     {
       "slug": "fried-chicken-with-tomato-sauce",
@@ -15776,10 +15722,6 @@
     {
       "slug": "green-gram-whole-with-baghar",
       "code": "BFP178"
-    },
-    {
-      "slug": "green-pea-soup",
-      "code": "BFP072"
     },
     {
       "slug": "greenpea-cookies",
@@ -16018,10 +15960,6 @@
       "code": "ASC008"
     },
     {
-      "slug": "lentil-soup",
-      "code": "ASC080"
-    },
-    {
       "slug": "lotus-stem-curry",
       "code": "ASC196"
     },
@@ -16098,10 +16036,6 @@
       "code": "BFP157"
     },
     {
-      "slug": "meat-consomme",
-      "code": "BFP065"
-    },
-    {
       "slug": "meat-stock",
       "code": "BFP060"
     },
@@ -16130,24 +16064,12 @@
       "code": "OSR041"
     },
     {
-      "slug": "millet-soup",
-      "code": "OSR136"
-    },
-    {
       "slug": "minced-meat-ball-curry",
       "code": "BFP197"
     },
     {
-      "slug": "minced-meat-pancake",
-      "code": "BFP127"
-    },
-    {
       "slug": "minced-meat-patties",
       "code": "ASC411"
-    },
-    {
-      "slug": "minestrone-soup",
-      "code": "ASC088"
     },
     {
       "slug": "mint-and-coriander-chutney",
@@ -16194,10 +16116,6 @@
       "code": "ASC261"
     },
     {
-      "slug": "mixed-vegetable-soup",
-      "code": "BFP074"
-    },
-    {
       "slug": "mooli-bhujia",
       "code": "BFP258"
     },
@@ -16216,10 +16134,6 @@
     {
       "slug": "moti-mahal-dal",
       "code": "ASC160"
-    },
-    {
-      "slug": "mulligatawny-soup",
-      "code": "BFP076"
     },
     {
       "slug": "murmura-chikki",
@@ -16244,10 +16158,6 @@
     {
       "slug": "mutton-korma",
       "code": "BFP194"
-    },
-    {
-      "slug": "mutton-pulao",
-      "code": "BFP141"
     },
     {
       "slug": "mutton-yakhni",
@@ -16778,10 +16688,6 @@
       "code": "ASC164"
     },
     {
-      "slug": "spaghetti-bolognese",
-      "code": "BFP155"
-    },
-    {
       "slug": "spaghetti-with-meat-balls-and-tomato-sauce",
       "code": "BFP158"
     },
@@ -16824,10 +16730,6 @@
     {
       "slug": "spinach-souffle",
       "code": "BFP296"
-    },
-    {
-      "slug": "spinach-soup",
-      "code": "BFP073"
     },
     {
       "slug": "split-bengal-gram-burfi",
@@ -16984,10 +16886,6 @@
     {
       "slug": "swiss-roll",
       "code": "ASC429"
-    },
-    {
-      "slug": "talaumein-soup",
-      "code": "ASC093"
     },
     {
       "slug": "tandoori-fish",
@@ -17344,6 +17242,16 @@
       "reason": "deep-fried: INDB counts the whole pan of oil"
     },
     {
+      "code": "ASC080",
+      "name": "Lentil soup",
+      "reason": "energy 121 kcal but its macros give 621"
+    },
+    {
+      "code": "ASC081",
+      "name": "Chicken consomme (Clear chicken soup)",
+      "reason": "energy 108 kcal but its macros give 359"
+    },
+    {
       "code": "ASC082",
       "name": "Cream of tomato soup",
       "reason": "deep-fried: INDB counts the whole pan of oil"
@@ -17359,14 +17267,49 @@
       "reason": "deep-fried: INDB counts the whole pan of oil"
     },
     {
+      "code": "ASC085",
+      "name": "Cream of mixed vegetable soup",
+      "reason": "energy 216 kcal but its macros give 466"
+    },
+    {
       "code": "ASC086",
       "name": "Cream of mushroom soup",
       "reason": "deep-fried: INDB counts the whole pan of oil"
     },
     {
+      "code": "ASC087",
+      "name": "Chicken sweet corn soup",
+      "reason": "energy 69 kcal but its macros give 430"
+    },
+    {
+      "code": "ASC088",
+      "name": "Minestrone soup",
+      "reason": "energy 98 kcal but its macros give 349"
+    },
+    {
+      "code": "ASC089",
+      "name": "Egg drop soup",
+      "reason": "energy 85 kcal but its macros give 565"
+    },
+    {
       "code": "ASC090",
       "name": "Chinese cabbage and meat ball soup",
       "reason": "deep-fried: INDB counts the whole pan of oil"
+    },
+    {
+      "code": "ASC091",
+      "name": "French onion soup",
+      "reason": "energy 196 kcal but its macros give 677"
+    },
+    {
+      "code": "ASC093",
+      "name": "Talaumein soup",
+      "reason": "energy 132 kcal but its macros give 636"
+    },
+    {
+      "code": "ASC095",
+      "name": "Cold summer garden soup",
+      "reason": "energy 151 kcal but its macros give 527"
     },
     {
       "code": "ASC096",
@@ -18384,6 +18327,66 @@
       "reason": "FITOS already has \"omlet\""
     },
     {
+      "code": "BFP065",
+      "name": "Meat consomme (with mutton)",
+      "reason": "energy 185 kcal but its macros give 1144"
+    },
+    {
+      "code": "BFP066",
+      "name": "Consomme au julienne",
+      "reason": "energy 214 kcal but its macros give 1169"
+    },
+    {
+      "code": "BFP067",
+      "name": "Consomme au vermicelli",
+      "reason": "energy 188 kcal but its macros give 1147"
+    },
+    {
+      "code": "BFP072",
+      "name": "Green pea soup (Matar ka soup)",
+      "reason": "energy 221 kcal but its macros give 972"
+    },
+    {
+      "code": "BFP073",
+      "name": "Spinach soup (Palak ka soup)",
+      "reason": "energy 164 kcal but its macros give 918"
+    },
+    {
+      "code": "BFP074",
+      "name": "Mixed vegetable soup",
+      "reason": "energy 157 kcal but its macros give 659"
+    },
+    {
+      "code": "BFP075",
+      "name": "Cheese soup",
+      "reason": "energy 183 kcal but its macros give 937"
+    },
+    {
+      "code": "BFP076",
+      "name": "Mulligatawny soup",
+      "reason": "energy 190 kcal but its macros give 689"
+    },
+    {
+      "code": "BFP079",
+      "name": "Cream of carrot soup",
+      "reason": "energy 278 kcal but its macros give 778"
+    },
+    {
+      "code": "BFP080",
+      "name": "Cream of broccoli soup",
+      "reason": "energy 259 kcal but its macros give 762"
+    },
+    {
+      "code": "BFP082",
+      "name": "Cream of potato soup",
+      "reason": "energy 286 kcal but its macros give 787"
+    },
+    {
+      "code": "BFP087",
+      "name": "Almond soup (Badam ka soup)",
+      "reason": "energy 375 kcal but its macros give 856"
+    },
+    {
       "code": "BFP095",
       "name": "Tartare sauce",
       "reason": "INDB gives no per-serving values"
@@ -18434,6 +18437,11 @@
       "reason": "deep-fried: INDB counts the whole pan of oil"
     },
     {
+      "code": "BFP127",
+      "name": "Minced meat pancake (with chicken)",
+      "reason": "energy 156 kcal but its macros give 235"
+    },
+    {
       "code": "BFP132",
       "name": "Eggplant/Brinjal rice (Vangi bhat)",
       "reason": "FITOS already has \"eggplant\""
@@ -18447,6 +18455,11 @@
       "code": "BFP136",
       "name": "Peas pulao (Matar pulao)",
       "reason": "FITOS already has \"peas pulao\""
+    },
+    {
+      "code": "BFP141",
+      "name": "Mutton pulao",
+      "reason": "energy 867 kcal but its macros give 1114"
     },
     {
       "code": "BFP142",
@@ -18472,6 +18485,11 @@
       "code": "BFP153",
       "name": "Appam",
       "reason": "FITOS already has \"appam\""
+    },
+    {
+      "code": "BFP155",
+      "name": "Spaghetti bolognese",
+      "reason": "energy 365 kcal but its macros give 611"
     },
     {
       "code": "BFP161",
@@ -19259,6 +19277,16 @@
       "reason": "FITOS already has \"ghiya\""
     },
     {
+      "code": "OSR135",
+      "name": "Curried Cauliflower soup",
+      "reason": "energy 130 kcal but its macros give 443"
+    },
+    {
+      "code": "OSR136",
+      "name": "Millet soup",
+      "reason": "energy 130 kcal but its macros give 442"
+    },
+    {
       "code": "OSR139",
       "name": "Dal makhani",
       "reason": "FITOS already has \"dal makhani\""
@@ -19287,6 +19315,11 @@
       "code": "OSR152",
       "name": "Bread roll",
       "reason": "deep-fried: INDB counts the whole pan of oil"
+    },
+    {
+      "code": "OSR154",
+      "name": "Classic seasoned black beans",
+      "reason": "energy 51 kcal but its macros give 242"
     }
   ],
   "cofidFoods": [

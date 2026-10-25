@@ -12,6 +12,11 @@
  *               5-900 kcal (a wrong unit). Never verified.
  *   CoFID 2021  measured as eaten, per 100 g: plain foods +-3 %, dishes +-8 %;
  *               verified.
+ *
+ * Both Indian sources have rows whose energy their own macros cannot give
+ * (INDB's soups list ~13 g protein and ~13 g fat per 100 g at 27 kcal; IFCT's
+ * skinless chicken leg twice the thigh's energy). A food whose energy and
+ * 4/4/9 kcal from its macros differ by more than 25 % is left out, not guessed.
  */
 import type { FoodNutrition } from '@fitos/contracts';
 
@@ -23,6 +28,15 @@ export const INDB_PIECE_KCAL = { min: 5, max: 900 } as const;
 /** INDB units that are a whole dish, not something one person eats. */
 export const INDB_WHOLE_UNITS = new Set(['cake', 'pie', 'jar', 'box', 'souffle dish', 'dish', 'chicken', 'loaf', 'tin', 'bottle', 'tray', 'pan']);
 export const COFID_SPREAD = { food: 0.03, dish: 0.08 } as const;
+/** How far energy and 4/4/9 from the macros may differ (share of the energy; at least 10 kcal). */
+export const ENERGY_AGREEMENT = 0.25;
+
+/** Why a food's energy cannot be its macros' (4/4/9 kcal), or null when they agree. */
+export function energyDisagreement(kcal: number, protein: number, carb: number, fat: number): string | null {
+  const fromMacros = 4 * protein + 4 * carb + 9 * fat;
+  if (Math.abs(fromMacros - kcal) <= Math.max(10, ENERGY_AGREEMENT * kcal)) return null;
+  return `energy ${Math.round(kcal)} kcal but its macros give ${Math.round(fromMacros)}`;
+}
 
 const down = (v: number, d: number): number => Math.max(0, Math.floor(v * 10 ** d + 1e-9) / 10 ** d);
 // `|| 0`: never -0 (the seed is JSON, which has no -0).
@@ -67,12 +81,31 @@ export function ifctSpread(value: number, sd: number | null): number {
   return Math.min(IFCT_SPREAD.max, Math.max(IFCT_SPREAD.min, sd / value));
 }
 
-/** An IFCT food per 100 g; null when IFCT lacks its energy or a macro. */
-export function ifctNutrition(f: IfctFood): FoodNutrition | null {
-  if (f.energyKj === null || f.protein === null || f.fat === null || f.carb === null) return null;
-  const kcal = f.energyKj / 4.184;
+export type SourceResult = { readonly nutrition: FoodNutrition } | { readonly skip: string };
+
+/** IFCT 2017's own energy factors, kJ per gram (its `energies` table). */
+export const IFCT_KJ_PER_G = { protein: 17, fat: 37, carb: 17, fibre: 8 } as const;
+
+/**
+ * IFCT's energy in kJ. Its data lists 0 kJ for the oils and ghee (100 g fat):
+ * a gap, not a measurement, so a food at 0 kJ with macros gets IFCT's own
+ * factors (an oil: 3700 kJ, 884 kcal).
+ */
+export function ifctEnergyKj(f: IfctFood): number | null {
+  if (f.energyKj !== 0 || f.protein === null || f.fat === null || f.carb === null) return f.energyKj;
+  const kj = IFCT_KJ_PER_G.protein * f.protein + IFCT_KJ_PER_G.fat * f.fat + IFCT_KJ_PER_G.carb * f.carb + IFCT_KJ_PER_G.fibre * (f.fibre ?? 0);
+  return kj > 0 ? kj : 0;
+}
+
+/** An IFCT food per 100 g; or why it is left out (a missing value, energy its macros cannot give). */
+export function ifctNutrition(f: IfctFood): SourceResult {
+  const kj = ifctEnergyKj(f);
+  if (kj === null || f.protein === null || f.fat === null || f.carb === null) return { skip: 'IFCT lacks its energy or a macro' };
+  const kcal = kj / 4.184;
+  const disagreement = energyDisagreement(kcal, f.protein, f.carb, f.fat);
+  if (disagreement !== null) return { skip: disagreement };
   const band = (v: number, sd: number | null, d: number) => around(v, ifctSpread(v, sd), d);
-  return {
+  return { nutrition: {
     basis: 'per_100g',
     servingLabel: '100 g',
     servingGrams: 100,
@@ -86,7 +119,7 @@ export function ifctNutrition(f: IfctFood): FoodNutrition | null {
       ),
     ),
     confidence: 'high',
-  };
+  } };
 }
 
 /** The names a local-language list adds for search (no name repeated). */
@@ -96,15 +129,15 @@ export function ifctAliases(f: IfctFood): string[] {
 
 /* ------------------------------------------------------------------ INDB -- */
 
-export type IndbResult = { readonly nutrition: FoodNutrition } | { readonly skip: string };
-
 /** An INDB recipe per piece / bowl; or why it is left out. */
-export function indbNutrition(r: IndbRecipe): IndbResult {
+export function indbNutrition(r: IndbRecipe): SourceResult {
   const u = r.perUnit;
   if (u === null) return { skip: 'INDB gives no per-serving values' };
   if (r.deepFry !== null) return { skip: 'deep-fried: INDB counts the whole pan of oil' };
   if (INDB_WHOLE_UNITS.has(u.unit.toLowerCase())) return { skip: `a whole ${u.unit}, not a portion` };
   if (u.kcal < INDB_PIECE_KCAL.min || u.kcal > INDB_PIECE_KCAL.max) return { skip: `${Math.round(u.kcal)} kcal a ${u.unit} is not plausible` };
+  const disagreement = energyDisagreement(u.kcal, u.protein, u.carb, u.fat);
+  if (disagreement !== null) return { skip: disagreement };
   return {
     nutrition: {
       basis: 'per_serving',

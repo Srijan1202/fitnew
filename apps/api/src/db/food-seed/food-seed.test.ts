@@ -12,7 +12,7 @@ import { estimateNutrition } from '@fitos/core/mess/nutrition';
 import { FOOD_SOURCES as CORE_FOOD_SOURCES, normaliseFoodText } from '@fitos/core/nutrition/food';
 
 import { assertSeedRules, carriedNutrition, compositeNutrition } from './build.js';
-import { cofidNutrition, ifctNutrition, indbNames, indbNutrition } from './sources.js';
+import { cofidNutrition, energyDisagreement, ifctNutrition, indbNames, indbNutrition } from './sources.js';
 import {
   FOOD_MANIFEST_FILE,
   FOOD_SEED_FILE,
@@ -96,6 +96,7 @@ describe('manifest integrity', () => {
       estimatedCarried: carriedN,
       estimatedComposite: composite + replaced.size,
       ifct: of('ifct'),
+      ifctSkipped: ifct.foods.length - of('ifct'),
       indb: of('indb'),
       cofidNew: cofidPicks.foods.length,
       cofidReplaced: replaced.size,
@@ -242,15 +243,31 @@ describe('measured sources (beta 3.7, ADR-036)', () => {
     expect(manifest.ifctFoods).toHaveLength(byRef.size);
     for (const i of ifct.foods) {
       const f = byRef.get(`IFCT 2017 (NIN-ICMR) · food ${i.code}`);
-      const n = ifctNutrition(i);
-      if (n === null) {
+      const result = ifctNutrition(i);
+      if ('skip' in result) {
         expect(f).toBeUndefined();
+        expect(manifest.ifctSkipped).toContainEqual({ code: i.code, name: i.name, reason: result.skip });
         continue;
       }
       expect(f, i.code).toBeDefined();
       expect(f!.isVerified).toBe(true);
-      expect(f!.nutrition).toEqual([n]);
+      expect(f!.nutrition).toEqual([result.nutrition]);
     }
+  });
+
+  it('a measured or estimated food\'s energy is what its macros give (4/4/9, within 25 %); USDA keeps its own food-specific factors', () => {
+    for (const f of foods.filter((x) => x.source !== 'usda')) {
+      for (const n of f.nutrition) {
+        const mid = (lo: number, hi: number) => (lo + hi) / 2;
+        const why = energyDisagreement(mid(n.kcalLow, n.kcalHigh), mid(n.proteinLow, n.proteinHigh), mid(n.carbLow, n.carbHigh), mid(n.fatLow, n.fatHigh));
+        expect(why, `${f.slug} ${n.servingLabel}`).toBeNull();
+      }
+    }
+    // IFCT's 0 kJ oils get IFCT's own factors: ghee is ~884 kcal per 100 g, not 0.
+    expect(bySlug.get('ghee-ifct')?.nutrition[0]).toMatchObject({ kcalLow: 857, kcalHigh: 900, fatHigh: 100 });
+    // The source rows that fail it are left out and named: INDB's soups, IFCT's skinless chicken leg.
+    expect(manifest.indbSkipped.find((s) => s.name === 'Egg drop soup')?.reason).toMatch(/^energy 85 kcal but its macros give/);
+    expect(manifest.ifctSkipped.find((s) => s.code === 'N001')?.reason).toMatch(/^energy 384 kcal but its macros give 192/);
   });
 
   it('every INDB food recomputes exactly from indb.json; no deep-fried recipe, no whole dish; never verified', () => {

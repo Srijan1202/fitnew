@@ -128,6 +128,7 @@ const full: FoodSeedManifest = manifestSchema.parse({
   carriedFoods: manifest.carriedFoods,
   compositeFoods: manifest.compositeFoods,
   ifctFoods: manifest.ifctFoods,
+  ifctSkipped: manifest.ifctSkipped,
   indbFoods: manifest.indbFoods,
   indbSkipped: manifest.indbSkipped,
   cofidFoods: manifest.cofidFoods,
@@ -137,7 +138,7 @@ const manifestText = serialise(full);
 
 const c = full.counts;
 const summary =
-  `${c.total} foods — ${c.usda} USDA, ${c.ifct} IFCT, ${c.indb} INDB (${c.indbSkipped} skipped), ${c.cofidNew} CoFID (+${c.cofidReplaced} replacing composites), ` +
+  `${c.total} foods — ${c.usda} USDA, ${c.ifct} IFCT (${c.ifctSkipped} skipped), ${c.indb} INDB (${c.indbSkipped} skipped), ${c.cofidNew} CoFID (+${c.cofidReplaced} replacing composites), ` +
   `${c.estimatedCarried} carried estimates, ${c.estimatedComposite - c.cofidReplaced} composite estimates; ${c.usdaPicksDropped} USDA picks dropped; gap to ~${c.targetApprox}: ${c.gapToTarget}`;
 
 if (check) {
