@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'food.dart';
@@ -9,6 +9,7 @@ part of 'food.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -42,56 +43,66 @@ mixin _$FoodNutrition {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as FoodNutrition;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is FoodNutrition &&
-            (identical(other.basis, basis) || other.basis == basis) &&
-            (identical(other.servingLabel, servingLabel) ||
-                other.servingLabel == servingLabel) &&
-            (identical(other.servingGrams, servingGrams) ||
-                other.servingGrams == servingGrams) &&
-            (identical(other.kcalLow, kcalLow) || other.kcalLow == kcalLow) &&
-            (identical(other.kcalHigh, kcalHigh) ||
-                other.kcalHigh == kcalHigh) &&
-            (identical(other.proteinLow, proteinLow) ||
-                other.proteinLow == proteinLow) &&
-            (identical(other.proteinHigh, proteinHigh) ||
-                other.proteinHigh == proteinHigh) &&
-            (identical(other.carbLow, carbLow) || other.carbLow == carbLow) &&
-            (identical(other.carbHigh, carbHigh) ||
-                other.carbHigh == carbHigh) &&
-            (identical(other.fatLow, fatLow) || other.fatLow == fatLow) &&
-            (identical(other.fatHigh, fatHigh) || other.fatHigh == fatHigh) &&
-            (identical(other.fibreLow, fibreLow) ||
-                other.fibreLow == fibreLow) &&
-            (identical(other.fibreHigh, fibreHigh) ||
-                other.fibreHigh == fibreHigh) &&
-            (identical(other.confidence, confidence) ||
-                other.confidence == confidence));
+            (identical(other.basis, _this.basis) ||
+                other.basis == _this.basis) &&
+            (identical(other.servingLabel, _this.servingLabel) ||
+                other.servingLabel == _this.servingLabel) &&
+            (identical(other.servingGrams, _this.servingGrams) ||
+                other.servingGrams == _this.servingGrams) &&
+            (identical(other.kcalLow, _this.kcalLow) ||
+                other.kcalLow == _this.kcalLow) &&
+            (identical(other.kcalHigh, _this.kcalHigh) ||
+                other.kcalHigh == _this.kcalHigh) &&
+            (identical(other.proteinLow, _this.proteinLow) ||
+                other.proteinLow == _this.proteinLow) &&
+            (identical(other.proteinHigh, _this.proteinHigh) ||
+                other.proteinHigh == _this.proteinHigh) &&
+            (identical(other.carbLow, _this.carbLow) ||
+                other.carbLow == _this.carbLow) &&
+            (identical(other.carbHigh, _this.carbHigh) ||
+                other.carbHigh == _this.carbHigh) &&
+            (identical(other.fatLow, _this.fatLow) ||
+                other.fatLow == _this.fatLow) &&
+            (identical(other.fatHigh, _this.fatHigh) ||
+                other.fatHigh == _this.fatHigh) &&
+            (identical(other.fibreLow, _this.fibreLow) ||
+                other.fibreLow == _this.fibreLow) &&
+            (identical(other.fibreHigh, _this.fibreHigh) ||
+                other.fibreHigh == _this.fibreHigh) &&
+            (identical(other.confidence, _this.confidence) ||
+                other.confidence == _this.confidence));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      basis,
-      servingLabel,
-      servingGrams,
-      kcalLow,
-      kcalHigh,
-      proteinLow,
-      proteinHigh,
-      carbLow,
-      carbHigh,
-      fatLow,
-      fatHigh,
-      fibreLow,
-      fibreHigh,
-      confidence);
+  int get hashCode {
+    final _this = this as FoodNutrition;
+    return Object.hash(
+        runtimeType,
+        _this.basis,
+        _this.servingLabel,
+        _this.servingGrams,
+        _this.kcalLow,
+        _this.kcalHigh,
+        _this.proteinLow,
+        _this.proteinHigh,
+        _this.carbLow,
+        _this.carbHigh,
+        _this.fatLow,
+        _this.fatHigh,
+        _this.fibreLow,
+        _this.fibreHigh,
+        _this.confidence);
+  }
 
   @override
   String toString() {
-    return 'FoodNutrition(basis: $basis, servingLabel: $servingLabel, servingGrams: $servingGrams, kcalLow: $kcalLow, kcalHigh: $kcalHigh, proteinLow: $proteinLow, proteinHigh: $proteinHigh, carbLow: $carbLow, carbHigh: $carbHigh, fatLow: $fatLow, fatHigh: $fatHigh, fibreLow: $fibreLow, fibreHigh: $fibreHigh, confidence: $confidence)';
+    final _this = this as FoodNutrition;
+    return 'FoodNutrition(basis: ${_this.basis}, servingLabel: ${_this.servingLabel}, servingGrams: ${_this.servingGrams}, kcalLow: ${_this.kcalLow}, kcalHigh: ${_this.kcalHigh}, proteinLow: ${_this.proteinLow}, proteinHigh: ${_this.proteinHigh}, carbLow: ${_this.carbLow}, carbHigh: ${_this.carbHigh}, fatLow: ${_this.fatLow}, fatHigh: ${_this.fatHigh}, fibreLow: ${_this.fibreLow}, fibreHigh: ${_this.fibreHigh}, confidence: ${_this.confidence})';
   }
 }
 
@@ -146,7 +157,7 @@ class _$FoodNutritionCopyWithImpl<$Res>
     Object? fibreHigh = freezed,
     Object? confidence = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(FoodNutrition(
       basis: null == basis
           ? _self.basis
           : basis // ignore: cast_nullable_to_non_nullable
@@ -549,22 +560,24 @@ class _FoodNutrition extends FoodNutrition {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      basis,
-      servingLabel,
-      servingGrams,
-      kcalLow,
-      kcalHigh,
-      proteinLow,
-      proteinHigh,
-      carbLow,
-      carbHigh,
-      fatLow,
-      fatHigh,
-      fibreLow,
-      fibreHigh,
-      confidence);
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        basis,
+        servingLabel,
+        servingGrams,
+        kcalLow,
+        kcalHigh,
+        proteinLow,
+        proteinHigh,
+        carbLow,
+        carbHigh,
+        fatLow,
+        fatHigh,
+        fibreLow,
+        fibreHigh,
+        confidence);
+  }
 
   @override
   String toString() {
@@ -715,47 +728,57 @@ mixin _$Food {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as Food;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is Food &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.slug, slug) || other.slug == slug) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.brand, brand) || other.brand == brand) &&
-            (identical(other.barcode, barcode) || other.barcode == barcode) &&
-            (identical(other.source, source) || other.source == source) &&
-            (identical(other.sourceRef, sourceRef) ||
-                other.sourceRef == sourceRef) &&
-            (identical(other.isVerified, isVerified) ||
-                other.isVerified == isVerified) &&
-            (identical(other.isCustom, isCustom) ||
-                other.isCustom == isCustom) &&
-            const DeepCollectionEquality().equals(other.aliases, aliases) &&
-            const DeepCollectionEquality().equals(other.nutrition, nutrition) &&
-            (identical(other.community, community) ||
-                other.community == community));
+            (identical(other.id, _this.id) || other.id == _this.id) &&
+            (identical(other.slug, _this.slug) || other.slug == _this.slug) &&
+            (identical(other.name, _this.name) || other.name == _this.name) &&
+            (identical(other.brand, _this.brand) ||
+                other.brand == _this.brand) &&
+            (identical(other.barcode, _this.barcode) ||
+                other.barcode == _this.barcode) &&
+            (identical(other.source, _this.source) ||
+                other.source == _this.source) &&
+            (identical(other.sourceRef, _this.sourceRef) ||
+                other.sourceRef == _this.sourceRef) &&
+            (identical(other.isVerified, _this.isVerified) ||
+                other.isVerified == _this.isVerified) &&
+            (identical(other.isCustom, _this.isCustom) ||
+                other.isCustom == _this.isCustom) &&
+            const DeepCollectionEquality()
+                .equals(other.aliases, _this.aliases) &&
+            const DeepCollectionEquality()
+                .equals(other.nutrition, _this.nutrition) &&
+            (identical(other.community, _this.community) ||
+                other.community == _this.community));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      slug,
-      name,
-      brand,
-      barcode,
-      source,
-      sourceRef,
-      isVerified,
-      isCustom,
-      const DeepCollectionEquality().hash(aliases),
-      const DeepCollectionEquality().hash(nutrition),
-      community);
+  int get hashCode {
+    final _this = this as Food;
+    return Object.hash(
+        runtimeType,
+        _this.id,
+        _this.slug,
+        _this.name,
+        _this.brand,
+        _this.barcode,
+        _this.source,
+        _this.sourceRef,
+        _this.isVerified,
+        _this.isCustom,
+        const DeepCollectionEquality().hash(_this.aliases),
+        const DeepCollectionEquality().hash(_this.nutrition),
+        _this.community);
+  }
 
   @override
   String toString() {
-    return 'Food(id: $id, slug: $slug, name: $name, brand: $brand, barcode: $barcode, source: $source, sourceRef: $sourceRef, isVerified: $isVerified, isCustom: $isCustom, aliases: $aliases, nutrition: $nutrition, community: $community)';
+    final _this = this as Food;
+    return 'Food(id: ${_this.id}, slug: ${_this.slug}, name: ${_this.name}, brand: ${_this.brand}, barcode: ${_this.barcode}, source: ${_this.source}, sourceRef: ${_this.sourceRef}, isVerified: ${_this.isVerified}, isCustom: ${_this.isCustom}, aliases: ${_this.aliases}, nutrition: ${_this.nutrition}, community: ${_this.community})';
   }
 }
 
@@ -804,7 +827,7 @@ class _$FoodCopyWithImpl<$Res> implements $FoodCopyWith<$Res> {
     Object? nutrition = null,
     Object? community = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(Food(
       id: null == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -1102,8 +1125,8 @@ class _Food extends Food {
       required this.sourceRef,
       required this.isVerified,
       required this.isCustom,
-      required final List<String> aliases,
-      required final List<FoodNutrition> nutrition,
+      required List<String> aliases,
+      required List<FoodNutrition> nutrition,
       this.community = false})
       : _aliases = aliases,
         _nutrition = nutrition,
@@ -1181,29 +1204,31 @@ class _Food extends Food {
                 other.isVerified == isVerified) &&
             (identical(other.isCustom, isCustom) ||
                 other.isCustom == isCustom) &&
-            const DeepCollectionEquality().equals(other._aliases, _aliases) &&
+            const DeepCollectionEquality().equals(other.aliases, _aliases) &&
             const DeepCollectionEquality()
-                .equals(other._nutrition, _nutrition) &&
+                .equals(other.nutrition, _nutrition) &&
             (identical(other.community, community) ||
                 other.community == community));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      slug,
-      name,
-      brand,
-      barcode,
-      source,
-      sourceRef,
-      isVerified,
-      isCustom,
-      const DeepCollectionEquality().hash(_aliases),
-      const DeepCollectionEquality().hash(_nutrition),
-      community);
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        id,
+        slug,
+        name,
+        brand,
+        barcode,
+        source,
+        sourceRef,
+        isVerified,
+        isCustom,
+        const DeepCollectionEquality().hash(_aliases),
+        const DeepCollectionEquality().hash(_nutrition),
+        community);
+  }
 
   @override
   String toString() {
@@ -1328,20 +1353,25 @@ mixin _$FoodSearchResponse {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as FoodSearchResponse;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is FoodSearchResponse &&
-            const DeepCollectionEquality().equals(other.items, items));
+            const DeepCollectionEquality().equals(other.items, _this.items));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(items));
+  int get hashCode {
+    final _this = this as FoodSearchResponse;
+    return Object.hash(
+        runtimeType, const DeepCollectionEquality().hash(_this.items));
+  }
 
   @override
   String toString() {
-    return 'FoodSearchResponse(items: $items)';
+    final _this = this as FoodSearchResponse;
+    return 'FoodSearchResponse(items: ${_this.items})';
   }
 }
 
@@ -1371,7 +1401,7 @@ class _$FoodSearchResponseCopyWithImpl<$Res>
   $Res call({
     Object? items = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(FoodSearchResponse(
       items: null == items
           ? _self.items
           : items // ignore: cast_nullable_to_non_nullable
@@ -1551,7 +1581,7 @@ extension FoodSearchResponsePatterns on FoodSearchResponse {
 class _FoodSearchResponse implements FoodSearchResponse {
   const _FoodSearchResponse(
       {@JsonKey(fromJson: _resultsFromJson, toJson: _resultsToJson)
-      required final List<FoodSearchResult> items})
+      required List<FoodSearchResult> items})
       : _items = items;
   factory _FoodSearchResponse.fromJson(Map<String, dynamic> json) =>
       _$FoodSearchResponseFromJson(json);
@@ -1585,13 +1615,15 @@ class _FoodSearchResponse implements FoodSearchResponse {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _FoodSearchResponse &&
-            const DeepCollectionEquality().equals(other._items, _items));
+            const DeepCollectionEquality().equals(other.items, _items));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(_items));
+  int get hashCode {
+    return Object.hash(
+        runtimeType, const DeepCollectionEquality().hash(_items));
+  }
 
   @override
   String toString() {

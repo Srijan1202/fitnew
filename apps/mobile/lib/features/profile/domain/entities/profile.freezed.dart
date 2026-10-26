@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'profile.dart';
@@ -9,6 +9,7 @@ part of 'profile.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -30,23 +31,30 @@ mixin _$MessRef {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as MessRef;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is MessRef &&
-            (identical(other.providerId, providerId) ||
-                other.providerId == providerId) &&
-            (identical(other.hostelId, hostelId) ||
-                other.hostelId == hostelId) &&
-            (identical(other.messId, messId) || other.messId == messId));
+            (identical(other.providerId, _this.providerId) ||
+                other.providerId == _this.providerId) &&
+            (identical(other.hostelId, _this.hostelId) ||
+                other.hostelId == _this.hostelId) &&
+            (identical(other.messId, _this.messId) ||
+                other.messId == _this.messId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, providerId, hostelId, messId);
+  int get hashCode {
+    final _this = this as MessRef;
+    return Object.hash(
+        runtimeType, _this.providerId, _this.hostelId, _this.messId);
+  }
 
   @override
   String toString() {
-    return 'MessRef(providerId: $providerId, hostelId: $hostelId, messId: $messId)';
+    final _this = this as MessRef;
+    return 'MessRef(providerId: ${_this.providerId}, hostelId: ${_this.hostelId}, messId: ${_this.messId})';
   }
 }
 
@@ -74,7 +82,7 @@ class _$MessRefCopyWithImpl<$Res> implements $MessRefCopyWith<$Res> {
     Object? hostelId = null,
     Object? messId = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(MessRef(
       providerId: null == providerId
           ? _self.providerId
           : providerId // ignore: cast_nullable_to_non_nullable
@@ -295,7 +303,9 @@ class _MessRef implements MessRef {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, providerId, hostelId, messId);
+  int get hashCode {
+    return Object.hash(runtimeType, providerId, hostelId, messId);
+  }
 
   @override
   String toString() {
@@ -383,67 +393,75 @@ mixin _$UserProfileDetail {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as UserProfileDetail;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is UserProfileDetail &&
-            (identical(other.displayName, displayName) ||
-                other.displayName == displayName) &&
-            (identical(other.sex, sex) || other.sex == sex) &&
-            (identical(other.birthDate, birthDate) ||
-                other.birthDate == birthDate) &&
-            (identical(other.heightCm, heightCm) ||
-                other.heightCm == heightCm) &&
-            (identical(other.experienceLevel, experienceLevel) ||
-                other.experienceLevel == experienceLevel) &&
-            (identical(other.trainingDaysPerWeek, trainingDaysPerWeek) ||
-                other.trainingDaysPerWeek == trainingDaysPerWeek) &&
-            (identical(other.activityLevel, activityLevel) ||
-                other.activityLevel == activityLevel) &&
-            (identical(
-                    other.preferredSessionMinutes, preferredSessionMinutes) ||
-                other.preferredSessionMinutes == preferredSessionMinutes) &&
-            (identical(other.trainingLocation, trainingLocation) ||
-                other.trainingLocation == trainingLocation) &&
-            const DeepCollectionEquality().equals(other.equipment, equipment) &&
-            (identical(other.latestWeightKg, latestWeightKg) ||
-                other.latestWeightKg == latestWeightKg) &&
-            (identical(other.timezone, timezone) ||
-                other.timezone == timezone) &&
-            (identical(other.locale, locale) || other.locale == locale) &&
-            (identical(other.onboardingStage, onboardingStage) ||
-                other.onboardingStage == onboardingStage) &&
-            (identical(other.isVitStudent, isVitStudent) ||
-                other.isVitStudent == isVitStudent) &&
-            (identical(other.mess, mess) || other.mess == mess) &&
-            (identical(other.avatarId, avatarId) ||
-                other.avatarId == avatarId));
+            (identical(other.displayName, _this.displayName) ||
+                other.displayName == _this.displayName) &&
+            (identical(other.sex, _this.sex) || other.sex == _this.sex) &&
+            (identical(other.birthDate, _this.birthDate) ||
+                other.birthDate == _this.birthDate) &&
+            (identical(other.heightCm, _this.heightCm) ||
+                other.heightCm == _this.heightCm) &&
+            (identical(other.experienceLevel, _this.experienceLevel) ||
+                other.experienceLevel == _this.experienceLevel) &&
+            (identical(other.trainingDaysPerWeek, _this.trainingDaysPerWeek) ||
+                other.trainingDaysPerWeek == _this.trainingDaysPerWeek) &&
+            (identical(other.activityLevel, _this.activityLevel) ||
+                other.activityLevel == _this.activityLevel) &&
+            (identical(other.preferredSessionMinutes,
+                    _this.preferredSessionMinutes) ||
+                other.preferredSessionMinutes ==
+                    _this.preferredSessionMinutes) &&
+            (identical(other.trainingLocation, _this.trainingLocation) ||
+                other.trainingLocation == _this.trainingLocation) &&
+            const DeepCollectionEquality()
+                .equals(other.equipment, _this.equipment) &&
+            (identical(other.latestWeightKg, _this.latestWeightKg) ||
+                other.latestWeightKg == _this.latestWeightKg) &&
+            (identical(other.timezone, _this.timezone) ||
+                other.timezone == _this.timezone) &&
+            (identical(other.locale, _this.locale) ||
+                other.locale == _this.locale) &&
+            (identical(other.onboardingStage, _this.onboardingStage) ||
+                other.onboardingStage == _this.onboardingStage) &&
+            (identical(other.isVitStudent, _this.isVitStudent) ||
+                other.isVitStudent == _this.isVitStudent) &&
+            (identical(other.mess, _this.mess) || other.mess == _this.mess) &&
+            (identical(other.avatarId, _this.avatarId) ||
+                other.avatarId == _this.avatarId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      displayName,
-      sex,
-      birthDate,
-      heightCm,
-      experienceLevel,
-      trainingDaysPerWeek,
-      activityLevel,
-      preferredSessionMinutes,
-      trainingLocation,
-      const DeepCollectionEquality().hash(equipment),
-      latestWeightKg,
-      timezone,
-      locale,
-      onboardingStage,
-      isVitStudent,
-      mess,
-      avatarId);
+  int get hashCode {
+    final _this = this as UserProfileDetail;
+    return Object.hash(
+        runtimeType,
+        _this.displayName,
+        _this.sex,
+        _this.birthDate,
+        _this.heightCm,
+        _this.experienceLevel,
+        _this.trainingDaysPerWeek,
+        _this.activityLevel,
+        _this.preferredSessionMinutes,
+        _this.trainingLocation,
+        const DeepCollectionEquality().hash(_this.equipment),
+        _this.latestWeightKg,
+        _this.timezone,
+        _this.locale,
+        _this.onboardingStage,
+        _this.isVitStudent,
+        _this.mess,
+        _this.avatarId);
+  }
 
   @override
   String toString() {
-    return 'UserProfileDetail(displayName: $displayName, sex: $sex, birthDate: $birthDate, heightCm: $heightCm, experienceLevel: $experienceLevel, trainingDaysPerWeek: $trainingDaysPerWeek, activityLevel: $activityLevel, preferredSessionMinutes: $preferredSessionMinutes, trainingLocation: $trainingLocation, equipment: $equipment, latestWeightKg: $latestWeightKg, timezone: $timezone, locale: $locale, onboardingStage: $onboardingStage, isVitStudent: $isVitStudent, mess: $mess, avatarId: $avatarId)';
+    final _this = this as UserProfileDetail;
+    return 'UserProfileDetail(displayName: ${_this.displayName}, sex: ${_this.sex}, birthDate: ${_this.birthDate}, heightCm: ${_this.heightCm}, experienceLevel: ${_this.experienceLevel}, trainingDaysPerWeek: ${_this.trainingDaysPerWeek}, activityLevel: ${_this.activityLevel}, preferredSessionMinutes: ${_this.preferredSessionMinutes}, trainingLocation: ${_this.trainingLocation}, equipment: ${_this.equipment}, latestWeightKg: ${_this.latestWeightKg}, timezone: ${_this.timezone}, locale: ${_this.locale}, onboardingStage: ${_this.onboardingStage}, isVitStudent: ${_this.isVitStudent}, mess: ${_this.mess}, avatarId: ${_this.avatarId})';
   }
 }
 
@@ -506,7 +524,7 @@ class _$UserProfileDetailCopyWithImpl<$Res>
     Object? mess = freezed,
     Object? avatarId = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(UserProfileDetail(
       displayName: freezed == displayName
           ? _self.displayName
           : displayName // ignore: cast_nullable_to_non_nullable
@@ -868,7 +886,7 @@ class _UserProfileDetail implements UserProfileDetail {
       required this.activityLevel,
       required this.preferredSessionMinutes,
       required this.trainingLocation,
-      required final List<Equipment> equipment,
+      required List<Equipment> equipment,
       required this.latestWeightKg,
       required this.timezone,
       required this.locale,
@@ -968,7 +986,7 @@ class _UserProfileDetail implements UserProfileDetail {
             (identical(other.trainingLocation, trainingLocation) ||
                 other.trainingLocation == trainingLocation) &&
             const DeepCollectionEquality()
-                .equals(other._equipment, _equipment) &&
+                .equals(other.equipment, _equipment) &&
             (identical(other.latestWeightKg, latestWeightKg) ||
                 other.latestWeightKg == latestWeightKg) &&
             (identical(other.timezone, timezone) ||
@@ -985,25 +1003,27 @@ class _UserProfileDetail implements UserProfileDetail {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      displayName,
-      sex,
-      birthDate,
-      heightCm,
-      experienceLevel,
-      trainingDaysPerWeek,
-      activityLevel,
-      preferredSessionMinutes,
-      trainingLocation,
-      const DeepCollectionEquality().hash(_equipment),
-      latestWeightKg,
-      timezone,
-      locale,
-      onboardingStage,
-      isVitStudent,
-      mess,
-      avatarId);
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        displayName,
+        sex,
+        birthDate,
+        heightCm,
+        experienceLevel,
+        trainingDaysPerWeek,
+        activityLevel,
+        preferredSessionMinutes,
+        trainingLocation,
+        const DeepCollectionEquality().hash(_equipment),
+        latestWeightKg,
+        timezone,
+        locale,
+        onboardingStage,
+        isVitStudent,
+        mess,
+        avatarId);
+  }
 
   @override
   String toString() {
@@ -1179,26 +1199,31 @@ mixin _$Goal {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as Goal;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is Goal &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.goalType, goalType) ||
-                other.goalType == goalType) &&
-            (identical(other.targetWeightKg, targetWeightKg) ||
-                other.targetWeightKg == targetWeightKg) &&
-            (identical(other.startedAt, startedAt) ||
-                other.startedAt == startedAt));
+            (identical(other.id, _this.id) || other.id == _this.id) &&
+            (identical(other.goalType, _this.goalType) ||
+                other.goalType == _this.goalType) &&
+            (identical(other.targetWeightKg, _this.targetWeightKg) ||
+                other.targetWeightKg == _this.targetWeightKg) &&
+            (identical(other.startedAt, _this.startedAt) ||
+                other.startedAt == _this.startedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, goalType, targetWeightKg, startedAt);
+  int get hashCode {
+    final _this = this as Goal;
+    return Object.hash(runtimeType, _this.id, _this.goalType,
+        _this.targetWeightKg, _this.startedAt);
+  }
 
   @override
   String toString() {
-    return 'Goal(id: $id, goalType: $goalType, targetWeightKg: $targetWeightKg, startedAt: $startedAt)';
+    final _this = this as Goal;
+    return 'Goal(id: ${_this.id}, goalType: ${_this.goalType}, targetWeightKg: ${_this.targetWeightKg}, startedAt: ${_this.startedAt})';
   }
 }
 
@@ -1231,7 +1256,7 @@ class _$GoalCopyWithImpl<$Res> implements $GoalCopyWith<$Res> {
     Object? targetWeightKg = freezed,
     Object? startedAt = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(Goal(
       id: null == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -1468,8 +1493,9 @@ class _Goal implements Goal {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, goalType, targetWeightKg, startedAt);
+  int get hashCode {
+    return Object.hash(runtimeType, id, goalType, targetWeightKg, startedAt);
+  }
 
   @override
   String toString() {
@@ -1545,22 +1571,27 @@ mixin _$Allergy {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as Allergy;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is Allergy &&
-            (identical(other.allergen, allergen) ||
-                other.allergen == allergen) &&
-            (identical(other.severity, severity) ||
-                other.severity == severity));
+            (identical(other.allergen, _this.allergen) ||
+                other.allergen == _this.allergen) &&
+            (identical(other.severity, _this.severity) ||
+                other.severity == _this.severity));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, allergen, severity);
+  int get hashCode {
+    final _this = this as Allergy;
+    return Object.hash(runtimeType, _this.allergen, _this.severity);
+  }
 
   @override
   String toString() {
-    return 'Allergy(allergen: $allergen, severity: $severity)';
+    final _this = this as Allergy;
+    return 'Allergy(allergen: ${_this.allergen}, severity: ${_this.severity})';
   }
 }
 
@@ -1587,7 +1618,7 @@ class _$AllergyCopyWithImpl<$Res> implements $AllergyCopyWith<$Res> {
     Object? allergen = null,
     Object? severity = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(Allergy(
       allergen: null == allergen
           ? _self.allergen
           : allergen // ignore: cast_nullable_to_non_nullable
@@ -1797,7 +1828,9 @@ class _Allergy implements Allergy {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, allergen, severity);
+  int get hashCode {
+    return Object.hash(runtimeType, allergen, severity);
+  }
 
   @override
   String toString() {
@@ -1862,30 +1895,36 @@ mixin _$DietPreferences {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as DietPreferences;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is DietPreferences &&
-            (identical(other.dietType, dietType) ||
-                other.dietType == dietType) &&
-            const DeepCollectionEquality().equals(other.allergies, allergies) &&
+            (identical(other.dietType, _this.dietType) ||
+                other.dietType == _this.dietType) &&
             const DeepCollectionEquality()
-                .equals(other.excludedDishIds, excludedDishIds) &&
-            (identical(other.budgetTier, budgetTier) ||
-                other.budgetTier == budgetTier));
+                .equals(other.allergies, _this.allergies) &&
+            const DeepCollectionEquality()
+                .equals(other.excludedDishIds, _this.excludedDishIds) &&
+            (identical(other.budgetTier, _this.budgetTier) ||
+                other.budgetTier == _this.budgetTier));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      dietType,
-      const DeepCollectionEquality().hash(allergies),
-      const DeepCollectionEquality().hash(excludedDishIds),
-      budgetTier);
+  int get hashCode {
+    final _this = this as DietPreferences;
+    return Object.hash(
+        runtimeType,
+        _this.dietType,
+        const DeepCollectionEquality().hash(_this.allergies),
+        const DeepCollectionEquality().hash(_this.excludedDishIds),
+        _this.budgetTier);
+  }
 
   @override
   String toString() {
-    return 'DietPreferences(dietType: $dietType, allergies: $allergies, excludedDishIds: $excludedDishIds, budgetTier: $budgetTier)';
+    final _this = this as DietPreferences;
+    return 'DietPreferences(dietType: ${_this.dietType}, allergies: ${_this.allergies}, excludedDishIds: ${_this.excludedDishIds}, budgetTier: ${_this.budgetTier})';
   }
 }
 
@@ -1920,7 +1959,7 @@ class _$DietPreferencesCopyWithImpl<$Res>
     Object? excludedDishIds = null,
     Object? budgetTier = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(DietPreferences(
       dietType: null == dietType
           ? _self.dietType
           : dietType // ignore: cast_nullable_to_non_nullable
@@ -2112,8 +2151,8 @@ extension DietPreferencesPatterns on DietPreferences {
 class _DietPreferences implements DietPreferences {
   const _DietPreferences(
       {required this.dietType,
-      required final List<Allergy> allergies,
-      required final List<String> excludedDishIds,
+      required List<Allergy> allergies,
+      required List<String> excludedDishIds,
       required this.budgetTier})
       : _allergies = allergies,
         _excludedDishIds = excludedDishIds;
@@ -2164,21 +2203,23 @@ class _DietPreferences implements DietPreferences {
             (identical(other.dietType, dietType) ||
                 other.dietType == dietType) &&
             const DeepCollectionEquality()
-                .equals(other._allergies, _allergies) &&
+                .equals(other.allergies, _allergies) &&
             const DeepCollectionEquality()
-                .equals(other._excludedDishIds, _excludedDishIds) &&
+                .equals(other.excludedDishIds, _excludedDishIds) &&
             (identical(other.budgetTier, budgetTier) ||
                 other.budgetTier == budgetTier));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      dietType,
-      const DeepCollectionEquality().hash(_allergies),
-      const DeepCollectionEquality().hash(_excludedDishIds),
-      budgetTier);
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        dietType,
+        const DeepCollectionEquality().hash(_allergies),
+        const DeepCollectionEquality().hash(_excludedDishIds),
+        budgetTier);
+  }
 
   @override
   String toString() {
@@ -2269,44 +2310,54 @@ mixin _$NutritionTargets {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as NutritionTargets;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is NutritionTargets &&
-            (identical(other.effectiveFrom, effectiveFrom) ||
-                other.effectiveFrom == effectiveFrom) &&
-            (identical(other.kcal, kcal) || other.kcal == kcal) &&
-            (identical(other.proteinG, proteinG) ||
-                other.proteinG == proteinG) &&
-            (identical(other.carbG, carbG) || other.carbG == carbG) &&
-            (identical(other.fatG, fatG) || other.fatG == fatG) &&
-            (identical(other.fiberG, fiberG) || other.fiberG == fiberG) &&
-            (identical(other.bmr, bmr) || other.bmr == bmr) &&
-            (identical(other.tdeeEstimate, tdeeEstimate) ||
-                other.tdeeEstimate == tdeeEstimate) &&
-            const DeepCollectionEquality().equals(other.rationale, rationale) &&
-            (identical(other.reason, reason) || other.reason == reason) &&
-            (identical(other.source, source) || other.source == source));
+            (identical(other.effectiveFrom, _this.effectiveFrom) ||
+                other.effectiveFrom == _this.effectiveFrom) &&
+            (identical(other.kcal, _this.kcal) || other.kcal == _this.kcal) &&
+            (identical(other.proteinG, _this.proteinG) ||
+                other.proteinG == _this.proteinG) &&
+            (identical(other.carbG, _this.carbG) ||
+                other.carbG == _this.carbG) &&
+            (identical(other.fatG, _this.fatG) || other.fatG == _this.fatG) &&
+            (identical(other.fiberG, _this.fiberG) ||
+                other.fiberG == _this.fiberG) &&
+            (identical(other.bmr, _this.bmr) || other.bmr == _this.bmr) &&
+            (identical(other.tdeeEstimate, _this.tdeeEstimate) ||
+                other.tdeeEstimate == _this.tdeeEstimate) &&
+            const DeepCollectionEquality()
+                .equals(other.rationale, _this.rationale) &&
+            (identical(other.reason, _this.reason) ||
+                other.reason == _this.reason) &&
+            (identical(other.source, _this.source) ||
+                other.source == _this.source));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      effectiveFrom,
-      kcal,
-      proteinG,
-      carbG,
-      fatG,
-      fiberG,
-      bmr,
-      tdeeEstimate,
-      const DeepCollectionEquality().hash(rationale),
-      reason,
-      source);
+  int get hashCode {
+    final _this = this as NutritionTargets;
+    return Object.hash(
+        runtimeType,
+        _this.effectiveFrom,
+        _this.kcal,
+        _this.proteinG,
+        _this.carbG,
+        _this.fatG,
+        _this.fiberG,
+        _this.bmr,
+        _this.tdeeEstimate,
+        const DeepCollectionEquality().hash(_this.rationale),
+        _this.reason,
+        _this.source);
+  }
 
   @override
   String toString() {
-    return 'NutritionTargets(effectiveFrom: $effectiveFrom, kcal: $kcal, proteinG: $proteinG, carbG: $carbG, fatG: $fatG, fiberG: $fiberG, bmr: $bmr, tdeeEstimate: $tdeeEstimate, rationale: $rationale, reason: $reason, source: $source)';
+    final _this = this as NutritionTargets;
+    return 'NutritionTargets(effectiveFrom: ${_this.effectiveFrom}, kcal: ${_this.kcal}, proteinG: ${_this.proteinG}, carbG: ${_this.carbG}, fatG: ${_this.fatG}, fiberG: ${_this.fiberG}, bmr: ${_this.bmr}, tdeeEstimate: ${_this.tdeeEstimate}, rationale: ${_this.rationale}, reason: ${_this.reason}, source: ${_this.source})';
   }
 }
 
@@ -2355,7 +2406,7 @@ class _$NutritionTargetsCopyWithImpl<$Res>
     Object? reason = null,
     Object? source = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(NutritionTargets(
       effectiveFrom: null == effectiveFrom
           ? _self.effectiveFrom
           : effectiveFrom // ignore: cast_nullable_to_non_nullable
@@ -2642,7 +2693,7 @@ class _NutritionTargets implements NutritionTargets {
       required this.fiberG,
       required this.bmr,
       required this.tdeeEstimate,
-      required final List<String> rationale,
+      required List<String> rationale,
       required this.reason,
       this.source = 'fitos'})
       : _rationale = rationale;
@@ -2713,26 +2764,28 @@ class _NutritionTargets implements NutritionTargets {
             (identical(other.tdeeEstimate, tdeeEstimate) ||
                 other.tdeeEstimate == tdeeEstimate) &&
             const DeepCollectionEquality()
-                .equals(other._rationale, _rationale) &&
+                .equals(other.rationale, _rationale) &&
             (identical(other.reason, reason) || other.reason == reason) &&
             (identical(other.source, source) || other.source == source));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      effectiveFrom,
-      kcal,
-      proteinG,
-      carbG,
-      fatG,
-      fiberG,
-      bmr,
-      tdeeEstimate,
-      const DeepCollectionEquality().hash(_rationale),
-      reason,
-      source);
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        effectiveFrom,
+        kcal,
+        proteinG,
+        carbG,
+        fatG,
+        fiberG,
+        bmr,
+        tdeeEstimate,
+        const DeepCollectionEquality().hash(_rationale),
+        reason,
+        source);
+  }
 
   @override
   String toString() {
@@ -2857,25 +2910,32 @@ mixin _$TargetsSuggestion {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as TargetsSuggestion;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is TargetsSuggestion &&
-            (identical(other.kcal, kcal) || other.kcal == kcal) &&
-            (identical(other.proteinG, proteinG) ||
-                other.proteinG == proteinG) &&
-            (identical(other.carbG, carbG) || other.carbG == carbG) &&
-            (identical(other.fatG, fatG) || other.fatG == fatG) &&
-            (identical(other.fiberG, fiberG) || other.fiberG == fiberG));
+            (identical(other.kcal, _this.kcal) || other.kcal == _this.kcal) &&
+            (identical(other.proteinG, _this.proteinG) ||
+                other.proteinG == _this.proteinG) &&
+            (identical(other.carbG, _this.carbG) ||
+                other.carbG == _this.carbG) &&
+            (identical(other.fatG, _this.fatG) || other.fatG == _this.fatG) &&
+            (identical(other.fiberG, _this.fiberG) ||
+                other.fiberG == _this.fiberG));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, kcal, proteinG, carbG, fatG, fiberG);
+  int get hashCode {
+    final _this = this as TargetsSuggestion;
+    return Object.hash(runtimeType, _this.kcal, _this.proteinG, _this.carbG,
+        _this.fatG, _this.fiberG);
+  }
 
   @override
   String toString() {
-    return 'TargetsSuggestion(kcal: $kcal, proteinG: $proteinG, carbG: $carbG, fatG: $fatG, fiberG: $fiberG)';
+    final _this = this as TargetsSuggestion;
+    return 'TargetsSuggestion(kcal: ${_this.kcal}, proteinG: ${_this.proteinG}, carbG: ${_this.carbG}, fatG: ${_this.fatG}, fiberG: ${_this.fiberG})';
   }
 }
 
@@ -2907,7 +2967,7 @@ class _$TargetsSuggestionCopyWithImpl<$Res>
     Object? fatG = null,
     Object? fiberG = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(TargetsSuggestion(
       kcal: null == kcal
           ? _self.kcal
           : kcal // ignore: cast_nullable_to_non_nullable
@@ -3148,8 +3208,9 @@ class _TargetsSuggestion implements TargetsSuggestion {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, kcal, proteinG, carbG, fatG, fiberG);
+  int get hashCode {
+    return Object.hash(runtimeType, kcal, proteinG, carbG, fatG, fiberG);
+  }
 
   @override
   String toString() {
@@ -3232,25 +3293,32 @@ mixin _$TargetLimits {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as TargetLimits;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is TargetLimits &&
-            (identical(other.kcalMin, kcalMin) || other.kcalMin == kcalMin) &&
-            (identical(other.kcalMax, kcalMax) || other.kcalMax == kcalMax) &&
-            (identical(other.proteinMinG, proteinMinG) ||
-                other.proteinMinG == proteinMinG) &&
-            (identical(other.proteinMaxG, proteinMaxG) ||
-                other.proteinMaxG == proteinMaxG));
+            (identical(other.kcalMin, _this.kcalMin) ||
+                other.kcalMin == _this.kcalMin) &&
+            (identical(other.kcalMax, _this.kcalMax) ||
+                other.kcalMax == _this.kcalMax) &&
+            (identical(other.proteinMinG, _this.proteinMinG) ||
+                other.proteinMinG == _this.proteinMinG) &&
+            (identical(other.proteinMaxG, _this.proteinMaxG) ||
+                other.proteinMaxG == _this.proteinMaxG));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, kcalMin, kcalMax, proteinMinG, proteinMaxG);
+  int get hashCode {
+    final _this = this as TargetLimits;
+    return Object.hash(runtimeType, _this.kcalMin, _this.kcalMax,
+        _this.proteinMinG, _this.proteinMaxG);
+  }
 
   @override
   String toString() {
-    return 'TargetLimits(kcalMin: $kcalMin, kcalMax: $kcalMax, proteinMinG: $proteinMinG, proteinMaxG: $proteinMaxG)';
+    final _this = this as TargetLimits;
+    return 'TargetLimits(kcalMin: ${_this.kcalMin}, kcalMax: ${_this.kcalMax}, proteinMinG: ${_this.proteinMinG}, proteinMaxG: ${_this.proteinMaxG})';
   }
 }
 
@@ -3280,7 +3348,7 @@ class _$TargetLimitsCopyWithImpl<$Res> implements $TargetLimitsCopyWith<$Res> {
     Object? proteinMinG = null,
     Object? proteinMaxG = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(TargetLimits(
       kcalMin: null == kcalMin
           ? _self.kcalMin
           : kcalMin // ignore: cast_nullable_to_non_nullable
@@ -3516,8 +3584,9 @@ class _TargetLimits implements TargetLimits {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, kcalMin, kcalMax, proteinMinG, proteinMaxG);
+  int get hashCode {
+    return Object.hash(runtimeType, kcalMin, kcalMax, proteinMinG, proteinMaxG);
+  }
 
   @override
   String toString() {
@@ -3593,22 +3662,30 @@ mixin _$TargetsView {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as TargetsView;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is TargetsView &&
-            (identical(other.current, current) || other.current == current) &&
-            (identical(other.suggestion, suggestion) ||
-                other.suggestion == suggestion) &&
-            (identical(other.limits, limits) || other.limits == limits));
+            (identical(other.current, _this.current) ||
+                other.current == _this.current) &&
+            (identical(other.suggestion, _this.suggestion) ||
+                other.suggestion == _this.suggestion) &&
+            (identical(other.limits, _this.limits) ||
+                other.limits == _this.limits));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, current, suggestion, limits);
+  int get hashCode {
+    final _this = this as TargetsView;
+    return Object.hash(
+        runtimeType, _this.current, _this.suggestion, _this.limits);
+  }
 
   @override
   String toString() {
-    return 'TargetsView(current: $current, suggestion: $suggestion, limits: $limits)';
+    final _this = this as TargetsView;
+    return 'TargetsView(current: ${_this.current}, suggestion: ${_this.suggestion}, limits: ${_this.limits})';
   }
 }
 
@@ -3644,7 +3721,7 @@ class _$TargetsViewCopyWithImpl<$Res> implements $TargetsViewCopyWith<$Res> {
     Object? suggestion = freezed,
     Object? limits = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(TargetsView(
       current: freezed == current
           ? _self.current
           : current // ignore: cast_nullable_to_non_nullable
@@ -3905,7 +3982,9 @@ class _TargetsView implements TargetsView {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, current, suggestion, limits);
+  int get hashCode {
+    return Object.hash(runtimeType, current, suggestion, limits);
+  }
 
   @override
   String toString() {
@@ -4023,21 +4102,28 @@ mixin _$CustomTargetsResponse {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as CustomTargetsResponse;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is CustomTargetsResponse &&
-            (identical(other.targets, targets) || other.targets == targets) &&
-            const DeepCollectionEquality().equals(other.warnings, warnings));
+            (identical(other.targets, _this.targets) ||
+                other.targets == _this.targets) &&
+            const DeepCollectionEquality()
+                .equals(other.warnings, _this.warnings));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, targets, const DeepCollectionEquality().hash(warnings));
+  int get hashCode {
+    final _this = this as CustomTargetsResponse;
+    return Object.hash(runtimeType, _this.targets,
+        const DeepCollectionEquality().hash(_this.warnings));
+  }
 
   @override
   String toString() {
-    return 'CustomTargetsResponse(targets: $targets, warnings: $warnings)';
+    final _this = this as CustomTargetsResponse;
+    return 'CustomTargetsResponse(targets: ${_this.targets}, warnings: ${_this.warnings})';
   }
 }
 
@@ -4068,7 +4154,7 @@ class _$CustomTargetsResponseCopyWithImpl<$Res>
     Object? targets = null,
     Object? warnings = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(CustomTargetsResponse(
       targets: null == targets
           ? _self.targets
           : targets // ignore: cast_nullable_to_non_nullable
@@ -4254,7 +4340,7 @@ extension CustomTargetsResponsePatterns on CustomTargetsResponse {
 @JsonSerializable()
 class _CustomTargetsResponse implements CustomTargetsResponse {
   const _CustomTargetsResponse(
-      {required this.targets, required final List<String> warnings})
+      {required this.targets, required List<String> warnings})
       : _warnings = warnings;
   factory _CustomTargetsResponse.fromJson(Map<String, dynamic> json) =>
       _$CustomTargetsResponseFromJson(json);
@@ -4291,13 +4377,15 @@ class _CustomTargetsResponse implements CustomTargetsResponse {
         (other.runtimeType == runtimeType &&
             other is _CustomTargetsResponse &&
             (identical(other.targets, targets) || other.targets == targets) &&
-            const DeepCollectionEquality().equals(other._warnings, _warnings));
+            const DeepCollectionEquality().equals(other.warnings, _warnings));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, targets, const DeepCollectionEquality().hash(_warnings));
+  int get hashCode {
+    return Object.hash(
+        runtimeType, targets, const DeepCollectionEquality().hash(_warnings));
+  }
 
   @override
   String toString() {
@@ -4376,20 +4464,26 @@ mixin _$GoalResponse {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as GoalResponse;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is GoalResponse &&
-            (identical(other.goal, goal) || other.goal == goal) &&
-            (identical(other.targets, targets) || other.targets == targets));
+            (identical(other.goal, _this.goal) || other.goal == _this.goal) &&
+            (identical(other.targets, _this.targets) ||
+                other.targets == _this.targets));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, goal, targets);
+  int get hashCode {
+    final _this = this as GoalResponse;
+    return Object.hash(runtimeType, _this.goal, _this.targets);
+  }
 
   @override
   String toString() {
-    return 'GoalResponse(goal: $goal, targets: $targets)';
+    final _this = this as GoalResponse;
+    return 'GoalResponse(goal: ${_this.goal}, targets: ${_this.targets})';
   }
 }
 
@@ -4420,7 +4514,7 @@ class _$GoalResponseCopyWithImpl<$Res> implements $GoalResponseCopyWith<$Res> {
     Object? goal = null,
     Object? targets = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(GoalResponse(
       goal: null == goal
           ? _self.goal
           : goal // ignore: cast_nullable_to_non_nullable
@@ -4652,7 +4746,9 @@ class _GoalResponse implements GoalResponse {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, goal, targets);
+  int get hashCode {
+    return Object.hash(runtimeType, goal, targets);
+  }
 
   @override
   String toString() {
@@ -4747,22 +4843,27 @@ mixin _$PutGoalRequest {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as PutGoalRequest;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is PutGoalRequest &&
-            (identical(other.goalType, goalType) ||
-                other.goalType == goalType) &&
-            (identical(other.targetWeightKg, targetWeightKg) ||
-                other.targetWeightKg == targetWeightKg));
+            (identical(other.goalType, _this.goalType) ||
+                other.goalType == _this.goalType) &&
+            (identical(other.targetWeightKg, _this.targetWeightKg) ||
+                other.targetWeightKg == _this.targetWeightKg));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, goalType, targetWeightKg);
+  int get hashCode {
+    final _this = this as PutGoalRequest;
+    return Object.hash(runtimeType, _this.goalType, _this.targetWeightKg);
+  }
 
   @override
   String toString() {
-    return 'PutGoalRequest(goalType: $goalType, targetWeightKg: $targetWeightKg)';
+    final _this = this as PutGoalRequest;
+    return 'PutGoalRequest(goalType: ${_this.goalType}, targetWeightKg: ${_this.targetWeightKg})';
   }
 }
 
@@ -4791,7 +4892,7 @@ class _$PutGoalRequestCopyWithImpl<$Res>
     Object? goalType = null,
     Object? targetWeightKg = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(PutGoalRequest(
       goalType: null == goalType
           ? _self.goalType
           : goalType // ignore: cast_nullable_to_non_nullable
@@ -5001,7 +5102,9 @@ class _PutGoalRequest implements PutGoalRequest {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, goalType, targetWeightKg);
+  int get hashCode {
+    return Object.hash(runtimeType, goalType, targetWeightKg);
+  }
 
   @override
   String toString() {

@@ -57,7 +57,7 @@ abstract final class FitNotifications {
   static Future<void> _init() async {
     tzdata.initializeTimeZones();
     await plugin.initialize(
-      const InitializationSettings(
+      settings: const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       ),
       onDidReceiveNotificationResponse: (r) {
@@ -86,11 +86,12 @@ abstract final class FitNotifications {
             ?.canScheduleExactNotifications() ??
         false;
     await plugin.zonedSchedule(
-      r.id ?? 0,
-      p['title'] as String? ?? 'FITOS',
-      p['body'] as String? ?? '',
-      tz.TZDateTime.now(tz.UTC).add(const Duration(hours: 1)),
-      NotificationDetails(android: reminderDetails(snooze: false)),
+      id: r.id ?? 0,
+      title: p['title'] as String? ?? 'FITOS',
+      body: p['body'] as String? ?? '',
+      scheduledDate: tz.TZDateTime.now(tz.UTC).add(const Duration(hours: 1)),
+      notificationDetails:
+          NotificationDetails(android: reminderDetails(snooze: false)),
       payload: payload,
       androidScheduleMode: exact
           ? AndroidScheduleMode.exactAllowWhileIdle
@@ -107,7 +108,7 @@ void notificationBackgroundTap(NotificationResponse response) {
   tzdata.initializeTimeZones();
   FitNotifications.plugin
       .initialize(
-        const InitializationSettings(
+        settings: const InitializationSettings(
           android: AndroidInitializationSettings('@mipmap/ic_launcher'),
         ),
       )

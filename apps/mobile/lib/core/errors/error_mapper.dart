@@ -26,6 +26,9 @@ abstract final class ErrorMapper {
         );
       case DioExceptionType.cancel:
       case DioExceptionType.badCertificate:
+      // dio 5.9+: the reply came but decoding it took too long — the server
+      // was reached, so not "offline".
+      case DioExceptionType.transformTimeout:
       case DioExceptionType.unknown:
         return const Unknown();
     }

@@ -4532,7 +4532,11 @@ class $$LocalSessionsTableTableManager extends RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<$LocalSessionsTable, LocalSession>(table),
+                    BaseReferences<_$AppDatabase, $LocalSessionsTable,
+                        LocalSession>(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -4778,7 +4782,12 @@ class $$LocalSessionExercisesTableTableManager extends RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<$LocalSessionExercisesTable,
+                        LocalSessionExercise>(table),
+                    BaseReferences<_$AppDatabase, $LocalSessionExercisesTable,
+                        LocalSessionExercise>(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -5061,7 +5070,11 @@ class $$LocalSetLogsTableTableManager extends RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<$LocalSetLogsTable, LocalSetLog>(table),
+                    BaseReferences<_$AppDatabase, $LocalSetLogsTable,
+                        LocalSetLog>(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -5304,7 +5317,11 @@ class $$SyncQueueTableTableManager extends RootTableManager<
             createdAt: createdAt,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<$SyncQueueTable, SyncQueueData>(table),
+                    BaseReferences<_$AppDatabase, $SyncQueueTable,
+                        SyncQueueData>(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -5445,7 +5462,11 @@ class $$CachedJsonTableTableManager extends RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<$CachedJsonTable, CachedJsonData>(table),
+                    BaseReferences<_$AppDatabase, $CachedJsonTable,
+                        CachedJsonData>(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -5648,7 +5669,11 @@ class $$LocalFoodLogsTableTableManager extends RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<$LocalFoodLogsTable, LocalFoodLog>(table),
+                    BaseReferences<_$AppDatabase, $LocalFoodLogsTable,
+                        LocalFoodLog>(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -5879,7 +5904,12 @@ class $$NutritionSyncQueueTableTableManager extends RootTableManager<
             createdAt: createdAt,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<$NutritionSyncQueueTable,
+                        NutritionSyncQueueData>(table),
+                    BaseReferences<_$AppDatabase, $NutritionSyncQueueTable,
+                        NutritionSyncQueueData>(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -6112,7 +6142,12 @@ class $$TodayEventQueueTableTableManager extends RootTableManager<
             createdAt: createdAt,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<$TodayEventQueueTable, TodayEventQueueData>(
+                        table),
+                    BaseReferences<_$AppDatabase, $TodayEventQueueTable,
+                        TodayEventQueueData>(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));
@@ -6335,7 +6370,12 @@ class $$TodayEventLedgerTableTableManager extends RootTableManager<
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable<$TodayEventLedgerTable, TodayEventLedgerData>(
+                        table),
+                    BaseReferences<_$AppDatabase, $TodayEventLedgerTable,
+                        TodayEventLedgerData>(db, table, e)
+                  ))
               .toList(),
           prefetchHooksCallback: null,
         ));

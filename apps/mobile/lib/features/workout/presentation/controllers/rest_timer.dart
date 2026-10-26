@@ -81,11 +81,11 @@ class LocalRestNotifier implements RestNotifier {
         AndroidFlutterLocalNotificationsPlugin>();
     final exact = await android?.canScheduleExactNotifications() ?? false;
     await _plugin.zonedSchedule(
-      _id,
-      'Rest over',
-      body,
-      tz.TZDateTime.now(tz.UTC).add(inFuture),
-      const NotificationDetails(
+      id: _id,
+      title: 'Rest over',
+      body: body,
+      scheduledDate: tz.TZDateTime.now(tz.UTC).add(inFuture),
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'rest-timer',
           'Rest timer',
@@ -103,7 +103,7 @@ class LocalRestNotifier implements RestNotifier {
   @override
   Future<void> cancel() async {
     await _init();
-    await _plugin.cancel(_id);
+    await _plugin.cancel(id: _id);
   }
 }
 

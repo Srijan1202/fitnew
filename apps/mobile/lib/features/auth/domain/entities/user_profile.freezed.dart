@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'user_profile.dart';
@@ -9,6 +9,7 @@ part of 'user_profile.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -39,30 +40,37 @@ mixin _$UserProfile {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as UserProfile;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is UserProfile &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.email, email) || other.email == email) &&
-            (identical(other.displayName, displayName) ||
-                other.displayName == displayName) &&
-            (identical(other.timezone, timezone) ||
-                other.timezone == timezone) &&
-            (identical(other.locale, locale) || other.locale == locale) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.onboardingStage, onboardingStage) ||
-                other.onboardingStage == onboardingStage));
+            (identical(other.id, _this.id) || other.id == _this.id) &&
+            (identical(other.email, _this.email) ||
+                other.email == _this.email) &&
+            (identical(other.displayName, _this.displayName) ||
+                other.displayName == _this.displayName) &&
+            (identical(other.timezone, _this.timezone) ||
+                other.timezone == _this.timezone) &&
+            (identical(other.locale, _this.locale) ||
+                other.locale == _this.locale) &&
+            (identical(other.createdAt, _this.createdAt) ||
+                other.createdAt == _this.createdAt) &&
+            (identical(other.onboardingStage, _this.onboardingStage) ||
+                other.onboardingStage == _this.onboardingStage));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, email, displayName, timezone,
-      locale, createdAt, onboardingStage);
+  int get hashCode {
+    final _this = this as UserProfile;
+    return Object.hash(runtimeType, _this.id, _this.email, _this.displayName,
+        _this.timezone, _this.locale, _this.createdAt, _this.onboardingStage);
+  }
 
   @override
   String toString() {
-    return 'UserProfile(id: $id, email: $email, displayName: $displayName, timezone: $timezone, locale: $locale, createdAt: $createdAt, onboardingStage: $onboardingStage)';
+    final _this = this as UserProfile;
+    return 'UserProfile(id: ${_this.id}, email: ${_this.email}, displayName: ${_this.displayName}, timezone: ${_this.timezone}, locale: ${_this.locale}, createdAt: ${_this.createdAt}, onboardingStage: ${_this.onboardingStage})';
   }
 }
 
@@ -102,7 +110,7 @@ class _$UserProfileCopyWithImpl<$Res> implements $UserProfileCopyWith<$Res> {
     Object? createdAt = null,
     Object? onboardingStage = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(UserProfile(
       id: null == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -408,8 +416,10 @@ class _UserProfile implements UserProfile {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, email, displayName, timezone,
-      locale, createdAt, onboardingStage);
+  int get hashCode {
+    return Object.hash(runtimeType, id, email, displayName, timezone, locale,
+        createdAt, onboardingStage);
+  }
 
   @override
   String toString() {

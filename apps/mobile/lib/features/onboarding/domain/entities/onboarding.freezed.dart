@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'onboarding.dart';
@@ -9,6 +9,7 @@ part of 'onboarding.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -30,22 +31,27 @@ mixin _$ConsentGrant {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as ConsentGrant;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is ConsentGrant &&
-            (identical(other.policyVersion, policyVersion) ||
-                other.policyVersion == policyVersion) &&
-            const DeepCollectionEquality().equals(other.types, types));
+            (identical(other.policyVersion, _this.policyVersion) ||
+                other.policyVersion == _this.policyVersion) &&
+            const DeepCollectionEquality().equals(other.types, _this.types));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, policyVersion, const DeepCollectionEquality().hash(types));
+  int get hashCode {
+    final _this = this as ConsentGrant;
+    return Object.hash(runtimeType, _this.policyVersion,
+        const DeepCollectionEquality().hash(_this.types));
+  }
 
   @override
   String toString() {
-    return 'ConsentGrant(policyVersion: $policyVersion, types: $types)';
+    final _this = this as ConsentGrant;
+    return 'ConsentGrant(policyVersion: ${_this.policyVersion}, types: ${_this.types})';
   }
 }
 
@@ -73,7 +79,7 @@ class _$ConsentGrantCopyWithImpl<$Res> implements $ConsentGrantCopyWith<$Res> {
     Object? policyVersion = null,
     Object? types = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(ConsentGrant(
       policyVersion: null == policyVersion
           ? _self.policyVersion
           : policyVersion // ignore: cast_nullable_to_non_nullable
@@ -247,7 +253,7 @@ extension ConsentGrantPatterns on ConsentGrant {
 @JsonSerializable()
 class _ConsentGrant implements ConsentGrant {
   const _ConsentGrant(
-      {required this.policyVersion, required final List<ConsentType> types})
+      {required this.policyVersion, required List<ConsentType> types})
       : _types = types;
   factory _ConsentGrant.fromJson(Map<String, dynamic> json) =>
       _$ConsentGrantFromJson(json);
@@ -284,13 +290,15 @@ class _ConsentGrant implements ConsentGrant {
             other is _ConsentGrant &&
             (identical(other.policyVersion, policyVersion) ||
                 other.policyVersion == policyVersion) &&
-            const DeepCollectionEquality().equals(other._types, _types));
+            const DeepCollectionEquality().equals(other.types, _types));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, policyVersion, const DeepCollectionEquality().hash(_types));
+  int get hashCode {
+    return Object.hash(runtimeType, policyVersion,
+        const DeepCollectionEquality().hash(_types));
+  }
 
   @override
   String toString() {
@@ -656,7 +664,7 @@ extension OnboardingAnswerPatterns on OnboardingAnswer {
 /// @nodoc
 @JsonSerializable()
 class GoalAnswer implements OnboardingAnswer {
-  const GoalAnswer({required this.goalType, final String? $type})
+  const GoalAnswer({required this.goalType, String? $type})
       : $type = $type ?? 'goal';
   factory GoalAnswer.fromJson(Map<String, dynamic> json) =>
       _$GoalAnswerFromJson(json);
@@ -691,7 +699,9 @@ class GoalAnswer implements OnboardingAnswer {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, goalType);
+  int get hashCode {
+    return Object.hash(runtimeType, goalType);
+  }
 
   @override
   String toString() {
@@ -741,7 +751,7 @@ class AboutAnswer implements OnboardingAnswer {
       required this.heightCm,
       required this.weightKg,
       required this.consent,
-      final String? $type})
+      String? $type})
       : $type = $type ?? 'about';
   factory AboutAnswer.fromJson(Map<String, dynamic> json) =>
       _$AboutAnswerFromJson(json);
@@ -790,8 +800,10 @@ class AboutAnswer implements OnboardingAnswer {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, displayName, sex, birthDate, heightCm, weightKg, consent);
+  int get hashCode {
+    return Object.hash(
+        runtimeType, displayName, sex, birthDate, heightCm, weightKg, consent);
+  }
 
   @override
   String toString() {
@@ -881,7 +893,7 @@ class ExperienceAnswer implements OnboardingAnswer {
       {required this.experienceLevel,
       required this.trainingDaysPerWeek,
       required this.activityLevel,
-      final String? $type})
+      String? $type})
       : $type = $type ?? 'experience';
   factory ExperienceAnswer.fromJson(Map<String, dynamic> json) =>
       _$ExperienceAnswerFromJson(json);
@@ -922,8 +934,10 @@ class ExperienceAnswer implements OnboardingAnswer {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, experienceLevel, trainingDaysPerWeek, activityLevel);
+  int get hashCode {
+    return Object.hash(
+        runtimeType, experienceLevel, trainingDaysPerWeek, activityLevel);
+  }
 
   @override
   String toString() {
@@ -982,8 +996,8 @@ class _$ExperienceAnswerCopyWithImpl<$Res>
 class TrainingAnswer implements OnboardingAnswer {
   const TrainingAnswer(
       {required this.trainingLocation,
-      required final List<Equipment> equipment,
-      final String? $type})
+      required List<Equipment> equipment,
+      String? $type})
       : _equipment = equipment,
         $type = $type ?? 'training';
   factory TrainingAnswer.fromJson(Map<String, dynamic> json) =>
@@ -1021,14 +1035,15 @@ class TrainingAnswer implements OnboardingAnswer {
             other is TrainingAnswer &&
             (identical(other.trainingLocation, trainingLocation) ||
                 other.trainingLocation == trainingLocation) &&
-            const DeepCollectionEquality()
-                .equals(other._equipment, _equipment));
+            const DeepCollectionEquality().equals(other.equipment, _equipment));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, trainingLocation,
-      const DeepCollectionEquality().hash(_equipment));
+  int get hashCode {
+    return Object.hash(runtimeType, trainingLocation,
+        const DeepCollectionEquality().hash(_equipment));
+  }
 
   @override
   String toString() {
@@ -1078,9 +1093,7 @@ class _$TrainingAnswerCopyWithImpl<$Res>
 @JsonSerializable()
 class FoodAnswer implements OnboardingAnswer {
   const FoodAnswer(
-      {required this.dietType,
-      required final List<Allergy> allergies,
-      final String? $type})
+      {required this.dietType, required List<Allergy> allergies, String? $type})
       : _allergies = allergies,
         $type = $type ?? 'food';
   factory FoodAnswer.fromJson(Map<String, dynamic> json) =>
@@ -1118,14 +1131,15 @@ class FoodAnswer implements OnboardingAnswer {
             other is FoodAnswer &&
             (identical(other.dietType, dietType) ||
                 other.dietType == dietType) &&
-            const DeepCollectionEquality()
-                .equals(other._allergies, _allergies));
+            const DeepCollectionEquality().equals(other.allergies, _allergies));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, dietType, const DeepCollectionEquality().hash(_allergies));
+  int get hashCode {
+    return Object.hash(
+        runtimeType, dietType, const DeepCollectionEquality().hash(_allergies));
+  }
 
   @override
   String toString() {
@@ -1174,7 +1188,7 @@ class _$FoodAnswerCopyWithImpl<$Res> implements $FoodAnswerCopyWith<$Res> {
 @JsonSerializable()
 class VitAnswer implements OnboardingAnswer {
   const VitAnswer(
-      {required this.isVitStudent, required this.mess, final String? $type})
+      {required this.isVitStudent, required this.mess, String? $type})
       : $type = $type ?? 'vit';
   factory VitAnswer.fromJson(Map<String, dynamic> json) =>
       _$VitAnswerFromJson(json);
@@ -1211,7 +1225,9 @@ class VitAnswer implements OnboardingAnswer {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, isVitStudent, mess);
+  int get hashCode {
+    return Object.hash(runtimeType, isVitStudent, mess);
+  }
 
   @override
   String toString() {
@@ -1299,41 +1315,51 @@ mixin _$OnboardingState {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as OnboardingState;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is OnboardingState &&
-            (identical(other.stage, stage) || other.stage == stage) &&
-            (identical(other.completed, completed) ||
-                other.completed == completed) &&
-            const DeepCollectionEquality().equals(other.answered, answered) &&
-            const DeepCollectionEquality().equals(other.missing, missing) &&
-            (identical(other.profile, profile) || other.profile == profile) &&
-            (identical(other.goalType, goalType) ||
-                other.goalType == goalType) &&
-            (identical(other.dietType, dietType) ||
-                other.dietType == dietType) &&
-            const DeepCollectionEquality().equals(other.allergies, allergies) &&
-            (identical(other.policyVersion, policyVersion) ||
-                other.policyVersion == policyVersion));
+            (identical(other.stage, _this.stage) ||
+                other.stage == _this.stage) &&
+            (identical(other.completed, _this.completed) ||
+                other.completed == _this.completed) &&
+            const DeepCollectionEquality()
+                .equals(other.answered, _this.answered) &&
+            const DeepCollectionEquality()
+                .equals(other.missing, _this.missing) &&
+            (identical(other.profile, _this.profile) ||
+                other.profile == _this.profile) &&
+            (identical(other.goalType, _this.goalType) ||
+                other.goalType == _this.goalType) &&
+            (identical(other.dietType, _this.dietType) ||
+                other.dietType == _this.dietType) &&
+            const DeepCollectionEquality()
+                .equals(other.allergies, _this.allergies) &&
+            (identical(other.policyVersion, _this.policyVersion) ||
+                other.policyVersion == _this.policyVersion));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      stage,
-      completed,
-      const DeepCollectionEquality().hash(answered),
-      const DeepCollectionEquality().hash(missing),
-      profile,
-      goalType,
-      dietType,
-      const DeepCollectionEquality().hash(allergies),
-      policyVersion);
+  int get hashCode {
+    final _this = this as OnboardingState;
+    return Object.hash(
+        runtimeType,
+        _this.stage,
+        _this.completed,
+        const DeepCollectionEquality().hash(_this.answered),
+        const DeepCollectionEquality().hash(_this.missing),
+        _this.profile,
+        _this.goalType,
+        _this.dietType,
+        const DeepCollectionEquality().hash(_this.allergies),
+        _this.policyVersion);
+  }
 
   @override
   String toString() {
-    return 'OnboardingState(stage: $stage, completed: $completed, answered: $answered, missing: $missing, profile: $profile, goalType: $goalType, dietType: $dietType, allergies: $allergies, policyVersion: $policyVersion)';
+    final _this = this as OnboardingState;
+    return 'OnboardingState(stage: ${_this.stage}, completed: ${_this.completed}, answered: ${_this.answered}, missing: ${_this.missing}, profile: ${_this.profile}, goalType: ${_this.goalType}, dietType: ${_this.dietType}, allergies: ${_this.allergies}, policyVersion: ${_this.policyVersion})';
   }
 }
 
@@ -1380,7 +1406,7 @@ class _$OnboardingStateCopyWithImpl<$Res>
     Object? allergies = null,
     Object? policyVersion = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(OnboardingState(
       stage: null == stage
           ? _self.stage
           : stage // ignore: cast_nullable_to_non_nullable
@@ -1651,12 +1677,12 @@ class _OnboardingState implements OnboardingState {
   const _OnboardingState(
       {required this.stage,
       required this.completed,
-      required final List<OnboardingStage> answered,
-      required final List<OnboardingStage> missing,
+      required List<OnboardingStage> answered,
+      required List<OnboardingStage> missing,
       required this.profile,
       required this.goalType,
       required this.dietType,
-      required final List<Allergy> allergies,
+      required List<Allergy> allergies,
       required this.policyVersion})
       : _answered = answered,
         _missing = missing,
@@ -1727,32 +1753,34 @@ class _OnboardingState implements OnboardingState {
             (identical(other.stage, stage) || other.stage == stage) &&
             (identical(other.completed, completed) ||
                 other.completed == completed) &&
-            const DeepCollectionEquality().equals(other._answered, _answered) &&
-            const DeepCollectionEquality().equals(other._missing, _missing) &&
+            const DeepCollectionEquality().equals(other.answered, _answered) &&
+            const DeepCollectionEquality().equals(other.missing, _missing) &&
             (identical(other.profile, profile) || other.profile == profile) &&
             (identical(other.goalType, goalType) ||
                 other.goalType == goalType) &&
             (identical(other.dietType, dietType) ||
                 other.dietType == dietType) &&
             const DeepCollectionEquality()
-                .equals(other._allergies, _allergies) &&
+                .equals(other.allergies, _allergies) &&
             (identical(other.policyVersion, policyVersion) ||
                 other.policyVersion == policyVersion));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      stage,
-      completed,
-      const DeepCollectionEquality().hash(_answered),
-      const DeepCollectionEquality().hash(_missing),
-      profile,
-      goalType,
-      dietType,
-      const DeepCollectionEquality().hash(_allergies),
-      policyVersion);
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        stage,
+        completed,
+        const DeepCollectionEquality().hash(_answered),
+        const DeepCollectionEquality().hash(_missing),
+        profile,
+        goalType,
+        dietType,
+        const DeepCollectionEquality().hash(_allergies),
+        policyVersion);
+  }
 
   @override
   String toString() {
@@ -1877,21 +1905,28 @@ mixin _$OnboardingCompleteResponse {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as OnboardingCompleteResponse;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is OnboardingCompleteResponse &&
-            (identical(other.profile, profile) || other.profile == profile) &&
-            (identical(other.goal, goal) || other.goal == goal) &&
-            (identical(other.targets, targets) || other.targets == targets));
+            (identical(other.profile, _this.profile) ||
+                other.profile == _this.profile) &&
+            (identical(other.goal, _this.goal) || other.goal == _this.goal) &&
+            (identical(other.targets, _this.targets) ||
+                other.targets == _this.targets));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, profile, goal, targets);
+  int get hashCode {
+    final _this = this as OnboardingCompleteResponse;
+    return Object.hash(runtimeType, _this.profile, _this.goal, _this.targets);
+  }
 
   @override
   String toString() {
-    return 'OnboardingCompleteResponse(profile: $profile, goal: $goal, targets: $targets)';
+    final _this = this as OnboardingCompleteResponse;
+    return 'OnboardingCompleteResponse(profile: ${_this.profile}, goal: ${_this.goal}, targets: ${_this.targets})';
   }
 }
 
@@ -1925,7 +1960,7 @@ class _$OnboardingCompleteResponseCopyWithImpl<$Res>
     Object? goal = null,
     Object? targets = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(OnboardingCompleteResponse(
       profile: null == profile
           ? _self.profile
           : profile // ignore: cast_nullable_to_non_nullable
@@ -2178,7 +2213,9 @@ class _OnboardingCompleteResponse implements OnboardingCompleteResponse {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, profile, goal, targets);
+  int get hashCode {
+    return Object.hash(runtimeType, profile, goal, targets);
+  }
 
   @override
   String toString() {

@@ -59,11 +59,11 @@ class LocalNotificationScheduler implements NotificationScheduler {
     await FitNotifications.ensureInitialized();
     final exact = await _android?.canScheduleExactNotifications() ?? false;
     await _plugin.zonedSchedule(
-      NotificationScheduler.idOf(item.id),
-      item.title,
-      item.body,
-      tz.TZDateTime.from(item.at.toUtc(), tz.UTC),
-      NotificationDetails(
+      id: NotificationScheduler.idOf(item.id),
+      title: item.title,
+      body: item.body,
+      scheduledDate: tz.TZDateTime.from(item.at.toUtc(), tz.UTC),
+      notificationDetails: NotificationDetails(
         android: FitNotifications.reminderDetails(
           snooze: item.actions.contains('snooze'),
         ),
@@ -78,17 +78,17 @@ class LocalNotificationScheduler implements NotificationScheduler {
   @override
   Future<void> cancel(PlannedNotification item) async {
     await FitNotifications.ensureInitialized();
-    await _plugin.cancel(NotificationScheduler.idOf(item.id));
+    await _plugin.cancel(id: NotificationScheduler.idOf(item.id));
   }
 
   @override
   Future<void> showNow(String title, String body) async {
     await FitNotifications.ensureInitialized();
     await _plugin.show(
-      99999,
-      title,
-      body,
-      NotificationDetails(
+      id: 99999,
+      title: title,
+      body: body,
+      notificationDetails: NotificationDetails(
         android: FitNotifications.reminderDetails(snooze: false),
       ),
     );

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'session_dto.dart';
@@ -9,6 +9,7 @@ part of 'session_dto.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -30,21 +31,26 @@ mixin _$CreateSessionResponse {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as CreateSessionResponse;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is CreateSessionResponse &&
-            (identical(other.user, user) || other.user == user) &&
-            (identical(other.isNewUser, isNewUser) ||
-                other.isNewUser == isNewUser));
+            (identical(other.user, _this.user) || other.user == _this.user) &&
+            (identical(other.isNewUser, _this.isNewUser) ||
+                other.isNewUser == _this.isNewUser));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, user, isNewUser);
+  int get hashCode {
+    final _this = this as CreateSessionResponse;
+    return Object.hash(runtimeType, _this.user, _this.isNewUser);
+  }
 
   @override
   String toString() {
-    return 'CreateSessionResponse(user: $user, isNewUser: $isNewUser)';
+    final _this = this as CreateSessionResponse;
+    return 'CreateSessionResponse(user: ${_this.user}, isNewUser: ${_this.isNewUser})';
   }
 }
 
@@ -75,7 +81,7 @@ class _$CreateSessionResponseCopyWithImpl<$Res>
     Object? user = null,
     Object? isNewUser = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(CreateSessionResponse(
       user: null == user
           ? _self.user
           : user // ignore: cast_nullable_to_non_nullable
@@ -295,7 +301,9 @@ class _CreateSessionResponse implements CreateSessionResponse {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, user, isNewUser);
+  int get hashCode {
+    return Object.hash(runtimeType, user, isNewUser);
+  }
 
   @override
   String toString() {
@@ -374,21 +382,27 @@ mixin _$CreateSessionRequest {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as CreateSessionRequest;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is CreateSessionRequest &&
-            (identical(other.timezone, timezone) ||
-                other.timezone == timezone) &&
-            (identical(other.locale, locale) || other.locale == locale));
+            (identical(other.timezone, _this.timezone) ||
+                other.timezone == _this.timezone) &&
+            (identical(other.locale, _this.locale) ||
+                other.locale == _this.locale));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, timezone, locale);
+  int get hashCode {
+    final _this = this as CreateSessionRequest;
+    return Object.hash(runtimeType, _this.timezone, _this.locale);
+  }
 
   @override
   String toString() {
-    return 'CreateSessionRequest(timezone: $timezone, locale: $locale)';
+    final _this = this as CreateSessionRequest;
+    return 'CreateSessionRequest(timezone: ${_this.timezone}, locale: ${_this.locale})';
   }
 }
 
@@ -417,7 +431,7 @@ class _$CreateSessionRequestCopyWithImpl<$Res>
     Object? timezone = freezed,
     Object? locale = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(CreateSessionRequest(
       timezone: freezed == timezone
           ? _self.timezone
           : timezone // ignore: cast_nullable_to_non_nullable
@@ -627,7 +641,9 @@ class _CreateSessionRequest implements CreateSessionRequest {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, timezone, locale);
+  int get hashCode {
+    return Object.hash(runtimeType, timezone, locale);
+  }
 
   @override
   String toString() {

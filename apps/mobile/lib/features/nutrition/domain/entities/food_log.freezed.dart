@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'food_log.dart';
@@ -9,6 +9,7 @@ part of 'food_log.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -52,78 +53,90 @@ mixin _$FoodLogItem {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as FoodLogItem;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is FoodLogItem &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.position, position) ||
-                other.position == position) &&
-            (identical(other.foodId, foodId) || other.foodId == foodId) &&
-            (identical(other.messDishSlug, messDishSlug) ||
-                other.messDishSlug == messDishSlug) &&
-            (identical(other.foodName, foodName) ||
-                other.foodName == foodName) &&
-            (identical(other.foodSource, foodSource) ||
-                other.foodSource == foodSource) &&
-            (identical(other.basis, basis) || other.basis == basis) &&
-            (identical(other.servingLabel, servingLabel) ||
-                other.servingLabel == servingLabel) &&
-            (identical(other.servingGrams, servingGrams) ||
-                other.servingGrams == servingGrams) &&
-            (identical(other.servings, servings) ||
-                other.servings == servings) &&
-            (identical(other.grams, grams) || other.grams == grams) &&
-            (identical(other.kcalLow, kcalLow) || other.kcalLow == kcalLow) &&
-            (identical(other.kcalHigh, kcalHigh) ||
-                other.kcalHigh == kcalHigh) &&
-            (identical(other.proteinLow, proteinLow) ||
-                other.proteinLow == proteinLow) &&
-            (identical(other.proteinHigh, proteinHigh) ||
-                other.proteinHigh == proteinHigh) &&
-            (identical(other.carbLow, carbLow) || other.carbLow == carbLow) &&
-            (identical(other.carbHigh, carbHigh) ||
-                other.carbHigh == carbHigh) &&
-            (identical(other.fatLow, fatLow) || other.fatLow == fatLow) &&
-            (identical(other.fatHigh, fatHigh) || other.fatHigh == fatHigh) &&
-            (identical(other.fibreLow, fibreLow) ||
-                other.fibreLow == fibreLow) &&
-            (identical(other.fibreHigh, fibreHigh) ||
-                other.fibreHigh == fibreHigh) &&
-            (identical(other.confidence, confidence) ||
-                other.confidence == confidence));
+            (identical(other.id, _this.id) || other.id == _this.id) &&
+            (identical(other.position, _this.position) ||
+                other.position == _this.position) &&
+            (identical(other.foodId, _this.foodId) ||
+                other.foodId == _this.foodId) &&
+            (identical(other.messDishSlug, _this.messDishSlug) ||
+                other.messDishSlug == _this.messDishSlug) &&
+            (identical(other.foodName, _this.foodName) ||
+                other.foodName == _this.foodName) &&
+            (identical(other.foodSource, _this.foodSource) ||
+                other.foodSource == _this.foodSource) &&
+            (identical(other.basis, _this.basis) ||
+                other.basis == _this.basis) &&
+            (identical(other.servingLabel, _this.servingLabel) ||
+                other.servingLabel == _this.servingLabel) &&
+            (identical(other.servingGrams, _this.servingGrams) ||
+                other.servingGrams == _this.servingGrams) &&
+            (identical(other.servings, _this.servings) ||
+                other.servings == _this.servings) &&
+            (identical(other.grams, _this.grams) ||
+                other.grams == _this.grams) &&
+            (identical(other.kcalLow, _this.kcalLow) ||
+                other.kcalLow == _this.kcalLow) &&
+            (identical(other.kcalHigh, _this.kcalHigh) ||
+                other.kcalHigh == _this.kcalHigh) &&
+            (identical(other.proteinLow, _this.proteinLow) ||
+                other.proteinLow == _this.proteinLow) &&
+            (identical(other.proteinHigh, _this.proteinHigh) ||
+                other.proteinHigh == _this.proteinHigh) &&
+            (identical(other.carbLow, _this.carbLow) ||
+                other.carbLow == _this.carbLow) &&
+            (identical(other.carbHigh, _this.carbHigh) ||
+                other.carbHigh == _this.carbHigh) &&
+            (identical(other.fatLow, _this.fatLow) ||
+                other.fatLow == _this.fatLow) &&
+            (identical(other.fatHigh, _this.fatHigh) ||
+                other.fatHigh == _this.fatHigh) &&
+            (identical(other.fibreLow, _this.fibreLow) ||
+                other.fibreLow == _this.fibreLow) &&
+            (identical(other.fibreHigh, _this.fibreHigh) ||
+                other.fibreHigh == _this.fibreHigh) &&
+            (identical(other.confidence, _this.confidence) ||
+                other.confidence == _this.confidence));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hashAll([
-        runtimeType,
-        id,
-        position,
-        foodId,
-        messDishSlug,
-        foodName,
-        foodSource,
-        basis,
-        servingLabel,
-        servingGrams,
-        servings,
-        grams,
-        kcalLow,
-        kcalHigh,
-        proteinLow,
-        proteinHigh,
-        carbLow,
-        carbHigh,
-        fatLow,
-        fatHigh,
-        fibreLow,
-        fibreHigh,
-        confidence
-      ]);
+  int get hashCode {
+    final _this = this as FoodLogItem;
+    return Object.hashAll([
+      runtimeType,
+      _this.id,
+      _this.position,
+      _this.foodId,
+      _this.messDishSlug,
+      _this.foodName,
+      _this.foodSource,
+      _this.basis,
+      _this.servingLabel,
+      _this.servingGrams,
+      _this.servings,
+      _this.grams,
+      _this.kcalLow,
+      _this.kcalHigh,
+      _this.proteinLow,
+      _this.proteinHigh,
+      _this.carbLow,
+      _this.carbHigh,
+      _this.fatLow,
+      _this.fatHigh,
+      _this.fibreLow,
+      _this.fibreHigh,
+      _this.confidence
+    ]);
+  }
 
   @override
   String toString() {
-    return 'FoodLogItem(id: $id, position: $position, foodId: $foodId, messDishSlug: $messDishSlug, foodName: $foodName, foodSource: $foodSource, basis: $basis, servingLabel: $servingLabel, servingGrams: $servingGrams, servings: $servings, grams: $grams, kcalLow: $kcalLow, kcalHigh: $kcalHigh, proteinLow: $proteinLow, proteinHigh: $proteinHigh, carbLow: $carbLow, carbHigh: $carbHigh, fatLow: $fatLow, fatHigh: $fatHigh, fibreLow: $fibreLow, fibreHigh: $fibreHigh, confidence: $confidence)';
+    final _this = this as FoodLogItem;
+    return 'FoodLogItem(id: ${_this.id}, position: ${_this.position}, foodId: ${_this.foodId}, messDishSlug: ${_this.messDishSlug}, foodName: ${_this.foodName}, foodSource: ${_this.foodSource}, basis: ${_this.basis}, servingLabel: ${_this.servingLabel}, servingGrams: ${_this.servingGrams}, servings: ${_this.servings}, grams: ${_this.grams}, kcalLow: ${_this.kcalLow}, kcalHigh: ${_this.kcalHigh}, proteinLow: ${_this.proteinLow}, proteinHigh: ${_this.proteinHigh}, carbLow: ${_this.carbLow}, carbHigh: ${_this.carbHigh}, fatLow: ${_this.fatLow}, fatHigh: ${_this.fatHigh}, fibreLow: ${_this.fibreLow}, fibreHigh: ${_this.fibreHigh}, confidence: ${_this.confidence})';
   }
 }
 
@@ -193,7 +206,7 @@ class _$FoodLogItemCopyWithImpl<$Res> implements $FoodLogItemCopyWith<$Res> {
     Object? fibreHigh = freezed,
     Object? confidence = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(FoodLogItem(
       id: null == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -717,31 +730,33 @@ class _FoodLogItem extends FoodLogItem {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hashAll([
-        runtimeType,
-        id,
-        position,
-        foodId,
-        messDishSlug,
-        foodName,
-        foodSource,
-        basis,
-        servingLabel,
-        servingGrams,
-        servings,
-        grams,
-        kcalLow,
-        kcalHigh,
-        proteinLow,
-        proteinHigh,
-        carbLow,
-        carbHigh,
-        fatLow,
-        fatHigh,
-        fibreLow,
-        fibreHigh,
-        confidence
-      ]);
+  int get hashCode {
+    return Object.hashAll([
+      runtimeType,
+      id,
+      position,
+      foodId,
+      messDishSlug,
+      foodName,
+      foodSource,
+      basis,
+      servingLabel,
+      servingGrams,
+      servings,
+      grams,
+      kcalLow,
+      kcalHigh,
+      proteinLow,
+      proteinHigh,
+      carbLow,
+      carbHigh,
+      fatLow,
+      fatHigh,
+      fibreLow,
+      fibreHigh,
+      confidence
+    ]);
+  }
 
   @override
   String toString() {
@@ -938,51 +953,60 @@ mixin _$NutritionTotals {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as NutritionTotals;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is NutritionTotals &&
-            (identical(other.kcalLow, kcalLow) || other.kcalLow == kcalLow) &&
-            (identical(other.kcalHigh, kcalHigh) ||
-                other.kcalHigh == kcalHigh) &&
-            (identical(other.proteinLow, proteinLow) ||
-                other.proteinLow == proteinLow) &&
-            (identical(other.proteinHigh, proteinHigh) ||
-                other.proteinHigh == proteinHigh) &&
-            (identical(other.carbLow, carbLow) || other.carbLow == carbLow) &&
-            (identical(other.carbHigh, carbHigh) ||
-                other.carbHigh == carbHigh) &&
-            (identical(other.fatLow, fatLow) || other.fatLow == fatLow) &&
-            (identical(other.fatHigh, fatHigh) || other.fatHigh == fatHigh) &&
-            (identical(other.fibreKnownLow, fibreKnownLow) ||
-                other.fibreKnownLow == fibreKnownLow) &&
-            (identical(other.fibreKnownHigh, fibreKnownHigh) ||
-                other.fibreKnownHigh == fibreKnownHigh) &&
-            (identical(other.fibreUnknownItems, fibreUnknownItems) ||
-                other.fibreUnknownItems == fibreUnknownItems) &&
-            (identical(other.itemCount, itemCount) ||
-                other.itemCount == itemCount));
+            (identical(other.kcalLow, _this.kcalLow) ||
+                other.kcalLow == _this.kcalLow) &&
+            (identical(other.kcalHigh, _this.kcalHigh) ||
+                other.kcalHigh == _this.kcalHigh) &&
+            (identical(other.proteinLow, _this.proteinLow) ||
+                other.proteinLow == _this.proteinLow) &&
+            (identical(other.proteinHigh, _this.proteinHigh) ||
+                other.proteinHigh == _this.proteinHigh) &&
+            (identical(other.carbLow, _this.carbLow) ||
+                other.carbLow == _this.carbLow) &&
+            (identical(other.carbHigh, _this.carbHigh) ||
+                other.carbHigh == _this.carbHigh) &&
+            (identical(other.fatLow, _this.fatLow) ||
+                other.fatLow == _this.fatLow) &&
+            (identical(other.fatHigh, _this.fatHigh) ||
+                other.fatHigh == _this.fatHigh) &&
+            (identical(other.fibreKnownLow, _this.fibreKnownLow) ||
+                other.fibreKnownLow == _this.fibreKnownLow) &&
+            (identical(other.fibreKnownHigh, _this.fibreKnownHigh) ||
+                other.fibreKnownHigh == _this.fibreKnownHigh) &&
+            (identical(other.fibreUnknownItems, _this.fibreUnknownItems) ||
+                other.fibreUnknownItems == _this.fibreUnknownItems) &&
+            (identical(other.itemCount, _this.itemCount) ||
+                other.itemCount == _this.itemCount));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      kcalLow,
-      kcalHigh,
-      proteinLow,
-      proteinHigh,
-      carbLow,
-      carbHigh,
-      fatLow,
-      fatHigh,
-      fibreKnownLow,
-      fibreKnownHigh,
-      fibreUnknownItems,
-      itemCount);
+  int get hashCode {
+    final _this = this as NutritionTotals;
+    return Object.hash(
+        runtimeType,
+        _this.kcalLow,
+        _this.kcalHigh,
+        _this.proteinLow,
+        _this.proteinHigh,
+        _this.carbLow,
+        _this.carbHigh,
+        _this.fatLow,
+        _this.fatHigh,
+        _this.fibreKnownLow,
+        _this.fibreKnownHigh,
+        _this.fibreUnknownItems,
+        _this.itemCount);
+  }
 
   @override
   String toString() {
-    return 'NutritionTotals(kcalLow: $kcalLow, kcalHigh: $kcalHigh, proteinLow: $proteinLow, proteinHigh: $proteinHigh, carbLow: $carbLow, carbHigh: $carbHigh, fatLow: $fatLow, fatHigh: $fatHigh, fibreKnownLow: $fibreKnownLow, fibreKnownHigh: $fibreKnownHigh, fibreUnknownItems: $fibreUnknownItems, itemCount: $itemCount)';
+    final _this = this as NutritionTotals;
+    return 'NutritionTotals(kcalLow: ${_this.kcalLow}, kcalHigh: ${_this.kcalHigh}, proteinLow: ${_this.proteinLow}, proteinHigh: ${_this.proteinHigh}, carbLow: ${_this.carbLow}, carbHigh: ${_this.carbHigh}, fatLow: ${_this.fatLow}, fatHigh: ${_this.fatHigh}, fibreKnownLow: ${_this.fibreKnownLow}, fibreKnownHigh: ${_this.fibreKnownHigh}, fibreUnknownItems: ${_this.fibreUnknownItems}, itemCount: ${_this.itemCount})';
   }
 }
 
@@ -1033,7 +1057,7 @@ class _$NutritionTotalsCopyWithImpl<$Res>
     Object? fibreUnknownItems = null,
     Object? itemCount = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(NutritionTotals(
       kcalLow: null == kcalLow
           ? _self.kcalLow
           : kcalLow // ignore: cast_nullable_to_non_nullable
@@ -1407,20 +1431,22 @@ class _NutritionTotals extends NutritionTotals {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      kcalLow,
-      kcalHigh,
-      proteinLow,
-      proteinHigh,
-      carbLow,
-      carbHigh,
-      fatLow,
-      fatHigh,
-      fibreKnownLow,
-      fibreKnownHigh,
-      fibreUnknownItems,
-      itemCount);
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        kcalLow,
+        kcalHigh,
+        proteinLow,
+        proteinHigh,
+        carbLow,
+        carbHigh,
+        fatLow,
+        fatHigh,
+        fibreKnownLow,
+        fibreKnownHigh,
+        fibreUnknownItems,
+        itemCount);
+  }
 
   @override
   String toString() {
@@ -1557,46 +1583,52 @@ mixin _$FoodLog {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as FoodLog;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is FoodLog &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.clientLogId, clientLogId) ||
-                other.clientLogId == clientLogId) &&
-            (identical(other.loggedAt, loggedAt) ||
-                other.loggedAt == loggedAt) &&
-            (identical(other.localDate, localDate) ||
-                other.localDate == localDate) &&
-            (identical(other.mealSlot, mealSlot) ||
-                other.mealSlot == mealSlot) &&
-            (identical(other.entryMethod, entryMethod) ||
-                other.entryMethod == entryMethod) &&
-            (identical(other.savedMealId, savedMealId) ||
-                other.savedMealId == savedMealId) &&
-            (identical(other.messCode, messCode) ||
-                other.messCode == messCode) &&
-            const DeepCollectionEquality().equals(other.items, items) &&
-            (identical(other.totals, totals) || other.totals == totals));
+            (identical(other.id, _this.id) || other.id == _this.id) &&
+            (identical(other.clientLogId, _this.clientLogId) ||
+                other.clientLogId == _this.clientLogId) &&
+            (identical(other.loggedAt, _this.loggedAt) ||
+                other.loggedAt == _this.loggedAt) &&
+            (identical(other.localDate, _this.localDate) ||
+                other.localDate == _this.localDate) &&
+            (identical(other.mealSlot, _this.mealSlot) ||
+                other.mealSlot == _this.mealSlot) &&
+            (identical(other.entryMethod, _this.entryMethod) ||
+                other.entryMethod == _this.entryMethod) &&
+            (identical(other.savedMealId, _this.savedMealId) ||
+                other.savedMealId == _this.savedMealId) &&
+            (identical(other.messCode, _this.messCode) ||
+                other.messCode == _this.messCode) &&
+            const DeepCollectionEquality().equals(other.items, _this.items) &&
+            (identical(other.totals, _this.totals) ||
+                other.totals == _this.totals));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      clientLogId,
-      loggedAt,
-      localDate,
-      mealSlot,
-      entryMethod,
-      savedMealId,
-      messCode,
-      const DeepCollectionEquality().hash(items),
-      totals);
+  int get hashCode {
+    final _this = this as FoodLog;
+    return Object.hash(
+        runtimeType,
+        _this.id,
+        _this.clientLogId,
+        _this.loggedAt,
+        _this.localDate,
+        _this.mealSlot,
+        _this.entryMethod,
+        _this.savedMealId,
+        _this.messCode,
+        const DeepCollectionEquality().hash(_this.items),
+        _this.totals);
+  }
 
   @override
   String toString() {
-    return 'FoodLog(id: $id, clientLogId: $clientLogId, loggedAt: $loggedAt, localDate: $localDate, mealSlot: $mealSlot, entryMethod: $entryMethod, savedMealId: $savedMealId, messCode: $messCode, items: $items, totals: $totals)';
+    final _this = this as FoodLog;
+    return 'FoodLog(id: ${_this.id}, clientLogId: ${_this.clientLogId}, loggedAt: ${_this.loggedAt}, localDate: ${_this.localDate}, mealSlot: ${_this.mealSlot}, entryMethod: ${_this.entryMethod}, savedMealId: ${_this.savedMealId}, messCode: ${_this.messCode}, items: ${_this.items}, totals: ${_this.totals})';
   }
 }
 
@@ -1643,7 +1675,7 @@ class _$FoodLogCopyWithImpl<$Res> implements $FoodLogCopyWith<$Res> {
     Object? items = null,
     Object? totals = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(FoodLog(
       id: null == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -1930,7 +1962,7 @@ class _FoodLog implements FoodLog {
       required this.entryMethod,
       required this.savedMealId,
       this.messCode = null,
-      required final List<FoodLogItem> items,
+      required List<FoodLogItem> items,
       required this.totals})
       : _items = items;
   factory _FoodLog.fromJson(Map<String, dynamic> json) =>
@@ -2001,24 +2033,26 @@ class _FoodLog implements FoodLog {
                 other.savedMealId == savedMealId) &&
             (identical(other.messCode, messCode) ||
                 other.messCode == messCode) &&
-            const DeepCollectionEquality().equals(other._items, _items) &&
+            const DeepCollectionEquality().equals(other.items, _items) &&
             (identical(other.totals, totals) || other.totals == totals));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      clientLogId,
-      loggedAt,
-      localDate,
-      mealSlot,
-      entryMethod,
-      savedMealId,
-      messCode,
-      const DeepCollectionEquality().hash(_items),
-      totals);
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        id,
+        clientLogId,
+        loggedAt,
+        localDate,
+        mealSlot,
+        entryMethod,
+        savedMealId,
+        messCode,
+        const DeepCollectionEquality().hash(_items),
+        totals);
+  }
 
   @override
   String toString() {
@@ -2146,22 +2180,30 @@ mixin _$RemainingRange {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as RemainingRange;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is RemainingRange &&
-            (identical(other.target, target) || other.target == target) &&
-            (identical(other.low, low) || other.low == low) &&
-            (identical(other.high, high) || other.high == high) &&
-            (identical(other.state, state) || other.state == state));
+            (identical(other.target, _this.target) ||
+                other.target == _this.target) &&
+            (identical(other.low, _this.low) || other.low == _this.low) &&
+            (identical(other.high, _this.high) || other.high == _this.high) &&
+            (identical(other.state, _this.state) ||
+                other.state == _this.state));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, target, low, high, state);
+  int get hashCode {
+    final _this = this as RemainingRange;
+    return Object.hash(
+        runtimeType, _this.target, _this.low, _this.high, _this.state);
+  }
 
   @override
   String toString() {
-    return 'RemainingRange(target: $target, low: $low, high: $high, state: $state)';
+    final _this = this as RemainingRange;
+    return 'RemainingRange(target: ${_this.target}, low: ${_this.low}, high: ${_this.high}, state: ${_this.state})';
   }
 }
 
@@ -2192,7 +2234,7 @@ class _$RemainingRangeCopyWithImpl<$Res>
     Object? high = null,
     Object? state = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(RemainingRange(
       target: null == target
           ? _self.target
           : target // ignore: cast_nullable_to_non_nullable
@@ -2424,7 +2466,9 @@ class _RemainingRange implements RemainingRange {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, target, low, high, state);
+  int get hashCode {
+    return Object.hash(runtimeType, target, low, high, state);
+  }
 
   @override
   String toString() {
@@ -2502,22 +2546,29 @@ mixin _$NutritionRemaining {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as NutritionRemaining;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is NutritionRemaining &&
-            (identical(other.kcal, kcal) || other.kcal == kcal) &&
-            (identical(other.protein, protein) || other.protein == protein) &&
-            (identical(other.carb, carb) || other.carb == carb) &&
-            (identical(other.fat, fat) || other.fat == fat));
+            (identical(other.kcal, _this.kcal) || other.kcal == _this.kcal) &&
+            (identical(other.protein, _this.protein) ||
+                other.protein == _this.protein) &&
+            (identical(other.carb, _this.carb) || other.carb == _this.carb) &&
+            (identical(other.fat, _this.fat) || other.fat == _this.fat));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, kcal, protein, carb, fat);
+  int get hashCode {
+    final _this = this as NutritionRemaining;
+    return Object.hash(
+        runtimeType, _this.kcal, _this.protein, _this.carb, _this.fat);
+  }
 
   @override
   String toString() {
-    return 'NutritionRemaining(kcal: $kcal, protein: $protein, carb: $carb, fat: $fat)';
+    final _this = this as NutritionRemaining;
+    return 'NutritionRemaining(kcal: ${_this.kcal}, protein: ${_this.protein}, carb: ${_this.carb}, fat: ${_this.fat})';
   }
 }
 
@@ -2557,7 +2608,7 @@ class _$NutritionRemainingCopyWithImpl<$Res>
     Object? carb = null,
     Object? fat = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(NutritionRemaining(
       kcal: null == kcal
           ? _self.kcal
           : kcal // ignore: cast_nullable_to_non_nullable
@@ -2829,7 +2880,9 @@ class _NutritionRemaining implements NutritionRemaining {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, kcal, protein, carb, fat);
+  int get hashCode {
+    return Object.hash(runtimeType, kcal, protein, carb, fat);
+  }
 
   @override
   String toString() {
@@ -2963,28 +3016,43 @@ mixin _$NutritionDay {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as NutritionDay;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is NutritionDay &&
-            (identical(other.date, date) || other.date == date) &&
-            (identical(other.today, today) || other.today == today) &&
-            (identical(other.timezone, timezone) ||
-                other.timezone == timezone) &&
-            (identical(other.targets, targets) || other.targets == targets) &&
-            (identical(other.totals, totals) || other.totals == totals) &&
-            (identical(other.remaining, remaining) ||
-                other.remaining == remaining) &&
-            const DeepCollectionEquality().equals(other.logs, logs));
+            (identical(other.date, _this.date) || other.date == _this.date) &&
+            (identical(other.today, _this.today) ||
+                other.today == _this.today) &&
+            (identical(other.timezone, _this.timezone) ||
+                other.timezone == _this.timezone) &&
+            (identical(other.targets, _this.targets) ||
+                other.targets == _this.targets) &&
+            (identical(other.totals, _this.totals) ||
+                other.totals == _this.totals) &&
+            (identical(other.remaining, _this.remaining) ||
+                other.remaining == _this.remaining) &&
+            const DeepCollectionEquality().equals(other.logs, _this.logs));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, date, today, timezone, targets,
-      totals, remaining, const DeepCollectionEquality().hash(logs));
+  int get hashCode {
+    final _this = this as NutritionDay;
+    return Object.hash(
+        runtimeType,
+        _this.date,
+        _this.today,
+        _this.timezone,
+        _this.targets,
+        _this.totals,
+        _this.remaining,
+        const DeepCollectionEquality().hash(_this.logs));
+  }
 
   @override
   String toString() {
-    return 'NutritionDay(date: $date, today: $today, timezone: $timezone, targets: $targets, totals: $totals, remaining: $remaining, logs: $logs)';
+    final _this = this as NutritionDay;
+    return 'NutritionDay(date: ${_this.date}, today: ${_this.today}, timezone: ${_this.timezone}, targets: ${_this.targets}, totals: ${_this.totals}, remaining: ${_this.remaining}, logs: ${_this.logs})';
   }
 }
 
@@ -3028,7 +3096,7 @@ class _$NutritionDayCopyWithImpl<$Res> implements $NutritionDayCopyWith<$Res> {
     Object? remaining = freezed,
     Object? logs = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(NutritionDay(
       date: null == date
           ? _self.date
           : date // ignore: cast_nullable_to_non_nullable
@@ -3293,7 +3361,7 @@ class _NutritionDay implements NutritionDay {
       required this.targets,
       required this.totals,
       required this.remaining,
-      required final List<FoodLog> logs})
+      required List<FoodLog> logs})
       : _logs = logs;
   factory _NutritionDay.fromJson(Map<String, dynamic> json) =>
       _$NutritionDayFromJson(json);
@@ -3346,13 +3414,15 @@ class _NutritionDay implements NutritionDay {
             (identical(other.totals, totals) || other.totals == totals) &&
             (identical(other.remaining, remaining) ||
                 other.remaining == remaining) &&
-            const DeepCollectionEquality().equals(other._logs, _logs));
+            const DeepCollectionEquality().equals(other.logs, _logs));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, date, today, timezone, targets,
-      totals, remaining, const DeepCollectionEquality().hash(_logs));
+  int get hashCode {
+    return Object.hash(runtimeType, date, today, timezone, targets, totals,
+        remaining, const DeepCollectionEquality().hash(_logs));
+  }
 
   @override
   String toString() {
@@ -3495,20 +3565,25 @@ mixin _$CreateLogResponse {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as CreateLogResponse;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is CreateLogResponse &&
-            (identical(other.log, log) || other.log == log) &&
-            (identical(other.day, day) || other.day == day));
+            (identical(other.log, _this.log) || other.log == _this.log) &&
+            (identical(other.day, _this.day) || other.day == _this.day));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, log, day);
+  int get hashCode {
+    final _this = this as CreateLogResponse;
+    return Object.hash(runtimeType, _this.log, _this.day);
+  }
 
   @override
   String toString() {
-    return 'CreateLogResponse(log: $log, day: $day)';
+    final _this = this as CreateLogResponse;
+    return 'CreateLogResponse(log: ${_this.log}, day: ${_this.day})';
   }
 }
 
@@ -3540,7 +3615,7 @@ class _$CreateLogResponseCopyWithImpl<$Res>
     Object? log = null,
     Object? day = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(CreateLogResponse(
       log: null == log
           ? _self.log
           : log // ignore: cast_nullable_to_non_nullable
@@ -3768,7 +3843,9 @@ class _CreateLogResponse implements CreateLogResponse {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, log, day);
+  int get hashCode {
+    return Object.hash(runtimeType, log, day);
+  }
 
   @override
   String toString() {
@@ -3858,19 +3935,24 @@ mixin _$DeleteLogResponse {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as DeleteLogResponse;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is DeleteLogResponse &&
-            (identical(other.day, day) || other.day == day));
+            (identical(other.day, _this.day) || other.day == _this.day));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, day);
+  int get hashCode {
+    final _this = this as DeleteLogResponse;
+    return Object.hash(runtimeType, _this.day);
+  }
 
   @override
   String toString() {
-    return 'DeleteLogResponse(day: $day)';
+    final _this = this as DeleteLogResponse;
+    return 'DeleteLogResponse(day: ${_this.day})';
   }
 }
 
@@ -3900,7 +3982,7 @@ class _$DeleteLogResponseCopyWithImpl<$Res>
   $Res call({
     Object? day = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(DeleteLogResponse(
       day: null == day
           ? _self.day
           : day // ignore: cast_nullable_to_non_nullable
@@ -4111,7 +4193,9 @@ class _DeleteLogResponse implements DeleteLogResponse {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, day);
+  int get hashCode {
+    return Object.hash(runtimeType, day);
+  }
 
   @override
   String toString() {
@@ -4187,28 +4271,33 @@ mixin _$RecentFood {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as RecentFood;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is RecentFood &&
-            (identical(other.food, food) || other.food == food) &&
-            (identical(other.lastLoggedAt, lastLoggedAt) ||
-                other.lastLoggedAt == lastLoggedAt) &&
-            (identical(other.lastBasis, lastBasis) ||
-                other.lastBasis == lastBasis) &&
-            (identical(other.lastServingLabel, lastServingLabel) ||
-                other.lastServingLabel == lastServingLabel) &&
-            (identical(other.lastServings, lastServings) ||
-                other.lastServings == lastServings));
+            (identical(other.food, _this.food) || other.food == _this.food) &&
+            (identical(other.lastLoggedAt, _this.lastLoggedAt) ||
+                other.lastLoggedAt == _this.lastLoggedAt) &&
+            (identical(other.lastBasis, _this.lastBasis) ||
+                other.lastBasis == _this.lastBasis) &&
+            (identical(other.lastServingLabel, _this.lastServingLabel) ||
+                other.lastServingLabel == _this.lastServingLabel) &&
+            (identical(other.lastServings, _this.lastServings) ||
+                other.lastServings == _this.lastServings));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, food, lastLoggedAt, lastBasis,
-      lastServingLabel, lastServings);
+  int get hashCode {
+    final _this = this as RecentFood;
+    return Object.hash(runtimeType, _this.food, _this.lastLoggedAt,
+        _this.lastBasis, _this.lastServingLabel, _this.lastServings);
+  }
 
   @override
   String toString() {
-    return 'RecentFood(food: $food, lastLoggedAt: $lastLoggedAt, lastBasis: $lastBasis, lastServingLabel: $lastServingLabel, lastServings: $lastServings)';
+    final _this = this as RecentFood;
+    return 'RecentFood(food: ${_this.food}, lastLoggedAt: ${_this.lastLoggedAt}, lastBasis: ${_this.lastBasis}, lastServingLabel: ${_this.lastServingLabel}, lastServings: ${_this.lastServings})';
   }
 }
 
@@ -4246,7 +4335,7 @@ class _$RecentFoodCopyWithImpl<$Res> implements $RecentFoodCopyWith<$Res> {
     Object? lastServingLabel = null,
     Object? lastServings = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(RecentFood(
       food: null == food
           ? _self.food
           : food // ignore: cast_nullable_to_non_nullable
@@ -4503,8 +4592,10 @@ class _RecentFood implements RecentFood {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, food, lastLoggedAt, lastBasis,
-      lastServingLabel, lastServings);
+  int get hashCode {
+    return Object.hash(runtimeType, food, lastLoggedAt, lastBasis,
+        lastServingLabel, lastServings);
+  }
 
   @override
   String toString() {
@@ -4601,20 +4692,25 @@ mixin _$RecentFoodsResponse {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as RecentFoodsResponse;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is RecentFoodsResponse &&
-            const DeepCollectionEquality().equals(other.items, items));
+            const DeepCollectionEquality().equals(other.items, _this.items));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(items));
+  int get hashCode {
+    final _this = this as RecentFoodsResponse;
+    return Object.hash(
+        runtimeType, const DeepCollectionEquality().hash(_this.items));
+  }
 
   @override
   String toString() {
-    return 'RecentFoodsResponse(items: $items)';
+    final _this = this as RecentFoodsResponse;
+    return 'RecentFoodsResponse(items: ${_this.items})';
   }
 }
 
@@ -4642,7 +4738,7 @@ class _$RecentFoodsResponseCopyWithImpl<$Res>
   $Res call({
     Object? items = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(RecentFoodsResponse(
       items: null == items
           ? _self.items
           : items // ignore: cast_nullable_to_non_nullable
@@ -4811,7 +4907,7 @@ extension RecentFoodsResponsePatterns on RecentFoodsResponse {
 /// @nodoc
 @JsonSerializable()
 class _RecentFoodsResponse implements RecentFoodsResponse {
-  const _RecentFoodsResponse({required final List<RecentFood> items})
+  const _RecentFoodsResponse({required List<RecentFood> items})
       : _items = items;
   factory _RecentFoodsResponse.fromJson(Map<String, dynamic> json) =>
       _$RecentFoodsResponseFromJson(json);
@@ -4845,13 +4941,15 @@ class _RecentFoodsResponse implements RecentFoodsResponse {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _RecentFoodsResponse &&
-            const DeepCollectionEquality().equals(other._items, _items));
+            const DeepCollectionEquality().equals(other.items, _items));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(_items));
+  int get hashCode {
+    return Object.hash(
+        runtimeType, const DeepCollectionEquality().hash(_items));
+  }
 
   @override
   String toString() {

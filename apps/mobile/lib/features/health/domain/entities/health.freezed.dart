@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'health.dart';
@@ -9,6 +9,7 @@ part of 'health.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -41,29 +42,45 @@ mixin _$HealthMetric {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as HealthMetric;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is HealthMetric &&
-            (identical(other.kind, kind) || other.kind == kind) &&
-            (identical(other.availability, availability) ||
-                other.availability == availability) &&
-            (identical(other.value, value) || other.value == value) &&
-            (identical(other.unit, unit) || other.unit == unit) &&
-            (identical(other.start, start) || other.start == start) &&
-            (identical(other.end, end) || other.end == end) &&
-            const DeepCollectionEquality().equals(other.sources, sources) &&
-            (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+            (identical(other.kind, _this.kind) || other.kind == _this.kind) &&
+            (identical(other.availability, _this.availability) ||
+                other.availability == _this.availability) &&
+            (identical(other.value, _this.value) ||
+                other.value == _this.value) &&
+            (identical(other.unit, _this.unit) || other.unit == _this.unit) &&
+            (identical(other.start, _this.start) ||
+                other.start == _this.start) &&
+            (identical(other.end, _this.end) || other.end == _this.end) &&
+            const DeepCollectionEquality()
+                .equals(other.sources, _this.sources) &&
+            (identical(other.updatedAt, _this.updatedAt) ||
+                other.updatedAt == _this.updatedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, kind, availability, value, unit,
-      start, end, const DeepCollectionEquality().hash(sources), updatedAt);
+  int get hashCode {
+    final _this = this as HealthMetric;
+    return Object.hash(
+        runtimeType,
+        _this.kind,
+        _this.availability,
+        _this.value,
+        _this.unit,
+        _this.start,
+        _this.end,
+        const DeepCollectionEquality().hash(_this.sources),
+        _this.updatedAt);
+  }
 
   @override
   String toString() {
-    return 'HealthMetric(kind: $kind, availability: $availability, value: $value, unit: $unit, start: $start, end: $end, sources: $sources, updatedAt: $updatedAt)';
+    final _this = this as HealthMetric;
+    return 'HealthMetric(kind: ${_this.kind}, availability: ${_this.availability}, value: ${_this.value}, unit: ${_this.unit}, start: ${_this.start}, end: ${_this.end}, sources: ${_this.sources}, updatedAt: ${_this.updatedAt})';
   }
 }
 
@@ -105,7 +122,7 @@ class _$HealthMetricCopyWithImpl<$Res> implements $HealthMetricCopyWith<$Res> {
     Object? sources = null,
     Object? updatedAt = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(HealthMetric(
       kind: null == kind
           ? _self.kind
           : kind // ignore: cast_nullable_to_non_nullable
@@ -339,7 +356,7 @@ class _HealthMetric extends HealthMetric {
       required this.unit,
       required this.start,
       required this.end,
-      final List<String> sources = const <String>[],
+      List<String> sources = const <String>[],
       required this.updatedAt})
       : _sources = sources,
         super._();
@@ -404,15 +421,17 @@ class _HealthMetric extends HealthMetric {
             (identical(other.unit, unit) || other.unit == unit) &&
             (identical(other.start, start) || other.start == start) &&
             (identical(other.end, end) || other.end == end) &&
-            const DeepCollectionEquality().equals(other._sources, _sources) &&
+            const DeepCollectionEquality().equals(other.sources, _sources) &&
             (identical(other.updatedAt, updatedAt) ||
                 other.updatedAt == updatedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, kind, availability, value, unit,
-      start, end, const DeepCollectionEquality().hash(_sources), updatedAt);
+  int get hashCode {
+    return Object.hash(runtimeType, kind, availability, value, unit, start, end,
+        const DeepCollectionEquality().hash(_sources), updatedAt);
+  }
 
   @override
   String toString() {
@@ -521,23 +540,32 @@ mixin _$HealthExerciseSession {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as HealthExerciseSession;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is HealthExerciseSession &&
-            (identical(other.start, start) || other.start == start) &&
-            (identical(other.end, end) || other.end == end) &&
-            (identical(other.type, type) || other.type == type) &&
-            (identical(other.title, title) || other.title == title) &&
-            (identical(other.source, source) || other.source == source));
+            (identical(other.start, _this.start) ||
+                other.start == _this.start) &&
+            (identical(other.end, _this.end) || other.end == _this.end) &&
+            (identical(other.type, _this.type) || other.type == _this.type) &&
+            (identical(other.title, _this.title) ||
+                other.title == _this.title) &&
+            (identical(other.source, _this.source) ||
+                other.source == _this.source));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, start, end, type, title, source);
+  int get hashCode {
+    final _this = this as HealthExerciseSession;
+    return Object.hash(runtimeType, _this.start, _this.end, _this.type,
+        _this.title, _this.source);
+  }
 
   @override
   String toString() {
-    return 'HealthExerciseSession(start: $start, end: $end, type: $type, title: $title, source: $source)';
+    final _this = this as HealthExerciseSession;
+    return 'HealthExerciseSession(start: ${_this.start}, end: ${_this.end}, type: ${_this.type}, title: ${_this.title}, source: ${_this.source})';
   }
 }
 
@@ -569,7 +597,7 @@ class _$HealthExerciseSessionCopyWithImpl<$Res>
     Object? title = freezed,
     Object? source = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(HealthExerciseSession(
       start: null == start
           ? _self.start
           : start // ignore: cast_nullable_to_non_nullable
@@ -815,7 +843,9 @@ class _HealthExerciseSession implements HealthExerciseSession {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, start, end, type, title, source);
+  int get hashCode {
+    return Object.hash(runtimeType, start, end, type, title, source);
+  }
 
   @override
   String toString() {
@@ -919,62 +949,74 @@ mixin _$HealthSnapshot {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as HealthSnapshot;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is HealthSnapshot &&
-            (identical(other.date, date) || other.date == date) &&
-            (identical(other.timezone, timezone) ||
-                other.timezone == timezone) &&
-            (identical(other.steps, steps) || other.steps == steps) &&
-            (identical(other.distance, distance) ||
-                other.distance == distance) &&
-            (identical(other.activeCalories, activeCalories) ||
-                other.activeCalories == activeCalories) &&
-            (identical(other.totalCalories, totalCalories) ||
-                other.totalCalories == totalCalories) &&
-            (identical(other.sleep, sleep) || other.sleep == sleep) &&
-            (identical(other.restingHeartRate, restingHeartRate) ||
-                other.restingHeartRate == restingHeartRate) &&
-            (identical(other.weight, weight) || other.weight == weight) &&
-            (identical(other.bodyFat, bodyFat) || other.bodyFat == bodyFat) &&
-            (identical(other.bmr, bmr) || other.bmr == bmr) &&
+            (identical(other.date, _this.date) || other.date == _this.date) &&
+            (identical(other.timezone, _this.timezone) ||
+                other.timezone == _this.timezone) &&
+            (identical(other.steps, _this.steps) ||
+                other.steps == _this.steps) &&
+            (identical(other.distance, _this.distance) ||
+                other.distance == _this.distance) &&
+            (identical(other.activeCalories, _this.activeCalories) ||
+                other.activeCalories == _this.activeCalories) &&
+            (identical(other.totalCalories, _this.totalCalories) ||
+                other.totalCalories == _this.totalCalories) &&
+            (identical(other.sleep, _this.sleep) ||
+                other.sleep == _this.sleep) &&
+            (identical(other.restingHeartRate, _this.restingHeartRate) ||
+                other.restingHeartRate == _this.restingHeartRate) &&
+            (identical(other.weight, _this.weight) ||
+                other.weight == _this.weight) &&
+            (identical(other.bodyFat, _this.bodyFat) ||
+                other.bodyFat == _this.bodyFat) &&
+            (identical(other.bmr, _this.bmr) || other.bmr == _this.bmr) &&
             const DeepCollectionEquality()
-                .equals(other.exerciseSessions, exerciseSessions) &&
-            (identical(other.exerciseAvailability, exerciseAvailability) ||
-                other.exerciseAvailability == exerciseAvailability) &&
-            const DeepCollectionEquality().equals(other.weekSteps, weekSteps) &&
-            const DeepCollectionEquality().equals(other.weekSleep, weekSleep) &&
-            (identical(other.fetchedAt, fetchedAt) ||
-                other.fetchedAt == fetchedAt) &&
-            (identical(other.fromCache, fromCache) ||
-                other.fromCache == fromCache));
+                .equals(other.exerciseSessions, _this.exerciseSessions) &&
+            (identical(
+                    other.exerciseAvailability, _this.exerciseAvailability) ||
+                other.exerciseAvailability == _this.exerciseAvailability) &&
+            const DeepCollectionEquality()
+                .equals(other.weekSteps, _this.weekSteps) &&
+            const DeepCollectionEquality()
+                .equals(other.weekSleep, _this.weekSleep) &&
+            (identical(other.fetchedAt, _this.fetchedAt) ||
+                other.fetchedAt == _this.fetchedAt) &&
+            (identical(other.fromCache, _this.fromCache) ||
+                other.fromCache == _this.fromCache));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      date,
-      timezone,
-      steps,
-      distance,
-      activeCalories,
-      totalCalories,
-      sleep,
-      restingHeartRate,
-      weight,
-      bodyFat,
-      bmr,
-      const DeepCollectionEquality().hash(exerciseSessions),
-      exerciseAvailability,
-      const DeepCollectionEquality().hash(weekSteps),
-      const DeepCollectionEquality().hash(weekSleep),
-      fetchedAt,
-      fromCache);
+  int get hashCode {
+    final _this = this as HealthSnapshot;
+    return Object.hash(
+        runtimeType,
+        _this.date,
+        _this.timezone,
+        _this.steps,
+        _this.distance,
+        _this.activeCalories,
+        _this.totalCalories,
+        _this.sleep,
+        _this.restingHeartRate,
+        _this.weight,
+        _this.bodyFat,
+        _this.bmr,
+        const DeepCollectionEquality().hash(_this.exerciseSessions),
+        _this.exerciseAvailability,
+        const DeepCollectionEquality().hash(_this.weekSteps),
+        const DeepCollectionEquality().hash(_this.weekSleep),
+        _this.fetchedAt,
+        _this.fromCache);
+  }
 
   @override
   String toString() {
-    return 'HealthSnapshot(date: $date, timezone: $timezone, steps: $steps, distance: $distance, activeCalories: $activeCalories, totalCalories: $totalCalories, sleep: $sleep, restingHeartRate: $restingHeartRate, weight: $weight, bodyFat: $bodyFat, bmr: $bmr, exerciseSessions: $exerciseSessions, exerciseAvailability: $exerciseAvailability, weekSteps: $weekSteps, weekSleep: $weekSleep, fetchedAt: $fetchedAt, fromCache: $fromCache)';
+    final _this = this as HealthSnapshot;
+    return 'HealthSnapshot(date: ${_this.date}, timezone: ${_this.timezone}, steps: ${_this.steps}, distance: ${_this.distance}, activeCalories: ${_this.activeCalories}, totalCalories: ${_this.totalCalories}, sleep: ${_this.sleep}, restingHeartRate: ${_this.restingHeartRate}, weight: ${_this.weight}, bodyFat: ${_this.bodyFat}, bmr: ${_this.bmr}, exerciseSessions: ${_this.exerciseSessions}, exerciseAvailability: ${_this.exerciseAvailability}, weekSteps: ${_this.weekSteps}, weekSleep: ${_this.weekSleep}, fetchedAt: ${_this.fetchedAt}, fromCache: ${_this.fromCache})';
   }
 }
 
@@ -1045,7 +1087,7 @@ class _$HealthSnapshotCopyWithImpl<$Res>
     Object? fetchedAt = null,
     Object? fromCache = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(HealthSnapshot(
       date: null == date
           ? _self.date
           : date // ignore: cast_nullable_to_non_nullable
@@ -1485,11 +1527,11 @@ class _HealthSnapshot extends HealthSnapshot {
       required this.weight,
       required this.bodyFat,
       required this.bmr,
-      final List<HealthExerciseSession> exerciseSessions =
+      List<HealthExerciseSession> exerciseSessions =
           const <HealthExerciseSession>[],
       required this.exerciseAvailability,
-      final List<double?> weekSteps = const <double?>[],
-      final List<double?> weekSleep = const <double?>[],
+      List<double?> weekSteps = const <double?>[],
+      List<double?> weekSleep = const <double?>[],
       required this.fetchedAt,
       this.fromCache = false})
       : _exerciseSessions = exerciseSessions,
@@ -1605,13 +1647,13 @@ class _HealthSnapshot extends HealthSnapshot {
             (identical(other.bodyFat, bodyFat) || other.bodyFat == bodyFat) &&
             (identical(other.bmr, bmr) || other.bmr == bmr) &&
             const DeepCollectionEquality()
-                .equals(other._exerciseSessions, _exerciseSessions) &&
+                .equals(other.exerciseSessions, _exerciseSessions) &&
             (identical(other.exerciseAvailability, exerciseAvailability) ||
                 other.exerciseAvailability == exerciseAvailability) &&
             const DeepCollectionEquality()
-                .equals(other._weekSteps, _weekSteps) &&
+                .equals(other.weekSteps, _weekSteps) &&
             const DeepCollectionEquality()
-                .equals(other._weekSleep, _weekSleep) &&
+                .equals(other.weekSleep, _weekSleep) &&
             (identical(other.fetchedAt, fetchedAt) ||
                 other.fetchedAt == fetchedAt) &&
             (identical(other.fromCache, fromCache) ||
@@ -1620,25 +1662,27 @@ class _HealthSnapshot extends HealthSnapshot {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      date,
-      timezone,
-      steps,
-      distance,
-      activeCalories,
-      totalCalories,
-      sleep,
-      restingHeartRate,
-      weight,
-      bodyFat,
-      bmr,
-      const DeepCollectionEquality().hash(_exerciseSessions),
-      exerciseAvailability,
-      const DeepCollectionEquality().hash(_weekSteps),
-      const DeepCollectionEquality().hash(_weekSleep),
-      fetchedAt,
-      fromCache);
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        date,
+        timezone,
+        steps,
+        distance,
+        activeCalories,
+        totalCalories,
+        sleep,
+        restingHeartRate,
+        weight,
+        bodyFat,
+        bmr,
+        const DeepCollectionEquality().hash(_exerciseSessions),
+        exerciseAvailability,
+        const DeepCollectionEquality().hash(_weekSteps),
+        const DeepCollectionEquality().hash(_weekSleep),
+        fetchedAt,
+        fromCache);
+  }
 
   @override
   String toString() {
@@ -1904,20 +1948,26 @@ mixin _$HealthConnectionState {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as HealthConnectionState;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is HealthConnectionState &&
-            (identical(other.sdk, sdk) || other.sdk == sdk) &&
-            const DeepCollectionEquality().equals(other.granted, granted));
+            (identical(other.sdk, _this.sdk) || other.sdk == _this.sdk) &&
+            const DeepCollectionEquality()
+                .equals(other.granted, _this.granted));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, sdk, const DeepCollectionEquality().hash(granted));
+  int get hashCode {
+    final _this = this as HealthConnectionState;
+    return Object.hash(runtimeType, _this.sdk,
+        const DeepCollectionEquality().hash(_this.granted));
+  }
 
   @override
   String toString() {
-    return 'HealthConnectionState(sdk: $sdk, granted: $granted)';
+    final _this = this as HealthConnectionState;
+    return 'HealthConnectionState(sdk: ${_this.sdk}, granted: ${_this.granted})';
   }
 }
 
@@ -1946,7 +1996,7 @@ class _$HealthConnectionStateCopyWithImpl<$Res>
     Object? sdk = null,
     Object? granted = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(HealthConnectionState(
       sdk: null == sdk
           ? _self.sdk
           : sdk // ignore: cast_nullable_to_non_nullable
@@ -2123,7 +2173,7 @@ extension HealthConnectionStatePatterns on HealthConnectionState {
 
 class _HealthConnectionState extends HealthConnectionState {
   const _HealthConnectionState(
-      {required this.sdk, required final Set<HealthMetricKind> granted})
+      {required this.sdk, required Set<HealthMetricKind> granted})
       : _granted = granted,
         super._();
 
@@ -2156,12 +2206,14 @@ class _HealthConnectionState extends HealthConnectionState {
         (other.runtimeType == runtimeType &&
             other is _HealthConnectionState &&
             (identical(other.sdk, sdk) || other.sdk == sdk) &&
-            const DeepCollectionEquality().equals(other._granted, _granted));
+            const DeepCollectionEquality().equals(other.granted, _granted));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, sdk, const DeepCollectionEquality().hash(_granted));
+  int get hashCode {
+    return Object.hash(
+        runtimeType, sdk, const DeepCollectionEquality().hash(_granted));
+  }
 
   @override
   String toString() {

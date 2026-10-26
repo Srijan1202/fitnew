@@ -48,13 +48,10 @@ jobs:
           git diff --exit-code -- '*.g.dart' '*.freezed.dart'
 
       # `dart analyze` must be clean, not merely warning-free: the standing
-      # quality bar in the spec requires it.
+      # quality bar in the spec requires it. riverpod_lint runs inside it as
+      # an analyzer plugin (analysis_options.yaml; beta 3.9).
       - name: Analyze
         run: dart analyze --fatal-infos
-
-      # riverpod_lint: provider misuse, missing ref disposal, etc.
-      - name: Riverpod lint
-        run: dart run custom_lint
 
       - name: Format check
         run: dart format --output=none --set-exit-if-changed .

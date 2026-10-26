@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'ai.dart';
@@ -9,6 +9,7 @@ part of 'ai.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -33,26 +34,39 @@ mixin _$AiStatus {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as AiStatus;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is AiStatus &&
-            (identical(other.enabled, enabled) || other.enabled == enabled) &&
-            (identical(other.configured, configured) ||
-                other.configured == configured) &&
-            (identical(other.provider, provider) ||
-                other.provider == provider) &&
-            (identical(other.model, model) || other.model == model) &&
-            const DeepCollectionEquality().equals(other.excludes, excludes));
+            (identical(other.enabled, _this.enabled) ||
+                other.enabled == _this.enabled) &&
+            (identical(other.configured, _this.configured) ||
+                other.configured == _this.configured) &&
+            (identical(other.provider, _this.provider) ||
+                other.provider == _this.provider) &&
+            (identical(other.model, _this.model) ||
+                other.model == _this.model) &&
+            const DeepCollectionEquality()
+                .equals(other.excludes, _this.excludes));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, enabled, configured, provider,
-      model, const DeepCollectionEquality().hash(excludes));
+  int get hashCode {
+    final _this = this as AiStatus;
+    return Object.hash(
+        runtimeType,
+        _this.enabled,
+        _this.configured,
+        _this.provider,
+        _this.model,
+        const DeepCollectionEquality().hash(_this.excludes));
+  }
 
   @override
   String toString() {
-    return 'AiStatus(enabled: $enabled, configured: $configured, provider: $provider, model: $model, excludes: $excludes)';
+    final _this = this as AiStatus;
+    return 'AiStatus(enabled: ${_this.enabled}, configured: ${_this.configured}, provider: ${_this.provider}, model: ${_this.model}, excludes: ${_this.excludes})';
   }
 }
 
@@ -87,7 +101,7 @@ class _$AiStatusCopyWithImpl<$Res> implements $AiStatusCopyWith<$Res> {
     Object? model = freezed,
     Object? excludes = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(AiStatus(
       enabled: null == enabled
           ? _self.enabled
           : enabled // ignore: cast_nullable_to_non_nullable
@@ -286,7 +300,7 @@ class _AiStatus implements AiStatus {
       required this.configured,
       required this.provider,
       required this.model,
-      final List<String> excludes = const <String>[]})
+      List<String> excludes = const <String>[]})
       : _excludes = excludes;
   factory _AiStatus.fromJson(Map<String, dynamic> json) =>
       _$AiStatusFromJson(json);
@@ -336,13 +350,15 @@ class _AiStatus implements AiStatus {
             (identical(other.provider, provider) ||
                 other.provider == provider) &&
             (identical(other.model, model) || other.model == model) &&
-            const DeepCollectionEquality().equals(other._excludes, _excludes));
+            const DeepCollectionEquality().equals(other.excludes, _excludes));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, enabled, configured, provider,
-      model, const DeepCollectionEquality().hash(_excludes));
+  int get hashCode {
+    return Object.hash(runtimeType, enabled, configured, provider, model,
+        const DeepCollectionEquality().hash(_excludes));
+  }
 
   @override
   String toString() {
@@ -426,20 +442,26 @@ mixin _$AiChatMessage {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as AiChatMessage;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is AiChatMessage &&
-            (identical(other.role, role) || other.role == role) &&
-            (identical(other.content, content) || other.content == content));
+            (identical(other.role, _this.role) || other.role == _this.role) &&
+            (identical(other.content, _this.content) ||
+                other.content == _this.content));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, role, content);
+  int get hashCode {
+    final _this = this as AiChatMessage;
+    return Object.hash(runtimeType, _this.role, _this.content);
+  }
 
   @override
   String toString() {
-    return 'AiChatMessage(role: $role, content: $content)';
+    final _this = this as AiChatMessage;
+    return 'AiChatMessage(role: ${_this.role}, content: ${_this.content})';
   }
 }
 
@@ -468,7 +490,7 @@ class _$AiChatMessageCopyWithImpl<$Res>
     Object? role = null,
     Object? content = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(AiChatMessage(
       role: null == role
           ? _self.role
           : role // ignore: cast_nullable_to_non_nullable
@@ -676,7 +698,9 @@ class _AiChatMessage implements AiChatMessage {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, role, content);
+  int get hashCode {
+    return Object.hash(runtimeType, role, content);
+  }
 
   @override
   String toString() {
@@ -742,21 +766,28 @@ mixin _$AiChatRequest {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as AiChatRequest;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is AiChatRequest &&
-            (identical(other.message, message) || other.message == message) &&
-            const DeepCollectionEquality().equals(other.history, history));
+            (identical(other.message, _this.message) ||
+                other.message == _this.message) &&
+            const DeepCollectionEquality()
+                .equals(other.history, _this.history));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, message, const DeepCollectionEquality().hash(history));
+  int get hashCode {
+    final _this = this as AiChatRequest;
+    return Object.hash(runtimeType, _this.message,
+        const DeepCollectionEquality().hash(_this.history));
+  }
 
   @override
   String toString() {
-    return 'AiChatRequest(message: $message, history: $history)';
+    final _this = this as AiChatRequest;
+    return 'AiChatRequest(message: ${_this.message}, history: ${_this.history})';
   }
 }
 
@@ -785,7 +816,7 @@ class _$AiChatRequestCopyWithImpl<$Res>
     Object? message = null,
     Object? history = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(AiChatRequest(
       message: null == message
           ? _self.message
           : message // ignore: cast_nullable_to_non_nullable
@@ -960,7 +991,7 @@ extension AiChatRequestPatterns on AiChatRequest {
 class _AiChatRequest implements AiChatRequest {
   const _AiChatRequest(
       {required this.message,
-      final List<AiChatMessage> history = const <AiChatMessage>[]})
+      List<AiChatMessage> history = const <AiChatMessage>[]})
       : _history = history;
   factory _AiChatRequest.fromJson(Map<String, dynamic> json) =>
       _$AiChatRequestFromJson(json);
@@ -997,13 +1028,15 @@ class _AiChatRequest implements AiChatRequest {
         (other.runtimeType == runtimeType &&
             other is _AiChatRequest &&
             (identical(other.message, message) || other.message == message) &&
-            const DeepCollectionEquality().equals(other._history, _history));
+            const DeepCollectionEquality().equals(other.history, _history));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, message, const DeepCollectionEquality().hash(_history));
+  int get hashCode {
+    return Object.hash(
+        runtimeType, message, const DeepCollectionEquality().hash(_history));
+  }
 
   @override
   String toString() {
@@ -1071,27 +1104,33 @@ mixin _$AiAction {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as AiAction;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is AiAction &&
-            (identical(other.type, type) || other.type == type) &&
-            (identical(other.label, label) || other.label == label) &&
-            (identical(other.exerciseId, exerciseId) ||
-                other.exerciseId == exerciseId) &&
-            (identical(other.sessionId, sessionId) ||
-                other.sessionId == sessionId) &&
-            (identical(other.programRequest, programRequest) ||
-                other.programRequest == programRequest));
+            (identical(other.type, _this.type) || other.type == _this.type) &&
+            (identical(other.label, _this.label) ||
+                other.label == _this.label) &&
+            (identical(other.exerciseId, _this.exerciseId) ||
+                other.exerciseId == _this.exerciseId) &&
+            (identical(other.sessionId, _this.sessionId) ||
+                other.sessionId == _this.sessionId) &&
+            (identical(other.programRequest, _this.programRequest) ||
+                other.programRequest == _this.programRequest));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, type, label, exerciseId, sessionId, programRequest);
+  int get hashCode {
+    final _this = this as AiAction;
+    return Object.hash(runtimeType, _this.type, _this.label, _this.exerciseId,
+        _this.sessionId, _this.programRequest);
+  }
 
   @override
   String toString() {
-    return 'AiAction(type: $type, label: $label, exerciseId: $exerciseId, sessionId: $sessionId, programRequest: $programRequest)';
+    final _this = this as AiAction;
+    return 'AiAction(type: ${_this.type}, label: ${_this.label}, exerciseId: ${_this.exerciseId}, sessionId: ${_this.sessionId}, programRequest: ${_this.programRequest})';
   }
 }
 
@@ -1128,7 +1167,7 @@ class _$AiActionCopyWithImpl<$Res> implements $AiActionCopyWith<$Res> {
     Object? sessionId = freezed,
     Object? programRequest = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(AiAction(
       type: null == type
           ? _self.type
           : type // ignore: cast_nullable_to_non_nullable
@@ -1391,8 +1430,10 @@ class _AiAction implements AiAction {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, type, label, exerciseId, sessionId, programRequest);
+  int get hashCode {
+    return Object.hash(
+        runtimeType, type, label, exerciseId, sessionId, programRequest);
+  }
 
   @override
   String toString() {
@@ -1495,31 +1536,38 @@ mixin _$AiProgramRequest {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as AiProgramRequest;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is AiProgramRequest &&
-            (identical(other.daysPerWeek, daysPerWeek) ||
-                other.daysPerWeek == daysPerWeek) &&
-            (identical(
-                    other.preferredSessionMinutes, preferredSessionMinutes) ||
-                other.preferredSessionMinutes == preferredSessionMinutes) &&
-            (identical(other.template, template) ||
-                other.template == template) &&
-            const DeepCollectionEquality().equals(other.emphasis, emphasis));
+            (identical(other.daysPerWeek, _this.daysPerWeek) ||
+                other.daysPerWeek == _this.daysPerWeek) &&
+            (identical(other.preferredSessionMinutes,
+                    _this.preferredSessionMinutes) ||
+                other.preferredSessionMinutes ==
+                    _this.preferredSessionMinutes) &&
+            (identical(other.template, _this.template) ||
+                other.template == _this.template) &&
+            const DeepCollectionEquality()
+                .equals(other.emphasis, _this.emphasis));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      daysPerWeek,
-      preferredSessionMinutes,
-      template,
-      const DeepCollectionEquality().hash(emphasis));
+  int get hashCode {
+    final _this = this as AiProgramRequest;
+    return Object.hash(
+        runtimeType,
+        _this.daysPerWeek,
+        _this.preferredSessionMinutes,
+        _this.template,
+        const DeepCollectionEquality().hash(_this.emphasis));
+  }
 
   @override
   String toString() {
-    return 'AiProgramRequest(daysPerWeek: $daysPerWeek, preferredSessionMinutes: $preferredSessionMinutes, template: $template, emphasis: $emphasis)';
+    final _this = this as AiProgramRequest;
+    return 'AiProgramRequest(daysPerWeek: ${_this.daysPerWeek}, preferredSessionMinutes: ${_this.preferredSessionMinutes}, template: ${_this.template}, emphasis: ${_this.emphasis})';
   }
 }
 
@@ -1554,7 +1602,7 @@ class _$AiProgramRequestCopyWithImpl<$Res>
     Object? template = freezed,
     Object? emphasis = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(AiProgramRequest(
       daysPerWeek: freezed == daysPerWeek
           ? _self.daysPerWeek
           : daysPerWeek // ignore: cast_nullable_to_non_nullable
@@ -1748,7 +1796,7 @@ class _AiProgramRequest implements AiProgramRequest {
       {this.daysPerWeek = null,
       this.preferredSessionMinutes = null,
       this.template = null,
-      final List<MuscleGroup>? emphasis = null})
+      List<MuscleGroup>? emphasis = null})
       : _emphasis = emphasis;
   factory _AiProgramRequest.fromJson(Map<String, dynamic> json) =>
       _$AiProgramRequestFromJson(json);
@@ -1800,17 +1848,15 @@ class _AiProgramRequest implements AiProgramRequest {
                 other.preferredSessionMinutes == preferredSessionMinutes) &&
             (identical(other.template, template) ||
                 other.template == template) &&
-            const DeepCollectionEquality().equals(other._emphasis, _emphasis));
+            const DeepCollectionEquality().equals(other.emphasis, _emphasis));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      daysPerWeek,
-      preferredSessionMinutes,
-      template,
-      const DeepCollectionEquality().hash(_emphasis));
+  int get hashCode {
+    return Object.hash(runtimeType, daysPerWeek, preferredSessionMinutes,
+        template, const DeepCollectionEquality().hash(_emphasis));
+  }
 
   @override
   String toString() {
@@ -1892,27 +1938,35 @@ mixin _$AiChatResponse {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as AiChatResponse;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is AiChatResponse &&
-            (identical(other.text, text) || other.text == text) &&
-            const DeepCollectionEquality().equals(other.actions, actions) &&
-            const DeepCollectionEquality().equals(other.toolsUsed, toolsUsed) &&
-            (identical(other.model, model) || other.model == model));
+            (identical(other.text, _this.text) || other.text == _this.text) &&
+            const DeepCollectionEquality()
+                .equals(other.actions, _this.actions) &&
+            const DeepCollectionEquality()
+                .equals(other.toolsUsed, _this.toolsUsed) &&
+            (identical(other.model, _this.model) ||
+                other.model == _this.model));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      text,
-      const DeepCollectionEquality().hash(actions),
-      const DeepCollectionEquality().hash(toolsUsed),
-      model);
+  int get hashCode {
+    final _this = this as AiChatResponse;
+    return Object.hash(
+        runtimeType,
+        _this.text,
+        const DeepCollectionEquality().hash(_this.actions),
+        const DeepCollectionEquality().hash(_this.toolsUsed),
+        _this.model);
+  }
 
   @override
   String toString() {
-    return 'AiChatResponse(text: $text, actions: $actions, toolsUsed: $toolsUsed, model: $model)';
+    final _this = this as AiChatResponse;
+    return 'AiChatResponse(text: ${_this.text}, actions: ${_this.actions}, toolsUsed: ${_this.toolsUsed}, model: ${_this.model})';
   }
 }
 
@@ -1947,7 +2001,7 @@ class _$AiChatResponseCopyWithImpl<$Res>
     Object? toolsUsed = null,
     Object? model = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(AiChatResponse(
       text: null == text
           ? _self.text
           : text // ignore: cast_nullable_to_non_nullable
@@ -2139,8 +2193,8 @@ extension AiChatResponsePatterns on AiChatResponse {
 class _AiChatResponse implements AiChatResponse {
   const _AiChatResponse(
       {required this.text,
-      final List<AiAction> actions = const <AiAction>[],
-      final List<String> toolsUsed = const <String>[],
+      List<AiAction> actions = const <AiAction>[],
+      List<String> toolsUsed = const <String>[],
       required this.model})
       : _actions = actions,
         _toolsUsed = toolsUsed;
@@ -2191,20 +2245,22 @@ class _AiChatResponse implements AiChatResponse {
         (other.runtimeType == runtimeType &&
             other is _AiChatResponse &&
             (identical(other.text, text) || other.text == text) &&
-            const DeepCollectionEquality().equals(other._actions, _actions) &&
+            const DeepCollectionEquality().equals(other.actions, _actions) &&
             const DeepCollectionEquality()
-                .equals(other._toolsUsed, _toolsUsed) &&
+                .equals(other.toolsUsed, _toolsUsed) &&
             (identical(other.model, model) || other.model == model));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      text,
-      const DeepCollectionEquality().hash(_actions),
-      const DeepCollectionEquality().hash(_toolsUsed),
-      model);
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        text,
+        const DeepCollectionEquality().hash(_actions),
+        const DeepCollectionEquality().hash(_toolsUsed),
+        model);
+  }
 
   @override
   String toString() {

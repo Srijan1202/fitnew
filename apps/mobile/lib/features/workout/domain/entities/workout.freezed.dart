@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'workout.dart';
@@ -9,6 +9,7 @@ part of 'workout.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -37,34 +38,50 @@ mixin _$SetLog {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as SetLog;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is SetLog &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.clientSetId, clientSetId) ||
-                other.clientSetId == clientSetId) &&
-            (identical(other.setIndex, setIndex) ||
-                other.setIndex == setIndex) &&
-            (identical(other.setType, setType) || other.setType == setType) &&
-            (identical(other.weightKg, weightKg) ||
-                other.weightKg == weightKg) &&
-            (identical(other.reps, reps) || other.reps == reps) &&
-            (identical(other.rir, rir) || other.rir == rir) &&
-            (identical(other.isPr, isPr) || other.isPr == isPr) &&
-            (identical(other.loggedAt, loggedAt) ||
-                other.loggedAt == loggedAt) &&
-            (identical(other.plannedSetId, plannedSetId) ||
-                other.plannedSetId == plannedSetId));
+            (identical(other.id, _this.id) || other.id == _this.id) &&
+            (identical(other.clientSetId, _this.clientSetId) ||
+                other.clientSetId == _this.clientSetId) &&
+            (identical(other.setIndex, _this.setIndex) ||
+                other.setIndex == _this.setIndex) &&
+            (identical(other.setType, _this.setType) ||
+                other.setType == _this.setType) &&
+            (identical(other.weightKg, _this.weightKg) ||
+                other.weightKg == _this.weightKg) &&
+            (identical(other.reps, _this.reps) || other.reps == _this.reps) &&
+            (identical(other.rir, _this.rir) || other.rir == _this.rir) &&
+            (identical(other.isPr, _this.isPr) || other.isPr == _this.isPr) &&
+            (identical(other.loggedAt, _this.loggedAt) ||
+                other.loggedAt == _this.loggedAt) &&
+            (identical(other.plannedSetId, _this.plannedSetId) ||
+                other.plannedSetId == _this.plannedSetId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, clientSetId, setIndex,
-      setType, weightKg, reps, rir, isPr, loggedAt, plannedSetId);
+  int get hashCode {
+    final _this = this as SetLog;
+    return Object.hash(
+        runtimeType,
+        _this.id,
+        _this.clientSetId,
+        _this.setIndex,
+        _this.setType,
+        _this.weightKg,
+        _this.reps,
+        _this.rir,
+        _this.isPr,
+        _this.loggedAt,
+        _this.plannedSetId);
+  }
 
   @override
   String toString() {
-    return 'SetLog(id: $id, clientSetId: $clientSetId, setIndex: $setIndex, setType: $setType, weightKg: $weightKg, reps: $reps, rir: $rir, isPr: $isPr, loggedAt: $loggedAt, plannedSetId: $plannedSetId)';
+    final _this = this as SetLog;
+    return 'SetLog(id: ${_this.id}, clientSetId: ${_this.clientSetId}, setIndex: ${_this.setIndex}, setType: ${_this.setType}, weightKg: ${_this.weightKg}, reps: ${_this.reps}, rir: ${_this.rir}, isPr: ${_this.isPr}, loggedAt: ${_this.loggedAt}, plannedSetId: ${_this.plannedSetId})';
   }
 }
 
@@ -109,7 +126,7 @@ class _$SetLogCopyWithImpl<$Res> implements $SetLogCopyWith<$Res> {
     Object? loggedAt = null,
     Object? plannedSetId = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(SetLog(
       id: null == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -451,8 +468,10 @@ class _SetLog extends SetLog {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, clientSetId, setIndex,
-      setType, weightKg, reps, rir, isPr, loggedAt, plannedSetId);
+  int get hashCode {
+    return Object.hash(runtimeType, id, clientSetId, setIndex, setType,
+        weightKg, reps, rir, isPr, loggedAt, plannedSetId);
+  }
 
   @override
   String toString() {
@@ -566,24 +585,30 @@ mixin _$LastSet {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as LastSet;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is LastSet &&
-            (identical(other.setIndex, setIndex) ||
-                other.setIndex == setIndex) &&
-            (identical(other.weightKg, weightKg) ||
-                other.weightKg == weightKg) &&
-            (identical(other.reps, reps) || other.reps == reps) &&
-            (identical(other.rir, rir) || other.rir == rir));
+            (identical(other.setIndex, _this.setIndex) ||
+                other.setIndex == _this.setIndex) &&
+            (identical(other.weightKg, _this.weightKg) ||
+                other.weightKg == _this.weightKg) &&
+            (identical(other.reps, _this.reps) || other.reps == _this.reps) &&
+            (identical(other.rir, _this.rir) || other.rir == _this.rir));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, setIndex, weightKg, reps, rir);
+  int get hashCode {
+    final _this = this as LastSet;
+    return Object.hash(
+        runtimeType, _this.setIndex, _this.weightKg, _this.reps, _this.rir);
+  }
 
   @override
   String toString() {
-    return 'LastSet(setIndex: $setIndex, weightKg: $weightKg, reps: $reps, rir: $rir)';
+    final _this = this as LastSet;
+    return 'LastSet(setIndex: ${_this.setIndex}, weightKg: ${_this.weightKg}, reps: ${_this.reps}, rir: ${_this.rir})';
   }
 }
 
@@ -612,7 +637,7 @@ class _$LastSetCopyWithImpl<$Res> implements $LastSetCopyWith<$Res> {
     Object? reps = null,
     Object? rir = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(LastSet(
       setIndex: null == setIndex
           ? _self.setIndex
           : setIndex // ignore: cast_nullable_to_non_nullable
@@ -843,7 +868,9 @@ class _LastSet implements LastSet {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, setIndex, weightKg, reps, rir);
+  int get hashCode {
+    return Object.hash(runtimeType, setIndex, weightKg, reps, rir);
+  }
 
   @override
   String toString() {
@@ -917,24 +944,29 @@ mixin _$LastPerformance {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as LastPerformance;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is LastPerformance &&
-            (identical(other.sessionId, sessionId) ||
-                other.sessionId == sessionId) &&
-            (identical(other.completedAt, completedAt) ||
-                other.completedAt == completedAt) &&
-            const DeepCollectionEquality().equals(other.sets, sets));
+            (identical(other.sessionId, _this.sessionId) ||
+                other.sessionId == _this.sessionId) &&
+            (identical(other.completedAt, _this.completedAt) ||
+                other.completedAt == _this.completedAt) &&
+            const DeepCollectionEquality().equals(other.sets, _this.sets));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, sessionId, completedAt,
-      const DeepCollectionEquality().hash(sets));
+  int get hashCode {
+    final _this = this as LastPerformance;
+    return Object.hash(runtimeType, _this.sessionId, _this.completedAt,
+        const DeepCollectionEquality().hash(_this.sets));
+  }
 
   @override
   String toString() {
-    return 'LastPerformance(sessionId: $sessionId, completedAt: $completedAt, sets: $sets)';
+    final _this = this as LastPerformance;
+    return 'LastPerformance(sessionId: ${_this.sessionId}, completedAt: ${_this.completedAt}, sets: ${_this.sets})';
   }
 }
 
@@ -964,7 +996,7 @@ class _$LastPerformanceCopyWithImpl<$Res>
     Object? completedAt = null,
     Object? sets = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(LastPerformance(
       sessionId: null == sessionId
           ? _self.sessionId
           : sessionId // ignore: cast_nullable_to_non_nullable
@@ -1147,7 +1179,7 @@ class _LastPerformance implements LastPerformance {
   const _LastPerformance(
       {required this.sessionId,
       required this.completedAt,
-      required final List<LastSet> sets})
+      required List<LastSet> sets})
       : _sets = sets;
   factory _LastPerformance.fromJson(Map<String, dynamic> json) =>
       _$LastPerformanceFromJson(json);
@@ -1188,13 +1220,15 @@ class _LastPerformance implements LastPerformance {
                 other.sessionId == sessionId) &&
             (identical(other.completedAt, completedAt) ||
                 other.completedAt == completedAt) &&
-            const DeepCollectionEquality().equals(other._sets, _sets));
+            const DeepCollectionEquality().equals(other.sets, _sets));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, sessionId, completedAt,
-      const DeepCollectionEquality().hash(_sets));
+  int get hashCode {
+    return Object.hash(runtimeType, sessionId, completedAt,
+        const DeepCollectionEquality().hash(_sets));
+  }
 
   @override
   String toString() {
@@ -1267,27 +1301,32 @@ mixin _$SetPrefill {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as SetPrefill;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is SetPrefill &&
-            (identical(other.setIndex, setIndex) ||
-                other.setIndex == setIndex) &&
-            (identical(other.reps, reps) || other.reps == reps) &&
-            (identical(other.weightKg, weightKg) ||
-                other.weightKg == weightKg) &&
-            (identical(other.rir, rir) || other.rir == rir) &&
-            (identical(other.weightSource, weightSource) ||
-                other.weightSource == weightSource));
+            (identical(other.setIndex, _this.setIndex) ||
+                other.setIndex == _this.setIndex) &&
+            (identical(other.reps, _this.reps) || other.reps == _this.reps) &&
+            (identical(other.weightKg, _this.weightKg) ||
+                other.weightKg == _this.weightKg) &&
+            (identical(other.rir, _this.rir) || other.rir == _this.rir) &&
+            (identical(other.weightSource, _this.weightSource) ||
+                other.weightSource == _this.weightSource));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, setIndex, reps, weightKg, rir, weightSource);
+  int get hashCode {
+    final _this = this as SetPrefill;
+    return Object.hash(runtimeType, _this.setIndex, _this.reps, _this.weightKg,
+        _this.rir, _this.weightSource);
+  }
 
   @override
   String toString() {
-    return 'SetPrefill(setIndex: $setIndex, reps: $reps, weightKg: $weightKg, rir: $rir, weightSource: $weightSource)';
+    final _this = this as SetPrefill;
+    return 'SetPrefill(setIndex: ${_this.setIndex}, reps: ${_this.reps}, weightKg: ${_this.weightKg}, rir: ${_this.rir}, weightSource: ${_this.weightSource})';
   }
 }
 
@@ -1319,7 +1358,7 @@ class _$SetPrefillCopyWithImpl<$Res> implements $SetPrefillCopyWith<$Res> {
     Object? rir = null,
     Object? weightSource = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(SetPrefill(
       setIndex: null == setIndex
           ? _self.setIndex
           : setIndex // ignore: cast_nullable_to_non_nullable
@@ -1565,8 +1604,10 @@ class _SetPrefill implements SetPrefill {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, setIndex, reps, weightKg, rir, weightSource);
+  int get hashCode {
+    return Object.hash(
+        runtimeType, setIndex, reps, weightKg, rir, weightSource);
+  }
 
   @override
   String toString() {
@@ -1652,30 +1693,45 @@ mixin _$ProgressionRecommendation {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as ProgressionRecommendation;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is ProgressionRecommendation &&
-            (identical(other.action, action) || other.action == action) &&
-            (identical(other.weightKg, weightKg) ||
-                other.weightKg == weightKg) &&
-            (identical(other.repTarget, repTarget) ||
-                other.repTarget == repTarget) &&
-            (identical(other.targetRir, targetRir) ||
-                other.targetRir == targetRir) &&
-            (identical(other.reason, reason) || other.reason == reason) &&
-            (identical(other.basis, basis) || other.basis == basis) &&
-            (identical(other.sessionsConsidered, sessionsConsidered) ||
-                other.sessionsConsidered == sessionsConsidered));
+            (identical(other.action, _this.action) ||
+                other.action == _this.action) &&
+            (identical(other.weightKg, _this.weightKg) ||
+                other.weightKg == _this.weightKg) &&
+            (identical(other.repTarget, _this.repTarget) ||
+                other.repTarget == _this.repTarget) &&
+            (identical(other.targetRir, _this.targetRir) ||
+                other.targetRir == _this.targetRir) &&
+            (identical(other.reason, _this.reason) ||
+                other.reason == _this.reason) &&
+            (identical(other.basis, _this.basis) ||
+                other.basis == _this.basis) &&
+            (identical(other.sessionsConsidered, _this.sessionsConsidered) ||
+                other.sessionsConsidered == _this.sessionsConsidered));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, action, weightKg, repTarget,
-      targetRir, reason, basis, sessionsConsidered);
+  int get hashCode {
+    final _this = this as ProgressionRecommendation;
+    return Object.hash(
+        runtimeType,
+        _this.action,
+        _this.weightKg,
+        _this.repTarget,
+        _this.targetRir,
+        _this.reason,
+        _this.basis,
+        _this.sessionsConsidered);
+  }
 
   @override
   String toString() {
-    return 'ProgressionRecommendation(action: $action, weightKg: $weightKg, repTarget: $repTarget, targetRir: $targetRir, reason: $reason, basis: $basis, sessionsConsidered: $sessionsConsidered)';
+    final _this = this as ProgressionRecommendation;
+    return 'ProgressionRecommendation(action: ${_this.action}, weightKg: ${_this.weightKg}, repTarget: ${_this.repTarget}, targetRir: ${_this.targetRir}, reason: ${_this.reason}, basis: ${_this.basis}, sessionsConsidered: ${_this.sessionsConsidered})';
   }
 }
 
@@ -1716,7 +1772,7 @@ class _$ProgressionRecommendationCopyWithImpl<$Res>
     Object? basis = null,
     Object? sessionsConsidered = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(ProgressionRecommendation(
       action: null == action
           ? _self.action
           : action // ignore: cast_nullable_to_non_nullable
@@ -2017,8 +2073,10 @@ class _ProgressionRecommendation implements ProgressionRecommendation {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, action, weightKg, repTarget,
-      targetRir, reason, basis, sessionsConsidered);
+  int get hashCode {
+    return Object.hash(runtimeType, action, weightKg, repTarget, targetRir,
+        reason, basis, sessionsConsidered);
+  }
 
   @override
   String toString() {
@@ -2116,25 +2174,30 @@ mixin _$PriorBest {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as PriorBest;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is PriorBest &&
-            (identical(other.weightKg, weightKg) ||
-                other.weightKg == weightKg) &&
-            (identical(other.repsAtBestWeight, repsAtBestWeight) ||
-                other.repsAtBestWeight == repsAtBestWeight) &&
-            (identical(other.estimated1rm, estimated1rm) ||
-                other.estimated1rm == estimated1rm));
+            (identical(other.weightKg, _this.weightKg) ||
+                other.weightKg == _this.weightKg) &&
+            (identical(other.repsAtBestWeight, _this.repsAtBestWeight) ||
+                other.repsAtBestWeight == _this.repsAtBestWeight) &&
+            (identical(other.estimated1rm, _this.estimated1rm) ||
+                other.estimated1rm == _this.estimated1rm));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, weightKg, repsAtBestWeight, estimated1rm);
+  int get hashCode {
+    final _this = this as PriorBest;
+    return Object.hash(runtimeType, _this.weightKg, _this.repsAtBestWeight,
+        _this.estimated1rm);
+  }
 
   @override
   String toString() {
-    return 'PriorBest(weightKg: $weightKg, repsAtBestWeight: $repsAtBestWeight, estimated1rm: $estimated1rm)';
+    final _this = this as PriorBest;
+    return 'PriorBest(weightKg: ${_this.weightKg}, repsAtBestWeight: ${_this.repsAtBestWeight}, estimated1rm: ${_this.estimated1rm})';
   }
 }
 
@@ -2162,7 +2225,7 @@ class _$PriorBestCopyWithImpl<$Res> implements $PriorBestCopyWith<$Res> {
     Object? repsAtBestWeight = freezed,
     Object? estimated1rm = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(PriorBest(
       weightKg: freezed == weightKg
           ? _self.weightKg
           : weightKg // ignore: cast_nullable_to_non_nullable
@@ -2393,8 +2456,9 @@ class _PriorBest extends PriorBest {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, weightKg, repsAtBestWeight, estimated1rm);
+  int get hashCode {
+    return Object.hash(runtimeType, weightKg, repsAtBestWeight, estimated1rm);
+  }
 
   @override
   String toString() {
@@ -2466,24 +2530,30 @@ mixin _$SubstitutionAlternative {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as SubstitutionAlternative;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is SubstitutionAlternative &&
-            (identical(other.exerciseId, exerciseId) ||
-                other.exerciseId == exerciseId) &&
-            (identical(other.slug, slug) || other.slug == slug) &&
-            (identical(other.name, name) || other.name == name) &&
-            const DeepCollectionEquality().equals(other.equipment, equipment));
+            (identical(other.exerciseId, _this.exerciseId) ||
+                other.exerciseId == _this.exerciseId) &&
+            (identical(other.slug, _this.slug) || other.slug == _this.slug) &&
+            (identical(other.name, _this.name) || other.name == _this.name) &&
+            const DeepCollectionEquality()
+                .equals(other.equipment, _this.equipment));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, exerciseId, slug, name,
-      const DeepCollectionEquality().hash(equipment));
+  int get hashCode {
+    final _this = this as SubstitutionAlternative;
+    return Object.hash(runtimeType, _this.exerciseId, _this.slug, _this.name,
+        const DeepCollectionEquality().hash(_this.equipment));
+  }
 
   @override
   String toString() {
-    return 'SubstitutionAlternative(exerciseId: $exerciseId, slug: $slug, name: $name, equipment: $equipment)';
+    final _this = this as SubstitutionAlternative;
+    return 'SubstitutionAlternative(exerciseId: ${_this.exerciseId}, slug: ${_this.slug}, name: ${_this.name}, equipment: ${_this.equipment})';
   }
 }
 
@@ -2515,7 +2585,7 @@ class _$SubstitutionAlternativeCopyWithImpl<$Res>
     Object? name = null,
     Object? equipment = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(SubstitutionAlternative(
       exerciseId: null == exerciseId
           ? _self.exerciseId
           : exerciseId // ignore: cast_nullable_to_non_nullable
@@ -2709,7 +2779,7 @@ class _SubstitutionAlternative implements SubstitutionAlternative {
       {required this.exerciseId,
       required this.slug,
       required this.name,
-      required final List<Equipment> equipment})
+      required List<Equipment> equipment})
       : _equipment = equipment;
   factory _SubstitutionAlternative.fromJson(Map<String, dynamic> json) =>
       _$SubstitutionAlternativeFromJson(json);
@@ -2753,14 +2823,15 @@ class _SubstitutionAlternative implements SubstitutionAlternative {
                 other.exerciseId == exerciseId) &&
             (identical(other.slug, slug) || other.slug == slug) &&
             (identical(other.name, name) || other.name == name) &&
-            const DeepCollectionEquality()
-                .equals(other._equipment, _equipment));
+            const DeepCollectionEquality().equals(other.equipment, _equipment));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, exerciseId, slug, name,
-      const DeepCollectionEquality().hash(_equipment));
+  int get hashCode {
+    return Object.hash(runtimeType, exerciseId, slug, name,
+        const DeepCollectionEquality().hash(_equipment));
+  }
 
   @override
   String toString() {
@@ -2838,22 +2909,30 @@ mixin _$Substitution {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as Substitution;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is Substitution &&
-            (identical(other.trigger, trigger) || other.trigger == trigger) &&
-            (identical(other.alternative, alternative) ||
-                other.alternative == alternative) &&
-            (identical(other.reason, reason) || other.reason == reason));
+            (identical(other.trigger, _this.trigger) ||
+                other.trigger == _this.trigger) &&
+            (identical(other.alternative, _this.alternative) ||
+                other.alternative == _this.alternative) &&
+            (identical(other.reason, _this.reason) ||
+                other.reason == _this.reason));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, trigger, alternative, reason);
+  int get hashCode {
+    final _this = this as Substitution;
+    return Object.hash(
+        runtimeType, _this.trigger, _this.alternative, _this.reason);
+  }
 
   @override
   String toString() {
-    return 'Substitution(trigger: $trigger, alternative: $alternative, reason: $reason)';
+    final _this = this as Substitution;
+    return 'Substitution(trigger: ${_this.trigger}, alternative: ${_this.alternative}, reason: ${_this.reason})';
   }
 }
 
@@ -2887,7 +2966,7 @@ class _$SubstitutionCopyWithImpl<$Res> implements $SubstitutionCopyWith<$Res> {
     Object? alternative = freezed,
     Object? reason = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(Substitution(
       trigger: null == trigger
           ? _self.trigger
           : trigger // ignore: cast_nullable_to_non_nullable
@@ -3124,7 +3203,9 @@ class _Substitution implements Substitution {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, trigger, alternative, reason);
+  int get hashCode {
+    return Object.hash(runtimeType, trigger, alternative, reason);
+  }
 
   @override
   String toString() {
@@ -3216,22 +3297,32 @@ mixin _$DeloadState {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as DeloadState;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is DeloadState &&
-            (identical(other.state, state) || other.state == state) &&
-            (identical(other.trigger, trigger) || other.trigger == trigger) &&
-            (identical(other.reason, reason) || other.reason == reason) &&
-            (identical(other.endsOn, endsOn) || other.endsOn == endsOn));
+            (identical(other.state, _this.state) ||
+                other.state == _this.state) &&
+            (identical(other.trigger, _this.trigger) ||
+                other.trigger == _this.trigger) &&
+            (identical(other.reason, _this.reason) ||
+                other.reason == _this.reason) &&
+            (identical(other.endsOn, _this.endsOn) ||
+                other.endsOn == _this.endsOn));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, state, trigger, reason, endsOn);
+  int get hashCode {
+    final _this = this as DeloadState;
+    return Object.hash(
+        runtimeType, _this.state, _this.trigger, _this.reason, _this.endsOn);
+  }
 
   @override
   String toString() {
-    return 'DeloadState(state: $state, trigger: $trigger, reason: $reason, endsOn: $endsOn)';
+    final _this = this as DeloadState;
+    return 'DeloadState(state: ${_this.state}, trigger: ${_this.trigger}, reason: ${_this.reason}, endsOn: ${_this.endsOn})';
   }
 }
 
@@ -3265,7 +3356,7 @@ class _$DeloadStateCopyWithImpl<$Res> implements $DeloadStateCopyWith<$Res> {
     Object? reason = null,
     Object? endsOn = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(DeloadState(
       state: null == state
           ? _self.state
           : state // ignore: cast_nullable_to_non_nullable
@@ -3497,7 +3588,9 @@ class _DeloadState implements DeloadState {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, state, trigger, reason, endsOn);
+  int get hashCode {
+    return Object.hash(runtimeType, state, trigger, reason, endsOn);
+  }
 
   @override
   String toString() {
@@ -3576,21 +3669,27 @@ mixin _$NeglectedMuscle {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as NeglectedMuscle;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is NeglectedMuscle &&
-            (identical(other.muscle, muscle) || other.muscle == muscle) &&
-            (identical(other.daysSince, daysSince) ||
-                other.daysSince == daysSince));
+            (identical(other.muscle, _this.muscle) ||
+                other.muscle == _this.muscle) &&
+            (identical(other.daysSince, _this.daysSince) ||
+                other.daysSince == _this.daysSince));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, muscle, daysSince);
+  int get hashCode {
+    final _this = this as NeglectedMuscle;
+    return Object.hash(runtimeType, _this.muscle, _this.daysSince);
+  }
 
   @override
   String toString() {
-    return 'NeglectedMuscle(muscle: $muscle, daysSince: $daysSince)';
+    final _this = this as NeglectedMuscle;
+    return 'NeglectedMuscle(muscle: ${_this.muscle}, daysSince: ${_this.daysSince})';
   }
 }
 
@@ -3619,7 +3718,7 @@ class _$NeglectedMuscleCopyWithImpl<$Res>
     Object? muscle = null,
     Object? daysSince = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(NeglectedMuscle(
       muscle: null == muscle
           ? _self.muscle
           : muscle // ignore: cast_nullable_to_non_nullable
@@ -3828,7 +3927,9 @@ class _NeglectedMuscle implements NeglectedMuscle {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, muscle, daysSince);
+  int get hashCode {
+    return Object.hash(runtimeType, muscle, daysSince);
+  }
 
   @override
   String toString() {
@@ -3917,79 +4018,87 @@ mixin _$SessionExercise {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as SessionExercise;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is SessionExercise &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.clientExerciseId, clientExerciseId) ||
-                other.clientExerciseId == clientExerciseId) &&
-            (identical(other.exerciseId, exerciseId) ||
-                other.exerciseId == exerciseId) &&
-            (identical(other.slug, slug) || other.slug == slug) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.movementPattern, movementPattern) ||
-                other.movementPattern == movementPattern) &&
-            const DeepCollectionEquality().equals(other.equipment, equipment) &&
-            (identical(other.difficulty, difficulty) ||
-                other.difficulty == difficulty) &&
+            (identical(other.id, _this.id) || other.id == _this.id) &&
+            (identical(other.clientExerciseId, _this.clientExerciseId) ||
+                other.clientExerciseId == _this.clientExerciseId) &&
+            (identical(other.exerciseId, _this.exerciseId) ||
+                other.exerciseId == _this.exerciseId) &&
+            (identical(other.slug, _this.slug) || other.slug == _this.slug) &&
+            (identical(other.name, _this.name) || other.name == _this.name) &&
+            (identical(other.movementPattern, _this.movementPattern) ||
+                other.movementPattern == _this.movementPattern) &&
             const DeepCollectionEquality()
-                .equals(other.primaryMuscles, primaryMuscles) &&
+                .equals(other.equipment, _this.equipment) &&
+            (identical(other.difficulty, _this.difficulty) ||
+                other.difficulty == _this.difficulty) &&
             const DeepCollectionEquality()
-                .equals(other.secondaryMuscles, secondaryMuscles) &&
-            (identical(other.incrementKg, incrementKg) ||
-                other.incrementKg == incrementKg) &&
-            (identical(other.orderIndex, orderIndex) ||
-                other.orderIndex == orderIndex) &&
-            (identical(other.supersetGroup, supersetGroup) ||
-                other.supersetGroup == supersetGroup) &&
-            (identical(other.plannedExerciseId, plannedExerciseId) ||
-                other.plannedExerciseId == plannedExerciseId) &&
-            const DeepCollectionEquality().equals(other.targets, targets) &&
-            const DeepCollectionEquality().equals(other.prefill, prefill) &&
-            (identical(other.lastPerformance, lastPerformance) ||
-                other.lastPerformance == lastPerformance) &&
-            (identical(other.recommendation, recommendation) ||
-                other.recommendation == recommendation) &&
-            (identical(other.priorBest, priorBest) ||
-                other.priorBest == priorBest) &&
+                .equals(other.primaryMuscles, _this.primaryMuscles) &&
             const DeepCollectionEquality()
-                .equals(other.originalTargets, originalTargets) &&
-            const DeepCollectionEquality().equals(other.sets, sets) &&
-            (identical(other.extraRows, extraRows) ||
-                other.extraRows == extraRows));
+                .equals(other.secondaryMuscles, _this.secondaryMuscles) &&
+            (identical(other.incrementKg, _this.incrementKg) ||
+                other.incrementKg == _this.incrementKg) &&
+            (identical(other.orderIndex, _this.orderIndex) ||
+                other.orderIndex == _this.orderIndex) &&
+            (identical(other.supersetGroup, _this.supersetGroup) ||
+                other.supersetGroup == _this.supersetGroup) &&
+            (identical(other.plannedExerciseId, _this.plannedExerciseId) ||
+                other.plannedExerciseId == _this.plannedExerciseId) &&
+            const DeepCollectionEquality()
+                .equals(other.targets, _this.targets) &&
+            const DeepCollectionEquality()
+                .equals(other.prefill, _this.prefill) &&
+            (identical(other.lastPerformance, _this.lastPerformance) ||
+                other.lastPerformance == _this.lastPerformance) &&
+            (identical(other.recommendation, _this.recommendation) ||
+                other.recommendation == _this.recommendation) &&
+            (identical(other.priorBest, _this.priorBest) ||
+                other.priorBest == _this.priorBest) &&
+            const DeepCollectionEquality()
+                .equals(other.originalTargets, _this.originalTargets) &&
+            const DeepCollectionEquality().equals(other.sets, _this.sets) &&
+            (identical(other.extraRows, _this.extraRows) ||
+                other.extraRows == _this.extraRows));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hashAll([
-        runtimeType,
-        id,
-        clientExerciseId,
-        exerciseId,
-        slug,
-        name,
-        movementPattern,
-        const DeepCollectionEquality().hash(equipment),
-        difficulty,
-        const DeepCollectionEquality().hash(primaryMuscles),
-        const DeepCollectionEquality().hash(secondaryMuscles),
-        incrementKg,
-        orderIndex,
-        supersetGroup,
-        plannedExerciseId,
-        const DeepCollectionEquality().hash(targets),
-        const DeepCollectionEquality().hash(prefill),
-        lastPerformance,
-        recommendation,
-        priorBest,
-        const DeepCollectionEquality().hash(originalTargets),
-        const DeepCollectionEquality().hash(sets),
-        extraRows
-      ]);
+  int get hashCode {
+    final _this = this as SessionExercise;
+    return Object.hashAll([
+      runtimeType,
+      _this.id,
+      _this.clientExerciseId,
+      _this.exerciseId,
+      _this.slug,
+      _this.name,
+      _this.movementPattern,
+      const DeepCollectionEquality().hash(_this.equipment),
+      _this.difficulty,
+      const DeepCollectionEquality().hash(_this.primaryMuscles),
+      const DeepCollectionEquality().hash(_this.secondaryMuscles),
+      _this.incrementKg,
+      _this.orderIndex,
+      _this.supersetGroup,
+      _this.plannedExerciseId,
+      const DeepCollectionEquality().hash(_this.targets),
+      const DeepCollectionEquality().hash(_this.prefill),
+      _this.lastPerformance,
+      _this.recommendation,
+      _this.priorBest,
+      const DeepCollectionEquality().hash(_this.originalTargets),
+      const DeepCollectionEquality().hash(_this.sets),
+      _this.extraRows
+    ]);
+  }
 
   @override
   String toString() {
-    return 'SessionExercise(id: $id, clientExerciseId: $clientExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, incrementKg: $incrementKg, orderIndex: $orderIndex, supersetGroup: $supersetGroup, plannedExerciseId: $plannedExerciseId, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance, recommendation: $recommendation, priorBest: $priorBest, originalTargets: $originalTargets, sets: $sets, extraRows: $extraRows)';
+    final _this = this as SessionExercise;
+    return 'SessionExercise(id: ${_this.id}, clientExerciseId: ${_this.clientExerciseId}, exerciseId: ${_this.exerciseId}, slug: ${_this.slug}, name: ${_this.name}, movementPattern: ${_this.movementPattern}, equipment: ${_this.equipment}, difficulty: ${_this.difficulty}, primaryMuscles: ${_this.primaryMuscles}, secondaryMuscles: ${_this.secondaryMuscles}, incrementKg: ${_this.incrementKg}, orderIndex: ${_this.orderIndex}, supersetGroup: ${_this.supersetGroup}, plannedExerciseId: ${_this.plannedExerciseId}, targets: ${_this.targets}, prefill: ${_this.prefill}, lastPerformance: ${_this.lastPerformance}, recommendation: ${_this.recommendation}, priorBest: ${_this.priorBest}, originalTargets: ${_this.originalTargets}, sets: ${_this.sets}, extraRows: ${_this.extraRows})';
   }
 }
 
@@ -4064,7 +4173,7 @@ class _$SessionExerciseCopyWithImpl<$Res>
     Object? sets = null,
     Object? extraRows = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(SessionExercise(
       id: null == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -4498,21 +4607,21 @@ class _SessionExercise extends SessionExercise {
       required this.slug,
       required this.name,
       required this.movementPattern,
-      required final List<Equipment> equipment,
+      required List<Equipment> equipment,
       required this.difficulty,
-      required final List<MuscleGroup> primaryMuscles,
-      required final List<MuscleGroup> secondaryMuscles,
+      required List<MuscleGroup> primaryMuscles,
+      required List<MuscleGroup> secondaryMuscles,
       required this.incrementKg,
       required this.orderIndex,
       required this.supersetGroup,
       required this.plannedExerciseId,
-      required final List<PlannedSet> targets,
-      final List<SetPrefill> prefill = const <SetPrefill>[],
+      required List<PlannedSet> targets,
+      List<SetPrefill> prefill = const <SetPrefill>[],
       required this.lastPerformance,
       this.recommendation = null,
       this.priorBest = PriorBest.none,
-      final List<PlannedSet>? originalTargets = null,
-      required final List<SetLog> sets,
+      List<PlannedSet>? originalTargets = null,
+      required List<SetLog> sets,
       this.extraRows = 0})
       : _equipment = equipment,
         _primaryMuscles = primaryMuscles,
@@ -4652,13 +4761,13 @@ class _SessionExercise extends SessionExercise {
             (identical(other.movementPattern, movementPattern) ||
                 other.movementPattern == movementPattern) &&
             const DeepCollectionEquality()
-                .equals(other._equipment, _equipment) &&
+                .equals(other.equipment, _equipment) &&
             (identical(other.difficulty, difficulty) ||
                 other.difficulty == difficulty) &&
             const DeepCollectionEquality()
-                .equals(other._primaryMuscles, _primaryMuscles) &&
+                .equals(other.primaryMuscles, _primaryMuscles) &&
             const DeepCollectionEquality()
-                .equals(other._secondaryMuscles, _secondaryMuscles) &&
+                .equals(other.secondaryMuscles, _secondaryMuscles) &&
             (identical(other.incrementKg, incrementKg) ||
                 other.incrementKg == incrementKg) &&
             (identical(other.orderIndex, orderIndex) ||
@@ -4667,8 +4776,8 @@ class _SessionExercise extends SessionExercise {
                 other.supersetGroup == supersetGroup) &&
             (identical(other.plannedExerciseId, plannedExerciseId) ||
                 other.plannedExerciseId == plannedExerciseId) &&
-            const DeepCollectionEquality().equals(other._targets, _targets) &&
-            const DeepCollectionEquality().equals(other._prefill, _prefill) &&
+            const DeepCollectionEquality().equals(other.targets, _targets) &&
+            const DeepCollectionEquality().equals(other.prefill, _prefill) &&
             (identical(other.lastPerformance, lastPerformance) ||
                 other.lastPerformance == lastPerformance) &&
             (identical(other.recommendation, recommendation) ||
@@ -4676,39 +4785,41 @@ class _SessionExercise extends SessionExercise {
             (identical(other.priorBest, priorBest) ||
                 other.priorBest == priorBest) &&
             const DeepCollectionEquality()
-                .equals(other._originalTargets, _originalTargets) &&
-            const DeepCollectionEquality().equals(other._sets, _sets) &&
+                .equals(other.originalTargets, _originalTargets) &&
+            const DeepCollectionEquality().equals(other.sets, _sets) &&
             (identical(other.extraRows, extraRows) ||
                 other.extraRows == extraRows));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hashAll([
-        runtimeType,
-        id,
-        clientExerciseId,
-        exerciseId,
-        slug,
-        name,
-        movementPattern,
-        const DeepCollectionEquality().hash(_equipment),
-        difficulty,
-        const DeepCollectionEquality().hash(_primaryMuscles),
-        const DeepCollectionEquality().hash(_secondaryMuscles),
-        incrementKg,
-        orderIndex,
-        supersetGroup,
-        plannedExerciseId,
-        const DeepCollectionEquality().hash(_targets),
-        const DeepCollectionEquality().hash(_prefill),
-        lastPerformance,
-        recommendation,
-        priorBest,
-        const DeepCollectionEquality().hash(_originalTargets),
-        const DeepCollectionEquality().hash(_sets),
-        extraRows
-      ]);
+  int get hashCode {
+    return Object.hashAll([
+      runtimeType,
+      id,
+      clientExerciseId,
+      exerciseId,
+      slug,
+      name,
+      movementPattern,
+      const DeepCollectionEquality().hash(_equipment),
+      difficulty,
+      const DeepCollectionEquality().hash(_primaryMuscles),
+      const DeepCollectionEquality().hash(_secondaryMuscles),
+      incrementKg,
+      orderIndex,
+      supersetGroup,
+      plannedExerciseId,
+      const DeepCollectionEquality().hash(_targets),
+      const DeepCollectionEquality().hash(_prefill),
+      lastPerformance,
+      recommendation,
+      priorBest,
+      const DeepCollectionEquality().hash(_originalTargets),
+      const DeepCollectionEquality().hash(_sets),
+      extraRows
+    ]);
+  }
 
   @override
   String toString() {
@@ -4947,30 +5058,45 @@ mixin _$PersonalRecord {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as PersonalRecord;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is PersonalRecord &&
-            (identical(other.prType, prType) || other.prType == prType) &&
-            (identical(other.exerciseId, exerciseId) ||
-                other.exerciseId == exerciseId) &&
-            (identical(other.exerciseName, exerciseName) ||
-                other.exerciseName == exerciseName) &&
-            (identical(other.value, value) || other.value == value) &&
-            (identical(other.previous, previous) ||
-                other.previous == previous) &&
-            (identical(other.setLogId, setLogId) ||
-                other.setLogId == setLogId) &&
-            (identical(other.reason, reason) || other.reason == reason));
+            (identical(other.prType, _this.prType) ||
+                other.prType == _this.prType) &&
+            (identical(other.exerciseId, _this.exerciseId) ||
+                other.exerciseId == _this.exerciseId) &&
+            (identical(other.exerciseName, _this.exerciseName) ||
+                other.exerciseName == _this.exerciseName) &&
+            (identical(other.value, _this.value) ||
+                other.value == _this.value) &&
+            (identical(other.previous, _this.previous) ||
+                other.previous == _this.previous) &&
+            (identical(other.setLogId, _this.setLogId) ||
+                other.setLogId == _this.setLogId) &&
+            (identical(other.reason, _this.reason) ||
+                other.reason == _this.reason));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, prType, exerciseId, exerciseName,
-      value, previous, setLogId, reason);
+  int get hashCode {
+    final _this = this as PersonalRecord;
+    return Object.hash(
+        runtimeType,
+        _this.prType,
+        _this.exerciseId,
+        _this.exerciseName,
+        _this.value,
+        _this.previous,
+        _this.setLogId,
+        _this.reason);
+  }
 
   @override
   String toString() {
-    return 'PersonalRecord(prType: $prType, exerciseId: $exerciseId, exerciseName: $exerciseName, value: $value, previous: $previous, setLogId: $setLogId, reason: $reason)';
+    final _this = this as PersonalRecord;
+    return 'PersonalRecord(prType: ${_this.prType}, exerciseId: ${_this.exerciseId}, exerciseName: ${_this.exerciseName}, value: ${_this.value}, previous: ${_this.previous}, setLogId: ${_this.setLogId}, reason: ${_this.reason})';
   }
 }
 
@@ -5011,7 +5137,7 @@ class _$PersonalRecordCopyWithImpl<$Res>
     Object? setLogId = null,
     Object? reason = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(PersonalRecord(
       prType: null == prType
           ? _self.prType
           : prType // ignore: cast_nullable_to_non_nullable
@@ -5274,8 +5400,10 @@ class _PersonalRecord implements PersonalRecord {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, prType, exerciseId, exerciseName,
-      value, previous, setLogId, reason);
+  int get hashCode {
+    return Object.hash(runtimeType, prType, exerciseId, exerciseName, value,
+        previous, setLogId, reason);
+  }
 
   @override
   String toString() {
@@ -5379,42 +5507,47 @@ mixin _$SessionSummary {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as SessionSummary;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is SessionSummary &&
-            (identical(other.durationSeconds, durationSeconds) ||
-                other.durationSeconds == durationSeconds) &&
-            (identical(other.totalSets, totalSets) ||
-                other.totalSets == totalSets) &&
-            (identical(other.workingSets, workingSets) ||
-                other.workingSets == workingSets) &&
-            (identical(other.tonnageKg, tonnageKg) ||
-                other.tonnageKg == tonnageKg) &&
+            (identical(other.durationSeconds, _this.durationSeconds) ||
+                other.durationSeconds == _this.durationSeconds) &&
+            (identical(other.totalSets, _this.totalSets) ||
+                other.totalSets == _this.totalSets) &&
+            (identical(other.workingSets, _this.workingSets) ||
+                other.workingSets == _this.workingSets) &&
+            (identical(other.tonnageKg, _this.tonnageKg) ||
+                other.tonnageKg == _this.tonnageKg) &&
             const DeepCollectionEquality()
-                .equals(other.hardSetsByMuscle, hardSetsByMuscle) &&
-            (identical(other.exercisesCompleted, exercisesCompleted) ||
-                other.exercisesCompleted == exercisesCompleted) &&
-            (identical(other.exercisesSkipped, exercisesSkipped) ||
-                other.exercisesSkipped == exercisesSkipped) &&
-            const DeepCollectionEquality().equals(other.prs, prs));
+                .equals(other.hardSetsByMuscle, _this.hardSetsByMuscle) &&
+            (identical(other.exercisesCompleted, _this.exercisesCompleted) ||
+                other.exercisesCompleted == _this.exercisesCompleted) &&
+            (identical(other.exercisesSkipped, _this.exercisesSkipped) ||
+                other.exercisesSkipped == _this.exercisesSkipped) &&
+            const DeepCollectionEquality().equals(other.prs, _this.prs));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      durationSeconds,
-      totalSets,
-      workingSets,
-      tonnageKg,
-      const DeepCollectionEquality().hash(hardSetsByMuscle),
-      exercisesCompleted,
-      exercisesSkipped,
-      const DeepCollectionEquality().hash(prs));
+  int get hashCode {
+    final _this = this as SessionSummary;
+    return Object.hash(
+        runtimeType,
+        _this.durationSeconds,
+        _this.totalSets,
+        _this.workingSets,
+        _this.tonnageKg,
+        const DeepCollectionEquality().hash(_this.hardSetsByMuscle),
+        _this.exercisesCompleted,
+        _this.exercisesSkipped,
+        const DeepCollectionEquality().hash(_this.prs));
+  }
 
   @override
   String toString() {
-    return 'SessionSummary(durationSeconds: $durationSeconds, totalSets: $totalSets, workingSets: $workingSets, tonnageKg: $tonnageKg, hardSetsByMuscle: $hardSetsByMuscle, exercisesCompleted: $exercisesCompleted, exercisesSkipped: $exercisesSkipped, prs: $prs)';
+    final _this = this as SessionSummary;
+    return 'SessionSummary(durationSeconds: ${_this.durationSeconds}, totalSets: ${_this.totalSets}, workingSets: ${_this.workingSets}, tonnageKg: ${_this.tonnageKg}, hardSetsByMuscle: ${_this.hardSetsByMuscle}, exercisesCompleted: ${_this.exercisesCompleted}, exercisesSkipped: ${_this.exercisesSkipped}, prs: ${_this.prs})';
   }
 }
 
@@ -5457,7 +5590,7 @@ class _$SessionSummaryCopyWithImpl<$Res>
     Object? exercisesSkipped = null,
     Object? prs = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(SessionSummary(
       durationSeconds: null == durationSeconds
           ? _self.durationSeconds
           : durationSeconds // ignore: cast_nullable_to_non_nullable
@@ -5710,10 +5843,10 @@ class _SessionSummary implements SessionSummary {
       required this.totalSets,
       required this.workingSets,
       required this.tonnageKg,
-      required final Map<String, double> hardSetsByMuscle,
+      required Map<String, double> hardSetsByMuscle,
       required this.exercisesCompleted,
       required this.exercisesSkipped,
-      required final List<PersonalRecord> prs})
+      required List<PersonalRecord> prs})
       : _hardSetsByMuscle = hardSetsByMuscle,
         _prs = prs;
   factory _SessionSummary.fromJson(Map<String, dynamic> json) =>
@@ -5776,26 +5909,28 @@ class _SessionSummary implements SessionSummary {
             (identical(other.tonnageKg, tonnageKg) ||
                 other.tonnageKg == tonnageKg) &&
             const DeepCollectionEquality()
-                .equals(other._hardSetsByMuscle, _hardSetsByMuscle) &&
+                .equals(other.hardSetsByMuscle, _hardSetsByMuscle) &&
             (identical(other.exercisesCompleted, exercisesCompleted) ||
                 other.exercisesCompleted == exercisesCompleted) &&
             (identical(other.exercisesSkipped, exercisesSkipped) ||
                 other.exercisesSkipped == exercisesSkipped) &&
-            const DeepCollectionEquality().equals(other._prs, _prs));
+            const DeepCollectionEquality().equals(other.prs, _prs));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      durationSeconds,
-      totalSets,
-      workingSets,
-      tonnageKg,
-      const DeepCollectionEquality().hash(_hardSetsByMuscle),
-      exercisesCompleted,
-      exercisesSkipped,
-      const DeepCollectionEquality().hash(_prs));
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        durationSeconds,
+        totalSets,
+        workingSets,
+        tonnageKg,
+        const DeepCollectionEquality().hash(_hardSetsByMuscle),
+        exercisesCompleted,
+        exercisesSkipped,
+        const DeepCollectionEquality().hash(_prs));
+  }
 
   @override
   String toString() {
@@ -5909,49 +6044,58 @@ mixin _$WorkoutSession {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as WorkoutSession;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is WorkoutSession &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.clientSessionId, clientSessionId) ||
-                other.clientSessionId == clientSessionId) &&
-            (identical(other.status, status) || other.status == status) &&
-            (identical(other.programId, programId) ||
-                other.programId == programId) &&
-            (identical(other.programDayId, programDayId) ||
-                other.programDayId == programDayId) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.startedAt, startedAt) ||
-                other.startedAt == startedAt) &&
-            (identical(other.completedAt, completedAt) ||
-                other.completedAt == completedAt) &&
-            (identical(other.durationSeconds, durationSeconds) ||
-                other.durationSeconds == durationSeconds) &&
-            (identical(other.notes, notes) || other.notes == notes) &&
-            const DeepCollectionEquality().equals(other.exercises, exercises) &&
-            (identical(other.summary, summary) || other.summary == summary));
+            (identical(other.id, _this.id) || other.id == _this.id) &&
+            (identical(other.clientSessionId, _this.clientSessionId) ||
+                other.clientSessionId == _this.clientSessionId) &&
+            (identical(other.status, _this.status) ||
+                other.status == _this.status) &&
+            (identical(other.programId, _this.programId) ||
+                other.programId == _this.programId) &&
+            (identical(other.programDayId, _this.programDayId) ||
+                other.programDayId == _this.programDayId) &&
+            (identical(other.name, _this.name) || other.name == _this.name) &&
+            (identical(other.startedAt, _this.startedAt) ||
+                other.startedAt == _this.startedAt) &&
+            (identical(other.completedAt, _this.completedAt) ||
+                other.completedAt == _this.completedAt) &&
+            (identical(other.durationSeconds, _this.durationSeconds) ||
+                other.durationSeconds == _this.durationSeconds) &&
+            (identical(other.notes, _this.notes) ||
+                other.notes == _this.notes) &&
+            const DeepCollectionEquality()
+                .equals(other.exercises, _this.exercises) &&
+            (identical(other.summary, _this.summary) ||
+                other.summary == _this.summary));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      clientSessionId,
-      status,
-      programId,
-      programDayId,
-      name,
-      startedAt,
-      completedAt,
-      durationSeconds,
-      notes,
-      const DeepCollectionEquality().hash(exercises),
-      summary);
+  int get hashCode {
+    final _this = this as WorkoutSession;
+    return Object.hash(
+        runtimeType,
+        _this.id,
+        _this.clientSessionId,
+        _this.status,
+        _this.programId,
+        _this.programDayId,
+        _this.name,
+        _this.startedAt,
+        _this.completedAt,
+        _this.durationSeconds,
+        _this.notes,
+        const DeepCollectionEquality().hash(_this.exercises),
+        _this.summary);
+  }
 
   @override
   String toString() {
-    return 'WorkoutSession(id: $id, clientSessionId: $clientSessionId, status: $status, programId: $programId, programDayId: $programDayId, name: $name, startedAt: $startedAt, completedAt: $completedAt, durationSeconds: $durationSeconds, notes: $notes, exercises: $exercises, summary: $summary)';
+    final _this = this as WorkoutSession;
+    return 'WorkoutSession(id: ${_this.id}, clientSessionId: ${_this.clientSessionId}, status: ${_this.status}, programId: ${_this.programId}, programDayId: ${_this.programDayId}, name: ${_this.name}, startedAt: ${_this.startedAt}, completedAt: ${_this.completedAt}, durationSeconds: ${_this.durationSeconds}, notes: ${_this.notes}, exercises: ${_this.exercises}, summary: ${_this.summary})';
   }
 }
 
@@ -6004,7 +6148,7 @@ class _$WorkoutSessionCopyWithImpl<$Res>
     Object? exercises = null,
     Object? summary = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(WorkoutSession(
       id: null == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -6317,7 +6461,7 @@ class _WorkoutSession extends WorkoutSession {
       required this.completedAt,
       required this.durationSeconds,
       required this.notes,
-      required final List<SessionExercise> exercises,
+      required List<SessionExercise> exercises,
       required this.summary})
       : _exercises = exercises,
         super._();
@@ -6392,26 +6536,28 @@ class _WorkoutSession extends WorkoutSession {
                 other.durationSeconds == durationSeconds) &&
             (identical(other.notes, notes) || other.notes == notes) &&
             const DeepCollectionEquality()
-                .equals(other._exercises, _exercises) &&
+                .equals(other.exercises, _exercises) &&
             (identical(other.summary, summary) || other.summary == summary));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      clientSessionId,
-      status,
-      programId,
-      programDayId,
-      name,
-      startedAt,
-      completedAt,
-      durationSeconds,
-      notes,
-      const DeepCollectionEquality().hash(_exercises),
-      summary);
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        id,
+        clientSessionId,
+        status,
+        programId,
+        programDayId,
+        name,
+        startedAt,
+        completedAt,
+        durationSeconds,
+        notes,
+        const DeepCollectionEquality().hash(_exercises),
+        summary);
+  }
 
   @override
   String toString() {
@@ -6564,45 +6710,52 @@ mixin _$SessionListItem {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as SessionListItem;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is SessionListItem &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.status, status) || other.status == status) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.startedAt, startedAt) ||
-                other.startedAt == startedAt) &&
-            (identical(other.completedAt, completedAt) ||
-                other.completedAt == completedAt) &&
-            (identical(other.durationSeconds, durationSeconds) ||
-                other.durationSeconds == durationSeconds) &&
-            (identical(other.exerciseCount, exerciseCount) ||
-                other.exerciseCount == exerciseCount) &&
-            (identical(other.workingSets, workingSets) ||
-                other.workingSets == workingSets) &&
-            (identical(other.tonnageKg, tonnageKg) ||
-                other.tonnageKg == tonnageKg) &&
-            (identical(other.prCount, prCount) || other.prCount == prCount));
+            (identical(other.id, _this.id) || other.id == _this.id) &&
+            (identical(other.status, _this.status) ||
+                other.status == _this.status) &&
+            (identical(other.name, _this.name) || other.name == _this.name) &&
+            (identical(other.startedAt, _this.startedAt) ||
+                other.startedAt == _this.startedAt) &&
+            (identical(other.completedAt, _this.completedAt) ||
+                other.completedAt == _this.completedAt) &&
+            (identical(other.durationSeconds, _this.durationSeconds) ||
+                other.durationSeconds == _this.durationSeconds) &&
+            (identical(other.exerciseCount, _this.exerciseCount) ||
+                other.exerciseCount == _this.exerciseCount) &&
+            (identical(other.workingSets, _this.workingSets) ||
+                other.workingSets == _this.workingSets) &&
+            (identical(other.tonnageKg, _this.tonnageKg) ||
+                other.tonnageKg == _this.tonnageKg) &&
+            (identical(other.prCount, _this.prCount) ||
+                other.prCount == _this.prCount));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      status,
-      name,
-      startedAt,
-      completedAt,
-      durationSeconds,
-      exerciseCount,
-      workingSets,
-      tonnageKg,
-      prCount);
+  int get hashCode {
+    final _this = this as SessionListItem;
+    return Object.hash(
+        runtimeType,
+        _this.id,
+        _this.status,
+        _this.name,
+        _this.startedAt,
+        _this.completedAt,
+        _this.durationSeconds,
+        _this.exerciseCount,
+        _this.workingSets,
+        _this.tonnageKg,
+        _this.prCount);
+  }
 
   @override
   String toString() {
-    return 'SessionListItem(id: $id, status: $status, name: $name, startedAt: $startedAt, completedAt: $completedAt, durationSeconds: $durationSeconds, exerciseCount: $exerciseCount, workingSets: $workingSets, tonnageKg: $tonnageKg, prCount: $prCount)';
+    final _this = this as SessionListItem;
+    return 'SessionListItem(id: ${_this.id}, status: ${_this.status}, name: ${_this.name}, startedAt: ${_this.startedAt}, completedAt: ${_this.completedAt}, durationSeconds: ${_this.durationSeconds}, exerciseCount: ${_this.exerciseCount}, workingSets: ${_this.workingSets}, tonnageKg: ${_this.tonnageKg}, prCount: ${_this.prCount})';
   }
 }
 
@@ -6649,7 +6802,7 @@ class _$SessionListItemCopyWithImpl<$Res>
     Object? tonnageKg = null,
     Object? prCount = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(SessionListItem(
       id: null == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -6992,18 +7145,10 @@ class _SessionListItem implements SessionListItem {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      status,
-      name,
-      startedAt,
-      completedAt,
-      durationSeconds,
-      exerciseCount,
-      workingSets,
-      tonnageKg,
-      prCount);
+  int get hashCode {
+    return Object.hash(runtimeType, id, status, name, startedAt, completedAt,
+        durationSeconds, exerciseCount, workingSets, tonnageKg, prCount);
+  }
 
   @override
   String toString() {
@@ -7119,22 +7264,27 @@ mixin _$SessionListResponse {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as SessionListResponse;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is SessionListResponse &&
-            const DeepCollectionEquality().equals(other.items, items) &&
-            (identical(other.nextBefore, nextBefore) ||
-                other.nextBefore == nextBefore));
+            const DeepCollectionEquality().equals(other.items, _this.items) &&
+            (identical(other.nextBefore, _this.nextBefore) ||
+                other.nextBefore == _this.nextBefore));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, const DeepCollectionEquality().hash(items), nextBefore);
+  int get hashCode {
+    final _this = this as SessionListResponse;
+    return Object.hash(runtimeType,
+        const DeepCollectionEquality().hash(_this.items), _this.nextBefore);
+  }
 
   @override
   String toString() {
-    return 'SessionListResponse(items: $items, nextBefore: $nextBefore)';
+    final _this = this as SessionListResponse;
+    return 'SessionListResponse(items: ${_this.items}, nextBefore: ${_this.nextBefore})';
   }
 }
 
@@ -7163,7 +7313,7 @@ class _$SessionListResponseCopyWithImpl<$Res>
     Object? items = null,
     Object? nextBefore = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(SessionListResponse(
       items: null == items
           ? _self.items
           : items // ignore: cast_nullable_to_non_nullable
@@ -7339,7 +7489,7 @@ extension SessionListResponsePatterns on SessionListResponse {
 @JsonSerializable()
 class _SessionListResponse implements SessionListResponse {
   const _SessionListResponse(
-      {required final List<SessionListItem> items, required this.nextBefore})
+      {required List<SessionListItem> items, required this.nextBefore})
       : _items = items;
   factory _SessionListResponse.fromJson(Map<String, dynamic> json) =>
       _$SessionListResponseFromJson(json);
@@ -7376,15 +7526,17 @@ class _SessionListResponse implements SessionListResponse {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _SessionListResponse &&
-            const DeepCollectionEquality().equals(other._items, _items) &&
+            const DeepCollectionEquality().equals(other.items, _items) &&
             (identical(other.nextBefore, nextBefore) ||
                 other.nextBefore == nextBefore));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, const DeepCollectionEquality().hash(_items), nextBefore);
+  int get hashCode {
+    return Object.hash(
+        runtimeType, const DeepCollectionEquality().hash(_items), nextBefore);
+  }
 
   @override
   String toString() {
@@ -7466,68 +7618,76 @@ mixin _$TodayExercise {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as TodayExercise;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is TodayExercise &&
-            (identical(other.plannedExerciseId, plannedExerciseId) ||
-                other.plannedExerciseId == plannedExerciseId) &&
-            (identical(other.exerciseId, exerciseId) ||
-                other.exerciseId == exerciseId) &&
-            (identical(other.slug, slug) || other.slug == slug) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.movementPattern, movementPattern) ||
-                other.movementPattern == movementPattern) &&
-            const DeepCollectionEquality().equals(other.equipment, equipment) &&
-            (identical(other.difficulty, difficulty) ||
-                other.difficulty == difficulty) &&
+            (identical(other.plannedExerciseId, _this.plannedExerciseId) ||
+                other.plannedExerciseId == _this.plannedExerciseId) &&
+            (identical(other.exerciseId, _this.exerciseId) ||
+                other.exerciseId == _this.exerciseId) &&
+            (identical(other.slug, _this.slug) || other.slug == _this.slug) &&
+            (identical(other.name, _this.name) || other.name == _this.name) &&
+            (identical(other.movementPattern, _this.movementPattern) ||
+                other.movementPattern == _this.movementPattern) &&
             const DeepCollectionEquality()
-                .equals(other.primaryMuscles, primaryMuscles) &&
+                .equals(other.equipment, _this.equipment) &&
+            (identical(other.difficulty, _this.difficulty) ||
+                other.difficulty == _this.difficulty) &&
             const DeepCollectionEquality()
-                .equals(other.secondaryMuscles, secondaryMuscles) &&
-            (identical(other.orderIndex, orderIndex) ||
-                other.orderIndex == orderIndex) &&
-            (identical(other.incrementKg, incrementKg) ||
-                other.incrementKg == incrementKg) &&
-            const DeepCollectionEquality().equals(other.targets, targets) &&
-            const DeepCollectionEquality().equals(other.prefill, prefill) &&
-            (identical(other.lastPerformance, lastPerformance) ||
-                other.lastPerformance == lastPerformance) &&
-            (identical(other.recommendation, recommendation) ||
-                other.recommendation == recommendation) &&
-            (identical(other.priorBest, priorBest) ||
-                other.priorBest == priorBest) &&
+                .equals(other.primaryMuscles, _this.primaryMuscles) &&
             const DeepCollectionEquality()
-                .equals(other.originalTargets, originalTargets) &&
-            (identical(other.substitution, substitution) ||
-                other.substitution == substitution));
+                .equals(other.secondaryMuscles, _this.secondaryMuscles) &&
+            (identical(other.orderIndex, _this.orderIndex) ||
+                other.orderIndex == _this.orderIndex) &&
+            (identical(other.incrementKg, _this.incrementKg) ||
+                other.incrementKg == _this.incrementKg) &&
+            const DeepCollectionEquality()
+                .equals(other.targets, _this.targets) &&
+            const DeepCollectionEquality()
+                .equals(other.prefill, _this.prefill) &&
+            (identical(other.lastPerformance, _this.lastPerformance) ||
+                other.lastPerformance == _this.lastPerformance) &&
+            (identical(other.recommendation, _this.recommendation) ||
+                other.recommendation == _this.recommendation) &&
+            (identical(other.priorBest, _this.priorBest) ||
+                other.priorBest == _this.priorBest) &&
+            const DeepCollectionEquality()
+                .equals(other.originalTargets, _this.originalTargets) &&
+            (identical(other.substitution, _this.substitution) ||
+                other.substitution == _this.substitution));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      plannedExerciseId,
-      exerciseId,
-      slug,
-      name,
-      movementPattern,
-      const DeepCollectionEquality().hash(equipment),
-      difficulty,
-      const DeepCollectionEquality().hash(primaryMuscles),
-      const DeepCollectionEquality().hash(secondaryMuscles),
-      orderIndex,
-      incrementKg,
-      const DeepCollectionEquality().hash(targets),
-      const DeepCollectionEquality().hash(prefill),
-      lastPerformance,
-      recommendation,
-      priorBest,
-      const DeepCollectionEquality().hash(originalTargets),
-      substitution);
+  int get hashCode {
+    final _this = this as TodayExercise;
+    return Object.hash(
+        runtimeType,
+        _this.plannedExerciseId,
+        _this.exerciseId,
+        _this.slug,
+        _this.name,
+        _this.movementPattern,
+        const DeepCollectionEquality().hash(_this.equipment),
+        _this.difficulty,
+        const DeepCollectionEquality().hash(_this.primaryMuscles),
+        const DeepCollectionEquality().hash(_this.secondaryMuscles),
+        _this.orderIndex,
+        _this.incrementKg,
+        const DeepCollectionEquality().hash(_this.targets),
+        const DeepCollectionEquality().hash(_this.prefill),
+        _this.lastPerformance,
+        _this.recommendation,
+        _this.priorBest,
+        const DeepCollectionEquality().hash(_this.originalTargets),
+        _this.substitution);
+  }
 
   @override
   String toString() {
-    return 'TodayExercise(plannedExerciseId: $plannedExerciseId, exerciseId: $exerciseId, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, primaryMuscles: $primaryMuscles, secondaryMuscles: $secondaryMuscles, orderIndex: $orderIndex, incrementKg: $incrementKg, targets: $targets, prefill: $prefill, lastPerformance: $lastPerformance, recommendation: $recommendation, priorBest: $priorBest, originalTargets: $originalTargets, substitution: $substitution)';
+    final _this = this as TodayExercise;
+    return 'TodayExercise(plannedExerciseId: ${_this.plannedExerciseId}, exerciseId: ${_this.exerciseId}, slug: ${_this.slug}, name: ${_this.name}, movementPattern: ${_this.movementPattern}, equipment: ${_this.equipment}, difficulty: ${_this.difficulty}, primaryMuscles: ${_this.primaryMuscles}, secondaryMuscles: ${_this.secondaryMuscles}, orderIndex: ${_this.orderIndex}, incrementKg: ${_this.incrementKg}, targets: ${_this.targets}, prefill: ${_this.prefill}, lastPerformance: ${_this.lastPerformance}, recommendation: ${_this.recommendation}, priorBest: ${_this.priorBest}, originalTargets: ${_this.originalTargets}, substitution: ${_this.substitution})';
   }
 }
 
@@ -7595,7 +7755,7 @@ class _$TodayExerciseCopyWithImpl<$Res>
     Object? originalTargets = freezed,
     Object? substitution = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(TodayExercise(
       plannedExerciseId: null == plannedExerciseId
           ? _self.plannedExerciseId
           : plannedExerciseId // ignore: cast_nullable_to_non_nullable
@@ -8002,18 +8162,18 @@ class _TodayExercise implements TodayExercise {
       required this.slug,
       required this.name,
       required this.movementPattern,
-      required final List<Equipment> equipment,
+      required List<Equipment> equipment,
       required this.difficulty,
-      required final List<MuscleGroup> primaryMuscles,
-      required final List<MuscleGroup> secondaryMuscles,
+      required List<MuscleGroup> primaryMuscles,
+      required List<MuscleGroup> secondaryMuscles,
       required this.orderIndex,
       required this.incrementKg,
-      required final List<PlannedSet> targets,
-      final List<SetPrefill> prefill = const <SetPrefill>[],
+      required List<PlannedSet> targets,
+      List<SetPrefill> prefill = const <SetPrefill>[],
       required this.lastPerformance,
       this.recommendation = null,
       this.priorBest = PriorBest.none,
-      final List<PlannedSet>? originalTargets = null,
+      List<PlannedSet>? originalTargets = null,
       this.substitution = null})
       : _equipment = equipment,
         _primaryMuscles = primaryMuscles,
@@ -8134,19 +8294,19 @@ class _TodayExercise implements TodayExercise {
             (identical(other.movementPattern, movementPattern) ||
                 other.movementPattern == movementPattern) &&
             const DeepCollectionEquality()
-                .equals(other._equipment, _equipment) &&
+                .equals(other.equipment, _equipment) &&
             (identical(other.difficulty, difficulty) ||
                 other.difficulty == difficulty) &&
             const DeepCollectionEquality()
-                .equals(other._primaryMuscles, _primaryMuscles) &&
+                .equals(other.primaryMuscles, _primaryMuscles) &&
             const DeepCollectionEquality()
-                .equals(other._secondaryMuscles, _secondaryMuscles) &&
+                .equals(other.secondaryMuscles, _secondaryMuscles) &&
             (identical(other.orderIndex, orderIndex) ||
                 other.orderIndex == orderIndex) &&
             (identical(other.incrementKg, incrementKg) ||
                 other.incrementKg == incrementKg) &&
-            const DeepCollectionEquality().equals(other._targets, _targets) &&
-            const DeepCollectionEquality().equals(other._prefill, _prefill) &&
+            const DeepCollectionEquality().equals(other.targets, _targets) &&
+            const DeepCollectionEquality().equals(other.prefill, _prefill) &&
             (identical(other.lastPerformance, lastPerformance) ||
                 other.lastPerformance == lastPerformance) &&
             (identical(other.recommendation, recommendation) ||
@@ -8154,33 +8314,35 @@ class _TodayExercise implements TodayExercise {
             (identical(other.priorBest, priorBest) ||
                 other.priorBest == priorBest) &&
             const DeepCollectionEquality()
-                .equals(other._originalTargets, _originalTargets) &&
+                .equals(other.originalTargets, _originalTargets) &&
             (identical(other.substitution, substitution) ||
                 other.substitution == substitution));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      plannedExerciseId,
-      exerciseId,
-      slug,
-      name,
-      movementPattern,
-      const DeepCollectionEquality().hash(_equipment),
-      difficulty,
-      const DeepCollectionEquality().hash(_primaryMuscles),
-      const DeepCollectionEquality().hash(_secondaryMuscles),
-      orderIndex,
-      incrementKg,
-      const DeepCollectionEquality().hash(_targets),
-      const DeepCollectionEquality().hash(_prefill),
-      lastPerformance,
-      recommendation,
-      priorBest,
-      const DeepCollectionEquality().hash(_originalTargets),
-      substitution);
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        plannedExerciseId,
+        exerciseId,
+        slug,
+        name,
+        movementPattern,
+        const DeepCollectionEquality().hash(_equipment),
+        difficulty,
+        const DeepCollectionEquality().hash(_primaryMuscles),
+        const DeepCollectionEquality().hash(_secondaryMuscles),
+        orderIndex,
+        incrementKg,
+        const DeepCollectionEquality().hash(_targets),
+        const DeepCollectionEquality().hash(_prefill),
+        lastPerformance,
+        recommendation,
+        priorBest,
+        const DeepCollectionEquality().hash(_originalTargets),
+        substitution);
+  }
 
   @override
   String toString() {
@@ -8420,54 +8582,64 @@ mixin _$TodayResponse {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as TodayResponse;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is TodayResponse &&
-            (identical(other.date, date) || other.date == date) &&
-            (identical(other.dayOfWeek, dayOfWeek) ||
-                other.dayOfWeek == dayOfWeek) &&
-            (identical(other.programId, programId) ||
-                other.programId == programId) &&
-            (identical(other.programDayId, programDayId) ||
-                other.programDayId == programDayId) &&
-            (identical(other.sessionName, sessionName) ||
-                other.sessionName == sessionName) &&
-            (identical(other.isRest, isRest) || other.isRest == isRest) &&
-            (identical(other.skipped, skipped) || other.skipped == skipped) &&
-            const DeepCollectionEquality().equals(other.focus, focus) &&
-            const DeepCollectionEquality().equals(other.exercises, exercises) &&
-            (identical(other.activeSession, activeSession) ||
-                other.activeSession == activeSession) &&
-            (identical(other.completedSessionId, completedSessionId) ||
-                other.completedSessionId == completedSessionId) &&
-            (identical(other.mesocycleWeek, mesocycleWeek) ||
-                other.mesocycleWeek == mesocycleWeek) &&
-            (identical(other.deload, deload) || other.deload == deload) &&
-            const DeepCollectionEquality().equals(other.neglected, neglected));
+            (identical(other.date, _this.date) || other.date == _this.date) &&
+            (identical(other.dayOfWeek, _this.dayOfWeek) ||
+                other.dayOfWeek == _this.dayOfWeek) &&
+            (identical(other.programId, _this.programId) ||
+                other.programId == _this.programId) &&
+            (identical(other.programDayId, _this.programDayId) ||
+                other.programDayId == _this.programDayId) &&
+            (identical(other.sessionName, _this.sessionName) ||
+                other.sessionName == _this.sessionName) &&
+            (identical(other.isRest, _this.isRest) ||
+                other.isRest == _this.isRest) &&
+            (identical(other.skipped, _this.skipped) ||
+                other.skipped == _this.skipped) &&
+            const DeepCollectionEquality().equals(other.focus, _this.focus) &&
+            const DeepCollectionEquality()
+                .equals(other.exercises, _this.exercises) &&
+            (identical(other.activeSession, _this.activeSession) ||
+                other.activeSession == _this.activeSession) &&
+            (identical(other.completedSessionId, _this.completedSessionId) ||
+                other.completedSessionId == _this.completedSessionId) &&
+            (identical(other.mesocycleWeek, _this.mesocycleWeek) ||
+                other.mesocycleWeek == _this.mesocycleWeek) &&
+            (identical(other.deload, _this.deload) ||
+                other.deload == _this.deload) &&
+            const DeepCollectionEquality()
+                .equals(other.neglected, _this.neglected));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      date,
-      dayOfWeek,
-      programId,
-      programDayId,
-      sessionName,
-      isRest,
-      skipped,
-      const DeepCollectionEquality().hash(focus),
-      const DeepCollectionEquality().hash(exercises),
-      activeSession,
-      completedSessionId,
-      mesocycleWeek,
-      deload,
-      const DeepCollectionEquality().hash(neglected));
+  int get hashCode {
+    final _this = this as TodayResponse;
+    return Object.hash(
+        runtimeType,
+        _this.date,
+        _this.dayOfWeek,
+        _this.programId,
+        _this.programDayId,
+        _this.sessionName,
+        _this.isRest,
+        _this.skipped,
+        const DeepCollectionEquality().hash(_this.focus),
+        const DeepCollectionEquality().hash(_this.exercises),
+        _this.activeSession,
+        _this.completedSessionId,
+        _this.mesocycleWeek,
+        _this.deload,
+        const DeepCollectionEquality().hash(_this.neglected));
+  }
 
   @override
   String toString() {
-    return 'TodayResponse(date: $date, dayOfWeek: $dayOfWeek, programId: $programId, programDayId: $programDayId, sessionName: $sessionName, isRest: $isRest, skipped: $skipped, focus: $focus, exercises: $exercises, activeSession: $activeSession, completedSessionId: $completedSessionId, mesocycleWeek: $mesocycleWeek, deload: $deload, neglected: $neglected)';
+    final _this = this as TodayResponse;
+    return 'TodayResponse(date: ${_this.date}, dayOfWeek: ${_this.dayOfWeek}, programId: ${_this.programId}, programDayId: ${_this.programDayId}, sessionName: ${_this.sessionName}, isRest: ${_this.isRest}, skipped: ${_this.skipped}, focus: ${_this.focus}, exercises: ${_this.exercises}, activeSession: ${_this.activeSession}, completedSessionId: ${_this.completedSessionId}, mesocycleWeek: ${_this.mesocycleWeek}, deload: ${_this.deload}, neglected: ${_this.neglected})';
   }
 }
 
@@ -8525,7 +8697,7 @@ class _$TodayResponseCopyWithImpl<$Res>
     Object? deload = null,
     Object? neglected = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(TodayResponse(
       date: null == date
           ? _self.date
           : date // ignore: cast_nullable_to_non_nullable
@@ -8865,13 +9037,13 @@ class _TodayResponse implements TodayResponse {
       required this.sessionName,
       required this.isRest,
       this.skipped = false,
-      required final List<MuscleGroup> focus,
-      required final List<TodayExercise> exercises,
+      required List<MuscleGroup> focus,
+      required List<TodayExercise> exercises,
       required this.activeSession,
       required this.completedSessionId,
       this.mesocycleWeek = null,
       this.deload = DeloadState.none,
-      final List<NeglectedMuscle> neglected = const <NeglectedMuscle>[]})
+      List<NeglectedMuscle> neglected = const <NeglectedMuscle>[]})
       : _focus = focus,
         _exercises = exercises,
         _neglected = neglected;
@@ -8961,9 +9133,9 @@ class _TodayResponse implements TodayResponse {
                 other.sessionName == sessionName) &&
             (identical(other.isRest, isRest) || other.isRest == isRest) &&
             (identical(other.skipped, skipped) || other.skipped == skipped) &&
-            const DeepCollectionEquality().equals(other._focus, _focus) &&
+            const DeepCollectionEquality().equals(other.focus, _focus) &&
             const DeepCollectionEquality()
-                .equals(other._exercises, _exercises) &&
+                .equals(other.exercises, _exercises) &&
             (identical(other.activeSession, activeSession) ||
                 other.activeSession == activeSession) &&
             (identical(other.completedSessionId, completedSessionId) ||
@@ -8971,28 +9143,29 @@ class _TodayResponse implements TodayResponse {
             (identical(other.mesocycleWeek, mesocycleWeek) ||
                 other.mesocycleWeek == mesocycleWeek) &&
             (identical(other.deload, deload) || other.deload == deload) &&
-            const DeepCollectionEquality()
-                .equals(other._neglected, _neglected));
+            const DeepCollectionEquality().equals(other.neglected, _neglected));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      date,
-      dayOfWeek,
-      programId,
-      programDayId,
-      sessionName,
-      isRest,
-      skipped,
-      const DeepCollectionEquality().hash(_focus),
-      const DeepCollectionEquality().hash(_exercises),
-      activeSession,
-      completedSessionId,
-      mesocycleWeek,
-      deload,
-      const DeepCollectionEquality().hash(_neglected));
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        date,
+        dayOfWeek,
+        programId,
+        programDayId,
+        sessionName,
+        isRest,
+        skipped,
+        const DeepCollectionEquality().hash(_focus),
+        const DeepCollectionEquality().hash(_exercises),
+        activeSession,
+        completedSessionId,
+        mesocycleWeek,
+        deload,
+        const DeepCollectionEquality().hash(_neglected));
+  }
 
   @override
   String toString() {
@@ -9164,23 +9337,31 @@ mixin _$VolumeLandmarks {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as VolumeLandmarks;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is VolumeLandmarks &&
-            (identical(other.mv, mv) || other.mv == mv) &&
-            (identical(other.mev, mev) || other.mev == mev) &&
-            (identical(other.mavLow, mavLow) || other.mavLow == mavLow) &&
-            (identical(other.mavHigh, mavHigh) || other.mavHigh == mavHigh) &&
-            (identical(other.mrv, mrv) || other.mrv == mrv));
+            (identical(other.mv, _this.mv) || other.mv == _this.mv) &&
+            (identical(other.mev, _this.mev) || other.mev == _this.mev) &&
+            (identical(other.mavLow, _this.mavLow) ||
+                other.mavLow == _this.mavLow) &&
+            (identical(other.mavHigh, _this.mavHigh) ||
+                other.mavHigh == _this.mavHigh) &&
+            (identical(other.mrv, _this.mrv) || other.mrv == _this.mrv));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, mv, mev, mavLow, mavHigh, mrv);
+  int get hashCode {
+    final _this = this as VolumeLandmarks;
+    return Object.hash(runtimeType, _this.mv, _this.mev, _this.mavLow,
+        _this.mavHigh, _this.mrv);
+  }
 
   @override
   String toString() {
-    return 'VolumeLandmarks(mv: $mv, mev: $mev, mavLow: $mavLow, mavHigh: $mavHigh, mrv: $mrv)';
+    final _this = this as VolumeLandmarks;
+    return 'VolumeLandmarks(mv: ${_this.mv}, mev: ${_this.mev}, mavLow: ${_this.mavLow}, mavHigh: ${_this.mavHigh}, mrv: ${_this.mrv})';
   }
 }
 
@@ -9212,7 +9393,7 @@ class _$VolumeLandmarksCopyWithImpl<$Res>
     Object? mavHigh = null,
     Object? mrv = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(VolumeLandmarks(
       mv: null == mv
           ? _self.mv
           : mv // ignore: cast_nullable_to_non_nullable
@@ -9455,7 +9636,9 @@ class _VolumeLandmarks implements VolumeLandmarks {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, mv, mev, mavLow, mavHigh, mrv);
+  int get hashCode {
+    return Object.hash(runtimeType, mv, mev, mavLow, mavHigh, mrv);
+  }
 
   @override
   String toString() {
@@ -9539,28 +9722,36 @@ mixin _$MuscleWeek {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as MuscleWeek;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is MuscleWeek &&
-            (identical(other.muscle, muscle) || other.muscle == muscle) &&
-            (identical(other.hardSets, hardSets) ||
-                other.hardSets == hardSets) &&
-            (identical(other.tonnageKg, tonnageKg) ||
-                other.tonnageKg == tonnageKg) &&
-            (identical(other.status, status) || other.status == status) &&
-            (identical(other.landmarks, landmarks) ||
-                other.landmarks == landmarks) &&
-            (identical(other.owned, owned) || other.owned == owned));
+            (identical(other.muscle, _this.muscle) ||
+                other.muscle == _this.muscle) &&
+            (identical(other.hardSets, _this.hardSets) ||
+                other.hardSets == _this.hardSets) &&
+            (identical(other.tonnageKg, _this.tonnageKg) ||
+                other.tonnageKg == _this.tonnageKg) &&
+            (identical(other.status, _this.status) ||
+                other.status == _this.status) &&
+            (identical(other.landmarks, _this.landmarks) ||
+                other.landmarks == _this.landmarks) &&
+            (identical(other.owned, _this.owned) ||
+                other.owned == _this.owned));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, muscle, hardSets, tonnageKg, status, landmarks, owned);
+  int get hashCode {
+    final _this = this as MuscleWeek;
+    return Object.hash(runtimeType, _this.muscle, _this.hardSets,
+        _this.tonnageKg, _this.status, _this.landmarks, _this.owned);
+  }
 
   @override
   String toString() {
-    return 'MuscleWeek(muscle: $muscle, hardSets: $hardSets, tonnageKg: $tonnageKg, status: $status, landmarks: $landmarks, owned: $owned)';
+    final _this = this as MuscleWeek;
+    return 'MuscleWeek(muscle: ${_this.muscle}, hardSets: ${_this.hardSets}, tonnageKg: ${_this.tonnageKg}, status: ${_this.status}, landmarks: ${_this.landmarks}, owned: ${_this.owned})';
   }
 }
 
@@ -9600,7 +9791,7 @@ class _$MuscleWeekCopyWithImpl<$Res> implements $MuscleWeekCopyWith<$Res> {
     Object? landmarks = null,
     Object? owned = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(MuscleWeek(
       muscle: null == muscle
           ? _self.muscle
           : muscle // ignore: cast_nullable_to_non_nullable
@@ -9864,8 +10055,10 @@ class _MuscleWeek implements MuscleWeek {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, muscle, hardSets, tonnageKg, status, landmarks, owned);
+  int get hashCode {
+    return Object.hash(
+        runtimeType, muscle, hardSets, tonnageKg, status, landmarks, owned);
+  }
 
   @override
   String toString() {
@@ -9968,21 +10161,28 @@ mixin _$VolumeWeek {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as VolumeWeek;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is VolumeWeek &&
-            (identical(other.isoWeek, isoWeek) || other.isoWeek == isoWeek) &&
-            const DeepCollectionEquality().equals(other.muscles, muscles));
+            (identical(other.isoWeek, _this.isoWeek) ||
+                other.isoWeek == _this.isoWeek) &&
+            const DeepCollectionEquality()
+                .equals(other.muscles, _this.muscles));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, isoWeek, const DeepCollectionEquality().hash(muscles));
+  int get hashCode {
+    final _this = this as VolumeWeek;
+    return Object.hash(runtimeType, _this.isoWeek,
+        const DeepCollectionEquality().hash(_this.muscles));
+  }
 
   @override
   String toString() {
-    return 'VolumeWeek(isoWeek: $isoWeek, muscles: $muscles)';
+    final _this = this as VolumeWeek;
+    return 'VolumeWeek(isoWeek: ${_this.isoWeek}, muscles: ${_this.muscles})';
   }
 }
 
@@ -10010,7 +10210,7 @@ class _$VolumeWeekCopyWithImpl<$Res> implements $VolumeWeekCopyWith<$Res> {
     Object? isoWeek = null,
     Object? muscles = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(VolumeWeek(
       isoWeek: null == isoWeek
           ? _self.isoWeek
           : isoWeek // ignore: cast_nullable_to_non_nullable
@@ -10183,8 +10383,7 @@ extension VolumeWeekPatterns on VolumeWeek {
 /// @nodoc
 @JsonSerializable()
 class _VolumeWeek implements VolumeWeek {
-  const _VolumeWeek(
-      {required this.isoWeek, required final List<MuscleWeek> muscles})
+  const _VolumeWeek({required this.isoWeek, required List<MuscleWeek> muscles})
       : _muscles = muscles;
   factory _VolumeWeek.fromJson(Map<String, dynamic> json) =>
       _$VolumeWeekFromJson(json);
@@ -10220,13 +10419,15 @@ class _VolumeWeek implements VolumeWeek {
         (other.runtimeType == runtimeType &&
             other is _VolumeWeek &&
             (identical(other.isoWeek, isoWeek) || other.isoWeek == isoWeek) &&
-            const DeepCollectionEquality().equals(other._muscles, _muscles));
+            const DeepCollectionEquality().equals(other.muscles, _muscles));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, isoWeek, const DeepCollectionEquality().hash(_muscles));
+  int get hashCode {
+    return Object.hash(
+        runtimeType, isoWeek, const DeepCollectionEquality().hash(_muscles));
+  }
 
   @override
   String toString() {
@@ -10294,30 +10495,37 @@ mixin _$VolumeResponse {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as VolumeResponse;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is VolumeResponse &&
-            const DeepCollectionEquality().equals(other.weeks, weeks) &&
-            const DeepCollectionEquality().equals(other.owned, owned) &&
-            const DeepCollectionEquality().equals(other.neglected, neglected) &&
-            (identical(other.mesocycleWeek, mesocycleWeek) ||
-                other.mesocycleWeek == mesocycleWeek) &&
-            (identical(other.deload, deload) || other.deload == deload));
+            const DeepCollectionEquality().equals(other.weeks, _this.weeks) &&
+            const DeepCollectionEquality().equals(other.owned, _this.owned) &&
+            const DeepCollectionEquality()
+                .equals(other.neglected, _this.neglected) &&
+            (identical(other.mesocycleWeek, _this.mesocycleWeek) ||
+                other.mesocycleWeek == _this.mesocycleWeek) &&
+            (identical(other.deload, _this.deload) ||
+                other.deload == _this.deload));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(weeks),
-      const DeepCollectionEquality().hash(owned),
-      const DeepCollectionEquality().hash(neglected),
-      mesocycleWeek,
-      deload);
+  int get hashCode {
+    final _this = this as VolumeResponse;
+    return Object.hash(
+        runtimeType,
+        const DeepCollectionEquality().hash(_this.weeks),
+        const DeepCollectionEquality().hash(_this.owned),
+        const DeepCollectionEquality().hash(_this.neglected),
+        _this.mesocycleWeek,
+        _this.deload);
+  }
 
   @override
   String toString() {
-    return 'VolumeResponse(weeks: $weeks, owned: $owned, neglected: $neglected, mesocycleWeek: $mesocycleWeek, deload: $deload)';
+    final _this = this as VolumeResponse;
+    return 'VolumeResponse(weeks: ${_this.weeks}, owned: ${_this.owned}, neglected: ${_this.neglected}, mesocycleWeek: ${_this.mesocycleWeek}, deload: ${_this.deload})';
   }
 }
 
@@ -10356,7 +10564,7 @@ class _$VolumeResponseCopyWithImpl<$Res>
     Object? mesocycleWeek = freezed,
     Object? deload = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(VolumeResponse(
       weeks: null == weeks
           ? _self.weeks
           : weeks // ignore: cast_nullable_to_non_nullable
@@ -10573,9 +10781,9 @@ extension VolumeResponsePatterns on VolumeResponse {
 @JsonSerializable()
 class _VolumeResponse implements VolumeResponse {
   const _VolumeResponse(
-      {required final List<VolumeWeek> weeks,
-      required final List<MuscleGroup> owned,
-      required final List<NeglectedMuscle> neglected,
+      {required List<VolumeWeek> weeks,
+      required List<MuscleGroup> owned,
+      required List<NeglectedMuscle> neglected,
       required this.mesocycleWeek,
       required this.deload})
       : _weeks = weeks,
@@ -10633,10 +10841,10 @@ class _VolumeResponse implements VolumeResponse {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _VolumeResponse &&
-            const DeepCollectionEquality().equals(other._weeks, _weeks) &&
-            const DeepCollectionEquality().equals(other._owned, _owned) &&
+            const DeepCollectionEquality().equals(other.weeks, _weeks) &&
+            const DeepCollectionEquality().equals(other.owned, _owned) &&
             const DeepCollectionEquality()
-                .equals(other._neglected, _neglected) &&
+                .equals(other.neglected, _neglected) &&
             (identical(other.mesocycleWeek, mesocycleWeek) ||
                 other.mesocycleWeek == mesocycleWeek) &&
             (identical(other.deload, deload) || other.deload == deload));
@@ -10644,13 +10852,15 @@ class _VolumeResponse implements VolumeResponse {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(_weeks),
-      const DeepCollectionEquality().hash(_owned),
-      const DeepCollectionEquality().hash(_neglected),
-      mesocycleWeek,
-      deload);
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        const DeepCollectionEquality().hash(_weeks),
+        const DeepCollectionEquality().hash(_owned),
+        const DeepCollectionEquality().hash(_neglected),
+        mesocycleWeek,
+        deload);
+  }
 
   @override
   String toString() {
@@ -10752,26 +10962,33 @@ mixin _$ProgressionTarget {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as ProgressionTarget;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is ProgressionTarget &&
-            (identical(other.repMin, repMin) || other.repMin == repMin) &&
-            (identical(other.repMax, repMax) || other.repMax == repMax) &&
-            (identical(other.targetRir, targetRir) ||
-                other.targetRir == targetRir) &&
-            (identical(other.sets, sets) || other.sets == sets) &&
-            (identical(other.incrementKg, incrementKg) ||
-                other.incrementKg == incrementKg));
+            (identical(other.repMin, _this.repMin) ||
+                other.repMin == _this.repMin) &&
+            (identical(other.repMax, _this.repMax) ||
+                other.repMax == _this.repMax) &&
+            (identical(other.targetRir, _this.targetRir) ||
+                other.targetRir == _this.targetRir) &&
+            (identical(other.sets, _this.sets) || other.sets == _this.sets) &&
+            (identical(other.incrementKg, _this.incrementKg) ||
+                other.incrementKg == _this.incrementKg));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, repMin, repMax, targetRir, sets, incrementKg);
+  int get hashCode {
+    final _this = this as ProgressionTarget;
+    return Object.hash(runtimeType, _this.repMin, _this.repMax, _this.targetRir,
+        _this.sets, _this.incrementKg);
+  }
 
   @override
   String toString() {
-    return 'ProgressionTarget(repMin: $repMin, repMax: $repMax, targetRir: $targetRir, sets: $sets, incrementKg: $incrementKg)';
+    final _this = this as ProgressionTarget;
+    return 'ProgressionTarget(repMin: ${_this.repMin}, repMax: ${_this.repMax}, targetRir: ${_this.targetRir}, sets: ${_this.sets}, incrementKg: ${_this.incrementKg})';
   }
 }
 
@@ -10804,7 +11021,7 @@ class _$ProgressionTargetCopyWithImpl<$Res>
     Object? sets = null,
     Object? incrementKg = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(ProgressionTarget(
       repMin: null == repMin
           ? _self.repMin
           : repMin // ignore: cast_nullable_to_non_nullable
@@ -11049,8 +11266,10 @@ class _ProgressionTarget implements ProgressionTarget {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, repMin, repMax, targetRir, sets, incrementKg);
+  int get hashCode {
+    return Object.hash(
+        runtimeType, repMin, repMax, targetRir, sets, incrementKg);
+  }
 
   @override
   String toString() {
@@ -11134,24 +11353,30 @@ mixin _$ProgressionHistorySet {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as ProgressionHistorySet;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is ProgressionHistorySet &&
-            (identical(other.setIndex, setIndex) ||
-                other.setIndex == setIndex) &&
-            (identical(other.weightKg, weightKg) ||
-                other.weightKg == weightKg) &&
-            (identical(other.reps, reps) || other.reps == reps) &&
-            (identical(other.rir, rir) || other.rir == rir));
+            (identical(other.setIndex, _this.setIndex) ||
+                other.setIndex == _this.setIndex) &&
+            (identical(other.weightKg, _this.weightKg) ||
+                other.weightKg == _this.weightKg) &&
+            (identical(other.reps, _this.reps) || other.reps == _this.reps) &&
+            (identical(other.rir, _this.rir) || other.rir == _this.rir));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, setIndex, weightKg, reps, rir);
+  int get hashCode {
+    final _this = this as ProgressionHistorySet;
+    return Object.hash(
+        runtimeType, _this.setIndex, _this.weightKg, _this.reps, _this.rir);
+  }
 
   @override
   String toString() {
-    return 'ProgressionHistorySet(setIndex: $setIndex, weightKg: $weightKg, reps: $reps, rir: $rir)';
+    final _this = this as ProgressionHistorySet;
+    return 'ProgressionHistorySet(setIndex: ${_this.setIndex}, weightKg: ${_this.weightKg}, reps: ${_this.reps}, rir: ${_this.rir})';
   }
 }
 
@@ -11182,7 +11407,7 @@ class _$ProgressionHistorySetCopyWithImpl<$Res>
     Object? reps = null,
     Object? rir = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(ProgressionHistorySet(
       setIndex: null == setIndex
           ? _self.setIndex
           : setIndex // ignore: cast_nullable_to_non_nullable
@@ -11414,7 +11639,9 @@ class _ProgressionHistorySet implements ProgressionHistorySet {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, setIndex, weightKg, reps, rir);
+  int get hashCode {
+    return Object.hash(runtimeType, setIndex, weightKg, reps, rir);
+  }
 
   @override
   String toString() {
@@ -11491,23 +11718,28 @@ mixin _$ProgressionHistoryEntry {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as ProgressionHistoryEntry;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is ProgressionHistoryEntry &&
-            (identical(other.sessionId, sessionId) ||
-                other.sessionId == sessionId) &&
-            (identical(other.date, date) || other.date == date) &&
-            const DeepCollectionEquality().equals(other.sets, sets));
+            (identical(other.sessionId, _this.sessionId) ||
+                other.sessionId == _this.sessionId) &&
+            (identical(other.date, _this.date) || other.date == _this.date) &&
+            const DeepCollectionEquality().equals(other.sets, _this.sets));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, sessionId, date, const DeepCollectionEquality().hash(sets));
+  int get hashCode {
+    final _this = this as ProgressionHistoryEntry;
+    return Object.hash(runtimeType, _this.sessionId, _this.date,
+        const DeepCollectionEquality().hash(_this.sets));
+  }
 
   @override
   String toString() {
-    return 'ProgressionHistoryEntry(sessionId: $sessionId, date: $date, sets: $sets)';
+    final _this = this as ProgressionHistoryEntry;
+    return 'ProgressionHistoryEntry(sessionId: ${_this.sessionId}, date: ${_this.date}, sets: ${_this.sets})';
   }
 }
 
@@ -11537,7 +11769,7 @@ class _$ProgressionHistoryEntryCopyWithImpl<$Res>
     Object? date = null,
     Object? sets = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(ProgressionHistoryEntry(
       sessionId: null == sessionId
           ? _self.sessionId
           : sessionId // ignore: cast_nullable_to_non_nullable
@@ -11723,7 +11955,7 @@ class _ProgressionHistoryEntry implements ProgressionHistoryEntry {
   const _ProgressionHistoryEntry(
       {required this.sessionId,
       required this.date,
-      required final List<ProgressionHistorySet> sets})
+      required List<ProgressionHistorySet> sets})
       : _sets = sets;
   factory _ProgressionHistoryEntry.fromJson(Map<String, dynamic> json) =>
       _$ProgressionHistoryEntryFromJson(json);
@@ -11764,13 +11996,15 @@ class _ProgressionHistoryEntry implements ProgressionHistoryEntry {
             (identical(other.sessionId, sessionId) ||
                 other.sessionId == sessionId) &&
             (identical(other.date, date) || other.date == date) &&
-            const DeepCollectionEquality().equals(other._sets, _sets));
+            const DeepCollectionEquality().equals(other.sets, _sets));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, sessionId, date, const DeepCollectionEquality().hash(_sets));
+  int get hashCode {
+    return Object.hash(runtimeType, sessionId, date,
+        const DeepCollectionEquality().hash(_sets));
+  }
 
   @override
   String toString() {
@@ -11844,26 +12078,38 @@ mixin _$ProgressionDetail {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as ProgressionDetail;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is ProgressionDetail &&
-            (identical(other.exerciseId, exerciseId) ||
-                other.exerciseId == exerciseId) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.target, target) || other.target == target) &&
-            (identical(other.recommendation, recommendation) ||
-                other.recommendation == recommendation) &&
-            const DeepCollectionEquality().equals(other.history, history));
+            (identical(other.exerciseId, _this.exerciseId) ||
+                other.exerciseId == _this.exerciseId) &&
+            (identical(other.name, _this.name) || other.name == _this.name) &&
+            (identical(other.target, _this.target) ||
+                other.target == _this.target) &&
+            (identical(other.recommendation, _this.recommendation) ||
+                other.recommendation == _this.recommendation) &&
+            const DeepCollectionEquality()
+                .equals(other.history, _this.history));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, exerciseId, name, target,
-      recommendation, const DeepCollectionEquality().hash(history));
+  int get hashCode {
+    final _this = this as ProgressionDetail;
+    return Object.hash(
+        runtimeType,
+        _this.exerciseId,
+        _this.name,
+        _this.target,
+        _this.recommendation,
+        const DeepCollectionEquality().hash(_this.history));
+  }
 
   @override
   String toString() {
-    return 'ProgressionDetail(exerciseId: $exerciseId, name: $name, target: $target, recommendation: $recommendation, history: $history)';
+    final _this = this as ProgressionDetail;
+    return 'ProgressionDetail(exerciseId: ${_this.exerciseId}, name: ${_this.name}, target: ${_this.target}, recommendation: ${_this.recommendation}, history: ${_this.history})';
   }
 }
 
@@ -11903,7 +12149,7 @@ class _$ProgressionDetailCopyWithImpl<$Res>
     Object? recommendation = null,
     Object? history = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(ProgressionDetail(
       exerciseId: null == exerciseId
           ? _self.exerciseId
           : exerciseId // ignore: cast_nullable_to_non_nullable
@@ -12139,7 +12385,7 @@ class _ProgressionDetail implements ProgressionDetail {
       required this.name,
       required this.target,
       required this.recommendation,
-      required final List<ProgressionHistoryEntry> history})
+      required List<ProgressionHistoryEntry> history})
       : _history = history;
   factory _ProgressionDetail.fromJson(Map<String, dynamic> json) =>
       _$ProgressionDetailFromJson(json);
@@ -12186,13 +12432,15 @@ class _ProgressionDetail implements ProgressionDetail {
             (identical(other.target, target) || other.target == target) &&
             (identical(other.recommendation, recommendation) ||
                 other.recommendation == recommendation) &&
-            const DeepCollectionEquality().equals(other._history, _history));
+            const DeepCollectionEquality().equals(other.history, _history));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, exerciseId, name, target,
-      recommendation, const DeepCollectionEquality().hash(_history));
+  int get hashCode {
+    return Object.hash(runtimeType, exerciseId, name, target, recommendation,
+        const DeepCollectionEquality().hash(_history));
+  }
 
   @override
   String toString() {
@@ -12310,27 +12558,32 @@ mixin _$SeededExercise {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as SeededExercise;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is SeededExercise &&
-            (identical(other.clientExerciseId, clientExerciseId) ||
-                other.clientExerciseId == clientExerciseId) &&
-            (identical(other.exerciseId, exerciseId) ||
-                other.exerciseId == exerciseId) &&
-            (identical(other.plannedExerciseId, plannedExerciseId) ||
-                other.plannedExerciseId == plannedExerciseId) &&
-            (identical(other.orderIndex, orderIndex) ||
-                other.orderIndex == orderIndex));
+            (identical(other.clientExerciseId, _this.clientExerciseId) ||
+                other.clientExerciseId == _this.clientExerciseId) &&
+            (identical(other.exerciseId, _this.exerciseId) ||
+                other.exerciseId == _this.exerciseId) &&
+            (identical(other.plannedExerciseId, _this.plannedExerciseId) ||
+                other.plannedExerciseId == _this.plannedExerciseId) &&
+            (identical(other.orderIndex, _this.orderIndex) ||
+                other.orderIndex == _this.orderIndex));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, clientExerciseId, exerciseId, plannedExerciseId, orderIndex);
+  int get hashCode {
+    final _this = this as SeededExercise;
+    return Object.hash(runtimeType, _this.clientExerciseId, _this.exerciseId,
+        _this.plannedExerciseId, _this.orderIndex);
+  }
 
   @override
   String toString() {
-    return 'SeededExercise(clientExerciseId: $clientExerciseId, exerciseId: $exerciseId, plannedExerciseId: $plannedExerciseId, orderIndex: $orderIndex)';
+    final _this = this as SeededExercise;
+    return 'SeededExercise(clientExerciseId: ${_this.clientExerciseId}, exerciseId: ${_this.exerciseId}, plannedExerciseId: ${_this.plannedExerciseId}, orderIndex: ${_this.orderIndex})';
   }
 }
 
@@ -12365,7 +12618,7 @@ class _$SeededExerciseCopyWithImpl<$Res>
     Object? plannedExerciseId = freezed,
     Object? orderIndex = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(SeededExercise(
       clientExerciseId: null == clientExerciseId
           ? _self.clientExerciseId
           : clientExerciseId // ignore: cast_nullable_to_non_nullable
@@ -12604,8 +12857,10 @@ class _SeededExercise implements SeededExercise {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, clientExerciseId, exerciseId, plannedExerciseId, orderIndex);
+  int get hashCode {
+    return Object.hash(runtimeType, clientExerciseId, exerciseId,
+        plannedExerciseId, orderIndex);
+  }
 
   @override
   String toString() {
@@ -12687,26 +12942,32 @@ mixin _$StartSessionRequest {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as StartSessionRequest;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is StartSessionRequest &&
-            (identical(other.clientSessionId, clientSessionId) ||
-                other.clientSessionId == clientSessionId) &&
-            (identical(other.programDayId, programDayId) ||
-                other.programDayId == programDayId) &&
-            (identical(other.startedAt, startedAt) ||
-                other.startedAt == startedAt) &&
-            const DeepCollectionEquality().equals(other.exercises, exercises));
+            (identical(other.clientSessionId, _this.clientSessionId) ||
+                other.clientSessionId == _this.clientSessionId) &&
+            (identical(other.programDayId, _this.programDayId) ||
+                other.programDayId == _this.programDayId) &&
+            (identical(other.startedAt, _this.startedAt) ||
+                other.startedAt == _this.startedAt) &&
+            const DeepCollectionEquality()
+                .equals(other.exercises, _this.exercises));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, clientSessionId, programDayId,
-      startedAt, const DeepCollectionEquality().hash(exercises));
+  int get hashCode {
+    final _this = this as StartSessionRequest;
+    return Object.hash(runtimeType, _this.clientSessionId, _this.programDayId,
+        _this.startedAt, const DeepCollectionEquality().hash(_this.exercises));
+  }
 
   @override
   String toString() {
-    return 'StartSessionRequest(clientSessionId: $clientSessionId, programDayId: $programDayId, startedAt: $startedAt, exercises: $exercises)';
+    final _this = this as StartSessionRequest;
+    return 'StartSessionRequest(clientSessionId: ${_this.clientSessionId}, programDayId: ${_this.programDayId}, startedAt: ${_this.startedAt}, exercises: ${_this.exercises})';
   }
 }
 
@@ -12741,7 +13002,7 @@ class _$StartSessionRequestCopyWithImpl<$Res>
     Object? startedAt = null,
     Object? exercises = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(StartSessionRequest(
       clientSessionId: null == clientSessionId
           ? _self.clientSessionId
           : clientSessionId // ignore: cast_nullable_to_non_nullable
@@ -12935,7 +13196,7 @@ class _StartSessionRequest implements StartSessionRequest {
       {required this.clientSessionId,
       this.programDayId,
       required this.startedAt,
-      final List<SeededExercise>? exercises})
+      List<SeededExercise>? exercises})
       : _exercises = exercises;
   factory _StartSessionRequest.fromJson(Map<String, dynamic> json) =>
       _$StartSessionRequestFromJson(json);
@@ -12983,14 +13244,15 @@ class _StartSessionRequest implements StartSessionRequest {
                 other.programDayId == programDayId) &&
             (identical(other.startedAt, startedAt) ||
                 other.startedAt == startedAt) &&
-            const DeepCollectionEquality()
-                .equals(other._exercises, _exercises));
+            const DeepCollectionEquality().equals(other.exercises, _exercises));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, clientSessionId, programDayId,
-      startedAt, const DeepCollectionEquality().hash(_exercises));
+  int get hashCode {
+    return Object.hash(runtimeType, clientSessionId, programDayId, startedAt,
+        const DeepCollectionEquality().hash(_exercises));
+  }
 
   @override
   String toString() {
@@ -13076,34 +13338,49 @@ mixin _$LogSetInput {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as LogSetInput;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is LogSetInput &&
-            (identical(other.clientSetId, clientSetId) ||
-                other.clientSetId == clientSetId) &&
-            (identical(other.clientExerciseId, clientExerciseId) ||
-                other.clientExerciseId == clientExerciseId) &&
-            (identical(other.setIndex, setIndex) ||
-                other.setIndex == setIndex) &&
-            (identical(other.setType, setType) || other.setType == setType) &&
-            (identical(other.weightKg, weightKg) ||
-                other.weightKg == weightKg) &&
-            (identical(other.reps, reps) || other.reps == reps) &&
-            (identical(other.rir, rir) || other.rir == rir) &&
-            (identical(other.loggedAt, loggedAt) ||
-                other.loggedAt == loggedAt) &&
-            (identical(other.plannedSetId, plannedSetId) ||
-                other.plannedSetId == plannedSetId));
+            (identical(other.clientSetId, _this.clientSetId) ||
+                other.clientSetId == _this.clientSetId) &&
+            (identical(other.clientExerciseId, _this.clientExerciseId) ||
+                other.clientExerciseId == _this.clientExerciseId) &&
+            (identical(other.setIndex, _this.setIndex) ||
+                other.setIndex == _this.setIndex) &&
+            (identical(other.setType, _this.setType) ||
+                other.setType == _this.setType) &&
+            (identical(other.weightKg, _this.weightKg) ||
+                other.weightKg == _this.weightKg) &&
+            (identical(other.reps, _this.reps) || other.reps == _this.reps) &&
+            (identical(other.rir, _this.rir) || other.rir == _this.rir) &&
+            (identical(other.loggedAt, _this.loggedAt) ||
+                other.loggedAt == _this.loggedAt) &&
+            (identical(other.plannedSetId, _this.plannedSetId) ||
+                other.plannedSetId == _this.plannedSetId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, clientSetId, clientExerciseId,
-      setIndex, setType, weightKg, reps, rir, loggedAt, plannedSetId);
+  int get hashCode {
+    final _this = this as LogSetInput;
+    return Object.hash(
+        runtimeType,
+        _this.clientSetId,
+        _this.clientExerciseId,
+        _this.setIndex,
+        _this.setType,
+        _this.weightKg,
+        _this.reps,
+        _this.rir,
+        _this.loggedAt,
+        _this.plannedSetId);
+  }
 
   @override
   String toString() {
-    return 'LogSetInput(clientSetId: $clientSetId, clientExerciseId: $clientExerciseId, setIndex: $setIndex, setType: $setType, weightKg: $weightKg, reps: $reps, rir: $rir, loggedAt: $loggedAt, plannedSetId: $plannedSetId)';
+    final _this = this as LogSetInput;
+    return 'LogSetInput(clientSetId: ${_this.clientSetId}, clientExerciseId: ${_this.clientExerciseId}, setIndex: ${_this.setIndex}, setType: ${_this.setType}, weightKg: ${_this.weightKg}, reps: ${_this.reps}, rir: ${_this.rir}, loggedAt: ${_this.loggedAt}, plannedSetId: ${_this.plannedSetId})';
   }
 }
 
@@ -13147,7 +13424,7 @@ class _$LogSetInputCopyWithImpl<$Res> implements $LogSetInputCopyWith<$Res> {
     Object? loggedAt = null,
     Object? plannedSetId = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(LogSetInput(
       clientSetId: null == clientSetId
           ? _self.clientSetId
           : clientSetId // ignore: cast_nullable_to_non_nullable
@@ -13476,8 +13753,10 @@ class _LogSetInput implements LogSetInput {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, clientSetId, clientExerciseId,
-      setIndex, setType, weightKg, reps, rir, loggedAt, plannedSetId);
+  int get hashCode {
+    return Object.hash(runtimeType, clientSetId, clientExerciseId, setIndex,
+        setType, weightKg, reps, rir, loggedAt, plannedSetId);
+  }
 
   @override
   String toString() {
@@ -13586,21 +13865,27 @@ mixin _$LogSetsRequest {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as LogSetsRequest;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is LogSetsRequest &&
-            const DeepCollectionEquality().equals(other.sets, sets) &&
-            (identical(other.merge, merge) || other.merge == merge));
+            const DeepCollectionEquality().equals(other.sets, _this.sets) &&
+            (identical(other.merge, _this.merge) ||
+                other.merge == _this.merge));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, const DeepCollectionEquality().hash(sets), merge);
+  int get hashCode {
+    final _this = this as LogSetsRequest;
+    return Object.hash(runtimeType,
+        const DeepCollectionEquality().hash(_this.sets), _this.merge);
+  }
 
   @override
   String toString() {
-    return 'LogSetsRequest(sets: $sets, merge: $merge)';
+    final _this = this as LogSetsRequest;
+    return 'LogSetsRequest(sets: ${_this.sets}, merge: ${_this.merge})';
   }
 }
 
@@ -13629,7 +13914,7 @@ class _$LogSetsRequestCopyWithImpl<$Res>
     Object? sets = null,
     Object? merge = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(LogSetsRequest(
       sets: null == sets
           ? _self.sets
           : sets // ignore: cast_nullable_to_non_nullable
@@ -13802,8 +14087,7 @@ extension LogSetsRequestPatterns on LogSetsRequest {
 /// @nodoc
 @JsonSerializable()
 class _LogSetsRequest implements LogSetsRequest {
-  const _LogSetsRequest(
-      {required final List<LogSetInput> sets, this.merge = false})
+  const _LogSetsRequest({required List<LogSetInput> sets, this.merge = false})
       : _sets = sets;
   factory _LogSetsRequest.fromJson(Map<String, dynamic> json) =>
       _$LogSetsRequestFromJson(json);
@@ -13840,14 +14124,16 @@ class _LogSetsRequest implements LogSetsRequest {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _LogSetsRequest &&
-            const DeepCollectionEquality().equals(other._sets, _sets) &&
+            const DeepCollectionEquality().equals(other.sets, _sets) &&
             (identical(other.merge, merge) || other.merge == merge));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, const DeepCollectionEquality().hash(_sets), merge);
+  int get hashCode {
+    return Object.hash(
+        runtimeType, const DeepCollectionEquality().hash(_sets), merge);
+  }
 
   @override
   String toString() {
@@ -13919,28 +14205,34 @@ mixin _$PatchSetRequest {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as PatchSetRequest;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is PatchSetRequest &&
-            (identical(other.setType, setType) || other.setType == setType) &&
-            (identical(other.weightKg, weightKg) ||
-                other.weightKg == weightKg) &&
-            (identical(other.weightCleared, weightCleared) ||
-                other.weightCleared == weightCleared) &&
-            (identical(other.reps, reps) || other.reps == reps) &&
-            (identical(other.rir, rir) || other.rir == rir) &&
-            (identical(other.rirCleared, rirCleared) ||
-                other.rirCleared == rirCleared));
+            (identical(other.setType, _this.setType) ||
+                other.setType == _this.setType) &&
+            (identical(other.weightKg, _this.weightKg) ||
+                other.weightKg == _this.weightKg) &&
+            (identical(other.weightCleared, _this.weightCleared) ||
+                other.weightCleared == _this.weightCleared) &&
+            (identical(other.reps, _this.reps) || other.reps == _this.reps) &&
+            (identical(other.rir, _this.rir) || other.rir == _this.rir) &&
+            (identical(other.rirCleared, _this.rirCleared) ||
+                other.rirCleared == _this.rirCleared));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, setType, weightKg, weightCleared, reps, rir, rirCleared);
+  int get hashCode {
+    final _this = this as PatchSetRequest;
+    return Object.hash(runtimeType, _this.setType, _this.weightKg,
+        _this.weightCleared, _this.reps, _this.rir, _this.rirCleared);
+  }
 
   @override
   String toString() {
-    return 'PatchSetRequest(setType: $setType, weightKg: $weightKg, weightCleared: $weightCleared, reps: $reps, rir: $rir, rirCleared: $rirCleared)';
+    final _this = this as PatchSetRequest;
+    return 'PatchSetRequest(setType: ${_this.setType}, weightKg: ${_this.weightKg}, weightCleared: ${_this.weightCleared}, reps: ${_this.reps}, rir: ${_this.rir}, rirCleared: ${_this.rirCleared})';
   }
 }
 
@@ -13979,7 +14271,7 @@ class _$PatchSetRequestCopyWithImpl<$Res>
     Object? rir = freezed,
     Object? rirCleared = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(PatchSetRequest(
       setType: freezed == setType
           ? _self.setType
           : setType // ignore: cast_nullable_to_non_nullable
@@ -14237,8 +14529,10 @@ class _PatchSetRequest implements PatchSetRequest {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, setType, weightKg, weightCleared, reps, rir, rirCleared);
+  int get hashCode {
+    return Object.hash(
+        runtimeType, setType, weightKg, weightCleared, reps, rir, rirCleared);
+  }
 
   @override
   String toString() {
@@ -14333,29 +14627,34 @@ mixin _$AddSessionExerciseRequest {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as AddSessionExerciseRequest;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is AddSessionExerciseRequest &&
-            (identical(other.clientExerciseId, clientExerciseId) ||
-                other.clientExerciseId == clientExerciseId) &&
-            (identical(other.exerciseId, exerciseId) ||
-                other.exerciseId == exerciseId) &&
-            (identical(other.plannedExerciseId, plannedExerciseId) ||
-                other.plannedExerciseId == plannedExerciseId) &&
-            (identical(other.orderIndex, orderIndex) ||
-                other.orderIndex == orderIndex) &&
-            (identical(other.supersetGroup, supersetGroup) ||
-                other.supersetGroup == supersetGroup));
+            (identical(other.clientExerciseId, _this.clientExerciseId) ||
+                other.clientExerciseId == _this.clientExerciseId) &&
+            (identical(other.exerciseId, _this.exerciseId) ||
+                other.exerciseId == _this.exerciseId) &&
+            (identical(other.plannedExerciseId, _this.plannedExerciseId) ||
+                other.plannedExerciseId == _this.plannedExerciseId) &&
+            (identical(other.orderIndex, _this.orderIndex) ||
+                other.orderIndex == _this.orderIndex) &&
+            (identical(other.supersetGroup, _this.supersetGroup) ||
+                other.supersetGroup == _this.supersetGroup));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, clientExerciseId, exerciseId,
-      plannedExerciseId, orderIndex, supersetGroup);
+  int get hashCode {
+    final _this = this as AddSessionExerciseRequest;
+    return Object.hash(runtimeType, _this.clientExerciseId, _this.exerciseId,
+        _this.plannedExerciseId, _this.orderIndex, _this.supersetGroup);
+  }
 
   @override
   String toString() {
-    return 'AddSessionExerciseRequest(clientExerciseId: $clientExerciseId, exerciseId: $exerciseId, plannedExerciseId: $plannedExerciseId, orderIndex: $orderIndex, supersetGroup: $supersetGroup)';
+    final _this = this as AddSessionExerciseRequest;
+    return 'AddSessionExerciseRequest(clientExerciseId: ${_this.clientExerciseId}, exerciseId: ${_this.exerciseId}, plannedExerciseId: ${_this.plannedExerciseId}, orderIndex: ${_this.orderIndex}, supersetGroup: ${_this.supersetGroup})';
   }
 }
 
@@ -14392,7 +14691,7 @@ class _$AddSessionExerciseRequestCopyWithImpl<$Res>
     Object? orderIndex = freezed,
     Object? supersetGroup = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(AddSessionExerciseRequest(
       clientExerciseId: null == clientExerciseId
           ? _self.clientExerciseId
           : clientExerciseId // ignore: cast_nullable_to_non_nullable
@@ -14642,8 +14941,10 @@ class _AddSessionExerciseRequest implements AddSessionExerciseRequest {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, clientExerciseId, exerciseId,
-      plannedExerciseId, orderIndex, supersetGroup);
+  int get hashCode {
+    return Object.hash(runtimeType, clientExerciseId, exerciseId,
+        plannedExerciseId, orderIndex, supersetGroup);
+  }
 
   @override
   String toString() {
@@ -14733,28 +15034,34 @@ mixin _$PatchSessionExerciseRequest {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as PatchSessionExerciseRequest;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is PatchSessionExerciseRequest &&
-            (identical(other.orderIndex, orderIndex) ||
-                other.orderIndex == orderIndex) &&
-            (identical(other.supersetGroup, supersetGroup) ||
-                other.supersetGroup == supersetGroup) &&
-            (identical(other.supersetCleared, supersetCleared) ||
-                other.supersetCleared == supersetCleared) &&
-            (identical(other.exerciseId, exerciseId) ||
-                other.exerciseId == exerciseId) &&
-            (identical(other.removed, removed) || other.removed == removed));
+            (identical(other.orderIndex, _this.orderIndex) ||
+                other.orderIndex == _this.orderIndex) &&
+            (identical(other.supersetGroup, _this.supersetGroup) ||
+                other.supersetGroup == _this.supersetGroup) &&
+            (identical(other.supersetCleared, _this.supersetCleared) ||
+                other.supersetCleared == _this.supersetCleared) &&
+            (identical(other.exerciseId, _this.exerciseId) ||
+                other.exerciseId == _this.exerciseId) &&
+            (identical(other.removed, _this.removed) ||
+                other.removed == _this.removed));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, orderIndex, supersetGroup,
-      supersetCleared, exerciseId, removed);
+  int get hashCode {
+    final _this = this as PatchSessionExerciseRequest;
+    return Object.hash(runtimeType, _this.orderIndex, _this.supersetGroup,
+        _this.supersetCleared, _this.exerciseId, _this.removed);
+  }
 
   @override
   String toString() {
-    return 'PatchSessionExerciseRequest(orderIndex: $orderIndex, supersetGroup: $supersetGroup, supersetCleared: $supersetCleared, exerciseId: $exerciseId, removed: $removed)';
+    final _this = this as PatchSessionExerciseRequest;
+    return 'PatchSessionExerciseRequest(orderIndex: ${_this.orderIndex}, supersetGroup: ${_this.supersetGroup}, supersetCleared: ${_this.supersetCleared}, exerciseId: ${_this.exerciseId}, removed: ${_this.removed})';
   }
 }
 
@@ -14792,7 +15099,7 @@ class _$PatchSessionExerciseRequestCopyWithImpl<$Res>
     Object? exerciseId = freezed,
     Object? removed = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(PatchSessionExerciseRequest(
       orderIndex: freezed == orderIndex
           ? _self.orderIndex
           : orderIndex // ignore: cast_nullable_to_non_nullable
@@ -15042,8 +15349,10 @@ class _PatchSessionExerciseRequest implements PatchSessionExerciseRequest {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, orderIndex, supersetGroup,
-      supersetCleared, exerciseId, removed);
+  int get hashCode {
+    return Object.hash(runtimeType, orderIndex, supersetGroup, supersetCleared,
+        exerciseId, removed);
+  }
 
   @override
   String toString() {
@@ -15130,21 +15439,27 @@ mixin _$CompleteSessionRequest {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as CompleteSessionRequest;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is CompleteSessionRequest &&
-            (identical(other.completedAt, completedAt) ||
-                other.completedAt == completedAt) &&
-            (identical(other.notes, notes) || other.notes == notes));
+            (identical(other.completedAt, _this.completedAt) ||
+                other.completedAt == _this.completedAt) &&
+            (identical(other.notes, _this.notes) ||
+                other.notes == _this.notes));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, completedAt, notes);
+  int get hashCode {
+    final _this = this as CompleteSessionRequest;
+    return Object.hash(runtimeType, _this.completedAt, _this.notes);
+  }
 
   @override
   String toString() {
-    return 'CompleteSessionRequest(completedAt: $completedAt, notes: $notes)';
+    final _this = this as CompleteSessionRequest;
+    return 'CompleteSessionRequest(completedAt: ${_this.completedAt}, notes: ${_this.notes})';
   }
 }
 
@@ -15173,7 +15488,7 @@ class _$CompleteSessionRequestCopyWithImpl<$Res>
     Object? completedAt = null,
     Object? notes = freezed,
   }) {
-    return _then(_self.copyWith(
+    return _then(CompleteSessionRequest(
       completedAt: null == completedAt
           ? _self.completedAt
           : completedAt // ignore: cast_nullable_to_non_nullable
@@ -15383,7 +15698,9 @@ class _CompleteSessionRequest implements CompleteSessionRequest {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, completedAt, notes);
+  int get hashCode {
+    return Object.hash(runtimeType, completedAt, notes);
+  }
 
   @override
   String toString() {

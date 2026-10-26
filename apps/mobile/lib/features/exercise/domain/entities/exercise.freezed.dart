@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'exercise.dart';
@@ -9,6 +9,7 @@ part of 'exercise.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -36,39 +37,45 @@ mixin _$ExerciseSummary {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as ExerciseSummary;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is ExerciseSummary &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.slug, slug) || other.slug == slug) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.movementPattern, movementPattern) ||
-                other.movementPattern == movementPattern) &&
-            const DeepCollectionEquality().equals(other.equipment, equipment) &&
-            (identical(other.difficulty, difficulty) ||
-                other.difficulty == difficulty) &&
-            (identical(other.isUnilateral, isUnilateral) ||
-                other.isUnilateral == isUnilateral) &&
+            (identical(other.id, _this.id) || other.id == _this.id) &&
+            (identical(other.slug, _this.slug) || other.slug == _this.slug) &&
+            (identical(other.name, _this.name) || other.name == _this.name) &&
+            (identical(other.movementPattern, _this.movementPattern) ||
+                other.movementPattern == _this.movementPattern) &&
             const DeepCollectionEquality()
-                .equals(other.primaryMuscles, primaryMuscles));
+                .equals(other.equipment, _this.equipment) &&
+            (identical(other.difficulty, _this.difficulty) ||
+                other.difficulty == _this.difficulty) &&
+            (identical(other.isUnilateral, _this.isUnilateral) ||
+                other.isUnilateral == _this.isUnilateral) &&
+            const DeepCollectionEquality()
+                .equals(other.primaryMuscles, _this.primaryMuscles));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      slug,
-      name,
-      movementPattern,
-      const DeepCollectionEquality().hash(equipment),
-      difficulty,
-      isUnilateral,
-      const DeepCollectionEquality().hash(primaryMuscles));
+  int get hashCode {
+    final _this = this as ExerciseSummary;
+    return Object.hash(
+        runtimeType,
+        _this.id,
+        _this.slug,
+        _this.name,
+        _this.movementPattern,
+        const DeepCollectionEquality().hash(_this.equipment),
+        _this.difficulty,
+        _this.isUnilateral,
+        const DeepCollectionEquality().hash(_this.primaryMuscles));
+  }
 
   @override
   String toString() {
-    return 'ExerciseSummary(id: $id, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, isUnilateral: $isUnilateral, primaryMuscles: $primaryMuscles)';
+    final _this = this as ExerciseSummary;
+    return 'ExerciseSummary(id: ${_this.id}, slug: ${_this.slug}, name: ${_this.name}, movementPattern: ${_this.movementPattern}, equipment: ${_this.equipment}, difficulty: ${_this.difficulty}, isUnilateral: ${_this.isUnilateral}, primaryMuscles: ${_this.primaryMuscles})';
   }
 }
 
@@ -111,7 +118,7 @@ class _$ExerciseSummaryCopyWithImpl<$Res>
     Object? isUnilateral = null,
     Object? primaryMuscles = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(ExerciseSummary(
       id: null == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -364,10 +371,10 @@ class _ExerciseSummary implements ExerciseSummary {
       required this.slug,
       required this.name,
       required this.movementPattern,
-      required final List<Equipment> equipment,
+      required List<Equipment> equipment,
       required this.difficulty,
       required this.isUnilateral,
-      required final List<MuscleGroup> primaryMuscles})
+      required List<MuscleGroup> primaryMuscles})
       : _equipment = equipment,
         _primaryMuscles = primaryMuscles;
   factory _ExerciseSummary.fromJson(Map<String, dynamic> json) =>
@@ -427,27 +434,29 @@ class _ExerciseSummary implements ExerciseSummary {
             (identical(other.movementPattern, movementPattern) ||
                 other.movementPattern == movementPattern) &&
             const DeepCollectionEquality()
-                .equals(other._equipment, _equipment) &&
+                .equals(other.equipment, _equipment) &&
             (identical(other.difficulty, difficulty) ||
                 other.difficulty == difficulty) &&
             (identical(other.isUnilateral, isUnilateral) ||
                 other.isUnilateral == isUnilateral) &&
             const DeepCollectionEquality()
-                .equals(other._primaryMuscles, _primaryMuscles));
+                .equals(other.primaryMuscles, _primaryMuscles));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      slug,
-      name,
-      movementPattern,
-      const DeepCollectionEquality().hash(_equipment),
-      difficulty,
-      isUnilateral,
-      const DeepCollectionEquality().hash(_primaryMuscles));
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        id,
+        slug,
+        name,
+        movementPattern,
+        const DeepCollectionEquality().hash(_equipment),
+        difficulty,
+        isUnilateral,
+        const DeepCollectionEquality().hash(_primaryMuscles));
+  }
 
   @override
   String toString() {
@@ -552,23 +561,29 @@ mixin _$ExerciseMuscle {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as ExerciseMuscle;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is ExerciseMuscle &&
-            (identical(other.muscleGroup, muscleGroup) ||
-                other.muscleGroup == muscleGroup) &&
-            (identical(other.role, role) || other.role == role) &&
-            (identical(other.contribution, contribution) ||
-                other.contribution == contribution));
+            (identical(other.muscleGroup, _this.muscleGroup) ||
+                other.muscleGroup == _this.muscleGroup) &&
+            (identical(other.role, _this.role) || other.role == _this.role) &&
+            (identical(other.contribution, _this.contribution) ||
+                other.contribution == _this.contribution));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, muscleGroup, role, contribution);
+  int get hashCode {
+    final _this = this as ExerciseMuscle;
+    return Object.hash(
+        runtimeType, _this.muscleGroup, _this.role, _this.contribution);
+  }
 
   @override
   String toString() {
-    return 'ExerciseMuscle(muscleGroup: $muscleGroup, role: $role, contribution: $contribution)';
+    final _this = this as ExerciseMuscle;
+    return 'ExerciseMuscle(muscleGroup: ${_this.muscleGroup}, role: ${_this.role}, contribution: ${_this.contribution})';
   }
 }
 
@@ -598,7 +613,7 @@ class _$ExerciseMuscleCopyWithImpl<$Res>
     Object? role = null,
     Object? contribution = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(ExerciseMuscle(
       muscleGroup: null == muscleGroup
           ? _self.muscleGroup
           : muscleGroup // ignore: cast_nullable_to_non_nullable
@@ -824,7 +839,9 @@ class _ExerciseMuscle implements ExerciseMuscle {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, muscleGroup, role, contribution);
+  int get hashCode {
+    return Object.hash(runtimeType, muscleGroup, role, contribution);
+  }
 
   @override
   String toString() {
@@ -898,24 +915,31 @@ mixin _$ExerciseAlternative {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as ExerciseAlternative;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is ExerciseAlternative &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.slug, slug) || other.slug == slug) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.reason, reason) || other.reason == reason) &&
-            const DeepCollectionEquality().equals(other.equipment, equipment));
+            (identical(other.id, _this.id) || other.id == _this.id) &&
+            (identical(other.slug, _this.slug) || other.slug == _this.slug) &&
+            (identical(other.name, _this.name) || other.name == _this.name) &&
+            (identical(other.reason, _this.reason) ||
+                other.reason == _this.reason) &&
+            const DeepCollectionEquality()
+                .equals(other.equipment, _this.equipment));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, slug, name, reason,
-      const DeepCollectionEquality().hash(equipment));
+  int get hashCode {
+    final _this = this as ExerciseAlternative;
+    return Object.hash(runtimeType, _this.id, _this.slug, _this.name,
+        _this.reason, const DeepCollectionEquality().hash(_this.equipment));
+  }
 
   @override
   String toString() {
-    return 'ExerciseAlternative(id: $id, slug: $slug, name: $name, reason: $reason, equipment: $equipment)';
+    final _this = this as ExerciseAlternative;
+    return 'ExerciseAlternative(id: ${_this.id}, slug: ${_this.slug}, name: ${_this.name}, reason: ${_this.reason}, equipment: ${_this.equipment})';
   }
 }
 
@@ -952,7 +976,7 @@ class _$ExerciseAlternativeCopyWithImpl<$Res>
     Object? reason = null,
     Object? equipment = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(ExerciseAlternative(
       id: null == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -1151,7 +1175,7 @@ class _ExerciseAlternative implements ExerciseAlternative {
       required this.slug,
       required this.name,
       required this.reason,
-      required final List<Equipment> equipment})
+      required List<Equipment> equipment})
       : _equipment = equipment;
   factory _ExerciseAlternative.fromJson(Map<String, dynamic> json) =>
       _$ExerciseAlternativeFromJson(json);
@@ -1197,14 +1221,15 @@ class _ExerciseAlternative implements ExerciseAlternative {
             (identical(other.slug, slug) || other.slug == slug) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.reason, reason) || other.reason == reason) &&
-            const DeepCollectionEquality()
-                .equals(other._equipment, _equipment));
+            const DeepCollectionEquality().equals(other.equipment, _equipment));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, slug, name, reason,
-      const DeepCollectionEquality().hash(_equipment));
+  int get hashCode {
+    return Object.hash(runtimeType, id, slug, name, reason,
+        const DeepCollectionEquality().hash(_equipment));
+  }
 
   @override
   String toString() {
@@ -1302,56 +1327,63 @@ mixin _$ExerciseDetail {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as ExerciseDetail;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is ExerciseDetail &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.slug, slug) || other.slug == slug) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.movementPattern, movementPattern) ||
-                other.movementPattern == movementPattern) &&
-            const DeepCollectionEquality().equals(other.equipment, equipment) &&
-            (identical(other.difficulty, difficulty) ||
-                other.difficulty == difficulty) &&
-            (identical(other.isUnilateral, isUnilateral) ||
-                other.isUnilateral == isUnilateral) &&
+            (identical(other.id, _this.id) || other.id == _this.id) &&
+            (identical(other.slug, _this.slug) || other.slug == _this.slug) &&
+            (identical(other.name, _this.name) || other.name == _this.name) &&
+            (identical(other.movementPattern, _this.movementPattern) ||
+                other.movementPattern == _this.movementPattern) &&
             const DeepCollectionEquality()
-                .equals(other.primaryMuscles, primaryMuscles) &&
-            (identical(other.defaultIncrementKg, defaultIncrementKg) ||
-                other.defaultIncrementKg == defaultIncrementKg) &&
+                .equals(other.equipment, _this.equipment) &&
+            (identical(other.difficulty, _this.difficulty) ||
+                other.difficulty == _this.difficulty) &&
+            (identical(other.isUnilateral, _this.isUnilateral) ||
+                other.isUnilateral == _this.isUnilateral) &&
             const DeepCollectionEquality()
-                .equals(other.instructions, instructions) &&
-            (identical(other.videoUrl, videoUrl) ||
-                other.videoUrl == videoUrl) &&
-            const DeepCollectionEquality().equals(other.muscles, muscles) &&
+                .equals(other.primaryMuscles, _this.primaryMuscles) &&
+            (identical(other.defaultIncrementKg, _this.defaultIncrementKg) ||
+                other.defaultIncrementKg == _this.defaultIncrementKg) &&
             const DeepCollectionEquality()
-                .equals(other.alternatives, alternatives) &&
+                .equals(other.instructions, _this.instructions) &&
+            (identical(other.videoUrl, _this.videoUrl) ||
+                other.videoUrl == _this.videoUrl) &&
             const DeepCollectionEquality()
-                .equals(other.contraindications, contraindications));
+                .equals(other.muscles, _this.muscles) &&
+            const DeepCollectionEquality()
+                .equals(other.alternatives, _this.alternatives) &&
+            const DeepCollectionEquality()
+                .equals(other.contraindications, _this.contraindications));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      slug,
-      name,
-      movementPattern,
-      const DeepCollectionEquality().hash(equipment),
-      difficulty,
-      isUnilateral,
-      const DeepCollectionEquality().hash(primaryMuscles),
-      defaultIncrementKg,
-      const DeepCollectionEquality().hash(instructions),
-      videoUrl,
-      const DeepCollectionEquality().hash(muscles),
-      const DeepCollectionEquality().hash(alternatives),
-      const DeepCollectionEquality().hash(contraindications));
+  int get hashCode {
+    final _this = this as ExerciseDetail;
+    return Object.hash(
+        runtimeType,
+        _this.id,
+        _this.slug,
+        _this.name,
+        _this.movementPattern,
+        const DeepCollectionEquality().hash(_this.equipment),
+        _this.difficulty,
+        _this.isUnilateral,
+        const DeepCollectionEquality().hash(_this.primaryMuscles),
+        _this.defaultIncrementKg,
+        const DeepCollectionEquality().hash(_this.instructions),
+        _this.videoUrl,
+        const DeepCollectionEquality().hash(_this.muscles),
+        const DeepCollectionEquality().hash(_this.alternatives),
+        const DeepCollectionEquality().hash(_this.contraindications));
+  }
 
   @override
   String toString() {
-    return 'ExerciseDetail(id: $id, slug: $slug, name: $name, movementPattern: $movementPattern, equipment: $equipment, difficulty: $difficulty, isUnilateral: $isUnilateral, primaryMuscles: $primaryMuscles, defaultIncrementKg: $defaultIncrementKg, instructions: $instructions, videoUrl: $videoUrl, muscles: $muscles, alternatives: $alternatives, contraindications: $contraindications)';
+    final _this = this as ExerciseDetail;
+    return 'ExerciseDetail(id: ${_this.id}, slug: ${_this.slug}, name: ${_this.name}, movementPattern: ${_this.movementPattern}, equipment: ${_this.equipment}, difficulty: ${_this.difficulty}, isUnilateral: ${_this.isUnilateral}, primaryMuscles: ${_this.primaryMuscles}, defaultIncrementKg: ${_this.defaultIncrementKg}, instructions: ${_this.instructions}, videoUrl: ${_this.videoUrl}, muscles: ${_this.muscles}, alternatives: ${_this.alternatives}, contraindications: ${_this.contraindications})';
   }
 }
 
@@ -1406,7 +1438,7 @@ class _$ExerciseDetailCopyWithImpl<$Res>
     Object? alternatives = null,
     Object? contraindications = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(ExerciseDetail(
       id: null == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -1719,16 +1751,16 @@ class _ExerciseDetail implements ExerciseDetail {
       required this.slug,
       required this.name,
       required this.movementPattern,
-      required final List<Equipment> equipment,
+      required List<Equipment> equipment,
       required this.difficulty,
       required this.isUnilateral,
-      required final List<MuscleGroup> primaryMuscles,
+      required List<MuscleGroup> primaryMuscles,
       required this.defaultIncrementKg,
-      required final List<String> instructions,
+      required List<String> instructions,
       required this.videoUrl,
-      required final List<ExerciseMuscle> muscles,
-      required final List<ExerciseAlternative> alternatives,
-      required final List<BodyPart> contraindications})
+      required List<ExerciseMuscle> muscles,
+      required List<ExerciseAlternative> alternatives,
+      required List<BodyPart> contraindications})
       : _equipment = equipment,
         _primaryMuscles = primaryMuscles,
         _instructions = instructions,
@@ -1829,44 +1861,46 @@ class _ExerciseDetail implements ExerciseDetail {
             (identical(other.movementPattern, movementPattern) ||
                 other.movementPattern == movementPattern) &&
             const DeepCollectionEquality()
-                .equals(other._equipment, _equipment) &&
+                .equals(other.equipment, _equipment) &&
             (identical(other.difficulty, difficulty) ||
                 other.difficulty == difficulty) &&
             (identical(other.isUnilateral, isUnilateral) ||
                 other.isUnilateral == isUnilateral) &&
             const DeepCollectionEquality()
-                .equals(other._primaryMuscles, _primaryMuscles) &&
+                .equals(other.primaryMuscles, _primaryMuscles) &&
             (identical(other.defaultIncrementKg, defaultIncrementKg) ||
                 other.defaultIncrementKg == defaultIncrementKg) &&
             const DeepCollectionEquality()
-                .equals(other._instructions, _instructions) &&
+                .equals(other.instructions, _instructions) &&
             (identical(other.videoUrl, videoUrl) ||
                 other.videoUrl == videoUrl) &&
-            const DeepCollectionEquality().equals(other._muscles, _muscles) &&
+            const DeepCollectionEquality().equals(other.muscles, _muscles) &&
             const DeepCollectionEquality()
-                .equals(other._alternatives, _alternatives) &&
+                .equals(other.alternatives, _alternatives) &&
             const DeepCollectionEquality()
-                .equals(other._contraindications, _contraindications));
+                .equals(other.contraindications, _contraindications));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      slug,
-      name,
-      movementPattern,
-      const DeepCollectionEquality().hash(_equipment),
-      difficulty,
-      isUnilateral,
-      const DeepCollectionEquality().hash(_primaryMuscles),
-      defaultIncrementKg,
-      const DeepCollectionEquality().hash(_instructions),
-      videoUrl,
-      const DeepCollectionEquality().hash(_muscles),
-      const DeepCollectionEquality().hash(_alternatives),
-      const DeepCollectionEquality().hash(_contraindications));
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        id,
+        slug,
+        name,
+        movementPattern,
+        const DeepCollectionEquality().hash(_equipment),
+        difficulty,
+        isUnilateral,
+        const DeepCollectionEquality().hash(_primaryMuscles),
+        defaultIncrementKg,
+        const DeepCollectionEquality().hash(_instructions),
+        videoUrl,
+        const DeepCollectionEquality().hash(_muscles),
+        const DeepCollectionEquality().hash(_alternatives),
+        const DeepCollectionEquality().hash(_contraindications));
+  }
 
   @override
   String toString() {
@@ -2008,23 +2042,35 @@ mixin _$ExerciseListResponse {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as ExerciseListResponse;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is ExerciseListResponse &&
-            const DeepCollectionEquality().equals(other.items, items) &&
-            (identical(other.total, total) || other.total == total) &&
-            (identical(other.limit, limit) || other.limit == limit) &&
-            (identical(other.offset, offset) || other.offset == offset));
+            const DeepCollectionEquality().equals(other.items, _this.items) &&
+            (identical(other.total, _this.total) ||
+                other.total == _this.total) &&
+            (identical(other.limit, _this.limit) ||
+                other.limit == _this.limit) &&
+            (identical(other.offset, _this.offset) ||
+                other.offset == _this.offset));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType,
-      const DeepCollectionEquality().hash(items), total, limit, offset);
+  int get hashCode {
+    final _this = this as ExerciseListResponse;
+    return Object.hash(
+        runtimeType,
+        const DeepCollectionEquality().hash(_this.items),
+        _this.total,
+        _this.limit,
+        _this.offset);
+  }
 
   @override
   String toString() {
-    return 'ExerciseListResponse(items: $items, total: $total, limit: $limit, offset: $offset)';
+    final _this = this as ExerciseListResponse;
+    return 'ExerciseListResponse(items: ${_this.items}, total: ${_this.total}, limit: ${_this.limit}, offset: ${_this.offset})';
   }
 }
 
@@ -2055,7 +2101,7 @@ class _$ExerciseListResponseCopyWithImpl<$Res>
     Object? limit = null,
     Object? offset = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(ExerciseListResponse(
       items: null == items
           ? _self.items
           : items // ignore: cast_nullable_to_non_nullable
@@ -2243,7 +2289,7 @@ extension ExerciseListResponsePatterns on ExerciseListResponse {
 @JsonSerializable()
 class _ExerciseListResponse implements ExerciseListResponse {
   const _ExerciseListResponse(
-      {required final List<ExerciseSummary> items,
+      {required List<ExerciseSummary> items,
       required this.total,
       required this.limit,
       required this.offset})
@@ -2287,7 +2333,7 @@ class _ExerciseListResponse implements ExerciseListResponse {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _ExerciseListResponse &&
-            const DeepCollectionEquality().equals(other._items, _items) &&
+            const DeepCollectionEquality().equals(other.items, _items) &&
             (identical(other.total, total) || other.total == total) &&
             (identical(other.limit, limit) || other.limit == limit) &&
             (identical(other.offset, offset) || other.offset == offset));
@@ -2295,8 +2341,10 @@ class _ExerciseListResponse implements ExerciseListResponse {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType,
-      const DeepCollectionEquality().hash(_items), total, limit, offset);
+  int get hashCode {
+    return Object.hash(runtimeType, const DeepCollectionEquality().hash(_items),
+        total, limit, offset);
+  }
 
   @override
   String toString() {
@@ -2373,30 +2421,40 @@ mixin _$ExerciseQuery {
 
   @override
   bool operator ==(Object other) {
+    final _this = this as ExerciseQuery;
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is ExerciseQuery &&
-            (identical(other.q, q) || other.q == q) &&
-            const DeepCollectionEquality().equals(other.equipment, equipment) &&
-            (identical(other.muscle, muscle) || other.muscle == muscle) &&
-            (identical(other.pattern, pattern) || other.pattern == pattern) &&
-            (identical(other.limit, limit) || other.limit == limit) &&
-            (identical(other.offset, offset) || other.offset == offset));
+            (identical(other.q, _this.q) || other.q == _this.q) &&
+            const DeepCollectionEquality()
+                .equals(other.equipment, _this.equipment) &&
+            (identical(other.muscle, _this.muscle) ||
+                other.muscle == _this.muscle) &&
+            (identical(other.pattern, _this.pattern) ||
+                other.pattern == _this.pattern) &&
+            (identical(other.limit, _this.limit) ||
+                other.limit == _this.limit) &&
+            (identical(other.offset, _this.offset) ||
+                other.offset == _this.offset));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      q,
-      const DeepCollectionEquality().hash(equipment),
-      muscle,
-      pattern,
-      limit,
-      offset);
+  int get hashCode {
+    final _this = this as ExerciseQuery;
+    return Object.hash(
+        runtimeType,
+        _this.q,
+        const DeepCollectionEquality().hash(_this.equipment),
+        _this.muscle,
+        _this.pattern,
+        _this.limit,
+        _this.offset);
+  }
 
   @override
   String toString() {
-    return 'ExerciseQuery(q: $q, equipment: $equipment, muscle: $muscle, pattern: $pattern, limit: $limit, offset: $offset)';
+    final _this = this as ExerciseQuery;
+    return 'ExerciseQuery(q: ${_this.q}, equipment: ${_this.equipment}, muscle: ${_this.muscle}, pattern: ${_this.pattern}, limit: ${_this.limit}, offset: ${_this.offset})';
   }
 }
 
@@ -2435,7 +2493,7 @@ class _$ExerciseQueryCopyWithImpl<$Res>
     Object? limit = null,
     Object? offset = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(ExerciseQuery(
       q: null == q
           ? _self.q
           : q // ignore: cast_nullable_to_non_nullable
@@ -2635,7 +2693,7 @@ extension ExerciseQueryPatterns on ExerciseQuery {
 class _ExerciseQuery extends ExerciseQuery {
   const _ExerciseQuery(
       {this.q = '',
-      final Set<Equipment> equipment = const <Equipment>{},
+      Set<Equipment> equipment = const <Equipment>{},
       this.muscle,
       this.pattern,
       this.limit = 200,
@@ -2681,7 +2739,7 @@ class _ExerciseQuery extends ExerciseQuery {
             other is _ExerciseQuery &&
             (identical(other.q, q) || other.q == q) &&
             const DeepCollectionEquality()
-                .equals(other._equipment, _equipment) &&
+                .equals(other.equipment, _equipment) &&
             (identical(other.muscle, muscle) || other.muscle == muscle) &&
             (identical(other.pattern, pattern) || other.pattern == pattern) &&
             (identical(other.limit, limit) || other.limit == limit) &&
@@ -2689,14 +2747,16 @@ class _ExerciseQuery extends ExerciseQuery {
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      q,
-      const DeepCollectionEquality().hash(_equipment),
-      muscle,
-      pattern,
-      limit,
-      offset);
+  int get hashCode {
+    return Object.hash(
+        runtimeType,
+        q,
+        const DeepCollectionEquality().hash(_equipment),
+        muscle,
+        pattern,
+        limit,
+        offset);
+  }
 
   @override
   String toString() {
