@@ -13,8 +13,8 @@
     "lint": "echo \"@fitos/config: nothing to lint\" && exit 0"
   },
   "devDependencies": {
-    "@eslint/js": "9.18.0",
-    "eslint": "9.18.0",
-    "typescript-eslint": "8.20.0"
+    "@eslint/js": "9.39.5",
+    "eslint": "9.39.5",
+    "typescript-eslint": "8.72.1"
   }
 }
