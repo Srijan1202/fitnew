@@ -18,6 +18,7 @@ class SuggestionCarousel extends StatefulWidget {
     required this.onAction,
     this.onOpen,
     this.onDismiss,
+    this.onDiscardSession,
     this.onShown,
     this.recorded = const {},
     this.messConfigured = false,
@@ -32,6 +33,9 @@ class SuggestionCarousel extends StatefulWidget {
 
   /// "Not today" on a server card (→ `dismissed`).
   final ValueChanged<Suggestion>? onDismiss;
+
+  /// Beta 3.8: "Discard" on the session-in-progress card.
+  final ValueChanged<Suggestion>? onDiscardSession;
 
   /// A server card actually on screen (→ `shown`, once per action).
   final ValueChanged<Suggestion>? onShown;
@@ -147,6 +151,11 @@ class _SuggestionCarouselState extends State<SuggestionCarousel> {
                   onDismiss: s.isServer && widget.onDismiss != null
                       ? () => widget.onDismiss!(s)
                       : null,
+                  onDiscardSession:
+                      s.action == SuggestionAction.resumeWorkout &&
+                              widget.onDiscardSession != null
+                          ? () => widget.onDiscardSession!(s)
+                          : null,
                   textTheme: textTheme,
                 ),
               );
@@ -190,6 +199,7 @@ class _Card extends StatelessWidget {
     required this.onAction,
     required this.onOpen,
     required this.onDismiss,
+    required this.onDiscardSession,
     required this.textTheme,
     super.key,
   });
@@ -200,6 +210,7 @@ class _Card extends StatelessWidget {
   final VoidCallback onAction;
   final VoidCallback? onOpen;
   final VoidCallback? onDismiss;
+  final VoidCallback? onDiscardSession;
   final TextTheme textTheme;
 
   @override
@@ -259,6 +270,12 @@ class _Card extends StatelessWidget {
                   key: ValueKey('home.suggestion.${s.id}.dismiss'),
                   onPressed: onDismiss,
                   child: const Text('Not today'),
+                ),
+              if (onDiscardSession != null)
+                TextButton(
+                  key: ValueKey('home.suggestion.${s.id}.discard'),
+                  onPressed: onDiscardSession,
+                  child: const Text('Discard'),
                 ),
             ],
           ),

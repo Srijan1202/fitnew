@@ -643,6 +643,23 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.byKey(const ValueKey('day.resume')), findsOneWidget);
+
+      // Beta 3.8: started by mistake — Discard beside Resume, after a
+      // confirm; nothing was logged, so it is said to go completely.
+      await tester.tap(find.byKey(const ValueKey('day.discard')));
+      await settle(tester);
+      expect(find.textContaining('removed completely'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('session.discard.confirm')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('day.resume')), findsNothing);
+      expect(find.byKey(const ValueKey('day.start')), findsOneWidget);
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(WorkoutWeekScreen)),
+      );
+      expect(
+        await container.read(workoutRepositoryProvider).activeSession(),
+        isNull,
+      );
     });
 
     testWidgets('a rest day offers an empty session; the menu lists History',
@@ -1097,7 +1114,37 @@ void main() {
         ),
       );
       expect(body.exercises!.single.exerciseId, plannedSquat.exerciseId);
+      // Beta 3.8: the kept row names itself, so the server keeps its id.
+      expect(body.exercises!.single.id, plannedSquat.id);
       expect(body.exercises!.single.sets!.length, 4);
+    });
+
+    testWidgets(
+        'saving keeps every row and re-reads the day, so last time\'s weights stay (beta 3.8)',
+        (tester) async {
+      training.stored = generatedProgram;
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await openMonday(tester);
+      final before = workoutApi.calls.where((c) => c == 'today').length;
+      await tester.tap(find.byKey(const ValueKey('plan.menu')));
+      await settle(tester);
+      await tester.tap(find.text('Edit this day'));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('day.save')));
+      await settle(tester);
+
+      final (_, body) = training.patchRequests.single;
+      expect(
+        body.exercises!.map((x) => x.id).toList(),
+        [plannedSquat.id, plannedBench.id],
+      );
+      expect(find.byType(WorkoutWeekScreen), findsOneWidget);
+      expect(
+        workoutApi.calls.where((c) => c == 'today').length,
+        greaterThan(before),
+        reason: 'the server\'s day (last time\'s weights) was not re-read',
+      );
     });
 
     testWidgets(

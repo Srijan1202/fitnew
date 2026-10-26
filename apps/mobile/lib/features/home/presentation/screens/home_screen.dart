@@ -13,11 +13,13 @@ import '../../../nutrition/domain/entities/food_log.dart';
 import '../../../nutrition/presentation/controllers/food_log_providers.dart';
 import '../../../nutrition/presentation/controllers/food_logger.dart';
 import '../../../profile/data/profile_repository.dart';
+import '../../../progress/presentation/progress_sheets.dart';
 import '../../../recovery/presentation/recovery_providers.dart';
 import '../../../today/domain/today.dart';
 import '../../../today/presentation/today_providers.dart';
 import '../../../today/presentation/today_why_sheet.dart';
 import '../../../workout/presentation/controllers/workout_providers.dart';
+import '../../../workout/presentation/widgets/discard_session.dart';
 import '../../../workout/presentation/widgets/orphan_session_notice.dart';
 import '../../domain/home_context.dart';
 import '../../domain/home_suggestion_engine.dart';
@@ -86,6 +88,20 @@ class HomeScreen extends ConsumerWidget {
     }
   }
 
+  /// Beta 3.8: Discard on the session-in-progress card, after a confirm.
+  Future<void> _discard(
+    BuildContext context,
+    WidgetRef ref,
+    Suggestion s,
+  ) async {
+    final active = ref.read(activeSessionProvider).value;
+    if (active == null ||
+        active.clientSessionId != s.metadata['clientSessionId']) {
+      return;
+    }
+    await confirmDiscardSession(context, ref, active);
+  }
+
   /// Into the existing flow for the action's kind (plan §6). `completed`
   /// is sent later, once that flow has finished on the server.
   Future<void> _go(
@@ -133,7 +149,16 @@ class HomeScreen extends ConsumerWidget {
         await context
             .push(id == null ? Routes.history : Routes.historyDetail(id));
       case TodayKind.logWeight:
-        await context.push(Routes.personalDetails);
+        // Beta 3.8: a popup, not the Personal details screen.
+        final saved = await showQuickWeightSheet(context);
+        if (saved && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              key: ValueKey('weigh.saved'),
+              content: Text('Weight saved.'),
+            ),
+          );
+        }
       case TodayKind.calorieAdjust:
         // Accepting applies it on the server (a new target row). Deliver the
         // event now, then show the targets where they live.
@@ -256,6 +281,7 @@ class HomeScreen extends ConsumerWidget {
                         onAction: (s) => _act(context, ref, s),
                         onOpen: (s) => _open(context, ref, s),
                         onDismiss: (s) => _dismiss(ref, s),
+                        onDiscardSession: (s) => _discard(context, ref, s),
                         onShown: (s) => _record(ref, s, TodayEventName.shown),
                       ),
                   ],

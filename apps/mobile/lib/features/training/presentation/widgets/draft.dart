@@ -16,10 +16,12 @@ class DraftExercise {
     required this.repMax,
     required this.targetRir,
     required this.sets,
+    this.plannedId,
   });
 
   factory DraftExercise.fromPlanned(PlannedExercise x) => DraftExercise(
         key: x.id,
+        plannedId: x.id,
         exerciseId: x.exerciseId,
         name: x.name,
         primaryMuscles: x.primaryMuscles,
@@ -59,6 +61,11 @@ class DraftExercise {
 
   /// Stable identity for lists and reorders.
   final String key;
+
+  /// The planned exercise this row continues; null for a fresh pick. Sent
+  /// back on save so the server keeps the row (beta 3.8: a new row lost its
+  /// last-time weights, which are keyed by the planned exercise's id).
+  final String? plannedId;
   final String exerciseId;
   final String name;
   final List<MuscleGroup> primaryMuscles;
@@ -80,6 +87,7 @@ class DraftExercise {
         repMax: repMax,
         targetRir: targetRir,
         sets: sets ?? this.sets,
+        plannedId: plannedId,
       );
 
   /// Change the number of sets: added sets copy the last one's targets.
@@ -98,6 +106,7 @@ class DraftExercise {
       );
 
   CustomExercise toCustom() => CustomExercise(
+        id: plannedId,
         exerciseId: exerciseId,
         setCount: sets.length,
         repMin: repMin,

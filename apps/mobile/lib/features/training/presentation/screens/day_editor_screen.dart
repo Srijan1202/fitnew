@@ -7,6 +7,7 @@ import '../../../../core/errors/failure.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../../exercise/domain/entities/exercise.dart';
+import '../../../workout/presentation/controllers/workout_providers.dart';
 import '../../domain/entities/program.dart';
 import '../controllers/program_controller.dart';
 import '../widgets/draft.dart';
@@ -74,7 +75,13 @@ class _DayEditorScreenState extends ConsumerState<DayEditorScreen> {
       _busy = false;
       _failure = failure;
     });
-    if (failure == null) context.popOrHome();
+    if (failure != null) return;
+    // The server's view of the days (last time's weights, TODAY) follows
+    // the new structure; without this the plan showed none until a restart.
+    ref
+      ..invalidate(dayProvider)
+      ..invalidate(todayProvider);
+    context.popOrHome();
   }
 
   @override

@@ -15,6 +15,7 @@ import '../../domain/entities/workout.dart';
 import '../controllers/rest_timer.dart';
 import '../controllers/workout_providers.dart';
 import '../widgets/rest_bar.dart';
+import '../widgets/discard_session.dart';
 import '../widgets/recommendation_sheet.dart';
 import '../widgets/session_exercise_card.dart';
 import '../widgets/sync_pill.dart';
@@ -434,32 +435,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
     context.go(Routes.sessionSummary(widget.clientSessionId));
   }
 
-  Future<void> _discard() async {
-    final yes = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: FitColors.paper,
-        title: const Text('Discard this session?'),
-        content: const Text(
-          'It stays in your history as abandoned and never counts toward a record.',
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Keep going'),
-          ),
-          FilledButton(
-            key: const ValueKey('session.discard.confirm'),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Discard'),
-          ),
-        ],
-      ),
-    );
-    if (yes != true || !mounted) return;
-    ref.read(restTimerProvider.notifier).skip();
-    await ref.read(workoutRepositoryProvider).abandon(widget.clientSessionId);
-    if (mounted) context.go(Routes.plan);
+  Future<void> _discard(WorkoutSession session) async {
+    final discarded = await confirmDiscardSession(context, ref, session);
+    if (discarded && mounted) context.go(Routes.plan);
   }
 
   Future<void> _leave() async {
@@ -589,7 +567,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                   case 'add':
                     _add();
                   case 'discard':
-                    _discard();
+                    _discard(session);
                 }
               },
               itemBuilder: (_) => const [

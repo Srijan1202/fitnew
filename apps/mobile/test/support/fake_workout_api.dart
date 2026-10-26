@@ -418,6 +418,9 @@ class FakeWorkoutApi implements WorkoutApi {
   @override
   Future<Result<WorkoutSession>> abandon(String id) async {
     calls.add('abandon');
+    // Beta 3.8: the server already deleted it (an empty session's discard
+    // whose reply was lost).
+    if (abandonGone) return const Err(NotFound());
     return _guard(() {
       final s = _byServerId(id)!;
       final next = s.copyWith(
@@ -460,6 +463,9 @@ class FakeWorkoutApi implements WorkoutApi {
       ),
     );
   }
+
+  /// [abandon] answers 404, as for an empty session the server deleted.
+  bool abandonGone = false;
 
   /// Scripted "today".
   TodayResponse todayResponse = const TodayResponse(

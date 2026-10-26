@@ -112,6 +112,26 @@ void main() {
     });
 
     test(
+        'beta 3.8: a discard the server answers 404 (an empty session it already deleted) is done, not parked',
+        () async {
+      final s = await repo.startSession(day: api.todayResponse);
+      await eventually(
+        () async => onServer(s.clientSessionId) != null,
+        reason: 'the start reached the server',
+      );
+      api.abandonGone = true;
+      await repo.abandon(s.clientSessionId);
+
+      await eventually(clean, reason: 'queue drained');
+      expect(api.calls, contains('abandon'));
+      expect((await repo.syncStatus()).parked, 0);
+      expect(
+        (await repo.session(s.clientSessionId))!.status,
+        SessionStatus.abandoned,
+      );
+    });
+
+    test(
         'B. completed while the server is unreachable → kept on the phone, pending, nothing parked, a retry scheduled',
         () async {
       api.offline = true;

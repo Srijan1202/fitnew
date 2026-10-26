@@ -7,10 +7,11 @@ import '../../../../core/theme/tokens.dart';
 import '../../../training/domain/entities/program.dart';
 import '../../domain/entities/workout.dart';
 import '../controllers/workout_providers.dart';
+import 'discard_session.dart';
 import 'orphan_session_notice.dart';
 
 /// "Start session" on a training day, "Start empty session" on a rest
-/// day, "Resume · 12 min" whenever a session is in progress on this phone
+/// day, "Resume · 12 min" (and Discard) whenever a session is in progress on this phone
 /// (one at a time, whatever day it belongs to), and "Done today" with the
 /// summary once today's session is finished (owner 2026-10-23: the day
 /// screen offered Start again right after finishing).
@@ -77,10 +78,23 @@ class StartSessionButton extends ConsumerWidget {
     if (active != null) {
       final minutes =
           DateTime.now().difference(DateTime.parse(active.startedAt)).inMinutes;
-      return FilledButton(
-        key: const ValueKey('day.resume'),
-        onPressed: onStart,
-        child: Text('Resume ${active.name} · $minutes min'),
+      // Beta 3.8: a session started by mistake can be thrown away here.
+      return Row(
+        children: <Widget>[
+          Expanded(
+            child: FilledButton(
+              key: const ValueKey('day.resume'),
+              onPressed: onStart,
+              child: Text('Resume ${active.name} · $minutes min'),
+            ),
+          ),
+          const SizedBox(width: FitSpacing.sm),
+          OutlinedButton(
+            key: const ValueKey('day.discard'),
+            onPressed: () => confirmDiscardSession(context, ref, active),
+            child: const Text('Discard'),
+          ),
+        ],
       );
     }
     if (isRest) {

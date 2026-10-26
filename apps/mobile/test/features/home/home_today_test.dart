@@ -33,6 +33,7 @@ import '../../support/fake_exercise_repository.dart';
 import '../../support/fake_food_log_api.dart';
 import '../../support/fake_health_provider.dart';
 import '../../support/fake_profile_repository.dart';
+import '../../support/fake_progress_api.dart';
 import '../../support/fake_today_api.dart';
 import '../../support/fake_training_repository.dart';
 import '../../support/fake_workout_api.dart';
@@ -55,6 +56,7 @@ void main() {
   late FakeTodayApi today;
   late FakeAuthRepository auth;
   late FakeAiApi ai;
+  late FakeProgressApi progressApi;
 
   setUp(() {
     db = AppDatabase.inMemory();
@@ -65,6 +67,7 @@ void main() {
     foodLog = FakeFoodLogApi();
     today = FakeTodayApi(date: date);
     ai = FakeAiApi.off();
+    progressApi = FakeProgressApi();
     auth = FakeAuthRepository()
       ..restoreResult = AuthState.signedIn(testProfile);
   });
@@ -128,6 +131,7 @@ void main() {
           today: today,
           ai: ai,
           premium: FakePremiumApi(premium: true),
+          progress: progressApi,
         ),
         ...healthOverrides(health),
       ],
@@ -435,7 +439,7 @@ void main() {
     ('progress-load', TodayKind.progressLoad, 'PLAN'),
     ('muscle-neglected', TodayKind.muscleNeglected, 'PLAN'),
     ('low-readiness', TodayKind.lowReadiness, 'PLAN'), // Phase 13
-    ('log-weight', TodayKind.logWeight, 'DETAILS'),
+    ('log-weight', TodayKind.logWeight, "TODAY'S WEIGHT"), // beta 3.8: a popup
     ('celebrate-pr', TodayKind.celebratePr, 'HISTORY'),
   ]) {
     testToday(
@@ -450,6 +454,41 @@ void main() {
       expect(today.sent, ['a-1:shown', 'a-1:accepted']);
     });
   }
+
+  testToday(
+      'beta 3.8: log weight is a popup — the weight saves like Personal details did, measurements are optional and go to Progress',
+      (tester) async {
+    today.plan = plan([FakeTodayApi.action(TodayKind.logWeight, id: 'a-w')]);
+    await tester.pumpWidget(app());
+    await settle(tester);
+    await tester.tap(key('home.suggestion.log-weight.action'));
+    await settle(tester);
+    expect(find.text('DETAILS'), findsNothing);
+    expect(key('weigh.site.waist'), findsNothing); // optional, folded away
+
+    // A weight is required.
+    await tester.tap(key('weigh.save'));
+    await settle(tester);
+    expect(find.text('Enter your weight.'), findsOneWidget);
+    expect(profile.personalChanges, isEmpty);
+
+    await tester.enterText(key('weigh.value'), '72,4');
+    await tester.tap(key('weigh.measure'));
+    await settle(tester);
+    await tester.enterText(key('weigh.site.waist'), '81');
+    await tester.ensureVisible(key('weigh.save'));
+    await tester.tap(key('weigh.save'));
+    await settle(tester);
+
+    expect(profile.personalChanges, [
+      {'weightKg': 72.4},
+    ]);
+    expect(progressApi.writes, [
+      {'site': 'waist', 'valueCm': 81.0},
+    ]);
+    expect(key('weigh.value'), findsNothing); // closed
+    expect(key('weigh.saved'), findsOneWidget);
+  });
 
   testToday(
       'Phase 12 calorie-adjust: the card says the change; accepting sends it now and opens EAT; completed once the server holds the new target',

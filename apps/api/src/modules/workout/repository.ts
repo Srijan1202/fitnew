@@ -365,6 +365,14 @@ export class WorkoutRepository {
       .where(and(eq(workoutSessions.id, sessionId), eq(workoutSessions.status, 'active')));
   }
 
+  /**
+   * Beta 3.8 (owner): an active session with nothing logged, deleted on
+   * discard. Its exercises and any removed sets go with it (CASCADE).
+   */
+  async deleteEmptySession(sessionId: string): Promise<void> {
+    await this.db.delete(workoutSessions).where(and(eq(workoutSessions.id, sessionId), eq(workoutSessions.status, 'active')));
+  }
+
   /** Records for a completed session, in one transaction with the is_pr flags. */
   async recordPrs(
     userId: string,

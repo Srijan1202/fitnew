@@ -166,6 +166,22 @@ class ProgressActions {
     }
   }
 
+  /// Beta 3.8: today's weigh-in from Home's popup. Saved as the profile's
+  /// weight, as Personal details did before, so the targets follow it the
+  /// same way; the reading lands in the same history as Progress's.
+  Future<Failure?> logTodayWeight(double kg) async {
+    final failure = await _ref
+        .read(profileControllerProvider.notifier)
+        .savePersonalDetails(PersonalDetailsChange(weightKg: kg));
+    if (failure != null) return failure;
+    _ref.invalidate(progressSummaryProvider);
+    _ref
+        .read(weightSavedOnProvider.notifier)
+        .mark(_ref.read(localTodayProvider));
+    ActivitySignal.report(ActivityKind.weightLogged);
+    return null;
+  }
+
   Future<Failure?> logMeasurement(
     MeasurementSite site,
     double cm, {

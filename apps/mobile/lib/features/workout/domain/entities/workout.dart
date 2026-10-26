@@ -379,6 +379,9 @@ abstract class WorkoutSession with _$WorkoutSession {
         0,
         (n, x) => n + x.sets.where((s) => s.setType == SetType.working).length,
       );
+
+  /// Every logged set, warm-ups included: none means a discard deletes it.
+  int get setsLogged => exercises.fold(0, (n, x) => n + x.sets.length);
 }
 
 @freezed

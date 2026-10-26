@@ -643,7 +643,16 @@ class SyncEngine {
           ),
         );
       case SyncKind.abandon:
-        return _settle(entry, await _api.abandon(serverId));
+        final result = await _api.abandon(serverId);
+        // Beta 3.8: the server deletes a session discarded with nothing
+        // logged, so a resend after a lost reply finds no session. That
+        // is the discard having happened.
+        if (result case Err(failure: NotFound())) {
+          await (_db.delete(_db.syncQueue)..where((t) => t.id.equals(entry.id)))
+              .go();
+          return const _Sent();
+        }
+        return _settle(entry, result);
     }
   }
 

@@ -477,12 +477,16 @@ export class WorkoutService {
       throw new AppError('CONFLICT', 'This session is already completed.', [{ path: 'session', issue: 'completed' }]);
     }
     const now = new Date();
-    await this.repo.finish(id, {
-      status: 'abandoned',
-      completedAt: now,
-      durationSeconds: Math.max(0, Math.round((now.getTime() - b.session.startedAt.getTime()) / 1000)),
-      notes: null,
-    });
+    const durationSeconds = Math.max(0, Math.round((now.getTime() - b.session.startedAt.getTime()) / 1000));
+    // Beta 3.8 (owner): a session discarded with nothing logged leaves no
+    // trace (a start by mistake). The answer still describes it as
+    // abandoned, so the phone settles it like any other discard.
+    if (b.sets.length === 0) {
+      const wire = await this.toWire(userId, b);
+      await this.repo.deleteEmptySession(id);
+      return { ...wire, status: 'abandoned', completedAt: now.toISOString(), durationSeconds };
+    }
+    await this.repo.finish(id, { status: 'abandoned', completedAt: now, durationSeconds, notes: null });
     return this.get(userId, id);
   }
 

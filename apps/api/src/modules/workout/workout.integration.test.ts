@@ -158,6 +158,23 @@ describeIfDb('/v1/training/sessions (real Postgres, real seed)', () => {
     expect((await start(token, { clientSessionId: randomUUID(), startedAt: at(2) })).statusCode).toBe(201);
   });
 
+  it('beta 3.8: a session discarded with nothing logged leaves no trace; one with sets stays in History as abandoned', async () => {
+    const { token, day } = await withProgram();
+    const empty: WorkoutSession = (await start(token, { clientSessionId: randomUUID(), programDayId: day.id, startedAt: at(0) })).json();
+    const ab = await app.inject({ method: 'POST', url: `/v1/training/sessions/${empty.id}/abandon`, headers: auth(token) });
+    expect(ab.statusCode, ab.body).toBe(200);
+    expect((ab.json() as WorkoutSession).status).toBe('abandoned');
+    expect((await sql`select count(*)::int as c from workout_sessions where id = ${empty.id}`)[0]!.c).toBe(0);
+    // A resend after a lost reply finds nothing (the phone treats that as done).
+    expect((await app.inject({ method: 'POST', url: `/v1/training/sessions/${empty.id}/abandon`, headers: auth(token) })).statusCode).toBe(404);
+
+    const lifted: WorkoutSession = (await start(token, { clientSessionId: randomUUID(), programDayId: day.id, startedAt: at(10) })).json();
+    await logFirst(token, lifted, 50, 10);
+    expect((await app.inject({ method: 'POST', url: `/v1/training/sessions/${lifted.id}/abandon`, headers: auth(token) })).statusCode).toBe(200);
+    const history = (await app.inject({ method: 'GET', url: '/v1/training/sessions?limit=20', headers: auth(token) })).json();
+    expect(history.items.map((i: { id: string; status: string }) => [i.id, i.status])).toEqual([[lifted.id, 'abandoned']]);
+  });
+
   it('Phase 6.6 Gate 7 — a session left active by a phone that lost it: new starts are refused with its id, /today names it with its sets, the user finishing it frees the slot, and the blocked start then replays idempotently', async () => {
     const { token, day } = await withProgram();
     // The phone that owned it signed out before its end was sent.

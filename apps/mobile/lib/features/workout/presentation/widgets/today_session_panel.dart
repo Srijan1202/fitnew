@@ -8,6 +8,7 @@ import '../../../../shared/widgets/hairline_section.dart';
 import '../../domain/entities/workout.dart';
 import '../controllers/workout_providers.dart';
 import 'deload_panel.dart';
+import 'discard_session.dart';
 
 /// TODAY's one training panel (Phase 5; the ranked-actions engine is
 /// Phase 11): today's session by name with Start, Resume, or Done. Phase 6
@@ -53,11 +54,22 @@ class TodaySessionPanel extends ConsumerWidget {
             style: textTheme.bodyMedium,
           ),
           const SizedBox(height: FitSpacing.md),
-          FilledButton(
-            key: const ValueKey('today.resume'),
-            onPressed: () =>
-                context.push(Routes.session(active.clientSessionId)),
-            child: const Text('Resume'),
+          Row(
+            children: <Widget>[
+              FilledButton(
+                key: const ValueKey('today.resume'),
+                onPressed: () =>
+                    context.push(Routes.session(active.clientSessionId)),
+                child: const Text('Resume'),
+              ),
+              const SizedBox(width: FitSpacing.sm),
+              // Beta 3.8: a session started by mistake can be thrown away.
+              OutlinedButton(
+                key: const ValueKey('today.discard'),
+                onPressed: () => confirmDiscardSession(context, ref, active),
+                child: const Text('Discard'),
+              ),
+            ],
           ),
         ],
       );

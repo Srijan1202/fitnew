@@ -5,11 +5,16 @@ import '../../../core/errors/failure.dart';
 import '../../../core/theme/tokens.dart';
 import '../../auth/presentation/widgets/auth_form_field.dart';
 import '../../health/presentation/controllers/health_providers.dart';
+import '../../profile/data/profile_repository.dart';
 import '../domain/progress.dart';
 import 'progress_providers.dart';
 
 /// Owner D5: readings can be dated up to 30 days back, never ahead.
 const progressDaysBack = 30;
+
+/// 72 kg, 72.4 kg.
+String _kg(double v) =>
+    v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
 
 String _iso(DateTime d) =>
     '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -196,6 +201,200 @@ class _ReadingSheetState extends ConsumerState<_ReadingSheet> {
               const SizedBox(height: FitSpacing.md),
               FilledButton(
                 key: const ValueKey('progress.sheet.save'),
+                onPressed: _busy ? null : _save,
+                child: Text(_busy ? 'Saving…' : 'Save'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Beta 3.8 (tester feedback: "should be just a popup"): Home's log-weight
+/// action. Today's weight, saved like Personal details saved it (the targets
+/// follow), and optionally the tape measurements in the same sheet. Returns
+/// true when the weight was saved.
+Future<bool> showQuickWeightSheet(BuildContext context) async =>
+    await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => const _QuickWeightSheet(),
+    ) ??
+    false;
+
+class _QuickWeightSheet extends ConsumerStatefulWidget {
+  const _QuickWeightSheet();
+
+  @override
+  ConsumerState<_QuickWeightSheet> createState() => _QuickWeightSheetState();
+}
+
+class _QuickWeightSheetState extends ConsumerState<_QuickWeightSheet> {
+  final _form = GlobalKey<FormState>();
+  final _weight = TextEditingController();
+  final _sites = {
+    for (final s in MeasurementSite.values) s: TextEditingController(),
+  };
+  bool _measure = false;
+  bool _busy = false;
+
+  /// The weight went through but a measurement did not: a retry sends only
+  /// the measurements still missing.
+  bool _weightSaved = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _weight.dispose();
+    for (final c in _sites.values) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  String? _validateWeight(String? v) {
+    if (_weightSaved) return null;
+    final n = double.tryParse((v ?? '').trim().replaceAll(',', '.'));
+    if (n == null) return 'Enter your weight.';
+    if (n < 30 || n > 300) return 'That does not look right.';
+    return null;
+  }
+
+  /// Optional: empty is fine, a number must be plausible.
+  String? _validateSite(String? v) {
+    final text = (v ?? '').trim();
+    if (text.isEmpty) return null;
+    final n = double.tryParse(text.replaceAll(',', '.'));
+    if (n == null || n < 10 || n > 250) return 'That does not look right.';
+    return null;
+  }
+
+  Future<void> _save() async {
+    if (!(_form.currentState?.validate() ?? false)) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    final actions = ref.read(progressActionsProvider);
+    if (!_weightSaved) {
+      final kg = double.parse(_weight.text.trim().replaceAll(',', '.'));
+      final failure = await actions.logTodayWeight(kg);
+      if (!mounted) return;
+      if (failure != null) {
+        setState(() {
+          _busy = false;
+          _error = failure.message;
+        });
+        return;
+      }
+      _weightSaved = true;
+    }
+    if (_measure) {
+      for (final MapEntry(key: site, value: c) in _sites.entries) {
+        final text = c.text.trim();
+        if (text.isEmpty) continue;
+        final failure = await actions.logMeasurement(
+          site,
+          double.parse(text.replaceAll(',', '.')),
+        );
+        if (!mounted) return;
+        if (failure != null) {
+          setState(() {
+            _busy = false;
+            _error =
+                'Your weight is saved. ${site.label} and anything after it are not: ${saveFailureText(failure)}';
+          });
+          return;
+        }
+        c.clear(); // saved: a retry does not send it again
+      }
+    }
+    Navigator.of(context).pop(true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final inset = MediaQuery.viewInsetsOf(context).bottom;
+    final last =
+        ref.watch(profileControllerProvider).value?.profile.latestWeightKg;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        FitSpacing.screen,
+        0,
+        FitSpacing.screen,
+        FitSpacing.lg + inset,
+      ),
+      child: SingleChildScrollView(
+        child: Form(
+          key: _form,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Text("TODAY'S WEIGHT", style: textTheme.labelSmall),
+              const SizedBox(height: FitSpacing.sm),
+              AuthFormField(
+                fieldKey: const ValueKey('weigh.value'),
+                label: 'Weight (kg)',
+                controller: _weight,
+                enabled: !_weightSaved,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                validator: _validateWeight,
+              ),
+              if (last != null) ...<Widget>[
+                const SizedBox(height: FitSpacing.xs),
+                Text(
+                  'Last time: ${_kg(last)} kg',
+                  key: const ValueKey('weigh.last'),
+                  style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
+                ),
+              ],
+              const SizedBox(height: FitSpacing.sm),
+              if (!_measure)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    key: const ValueKey('weigh.measure'),
+                    onPressed:
+                        _busy ? null : () => setState(() => _measure = true),
+                    icon: const Icon(Icons.straighten),
+                    label: const Text('Add measurements (optional)'),
+                  ),
+                )
+              else ...<Widget>[
+                Text(
+                  'MEASUREMENTS (CM), OPTIONAL',
+                  style: textTheme.labelSmall,
+                ),
+                const SizedBox(height: FitSpacing.xs),
+                for (final s in MeasurementSite.values) ...<Widget>[
+                  AuthFormField(
+                    fieldKey: ValueKey('weigh.site.${s.wire}'),
+                    label: s.label,
+                    controller: _sites[s]!,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    validator: _validateSite,
+                  ),
+                  const SizedBox(height: FitSpacing.xs),
+                ],
+              ],
+              if (_error != null) ...<Widget>[
+                const SizedBox(height: FitSpacing.sm),
+                Text(
+                  _error!,
+                  key: const ValueKey('weigh.error'),
+                  style: textTheme.bodyMedium?.copyWith(color: FitColors.oxide),
+                ),
+              ],
+              const SizedBox(height: FitSpacing.md),
+              FilledButton(
+                key: const ValueKey('weigh.save'),
                 onPressed: _busy ? null : _save,
                 child: Text(_busy ? 'Saving…' : 'Save'),
               ),
