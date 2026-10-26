@@ -1,7 +1,16 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- Phase 6.6 Gate 6: the main manifest needs INTERNET for release-like
          builds (Flutter's template grants it in debug/profile only). -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Beta 3.8: photos are taken inside FITOS (the camera plugin). It also
+         asks for the microphone (video) and old-Android storage, which a
+         photo saved in the app's own cache needs neither of. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Not required: a phone without a camera still installs FITOS. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
     <!-- Phase 5 rest timer: a local notification when the app is in the
          background (owner decision 8.4). Exact alarms keep a 60–90 s rest
          honest; the plugin falls back to inexact when the user denies it. -->

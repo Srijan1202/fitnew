@@ -125,6 +125,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
     final picked = await ref.read(feedbackPictureSourceProvider).pick(
           camera: camera,
           max: kFeedbackMaxPictures - _pictures.length,
+          navigator: Navigator.of(context, rootNavigator: true),
         );
     if (!mounted) return;
     final ok = <Uint8List>[];

@@ -2,15 +2,23 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
+
+import '../../../shared/widgets/in_app_camera.dart';
 
 import 'feedback_api.dart';
 
 /// Beta 3.6: pictures for feedback (screenshots from the gallery, or the
 /// camera), resized on the phone; behind a seam for tests.
 abstract class FeedbackPictureSource {
-  /// At most [max] pictures' bytes; empty when the person cancelled.
-  Future<List<Uint8List>> pick({required bool camera, required int max});
+  /// At most [max] pictures' bytes; empty when the person cancelled. Beta
+  /// 3.8: a photo is taken inside FITOS on [navigator].
+  Future<List<Uint8List>> pick({
+    required bool camera,
+    required int max,
+    NavigatorState? navigator,
+  });
 }
 
 class DeviceFeedbackPictureSource implements FeedbackPictureSource {
@@ -20,8 +28,16 @@ class DeviceFeedbackPictureSource implements FeedbackPictureSource {
   static const _quality = 80;
 
   @override
-  Future<List<Uint8List>> pick({required bool camera, required int max}) async {
+  Future<List<Uint8List>> pick({
+    required bool camera,
+    required int max,
+    NavigatorState? navigator,
+  }) async {
     if (max <= 0) return const [];
+    if (camera && navigator != null) {
+      final path = await takePhotoInApp(navigator);
+      return path == null ? const [] : [await File(path).readAsBytes()];
+    }
     final picker = ImagePicker();
     final files = camera
         ? [

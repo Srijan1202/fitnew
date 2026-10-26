@@ -37,7 +37,10 @@ class FakePhotoSource implements PhotoSource {
   Completer<void>? hold;
 
   @override
-  Future<String?> pick({required bool camera}) async {
+  Future<String?> pick({
+    required bool camera,
+    NavigatorState? navigator,
+  }) async {
     lastCamera = camera;
     if (hold != null) await hold!.future;
     if (cancel) return null;

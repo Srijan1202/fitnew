@@ -186,7 +186,9 @@ Future<void> addProgressPhoto(BuildContext context, WidgetRef ref) async {
   if (camera == null || !context.mounted) return;
   final container = ProviderScope.containerOf(context, listen: false);
   final navigator = Navigator.of(context, rootNavigator: true);
-  final source = await container.read(photoSourceProvider).pick(camera: camera);
+  final source = await container
+      .read(photoSourceProvider)
+      .pick(camera: camera, navigator: navigator);
   if (source == null || !navigator.mounted) return;
   await finishProgressPhoto(navigator.context, container, source);
 }

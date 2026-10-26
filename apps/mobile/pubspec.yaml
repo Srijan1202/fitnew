@@ -83,6 +83,9 @@ dependencies:
   image_picker: 1.2.4
   # Beta 3.6 (F14): the phone's model and Android version with feedback.
   device_info_plus: 13.3.0
+  # Beta 3.8 (tester feedback): photos taken inside FITOS, so Android never
+  # closes it while the phone's camera app is open (the official plugin).
+  camera: 0.12.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

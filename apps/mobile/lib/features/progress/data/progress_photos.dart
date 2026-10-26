@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
+
+import '../../../shared/widgets/in_app_camera.dart';
 
 /// Beta 3.4 (ADR-035): progress photos live on this phone only — in the
 /// app's private files (`files/progress_photos/<account>/`, excluded from
@@ -66,11 +69,14 @@ class ProgressPhoto {
 
 /// Where photos come from (camera or gallery), behind a seam for tests.
 abstract class PhotoSource {
-  /// A resized JPEG's path, or null when the person cancelled.
-  Future<String?> pick({required bool camera});
+  /// A resized JPEG's path, or null when the person cancelled. Beta 3.8: a
+  /// photo is taken inside FITOS on [navigator] (see [takePhotoInApp]).
+  Future<String?> pick({required bool camera, NavigatorState? navigator});
 
   /// Beta 3.6: a photo taken while Android closed FITOS (the camera app used
   /// the memory), handed back on the next start; null when there is none.
+  /// Since beta 3.8 photos are taken inside FITOS, so this only finds one
+  /// taken with an older build.
   Future<String?> recoverLost();
 }
 
@@ -78,7 +84,11 @@ class DevicePhotoSource implements PhotoSource {
   const DevicePhotoSource();
 
   @override
-  Future<String?> pick({required bool camera}) async {
+  Future<String?> pick({
+    required bool camera,
+    NavigatorState? navigator,
+  }) async {
+    if (camera && navigator != null) return takePhotoInApp(navigator);
     final file = await ImagePicker().pickImage(
       source: camera ? ImageSource.camera : ImageSource.gallery,
       maxWidth: 1600,

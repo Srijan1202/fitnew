@@ -28,7 +28,11 @@ class FakePictureSource implements FeedbackPictureSource {
   int? lastMax;
 
   @override
-  Future<List<Uint8List>> pick({required bool camera, required int max}) async {
+  Future<List<Uint8List>> pick({
+    required bool camera,
+    required int max,
+    NavigatorState? navigator,
+  }) async {
     lastMax = max;
     return next.take(max).toList();
   }
