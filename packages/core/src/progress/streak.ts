@@ -5,8 +5,12 @@
  *
  * Rules the owner chose:
  *  - a day COUNTS when a workout was completed or any food was logged;
- *  - a planned rest day and the day used by Skip today are EXCUSED: they
- *    neither break nor add to the run;
+ *  - beta 3.8 (owner, tester feedback "how to continue the streak on a rest
+ *    day when there is nothing to do"): a planned rest day COUNTS by itself
+ *    when it continues a run. It never starts one, so a streak always has
+ *    something logged in it;
+ *  - the day used by Skip today (and a rest day before any run) is EXCUSED:
+ *    it neither breaks nor adds to the run;
  *  - any other day without a log ends the run;
  *  - today not logged yet does not break it (there is still time).
  */
@@ -36,6 +40,8 @@ export interface Streak {
   readonly best: number;
   /** Whether today already counts. */
   readonly todayCounted: boolean;
+  /** Beta 3.8: today is a planned rest day (it counts once a run is going). */
+  readonly todayRest: boolean;
 }
 
 /** 1 = Monday … 7 = Sunday for a yyyy-mm-dd date. */
@@ -48,18 +54,21 @@ export function isoWeekday(date: string): number {
 export function streak(input: StreakInput): Streak {
   const windowStart = addDays(input.today, -STREAK_LOOKBACK_DAYS);
   const start = input.firstDay !== null && input.firstDay > windowStart ? input.firstDay : windowStart;
-  const excused = (d: string): boolean => input.restWeekdays.has(isoWeekday(d)) || input.skippedDays.has(d);
+  const rest = (d: string): boolean => input.restWeekdays.has(isoWeekday(d));
+  const excused = (d: string): boolean => rest(d) || input.skippedDays.has(d);
   let run = 0;
   let best = 0;
+  let todayCounted = false;
   for (let d = start; d <= input.today; d = addDays(d, 1)) {
-    if (input.activeDays.has(d)) {
+    if (input.activeDays.has(d) || (rest(d) && run > 0)) {
       run += 1;
       best = Math.max(best, run);
+      todayCounted = d === input.today;
     } else if (d !== input.today && !excused(d)) {
       run = 0;
     }
   }
-  return { current: run, best, todayCounted: input.activeDays.has(input.today) };
+  return { current: run, best, todayCounted, todayRest: rest(input.today) };
 }
 
 export interface WeekGoal {

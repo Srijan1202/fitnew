@@ -238,11 +238,20 @@ export function learnMeals(facts: Pick<PlanFacts, 'timeZone' | 'foodLogs'>): Mea
   });
 }
 
-/** Consecutive active days ending on `date` (0 when `date` was not active). */
-export function streakEnding(active: ReadonlySet<string>, date: string): number {
+/**
+ * The streak ending on `date`: consecutive active days, and (beta 3.8) the
+ * rest days between them, as the streak itself counts them. A rest day
+ * before the first active day of the run adds nothing. 0 when nothing
+ * active ends there. Looked back at most a year.
+ */
+export function streakEnding(active: ReadonlySet<string>, date: string, rest: (date: string) => boolean = () => false): number {
   let n = 0;
-  for (let d = date; active.has(d); d = addDays(d, -1)) n++;
-  return n;
+  let counted = 0;
+  for (let d = date; n < 400 && (active.has(d) || rest(d)); d = addDays(d, -1)) {
+    n++;
+    if (active.has(d)) counted = n;
+  }
+  return counted;
 }
 
 /** Whether the point of a sent notification was met that day (so it was not "ignored"). */
@@ -451,8 +460,11 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
       });
     }
 
-    if (!silentAfterStop && !(i === 0 && sets.active.has(d))) {
-      const streak = i === 0 ? streakEnding(sets.active, addDays(d, -1)) : null;
+    // Beta 3.8: a planned rest day counts toward the streak by itself and a
+    // skipped day cannot break it, so neither is "at risk".
+    const restDay = (day: string): boolean => facts.programme !== null && facts.programme[isoWeekday(day)] === undefined;
+    if (!silentAfterStop && !(i === 0 && sets.active.has(d)) && !restDay(d) && !skipped.has(d)) {
+      const streak = i === 0 ? streakEnding(sets.active, addDays(d, -1), restDay) : null;
       candidates.push({
         kind: 'streak-at-risk',
         minute: Math.min(DEFAULT_MINUTES.streak, quietStart - 60),

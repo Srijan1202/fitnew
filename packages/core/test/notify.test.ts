@@ -220,6 +220,21 @@ describe('notify/planner', () => {
     expect(logged.some((p) => p.localDate === '2026-10-19')).toBe(false);
   });
 
+  it('beta 3.8: no "streak at risk" on a rest day (it counts by itself) or a skipped day; the number counts rest days', () => {
+    // 2026-10-19 is a Monday: Push Mon, Pull Wed; the rest are rest days. Monday is skipped.
+    const plan = planNotifications(facts({ programme: { 1: 'Push', 3: 'Pull' }, skippedDates: ['2026-10-19'], settings: onlyKinds('streak-at-risk') }));
+    const days = plan.map((p) => p.localDate);
+    expect(days).toContain('2026-10-21');
+    for (const d of ['2026-10-19', '2026-10-20', '2026-10-22', '2026-10-23', '2026-10-24', '2026-10-25']) expect(days, d).not.toContain(d);
+
+    // Sun 18 rest, Sat 17 logged, Fri 16 logged, Thu 15 rest (before the run): 3.
+    const rest = (d: string): boolean => ['2026-10-15', '2026-10-18'].includes(d);
+    expect(streakEnding(new Set(['2026-10-16', '2026-10-17']), '2026-10-18', rest)).toBe(3);
+    expect(streakEnding(new Set(), '2026-10-18', rest)).toBe(0);
+    // Every day a rest day: looked back at most a year, still nothing active.
+    expect(streakEnding(new Set(), '2026-10-18', () => true)).toBe(0);
+  });
+
   it('quiet hours move a nudge out of the window, or drop it', () => {
     const plan = planNotifications(facts({ settings: { ...onlyKinds('streak-at-risk'), quietStart: '20:00', quietEnd: '08:00' } }));
     for (const p of plan) expect(formatClock(minuteOfDay(p.at, TZ))).toBe('19:00');

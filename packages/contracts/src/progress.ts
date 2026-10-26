@@ -184,14 +184,17 @@ export type WeeklyReport = z.infer<typeof weeklyReportSchema>;
 
 /**
  * Beta 3.3 (ADR-018 amendment): the streak on Home — counted days in the
- * current run (a workout or any food logged; rest days and Skip today are
- * excused) — and the weekly goal ring, null without a programme.
+ * current run (a workout or any food logged; Skip today is excused; beta
+ * 3.8: a planned rest day counts by itself inside a run) — and the weekly
+ * goal ring, null without a programme.
  */
 export const streakSchema = z
   .object({
     current: z.number().int().min(0),
     best: z.number().int().min(0),
     todayCounted: z.boolean(),
+    /** Beta 3.8: today is a planned rest day. */
+    todayRest: z.boolean(),
     week: z.object({ done: z.number().int().min(0), planned: z.number().int().min(1) }).strict().nullable(),
     /** Beta 3.4: streak rewards earned just now by this read (shown once), by id. */
     newRewards: z.array(z.string()),

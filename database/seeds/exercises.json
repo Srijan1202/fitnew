@@ -4787,6 +4787,10 @@
         "reason": "equipment"
       },
       {
+        "slug": "high-to-low-cable-fly",
+        "reason": "equipment"
+      },
+      {
         "slug": "incline-dumbbell-fly",
         "reason": "preference"
       },
@@ -4875,6 +4879,10 @@
         "reason": "equipment"
       },
       {
+        "slug": "high-to-low-cable-fly",
+        "reason": "preference"
+      },
+      {
         "slug": "low-to-high-cable-fly",
         "reason": "preference"
       },
@@ -4915,8 +4923,56 @@
         "reason": "preference"
       },
       {
+        "slug": "high-to-low-cable-fly",
+        "reason": "preference"
+      },
+      {
         "slug": "incline-dumbbell-fly",
         "reason": "equipment"
+      }
+    ],
+    "contraindications": [
+      "shoulder"
+    ]
+  },
+  {
+    "slug": "high-to-low-cable-fly",
+    "name": "High-to-Low Cable Fly",
+    "movementPattern": "chest-isolation",
+    "equipment": [
+      "cable"
+    ],
+    "difficulty": "intermediate",
+    "isUnilateral": false,
+    "defaultIncrementKg": 2.5,
+    "instructions": [
+      "Set both pulleys high and stand a step forward with a handle in each hand.",
+      "Sweep your hands down and together in front of your hips.",
+      "Return slowly until you feel a stretch. Emphasises the lower chest."
+    ],
+    "videoUrl": null,
+    "primaryMuscles": [
+      "chest"
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "alternatives": [
+      {
+        "slug": "band-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "cable-fly",
+        "reason": "preference"
+      },
+      {
+        "slug": "dumbbell-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "low-to-high-cable-fly",
+        "reason": "preference"
       }
     ],
     "contraindications": [
@@ -4990,6 +5046,10 @@
       },
       {
         "slug": "dumbbell-fly",
+        "reason": "equipment"
+      },
+      {
+        "slug": "high-to-low-cable-fly",
         "reason": "equipment"
       },
       {

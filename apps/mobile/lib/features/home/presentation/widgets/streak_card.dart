@@ -25,6 +25,10 @@ class StreakCard extends StatelessWidget {
   String get _detail {
     final s = streak;
     if (s.current == 0) return 'Log a workout or a meal today.';
+    // Beta 3.8 (tester feedback): a rest day counts by itself.
+    if (s.todayRest && s.todayCounted) {
+      return 'Rest day. It counts toward your streak, nothing to log.';
+    }
     if (!s.todayCounted) {
       return 'Log a workout or a meal today to keep it going.';
     }

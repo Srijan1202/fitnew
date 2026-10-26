@@ -11,6 +11,7 @@ class Streak {
     required this.current,
     required this.best,
     required this.todayCounted,
+    this.todayRest = false,
     required this.weekDone,
     required this.weekPlanned,
     this.newRewards = const [],
@@ -22,6 +23,8 @@ class Streak {
       current: j['current'] as int,
       best: j['best'] as int,
       todayCounted: j['todayCounted'] as bool,
+      // Beta 3.8; absent from an older server.
+      todayRest: j['todayRest'] as bool? ?? false,
       weekDone: week?['done'] as int?,
       weekPlanned: week?['planned'] as int?,
       newRewards: [
@@ -37,6 +40,10 @@ class Streak {
 
   /// Whether today already counts (else "log today to keep it").
   final bool todayCounted;
+
+  /// Beta 3.8: today is a planned rest day, which counts by itself once a
+  /// run is going.
+  final bool todayRest;
 
   /// Workouts done this week, and planned; null without a programme.
   final int? weekDone;

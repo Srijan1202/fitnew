@@ -357,15 +357,16 @@ describeIfDb('/v1/progress (real Postgres)', { timeout: 60_000 }, () => {
       sql`insert into daily_nutrition (user_id, local_date, kcal_low, kcal_high, protein_low, protein_high, item_count) values (${u.id}, ${d}, 500, 600, 20, 25, 1)
           on conflict do nothing`;
 
-    expect(await streakOf()).toEqual({ current: 0, best: 0, todayCounted: false, week: null, newRewards: [] });
+    expect(await streakOf()).toEqual({ current: 0, best: 0, todayCounted: false, todayRest: false, week: null, newRewards: [] });
 
     // No programme: every day asks for a log.
     for (const d of [-6, -5, -2, -1]) await food(addDays(t, d));
-    expect(await streakOf()).toEqual({ current: 2, best: 2, todayCounted: false, week: null, newRewards: [] });
+    expect(await streakOf()).toEqual({ current: 2, best: 2, todayCounted: false, todayRest: false, week: null, newRewards: [] });
     await food(t);
     expect(await streakOf()).toMatchObject({ current: 3, todayCounted: true });
 
-    // A programme whose only rest day is the gap at t-3 / t-4: the rest day is excused.
+    // A programme whose only rest day is the gap at t-3 / t-4. Beta 3.8: a
+    // rest day counts by itself, but only inside a run.
     const weekday = (d: string) => {
       const day = new Date(`${d}T00:00:00Z`).getUTCDay();
       return day === 0 ? 7 : day;
@@ -376,11 +377,13 @@ describeIfDb('/v1/progress (real Postgres)', { timeout: 60_000 }, () => {
     for (let dow = 1; dow <= 7; dow += 1) {
       await sql`insert into program_days (program_id, day_of_week, session_name, is_rest) values (${program!.id}, ${dow}, ${`D${dow}`}, ${dow === rest})`;
     }
-    // t-4 is still a training day without a log: the run starts after it.
+    // t-4 is still a training day without a log: the run starts after it,
+    // and the rest day t-3 right after the break does not start it.
     expect((await streakOf()).current).toBe(3);
-    // Skip today on t-4 excuses it too; then the run reaches back to t-6.
+    // Skip today on t-4 excuses it; the run reaches back to t-6, and the
+    // rest day t-3 inside it now counts: 6.
     await sql`update programs set skipped_on = ${addDays(t, -4)} where id = ${program!.id}`;
-    expect(await streakOf()).toMatchObject({ current: 5, best: 5 });
+    expect(await streakOf()).toMatchObject({ current: 6, best: 6, todayRest: false });
 
     // A workout completed today counts on the ring (6 training days planned).
     await sql`insert into workout_sessions (user_id, client_session_id, status, name, started_at, completed_at, duration_seconds)

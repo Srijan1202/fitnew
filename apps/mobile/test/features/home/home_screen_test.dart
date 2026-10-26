@@ -815,6 +815,7 @@ void main() {
       int current, {
       int best = 0,
       bool today = true,
+      bool rest = false,
       int? done,
       int? planned,
     }) =>
@@ -822,6 +823,7 @@ void main() {
           current: current,
           best: best < current ? current : best,
           todayCounted: today,
+          todayRest: rest,
           weekDone: done,
           weekPlanned: planned,
         );
@@ -852,6 +854,28 @@ void main() {
         'Log a workout or a meal today to keep it going.',
       );
       expect(find.byKey(const ValueKey('home.ring')), findsNothing);
+    });
+
+    testWidgets('beta 3.8: a rest day counts by itself, and the card says so',
+        (tester) async {
+      streakApi.next = s(6, best: 9, rest: true);
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+      expect(textOf(tester, 'home.streak.headline').data, '6-day streak');
+      expect(
+        textOf(tester, 'home.streak.detail').data,
+        'Rest day. It counts toward your streak, nothing to log.',
+      );
+      expect(
+        Streak.fromJson({
+          'current': 1,
+          'best': 1,
+          'todayCounted': true,
+          'week': null,
+        }).todayRest,
+        isFalse,
+        reason: 'an older server sends no todayRest',
+      );
     });
 
     testWidgets('no run: how to start one; at the best: said so',
