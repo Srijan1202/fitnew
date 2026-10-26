@@ -11,6 +11,7 @@ import '../../../core/errors/failure.dart';
 import '../../../core/errors/result.dart';
 import '../../../core/notifications/activity_signal.dart';
 import '../../../core/notifications/local_notifications.dart';
+import '../../../core/config/app_update.dart';
 import '../../../core/routing/router.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
 import '../../auth/presentation/controllers/auth_providers.dart';
@@ -188,9 +189,15 @@ class NotificationCoordinator extends Notifier<NotifyState> {
         AppLifecycleListener(onResume: () => unawaited(refresh()));
     FitNotifications.onTap = (r) => unawaited(onTap(r.payload));
     // Beta 3.6: "FITOS replied to your feedback" opens the messages.
+    // Beta 3.9: "FITOS beta N is out" reads the website at once, so the
+    // update dialog shows even if FITOS looked just before the release.
     final pushes = ref.read(pushOpensProvider).listen((data) {
-      if (data['type'] == 'feedback-reply' && ref.mounted) {
-        ref.read(routerProvider).push(Routes.feedback);
+      if (!ref.mounted) return;
+      switch (data['type']) {
+        case 'feedback-reply':
+          ref.read(routerProvider).push(Routes.feedback);
+        case 'update':
+          ref.read(updateControllerProvider.notifier).checkNow();
       }
     });
     ref.onDispose(() {

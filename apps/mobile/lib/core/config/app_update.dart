@@ -23,9 +23,15 @@ import 'app_config.dart';
 /// workout); the banner sits at the very top of Home and × hides it only
 /// until the next open. Nothing about the user is sent: it is a plain GET of
 /// a public file. Offline, or a bad file, shows nothing.
+///
+/// Beta 3.9 (owner: the 3.8 notification came, the pop-up did not): the
+/// answer was kept for an hour, so a phone that had looked just before the
+/// release still believed the old build was the latest. A tapped "FITOS beta
+/// N is out" now reads the website at once ([UpdateController.checkNow]), and
+/// the answer is kept for 15 minutes.
 const kReleaseFeedUrl = 'https://tryfitos.me/version.json';
 const kDownloadUrl = 'https://tryfitos.me/download/';
-const kUpdateCheckEvery = Duration(hours: 1);
+const kUpdateCheckEvery = Duration(minutes: 15);
 
 /// Back in the app after at least this long away counts as opening it again.
 const kUpdatePromptAfterAway = Duration(minutes: 5);
@@ -200,6 +206,15 @@ class AvailableUpdate {
       );
 }
 
+/// Set by [UpdateController.checkNow]: the next build reads the website even
+/// within [kUpdateCheckEvery]. Kept outside the notifier, which a rebuild may
+/// replace.
+class _ForceCheck {
+  bool due = false;
+}
+
+final _forceCheckProvider = Provider<_ForceCheck>((_) => _ForceCheck());
+
 /// Null when this is the latest build, or when nothing is known.
 class UpdateController extends AsyncNotifier<AvailableUpdate?> {
   UpdatePrefs get _prefs => ref.read(updatePrefsProvider);
@@ -210,7 +225,10 @@ class UpdateController extends AsyncNotifier<AvailableUpdate?> {
     final now = ref.read(updateClockProvider)();
     final last = await _prefs.lastChecked();
     var release = await _prefs.cached();
-    if (last == null || now.difference(last) >= kUpdateCheckEvery) {
+    final force = ref.read(_forceCheckProvider);
+    final forced = force.due;
+    force.due = false;
+    if (forced || last == null || now.difference(last) >= kUpdateCheckEvery) {
       final fresh = await ref.read(releaseFeedProvider).latest();
       if (fresh != null) release = fresh;
       // A failed read is not retried at once: offline stays quiet.
@@ -224,6 +242,13 @@ class UpdateController extends AsyncNotifier<AvailableUpdate?> {
       promptDue: true,
       bannerVisible: true,
     );
+  }
+
+  /// Beta 3.9: read the website now, whenever it was last read — a tapped
+  /// "FITOS beta N is out" push. The dialog and banner follow its answer.
+  void checkNow() {
+    ref.read(_forceCheckProvider).due = true;
+    ref.invalidateSelf();
   }
 
   /// Shown for this open; it asks again the next time the app is opened.

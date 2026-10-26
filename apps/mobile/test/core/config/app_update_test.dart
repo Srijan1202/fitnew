@@ -8,7 +8,8 @@ import 'package:riverpod/misc.dart' show Override;
 
 /// Beta 3.2 (ADR-026 amendment): "a new version is available". The website's
 /// version.json is the source; the app asks once per new build, then keeps a
-/// Home banner until updated or hidden; at most one read every six hours;
+/// Home banner until updated or hidden; at most one read every 15 minutes
+/// (a tapped update push reads at once);
 /// offline or a bad file shows nothing; only tryfitos.me is ever opened.
 class FakeFeed implements ReleaseFeed {
   FakeFeed(this.release);
@@ -93,16 +94,48 @@ void main() {
       expect(await check(build: 9), isNull);
     });
 
-    test('at most one read an hour: the cached answer is used in between',
+    test(
+        'at most one read every 15 minutes (beta 3.9): the cached answer is used in between',
         () async {
       await check();
       expect(feed.reads, 1);
-      now = now.add(const Duration(minutes: 59));
+      now = now.add(const Duration(minutes: 14));
       feed.release = null; // would hide it if read
       expect(await check(), isNotNull);
       expect(feed.reads, 1);
       now = now.add(const Duration(minutes: 1));
       await check();
+      expect(feed.reads, 2);
+    });
+
+    test(
+        'beta 3.9: a tapped "beta N is out" reads the website at once, even just after a read that still said the old build',
+        () async {
+      // Read a minute before the release: this build was the latest.
+      expect(await check(build: 8), isNull);
+      expect(feed.reads, 1);
+      const beta38 = LatestRelease(
+        version: '1.0.0-beta.3.8',
+        build: 14,
+        url: 'https://tryfitos.me/download/',
+        notesUrl: 'https://tryfitos.me/blog/beta-3-8/',
+      );
+      feed.release = beta38;
+      now = now.add(const Duration(minutes: 1));
+      final c = ProviderContainer(overrides: overrides(build: 8));
+      addTearDown(c.dispose);
+      expect(await c.read(updateControllerProvider.future), isNull);
+      expect(feed.reads, 1, reason: 'within the 15 minutes: the cached answer');
+
+      c.read(updateControllerProvider.notifier).checkNow();
+      final u = await c.read(updateControllerProvider.future);
+      expect(feed.reads, 2);
+      expect(u!.release.label, 'beta 3.8');
+      expect(u.promptDue, isTrue);
+      expect(u.bannerVisible, isTrue);
+      // Only that once: the next build uses the answer just read.
+      c.invalidate(updateControllerProvider);
+      await c.read(updateControllerProvider.future);
       expect(feed.reads, 2);
     });
 

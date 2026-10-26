@@ -104,6 +104,7 @@ The owner asked for the update pop-up every time the app is opened, on top, and 
     - The rules are unchanged: once per build, audited (`via: 'website-deploy'`, no actor).
     - `-NoAnnounce` skips it.
     - If it fails, the site stays published and the button still works.
+  - `AMENDED 2026-10-26 (owner: the 3.8 push came, the pop-up did not)`: the app kept the website's answer for an hour, so a phone that had looked just before the release still saw the old build as the latest. Tapping "FITOS beta N is out" now reads the website at once, and the answer is kept for **15 minutes** (was an hour). It takes effect from the build after 3.8; 3.8 itself and older builds show the dialog on the first open after their hour.
 - **The feedback limit** goes from 5 to **20 an hour per person**, and **admins are not limited**. A tester who reaches it is told kindly and keeps their text.
 
 ## Amendment — feedback with pictures, the phone and replies (beta 3.6, owner 2026-10-24)
