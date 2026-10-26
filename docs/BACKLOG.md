@@ -35,7 +35,7 @@
 | E9 | Workout `client_session_id` / `client_set_id` unique per user (food logs already are) | M | Migration + conflict handling; UUIDv4 makes collisions impractical, so low value |
 | E10 | Session summary tonnage computed on the phone (§30 edge, Phase 5) | S | Display only; could read a server figure instead |
 | E11 | Measure and record "< 3 s to log a set" (§38 Phase 5 box still open) | S | Device stopwatch run on the S24 |
-| E12 | Split the largest screens (log_food 1,011 lines, what_to_eat 851, eat 820, workout_week 729) | M | Maintainability only; behaviour-neutral refactor |
+| E12 | ~~Split the largest screens (log_food 1,011 lines, what_to_eat 851, eat 820, workout_week 729)~~ — ✅ beta 3.9: log_food, eat, workout_week, what_to_eat and home_sections into `part` files, every line moved unchanged (each library now at most 590 lines; progress_screen in the O4 redesign) | M | Maintainability only; behaviour-neutral refactor |
 | E13 | Food database gap: 305 of ~500 foods; licensing not confirmed (§38 Phase 7) | L | Needs licensed Indian data (Phase 7 report) |
 | E14 | §38 Phase 0 open boxes: Neon staging/prod, the extra Firebase projects, Cloud Run region verification | — | Follow O1 (hosting) |
 | E15 | Reading GitHub CI from this PC | S | The public API allows 60 calls an hour; installing `gh` (authenticated) would make CI checks reliable |
