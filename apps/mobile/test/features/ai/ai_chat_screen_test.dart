@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/errors/result.dart';
@@ -203,6 +205,44 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('ai.send')));
     await tester.pumpAndSettle();
     expect(ai.requests, isEmpty);
+  });
+
+  testWidgets(
+      'beta 3.8: the answer appears as it is written, then the final one is kept with its actions',
+      (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    final gate = Completer<void>();
+    ai
+      ..streamTexts = ['Pull is ready:', 'Pull is ready: 4 movements']
+      ..streamGate = gate;
+    await type(tester, 'What now?');
+    await tester.tap(find.byKey(const ValueKey('ai.send')));
+    await tester.pump();
+    await tester.pump();
+    // Written so far: shown in place of "Thinking…", no actions yet.
+    expect(textOf(tester, 'ai.partial').data, 'Pull is ready: 4 movements');
+    expect(find.byKey(const ValueKey('ai.thinking')), findsNothing);
+    expect(find.byKey(const ValueKey('ai.action.open-workout')), findsNothing);
+    expect(
+      tester.widget<TextField>(find.byKey(const ValueKey('ai.input'))).enabled,
+      isFalse,
+      reason: 'one question at a time',
+    );
+
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('ai.partial')), findsNothing);
+    expect(
+      tester
+          .widget<SelectableText>(find.byKey(const ValueKey('ai.turn.1')))
+          .data,
+      'Pull is ready: 4 movements, about 45 minutes.',
+    );
+    expect(
+      find.byKey(const ValueKey('ai.action.open-workout')),
+      findsOneWidget,
+    );
   });
 
   testWidgets(

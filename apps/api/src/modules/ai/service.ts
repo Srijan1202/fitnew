@@ -10,7 +10,7 @@ import { programRequestSchema, type AiAction, type AiChatRequest, type AiChatRes
 
 import { AppError } from '../../lib/errors.js';
 import type { FitosAiContext, UserContextAssembler } from './context-assembler.js';
-import { AiProviderError, type AiMessage, type AiProvider, type AiToolCall, type AiToolResult } from './provider.js';
+import { AiProviderError, type AiMessage, type AiProvider, type AiRequest, type AiResponse, type AiToolCall, type AiToolResult } from './provider.js';
 import { MAX_TOOL_ROUNDS, PROPOSE_PROGRAM, type ToolRegistry } from './tools.js';
 import type { AiBudget } from './usage.js';
 
@@ -29,6 +29,20 @@ export const CHAT_HISTORY_TURNS = 12;
 export const OFF_TOPIC_MARKER = 'OFF_TOPIC';
 export const OFF_TOPIC_REPLY =
   "I'm FITOS AI, so I only help with your training, food and recovery, not general questions. Try asking about today's workout, your protein target or how a lift is progressing.";
+
+/**
+ * Beta 3.8: what a streamed chat tells the phone while it is written —
+ * `text` is the answer so far (plain text, the whole of it each time);
+ * `tool` means FITOS is looking something up, so any text shown so far is
+ * cleared. The final answer still comes whole and is the one kept.
+ */
+export type AiStreamEvent = { readonly type: 'text'; readonly text: string } | { readonly type: 'tool' };
+
+/**
+ * Nothing is shown before this many characters: an off-topic answer is the
+ * marker alone, so it is caught before a word of it reaches the screen.
+ */
+export const STREAM_HOLDBACK_CHARS = 24;
 
 export interface ChatDeps {
   readonly assembler: UserContextAssembler;
@@ -60,7 +74,7 @@ export class AiService {
 
   /* --------------------------------------------------------------- chat -- */
 
-  async chat(userId: string, request: AiChatRequest, premium = false): Promise<AiChatResponse> {
+  async chat(userId: string, request: AiChatRequest, premium = false, onEvent?: (event: AiStreamEvent) => void): Promise<AiChatResponse> {
     if (this.deps === undefined) throw new Error('AiService.chat needs an assembler and a tool registry');
     await this.deps.budget?.check(userId, 'chat', premium);
     if (this.provider.name === 'none') throw AiService.toAppError(new AiProviderError('not_configured', 'no provider'));
@@ -78,12 +92,15 @@ export class AiService {
 
     try {
       for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
-        const response = await this.provider.generate({
-          system,
-          messages,
-          tools: declarations,
-          ...(toolResults !== undefined ? { toolResults } : {}),
-        });
+        const response = await this.ask(
+          {
+            system,
+            messages,
+            tools: declarations,
+            ...(toolResults !== undefined ? { toolResults } : {}),
+          },
+          onEvent,
+        );
         // §19.3: every model call's tokens are logged, one row per round.
         await this.deps.budget?.record(userId, 'chat', this.provider.model, response.usage, 'ok');
 
@@ -99,6 +116,7 @@ export class AiService {
 
         // The model asked for tools: run each through the allowlist for THIS
         // user, record the turn, feed the results back, ask again.
+        onEvent?.({ type: 'tool' });
         const results: AiToolResult[] = [];
         for (const call of response.toolCalls) {
           const result = await this.deps.tools.execute(userId, call.name, call.args);
@@ -118,6 +136,26 @@ export class AiService {
       }
       throw AiService.toAppError(e);
     }
+  }
+
+  /** One model call; streamed when the caller listens and the provider can. */
+  private ask(request: AiRequest, onEvent: ((event: AiStreamEvent) => void) | undefined): Promise<AiResponse> {
+    if (onEvent === undefined || this.provider.generateStream === undefined) return this.provider.generate(request);
+    return this.provider.generateStream(request, (soFar) => {
+      const shown = AiService.streamable(soFar);
+      if (shown !== null) onEvent({ type: 'text', text: shown });
+    });
+  }
+
+  /**
+   * Beta 3.8: what of an answer still being written may be shown — its plain
+   * text, once past the holdback and while it is not off topic; null until
+   * then. The final answer replaces it in any case.
+   */
+  static streamable(soFar: string): string | null {
+    if (soFar.length < STREAM_HOLDBACK_CHARS || AiService.isOffTopic(soFar)) return null;
+    const plain = AiService.plainText(soFar);
+    return plain.length > 0 ? plain : null;
   }
 
   /**

@@ -57,24 +57,32 @@ class AiChatState {
   const AiChatState({
     this.turns = const [],
     this.sending = false,
+    this.partial,
     this.failure,
   });
 
   final List<AiTurn> turns;
   final bool sending;
 
+  /// Beta 3.8: FITOS AI's answer while it is being written; null before the
+  /// first words, while it looks something up, and once it is a turn.
+  final String? partial;
+
   /// The last send's failure, shown under the exchange with Retry.
   final Failure? failure;
 
+  /// Every copy drops [partial] unless it is given again.
   AiChatState copyWith({
     List<AiTurn>? turns,
     bool? sending,
+    String? partial,
     Failure? failure,
     bool clearFailure = false,
   }) =>
       AiChatState(
         turns: turns ?? this.turns,
         sending: sending ?? this.sending,
+        partial: partial,
         failure: clearFailure ? null : (failure ?? this.failure),
       );
 }
@@ -101,29 +109,38 @@ class AiChatController extends Notifier<AiChatState> {
       sending: true,
       clearFailure: true,
     );
-    final r = await ref.read(aiApiProvider).chat(
-          AiChatRequest(message: text, history: history),
-        );
-    r.when(
-      ok: (answer) => state = state.copyWith(
-        turns: [
-          ...state.turns,
-          AiTurn(
-            role: AiRole.assistant,
-            text: answer.text,
-            actions: answer.actions,
-          ),
-        ],
-        sending: false,
-      ),
-      err: (f) {
-        // Mark the last user turn as unanswered so Retry can resend it.
-        final turns = [...state.turns];
-        final last = turns.removeLast();
-        turns.add(AiTurn(role: last.role, text: last.text, failed: true));
-        state = state.copyWith(turns: turns, sending: false, failure: f);
-      },
-    );
+    // Beta 3.8: the answer appears as it is written; the final one is kept.
+    final events = ref
+        .read(aiApiProvider)
+        .chatStream(AiChatRequest(message: text, history: history));
+    await for (final e in events) {
+      if (!ref.mounted) return;
+      switch (e) {
+        case AiStreamText(:final text):
+          state = state.copyWith(partial: text);
+        case AiStreamTool():
+          state = state.copyWith();
+        case AiStreamDone(:final answer):
+          state = state.copyWith(
+            turns: [
+              ...state.turns,
+              AiTurn(
+                role: AiRole.assistant,
+                text: answer.text,
+                actions: answer.actions,
+              ),
+            ],
+            sending: false,
+          );
+        case AiStreamFailed(:final failure):
+          // Mark the last user turn as unanswered so Retry can resend it.
+          final turns = [...state.turns];
+          final last = turns.removeLast();
+          turns.add(AiTurn(role: last.role, text: last.text, failed: true));
+          state =
+              state.copyWith(turns: turns, sending: false, failure: failure);
+      }
+    }
   }
 
   /// Re-send the last unanswered message.

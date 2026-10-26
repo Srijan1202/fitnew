@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../../../core/errors/failure.dart';
 import '../../../exercise/domain/entities/exercise.dart';
 
 part 'ai.freezed.dart';
@@ -125,4 +126,31 @@ abstract class AiChatResponse with _$AiChatResponse {
 
   factory AiChatResponse.fromJson(Map<String, dynamic> json) =>
       _$AiChatResponseFromJson(json);
+}
+
+/// Beta 3.8: what a streamed answer (`POST /v1/ai/chat/stream`) says while
+/// it is written. [AiStreamText] is the answer so far, whole each time;
+/// [AiStreamTool] means FITOS is looking something up (clear what is shown);
+/// the stream ends with [AiStreamDone], the answer to keep, or [AiStreamFailed].
+sealed class AiStreamEvent {
+  const AiStreamEvent();
+}
+
+final class AiStreamText extends AiStreamEvent {
+  const AiStreamText(this.text);
+  final String text;
+}
+
+final class AiStreamTool extends AiStreamEvent {
+  const AiStreamTool();
+}
+
+final class AiStreamDone extends AiStreamEvent {
+  const AiStreamDone(this.answer);
+  final AiChatResponse answer;
+}
+
+final class AiStreamFailed extends AiStreamEvent {
+  const AiStreamFailed(this.failure);
+  final Failure failure;
 }

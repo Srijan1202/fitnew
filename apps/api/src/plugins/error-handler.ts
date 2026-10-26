@@ -16,7 +16,7 @@ import {
 import { isDatabaseUnavailable } from '../db/errors.js';
 import { AppError, HTTP_STATUS_FOR_CODE, type ErrorCode } from '../lib/errors.js';
 
-function envelope(
+export function envelope(
   code: ErrorCode,
   message: string,
   requestId: string,

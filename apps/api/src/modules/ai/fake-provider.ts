@@ -4,7 +4,7 @@
  * request so a test can assert what reached "the model" — and, above all,
  * what did not (no Health Connect data, owner B4).
  */
-import { AiProviderError, type AiProvider, type AiRequest, type AiResponse } from './provider.js';
+import { AiProviderError, type AiProvider, type AiRequest, type AiResponse, type AiTextSink } from './provider.js';
 
 export class FakeAiProvider implements AiProvider {
   readonly name = 'fake';
@@ -20,6 +20,13 @@ export class FakeAiProvider implements AiProvider {
       return { text: 'OK', toolCalls: [], finishReason: 'stop' };
     }
     return typeof next === 'function' ? next(request) : next;
+  }
+
+  /** Beta 3.8: the scripted answer, its text reported in 10-character steps. */
+  async generateStream(request: AiRequest, onText: AiTextSink): Promise<AiResponse> {
+    const response = await this.generate(request);
+    for (let i = 10; i < response.text.length + 10; i += 10) onText(response.text.slice(0, i));
+    return response;
   }
 }
 

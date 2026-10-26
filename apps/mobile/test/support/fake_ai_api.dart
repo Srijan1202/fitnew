@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/features/ai/data/ai_api.dart';
@@ -62,6 +64,26 @@ class FakeAiApi implements AiApi {
     final f = nextFailure;
     if (f != null) return Err(f);
     return Ok(nextAnswer);
+  }
+
+  /// Beta 3.8: the answer so far, shown before the answer is done (none: the
+  /// answer arrives whole); [streamGate], when set, holds the stream after
+  /// those pieces until it completes.
+  List<String> streamTexts = const [];
+  Completer<void>? streamGate;
+
+  /// Counted like [chat]: a send is a chat whichever way it is answered.
+  @override
+  Stream<AiStreamEvent> chatStream(AiChatRequest request) async* {
+    calls.add('chat');
+    requests.add(request);
+    for (final t in streamTexts) {
+      yield AiStreamText(t);
+    }
+    final gate = streamGate;
+    if (gate != null) await gate.future;
+    final f = nextFailure;
+    yield f != null ? AiStreamFailed(f) : AiStreamDone(nextAnswer);
   }
 
   @override

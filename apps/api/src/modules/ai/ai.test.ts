@@ -182,6 +182,87 @@ describe('GeminiProvider', () => {
     expect(GeminiProvider.fromBody({ candidates: [{ content: { parts: [{ text: 'x' }] }, finishReason: 'MAX_TOKENS' }] }).finishReason).toBe('length');
     expect(GeminiProvider.fromBody({ candidates: [{ content: { parts: [{ text: 'x' }] }, finishReason: 'RECITATION' }] }).finishReason).toBe('other');
   });
+
+  describe('beta 3.8: streaming', () => {
+    /** A response body that arrives in the pieces given (split anywhere, even mid-line). */
+    function sse(pieces: readonly string[], status = 200): typeof fetch {
+      return (async (url: string | URL | Request, init?: RequestInit) => {
+        sseCalls.push({ url: String(url), init: init ?? {} });
+        const enc = new TextEncoder();
+        return new Response(
+          new ReadableStream<Uint8Array>({
+            start(c) {
+              for (const p of pieces) c.enqueue(enc.encode(p));
+              c.close();
+            },
+          }),
+          { status, headers: { 'content-type': 'text/event-stream' } },
+        );
+      }) as typeof fetch;
+    }
+    let sseCalls: { url: string; init: RequestInit }[] = [];
+    const streaming = (fetchImpl: typeof fetch, timeoutMs = 1000) =>
+      new GeminiProvider({ apiKey: KEY, model: 'gemini-3.6-flash', timeoutMs, maxOutputTokens: 256, fetchImpl, retryDelayMs: 0 });
+    const data = (o: unknown) => `data: ${JSON.stringify(o)}\r\n\r\n`;
+
+    it('reads the events as they come (split anywhere), reports the text so far, and returns the whole answer', async () => {
+      sseCalls = [];
+      const one = data({ candidates: [{ content: { parts: [{ text: 'Pull ' }] } }] });
+      const two = data({ candidates: [{ content: { parts: [{ text: 'day.' }] }, finishReason: 'STOP' }], usageMetadata: { promptTokenCount: 9, candidatesTokenCount: 3 } });
+      const seen: string[] = [];
+      const r = await streaming(sse([one.slice(0, 7), one.slice(7) + two.slice(0, 20), two.slice(20)])).generateStream(request, (t) => seen.push(t));
+      expect(seen).toEqual(['Pull ', 'Pull day.']);
+      expect(r).toEqual({ text: 'Pull day.', toolCalls: [], finishReason: 'stop', usage: { inputTokens: 9, outputTokens: 3 } });
+      expect(sseCalls[0]!.url).toBe('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?alt=sse');
+      expect(sseCalls[0]!.url).not.toContain(KEY);
+      expect((sseCalls[0]!.init.headers as Record<string, string>)['x-goog-api-key']).toBe(KEY);
+    });
+
+    it('a last event without a line end still counts; tool calls come back with their signature', async () => {
+      const call = { candidates: [{ content: { parts: [{ functionCall: { name: 'get_today', args: {} }, thoughtSignature: 's' }] }, finishReason: 'STOP' }] };
+      const seen: string[] = [];
+      const r = await streaming(sse([': keep-alive\n', `data: ${JSON.stringify(call)}`])).generateStream(request, (t) => seen.push(t));
+      expect(seen).toEqual([]);
+      expect(r).toMatchObject({ finishReason: 'tool', toolCalls: [{ name: 'get_today', args: {}, signature: 's' }] });
+    });
+
+    it('a block, nothing at all, bad JSON, a 5xx (retried once), a 429, a stall and a dropped connection are the usual failures', async () => {
+      const kind = async (p: GeminiProvider) => ((await p.generateStream(request, () => undefined).catch((e: unknown) => e)) as AiProviderError).kind;
+      expect(await kind(streaming(sse([data({ promptFeedback: { blockReason: 'SAFETY' } })])))).toBe('blocked');
+      expect(await kind(streaming(sse([])))).toBe('empty');
+      expect(await kind(streaming(sse(['data: {nope\n\n'])))).toBe('malformed');
+      sseCalls = [];
+      expect(await kind(streaming(sse([], 503)))).toBe('unavailable');
+      expect(sseCalls).toHaveLength(2);
+      expect(await kind(streaming(sse([], 429)))).toBe('rate_limited');
+      const noBody = (async () => new Response(null, { status: 200 })) as typeof fetch;
+      expect(await kind(streaming(noBody))).toBe('malformed');
+      // Headers arrive, then nothing: the per-chunk timeout ends it.
+      const stall = ((_u: unknown, init?: RequestInit) =>
+        Promise.resolve(
+          new Response(
+            new ReadableStream<Uint8Array>({
+              start(c) {
+                init?.signal?.addEventListener('abort', () => c.error(Object.assign(new Error('aborted'), { name: 'AbortError' })));
+              },
+            }),
+            { status: 200 },
+          ),
+        )) as typeof fetch;
+      expect(await kind(streaming(stall, 30))).toBe('timeout');
+      const dropped = (async () =>
+        new Response(
+          new ReadableStream<Uint8Array>({
+            start(c) {
+              c.enqueue(new TextEncoder().encode(data({ candidates: [{ content: { parts: [{ text: 'Hal' }] } }] })));
+              c.error(new TypeError('socket hang up'));
+            },
+          }),
+          { status: 200 },
+        )) as typeof fetch;
+      expect(await kind(streaming(dropped))).toBe('unavailable');
+    });
+  });
 });
 
 describe('AiService', () => {

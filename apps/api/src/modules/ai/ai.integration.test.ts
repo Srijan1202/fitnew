@@ -17,6 +17,7 @@ import { databaseUrl, testEnv } from '../../test/build-test-app.js';
 import { createDatabase } from '../../db/client.js';
 import { FakeTokenVerifier } from '../../test/fake-token-verifier.js';
 import { FakeAiProvider } from './fake-provider.js';
+import { AiProviderError } from './provider.js';
 import { OFF_TOPIC_REPLY } from './service.js';
 
 const describeIfDb = databaseUrl !== undefined ? describe : describe.skip;
@@ -355,6 +356,76 @@ describeIfDb('/v1/ai (real Postgres, scripted model)', () => {
     expect(refused.json().error.code).toBe('RATE_LIMITED');
     // Same IP, different user: untouched by alice's allowance.
     expect((await send(bob)).statusCode).toBe(200);
+  });
+
+  describe('beta 3.8: POST /ai/chat/stream', () => {
+    const stream = (token: string | null, message: string) =>
+      app.inject({
+        method: 'POST',
+        url: '/v1/ai/chat/stream',
+        headers: token === null ? { 'x-forwarded-for': '203.0.116.251' } : auth(token),
+        payload: { message },
+      });
+    /** The server-sent events, in order. */
+    const eventsOf = (body: string): { event: string; data: Loose }[] =>
+      body
+        .split('\n\n')
+        .filter((b) => b.trim().length > 0)
+        .map((b) => {
+          const [e, d] = b.split('\n');
+          return { event: e!.slice('event: '.length), data: JSON.parse(d!.slice('data: '.length)) as Loose };
+        });
+    const answer = 'You trained **legs** two days ago; today is a good day for your upper body session.';
+
+    it('a tool round, then the answer as it is written (plain text, growing), then the whole answer to keep', async () => {
+      const token = await onboarded('Stream');
+      ai.script = [
+        { text: '', toolCalls: [{ name: 'get_today', args: {} }], finishReason: 'tool' },
+        { text: answer, toolCalls: [], finishReason: 'stop' },
+      ];
+      const r = await stream(token, 'What should I train?');
+      expect(r.statusCode, r.body).toBe(200);
+      expect(r.headers['content-type']).toMatch(/^text\/event-stream/);
+      const events = eventsOf(r.body);
+      expect(events[0]).toEqual({ event: 'tool', data: { type: 'tool' } });
+      const texts = events.filter((e) => e.event === 'text').map((e) => e.data['text'] as string);
+      expect(texts.length).toBeGreaterThan(3);
+      // Held back until 24 characters; each one a longer start of the answer, markdown removed.
+      expect(texts[0]!.length).toBeGreaterThanOrEqual(20);
+      for (const [i, t] of texts.entries()) {
+        expect(t).not.toContain('**');
+        if (i > 0) expect(t.length).toBeGreaterThanOrEqual(texts[i - 1]!.length);
+      }
+      const done = events.at(-1)!;
+      expect(done.event).toBe('done');
+      expect(done.data).toMatchObject({ text: answer.replace(/\*\*/g, ''), toolsUsed: ['get_today'] });
+      expect(texts.at(-1)).toBe(done.data['text']);
+    });
+
+    it('an off-topic answer never shows a word of itself: only the scope reply, whole', async () => {
+      const token = await onboarded('Stream off');
+      ai.script = [{ text: 'OFF_TOPIC — but the capital of India is New Delhi, of course.', toolCalls: [], finishReason: 'stop' }];
+      const events = eventsOf((await stream(token, 'Capital of India?')).body);
+      expect(events.filter((e) => e.event === 'text')).toEqual([]);
+      expect(events).toEqual([{ event: 'done', data: expect.objectContaining({ text: OFF_TOPIC_REPLY }) }]);
+    });
+
+    it('a failure before the stream begins is an ordinary error; after it began, an error event with the envelope', async () => {
+      expect((await stream(null, 'hi')).statusCode).toBe(401);
+      const token = await onboarded('Stream fail');
+      ai.script = [
+        { text: '', toolCalls: [{ name: 'get_today', args: {} }], finishReason: 'tool' },
+        () => {
+          throw new AiProviderError('unavailable', 'down', 503);
+        },
+      ];
+      const r = await stream(token, 'What now?');
+      expect(r.statusCode).toBe(200);
+      const events = eventsOf(r.body);
+      expect(events.map((e) => e.event)).toEqual(['tool', 'error']);
+      expect(events[1]!.data['error']).toMatchObject({ code: 'UPSTREAM_UNAVAILABLE', requestId: expect.any(String) });
+      expect(JSON.stringify(events)).not.toMatch(/down|503/);
+    });
   });
 });
 

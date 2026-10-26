@@ -167,6 +167,10 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   Widget build(BuildContext context) {
     final status = ref.watch(aiStatusProvider);
     final chat = ref.watch(aiChatProvider);
+    // Beta 3.8: keep the answer in view while it is written.
+    ref.listen(aiChatProvider.select((c) => c.partial), (_, next) {
+      if (next != null) _toBottom();
+    });
     final s = status.value;
     // Phase 19 (ADR-027): a free user sees what premium is, and the request.
     final locked = ref.watch(isPremiumProvider) == false;
@@ -487,7 +491,25 @@ class _Conversation extends StatelessWidget {
             ),
           ),
         ],
-        if (state.sending) ...<Widget>[
+        if (state.sending && state.partial != null) ...<Widget>[
+          // Beta 3.8: FITOS AI's answer as it is written.
+          const FitRule(),
+          _Bubble(
+            user: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text('FITOS AI', style: textTheme.labelSmall),
+                const SizedBox(height: FitSpacing.xs),
+                Text(
+                  state.partial!,
+                  key: const ValueKey('ai.partial'),
+                  style: textTheme.bodyLarge,
+                ),
+              ],
+            ),
+          ),
+        ] else if (state.sending) ...<Widget>[
           const FitRule(),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),

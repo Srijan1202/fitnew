@@ -12,6 +12,7 @@ import {
   type AiProvider,
   type AiRequest,
   type AiResponse,
+  type AiTextSink,
   type AiToolCall,
 } from './provider.js';
 
@@ -81,43 +82,113 @@ export class GeminiProvider implements AiProvider {
    * Never for 429 (the quota), a bad key, a timeout or a malformed answer.
    */
   async generate(request: AiRequest): Promise<AiResponse> {
+    return this.withRetry(() => this.once(request));
+  }
+
+  /**
+   * Beta 3.8: `streamGenerateContent` as server-sent events. The timeout is
+   * per chunk (the model may write for longer than one answer took whole),
+   * and the one 5xx retry happens before any text, as a 5xx is a status.
+   */
+  async generateStream(request: AiRequest, onText: AiTextSink): Promise<AiResponse> {
+    return this.withRetry(() => this.streamOnce(request, onText));
+  }
+
+  private async withRetry(call: () => Promise<AiResponse>): Promise<AiResponse> {
     try {
-      return await this.once(request);
+      return await call();
     } catch (e) {
       if (!(e instanceof AiProviderError) || e.kind !== 'unavailable' || e.status === undefined || e.status < 500) throw e;
       await new Promise((r) => setTimeout(r, this.retryDelayMs));
-      return this.once(request);
+      return call();
     }
   }
 
-  private async once(request: AiRequest): Promise<AiResponse> {
-    const body = GeminiProvider.toBody(request, this.maxOutputTokens);
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+  private async post(request: AiRequest, method: string, signal: AbortSignal): Promise<Response> {
     let res: Response;
     try {
       const model = request.model ?? this.model;
-      res = await this.fetchImpl(`${this.baseUrl}/models/${encodeURIComponent(model)}:generateContent`, {
+      res = await this.fetchImpl(`${this.baseUrl}/models/${encodeURIComponent(model)}:${method}`, {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-goog-api-key': this.apiKey },
-        body: JSON.stringify(body),
-        signal: controller.signal,
+        body: JSON.stringify(GeminiProvider.toBody(request, this.maxOutputTokens)),
+        signal,
       });
     } catch (e) {
-      if ((e as { name?: string }).name === 'AbortError') {
-        throw new AiProviderError('timeout', `The model did not answer within ${this.timeoutMs} ms.`);
-      }
-      throw new AiProviderError('unavailable', 'Could not reach the model.');
-    } finally {
-      clearTimeout(timer);
+      throw this.transportError(e, 'Could not reach the model.');
     }
-
     if (res.status === 429) throw new AiProviderError('rate_limited', 'The model is rate limited right now.', 429);
     if (res.status === 401 || res.status === 403) {
       // A bad key is an operator problem, never the user's; say so without the key.
       throw new AiProviderError('not_configured', 'The model rejected this server\'s credentials.', res.status);
     }
     if (!res.ok) throw new AiProviderError('unavailable', `The model answered ${res.status}.`, res.status);
+    return res;
+  }
+
+  private transportError(e: unknown, message: string): AiProviderError {
+    if (e instanceof AiProviderError) return e;
+    if ((e as { name?: string }).name === 'AbortError') {
+      return new AiProviderError('timeout', `The model did not answer within ${this.timeoutMs} ms.`);
+    }
+    return new AiProviderError('unavailable', message);
+  }
+
+  private async streamOnce(request: AiRequest, onText: AiTextSink): Promise<AiResponse> {
+    const controller = new AbortController();
+    let timer = setTimeout(() => controller.abort(), this.timeoutMs);
+    try {
+      const res = await this.post(request, 'streamGenerateContent?alt=sse', controller.signal);
+      if (res.body === null) throw new AiProviderError('malformed', 'The model answered with no body.');
+      const chunks: GeminiResponseBody[] = [];
+      let text = '';
+      const line = (raw: string): void => {
+        const l = raw.replace(/\r$/, '');
+        if (!l.startsWith('data:')) return;
+        let chunk: GeminiResponseBody;
+        try {
+          chunk = JSON.parse(l.slice(5)) as GeminiResponseBody;
+        } catch {
+          throw new AiProviderError('malformed', 'The model answered with something that is not JSON.');
+        }
+        chunks.push(chunk);
+        const delta = (chunk.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? '').join('');
+        if (delta.length > 0) {
+          text += delta;
+          onText(text);
+        }
+      };
+      let pending = '';
+      const decoder = new TextDecoder();
+      try {
+        for await (const bytes of res.body as unknown as AsyncIterable<Uint8Array>) {
+          clearTimeout(timer);
+          timer = setTimeout(() => controller.abort(), this.timeoutMs);
+          pending += decoder.decode(bytes, { stream: true });
+          for (let nl = pending.indexOf('\n'); nl >= 0; nl = pending.indexOf('\n')) {
+            line(pending.slice(0, nl));
+            pending = pending.slice(nl + 1);
+          }
+        }
+      } catch (e) {
+        throw this.transportError(e, 'The model stopped answering.');
+      }
+      line(pending + decoder.decode());
+      return GeminiProvider.fromChunks(chunks);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  private async once(request: AiRequest): Promise<AiResponse> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+    let res: Response;
+    try {
+      res = await this.post(request, 'generateContent', controller.signal);
+    } finally {
+      clearTimeout(timer);
+    }
 
     let json: GeminiResponseBody;
     try {
@@ -169,6 +240,23 @@ export class GeminiProvider implements AiProvider {
       ];
     }
     return body;
+  }
+
+  /**
+   * Beta 3.8: a streamed answer as one body: every part in order, the last
+   * finish reason and token count, and a block if any chunk carried one.
+   */
+  static fromChunks(chunks: readonly GeminiResponseBody[]): AiResponse {
+    if (chunks.length === 0) throw new AiProviderError('empty', 'The model returned no answer.');
+    const blocked = chunks.find((c) => c.promptFeedback?.blockReason !== undefined);
+    const finishReason = [...chunks].reverse().find((c) => c.candidates?.[0]?.finishReason !== undefined)?.candidates?.[0]?.finishReason;
+    const usage = [...chunks].reverse().find((c) => c.usageMetadata !== undefined)?.usageMetadata;
+    const parts = chunks.flatMap((c) => c.candidates?.[0]?.content?.parts ?? []);
+    return GeminiProvider.fromBody({
+      ...(blocked !== undefined ? { promptFeedback: blocked.promptFeedback } : {}),
+      candidates: [{ content: { parts }, ...(finishReason !== undefined ? { finishReason } : {}) }],
+      ...(usage !== undefined ? { usageMetadata: usage } : {}),
+    });
   }
 
   static fromBody(json: GeminiResponseBody): AiResponse {

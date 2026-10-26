@@ -71,11 +71,20 @@ export interface AiResponse {
   readonly usage?: { readonly inputTokens: number; readonly outputTokens: number };
 }
 
+/** Beta 3.8: the answer's text as it is written — all of it so far, each time. */
+export type AiTextSink = (textSoFar: string) => void;
+
 export interface AiProvider {
   /** For status and logs — never a credential. */
   readonly name: string;
   readonly model: string;
   generate(request: AiRequest): Promise<AiResponse>;
+  /**
+   * Beta 3.8 (tester feedback: answers should appear as they are written):
+   * the same answer as [generate], its text reported to `onText` while it
+   * arrives. Optional: without it the caller shows the answer whole.
+   */
+  generateStream?(request: AiRequest, onText: AiTextSink): Promise<AiResponse>;
 }
 
 /**

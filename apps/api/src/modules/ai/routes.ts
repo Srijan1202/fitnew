@@ -29,6 +29,7 @@ import {
 } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
+import { envelope } from '../../plugins/error-handler.js';
 import { ExerciseRepository } from '../exercise/repository.js';
 import { ExerciseService } from '../exercise/service.js';
 import { FoodRepository } from '../nutrition/repository.js';
@@ -153,6 +154,64 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request) => service.chat(requireUserId(request.userId), request.body, await premiumOf(request)),
+  );
+
+  // Beta 3.8 (tester feedback: answers should appear as they are written).
+  typed.post(
+    '/ai/chat/stream',
+    {
+      config: { rateLimit: AI_CHAT_RATE_LIMIT },
+      schema: {
+        summary: 'Ask FITOS AI, the answer streamed as it is written (server-sent events)',
+        description:
+          'The same chat as POST /ai/chat, answered as text/event-stream. `event: text` carries the answer so far ' +
+          '(plain text, all of it each time); `event: tool` means FITOS is looking something up, so the text so far is ' +
+          'cleared; `event: done` carries the final AiChatResponse, which is the answer to keep; `event: error` carries ' +
+          'the §10 envelope when it fails after the stream began. A failure before it began is an ordinary error response.',
+        tags: ['ai'],
+        security: [{ bearerAuth: [] }],
+        body: aiChatRequestSchema,
+        response: errors,
+      },
+    },
+    async (request, reply) => {
+      const userId = requireUserId(request.userId);
+      const premium = await premiumOf(request);
+      let open = false;
+      let gone = false;
+      const send = (event: string, data: unknown): void => {
+        if (!open) {
+          open = true;
+          void reply.hijack();
+          reply.raw.on('close', () => {
+            gone = true;
+          });
+          reply.raw.writeHead(200, {
+            'content-type': 'text/event-stream; charset=utf-8',
+            'cache-control': 'no-cache, no-transform',
+            // Caddy's encoder must not hold the events back to compress them.
+            'content-encoding': 'identity',
+            'x-request-id': request.id,
+          });
+        }
+        if (!gone) reply.raw.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+      };
+      try {
+        const answer = await service.chat(userId, request.body, premium, (e) => send(e.type, e));
+        send('done', answer);
+      } catch (e) {
+        // Before the first event the error handler answers as usual.
+        if (!open) throw e;
+        if (e instanceof AppError) {
+          send('error', envelope(e.code, e.message, request.id, e.details));
+        } else {
+          request.log.error({ err: e }, 'ai: chat stream failed');
+          send('error', envelope('INTERNAL', 'Something went wrong on our side.', request.id));
+        }
+      }
+      reply.raw.end();
+      return reply;
+    },
   );
 
   typed.post(
