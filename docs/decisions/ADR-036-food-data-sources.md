@@ -87,3 +87,43 @@ MASTER-SPEC §13 held IFCT and INDB behind an open question: a human must confir
 
 - INDB's deep-fried recipes, until a reliable oil-uptake rule exists.
 - Rebasing the mess table on INDB recipes (the plan's D3). CoFID calibration and the ±20 % cap were used instead, because INDB's portions and frying made it the less reliable reference.
+
+## Amendment — beta 3.9: INDB's deep-fried recipes (owner, 2026-10-26)
+
+The owner chose to bring the deep-fried recipes in, checked against CoFID within **±15 %** (BACKLOG E25).
+
+1. **The pan comes out.** INDB lists the whole pan of oil as an ingredient, so a poori comes to ~920 kcal.
+   - The converter records the pan: the heaviest fat line "for frying" (or 100 ml of oil or more), when it is at least 100 g. That is 129 recipes.
+   - A few tablespoons "for frying" is a sauté, and all of it is eaten.
+2. **The fat kept is what CoFID measured in the same kind of fried food.**
+   - It is measured as grams of fat per gram of protein + carbohydrate. That ratio does not depend on water or portion size, so INDB's own per-piece protein and carbohydrate give the fat.
+   - The fat is never less than the recipe's fat without the pan (a gravy's own oil). The energy moves with the fat.
+   - Each kind has one share (`FRIED_KINDS` in `apps/api/src/db/food-seed/sources.ts`). Its CoFID references are listed in `cofid-picks.json` `oilReferences`; they are converted into `cofid.json` and are never foods themselves.
+3. **The owner's check.** A kind is used only when its one share puts **every** reference's energy within ±15 % (`food-seed.test.ts`). A fried food's range is ±15 %.
+
+   | Kind | Share | CoFID references |
+   |---|---|---|
+   | Poori, bhatura, kachori, mathri | 0.51 | puri |
+   | Cauliflower pakora, gobi 65 | 0.88 | aubergine and cauliflower bhajia, restaurant pakora |
+   | Potato, onion or leafy pakora, potato bonda | 0.47 | onion, potato, potato-carrot-pea and spinach bhajia, retail bhajia |
+   | Fried fish | 0.47 | cod in batter, fish fingers |
+   | Sev, namak para, murukku, papdi | 0.48 | sev, chevda |
+   | Kofta | 0.53 | dudhi kofta curry, lamb kofta |
+   | Spring roll / scotch egg | 0.66 / 0.64 | spring rolls / scotch eggs |
+
+   Pakoras are split by what is fried: cauliflower and aubergine soak up nearly twice the oil (0.87–0.90 against 0.41–0.55). One share for all of them misses by up to 30 %.
+4. **Left out, not guessed:**
+   - **Samosa:** CoFID's own samosas range from 0.26 to 1.26, a 42 % miss even at the best share.
+   - **Vada, cutlet and tikki:** 0.25 to 0.95, a 24–34 % miss even split into pulse and other kinds.
+   - **Pakoras of paneer, egg, bread, chicken, fish or chilli:** no reference.
+   - **Gulab jamun:** INDB also counts the whole pan of syrup.
+   - **Curries, chaat, pickles, cakes and the rest:** no kind of their own.
+5. **Names.** INDB's slashes also hid spellings.
+   - "Potato pakora/pakoda" made the alias "pakoda", which is another FITOS food, so every pakora was skipped as one FITOS already had. A one-word spelling of the last word now gives "Potato pakoda".
+   - "Ghiya/Lauki Kofta Curry" was named "Ghiya". One word before a whole dish now names the dish: "Lauki Kofta Curry".
+   - A seeded food's slug never changes (the seed is upserted by slug). So "Saunth" keeps its slug and is now named "Sonth chutney with ginger".
+   - Spellings never make a recipe "one FITOS already has". The same fix lets in 19 ordinary INDB dishes that a lone "omlet", "paratha" or "khichri" had kept out: omelettes, paranthas, khichdis and cheelas.
+
+**Result:** 1,839 foods (+64). That is 45 deep-fried INDB recipes and 19 ordinary ones. No existing food is removed and no food's nutrition changes. Release needs a `-Seed` deploy and no migration.
+
+**Search:** "panee" now matches more than 20 foods. Measured sources rank before FITOS estimates, so Paneer butter masala falls past the first 20 until the next word is typed. The ranking is unchanged.

@@ -3820,6 +3820,34 @@
     ]
   },
   {
+    "slug": "bathua-poori",
+    "name": "Bathua poori",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP114 · fried (poori, bhatura, kachori, mathri): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 poori",
+        "servingGrams": null,
+        "kcalLow": 108,
+        "kcalHigh": 148,
+        "proteinLow": 1.8,
+        "proteinHigh": 2.5,
+        "carbLow": 10.7,
+        "carbHigh": 14.5,
+        "fatLow": 6.3,
+        "fatHigh": 8.7,
+        "fibreLow": 1.4,
+        "fibreHigh": 2,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "bathua-raita",
     "name": "Bathua raita",
     "brand": null,
@@ -4529,6 +4557,36 @@
     ]
   },
   {
+    "slug": "beetroot-poori",
+    "name": "Beetroot poori",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP116 · fried (poori, bhatura, kachori, mathri): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "chukandar ki poori"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 poori",
+        "servingGrams": null,
+        "kcalLow": 107,
+        "kcalHigh": 146,
+        "proteinLow": 1.6,
+        "proteinHigh": 2.3,
+        "carbLow": 10.7,
+        "carbHigh": 14.6,
+        "fatLow": 6.3,
+        "fatHigh": 8.6,
+        "fibreLow": 1.2,
+        "fibreHigh": 1.7,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "beets-raw",
     "name": "Beets, raw",
     "brand": null,
@@ -4662,7 +4720,7 @@
     "sourceRef": "INDB 2024 · recipe BFP570",
     "isVerified": false,
     "aliases": [
-      "cheela"
+      "besan bathua cheela"
     ],
     "nutrition": [
       {
@@ -8195,6 +8253,36 @@
     ]
   },
   {
+    "slug": "cabbage-kofta-curry",
+    "name": "Cabbage kofta curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC204 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "pattagobhi kofta curry"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bowl",
+        "servingGrams": null,
+        "kcalLow": 206,
+        "kcalHigh": 280,
+        "proteinLow": 5.9,
+        "proteinHigh": 8.1,
+        "carbLow": 17.4,
+        "carbHigh": 23.6,
+        "fatLow": 12.6,
+        "fatHigh": 17.2,
+        "fibreLow": 5.4,
+        "fibreHigh": 7.4,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "cabbage-raita",
     "name": "Cabbage raita",
     "brand": null,
@@ -9901,6 +9989,36 @@
     ]
   },
   {
+    "slug": "cauliflower-kofta-curry",
+    "name": "Cauliflower kofta curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC203 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "phoolgobhi kofta curry"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bowl",
+        "servingGrams": null,
+        "kcalLow": 203,
+        "kcalHigh": 276,
+        "proteinLow": 6.2,
+        "proteinHigh": 8.5,
+        "carbLow": 15.8,
+        "carbHigh": 21.5,
+        "fatLow": 12.8,
+        "fatHigh": 17.5,
+        "fibreLow": 6,
+        "fibreHigh": 8.2,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "cauliflower-leaves",
     "name": "Cauliflower leaves",
     "brand": null,
@@ -9956,6 +10074,37 @@
         "fatHigh": 8.5,
         "fibreLow": 5.9,
         "fibreHigh": 7.3,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "cauliflower-pakora",
+    "name": "Cauliflower pakora",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC353 · fried (cauliflower pakora): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "cauliflower pakoda",
+      "phoolgobhi ke pakode"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 plate",
+        "servingGrams": null,
+        "kcalLow": 437,
+        "kcalHigh": 593,
+        "proteinLow": 11.3,
+        "proteinHigh": 15.4,
+        "carbLow": 25.9,
+        "carbHigh": 35.1,
+        "fatLow": 32.7,
+        "fatHigh": 44.4,
+        "fibreLow": 7.2,
+        "fibreHigh": 9.8,
         "confidence": "medium"
       }
     ]
@@ -10448,6 +10597,36 @@
         "fatHigh": 6,
         "fibreLow": 1,
         "fibreHigh": 1.3,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "cheese-and-mushroom-omelette",
+    "name": "Cheese and mushroom omelette",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP057",
+    "isVerified": false,
+    "aliases": [
+      "cheese and mushroom omlet"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 egg",
+        "servingGrams": null,
+        "kcalLow": 236,
+        "kcalHigh": 290,
+        "proteinLow": 11.1,
+        "proteinHigh": 13.7,
+        "carbLow": 1.9,
+        "carbHigh": 2.4,
+        "fatLow": 20.5,
+        "fatHigh": 25.1,
+        "fibreLow": 1,
+        "fibreHigh": 1.4,
         "confidence": "medium"
       }
     ]
@@ -16403,6 +16582,36 @@
     ]
   },
   {
+    "slug": "corn-omelette",
+    "name": "Corn omelette",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe OSR072",
+    "isVerified": false,
+    "aliases": [
+      "corn omlet"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 omelette",
+        "servingGrams": null,
+        "kcalLow": 291,
+        "kcalHigh": 357,
+        "proteinLow": 19.8,
+        "proteinHigh": 24.3,
+        "carbLow": 2.7,
+        "carbHigh": 3.4,
+        "fatLow": 22.5,
+        "fatHigh": 27.6,
+        "fibreLow": 0,
+        "fibreHigh": 0.1,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "cornflakes-with-milk",
     "name": "Cornflakes with milk",
     "brand": null,
@@ -18445,6 +18654,64 @@
         "fatHigh": 7.3,
         "fibreLow": 5.5,
         "fibreHigh": 6.8,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "dal-parantha",
+    "name": "Dal parantha",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC101",
+    "isVerified": false,
+    "aliases": [
+      "dal paratha"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 parantha",
+        "servingGrams": null,
+        "kcalLow": 185,
+        "kcalHigh": 227,
+        "proteinLow": 4.6,
+        "proteinHigh": 5.8,
+        "carbLow": 20.7,
+        "carbHigh": 25.4,
+        "fatLow": 9,
+        "fatHigh": 11.1,
+        "fibreLow": 4.4,
+        "fibreHigh": 5.5,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "dal-stuffed-poori",
+    "name": "Dal stuffed poori",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC110 · fried (poori, bhatura, kachori, mathri): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 poori",
+        "servingGrams": null,
+        "kcalLow": 107,
+        "kcalHigh": 145,
+        "proteinLow": 2,
+        "proteinHigh": 2.9,
+        "carbLow": 10.2,
+        "carbHigh": 13.9,
+        "fatLow": 6.2,
+        "fatHigh": 8.6,
+        "fibreLow": 1.9,
+        "fibreHigh": 2.7,
         "confidence": "medium"
       }
     ]
@@ -21124,6 +21391,36 @@
     ]
   },
   {
+    "slug": "eggplant",
+    "name": "Brinjal rice",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP132",
+    "isVerified": false,
+    "aliases": [
+      "vangi bhat"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 plate",
+        "servingGrams": null,
+        "kcalLow": 484,
+        "kcalHigh": 592,
+        "proteinLow": 13.8,
+        "proteinHigh": 17,
+        "carbLow": 83.1,
+        "carbHigh": 101.7,
+        "fatLow": 9.6,
+        "fatHigh": 11.8,
+        "fibreLow": 11.6,
+        "fibreHigh": 14.3,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "eggplant-raw",
     "name": "Eggplant, raw",
     "brand": null,
@@ -22233,6 +22530,34 @@
     ]
   },
   {
+    "slug": "fish-finger",
+    "name": "Fish finger",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP226 · fried (fried fish): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 fillet",
+        "servingGrams": null,
+        "kcalLow": 314,
+        "kcalHigh": 426,
+        "proteinLow": 21.3,
+        "proteinHigh": 28.9,
+        "carbLow": 16.8,
+        "carbHigh": 22.9,
+        "fatLow": 17.9,
+        "fatHigh": 24.3,
+        "fibreLow": 1.2,
+        "fibreHigh": 1.8,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "fish-fry",
     "name": "Fish fry",
     "brand": null,
@@ -22379,6 +22704,34 @@
         "fibreLow": 0,
         "fibreHigh": 0,
         "confidence": "high"
+      }
+    ]
+  },
+  {
+    "slug": "fish-orly",
+    "name": "Fish orly",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe OSR063 · fried (fried fish): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 fillet",
+        "servingGrams": null,
+        "kcalLow": 207,
+        "kcalHigh": 281,
+        "proteinLow": 14.6,
+        "proteinHigh": 19.9,
+        "carbLow": 10.6,
+        "carbHigh": 14.5,
+        "fatLow": 11.9,
+        "fatHigh": 16.2,
+        "fibreLow": 0.8,
+        "fibreHigh": 1.2,
+        "confidence": "medium"
       }
     ]
   },
@@ -23054,6 +23407,36 @@
     ]
   },
   {
+    "slug": "french-omelette",
+    "name": "French omelette",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP054",
+    "isVerified": false,
+    "aliases": [
+      "french omlet"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 egg",
+        "servingGrams": null,
+        "kcalLow": 129,
+        "kcalHigh": 158,
+        "proteinLow": 6.1,
+        "proteinHigh": 7.6,
+        "carbLow": 0.2,
+        "carbHigh": 0.4,
+        "fatLow": 11.5,
+        "fatHigh": 14.2,
+        "fibreLow": 0.2,
+        "fibreHigh": 0.3,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "french-toast",
     "name": "French toast",
     "brand": null,
@@ -23138,6 +23521,37 @@
         "fatHigh": 10.4,
         "fibreLow": 1.2,
         "fibreHigh": 1.6,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "fried-fish",
+    "name": "Fried fish",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC247 · fried (fried fish): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "indian style",
+      "tali hui machli"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 piece",
+        "servingGrams": null,
+        "kcalLow": 240,
+        "kcalHigh": 325,
+        "proteinLow": 13,
+        "proteinHigh": 17.7,
+        "carbLow": 16.2,
+        "carbHigh": 22,
+        "fatLow": 13.7,
+        "fatHigh": 18.7,
+        "fibreLow": 1.8,
+        "fibreHigh": 2.5,
         "confidence": "medium"
       }
     ]
@@ -23819,6 +24233,34 @@
         "fibreLow": 2.5,
         "fibreHigh": 3.2,
         "confidence": "low"
+      }
+    ]
+  },
+  {
+    "slug": "ghiya",
+    "name": "Lauki Kofta Curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC205 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bowl",
+        "servingGrams": null,
+        "kcalLow": 199,
+        "kcalHigh": 271,
+        "proteinLow": 5.3,
+        "proteinHigh": 7.3,
+        "carbLow": 16.4,
+        "carbHigh": 22.3,
+        "fatLow": 12.7,
+        "fatHigh": 17.2,
+        "fibreLow": 5,
+        "fibreHigh": 6.9,
+        "confidence": "medium"
       }
     ]
   },
@@ -24694,6 +25136,34 @@
     ]
   },
   {
+    "slug": "gobi-65",
+    "name": "Gobi 65",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe OSR076 · fried (cauliflower pakora): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 plate",
+        "servingGrams": null,
+        "kcalLow": 358,
+        "kcalHigh": 486,
+        "proteinLow": 4,
+        "proteinHigh": 5.6,
+        "carbLow": 26.1,
+        "carbHigh": 35.5,
+        "fatLow": 26.6,
+        "fatHigh": 36.1,
+        "fibreLow": 4.1,
+        "fibreHigh": 5.7,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "gobi-manchurian",
     "name": "Gobi manchurian",
     "brand": null,
@@ -25029,6 +25499,36 @@
         "fatHigh": 28.3,
         "fibreLow": 2.4,
         "fibreHigh": 3,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "gram-flour-poori",
+    "name": "Gram flour poori",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP115 · fried (poori, bhatura, kachori, mathri): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "besan poori"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 poori",
+        "servingGrams": null,
+        "kcalLow": 74,
+        "kcalHigh": 101,
+        "proteinLow": 1.6,
+        "proteinHigh": 2.3,
+        "carbLow": 7,
+        "carbHigh": 9.5,
+        "fatLow": 4.4,
+        "fatHigh": 6,
+        "fibreLow": 1.2,
+        "fibreHigh": 1.7,
         "confidence": "medium"
       }
     ]
@@ -27806,6 +28306,36 @@
     ]
   },
   {
+    "slug": "indian-lamb-and-egg-curry",
+    "name": "Indian lamb and egg curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP201 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "nargisi kofta"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 kofta",
+        "servingGrams": null,
+        "kcalLow": 197,
+        "kcalHigh": 268,
+        "proteinLow": 12.7,
+        "proteinHigh": 17.3,
+        "carbLow": 6.8,
+        "carbHigh": 9.4,
+        "fatLow": 13.2,
+        "fatHigh": 18,
+        "fibreLow": 1.9,
+        "fibreHigh": 2.7,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "indian-style-egg-bhujia",
     "name": "Indian style egg bhujia )",
     "brand": null,
@@ -28044,6 +28574,36 @@
         "fibreLow": 8.3,
         "fibreHigh": 8.9,
         "confidence": "high"
+      }
+    ]
+  },
+  {
+    "slug": "jackfruit-kofta-curry",
+    "name": "Jackfruit kofta curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP250 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "kathal ka kofta curry"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bowl",
+        "servingGrams": null,
+        "kcalLow": 226,
+        "kcalHigh": 307,
+        "proteinLow": 5.1,
+        "proteinHigh": 7,
+        "carbLow": 20.1,
+        "carbHigh": 27.4,
+        "fatLow": 13.4,
+        "fatHigh": 18.2,
+        "fibreLow": 6.1,
+        "fibreHigh": 8.4,
+        "confidence": "medium"
       }
     ]
   },
@@ -29709,6 +30269,36 @@
         "fatHigh": 13.7,
         "fibreLow": 0.8,
         "fibreHigh": 1.1,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "keema-parantha",
+    "name": "Keema parantha",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC104",
+    "isVerified": false,
+    "aliases": [
+      "keema paratha"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 parantha",
+        "servingGrams": null,
+        "kcalLow": 214,
+        "kcalHigh": 263,
+        "proteinLow": 8.4,
+        "proteinHigh": 10.4,
+        "carbLow": 16.5,
+        "carbHigh": 20.2,
+        "fatLow": 12.5,
+        "fatHigh": 15.4,
+        "fibreLow": 3,
+        "fibreHigh": 3.8,
         "confidence": "medium"
       }
     ]
@@ -32174,6 +32764,36 @@
     ]
   },
   {
+    "slug": "lotus-stem-kofta-curry",
+    "name": "Lotus stem kofta curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC201 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "kamal kakdi kofta curry"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bowl",
+        "servingGrams": null,
+        "kcalLow": 324,
+        "kcalHigh": 439,
+        "proteinLow": 5.9,
+        "proteinHigh": 8.1,
+        "carbLow": 31.1,
+        "carbHigh": 42.2,
+        "fatLow": 19.6,
+        "fatHigh": 26.7,
+        "fibreLow": 6.2,
+        "fibreHigh": 8.6,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "maa-chaane-ki-dal",
     "name": "Maa chaane ki dal",
     "brand": null,
@@ -34064,6 +34684,95 @@
     ]
   },
   {
+    "slug": "methi-pakora",
+    "name": "Methi pakora",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC356 · fried (potato, onion or leafy pakora): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "methi ke pakode",
+      "methi pakoda"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 plate",
+        "servingGrams": null,
+        "kcalLow": 292,
+        "kcalHigh": 397,
+        "proteinLow": 11.1,
+        "proteinHigh": 15.1,
+        "carbLow": 25.2,
+        "carbHigh": 34.2,
+        "fatLow": 17,
+        "fatHigh": 23.2,
+        "fibreLow": 6.3,
+        "fibreHigh": 8.7,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "methi-parantha",
+    "name": "Methi parantha",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP110",
+    "isVerified": false,
+    "aliases": [
+      "methi paratha"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 parantha",
+        "servingGrams": null,
+        "kcalLow": 121,
+        "kcalHigh": 149,
+        "proteinLow": 3.5,
+        "proteinHigh": 4.3,
+        "carbLow": 18.2,
+        "carbHigh": 22.3,
+        "fatLow": 3.5,
+        "fatHigh": 4.4,
+        "fibreLow": 4.1,
+        "fibreHigh": 5.2,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "methi-poori",
+    "name": "Methi poori",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC109 · fried (poori, bhatura, kachori, mathri): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 poori",
+        "servingGrams": null,
+        "kcalLow": 90,
+        "kcalHigh": 123,
+        "proteinLow": 1.6,
+        "proteinHigh": 2.2,
+        "carbLow": 8.8,
+        "carbHigh": 12,
+        "fatLow": 5.3,
+        "fatHigh": 7.2,
+        "fibreLow": 1.7,
+        "fibreHigh": 2.5,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "methi-thepla",
     "name": "Methi thepla",
     "brand": null,
@@ -35541,6 +36250,36 @@
     ]
   },
   {
+    "slug": "mixed-vegetable-pakora",
+    "name": "Mixed vegetable pakora",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC354 · fried (potato, onion or leafy pakora): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "mixed vegetable pakoda"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 plate",
+        "servingGrams": null,
+        "kcalLow": 326,
+        "kcalHigh": 442,
+        "proteinLow": 11.1,
+        "proteinHigh": 15.1,
+        "carbLow": 29.3,
+        "carbHigh": 39.8,
+        "fatLow": 19,
+        "fatHigh": 25.8,
+        "fibreLow": 6.4,
+        "fibreHigh": 8.8,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "mixed-vegetable-pulao",
     "name": "Mixed vegetable pulao",
     "brand": null,
@@ -35827,7 +36566,8 @@
     "isVerified": false,
     "aliases": [
       "chilla",
-      "moong dal ka cheela"
+      "moong dal ka cheela",
+      "moong dal stuffed chilla"
     ],
     "nutrition": [
       {
@@ -38799,6 +39539,37 @@
     ]
   },
   {
+    "slug": "onion-pakora",
+    "name": "Onion pakora",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC352 · fried (potato, onion or leafy pakora): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "onion pakoda",
+      "pyaaz ke pakode"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 plate",
+        "servingGrams": null,
+        "kcalLow": 338,
+        "kcalHigh": 458,
+        "proteinLow": 10.8,
+        "proteinHigh": 14.8,
+        "carbLow": 31,
+        "carbHigh": 42,
+        "fatLow": 19.6,
+        "fatHigh": 26.7,
+        "fibreLow": 6.3,
+        "fibreHigh": 8.7,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "onion-small",
     "name": "Onion, small",
     "brand": null,
@@ -39213,6 +39984,36 @@
         "fatHigh": 10.3,
         "fibreLow": 0.4,
         "fibreHigh": 0.7,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "orange-omelette",
+    "name": "Orange omelette",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP056",
+    "isVerified": false,
+    "aliases": [
+      "orange omlet"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 egg",
+        "servingGrams": null,
+        "kcalLow": 133,
+        "kcalHigh": 163,
+        "proteinLow": 6.1,
+        "proteinHigh": 7.5,
+        "carbLow": 1.1,
+        "carbHigh": 1.4,
+        "fatLow": 11.5,
+        "fatHigh": 14.1,
+        "fibreLow": 0,
+        "fibreHigh": 0,
         "confidence": "medium"
       }
     ]
@@ -40125,6 +40926,34 @@
     ]
   },
   {
+    "slug": "paneer-kofta-curry",
+    "name": "Paneer kofta curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC200 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bowl",
+        "servingGrams": null,
+        "kcalLow": 325,
+        "kcalHigh": 441,
+        "proteinLow": 14.2,
+        "proteinHigh": 19.3,
+        "carbLow": 19.4,
+        "carbHigh": 26.4,
+        "fatLow": 21.3,
+        "fatHigh": 29,
+        "fibreLow": 2.3,
+        "fibreHigh": 3.3,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "paneer-lababdar",
     "name": "Paneer lababdar",
     "brand": null,
@@ -40179,6 +41008,34 @@
         "fibreLow": null,
         "fibreHigh": null,
         "confidence": "low"
+      }
+    ]
+  },
+  {
+    "slug": "paneer-parantha",
+    "name": "Paneer parantha",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC105",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 parantha",
+        "servingGrams": null,
+        "kcalLow": 201,
+        "kcalHigh": 246,
+        "proteinLow": 6.1,
+        "proteinHigh": 7.5,
+        "carbLow": 18.6,
+        "carbHigh": 22.8,
+        "fatLow": 11.1,
+        "fatHigh": 13.7,
+        "fibreLow": 3,
+        "fibreHigh": 3.8,
+        "confidence": "medium"
       }
     ]
   },
@@ -40246,9 +41103,7 @@
     "source": "indb",
     "sourceRef": "INDB 2024 · recipe ASC381",
     "isVerified": false,
-    "aliases": [
-      "tikka"
-    ],
+    "aliases": [],
     "nutrition": [
       {
         "basis": "per_serving",
@@ -40292,6 +41147,36 @@
         "fatHigh": 18.9,
         "fibreLow": 1.5,
         "fibreHigh": 1.9,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "paneer-stuffed-cheela",
+    "name": "Paneer stuffed cheela",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP047",
+    "isVerified": false,
+    "aliases": [
+      "paneer stuffed chilla"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 cheela",
+        "servingGrams": null,
+        "kcalLow": 392,
+        "kcalHigh": 480,
+        "proteinLow": 21.8,
+        "proteinHigh": 26.8,
+        "carbLow": 36.6,
+        "carbHigh": 44.8,
+        "fatLow": 16.9,
+        "fatHigh": 20.8,
+        "fibreLow": 7.6,
+        "fibreHigh": 9.5,
         "confidence": "medium"
       }
     ]
@@ -40601,6 +41486,34 @@
         "fibreLow": 2.5,
         "fibreHigh": 3.1,
         "confidence": "high"
+      }
+    ]
+  },
+  {
+    "slug": "papdi",
+    "name": "Papdi",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe OSR148 · fried (sev, namak para, murukku, papdi): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 plate",
+        "servingGrams": null,
+        "kcalLow": 182,
+        "kcalHigh": 247,
+        "proteinLow": 2.7,
+        "proteinHigh": 3.7,
+        "carbLow": 19,
+        "carbHigh": 25.8,
+        "fatLow": 10.4,
+        "fatHigh": 14.2,
+        "fibreLow": 0.8,
+        "fibreHigh": 1.2,
+        "confidence": "medium"
       }
     ]
   },
@@ -41233,6 +42146,36 @@
         "fatHigh": 30.8,
         "fibreLow": 9.1,
         "fibreHigh": 11.2,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "pea-kofta-curry",
+    "name": "Pea kofta curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC198 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "matar kofta curry"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bowl",
+        "servingGrams": null,
+        "kcalLow": 362,
+        "kcalHigh": 491,
+        "proteinLow": 13.3,
+        "proteinHigh": 18.1,
+        "carbLow": 27.6,
+        "carbHigh": 37.5,
+        "fatLow": 21.7,
+        "fatHigh": 29.4,
+        "fibreLow": 11.3,
+        "fibreHigh": 15.3,
         "confidence": "medium"
       }
     ]
@@ -42198,6 +43141,36 @@
     ]
   },
   {
+    "slug": "pearl-millet-mathri",
+    "name": "Pearl millet mathri",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP564 · fried (poori, bhatura, kachori, mathri): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "bajra mathri"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 piece",
+        "servingGrams": null,
+        "kcalLow": 101,
+        "kcalHigh": 138,
+        "proteinLow": 2.3,
+        "proteinHigh": 3.2,
+        "carbLow": 9.4,
+        "carbHigh": 12.9,
+        "fatLow": 6,
+        "fatHigh": 8.2,
+        "fibreLow": 1.7,
+        "fibreHigh": 2.4,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "pears-asian-raw",
     "name": "Pears, asian, raw",
     "brand": null,
@@ -42515,6 +43488,66 @@
         "fibreLow": 8.3,
         "fibreHigh": 8.3,
         "confidence": "high"
+      }
+    ]
+  },
+  {
+    "slug": "peas-kachori",
+    "name": "Peas kachori",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP118 · fried (poori, bhatura, kachori, mathri): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "matar kachori"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 kachori",
+        "servingGrams": null,
+        "kcalLow": 131,
+        "kcalHigh": 178,
+        "proteinLow": 2.9,
+        "proteinHigh": 4,
+        "carbLow": 12.1,
+        "carbHigh": 16.5,
+        "fatLow": 7.7,
+        "fatHigh": 10.5,
+        "fibreLow": 1.8,
+        "fibreHigh": 2.6,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "peas-poori",
+    "name": "Peas poori",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP117 · fried (poori, bhatura, kachori, mathri): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "matar ki poori"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 poori",
+        "servingGrams": null,
+        "kcalLow": 111,
+        "kcalHigh": 151,
+        "proteinLow": 2.1,
+        "proteinHigh": 3,
+        "carbLow": 10.6,
+        "carbHigh": 14.4,
+        "fatLow": 6.5,
+        "fatHigh": 8.9,
+        "fibreLow": 1.6,
+        "fibreHigh": 2.2,
+        "confidence": "medium"
       }
     ]
   },
@@ -43788,7 +44821,7 @@
     "sourceRef": "INDB 2024 · recipe ASC061",
     "isVerified": false,
     "aliases": [
-      "omlet"
+      "plain omlet"
     ],
     "nutrition": [
       {
@@ -43805,6 +44838,36 @@
         "fatHigh": 40.5,
         "fibreLow": 0.1,
         "fibreHigh": 0.2,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "plain-parantha",
+    "name": "Plain parantha",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC097",
+    "isVerified": false,
+    "aliases": [
+      "plain paratha"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 parantha",
+        "servingGrams": null,
+        "kcalLow": 149,
+        "kcalHigh": 183,
+        "proteinLow": 2.5,
+        "proteinHigh": 3.2,
+        "carbLow": 15.3,
+        "carbHigh": 18.9,
+        "fatLow": 8.4,
+        "fatHigh": 10.4,
+        "fibreLow": 2.7,
+        "fibreHigh": 3.4,
         "confidence": "medium"
       }
     ]
@@ -44861,6 +45924,124 @@
     ]
   },
   {
+    "slug": "poshtik-chilla",
+    "name": "Poshtik chilla",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP580",
+    "isVerified": false,
+    "aliases": [
+      "poshtik cheela"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 cheela",
+        "servingGrams": null,
+        "kcalLow": 103,
+        "kcalHigh": 127,
+        "proteinLow": 3.1,
+        "proteinHigh": 3.9,
+        "carbLow": 17.8,
+        "carbHigh": 21.9,
+        "fatLow": 1.9,
+        "fatHigh": 2.5,
+        "fibreLow": 3.1,
+        "fibreHigh": 4,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "poshtik-khichdi",
+    "name": "Poshtik khichdi",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP576",
+    "isVerified": false,
+    "aliases": [
+      "poshtik khichri"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 plate",
+        "servingGrams": null,
+        "kcalLow": 302,
+        "kcalHigh": 371,
+        "proteinLow": 9.8,
+        "proteinHigh": 12.1,
+        "carbLow": 50.7,
+        "carbHigh": 62,
+        "fatLow": 6.1,
+        "fatHigh": 7.5,
+        "fibreLow": 6.4,
+        "fibreHigh": 8,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "poshtik-namak-paras",
+    "name": "Poshtik namak paras",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP568 · fried (sev, namak para, murukku, papdi): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 piece",
+        "servingGrams": null,
+        "kcalLow": 23,
+        "kcalHigh": 33,
+        "proteinLow": 0.7,
+        "proteinHigh": 1,
+        "carbLow": 2.1,
+        "carbHigh": 2.9,
+        "fatLow": 1.3,
+        "fatHigh": 1.9,
+        "fibreLow": 0.5,
+        "fibreHigh": 0.7,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "potato-bonda",
+    "name": "Potato bonda",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC360 · fried (potato, onion or leafy pakora): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "aloo bonda"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bonda",
+        "servingGrams": null,
+        "kcalLow": 70,
+        "kcalHigh": 96,
+        "proteinLow": 1.6,
+        "proteinHigh": 2.3,
+        "carbLow": 6.9,
+        "carbHigh": 9.4,
+        "fatLow": 4,
+        "fatHigh": 5.5,
+        "fibreLow": 1.2,
+        "fibreHigh": 1.8,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "potato-brown-skin-big",
     "name": "Potato, brown skin, big",
     "brand": null,
@@ -45133,6 +46314,36 @@
     ]
   },
   {
+    "slug": "potato-kofta-curry",
+    "name": "Potato kofta curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP246 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "aloo kofta curry"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bowl",
+        "servingGrams": null,
+        "kcalLow": 276,
+        "kcalHigh": 375,
+        "proteinLow": 4.8,
+        "proteinHigh": 6.6,
+        "carbLow": 24.1,
+        "carbHigh": 32.7,
+        "fatLow": 17.5,
+        "fatHigh": 23.9,
+        "fibreLow": 4.8,
+        "fibreHigh": 6.6,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "potato-nests",
     "name": "Potato nests",
     "brand": null,
@@ -45156,6 +46367,37 @@
         "fatHigh": 10.1,
         "fibreLow": 4.2,
         "fibreHigh": 5.3,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "potato-pakora",
+    "name": "Potato pakora",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC351 · fried (potato, onion or leafy pakora): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "aloo pakoda",
+      "potato pakoda"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 plate",
+        "servingGrams": null,
+        "kcalLow": 368,
+        "kcalHigh": 499,
+        "proteinLow": 10.9,
+        "proteinHigh": 14.8,
+        "carbLow": 34.6,
+        "carbHigh": 46.9,
+        "fatLow": 21.4,
+        "fatHigh": 29,
+        "fibreLow": 5.8,
+        "fibreHigh": 8,
         "confidence": "medium"
       }
     ]
@@ -45276,6 +46518,36 @@
         "fatHigh": 11.5,
         "fibreLow": 2.8,
         "fibreHigh": 3.5,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "potato-stuffed-poori",
+    "name": "Potato stuffed poori",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC111 · fried (poori, bhatura, kachori, mathri): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "aloo ki poori"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 poori",
+        "servingGrams": null,
+        "kcalLow": 95,
+        "kcalHigh": 130,
+        "proteinLow": 1.5,
+        "proteinHigh": 2.1,
+        "carbLow": 9.5,
+        "carbHigh": 12.9,
+        "fatLow": 5.6,
+        "fatHigh": 7.7,
+        "fibreLow": 1.6,
+        "fibreHigh": 2.3,
         "confidence": "medium"
       }
     ]
@@ -45964,6 +47236,36 @@
         "fatHigh": 12.4,
         "fibreLow": 0.6,
         "fibreHigh": 0.9,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "puffy-omelette",
+    "name": "Puffy omelette",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP055",
+    "isVerified": false,
+    "aliases": [
+      "puffy omlet"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 egg",
+        "servingGrams": null,
+        "kcalLow": 128,
+        "kcalHigh": 158,
+        "proteinLow": 6,
+        "proteinHigh": 7.4,
+        "carbLow": 0,
+        "carbHigh": 0.1,
+        "fatLow": 11.5,
+        "fatHigh": 14.1,
+        "fibreLow": 0,
+        "fibreHigh": 0,
         "confidence": "medium"
       }
     ]
@@ -46715,6 +48017,36 @@
         "fibreLow": 5.2,
         "fibreHigh": 5.2,
         "confidence": "high"
+      }
+    ]
+  },
+  {
+    "slug": "quinoa-khichdi",
+    "name": "Quinoa khichdi",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe OSR107",
+    "isVerified": false,
+    "aliases": [
+      "quinoa khichri"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bowl",
+        "servingGrams": null,
+        "kcalLow": 183,
+        "kcalHigh": 225,
+        "proteinLow": 9.1,
+        "proteinHigh": 11.2,
+        "carbLow": 25.2,
+        "carbHigh": 31,
+        "fatLow": 4.5,
+        "fatHigh": 5.6,
+        "fibreLow": 7.3,
+        "fibreHigh": 9.1,
+        "confidence": "medium"
       }
     ]
   },
@@ -48134,6 +49466,36 @@
     ]
   },
   {
+    "slug": "raw-banana-kofta-curry",
+    "name": "Raw banana kofta curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC202 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "kela kofta curry"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bowl",
+        "servingGrams": null,
+        "kcalLow": 214,
+        "kcalHigh": 290,
+        "proteinLow": 3.8,
+        "proteinHigh": 5.2,
+        "carbLow": 21,
+        "carbHigh": 28.5,
+        "fatLow": 13.1,
+        "fatHigh": 17.9,
+        "fibreLow": 3.6,
+        "fibreHigh": 5,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "raw-papaya-with-coconut",
     "name": "Raw papaya with coconut",
     "brand": null,
@@ -48867,6 +50229,34 @@
         "fatLow": 10.7,
         "fatHigh": 13.2,
         "fibreLow": 0.6,
+        "fibreHigh": 0.8,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "rice-murukku",
+    "name": "Rice murukku",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe OSR113 · fried (sev, namak para, murukku, papdi): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 piece",
+        "servingGrams": null,
+        "kcalLow": 85,
+        "kcalHigh": 117,
+        "proteinLow": 1.4,
+        "proteinHigh": 2,
+        "carbLow": 8.7,
+        "carbHigh": 11.9,
+        "fatLow": 4.8,
+        "fatHigh": 6.6,
+        "fibreLow": 0.5,
         "fibreHigh": 0.8,
         "confidence": "medium"
       }
@@ -50554,15 +51944,13 @@
   },
   {
     "slug": "saunth",
-    "name": "Saunth",
+    "name": "Sonth chutney with ginger",
     "brand": null,
     "barcode": null,
     "source": "indb",
     "sourceRef": "INDB 2024 · recipe BFP447",
     "isVerified": false,
-    "aliases": [
-      "sonth chutney with ginger"
-    ],
+    "aliases": [],
     "nutrition": [
       {
         "basis": "per_serving",
@@ -50693,6 +52081,34 @@
         "fibreLow": 2.7,
         "fibreHigh": 3.5,
         "confidence": "low"
+      }
+    ]
+  },
+  {
+    "slug": "scotch-egg",
+    "name": "Scotch egg",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC238 · fried (scotch egg): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 piece",
+        "servingGrams": null,
+        "kcalLow": 167,
+        "kcalHigh": 227,
+        "proteinLow": 11.7,
+        "proteinHigh": 16,
+        "carbLow": 5.5,
+        "carbHigh": 7.6,
+        "fatLow": 11,
+        "fatHigh": 15.1,
+        "fibreLow": 1,
+        "fibreHigh": 1.5,
+        "confidence": "medium"
       }
     ]
   },
@@ -51097,6 +52513,34 @@
         "fatHigh": 46.2,
         "fibreLow": 3,
         "fibreHigh": 3.7,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "shahi-keema-kofta-curry",
+    "name": "Shahi keema kofta curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP196 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bowl",
+        "servingGrams": null,
+        "kcalLow": 357,
+        "kcalHigh": 484,
+        "proteinLow": 21.7,
+        "proteinHigh": 29.4,
+        "carbLow": 9,
+        "carbHigh": 12.3,
+        "fatLow": 25.8,
+        "fatHigh": 35.1,
+        "fibreLow": 4.7,
+        "fibreHigh": 6.5,
         "confidence": "medium"
       }
     ]
@@ -52786,6 +54230,34 @@
     ]
   },
   {
+    "slug": "soyabean-namak-paras",
+    "name": "Soyabean namak paras",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC458 · fried (sev, namak para, murukku, papdi): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 plate",
+        "servingGrams": null,
+        "kcalLow": 143,
+        "kcalHigh": 194,
+        "proteinLow": 6.1,
+        "proteinHigh": 8.4,
+        "carbLow": 10.8,
+        "carbHigh": 14.7,
+        "fatLow": 8.1,
+        "fatHigh": 11.1,
+        "fibreLow": 3.2,
+        "fibreHigh": 4.5,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "soyabean-oil",
     "name": "Soyabean oil",
     "brand": null,
@@ -53084,6 +54556,36 @@
     ]
   },
   {
+    "slug": "spanish-omelette",
+    "name": "Spanish omelette",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP058",
+    "isVerified": false,
+    "aliases": [
+      "spanish omlet"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 egg",
+        "servingGrams": null,
+        "kcalLow": 215,
+        "kcalHigh": 264,
+        "proteinLow": 11.2,
+        "proteinHigh": 13.8,
+        "carbLow": 6.9,
+        "carbHigh": 8.6,
+        "fatLow": 15.6,
+        "fatHigh": 19.2,
+        "fibreLow": 3.4,
+        "fibreHigh": 4.3,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "spanish-rice",
     "name": "Spanish rice",
     "brand": null,
@@ -53337,6 +54839,36 @@
     ]
   },
   {
+    "slug": "spinach-kofta-curry",
+    "name": "Spinach kofta curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC199 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "palak kofta curry"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bowl",
+        "servingGrams": null,
+        "kcalLow": 277,
+        "kcalHigh": 376,
+        "proteinLow": 7.4,
+        "proteinHigh": 10.1,
+        "carbLow": 24.4,
+        "carbHigh": 33.1,
+        "fatLow": 16.8,
+        "fatHigh": 22.9,
+        "fibreLow": 6.3,
+        "fibreHigh": 8.6,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "spinach-mushroom",
     "name": "Spinach mushroom",
     "brand": null,
@@ -53422,6 +54954,127 @@
         "fatHigh": 25.2,
         "fibreLow": 9.7,
         "fibreHigh": 12,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "spinach-pakora",
+    "name": "Spinach pakora",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC355 · fried (potato, onion or leafy pakora): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "palak pakoda",
+      "spinach pakoda"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 plate",
+        "servingGrams": null,
+        "kcalLow": 287,
+        "kcalHigh": 390,
+        "proteinLow": 10.5,
+        "proteinHigh": 14.4,
+        "carbLow": 25.2,
+        "carbHigh": 34.2,
+        "fatLow": 16.8,
+        "fatHigh": 22.8,
+        "fibreLow": 5.5,
+        "fibreHigh": 7.5,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "spinach-paneer-kofta-curry",
+    "name": "Spinach paneer kofta curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC206 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "palak paneer kofta curry"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bowl",
+        "servingGrams": null,
+        "kcalLow": 255,
+        "kcalHigh": 347,
+        "proteinLow": 9.2,
+        "proteinHigh": 12.6,
+        "carbLow": 19,
+        "carbHigh": 25.9,
+        "fatLow": 15.9,
+        "fatHigh": 21.6,
+        "fibreLow": 4.8,
+        "fibreHigh": 6.6,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "spinach-peanut-namak-paras",
+    "name": "Spinach peanut namak paras",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC460 · fried (sev, namak para, murukku, papdi): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "palak moongfali namak paras"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 plate",
+        "servingGrams": null,
+        "kcalLow": 186,
+        "kcalHigh": 252,
+        "proteinLow": 4.4,
+        "proteinHigh": 6.1,
+        "carbLow": 17.7,
+        "carbHigh": 24.1,
+        "fatLow": 10.6,
+        "fatHigh": 14.5,
+        "fibreLow": 2.1,
+        "fibreHigh": 3,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "spinach-poori",
+    "name": "Spinach poori",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC108 · fried (poori, bhatura, kachori, mathri): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "palak poori"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 poori",
+        "servingGrams": null,
+        "kcalLow": 91,
+        "kcalHigh": 124,
+        "proteinLow": 1.6,
+        "proteinHigh": 2.3,
+        "carbLow": 8.8,
+        "carbHigh": 12.1,
+        "fatLow": 5.3,
+        "fatHigh": 7.3,
+        "fibreLow": 1.7,
+        "fibreHigh": 2.5,
         "confidence": "medium"
       }
     ]
@@ -53556,7 +55209,7 @@
     "isVerified": false,
     "aliases": [
       "channa dal burfi",
-      "fudge"
+      "split bengal gram fudge"
     ],
     "nutrition": [
       {
@@ -53933,6 +55586,36 @@
         "fatHigh": 16.4,
         "fibreLow": 8.8,
         "fibreHigh": 10.9,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "sprouted-moong-parantha",
+    "name": "Sprouted moong parantha",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC102",
+    "isVerified": false,
+    "aliases": [
+      "sprouted moong paratha"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 parantha",
+        "servingGrams": null,
+        "kcalLow": 157,
+        "kcalHigh": 193,
+        "proteinLow": 2.9,
+        "proteinHigh": 3.7,
+        "carbLow": 16.7,
+        "carbHigh": 20.6,
+        "fatLow": 8.5,
+        "fatHigh": 10.5,
+        "fibreLow": 3,
+        "fibreHigh": 3.8,
         "confidence": "medium"
       }
     ]
@@ -54820,6 +56503,36 @@
         "fatHigh": 7.9,
         "fibreLow": 2.2,
         "fibreHigh": 2.8,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "stuffed-egg-omelette",
+    "name": "Stuffed egg omelette",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC062",
+    "isVerified": false,
+    "aliases": [
+      "stuffed egg omlet"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 omelette",
+        "servingGrams": null,
+        "kcalLow": 479,
+        "kcalHigh": 587,
+        "proteinLow": 20.2,
+        "proteinHigh": 24.8,
+        "carbLow": 5.4,
+        "carbHigh": 6.7,
+        "fatLow": 41.9,
+        "fatHigh": 51.3,
+        "fibreLow": 1.7,
+        "fibreHigh": 2.2,
         "confidence": "medium"
       }
     ]
@@ -55717,6 +57430,36 @@
     ]
   },
   {
+    "slug": "sweet-poori",
+    "name": "Sweet poori",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC464 · fried (poori, bhatura, kachori, mathri): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "meethi poori"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 poori",
+        "servingGrams": null,
+        "kcalLow": 183,
+        "kcalHigh": 248,
+        "proteinLow": 2.7,
+        "proteinHigh": 3.8,
+        "carbLow": 18.4,
+        "carbHigh": 25.1,
+        "fatLow": 10.8,
+        "fatHigh": 14.7,
+        "fibreLow": 1.9,
+        "fibreHigh": 2.8,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "sweet-potato-baked",
     "name": "Sweet potato, cooked, baked in skin, flesh, without salt",
     "brand": null,
@@ -56292,6 +58035,36 @@
         "fatHigh": 12,
         "fibreLow": 1.2,
         "fibreHigh": 1.5,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "tandoori-parantha",
+    "name": "Tandoori parantha",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC112",
+    "isVerified": false,
+    "aliases": [
+      "tandoori paratha"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 parantha",
+        "servingGrams": null,
+        "kcalLow": 147,
+        "kcalHigh": 181,
+        "proteinLow": 2.5,
+        "proteinHigh": 3.2,
+        "carbLow": 15.3,
+        "carbHigh": 18.9,
+        "fatLow": 8.2,
+        "fatHigh": 10.2,
+        "fibreLow": 2.7,
+        "fibreHigh": 3.4,
         "confidence": "medium"
       }
     ]
@@ -59730,6 +61503,90 @@
     ]
   },
   {
+    "slug": "vegetarian-egg-kofta-curry",
+    "name": "Vegetarian egg kofta curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC207 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bowl",
+        "servingGrams": null,
+        "kcalLow": 307,
+        "kcalHigh": 417,
+        "proteinLow": 8.3,
+        "proteinHigh": 11.4,
+        "carbLow": 26.8,
+        "carbHigh": 36.4,
+        "fatLow": 18.6,
+        "fatHigh": 25.3,
+        "fibreLow": 4,
+        "fibreHigh": 5.5,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "vegetarian-nargisi-kofta-curry",
+    "name": "Vegetarian nargisi kofta curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP210 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 kofta",
+        "servingGrams": null,
+        "kcalLow": 264,
+        "kcalHigh": 358,
+        "proteinLow": 7.7,
+        "proteinHigh": 10.5,
+        "carbLow": 22.3,
+        "carbHigh": 30.2,
+        "fatLow": 15.9,
+        "fatHigh": 21.6,
+        "fibreLow": 2.9,
+        "fibreHigh": 4,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
+    "slug": "vegeterian-scotch-egg",
+    "name": "Vegeterian scotch egg",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe ASC380 · fried (scotch egg): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 piece",
+        "servingGrams": null,
+        "kcalLow": 187,
+        "kcalHigh": 254,
+        "proteinLow": 6.1,
+        "proteinHigh": 8.4,
+        "carbLow": 13.1,
+        "carbHigh": 17.9,
+        "fatLow": 12.3,
+        "fatHigh": 16.8,
+        "fibreLow": 1.6,
+        "fibreHigh": 2.3,
+        "confidence": "medium"
+      }
+    ]
+  },
+  {
     "slug": "vela-meen",
     "name": "Vela meen",
     "brand": null,
@@ -61317,6 +63174,37 @@
         "fibreLow": 4,
         "fibreHigh": 4.3,
         "confidence": "high"
+      }
+    ]
+  },
+  {
+    "slug": "yam-kofta-curry",
+    "name": "Yam kofta curry",
+    "brand": null,
+    "barcode": null,
+    "source": "indb",
+    "sourceRef": "INDB 2024 · recipe BFP249 · fried (kofta): the oil as CoFID measures it",
+    "isVerified": false,
+    "aliases": [
+      "suran kofta curry",
+      "zimikand"
+    ],
+    "nutrition": [
+      {
+        "basis": "per_serving",
+        "servingLabel": "1 bowl",
+        "servingGrams": null,
+        "kcalLow": 252,
+        "kcalHigh": 343,
+        "proteinLow": 4.5,
+        "proteinHigh": 6.2,
+        "carbLow": 23.9,
+        "carbHigh": 32.4,
+        "fatLow": 15,
+        "fatHigh": 20.5,
+        "fibreLow": 6.6,
+        "fibreHigh": 9,
+        "confidence": "medium"
       }
     ]
   },

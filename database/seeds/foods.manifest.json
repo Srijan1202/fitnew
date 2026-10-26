@@ -103,35 +103,36 @@
     "indb": {
       "file": "database/seeds/food-sources/indb.json",
       "version": 1,
-      "sha256": "aa1e717f65a262a813717d698d09937e46b033fef7399394aaa27c4b893d233b"
+      "sha256": "011a776f1cf142772f4a6f6ccddc05138cb27da5dd5d76cfb6f8de40f22360cb"
     },
     "cofid": {
       "file": "database/seeds/food-sources/cofid.json",
       "version": 1,
-      "sha256": "dd2c95ed505228ad39214ec114d96f46bb89dfcfd34017badd4ff00df076c43b"
+      "sha256": "ff6985ffad238bee6368440d25a920d196af565c8886b2972747ca5af44ff0ca"
     },
     "cofidPicks": {
       "file": "database/seeds/food-sources/cofid-picks.json",
       "version": 1,
-      "sha256": "19747a522d30635a774507860049e4c7bb4ca339fac12f538aa791f80c18bbc2"
+      "sha256": "6bc4044f89050dc6e16629183f0d70de824e5e3bc3b6ba4737987754082df943"
     }
   },
   "seed": {
     "file": "database/seeds/foods.json",
-    "sha256": "b2443116c3e354396ce66062ac31c2f7ac5b7375b8bd09bd559ecffdd560df3b"
+    "sha256": "b333102232469059c258b8d555d0d157d68980dbf4b3a95840a67369e7f70ac6"
   },
   "counts": {
-    "total": 1775,
+    "total": 1839,
     "usda": 326,
     "estimatedCarried": 76,
     "estimatedComposite": 265,
-    "nutritionRows": 2321,
-    "aliases": 2046,
+    "nutritionRows": 2385,
+    "aliases": 2098,
     "usdaPicksDropped": 0,
     "ifct": 539,
     "ifctSkipped": 3,
-    "indb": 566,
-    "indbSkipped": 448,
+    "indb": 630,
+    "indbSkipped": 384,
+    "indbFried": 45,
     "cofidNew": 3,
     "cofidReplaced": 10,
     "targetApprox": 500,
@@ -146,8 +147,8 @@
     "fibre": "null (unknown) when the source does not report it — never 0; a composite is unknown if any ingredient is",
     "carriedConfidence": "carried-over core estimates keep their numbers unchanged; a core confidence of high is seeded as medium (a FITOS estimate is never high)",
     "ifct": "IFCT 2017 per 100 g; kcal = kJ / 4.184 (IFCT's 0 kJ for its oils and ghee is computed with IFCT's own factors 17/37/17/8 kJ per g); each value +- the SD IFCT reports, kept within 3-10 %, rounded outward; left out: a missing value, and energy more than 25 % from 4/4/9 of its macros; verified, high confidence; used by the owner's decision of 2026-10-25 without NIN's written permission (ADR-036)",
-    "indb": "INDB 2024 per piece / bowl as INDB serves it (its per 100 g is of the raw ingredients, so unused); +-10 %; left out: deep-fried recipes (INDB counts the whole pan of oil), whole dishes, portions outside 5-900 kcal, energy more than 25 % from 4/4/9 of its macros, and a recipe FITOS already has (by name or alias); never verified (ADR-036)",
-    "cofid": "UK CoFID 2021 (gov.uk, Open Government Licence v3.0) measured as eaten: plain foods +-3 %, dishes +-8 %; a replaced FITOS composite keeps its slug, name, aliases and serving (ADR-036)",
+    "indb": "INDB 2024 per piece / bowl as INDB serves it (its per 100 g is of the raw ingredients, so unused); +-10 %; a deep-fried recipe has the pan taken out and keeps the fat CoFID measured in fried food of its kind, +-15 % (beta 3.9; samosa, vada, cutlet and other kinds CoFID cannot check within +-15 % are left out); left out: whole dishes, portions outside 5-900 kcal, energy more than 25 % from 4/4/9 of its macros, and a recipe FITOS already has (by name or alias); never verified (ADR-036)",
+    "cofid": "UK CoFID 2021 (gov.uk, Open Government Licence v3.0) measured as eaten: plain foods +-3 %, dishes +-8 %; a replaced FITOS composite keeps its slug, name, aliases and serving (ADR-036); the fried dishes listed as oil references only calibrate the fried INDB recipes and are never foods (beta 3.9)",
     "names": "a measured food never repeats a name: an IFCT name FITOS already uses gets \"(IFCT)\", an INDB recipe FITOS already has is skipped; an alias that is another food's name is dropped"
   },
   "usdaFoods": [
@@ -14817,2267 +14818,3153 @@
   "indbFoods": [
     {
       "slug": "afghani-chicken",
-      "code": "OSR062"
+      "code": "OSR062",
+      "fried": null
     },
     {
       "slug": "al-yakhani",
-      "code": "ASC220"
+      "code": "ASC220",
+      "fried": null
     },
     {
       "slug": "almond-biscuit",
-      "code": "BFP502"
+      "code": "BFP502",
+      "fried": null
     },
     {
       "slug": "almond-cardamom-cake",
-      "code": "OSR126"
+      "code": "OSR126",
+      "fried": null
     },
     {
       "slug": "amaranth-ladoo",
-      "code": "OSR021"
+      "code": "OSR021",
+      "fried": null
     },
     {
       "slug": "apple-and-honey-sorbet",
-      "code": "OSR004"
+      "code": "OSR004",
+      "fried": null
     },
     {
       "slug": "apple-cake",
-      "code": "ASC418"
+      "code": "ASC418",
+      "fried": null
     },
     {
       "slug": "apple-cinnamon-pie",
-      "code": "ASC403"
+      "code": "ASC403",
+      "fried": null
     },
     {
       "slug": "apple-crumb-pudding",
-      "code": "BFP379"
+      "code": "BFP379",
+      "fried": null
     },
     {
       "slug": "apple-kheer",
-      "code": "BFP338"
+      "code": "BFP338",
+      "fried": null
     },
     {
       "slug": "apple-mousse",
-      "code": "ASC314"
+      "code": "ASC314",
+      "fried": null
     },
     {
       "slug": "apple-oats-chia-seed-smoothie",
-      "code": "OSR007"
+      "code": "OSR007",
+      "fried": null
     },
     {
       "slug": "apple-sago-payasam",
-      "code": "OSR013"
+      "code": "OSR013",
+      "fried": null
     },
     {
       "slug": "apple-snowballs",
-      "code": "ASC331"
+      "code": "ASC331",
+      "fried": null
     },
     {
       "slug": "apricot-fool",
-      "code": "BFP372"
+      "code": "BFP372",
+      "fried": null
     },
     {
       "slug": "arhar-with-spinach",
-      "code": "BFP172"
+      "code": "BFP172",
+      "fried": null
     },
     {
       "slug": "assorted-pastry",
-      "code": "BFP483"
+      "code": "BFP483",
+      "fried": null
     },
     {
       "slug": "atta-dal-burfi",
-      "code": "BFP574"
+      "code": "BFP574",
+      "fried": null
     },
     {
       "slug": "bacon-and-mushroom-pancake",
-      "code": "BFP124"
+      "code": "BFP124",
+      "fried": null
     },
     {
       "slug": "baked-brinjal-in-tomato-sauce",
-      "code": "ASC213"
+      "code": "ASC213",
+      "fried": null
     },
     {
       "slug": "baked-custard",
-      "code": "ASC301"
+      "code": "ASC301",
+      "fried": null
     },
     {
       "slug": "baked-egg",
-      "code": "ASC060"
+      "code": "ASC060",
+      "fried": null
     },
     {
       "slug": "baked-eggs-in-tomato-sauce",
-      "code": "OSR069"
+      "code": "OSR069",
+      "fried": null
     },
     {
       "slug": "baked-fish-with-cheese-sauce",
-      "code": "ASC250"
+      "code": "ASC250",
+      "fried": null
     },
     {
       "slug": "baked-potato-soup",
-      "code": "OSR131"
+      "code": "OSR131",
+      "fried": null
     },
     {
       "slug": "baked-potato-with-skin",
-      "code": "ASC211"
+      "code": "ASC211",
+      "fried": null
     },
     {
       "slug": "baked-stuffed-fish",
-      "code": "BFP231"
+      "code": "BFP231",
+      "fried": null
     },
     {
       "slug": "baked-vegetables",
-      "code": "ASC208"
+      "code": "ASC208",
+      "fried": null
     },
     {
       "slug": "baked-vegetables-with-spinach",
-      "code": "ASC210"
+      "code": "ASC210",
+      "fried": null
     },
     {
       "slug": "banana-cake",
-      "code": "ASC423"
+      "code": "ASC423",
+      "fried": null
     },
     {
       "slug": "banana-milkshake-with-ice-cream",
-      "code": "BFP015"
+      "code": "BFP015",
+      "fried": null
     },
     {
       "slug": "banana-raita",
-      "code": "BFP326"
+      "code": "BFP326",
+      "fried": null
     },
     {
       "slug": "bathua-bhujia",
-      "code": "BFP259"
+      "code": "BFP259",
+      "fried": null
+    },
+    {
+      "slug": "bathua-poori",
+      "code": "BFP114",
+      "fried": "poori, bhatura, kachori, mathri"
     },
     {
       "slug": "bathua-raita",
-      "code": "BFP322"
+      "code": "BFP322",
+      "fried": null
     },
     {
       "slug": "beans-and-macaroni",
-      "code": "BFP154"
+      "code": "BFP154",
+      "fried": null
     },
     {
       "slug": "beans-foogath",
-      "code": "BFP272"
+      "code": "BFP272",
+      "fried": null
     },
     {
       "slug": "beans-with-coconut",
-      "code": "ASC179"
+      "code": "ASC179",
+      "fried": null
     },
     {
       "slug": "beetroot-and-egg-salad",
-      "code": "BFP299"
+      "code": "BFP299",
+      "fried": null
+    },
+    {
+      "slug": "beetroot-poori",
+      "code": "BFP116",
+      "fried": "poori, bhatura, kachori, mathri"
     },
     {
       "slug": "bengal-fish-curry",
-      "code": "BFP223"
+      "code": "BFP223",
+      "fried": null
     },
     {
       "slug": "besan-bathua-chilla",
-      "code": "BFP570"
+      "code": "BFP570",
+      "fried": null
     },
     {
       "slug": "besan-gatte-curry",
-      "code": "BFP187"
+      "code": "BFP187",
+      "fried": null
     },
     {
       "slug": "black-channa-curry",
-      "code": "ASC161"
+      "code": "ASC161",
+      "fried": null
     },
     {
       "slug": "black-channa-pulao",
-      "code": "BFP138"
+      "code": "BFP138",
+      "fried": null
     },
     {
       "slug": "black-forest-gateau",
-      "code": "BFP485"
+      "code": "BFP485",
+      "fried": null
     },
     {
       "slug": "black-forest-pastry",
-      "code": "ASC431"
+      "code": "ASC431",
+      "fried": null
     },
     {
       "slug": "black-rice-kheer",
-      "code": "OSR011"
+      "code": "OSR011",
+      "fried": null
     },
     {
       "slug": "boiled-rice",
-      "code": "ASC113"
+      "code": "ASC113",
+      "fried": null
     },
     {
       "slug": "boti-kebab",
-      "code": "BFP198"
+      "code": "BFP198",
+      "fried": null
     },
     {
       "slug": "bottle-gourd-raita",
-      "code": "ASC272"
+      "code": "ASC272",
+      "fried": null
     },
     {
       "slug": "bread-and-butter-pudding",
-      "code": "ASC326"
+      "code": "ASC326",
+      "fried": null
     },
     {
       "slug": "bread-upma",
-      "code": "BFP042"
+      "code": "BFP042",
+      "fried": null
     },
     {
       "slug": "brinjal-bhartha",
-      "code": "ASC177"
+      "code": "ASC177",
+      "fried": null
     },
     {
       "slug": "broccoli-chicken-ala-king",
-      "code": "BFP218"
+      "code": "BFP218",
+      "fried": null
     },
     {
       "slug": "broccoli-delight",
-      "code": "BFP279"
+      "code": "BFP279",
+      "fried": null
     },
     {
       "slug": "brown-stock",
-      "code": "ASC068"
+      "code": "ASC068",
+      "fried": null
     },
     {
       "slug": "buckwheat-pancake",
-      "code": "OSR106"
+      "code": "OSR106",
+      "fried": null
     },
     {
       "slug": "butter-icing",
-      "code": "BFP499"
+      "code": "BFP499",
+      "fried": null
     },
     {
       "slug": "butterfly-biscuit",
-      "code": "BFP519"
+      "code": "BFP519",
+      "fried": null
     },
     {
       "slug": "buttermilk-biscuit",
-      "code": "OSR032"
+      "code": "OSR032",
+      "fried": null
     },
     {
       "slug": "cabbage-and-peas",
-      "code": "ASC173"
+      "code": "ASC173",
+      "fried": null
     },
     {
       "slug": "cabbage-kheer",
-      "code": "ASC288"
+      "code": "ASC288",
+      "fried": null
+    },
+    {
+      "slug": "cabbage-kofta-curry",
+      "code": "ASC204",
+      "fried": "kofta"
     },
     {
       "slug": "cabbage-raita",
-      "code": "OSR088"
+      "code": "OSR088",
+      "fried": null
     },
     {
       "slug": "cabbage-rolls",
-      "code": "BFP261"
+      "code": "BFP261",
+      "fried": null
     },
     {
       "slug": "cajun-chicken",
-      "code": "OSR073"
+      "code": "OSR073",
+      "fried": null
     },
     {
       "slug": "canjee",
-      "code": "BFP029"
+      "code": "BFP029",
+      "fried": null
     },
     {
       "slug": "caramel-custard",
-      "code": "ASC300"
+      "code": "ASC300",
+      "fried": null
     },
     {
       "slug": "caramel-ice-cream",
-      "code": "ASC308"
+      "code": "ASC308",
+      "fried": null
     },
     {
       "slug": "cardamom-cookies",
-      "code": "OSR039"
+      "code": "OSR039",
+      "fried": null
     },
     {
       "slug": "carrot-and-cabbage-with-coconut",
-      "code": "ASC181"
+      "code": "ASC181",
+      "fried": null
     },
     {
       "slug": "carrot-and-fenugreek-leaves",
-      "code": "ASC174"
+      "code": "ASC174",
+      "fried": null
     },
     {
       "slug": "carrot-and-spinach-raita",
-      "code": "ASC274"
+      "code": "ASC274",
+      "fried": null
     },
     {
       "slug": "carrot-apple-sandwich",
-      "code": "ASC034"
+      "code": "ASC034",
+      "fried": null
     },
     {
       "slug": "carrot-cake",
-      "code": "OSR122"
+      "code": "OSR122",
+      "fried": null
     },
     {
       "slug": "carrot-kheer",
-      "code": "ASC289"
+      "code": "ASC289",
+      "fried": null
     },
     {
       "slug": "carrot-raita",
-      "code": "BFP316"
+      "code": "BFP316",
+      "fried": null
     },
     {
       "slug": "cauliflower-au-gratin",
-      "code": "BFP293"
+      "code": "BFP293",
+      "fried": null
     },
     {
       "slug": "cauliflower-basket",
-      "code": "BFP282"
+      "code": "BFP282",
+      "fried": null
     },
     {
       "slug": "cauliflower-canjee",
-      "code": "BFP030"
+      "code": "BFP030",
+      "fried": null
     },
     {
       "slug": "cauliflower-kheer",
-      "code": "ASC290"
+      "code": "ASC290",
+      "fried": null
+    },
+    {
+      "slug": "cauliflower-kofta-curry",
+      "code": "ASC203",
+      "fried": "kofta"
     },
     {
       "slug": "cauliflower-musallam",
-      "code": "ASC209"
+      "code": "ASC209",
+      "fried": null
+    },
+    {
+      "slug": "cauliflower-pakora",
+      "code": "ASC353",
+      "fried": "cauliflower pakora"
     },
     {
       "slug": "cauliflower-pea-and-potato-bhujia",
-      "code": "BFP276"
+      "code": "BFP276",
+      "fried": null
     },
     {
       "slug": "cauliflower-potato-canjee",
-      "code": "BFP605"
+      "code": "BFP605",
+      "fried": null
     },
     {
       "slug": "cauliflower-with-coconut",
-      "code": "ASC180"
+      "code": "ASC180",
+      "fried": null
     },
     {
       "slug": "charlotte-rousse",
-      "code": "ASC318"
+      "code": "ASC318",
+      "fried": null
     },
     {
       "slug": "checker-board-sandwich",
-      "code": "BFP467"
+      "code": "BFP467",
+      "fried": null
     },
     {
       "slug": "cheese-and-chilli-sandwich",
-      "code": "ASC023"
+      "code": "ASC023",
+      "fried": null
+    },
+    {
+      "slug": "cheese-and-mushroom-omelette",
+      "code": "BFP057",
+      "fried": null
     },
     {
       "slug": "cheese-and-mushroom-tart",
-      "code": "ASC400"
+      "code": "ASC400",
+      "fried": null
     },
     {
       "slug": "cheese-and-pineapple-sandwich",
-      "code": "ASC026"
+      "code": "ASC026",
+      "fried": null
     },
     {
       "slug": "cheese-and-tomato-pancake",
-      "code": "BFP125"
+      "code": "BFP125",
+      "fried": null
     },
     {
       "slug": "cheese-and-tomato-sandwich",
-      "code": "ASC027"
+      "code": "ASC027",
+      "fried": null
     },
     {
       "slug": "cheese-noodle-ring",
-      "code": "ASC136"
+      "code": "ASC136",
+      "fried": null
     },
     {
       "slug": "cheese-open-sandwich",
-      "code": "BFP470"
+      "code": "BFP470",
+      "fried": null
     },
     {
       "slug": "cheese-patties",
-      "code": "ASC412"
+      "code": "ASC412",
+      "fried": null
     },
     {
       "slug": "cheese-pudding",
-      "code": "ASC324"
+      "code": "ASC324",
+      "fried": null
     },
     {
       "slug": "cheese-straws",
-      "code": "BFP518"
+      "code": "BFP518",
+      "fried": null
     },
     {
       "slug": "chenna-murki",
-      "code": "ASC345"
+      "code": "ASC345",
+      "fried": null
     },
     {
       "slug": "cherry-and-walnut-cookies",
-      "code": "BFP517"
+      "code": "BFP517",
+      "fried": null
     },
     {
       "slug": "chhena-poda",
-      "code": "OSR022"
+      "code": "OSR022",
+      "fried": null
     },
     {
       "slug": "chicken-and-corn-open-sandwich",
-      "code": "BFP473"
+      "code": "BFP473",
+      "fried": null
     },
     {
       "slug": "chicken-and-tomato-towers",
-      "code": "BFP305"
+      "code": "BFP305",
+      "fried": null
     },
     {
       "slug": "chicken-manchurian",
-      "code": "OSR065"
+      "code": "OSR065",
+      "fried": null
     },
     {
       "slug": "chicken-stew",
-      "code": "BFP090"
+      "code": "BFP090",
+      "fried": null
     },
     {
       "slug": "chicken-stock",
-      "code": "ASC070"
+      "code": "ASC070",
+      "fried": null
     },
     {
       "slug": "chicken-walnut-sandwich",
-      "code": "BFP461"
+      "code": "BFP461",
+      "fried": null
     },
     {
       "slug": "chicken-yakhni",
-      "code": "ASC233"
+      "code": "ASC233",
+      "fried": null
     },
     {
       "slug": "chickpea-flour-cookies",
-      "code": "BFP563"
+      "code": "BFP563",
+      "fried": null
     },
     {
       "slug": "chickpeas-curry",
-      "code": "ASC162"
+      "code": "ASC162",
+      "fried": null
     },
     {
       "slug": "chinese-fried-rice",
-      "code": "ASC129"
+      "code": "ASC129",
+      "fried": null
     },
     {
       "slug": "chocochip-ice-cream",
-      "code": "BFP350"
+      "code": "BFP350",
+      "fried": null
     },
     {
       "slug": "chocolate-biscuit",
-      "code": "ASC442"
+      "code": "ASC442",
+      "fried": null
     },
     {
       "slug": "chocolate-burfi",
-      "code": "ASC338"
+      "code": "ASC338",
+      "fried": null
     },
     {
       "slug": "chocolate-butter-icing",
-      "code": "BFP500"
+      "code": "BFP500",
+      "fried": null
     },
     {
       "slug": "chocolate-cake",
-      "code": "ASC420"
+      "code": "ASC420",
+      "fried": null
     },
     {
       "slug": "chocolate-chiffon-cake",
-      "code": "ASC424"
+      "code": "ASC424",
+      "fried": null
     },
     {
       "slug": "chocolate-chip-cookies",
-      "code": "ASC440"
+      "code": "ASC440",
+      "fried": null
     },
     {
       "slug": "chocolate-cream-shells",
-      "code": "BFP513"
+      "code": "BFP513",
+      "fried": null
     },
     {
       "slug": "chocolate-eclairs",
-      "code": "ASC408"
+      "code": "ASC408",
+      "fried": null
     },
     {
       "slug": "chocolate-eggless-cake",
-      "code": "BFP495"
+      "code": "BFP495",
+      "fried": null
     },
     {
       "slug": "chocolate-glace-icing",
-      "code": "BFP498"
+      "code": "BFP498",
+      "fried": null
     },
     {
       "slug": "chocolate-ice-cream",
-      "code": "ASC304"
+      "code": "ASC304",
+      "fried": null
     },
     {
       "slug": "chocolate-meringue-pie",
-      "code": "ASC405"
+      "code": "ASC405",
+      "fried": null
     },
     {
       "slug": "chocolate-pastry",
-      "code": "BFP482"
+      "code": "BFP482",
+      "fried": null
     },
     {
       "slug": "chocolate-pudding",
-      "code": "ASC325"
+      "code": "ASC325",
+      "fried": null
     },
     {
       "slug": "chocolate-sauce",
-      "code": "BFP353"
+      "code": "BFP353",
+      "fried": null
     },
     {
       "slug": "chocolate-souffle",
-      "code": "ASC312"
+      "code": "ASC312",
+      "fried": null
     },
     {
       "slug": "chocolate-sponge-cake",
-      "code": "BFP476"
+      "code": "BFP476",
+      "fried": null
     },
     {
       "slug": "chocolate-swiss-roll",
-      "code": "BFP478"
+      "code": "BFP478",
+      "fried": null
     },
     {
       "slug": "chocolate-walnut-cookies",
-      "code": "ASC439"
+      "code": "ASC439",
+      "fried": null
     },
     {
       "slug": "choconut-ice-cream",
-      "code": "BFP351"
+      "code": "BFP351",
+      "fried": null
     },
     {
       "slug": "choux-swans",
-      "code": "BFP536"
+      "code": "BFP536",
+      "fried": null
     },
     {
       "slug": "christmas-bell-biscuit",
-      "code": "BFP510"
+      "code": "BFP510",
+      "fried": null
     },
     {
       "slug": "christmas-biscuit",
-      "code": "BFP508"
+      "code": "BFP508",
+      "fried": null
     },
     {
       "slug": "christmas-cake",
-      "code": "ASC425"
+      "code": "ASC425",
+      "fried": null
     },
     {
       "slug": "christmas-star-biscuit",
-      "code": "BFP511"
+      "code": "BFP511",
+      "fried": null
     },
     {
       "slug": "christmas-tree-biscuit",
-      "code": "BFP512"
+      "code": "BFP512",
+      "fried": null
     },
     {
       "slug": "christmas-wreath-biscuit",
-      "code": "BFP509"
+      "code": "BFP509",
+      "fried": null
     },
     {
       "slug": "chum-chum",
-      "code": "BFP388"
+      "code": "BFP388",
+      "fried": null
     },
     {
       "slug": "classic-club-sandwich",
-      "code": "ASC045"
+      "code": "ASC045",
+      "fried": null
     },
     {
       "slug": "club-sandwich",
-      "code": "ASC031"
+      "code": "ASC031",
+      "fried": null
     },
     {
       "slug": "coco-pine-cooler",
-      "code": "ASC011"
+      "code": "ASC011",
+      "fried": null
     },
     {
       "slug": "coconut-biscuit",
-      "code": "ASC443"
+      "code": "ASC443",
+      "fried": null
     },
     {
       "slug": "coconut-burfi",
-      "code": "ASC336"
+      "code": "ASC336",
+      "fried": null
     },
     {
       "slug": "coconut-chutney",
-      "code": "ASC386"
+      "code": "ASC386",
+      "fried": null
     },
     {
       "slug": "coconut-finger",
-      "code": "ASC432"
+      "code": "ASC432",
+      "fried": null
     },
     {
       "slug": "coffee-biscuit",
-      "code": "ASC453"
+      "code": "ASC453",
+      "fried": null
     },
     {
       "slug": "coffee-drops",
-      "code": "BFP507"
+      "code": "BFP507",
+      "fried": null
     },
     {
       "slug": "coffee-ice-cream",
-      "code": "BFP354"
+      "code": "BFP354",
+      "fried": null
     },
     {
       "slug": "cold-cucumber-cream-soup",
-      "code": "BFP088"
+      "code": "BFP088",
+      "fried": null
     },
     {
       "slug": "cold-cucumber-soup",
-      "code": "ASC094"
+      "code": "ASC094",
+      "fried": null
     },
     {
       "slug": "cold-tomato-soup",
-      "code": "BFP089"
+      "code": "BFP089",
+      "fried": null
     },
     {
       "slug": "coleslaw",
-      "code": "ASC264"
+      "code": "ASC264",
+      "fried": null
     },
     {
       "slug": "coriander-chutney",
-      "code": "BFP444"
+      "code": "BFP444",
+      "fried": null
+    },
+    {
+      "slug": "corn-omelette",
+      "code": "OSR072",
+      "fried": null
     },
     {
       "slug": "cornflakes-with-milk",
-      "code": "ASC051"
+      "code": "ASC051",
+      "fried": null
     },
     {
       "slug": "cracked-wheat-porridge",
-      "code": "ASC047"
+      "code": "ASC047",
+      "fried": null
     },
     {
       "slug": "cranberry-cookies",
-      "code": "OSR042"
+      "code": "OSR042",
+      "fried": null
     },
     {
       "slug": "cream-buns",
-      "code": "BFP534"
+      "code": "BFP534",
+      "fried": null
     },
     {
       "slug": "cream-horns",
-      "code": "BFP541"
+      "code": "BFP541",
+      "fried": null
     },
     {
       "slug": "cream-puffs",
-      "code": "ASC407"
+      "code": "ASC407",
+      "fried": null
     },
     {
       "slug": "creamed-spinach",
-      "code": "BFP606"
+      "code": "BFP606",
+      "fried": null
     },
     {
       "slug": "creamy-chicken",
-      "code": "BFP217"
+      "code": "BFP217",
+      "fried": null
     },
     {
       "slug": "crispy-baked-fish",
-      "code": "BFP233"
+      "code": "BFP233",
+      "fried": null
     },
     {
       "slug": "crunchy-butterscotch",
-      "code": "BFP356"
+      "code": "BFP356",
+      "fried": null
     },
     {
       "slug": "cucumber-and-yogurt-salad",
-      "code": "BFP303"
+      "code": "BFP303",
+      "fried": null
     },
     {
       "slug": "cucumber-sandwich",
-      "code": "ASC025"
+      "code": "ASC025",
+      "fried": null
     },
     {
       "slug": "cucumber-sharbat",
-      "code": "OSR006"
+      "code": "OSR006",
+      "fried": null
     },
     {
       "slug": "cumin-infused-water",
-      "code": "ASC010"
+      "code": "ASC010",
+      "fried": null
     },
     {
       "slug": "curd-dressing",
-      "code": "BFP313"
+      "code": "BFP313",
+      "fried": null
     },
     {
       "slug": "curd-mint-dip",
-      "code": "BFP451"
+      "code": "BFP451",
+      "fried": null
     },
     {
       "slug": "curd-vegetable-dip",
-      "code": "BFP452"
+      "code": "BFP452",
+      "fried": null
     },
     {
       "slug": "curd-with-potatoes",
-      "code": "BFP242"
+      "code": "BFP242",
+      "fried": null
     },
     {
       "slug": "custard-tart",
-      "code": "ASC395"
+      "code": "ASC395",
+      "fried": null
     },
     {
       "slug": "dal-dhokli",
-      "code": "OSR145"
+      "code": "OSR145",
+      "fried": null
+    },
+    {
+      "slug": "dal-parantha",
+      "code": "ASC101",
+      "fried": null
+    },
+    {
+      "slug": "dal-stuffed-poori",
+      "code": "ASC110",
+      "fried": "poori, bhatura, kachori, mathri"
     },
     {
       "slug": "dalma",
-      "code": "OSR141"
+      "code": "OSR141",
+      "fried": null
     },
     {
       "slug": "danedar-burfi",
-      "code": "BFP397"
+      "code": "BFP397",
+      "fried": null
     },
     {
       "slug": "danish-cookies",
-      "code": "ASC451"
+      "code": "ASC451",
+      "fried": null
     },
     {
       "slug": "danish-luncheon-sandwich",
-      "code": "BFP472"
+      "code": "BFP472",
+      "fried": null
     },
     {
       "slug": "date-and-nut-pie",
-      "code": "ASC329"
+      "code": "ASC329",
+      "fried": null
     },
     {
       "slug": "date-pickle",
-      "code": "OSR051"
+      "code": "OSR051",
+      "fried": null
     },
     {
       "slug": "dates-chutney",
-      "code": "OSR085"
+      "code": "OSR085",
+      "fried": null
     },
     {
       "slug": "dessicated-coconut-chutney",
-      "code": "BFP450"
+      "code": "BFP450",
+      "fried": null
     },
     {
       "slug": "deviled-egg",
-      "code": "ASC256"
+      "code": "ASC256",
+      "fried": null
     },
     {
       "slug": "dil-bahar",
-      "code": "BFP389"
+      "code": "BFP389",
+      "fried": null
     },
     {
       "slug": "dry-arbi",
-      "code": "BFP263"
+      "code": "BFP263",
+      "fried": null
     },
     {
       "slug": "dry-mango-chutney",
-      "code": "ASC384"
+      "code": "ASC384",
+      "fried": null
     },
     {
       "slug": "dry-masala-chops",
-      "code": "BFP190"
+      "code": "BFP190",
+      "fried": null
     },
     {
       "slug": "dry-potato",
-      "code": "ASC178"
+      "code": "ASC178",
+      "fried": null
     },
     {
       "slug": "dry-washed-urad",
-      "code": "ASC154"
+      "code": "ASC154",
+      "fried": null
     },
     {
       "slug": "ducheese-potato",
-      "code": "BFP286"
+      "code": "BFP286",
+      "fried": null
     },
     {
       "slug": "dundee-cake",
-      "code": "BFP491"
+      "code": "BFP491",
+      "fried": null
     },
     {
       "slug": "egg-and-tomato-sandwich",
-      "code": "ASC037"
+      "code": "ASC037",
+      "fried": null
     },
     {
       "slug": "egg-halwa",
-      "code": "ASC296"
+      "code": "ASC296",
+      "fried": null
     },
     {
       "slug": "egg-in-a-pepper",
-      "code": "OSR070"
+      "code": "OSR070",
+      "fried": null
     },
     {
       "slug": "egg-nog",
-      "code": "ASC020"
+      "code": "ASC020",
+      "fried": null
     },
     {
       "slug": "eggless-cake",
-      "code": "ASC427"
+      "code": "ASC427",
+      "fried": null
+    },
+    {
+      "slug": "eggplant",
+      "code": "BFP132",
+      "fried": null
     },
     {
       "slug": "espreso-coffee",
-      "code": "ASC003"
+      "code": "ASC003",
+      "fried": null
     },
     {
       "slug": "fettuccine-with-spinach-sauce",
-      "code": "ASC141"
+      "code": "ASC141",
+      "fried": null
     },
     {
       "slug": "finger-millet-biscuit",
-      "code": "OSR031"
+      "code": "OSR031",
+      "fried": null
     },
     {
       "slug": "finger-millet-cake",
-      "code": "OSR124"
+      "code": "OSR124",
+      "fried": null
+    },
+    {
+      "slug": "fish-finger",
+      "code": "BFP226",
+      "fried": "fried fish"
+    },
+    {
+      "slug": "fish-orly",
+      "code": "OSR063",
+      "fried": "fried fish"
     },
     {
       "slug": "fish-sandwich",
-      "code": "OSR029"
+      "code": "OSR029",
+      "fried": null
     },
     {
       "slug": "flan-pastry",
-      "code": "BFP521"
+      "code": "BFP521",
+      "fried": null
     },
     {
       "slug": "flavoured-milkshake",
-      "code": "BFP019"
+      "code": "BFP019",
+      "fried": null
+    },
+    {
+      "slug": "french-omelette",
+      "code": "BFP054",
+      "fried": null
     },
     {
       "slug": "fried-chicken-with-tomato-sauce",
-      "code": "ASC245"
+      "code": "ASC245",
+      "fried": null
+    },
+    {
+      "slug": "fried-fish",
+      "code": "ASC247",
+      "fried": "fried fish"
     },
     {
       "slug": "fruit-delight",
-      "code": "BFP364"
+      "code": "BFP364",
+      "fried": null
     },
     {
       "slug": "fruit-ice-cream",
-      "code": "ASC307"
+      "code": "ASC307",
+      "fried": null
     },
     {
       "slug": "fruit-loaf",
-      "code": "ASC422"
+      "code": "ASC422",
+      "fried": null
     },
     {
       "slug": "fruit-punch",
-      "code": "ASC006"
+      "code": "ASC006",
+      "fried": null
     },
     {
       "slug": "fruit-puree-tart",
-      "code": "BFP527"
+      "code": "BFP527",
+      "fried": null
     },
     {
       "slug": "fruit-salad",
-      "code": "ASC265"
+      "code": "ASC265",
+      "fried": null
     },
     {
       "slug": "garlic-chickpea-soup",
-      "code": "OSR156"
+      "code": "OSR156",
+      "fried": null
     },
     {
       "slug": "garlic-chutney",
-      "code": "OSR080"
+      "code": "OSR080",
+      "fried": null
     },
     {
       "slug": "garlic-soup",
-      "code": "OSR138"
+      "code": "OSR138",
+      "fried": null
+    },
+    {
+      "slug": "ghiya",
+      "code": "ASC205",
+      "fried": "kofta"
     },
     {
       "slug": "ginger-biscuit",
-      "code": "ASC455"
+      "code": "ASC455",
+      "fried": null
     },
     {
       "slug": "ginger-bread-man",
-      "code": "ASC450"
+      "code": "ASC450",
+      "fried": null
     },
     {
       "slug": "ginger-chicken",
-      "code": "BFP220"
+      "code": "BFP220",
+      "fried": null
     },
     {
       "slug": "gingerman-biscuit",
-      "code": "BFP506"
+      "code": "BFP506",
+      "fried": null
     },
     {
       "slug": "gingo",
-      "code": "BFP026"
+      "code": "BFP026",
+      "fried": null
+    },
+    {
+      "slug": "gobi-65",
+      "code": "OSR076",
+      "fried": "cauliflower pakora"
     },
     {
       "slug": "gooseberry-chutney",
-      "code": "BFP445"
+      "code": "BFP445",
+      "fried": null
     },
     {
       "slug": "gram-flour-and-semolina-dhokla",
-      "code": "BFP573"
+      "code": "BFP573",
+      "fried": null
     },
     {
       "slug": "gram-flour-burfi",
-      "code": "ASC340"
+      "code": "ASC340",
+      "fried": null
     },
     {
       "slug": "gram-flour-halwa",
-      "code": "OSR026"
+      "code": "OSR026",
+      "fried": null
+    },
+    {
+      "slug": "gram-flour-poori",
+      "code": "BFP115",
+      "fried": "poori, bhatura, kachori, mathri"
     },
     {
       "slug": "grape-and-orange-whip",
-      "code": "BFP361"
+      "code": "BFP361",
+      "fried": null
     },
     {
       "slug": "grapes-raita",
-      "code": "BFP329"
+      "code": "BFP329",
+      "fried": null
     },
     {
       "slug": "gravy-for-kofta",
-      "code": "ASC197"
+      "code": "ASC197",
+      "fried": null
     },
     {
       "slug": "green-chickpeas-pulao",
-      "code": "ASC121"
+      "code": "ASC121",
+      "fried": null
     },
     {
       "slug": "green-chilli-raita",
-      "code": "OSR091"
+      "code": "OSR091",
+      "fried": null
     },
     {
       "slug": "green-chutney",
-      "code": "OSR098"
+      "code": "OSR098",
+      "fried": null
     },
     {
       "slug": "green-gram-whole-with-baghar",
-      "code": "BFP178"
+      "code": "BFP178",
+      "fried": null
     },
     {
       "slug": "greenpea-cookies",
-      "code": "OSR037"
+      "code": "OSR037",
+      "fried": null
     },
     {
       "slug": "guava-raita",
-      "code": "BFP328"
+      "code": "BFP328",
+      "fried": null
     },
     {
       "slug": "gun-powder-chutney",
-      "code": "BFP448"
+      "code": "BFP448",
+      "fried": null
     },
     {
       "slug": "ham-and-bean-soup",
-      "code": "OSR128"
+      "code": "OSR128",
+      "fried": null
     },
     {
       "slug": "handi-chicken",
-      "code": "OSR066"
+      "code": "OSR066",
+      "fried": null
     },
     {
       "slug": "hariyali-fish-tikka",
-      "code": "OSR064"
+      "code": "OSR064",
+      "fried": null
     },
     {
       "slug": "hawain-salad",
-      "code": "ASC257"
+      "code": "ASC257",
+      "fried": null
     },
     {
       "slug": "hazelnut-cookies",
-      "code": "OSR040"
+      "code": "OSR040",
+      "fried": null
     },
     {
       "slug": "home-made-egg-noodles",
-      "code": "BFP165"
+      "code": "BFP165",
+      "fried": null
     },
     {
       "slug": "honey-banana-cream",
-      "code": "BFP362"
+      "code": "BFP362",
+      "fried": null
     },
     {
       "slug": "honey-cake",
-      "code": "OSR125"
+      "code": "OSR125",
+      "fried": null
     },
     {
       "slug": "horsegram-dal",
-      "code": "OSR143"
+      "code": "OSR143",
+      "fried": null
     },
     {
       "slug": "hot-and-sour-soup",
-      "code": "ASC092"
+      "code": "ASC092",
+      "fried": null
     },
     {
       "slug": "hot-cheese-souffle",
-      "code": "ASC413"
+      "code": "ASC413",
+      "fried": null
     },
     {
       "slug": "hot-chocolate-souffle",
-      "code": "ASC333"
+      "code": "ASC333",
+      "fried": null
     },
     {
       "slug": "hot-fish-souffle",
-      "code": "ASC415"
+      "code": "ASC415",
+      "fried": null
     },
     {
       "slug": "hot-lemon-souffle",
-      "code": "BFP382"
+      "code": "BFP382",
+      "fried": null
     },
     {
       "slug": "hot-orange-souffle",
-      "code": "ASC332"
+      "code": "ASC332",
+      "fried": null
     },
     {
       "slug": "hot-potato-souffle",
-      "code": "ASC414"
+      "code": "ASC414",
+      "fried": null
     },
     {
       "slug": "hot-spinach-souffle",
-      "code": "ASC416"
+      "code": "ASC416",
+      "fried": null
     },
     {
       "slug": "hot-tea",
-      "code": "ASC001"
+      "code": "ASC001",
+      "fried": null
     },
     {
       "slug": "hot-vanilla-souffle",
-      "code": "ASC334"
+      "code": "ASC334",
+      "fried": null
     },
     {
       "slug": "ice-box-cookies",
-      "code": "ASC449"
+      "code": "ASC449",
+      "fried": null
     },
     {
       "slug": "iced-tea",
-      "code": "ASC004"
+      "code": "ASC004",
+      "fried": null
+    },
+    {
+      "slug": "indian-lamb-and-egg-curry",
+      "code": "BFP201",
+      "fried": "kofta"
     },
     {
       "slug": "indian-style-egg-bhujia",
-      "code": "BFP052"
+      "code": "BFP052",
+      "fried": null
     },
     {
       "slug": "instant-coffee",
-      "code": "ASC002"
+      "code": "ASC002",
+      "fried": null
     },
     {
       "slug": "instant-dhokla",
-      "code": "BFP440"
+      "code": "BFP440",
+      "fried": null
     },
     {
       "slug": "instant-idli",
-      "code": "BFP147"
+      "code": "BFP147",
+      "fried": null
+    },
+    {
+      "slug": "jackfruit-kofta-curry",
+      "code": "BFP250",
+      "fried": "kofta"
     },
     {
       "slug": "jam-and-fruit-pancake",
-      "code": "ASC066"
+      "code": "ASC066",
+      "fried": null
     },
     {
       "slug": "jam-filling",
-      "code": "BFP480"
+      "code": "BFP480",
+      "fried": null
     },
     {
       "slug": "jam-tart",
-      "code": "ASC397"
+      "code": "ASC397",
+      "fried": null
     },
     {
       "slug": "jellied-sunshine-fruit-salad",
-      "code": "BFP306"
+      "code": "BFP306",
+      "fried": null
     },
     {
       "slug": "jelly-biscuit",
-      "code": "BFP516"
+      "code": "BFP516",
+      "fried": null
     },
     {
       "slug": "jowar-dosa",
-      "code": "OSR151"
+      "code": "OSR151",
+      "fried": null
     },
     {
       "slug": "kabuli-channa-curry",
-      "code": "BFP185"
+      "code": "BFP185",
+      "fried": null
     },
     {
       "slug": "kadhai-paneer",
-      "code": "ASC226"
+      "code": "ASC226",
+      "fried": null
     },
     {
       "slug": "kale-salad",
-      "code": "OSR092"
+      "code": "OSR092",
+      "fried": null
     },
     {
       "slug": "kashmiri-mutton-koftas",
-      "code": "ASC231"
+      "code": "ASC231",
+      "fried": null
     },
     {
       "slug": "kashmiri-tahar",
-      "code": "BFP133"
+      "code": "BFP133",
+      "fried": null
     },
     {
       "slug": "kashmiri-tea",
-      "code": "BFP007"
+      "code": "BFP007",
+      "fried": null
     },
     {
       "slug": "keema-kofta-curry",
-      "code": "ASC230"
+      "code": "ASC230",
+      "fried": null
     },
     {
       "slug": "keema-pancake",
-      "code": "ASC064"
+      "code": "ASC064",
+      "fried": null
+    },
+    {
+      "slug": "keema-parantha",
+      "code": "ASC104",
+      "fried": null
     },
     {
       "slug": "khatta-channa",
-      "code": "ASC169"
+      "code": "ASC169",
+      "fried": null
     },
     {
       "slug": "khoa-and-coconut-pancake",
-      "code": "ASC067"
+      "code": "ASC067",
+      "fried": null
     },
     {
       "slug": "khoa-coconut-burfi",
-      "code": "BFP396"
+      "code": "BFP396",
+      "fried": null
     },
     {
       "slug": "khoa-ladoo",
-      "code": "BFP404"
+      "code": "BFP404",
+      "fried": null
     },
     {
       "slug": "kidney-bean-curry",
-      "code": "ASC165"
+      "code": "ASC165",
+      "fried": null
     },
     {
       "slug": "kidney-bean-sandwich-with-cottage-cheese",
-      "code": "OSR030"
+      "code": "OSR030",
+      "fried": null
     },
     {
       "slug": "lem-o-gin",
-      "code": "ASC009"
+      "code": "ASC009",
+      "fried": null
     },
     {
       "slug": "lemon-butter-fish",
-      "code": "OSR068"
+      "code": "OSR068",
+      "fried": null
     },
     {
       "slug": "lemon-cake",
-      "code": "BFP489"
+      "code": "BFP489",
+      "fried": null
     },
     {
       "slug": "lemon-chicken",
-      "code": "OSR067"
+      "code": "OSR067",
+      "fried": null
     },
     {
       "slug": "lemon-cookies",
-      "code": "OSR033"
+      "code": "OSR033",
+      "fried": null
     },
     {
       "slug": "lemon-coriander-soup",
-      "code": "OSR137"
+      "code": "OSR137",
+      "fried": null
     },
     {
       "slug": "lemon-curd-filling",
-      "code": "BFP479"
+      "code": "BFP479",
+      "fried": null
     },
     {
       "slug": "lemon-meringue-pie",
-      "code": "ASC404"
+      "code": "ASC404",
+      "fried": null
     },
     {
       "slug": "lemon-souffle",
-      "code": "ASC309"
+      "code": "ASC309",
+      "fried": null
     },
     {
       "slug": "lemon-tart",
-      "code": "ASC396"
+      "code": "ASC396",
+      "fried": null
     },
     {
       "slug": "lemonade",
-      "code": "ASC008"
+      "code": "ASC008",
+      "fried": null
     },
     {
       "slug": "lotus-stem-curry",
-      "code": "ASC196"
+      "code": "ASC196",
+      "fried": null
+    },
+    {
+      "slug": "lotus-stem-kofta-curry",
+      "code": "ASC201",
+      "fried": "kofta"
     },
     {
       "slug": "maa-chaane-ki-dal",
-      "code": "OSR155"
+      "code": "OSR155",
+      "fried": null
     },
     {
       "slug": "macaroni-salad",
-      "code": "OSR087"
+      "code": "OSR087",
+      "fried": null
     },
     {
       "slug": "macroni-cheese-pie",
-      "code": "ASC133"
+      "code": "ASC133",
+      "fried": null
     },
     {
       "slug": "makhana-kheer",
-      "code": "ASC283"
+      "code": "ASC283",
+      "fried": null
     },
     {
       "slug": "mango-cheesecake",
-      "code": "OSR121"
+      "code": "OSR121",
+      "fried": null
     },
     {
       "slug": "mango-ice-cream",
-      "code": "ASC305"
+      "code": "ASC305",
+      "fried": null
     },
     {
       "slug": "mango-milkshake-with-ice-cream",
-      "code": "BFP607"
+      "code": "BFP607",
+      "fried": null
     },
     {
       "slug": "mango-mousse",
-      "code": "ASC316"
+      "code": "ASC316",
+      "fried": null
     },
     {
       "slug": "mango-murabba-candy",
-      "code": "OSR061"
+      "code": "OSR061",
+      "fried": null
     },
     {
       "slug": "mango-raita",
-      "code": "BFP327"
+      "code": "BFP327",
+      "fried": null
     },
     {
       "slug": "mango-vanilla-custard",
-      "code": "OSR017"
+      "code": "OSR017",
+      "fried": null
     },
     {
       "slug": "marble-cake",
-      "code": "ASC419"
+      "code": "ASC419",
+      "fried": null
     },
     {
       "slug": "masala-arbi",
-      "code": "BFP264"
+      "code": "BFP264",
+      "fried": null
     },
     {
       "slug": "masala-biscuit",
-      "code": "ASC448"
+      "code": "ASC448",
+      "fried": null
     },
     {
       "slug": "masala-dosa-mixed-vegetable-fillings",
-      "code": "BFP150"
+      "code": "BFP150",
+      "fried": null
     },
     {
       "slug": "masala-dosa-paneer-fillings",
-      "code": "BFP151"
+      "code": "BFP151",
+      "fried": null
     },
     {
       "slug": "mayonnaise-vegetable-dip",
-      "code": "BFP453"
+      "code": "BFP453",
+      "fried": null
     },
     {
       "slug": "meat-and-macaroni-casserole",
-      "code": "BFP157"
+      "code": "BFP157",
+      "fried": null
     },
     {
       "slug": "meat-stock",
-      "code": "BFP060"
+      "code": "BFP060",
+      "fried": null
     },
     {
       "slug": "melting-moments",
-      "code": "ASC454"
+      "code": "ASC454",
+      "fried": null
     },
     {
       "slug": "meringue-and-rice-pudding",
-      "code": "ASC323"
+      "code": "ASC323",
+      "fried": null
     },
     {
       "slug": "methi-malai-paneer",
-      "code": "ASC223"
+      "code": "ASC223",
+      "fried": null
+    },
+    {
+      "slug": "methi-pakora",
+      "code": "ASC356",
+      "fried": "potato, onion or leafy pakora"
+    },
+    {
+      "slug": "methi-parantha",
+      "code": "BFP110",
+      "fried": null
+    },
+    {
+      "slug": "methi-poori",
+      "code": "ASC109",
+      "fried": "poori, bhatura, kachori, mathri"
     },
     {
       "slug": "mexican-rice",
-      "code": "BFP143"
+      "code": "BFP143",
+      "fried": null
     },
     {
       "slug": "milk-cake",
-      "code": "ASC346"
+      "code": "ASC346",
+      "fried": null
     },
     {
       "slug": "milk-cookies",
-      "code": "OSR041"
+      "code": "OSR041",
+      "fried": null
     },
     {
       "slug": "minced-meat-ball-curry",
-      "code": "BFP197"
+      "code": "BFP197",
+      "fried": null
     },
     {
       "slug": "minced-meat-patties",
-      "code": "ASC411"
+      "code": "ASC411",
+      "fried": null
     },
     {
       "slug": "mint-and-coriander-chutney",
-      "code": "ASC387"
+      "code": "ASC387",
+      "fried": null
     },
     {
       "slug": "mint-and-peanut-raita",
-      "code": "BFP320"
+      "code": "BFP320",
+      "fried": null
     },
     {
       "slug": "mint-and-peanut-sandwich",
-      "code": "BFP459"
+      "code": "BFP459",
+      "fried": null
     },
     {
       "slug": "mint-raita",
-      "code": "ASC275"
+      "code": "ASC275",
+      "fried": null
     },
     {
       "slug": "mint-tomato-chutney",
-      "code": "BFP443"
+      "code": "BFP443",
+      "fried": null
     },
     {
       "slug": "mintade",
-      "code": "BFP027"
+      "code": "BFP027",
+      "fried": null
     },
     {
       "slug": "mixed-dal",
-      "code": "ASC155"
+      "code": "ASC155",
+      "fried": null
     },
     {
       "slug": "mixed-pulse-and-vegetable-salad",
-      "code": "ASC258"
+      "code": "ASC258",
+      "fried": null
     },
     {
       "slug": "mixed-stock",
-      "code": "BFP059"
+      "code": "BFP059",
+      "fried": null
+    },
+    {
+      "slug": "mixed-vegetable-pakora",
+      "code": "ASC354",
+      "fried": "potato, onion or leafy pakora"
     },
     {
       "slug": "mixed-vegetable-pulao",
-      "code": "ASC115"
+      "code": "ASC115",
+      "fried": null
     },
     {
       "slug": "mixed-vegetable-salad-with-curd-sauce",
-      "code": "ASC261"
+      "code": "ASC261",
+      "fried": null
     },
     {
       "slug": "mooli-bhujia",
-      "code": "BFP258"
+      "code": "BFP258",
+      "fried": null
     },
     {
       "slug": "moong-dal-kheer",
-      "code": "ASC291"
+      "code": "ASC291",
+      "fried": null
     },
     {
       "slug": "moong-dal-stuffed-cheela",
-      "code": "BFP046"
+      "code": "BFP046",
+      "fried": null
     },
     {
       "slug": "moong-dal-with-vadi",
-      "code": "BFP174"
+      "code": "BFP174",
+      "fried": null
     },
     {
       "slug": "moti-mahal-dal",
-      "code": "ASC160"
+      "code": "ASC160",
+      "fried": null
     },
     {
       "slug": "murmura-chikki",
-      "code": "BFP413"
+      "code": "BFP413",
+      "fried": null
     },
     {
       "slug": "mushroom-and-cheese-sandwich",
-      "code": "ASC039"
+      "code": "ASC039",
+      "fried": null
     },
     {
       "slug": "mushroom-matar",
-      "code": "BFP205"
+      "code": "BFP205",
+      "fried": null
     },
     {
       "slug": "mushroom-pulao",
-      "code": "ASC116"
+      "code": "ASC116",
+      "fried": null
     },
     {
       "slug": "mutton-do-piaza",
-      "code": "ASC234"
+      "code": "ASC234",
+      "fried": null
     },
     {
       "slug": "mutton-korma",
-      "code": "BFP194"
+      "code": "BFP194",
+      "fried": null
     },
     {
       "slug": "mutton-yakhni",
-      "code": "ASC232"
+      "code": "ASC232",
+      "fried": null
     },
     {
       "slug": "namkeen-daliya",
-      "code": "BFP577"
+      "code": "BFP577",
+      "fried": null
     },
     {
       "slug": "navratan-pulao",
-      "code": "ASC120"
+      "code": "ASC120",
+      "fried": null
     },
     {
       "slug": "oatmeal-porridge",
-      "code": "ASC050"
+      "code": "ASC050",
+      "fried": null
     },
     {
       "slug": "oats-burfi",
-      "code": "OSR019"
+      "code": "OSR019",
+      "fried": null
     },
     {
       "slug": "olive-biscuit",
-      "code": "OSR043"
+      "code": "OSR043",
+      "fried": null
     },
     {
       "slug": "onion-chutney",
-      "code": "OSR083"
+      "code": "OSR083",
+      "fried": null
+    },
+    {
+      "slug": "onion-pakora",
+      "code": "ASC352",
+      "fried": "potato, onion or leafy pakora"
     },
     {
       "slug": "orange-and-pineapple-cream",
-      "code": "ASC317"
+      "code": "ASC317",
+      "fried": null
     },
     {
       "slug": "orange-biscuit",
-      "code": "BFP505"
+      "code": "BFP505",
+      "fried": null
     },
     {
       "slug": "orange-cake",
-      "code": "ASC421"
+      "code": "ASC421",
+      "fried": null
     },
     {
       "slug": "orange-cream-tart",
-      "code": "ASC398"
+      "code": "ASC398",
+      "fried": null
     },
     {
       "slug": "orange-eggless-cake",
-      "code": "BFP496"
+      "code": "BFP496",
+      "fried": null
     },
     {
       "slug": "orange-gateau",
-      "code": "BFP484"
+      "code": "BFP484",
+      "fried": null
     },
     {
       "slug": "orange-milkshake",
-      "code": "ASC019"
+      "code": "ASC019",
+      "fried": null
     },
     {
       "slug": "orange-milkshake-with-ice-cream",
-      "code": "BFP609"
+      "code": "BFP609",
+      "fried": null
+    },
+    {
+      "slug": "orange-omelette",
+      "code": "BFP056",
+      "fried": null
     },
     {
       "slug": "orange-souffle",
-      "code": "ASC310"
+      "code": "ASC310",
+      "fried": null
     },
     {
       "slug": "paaner-do-pyaza",
-      "code": "OSR074"
+      "code": "OSR074",
+      "fried": null
     },
     {
       "slug": "pancake",
-      "code": "ASC063"
+      "code": "ASC063",
+      "fried": null
     },
     {
       "slug": "paneer-apple-and-pineapple-salad",
-      "code": "ASC253"
+      "code": "ASC253",
+      "fried": null
     },
     {
       "slug": "paneer-curry",
-      "code": "ASC195"
+      "code": "ASC195",
+      "fried": null
     },
     {
       "slug": "paneer-in-butter-sauce",
-      "code": "ASC222"
+      "code": "ASC222",
+      "fried": null
     },
     {
       "slug": "paneer-kaathi-roll",
-      "code": "ASC149"
+      "code": "ASC149",
+      "fried": null
     },
     {
       "slug": "paneer-kheer",
-      "code": "ASC287"
+      "code": "ASC287",
+      "fried": null
+    },
+    {
+      "slug": "paneer-kofta-curry",
+      "code": "ASC200",
+      "fried": "kofta"
     },
     {
       "slug": "paneer-lababdar",
-      "code": "OSR077"
+      "code": "OSR077",
+      "fried": null
+    },
+    {
+      "slug": "paneer-parantha",
+      "code": "ASC105",
+      "fried": null
     },
     {
       "slug": "paneer-patties",
-      "code": "BFP544"
+      "code": "BFP544",
+      "fried": null
     },
     {
       "slug": "paneer-shaslik",
-      "code": "ASC381"
+      "code": "ASC381",
+      "fried": null
     },
     {
       "slug": "paneer-soup",
-      "code": "OSR134"
+      "code": "OSR134",
+      "fried": null
+    },
+    {
+      "slug": "paneer-stuffed-cheela",
+      "code": "BFP047",
+      "fried": null
+    },
+    {
+      "slug": "papdi",
+      "code": "OSR148",
+      "fried": "sev, namak para, murukku, papdi"
     },
     {
       "slug": "parsley-potato",
-      "code": "BFP290"
+      "code": "BFP290",
+      "fried": null
     },
     {
       "slug": "pasta-salad",
-      "code": "ASC255"
+      "code": "ASC255",
+      "fried": null
     },
     {
       "slug": "paushtik-ladoo",
-      "code": "ASC471"
+      "code": "ASC471",
+      "fried": null
     },
     {
       "slug": "paushtik-roti",
-      "code": "ASC472"
+      "code": "ASC472",
+      "fried": null
     },
     {
       "slug": "pavlova",
-      "code": "BFP373"
+      "code": "BFP373",
+      "fried": null
     },
     {
       "slug": "pea-curry",
-      "code": "ASC193"
+      "code": "ASC193",
+      "fried": null
     },
     {
       "slug": "pea-keema-curry",
-      "code": "ASC229"
+      "code": "ASC229",
+      "fried": null
+    },
+    {
+      "slug": "pea-kofta-curry",
+      "code": "ASC198",
+      "fried": "kofta"
     },
     {
       "slug": "pea-vadi-curry",
-      "code": "ASC194"
+      "code": "ASC194",
+      "fried": null
     },
     {
       "slug": "peach-blueberry-preserves",
-      "code": "OSR046"
+      "code": "OSR046",
+      "fried": null
     },
     {
       "slug": "peach-melba-ice-cream",
-      "code": "BFP358"
+      "code": "BFP358",
+      "fried": null
     },
     {
       "slug": "peanut-and-tomato-sandwich",
-      "code": "ASC029"
+      "code": "ASC029",
+      "fried": null
     },
     {
       "slug": "peanut-biscuit",
-      "code": "ASC445"
+      "code": "ASC445",
+      "fried": null
     },
     {
       "slug": "peanut-brittle",
-      "code": "ASC382"
+      "code": "ASC382",
+      "fried": null
     },
     {
       "slug": "peanut-burfi",
-      "code": "ASC459"
+      "code": "ASC459",
+      "fried": null
     },
     {
       "slug": "peanut-butter-cucumber-sandwich",
-      "code": "BFP458"
+      "code": "BFP458",
+      "fried": null
     },
     {
       "slug": "peanut-chutney",
-      "code": "ASC385"
+      "code": "ASC385",
+      "fried": null
     },
     {
       "slug": "peanut-pulao",
-      "code": "ASC119"
+      "code": "ASC119",
+      "fried": null
     },
     {
       "slug": "peanut-raita",
-      "code": "ASC270"
+      "code": "ASC270",
+      "fried": null
     },
     {
       "slug": "pear-chocholate-sunday",
-      "code": "BFP352"
+      "code": "BFP352",
+      "fried": null
     },
     {
       "slug": "pear-preserves",
-      "code": "OSR047"
+      "code": "OSR047",
+      "fried": null
     },
     {
       "slug": "pearl-millet-ladoo",
-      "code": "ASC470"
+      "code": "ASC470",
+      "fried": null
+    },
+    {
+      "slug": "pearl-millet-mathri",
+      "code": "BFP564",
+      "fried": "poori, bhatura, kachori, mathri"
     },
     {
       "slug": "peas-brinjal-bhartha",
-      "code": "BFP266"
+      "code": "BFP266",
+      "fried": null
+    },
+    {
+      "slug": "peas-kachori",
+      "code": "BFP118",
+      "fried": "poori, bhatura, kachori, mathri"
+    },
+    {
+      "slug": "peas-poori",
+      "code": "BFP117",
+      "fried": "poori, bhatura, kachori, mathri"
     },
     {
       "slug": "penne-platter",
-      "code": "ASC138"
+      "code": "ASC138",
+      "fried": null
     },
     {
       "slug": "pin-wheel-biscuit",
-      "code": "ASC446"
+      "code": "ASC446",
+      "fried": null
     },
     {
       "slug": "pin-wheel-sandwich",
-      "code": "ASC033"
+      "code": "ASC033",
+      "fried": null
     },
     {
       "slug": "pineapple-milkshake",
-      "code": "ASC018"
+      "code": "ASC018",
+      "fried": null
     },
     {
       "slug": "pineapple-milkshake-with-ice-cream",
-      "code": "BFP608"
+      "code": "BFP608",
+      "fried": null
     },
     {
       "slug": "pineapple-pastry",
-      "code": "ASC430"
+      "code": "ASC430",
+      "fried": null
     },
     {
       "slug": "pineapple-raita",
-      "code": "BFP325"
+      "code": "BFP325",
+      "fried": null
     },
     {
       "slug": "pineapple-souffle",
-      "code": "ASC313"
+      "code": "ASC313",
+      "fried": null
     },
     {
       "slug": "pineapple-tart",
-      "code": "ASC399"
+      "code": "ASC399",
+      "fried": null
     },
     {
       "slug": "pineapple-upside-down-pudding",
-      "code": "ASC328"
+      "code": "ASC328",
+      "fried": null
     },
     {
       "slug": "pizza",
-      "code": "BFP122"
+      "code": "BFP122",
+      "fried": null
     },
     {
       "slug": "plain-burfi",
-      "code": "ASC335"
+      "code": "ASC335",
+      "fried": null
     },
     {
       "slug": "plain-cream-cake",
-      "code": "ASC417"
+      "code": "ASC417",
+      "fried": null
     },
     {
       "slug": "plain-omelette",
-      "code": "ASC061"
+      "code": "ASC061",
+      "fried": null
+    },
+    {
+      "slug": "plain-parantha",
+      "code": "ASC097",
+      "fried": null
     },
     {
       "slug": "plain-pulao",
-      "code": "ASC114"
+      "code": "ASC114",
+      "fried": null
     },
     {
       "slug": "pomegranate-raita",
-      "code": "OSR089"
+      "code": "OSR089",
+      "fried": null
+    },
+    {
+      "slug": "poshtik-chilla",
+      "code": "BFP580",
+      "fried": null
+    },
+    {
+      "slug": "poshtik-khichdi",
+      "code": "BFP576",
+      "fried": null
+    },
+    {
+      "slug": "poshtik-namak-paras",
+      "code": "BFP568",
+      "fried": "sev, namak para, murukku, papdi"
+    },
+    {
+      "slug": "potato-bonda",
+      "code": "ASC360",
+      "fried": "potato, onion or leafy pakora"
     },
     {
       "slug": "potato-canjee",
-      "code": "BFP031"
+      "code": "BFP031",
+      "fried": null
     },
     {
       "slug": "potato-capsicum",
-      "code": "ASC172"
+      "code": "ASC172",
+      "fried": null
     },
     {
       "slug": "potato-cauliflower",
-      "code": "ASC171"
+      "code": "ASC171",
+      "fried": null
     },
     {
       "slug": "potato-curry",
-      "code": "BFP239"
+      "code": "BFP239",
+      "fried": null
     },
     {
       "slug": "potato-halwa",
-      "code": "ASC297"
+      "code": "ASC297",
+      "fried": null
+    },
+    {
+      "slug": "potato-kofta-curry",
+      "code": "BFP246",
+      "fried": "kofta"
     },
     {
       "slug": "potato-nests",
-      "code": "BFP289"
+      "code": "BFP289",
+      "fried": null
+    },
+    {
+      "slug": "potato-pakora",
+      "code": "ASC351",
+      "fried": "potato, onion or leafy pakora"
     },
     {
       "slug": "potato-pickle",
-      "code": "OSR060"
+      "code": "OSR060",
+      "fried": null
     },
     {
       "slug": "potato-raita",
-      "code": "ASC276"
+      "code": "ASC276",
+      "fried": null
     },
     {
       "slug": "potato-salad",
-      "code": "ASC262"
+      "code": "ASC262",
+      "fried": null
+    },
+    {
+      "slug": "potato-stuffed-poori",
+      "code": "ASC111",
+      "fried": "poori, bhatura, kachori, mathri"
     },
     {
       "slug": "prawn-sandwich",
-      "code": "OSR027"
+      "code": "OSR027",
+      "fried": null
     },
     {
       "slug": "puffed-wheat-indb",
-      "code": "ASC055"
+      "code": "ASC055",
+      "fried": null
+    },
+    {
+      "slug": "puffy-omelette",
+      "code": "BFP055",
+      "fried": null
     },
     {
       "slug": "pumpkin-coconut-burfi",
-      "code": "BFP403"
+      "code": "BFP403",
+      "fried": null
     },
     {
       "slug": "pumpkin-cookies",
-      "code": "OSR036"
+      "code": "OSR036",
+      "fried": null
     },
     {
       "slug": "pumpkin-halwa",
-      "code": "ASC298"
+      "code": "ASC298",
+      "fried": null
     },
     {
       "slug": "pumpkin-kheer",
-      "code": "BFP336"
+      "code": "BFP336",
+      "fried": null
     },
     {
       "slug": "pumpkin-raita",
-      "code": "BFP318"
+      "code": "BFP318",
+      "fried": null
     },
     {
       "slug": "pumpkin-soup",
-      "code": "OSR132"
+      "code": "OSR132",
+      "fried": null
     },
     {
       "slug": "putharekulu",
-      "code": "OSR015"
+      "code": "OSR015",
+      "fried": null
     },
     {
       "slug": "queen-of-pudding",
-      "code": "ASC327"
+      "code": "ASC327",
+      "fried": null
+    },
+    {
+      "slug": "quinoa-khichdi",
+      "code": "OSR107",
+      "fried": null
     },
     {
       "slug": "rainbow-sandwich",
-      "code": "ASC030"
+      "code": "ASC030",
+      "fried": null
     },
     {
       "slug": "rajbogh",
-      "code": "BFP391"
+      "code": "BFP391",
+      "fried": null
     },
     {
       "slug": "rasam-with-lemon",
-      "code": "BFP177"
+      "code": "BFP177",
+      "fried": null
     },
     {
       "slug": "rasam-with-tamarind",
-      "code": "BFP176"
+      "code": "BFP176",
+      "fried": null
     },
     {
       "slug": "rasbhari",
-      "code": "BFP390"
+      "code": "BFP390",
+      "fried": null
     },
     {
       "slug": "raspberry-bavarian-cream",
-      "code": "BFP363"
+      "code": "BFP363",
+      "fried": null
     },
     {
       "slug": "raspberry-shortbread-cookies",
-      "code": "OSR035"
+      "code": "OSR035",
+      "fried": null
+    },
+    {
+      "slug": "raw-banana-kofta-curry",
+      "code": "ASC202",
+      "fried": "kofta"
     },
     {
       "slug": "raw-papaya-with-coconut",
-      "code": "ASC183"
+      "code": "ASC183",
+      "fried": null
     },
     {
       "slug": "raw-turnip-with-coconut",
-      "code": "ASC182"
+      "code": "ASC182",
+      "fried": null
     },
     {
       "slug": "ribbon-sandwich",
-      "code": "BFP466"
+      "code": "BFP466",
+      "fried": null
     },
     {
       "slug": "rice-kheer",
-      "code": "ASC282"
+      "code": "ASC282",
+      "fried": null
+    },
+    {
+      "slug": "rice-murukku",
+      "code": "OSR113",
+      "fried": "sev, namak para, murukku, papdi"
     },
     {
       "slug": "rice-puttu",
-      "code": "OSR105"
+      "code": "OSR105",
+      "fried": null
     },
     {
       "slug": "rice-upma",
-      "code": "BFP041"
+      "code": "BFP041",
+      "fried": null
     },
     {
       "slug": "rich-chocolate-mousse",
-      "code": "ASC315"
+      "code": "ASC315",
+      "fried": null
     },
     {
       "slug": "roast-chicken",
-      "code": "BFP212"
+      "code": "BFP212",
+      "fried": null
     },
     {
       "slug": "roast-potatoes",
-      "code": "BFP287"
+      "code": "BFP287",
+      "fried": null
     },
     {
       "slug": "roasted-cauliflower-steak",
-      "code": "OSR078"
+      "code": "OSR078",
+      "fried": null
     },
     {
       "slug": "roghan-josh",
-      "code": "ASC227"
+      "code": "ASC227",
+      "fried": null
     },
     {
       "slug": "rolled-sandwich",
-      "code": "BFP463"
+      "code": "BFP463",
+      "fried": null
     },
     {
       "slug": "russian-salad",
-      "code": "ASC254"
+      "code": "ASC254",
+      "fried": null
     },
     {
       "slug": "saffron-biscuit",
-      "code": "ASC447"
+      "code": "ASC447",
+      "fried": null
     },
     {
       "slug": "saffron-milk",
-      "code": "OSR010"
+      "code": "OSR010",
+      "fried": null
     },
     {
       "slug": "salami-sandwich",
-      "code": "ASC035"
+      "code": "ASC035",
+      "fried": null
     },
     {
       "slug": "saunth",
-      "code": "BFP447"
+      "code": "BFP447",
+      "fried": null
     },
     {
       "slug": "sauteed-radishes-with-green-beans",
-      "code": "OSR079"
+      "code": "OSR079",
+      "fried": null
     },
     {
       "slug": "savoury-cheese-horns",
-      "code": "BFP542"
+      "code": "BFP542",
+      "fried": null
     },
     {
       "slug": "savoury-puffs",
-      "code": "BFP535"
+      "code": "BFP535",
+      "fried": null
+    },
+    {
+      "slug": "scotch-egg",
+      "code": "ASC238",
+      "fried": "scotch egg"
     },
     {
       "slug": "scrambled-egg",
-      "code": "ASC059"
+      "code": "ASC059",
+      "fried": null
     },
     {
       "slug": "semolina-halwa",
-      "code": "ASC293"
+      "code": "ASC293",
+      "fried": null
     },
     {
       "slug": "semolina-milk-drink",
-      "code": "OSR009"
+      "code": "OSR009",
+      "fried": null
     },
     {
       "slug": "sesame-biscuit",
-      "code": "BFP565"
+      "code": "BFP565",
+      "fried": null
     },
     {
       "slug": "sesame-chickpeas-brittle",
-      "code": "BFP412"
+      "code": "BFP412",
+      "fried": null
     },
     {
       "slug": "shahi-chicken-masala",
-      "code": "BFP214"
+      "code": "BFP214",
+      "fried": null
+    },
+    {
+      "slug": "shahi-keema-kofta-curry",
+      "code": "BFP196",
+      "fried": "kofta"
     },
     {
       "slug": "shahi-suji-halwa",
-      "code": "ASC294"
+      "code": "ASC294",
+      "fried": null
     },
     {
       "slug": "shahi-tukre",
-      "code": "ASC350"
+      "code": "ASC350",
+      "fried": null
     },
     {
       "slug": "shepherd-s-pie",
-      "code": "ASC212"
+      "code": "ASC212",
+      "fried": null
     },
     {
       "slug": "short-bread-cookies",
-      "code": "ASC452"
+      "code": "ASC452",
+      "fried": null
     },
     {
       "slug": "small-onion-pickle",
-      "code": "OSR056"
+      "code": "OSR056",
+      "fried": null
     },
     {
       "slug": "snow-flakes-pudding",
-      "code": "ASC320"
+      "code": "ASC320",
+      "fried": null
     },
     {
       "slug": "soft-custard",
-      "code": "ASC302"
+      "code": "ASC302",
+      "fried": null
     },
     {
       "slug": "sour-cream-potato-salad",
-      "code": "BFP300"
+      "code": "BFP300",
+      "fried": null
     },
     {
       "slug": "sour-lentils",
-      "code": "BFP170"
+      "code": "BFP170",
+      "fried": null
     },
     {
       "slug": "soya-chikki",
-      "code": "BFP569"
+      "code": "BFP569",
+      "fried": null
     },
     {
       "slug": "soya-chunks-and-peas",
-      "code": "BFP206"
+      "code": "BFP206",
+      "fried": null
     },
     {
       "slug": "soya-chunks-korma",
-      "code": "BFP204"
+      "code": "BFP204",
+      "fried": null
     },
     {
       "slug": "soya-roti",
-      "code": "BFP575"
+      "code": "BFP575",
+      "fried": null
     },
     {
       "slug": "soya-seekh-kebab",
-      "code": "OSR153"
+      "code": "OSR153",
+      "fried": null
     },
     {
       "slug": "soyabean-curry",
-      "code": "ASC164"
+      "code": "ASC164",
+      "fried": null
+    },
+    {
+      "slug": "soyabean-namak-paras",
+      "code": "ASC458",
+      "fried": "sev, namak para, murukku, papdi"
     },
     {
       "slug": "spaghetti-with-meat-balls-and-tomato-sauce",
-      "code": "BFP158"
+      "code": "BFP158",
+      "fried": null
     },
     {
       "slug": "spaghetti-with-paneer-balls-and-tomato-sauce",
-      "code": "BFP159"
+      "code": "BFP159",
+      "fried": null
+    },
+    {
+      "slug": "spanish-omelette",
+      "code": "BFP058",
+      "fried": null
     },
     {
       "slug": "spanish-rice",
-      "code": "ASC128"
+      "code": "ASC128",
+      "fried": null
     },
     {
       "slug": "spicy-chutney-sandwich",
-      "code": "BFP460"
+      "code": "BFP460",
+      "fried": null
     },
     {
       "slug": "spinach-and-potato",
-      "code": "BFP257"
+      "code": "BFP257",
+      "fried": null
     },
     {
       "slug": "spinach-burfi",
-      "code": "ASC466"
+      "code": "ASC466",
+      "fried": null
+    },
+    {
+      "slug": "spinach-kofta-curry",
+      "code": "ASC199",
+      "fried": "kofta"
     },
     {
       "slug": "spinach-mushroom",
-      "code": "BFP208"
+      "code": "BFP208",
+      "fried": null
     },
     {
       "slug": "spinach-mushroom-scrambled-egg",
-      "code": "OSR071"
+      "code": "OSR071",
+      "fried": null
     },
     {
       "slug": "spinach-mutton",
-      "code": "ASC228"
+      "code": "ASC228",
+      "fried": null
+    },
+    {
+      "slug": "spinach-pakora",
+      "code": "ASC355",
+      "fried": "potato, onion or leafy pakora"
+    },
+    {
+      "slug": "spinach-paneer-kofta-curry",
+      "code": "ASC206",
+      "fried": "kofta"
+    },
+    {
+      "slug": "spinach-peanut-namak-paras",
+      "code": "ASC460",
+      "fried": "sev, namak para, murukku, papdi"
+    },
+    {
+      "slug": "spinach-poori",
+      "code": "ASC108",
+      "fried": "poori, bhatura, kachori, mathri"
     },
     {
       "slug": "spinach-raita",
-      "code": "BFP321"
+      "code": "BFP321",
+      "fried": null
     },
     {
       "slug": "spinach-souffle",
-      "code": "BFP296"
+      "code": "BFP296",
+      "fried": null
     },
     {
       "slug": "split-bengal-gram-burfi",
-      "code": "BFP561"
+      "code": "BFP561",
+      "fried": null
     },
     {
       "slug": "split-bengal-gram-dal",
-      "code": "OSR142"
+      "code": "OSR142",
+      "fried": null
     },
     {
       "slug": "split-bengal-gram-dal-and-vegetable-pulao",
-      "code": "BFP137"
+      "code": "BFP137",
+      "fried": null
     },
     {
       "slug": "split-bengal-gram-sweet-rice",
-      "code": "ASC463"
+      "code": "ASC463",
+      "fried": null
     },
     {
       "slug": "spring-basket-salad",
-      "code": "BFP302"
+      "code": "BFP302",
+      "fried": null
     },
     {
       "slug": "sprouted-moong-dal-chat",
-      "code": "ASC170"
+      "code": "ASC170",
+      "fried": null
     },
     {
       "slug": "sprouted-moong-daliya",
-      "code": "ASC468"
+      "code": "ASC468",
+      "fried": null
+    },
+    {
+      "slug": "sprouted-moong-parantha",
+      "code": "ASC102",
+      "fried": null
     },
     {
       "slug": "sprouted-moong-poha",
-      "code": "ASC469"
+      "code": "ASC469",
+      "fried": null
     },
     {
       "slug": "sprouted-moong-pulao",
-      "code": "ASC117"
+      "code": "ASC117",
+      "fried": null
     },
     {
       "slug": "sprouted-moong-raita",
-      "code": "ASC271"
+      "code": "ASC271",
+      "fried": null
     },
     {
       "slug": "sprouted-moong-salad",
-      "code": "ASC259"
+      "code": "ASC259",
+      "fried": null
     },
     {
       "slug": "sprouts-upma",
-      "code": "BFP578"
+      "code": "BFP578",
+      "fried": null
     },
     {
       "slug": "steamed-cake-with-chocolate-sauce",
-      "code": "BFP380"
+      "code": "BFP380",
+      "fried": null
     },
     {
       "slug": "steamed-orange-pudding",
-      "code": "ASC322"
+      "code": "ASC322",
+      "fried": null
     },
     {
       "slug": "steeped-hot-coffee",
-      "code": "BFP008"
+      "code": "BFP008",
+      "fried": null
     },
     {
       "slug": "stewed-apple-with-custard",
-      "code": "ASC330"
+      "code": "ASC330",
+      "fried": null
     },
     {
       "slug": "stewed-fruit",
-      "code": "BFP371"
+      "code": "BFP371",
+      "fried": null
     },
     {
       "slug": "strawberry-and-vanilla-cake-with-butter-icing",
-      "code": "ASC426"
+      "code": "ASC426",
+      "fried": null
     },
     {
       "slug": "strawberry-ice-cream",
-      "code": "BFP348"
+      "code": "BFP348",
+      "fried": null
     },
     {
       "slug": "stuffed-baked-potatoes",
-      "code": "BFP288"
+      "code": "BFP288",
+      "fried": null
     },
     {
       "slug": "stuffed-bittergourd",
-      "code": "BFP273"
+      "code": "BFP273",
+      "fried": null
     },
     {
       "slug": "stuffed-brinjal",
-      "code": "ASC187"
+      "code": "ASC187",
+      "fried": null
     },
     {
       "slug": "stuffed-capsicum",
-      "code": "ASC186"
+      "code": "ASC186",
+      "fried": null
+    },
+    {
+      "slug": "stuffed-egg-omelette",
+      "code": "ASC062",
+      "fried": null
     },
     {
       "slug": "stuffed-okra",
-      "code": "ASC184"
+      "code": "ASC184",
+      "fried": null
     },
     {
       "slug": "stuffed-round-gourd",
-      "code": "ASC185"
+      "code": "ASC185",
+      "fried": null
     },
     {
       "slug": "stuffed-tomatoes",
-      "code": "ASC189"
+      "code": "ASC189",
+      "fried": null
     },
     {
       "slug": "submarine-sandwich",
-      "code": "BFP468"
+      "code": "BFP468",
+      "fried": null
     },
     {
       "slug": "summer-cooler",
-      "code": "ASC012"
+      "code": "ASC012",
+      "fried": null
     },
     {
       "slug": "sunset-and-sunrise-open-sandwich",
-      "code": "BFP471"
+      "code": "BFP471",
+      "fried": null
     },
     {
       "slug": "sweet-and-salty-biscuit",
-      "code": "ASC444"
+      "code": "ASC444",
+      "fried": null
     },
     {
       "slug": "sweet-corn-soup",
-      "code": "OSR133"
+      "code": "OSR133",
+      "fried": null
     },
     {
       "slug": "sweet-couscous-dessert",
-      "code": "OSR023"
+      "code": "OSR023",
+      "fried": null
     },
     {
       "slug": "sweet-open-sandwich",
-      "code": "ASC038"
+      "code": "ASC038",
+      "fried": null
     },
     {
       "slug": "sweet-plain-biscuit",
-      "code": "ASC441"
+      "code": "ASC441",
+      "fried": null
+    },
+    {
+      "slug": "sweet-poori",
+      "code": "ASC464",
+      "fried": "poori, bhatura, kachori, mathri"
     },
     {
       "slug": "sweet-potato-biscuit",
-      "code": "OSR034"
+      "code": "OSR034",
+      "fried": null
     },
     {
       "slug": "sweet-raita",
-      "code": "ASC278"
+      "code": "ASC278",
+      "fried": null
     },
     {
       "slug": "sweet-rice",
-      "code": "ASC125"
+      "code": "ASC125",
+      "fried": null
     },
     {
       "slug": "sweet-split-chickpea-roti",
-      "code": "ASC467"
+      "code": "ASC467",
+      "fried": null
     },
     {
       "slug": "swiss-roll",
-      "code": "ASC429"
+      "code": "ASC429",
+      "fried": null
     },
     {
       "slug": "tandoori-fish",
-      "code": "ASC252"
+      "code": "ASC252",
+      "fried": null
+    },
+    {
+      "slug": "tandoori-parantha",
+      "code": "ASC112",
+      "fried": null
     },
     {
       "slug": "tomato-and-cucumber-sandwich",
-      "code": "BFP455"
+      "code": "BFP455",
+      "fried": null
     },
     {
       "slug": "tomato-aspic",
-      "code": "BFP307"
+      "code": "BFP307",
+      "fried": null
     },
     {
       "slug": "tomato-chicken",
-      "code": "BFP216"
+      "code": "BFP216",
+      "fried": null
     },
     {
       "slug": "tomato-ginger-chutney",
-      "code": "BFP442"
+      "code": "BFP442",
+      "fried": null
     },
     {
       "slug": "tomato-onion-raita",
-      "code": "ASC269"
+      "code": "ASC269",
+      "fried": null
     },
     {
       "slug": "tomato-sandwich",
-      "code": "BFP456"
+      "code": "BFP456",
+      "fried": null
     },
     {
       "slug": "tossed-green-salad",
-      "code": "BFP301"
+      "code": "BFP301",
+      "fried": null
     },
     {
       "slug": "tossed-salad",
-      "code": "ASC260"
+      "code": "ASC260",
+      "fried": null
     },
     {
       "slug": "triffle-pudding",
-      "code": "ASC319"
+      "code": "ASC319",
+      "fried": null
     },
     {
       "slug": "tutti-fruitti-biscuit",
-      "code": "OSR045"
+      "code": "OSR045",
+      "fried": null
     },
     {
       "slug": "urad-sabut-special",
-      "code": "BFP179"
+      "code": "BFP179",
+      "fried": null
     },
     {
       "slug": "urad-special-dehusked",
-      "code": "BFP171"
+      "code": "BFP171",
+      "fried": null
     },
     {
       "slug": "vanilla-ice-cream-with-egg",
-      "code": "BFP347"
+      "code": "BFP347",
+      "fried": null
     },
     {
       "slug": "vanilla-ice-cream-without-egg",
-      "code": "BFP346"
+      "code": "BFP346",
+      "fried": null
     },
     {
       "slug": "vanilla-souffle",
-      "code": "ASC311"
+      "code": "ASC311",
+      "fried": null
     },
     {
       "slug": "veg-paneer-stew",
-      "code": "BFP091"
+      "code": "BFP091",
+      "fried": null
     },
     {
       "slug": "vegetable-and-mayonnaise-sandwich",
-      "code": "ASC036"
+      "code": "ASC036",
+      "fried": null
     },
     {
       "slug": "vegetable-chowmein",
-      "code": "ASC134"
+      "code": "ASC134",
+      "fried": null
     },
     {
       "slug": "vegetable-curry-with-coconut",
-      "code": "BFP241"
+      "code": "BFP241",
+      "fried": null
     },
     {
       "slug": "vegetable-jalfrezi",
-      "code": "BFP277"
+      "code": "BFP277",
+      "fried": null
     },
     {
       "slug": "vegetable-namkeen-jave",
-      "code": "OSR101"
+      "code": "OSR101",
+      "fried": null
     },
     {
       "slug": "vegetable-pancake",
-      "code": "ASC065"
+      "code": "ASC065",
+      "fried": null
     },
     {
       "slug": "vegetable-patties",
-      "code": "BFP545"
+      "code": "BFP545",
+      "fried": null
     },
     {
       "slug": "vegetable-poha",
-      "code": "BFP045"
+      "code": "BFP045",
+      "fried": null
     },
     {
       "slug": "vegetable-stock",
-      "code": "ASC069"
+      "code": "ASC069",
+      "fried": null
     },
     {
       "slug": "vegetable-upma",
-      "code": "BFP043"
+      "code": "BFP043",
+      "fried": null
     },
     {
       "slug": "vegetables-stir-fry",
-      "code": "BFP278"
+      "code": "BFP278",
+      "fried": null
     },
     {
       "slug": "vegetarian-club-sandwich",
-      "code": "ASC032"
+      "code": "ASC032",
+      "fried": null
+    },
+    {
+      "slug": "vegetarian-egg-kofta-curry",
+      "code": "ASC207",
+      "fried": "kofta"
+    },
+    {
+      "slug": "vegetarian-nargisi-kofta-curry",
+      "code": "BFP210",
+      "fried": "kofta"
+    },
+    {
+      "slug": "vegeterian-scotch-egg",
+      "code": "ASC380",
+      "fried": "scotch egg"
     },
     {
       "slug": "vermicelli-porridge",
-      "code": "BFP036"
+      "code": "BFP036",
+      "fried": null
     },
     {
       "slug": "victorian-sandwich-cake",
-      "code": "BFP492"
+      "code": "BFP492",
+      "fried": null
     },
     {
       "slug": "waldroff-salad",
-      "code": "ASC263"
+      "code": "ASC263",
+      "fried": null
     },
     {
       "slug": "walnut-chutney",
-      "code": "BFP446"
+      "code": "BFP446",
+      "fried": null
     },
     {
       "slug": "washed-moong-dal",
-      "code": "ASC151"
+      "code": "ASC151",
+      "fried": null
     },
     {
       "slug": "washed-urad-dal",
-      "code": "ASC152"
+      "code": "ASC152",
+      "fried": null
     },
     {
       "slug": "watercress-sandwich",
-      "code": "OSR028"
+      "code": "OSR028",
+      "fried": null
     },
     {
       "slug": "wheat-and-gram-flour-ladoo",
-      "code": "BFP406"
+      "code": "BFP406",
+      "fried": null
     },
     {
       "slug": "wheat-cake",
-      "code": "OSR120"
+      "code": "OSR120",
+      "fried": null
     },
     {
       "slug": "wheat-flakes",
-      "code": "ASC053"
+      "code": "ASC053",
+      "fried": null
     },
     {
       "slug": "wheat-flour-and-moong-dal-burfi",
-      "code": "ASC465"
+      "code": "ASC465",
+      "fried": null
     },
     {
       "slug": "wheat-flour-and-nuts-ladoos",
-      "code": "BFP571"
+      "code": "BFP571",
+      "fried": null
     },
     {
       "slug": "whey-soup",
-      "code": "OSR129"
+      "code": "OSR129",
+      "fried": null
     },
     {
       "slug": "white-stock",
-      "code": "BFP062"
+      "code": "BFP062",
+      "fried": null
     },
     {
       "slug": "whole-masoor",
-      "code": "ASC157"
+      "code": "ASC157",
+      "fried": null
     },
     {
       "slug": "whole-moong",
-      "code": "ASC156"
+      "code": "ASC156",
+      "fried": null
     },
     {
       "slug": "whole-moth",
-      "code": "ASC158"
+      "code": "ASC158",
+      "fried": null
     },
     {
       "slug": "whole-urad",
-      "code": "ASC159"
+      "code": "ASC159",
+      "fried": null
     },
     {
       "slug": "woodapple-juice",
-      "code": "OSR001"
+      "code": "OSR001",
+      "fried": null
+    },
+    {
+      "slug": "yam-kofta-curry",
+      "code": "BFP249",
+      "fried": "kofta"
     }
   ],
   "indbSkipped": [
@@ -17159,7 +18046,7 @@
     {
       "code": "ASC046",
       "name": "Sesame toast",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC048",
@@ -17190,11 +18077,6 @@
       "code": "ASC058",
       "name": "Poached egg",
       "reason": "FITOS already has \"poached egg\""
-    },
-    {
-      "code": "ASC062",
-      "name": "Stuffed egg omelette/omlet",
-      "reason": "FITOS already has \"omlet\""
     },
     {
       "code": "ASC071",
@@ -17239,7 +18121,7 @@
     {
       "code": "ASC079",
       "name": "Clear tomato soup (Tamatar ka soup)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "energy 318 kcal but its macros give 569"
     },
     {
       "code": "ASC080",
@@ -17254,17 +18136,17 @@
     {
       "code": "ASC082",
       "name": "Cream of tomato soup",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "energy 452 kcal but its macros give 704"
     },
     {
       "code": "ASC083",
       "name": "Cream of green peas soup",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "energy 522 kcal but its macros give 770"
     },
     {
       "code": "ASC084",
       "name": "Cream of spinach soup",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "energy 465 kcal but its macros give 714"
     },
     {
       "code": "ASC085",
@@ -17274,7 +18156,7 @@
     {
       "code": "ASC086",
       "name": "Cream of mushroom soup",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "energy 440 kcal but its macros give 679"
     },
     {
       "code": "ASC087",
@@ -17294,7 +18176,7 @@
     {
       "code": "ASC090",
       "name": "Chinese cabbage and meat ball soup",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC091",
@@ -17317,11 +18199,6 @@
       "reason": "FITOS already has \"chapati\""
     },
     {
-      "code": "ASC097",
-      "name": "Plain parantha/paratha",
-      "reason": "FITOS already has \"paratha\""
-    },
-    {
       "code": "ASC098",
       "name": "Potato parantha/paratha (Aloo ka parantha/paratha)",
       "reason": "FITOS already has \"paratha\""
@@ -17337,28 +18214,8 @@
       "reason": "FITOS already has \"paratha\""
     },
     {
-      "code": "ASC101",
-      "name": "Dal parantha/paratha",
-      "reason": "FITOS already has \"paratha\""
-    },
-    {
-      "code": "ASC102",
-      "name": "Sprouted moong parantha/paratha",
-      "reason": "FITOS already has \"paratha\""
-    },
-    {
       "code": "ASC103",
       "name": "Pea parantha/paratha (Matar ka parantha/paratha)",
-      "reason": "FITOS already has \"paratha\""
-    },
-    {
-      "code": "ASC104",
-      "name": "Keema parantha/paratha",
-      "reason": "FITOS already has \"paratha\""
-    },
-    {
-      "code": "ASC105",
-      "name": "Paneer parantha/paratha",
       "reason": "FITOS already has \"paratha\""
     },
     {
@@ -17372,34 +18229,9 @@
       "reason": "FITOS already has \"poori\""
     },
     {
-      "code": "ASC108",
-      "name": "Spinach poori (Palak poori)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC109",
-      "name": "Methi poori",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC110",
-      "name": "Dal stuffed poori",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC111",
-      "name": "Potato stuffed poori (Aloo ki poori)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC112",
-      "name": "Tandoori parantha/paratha",
-      "reason": "FITOS already has \"paratha\""
-    },
-    {
       "code": "ASC118",
       "name": "Paneer pulao",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC122",
@@ -17449,7 +18281,7 @@
     {
       "code": "ASC137",
       "name": "Spaghetti and cheese balls in tomato sauce",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC139",
@@ -17489,7 +18321,7 @@
     {
       "code": "ASC148",
       "name": "Onion tomato uttapam",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC150",
@@ -17514,7 +18346,7 @@
     {
       "code": "ASC168",
       "name": "Besan kadhi with pakodies",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC175",
@@ -17537,56 +18369,6 @@
       "reason": "FITOS already has \"matar mushroom\""
     },
     {
-      "code": "ASC198",
-      "name": "Pea kofta curry (Matar kofta curry)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC199",
-      "name": "Spinach kofta curry (Palak kofta curry)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC200",
-      "name": "Paneer kofta curry",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC201",
-      "name": "Lotus stem kofta curry (Kamal kakdi kofta curry)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC202",
-      "name": "Raw banana kofta curry (Kela kofta curry)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC203",
-      "name": "Cauliflower kofta curry (Phoolgobhi kofta curry)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC204",
-      "name": "Cabbage kofta curry (Pattagobhi kofta curry)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC205",
-      "name": "Ghiya/Lauki Kofta Curry",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC206",
-      "name": "Spinach paneer kofta curry (Palak paneer kofta curry)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC207",
-      "name": "Vegetarian egg kofta curry",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
       "code": "ASC214",
       "name": "Dum aloo",
       "reason": "FITOS already has \"dum aloo\""
@@ -17599,7 +18381,7 @@
     {
       "code": "ASC216",
       "name": "Methi chaman",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC217",
@@ -17609,7 +18391,7 @@
     {
       "code": "ASC218",
       "name": "Jackfruit sabzi (Kathal ki sabzi)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC219",
@@ -17629,22 +18411,17 @@
     {
       "code": "ASC225",
       "name": "Paneer makhana korma",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC236",
       "name": "Mutton chops",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC237",
       "name": "Shammi kebab",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC238",
-      "name": "Scotch egg",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC239",
@@ -17669,7 +18446,7 @@
     {
       "code": "ASC243",
       "name": "Chicken kebab",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC244",
@@ -17682,19 +18459,14 @@
       "reason": "FITOS already has \"fish curry\""
     },
     {
-      "code": "ASC247",
-      "name": "Fried fish (Indian style) (Tali hui machli)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
       "code": "ASC248",
       "name": "Fried fish and Chips (English Style) (Tali hui machli aur chips)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC249",
       "name": "Tomato fish",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC251",
@@ -17724,7 +18496,7 @@
     {
       "code": "ASC277",
       "name": "Boondi raita",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC279",
@@ -17734,7 +18506,7 @@
     {
       "code": "ASC280",
       "name": "Gunjia",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC281",
@@ -17804,52 +18576,22 @@
     {
       "code": "ASC347",
       "name": "Ghujia/Lavang latika",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC348",
       "name": "Gulab Jamun with khoya",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC349",
       "name": "Mal pua",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC351",
-      "name": "Potato pakora/pakoda (Aloo pakoda)",
-      "reason": "FITOS already has \"pakoda\""
-    },
-    {
-      "code": "ASC352",
-      "name": "Onion pakora/pakoda (Pyaaz ke pakode)",
-      "reason": "FITOS already has \"pakoda\""
-    },
-    {
-      "code": "ASC353",
-      "name": "Cauliflower pakora/pakoda (Phoolgobhi ke pakode)",
-      "reason": "FITOS already has \"pakoda\""
-    },
-    {
-      "code": "ASC354",
-      "name": "Mixed vegetable pakora/pakoda",
-      "reason": "FITOS already has \"pakoda\""
-    },
-    {
-      "code": "ASC355",
-      "name": "Spinach pakora/pakoda (Palak pakoda)",
-      "reason": "FITOS already has \"pakoda\""
-    },
-    {
-      "code": "ASC356",
-      "name": "Methi pakora/pakoda (Methi ke pakode)",
-      "reason": "FITOS already has \"pakoda\""
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC357",
       "name": "Egg pakora/pakoda (Ande ke pakode)",
-      "reason": "FITOS already has \"pakoda\""
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC358",
@@ -17862,24 +18604,19 @@
       "reason": "FITOS already has \"paneer pakora\""
     },
     {
-      "code": "ASC360",
-      "name": "Potato bonda (Aloo bonda)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
       "code": "ASC361",
       "name": "Potato samosa (Aloo ka samosa)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC362",
       "name": "Minced meat samosa (Keema ka samosa)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC363",
       "name": "Paneer and pea samosa (Paneer matar ka samosa)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC364",
@@ -17894,42 +18631,42 @@
     {
       "code": "ASC366",
       "name": "Vegetable cutlet",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC367",
       "name": "Flattened rice cutlet (Chirwa cutlet/Chivda cutlet/Poha cutlet)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC368",
       "name": "Peanut cutlet (Mungfali ke cutlet)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC369",
       "name": "Fish cutlet (Machli ka cutlet)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC370",
       "name": "Paneer potato cutlet (Paneer aloo cutlet)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC371",
       "name": "Spinach chickpeas cutlet (Palak channa dal cutlet)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC372",
       "name": "Cheese toast",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC375",
       "name": "Vegetable burger",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC376",
@@ -17939,22 +18676,17 @@
     {
       "code": "ASC377",
       "name": "Vegetable seekh kebab",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC378",
       "name": "Masala vada",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC379",
       "name": "Peanut sago vada (Sabudana mungfali vada)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC380",
-      "name": "Vegeterian scotch egg",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC383",
@@ -17989,7 +18721,7 @@
     {
       "code": "ASC409",
       "name": "Cheese balls",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC410",
@@ -18029,42 +18761,27 @@
     {
       "code": "ASC456",
       "name": "Soyabean muthias",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC457",
       "name": "Soyabean tikki",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC458",
-      "name": "Soyabean namak paras",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC460",
-      "name": "Spinach peanut namak paras (Palak moongfali namak paras)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC461",
       "name": "Gram flour and semolina chilla/cheela/savory pancake (Besan suji chilla/cheela)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC462",
       "name": "Rice moong dal cheela (Chawal aur moong dal ka cheela)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "ASC464",
-      "name": "Sweet poori (Meethi poori)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC473",
       "name": "Semolina carrot vada (Suji gajar vada)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "ASC474",
@@ -18119,7 +18836,7 @@
     {
       "code": "ASC487",
       "name": "Vegetable khichdi/khichri",
-      "reason": "FITOS already has \"khichri\""
+      "reason": "INDB gives no per-serving values"
     },
     {
       "code": "ASC489",
@@ -18297,36 +19014,6 @@
       "reason": "FITOS already has \"poha\""
     },
     {
-      "code": "BFP047",
-      "name": "Paneer stuffed cheela/chilla",
-      "reason": "FITOS already has \"chilla\""
-    },
-    {
-      "code": "BFP054",
-      "name": "French omelette/omlet",
-      "reason": "FITOS already has \"omlet\""
-    },
-    {
-      "code": "BFP055",
-      "name": "Puffy omelette/omlet",
-      "reason": "FITOS already has \"omlet\""
-    },
-    {
-      "code": "BFP056",
-      "name": "Orange omelette/omlet",
-      "reason": "FITOS already has \"omlet\""
-    },
-    {
-      "code": "BFP057",
-      "name": "Cheese and mushroom omelette/omlet",
-      "reason": "FITOS already has \"omlet\""
-    },
-    {
-      "code": "BFP058",
-      "name": "Spanish omelette/omlet",
-      "reason": "FITOS already has \"omlet\""
-    },
-    {
       "code": "BFP065",
       "name": "Meat consomme (with mutton)",
       "reason": "energy 185 kcal but its macros give 1144"
@@ -18407,44 +19094,9 @@
       "reason": "FITOS already has \"paratha\""
     },
     {
-      "code": "BFP110",
-      "name": "Methi parantha/paratha",
-      "reason": "FITOS already has \"paratha\""
-    },
-    {
-      "code": "BFP114",
-      "name": "Bathua poori",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "BFP115",
-      "name": "Gram flour poori (Besan poori)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "BFP116",
-      "name": "Beetroot poori (Chukandar ki poori)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "BFP117",
-      "name": "Peas poori (Matar ki poori)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "BFP118",
-      "name": "Peas kachori (Matar kachori)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
       "code": "BFP127",
       "name": "Minced meat pancake (with chicken)",
       "reason": "energy 156 kcal but its macros give 235"
-    },
-    {
-      "code": "BFP132",
-      "name": "Eggplant/Brinjal rice (Vangi bhat)",
-      "reason": "FITOS already has \"eggplant\""
     },
     {
       "code": "BFP134",
@@ -18532,49 +19184,29 @@
       "reason": "INDB gives no per-serving values"
     },
     {
-      "code": "BFP196",
-      "name": "Shahi keema kofta curry",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
       "code": "BFP199",
       "name": "Mutton seekh kebab",
       "reason": "FITOS already has \"mutton seekh kebab\""
     },
     {
-      "code": "BFP201",
-      "name": "Indian lamb and egg curry (Nargisi kofta)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
       "code": "BFP203",
       "name": "Soya chunks sweet and sour (Nutrinugget sweet and sour)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP207",
       "name": "Vegetable yakhni",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "BFP210",
-      "name": "Vegetarian nargisi kofta curry",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP221",
       "name": "Chicken sweet and sour",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP222",
       "name": "Chicken korma",
       "reason": "FITOS already has \"chicken korma\""
-    },
-    {
-      "code": "BFP226",
-      "name": "Fish finger",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
     },
     {
       "code": "BFP229",
@@ -18602,21 +19234,6 @@
       "reason": "FITOS already has \"egg curry\""
     },
     {
-      "code": "BFP246",
-      "name": "Potato kofta curry (Aloo kofta curry)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "BFP249",
-      "name": "Yam kofta curry (Zimikand/Suran kofta curry)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "BFP250",
-      "name": "Jackfruit kofta curry (Kathal ka kofta curry)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
       "code": "BFP262",
       "name": "Cabbage rolls (curry) ((Pattagobhi rolls)(curry))",
       "reason": "FITOS already has \"cabbage rolls\""
@@ -18624,12 +19241,12 @@
     {
       "code": "BFP269",
       "name": "Okra/Lady's fingers fry (Bhindi sabzi/sabji/subji)",
-      "reason": "FITOS already has \"okra\""
+      "reason": "FITOS already has \"bhindi sabzi\""
     },
     {
       "code": "BFP270",
       "name": "Crispy okra/Crispy lady's fingers (Karare bhindi)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP274",
@@ -18639,7 +19256,7 @@
     {
       "code": "BFP275",
       "name": "Yam fried (Zimikand/Suran fried)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "FITOS already has \"zimikand\""
     },
     {
       "code": "BFP280",
@@ -18654,7 +19271,7 @@
     {
       "code": "BFP291",
       "name": "Creamed spinach and mushroom",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP292",
@@ -18739,7 +19356,7 @@
     {
       "code": "BFP386",
       "name": "Gulab jamun with milk powder",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP392",
@@ -18764,52 +19381,52 @@
     {
       "code": "BFP415",
       "name": "Masala onion pakora/pakoda (Pyaaz ke pakode)",
-      "reason": "FITOS already has \"pakoda\""
+      "reason": "FITOS already has \"pyaaz ke pakode\""
     },
     {
       "code": "BFP416",
       "name": "Masala green chilli pakora/pakoda (Hari mirch kay pakode)",
-      "reason": "FITOS already has \"pakoda\""
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP420",
       "name": "Chicken pakora/pakoda",
-      "reason": "FITOS already has \"pakoda\""
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP421",
       "name": "Fish pakora/pakoda",
-      "reason": "FITOS already has \"pakoda\""
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP424",
       "name": "Paneer cutlet",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP425",
       "name": "Sago cutlet/vadas (Sabudana cutlet/vadas)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP427",
       "name": "Poshtik cutlet",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP428",
       "name": "Egg cutlet (Anda cutlet)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP430",
       "name": "Minced meat cutlet",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP431",
       "name": "Vegetable samosa",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP436",
@@ -18819,7 +19436,7 @@
     {
       "code": "BFP437",
       "name": "Masala urad dal vada",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP439",
@@ -18859,7 +19476,7 @@
     {
       "code": "BFP539",
       "name": "Potato aigrettes",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP546",
@@ -18932,34 +19549,14 @@
       "reason": "INDB gives no per-serving values"
     },
     {
-      "code": "BFP564",
-      "name": "Pearl millet mathri (Bajra mathri)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
       "code": "BFP566",
       "name": "Fermented bengal gram vada (Khameerikrit/Ufna hua channa dal ka vada)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "BFP568",
-      "name": "Poshtik namak paras",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "BFP576",
-      "name": "Poshtik khichdi/khichri",
-      "reason": "FITOS already has \"khichri\""
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "BFP579",
       "name": "Semolina idli (Suji/Rava idli)",
       "reason": "FITOS already has \"suji\""
-    },
-    {
-      "code": "BFP580",
-      "name": "Poshtik chilla/cheela",
-      "reason": "FITOS already has \"cheela\""
     },
     {
       "code": "BFP583",
@@ -19117,24 +19714,9 @@
       "reason": "a whole jar, not a portion"
     },
     {
-      "code": "OSR063",
-      "name": "Fish orly",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "OSR072",
-      "name": "Corn omelette/omlet",
-      "reason": "FITOS already has \"omlet\""
-    },
-    {
       "code": "OSR075",
       "name": "Cabbage manchurian (Pattagobhi manchurian)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
-      "code": "OSR076",
-      "name": "Gobi 65",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "OSR081",
@@ -19189,7 +19771,7 @@
     {
       "code": "OSR100",
       "name": "Gram flour chilla/cheela (Besan chilla/cheela)",
-      "reason": "FITOS already has \"cheela\""
+      "reason": "FITOS already has \"besan chilla\""
     },
     {
       "code": "OSR102",
@@ -19207,19 +19789,14 @@
       "reason": "FITOS already has \"methi thepla\""
     },
     {
-      "code": "OSR107",
-      "name": "Quinoa khichdi/khichri",
-      "reason": "FITOS already has \"khichri\""
-    },
-    {
       "code": "OSR108",
       "name": "Khakhra chaat",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "OSR110",
       "name": "Banana appam",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "OSR111",
@@ -19230,11 +19807,6 @@
       "code": "OSR112",
       "name": "Pav bhaji",
       "reason": "FITOS already has \"pav bhaji\""
-    },
-    {
-      "code": "OSR113",
-      "name": "Rice murukku",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
     },
     {
       "code": "OSR114",
@@ -19249,17 +19821,17 @@
     {
       "code": "OSR116",
       "name": "Spicy corn chaat",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "OSR118",
       "name": "Jackfruit fritters (Ponsa mulik/Kathal ka pakora)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "OSR119",
       "name": "Banana chips (Kele ke chips)",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "OSR123",
@@ -19307,14 +19879,9 @@
       "reason": "FITOS already has \"sev\""
     },
     {
-      "code": "OSR148",
-      "name": "Papdi",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
-    },
-    {
       "code": "OSR152",
       "name": "Bread roll",
-      "reason": "deep-fried: INDB counts the whole pan of oil"
+      "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
       "code": "OSR154",

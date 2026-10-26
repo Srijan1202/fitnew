@@ -44,7 +44,7 @@ import {
   type UsdaDatasetKey,
   type UsdaPicksFile,
 } from './format.js';
-import { cofidNutrition, ifctAliases, ifctNutrition, indbNames, indbNutrition, slugOf } from './sources.js';
+import { cofidNutrition, friedKindOf, ifctAliases, ifctNutrition, indbNames, indbNutrition, slugOf } from './sources.js';
 import { usableValues, usdaKey, type UsdaRecord } from './usda.js';
 
 type Confidence = FoodNutrition['confidence'];
@@ -350,20 +350,21 @@ export function buildFoodSeed({ picks, carried, recipes, usda, ifct, indb, cofid
       indbSkipped.push({ code: r.code, name: r.name, reason: result.skip });
       continue;
     }
+    const fried = r.deepFry === null ? null : friedKindOf(r.name)!.kind;
     const food: FoodSeed = {
-      slug: freeSlug(names.name, 'indb'),
+      slug: freeSlug(names.slugName, 'indb'),
       name: names.name,
       brand: null,
       barcode: null,
       source: 'indb',
-      sourceRef: INDB_SOURCE_REF(r.code),
+      sourceRef: INDB_SOURCE_REF(r.code, fried),
       isVerified: false,
-      aliases: normaliseAliases(names.name, names.aliases),
+      aliases: normaliseAliases(names.name, [...names.aliases, ...names.spellings]),
       nutrition: [result.nutrition],
     };
     foods.push(food);
     claim(food);
-    indbFoods.push({ slug: food.slug, code: r.code });
+    indbFoods.push({ slug: food.slug, code: r.code, fried });
   }
 
   // An alias that is another food's name is dropped (a later source's local name can be an earlier food's name).
@@ -396,6 +397,7 @@ export function buildFoodSeed({ picks, carried, recipes, usda, ifct, indb, cofid
     ifctSkipped: ifctSkipped.length,
     indb: indbFoods.length,
     indbSkipped: indbSkipped.length,
+    indbFried: indbFoods.filter((f) => f.fried !== null).length,
     cofidNew: cofidFoods.filter((c) => !c.replaced).length,
     cofidReplaced: cofidFoods.filter((c) => c.replaced).length,
     targetApprox: SEED_TARGET_APPROX,
@@ -422,8 +424,8 @@ export function buildFoodSeed({ picks, carried, recipes, usda, ifct, indb, cofid
         fibre: 'null (unknown) when the source does not report it — never 0; a composite is unknown if any ingredient is',
         carriedConfidence: 'carried-over core estimates keep their numbers unchanged; a core confidence of high is seeded as medium (a FITOS estimate is never high)',
         ifct: 'IFCT 2017 per 100 g; kcal = kJ / 4.184 (IFCT\'s 0 kJ for its oils and ghee is computed with IFCT\'s own factors 17/37/17/8 kJ per g); each value +- the SD IFCT reports, kept within 3-10 %, rounded outward; left out: a missing value, and energy more than 25 % from 4/4/9 of its macros; verified, high confidence; used by the owner\'s decision of 2026-10-25 without NIN\'s written permission (ADR-036)',
-        indb: 'INDB 2024 per piece / bowl as INDB serves it (its per 100 g is of the raw ingredients, so unused); +-10 %; left out: deep-fried recipes (INDB counts the whole pan of oil), whole dishes, portions outside 5-900 kcal, energy more than 25 % from 4/4/9 of its macros, and a recipe FITOS already has (by name or alias); never verified (ADR-036)',
-        cofid: 'UK CoFID 2021 (gov.uk, Open Government Licence v3.0) measured as eaten: plain foods +-3 %, dishes +-8 %; a replaced FITOS composite keeps its slug, name, aliases and serving (ADR-036)',
+        indb: 'INDB 2024 per piece / bowl as INDB serves it (its per 100 g is of the raw ingredients, so unused); +-10 %; a deep-fried recipe has the pan taken out and keeps the fat CoFID measured in fried food of its kind, +-15 % (beta 3.9; samosa, vada, cutlet and other kinds CoFID cannot check within +-15 % are left out); left out: whole dishes, portions outside 5-900 kcal, energy more than 25 % from 4/4/9 of its macros, and a recipe FITOS already has (by name or alias); never verified (ADR-036)',
+        cofid: 'UK CoFID 2021 (gov.uk, Open Government Licence v3.0) measured as eaten: plain foods +-3 %, dishes +-8 %; a replaced FITOS composite keeps its slug, name, aliases and serving (ADR-036); the fried dishes listed as oil references only calibrate the fried INDB recipes and are never foods (beta 3.9)',
         names: 'a measured food never repeats a name: an IFCT name FITOS already uses gets "(IFCT)", an INDB recipe FITOS already has is skipped; an alias that is another food\'s name is dropped',
       },
       usdaFoods: [...usdaFoods].sort((a, b) => (a.slug < b.slug ? -1 : 1)),

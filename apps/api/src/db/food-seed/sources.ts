@@ -5,11 +5,13 @@
  *   IFCT 2017   raw foods per 100 g, each value +- the SD IFCT reports across
  *               its six regions, kept within 3-10 % of the value; verified.
  *   INDB 2024   recipes per piece / bowl as INDB serves them, +-10 %. Its
- *               deep-fried recipes count the whole pan of oil (a medu vada at
- *               ~590 kcal) and often measure what is fried in cups, so the oil
- *               cannot be corrected reliably: they are left out, not guessed.
- *               So are whole dishes (a cake, a jar) and portions outside
- *               5-900 kcal (a wrong unit). Never verified.
+ *               deep-fried recipes count the whole pan of oil (a poori at
+ *               ~920 kcal). From beta 3.9 the pan is taken out and the fat
+ *               kept is what CoFID measured in fried food of the same kind
+ *               (FRIED_KINDS), +-15 %; a kind CoFID cannot check within
+ *               +-15 % (samosa, vada, cutlet) stays out, not guessed. So do
+ *               whole dishes (a cake, a jar) and portions outside 5-900 kcal
+ *               (a wrong unit). Never verified.
  *   CoFID 2021  measured as eaten, per 100 g: plain foods +-3 %, dishes +-8 %;
  *               verified.
  *
@@ -24,6 +26,8 @@ import type { CofidFood, IfctFood, IndbRecipe } from './format.js';
 
 export const IFCT_SPREAD = { min: 0.03, max: 0.1 } as const;
 export const INDB_SPREAD = 0.1;
+/** A fried INDB recipe's spread: the owner's +-15 % check against CoFID (beta 3.9). */
+export const INDB_FRIED_SPREAD = 0.15;
 export const INDB_PIECE_KCAL = { min: 5, max: 900 } as const;
 /** INDB units that are a whole dish, not something one person eats. */
 export const INDB_WHOLE_UNITS = new Set(['cake', 'pie', 'jar', 'box', 'souffle dish', 'dish', 'chicken', 'loaf', 'tin', 'bottle', 'tray', 'pan']);
@@ -129,11 +133,65 @@ export function ifctAliases(f: IfctFood): string[] {
 
 /* ------------------------------------------------------------------ INDB -- */
 
+/**
+ * Beta 3.9 (owner 2026-10-26, ADR-036 amendment): the fat a deep-fried food
+ * of each kind holds, as a share of its protein + carbohydrate (grams of fat
+ * per gram), from CoFID's dishes measured as eaten (`references`, codes in
+ * cofid-picks.json). Fat over protein + carbohydrate does not depend on the
+ * water or the portion, so INDB's own per-piece protein and carbohydrate give
+ * the fat. A kind is here only when one share puts every reference's energy
+ * within +-15 % (the owner's check; food-seed.test.ts). Pakoras split by what
+ * is fried: cauliflower and aubergine soak up nearly twice the oil. Left out,
+ * because CoFID's own measurements of them differ by more than that: samosa
+ * (0.26-1.26), vada and cutlet (0.25-0.95), and the pakoras of paneer, egg,
+ * bread, chicken and fish (no reference). Gulab jamun is left out too: INDB
+ * also counts the whole pan of syrup.
+ */
+export const FRIED_KINDS: readonly { readonly kind: string; readonly pattern: RegExp; readonly share: number; readonly references: readonly string[] }[] = [
+  { kind: 'poori, bhatura, kachori, mathri', pattern: /\b(poori|bhatura|kachori|mathri)\b/i, share: 0.51, references: ['11-911'] },
+  { kind: 'cauliflower pakora', pattern: /\b(cauliflower|phoolgobhi)\b.*\bpakora\b|^gobi 65\b/i, share: 0.88, references: ['15-620', '15-826', '15-827'] },
+  {
+    kind: 'potato, onion or leafy pakora',
+    pattern: /\b(potato|onion|spinach|methi|mixed vegetable)\b.*\bpakora\b|^potato bonda\b/i,
+    share: 0.47,
+    references: ['15-653', '15-828', '15-830', '15-831', '15-832'],
+  },
+  { kind: 'fried fish', pattern: /^(fried fish \(indian style\)|fish finger\b|fish orly\b)/i, share: 0.47, references: ['16-426', '16-444'] },
+  { kind: 'sev, namak para, murukku, papdi', pattern: /^(sev|rice murukku|papdi)\b|\bnamak paras\b/i, share: 0.48, references: ['17-782', '17-836'] },
+  { kind: 'kofta', pattern: /\bkofta\b/i, share: 0.53, references: ['15-774', '19-594'] },
+  { kind: 'spring roll', pattern: /^spring roll\b/i, share: 0.66, references: ['19-327'] },
+  { kind: 'scotch egg', pattern: /\bscotch egg\b/i, share: 0.64, references: ['19-518'] },
+];
+
+/** The kind of fried food an INDB recipe is, or null when no checked kind covers it. */
+export function friedKindOf(name: string): (typeof FRIED_KINDS)[number] | null {
+  return FRIED_KINDS.find((k) => k.pattern.test(name)) ?? null;
+}
+
+type IndbUnit = NonNullable<IndbRecipe['perUnit']>;
+
+/**
+ * A deep-fried recipe's piece with the pan taken out: the fat is the kind's
+ * share of its protein + carbohydrate, never less than the fat INDB has
+ * without the pan (a gravy's own oil); the energy moves with the fat.
+ */
+export function withAbsorbedOil(u: IndbUnit, panOilGrams: number, share: number): IndbUnit {
+  const own = Math.max(0, u.fat - panOilGrams / u.unitsInRecipe);
+  const fat = Math.max(own, share * (u.protein + u.carb));
+  return { ...u, fat, kcal: u.kcal - 9 * (u.fat - fat) };
+}
+
 /** An INDB recipe per piece / bowl; or why it is left out. */
 export function indbNutrition(r: IndbRecipe): SourceResult {
-  const u = r.perUnit;
+  let u = r.perUnit;
   if (u === null) return { skip: 'INDB gives no per-serving values' };
-  if (r.deepFry !== null) return { skip: 'deep-fried: INDB counts the whole pan of oil' };
+  let spread = INDB_SPREAD;
+  if (r.deepFry !== null) {
+    const kind = friedKindOf(r.name);
+    if (kind === null) return { skip: 'deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind' };
+    u = withAbsorbedOil(u, r.deepFry.panOilGrams, kind.share);
+    spread = INDB_FRIED_SPREAD;
+  }
   if (INDB_WHOLE_UNITS.has(u.unit.toLowerCase())) return { skip: `a whole ${u.unit}, not a portion` };
   if (u.kcal < INDB_PIECE_KCAL.min || u.kcal > INDB_PIECE_KCAL.max) return { skip: `${Math.round(u.kcal)} kcal a ${u.unit} is not plausible` };
   const disagreement = energyDisagreement(u.kcal, u.protein, u.carb, u.fat);
@@ -144,11 +202,11 @@ export function indbNutrition(r: IndbRecipe): SourceResult {
       servingLabel: `1 ${u.unit}`,
       servingGrams: null,
       ...rowOf(
-        around(u.kcal, INDB_SPREAD, 0),
-        around(u.protein, INDB_SPREAD, 1),
-        around(u.carb, INDB_SPREAD, 1),
-        around(u.fat, INDB_SPREAD, 1),
-        u.fibre === null ? null : around(u.fibre, INDB_SPREAD, 1),
+        around(u.kcal, spread, 0),
+        around(u.protein, spread, 1),
+        around(u.carb, spread, 1),
+        around(u.fat, spread, 1),
+        u.fibre === null ? null : around(u.fibre, spread, 1),
       ),
       confidence: 'medium',
     },
@@ -159,13 +217,28 @@ export function indbNutrition(r: IndbRecipe): SourceResult {
  * "Plain urad dal vada (Uzunne vada/Minapa garelu/Medu vada)" → the name
  * "Plain urad dal vada" and the other names as aliases; "Chapati/Roti" →
  * "Chapati" and "Roti".
+ *
+ * Beta 3.9: a one-word spelling of the last word is that dish's other
+ * spelling ("Potato pakora/pakoda" → the alias "Potato pakoda", not
+ * "pakoda", which is another food); one word before a whole dish names the
+ * dish's main ingredient ("Ghiya/Lauki Kofta Curry" → "Lauki Kofta Curry").
+ * `slugName` is the first part, as before beta 3.9: a seeded food's slug
+ * never changes (the seed is upserted by slug). `spellings` are kept apart:
+ * they never make a recipe "one FITOS already has".
  */
-export function indbNames(name: string): { name: string; aliases: string[] } {
+export function indbNames(name: string): { name: string; slugName: string; aliases: string[]; spellings: string[] } {
   const inner = [...name.matchAll(/\(([^)]*)\)/g)].flatMap((m) => m[1]!.split(/[/,]/));
   const base = name.replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim();
-  const [first, ...rest] = base.split('/').map((s) => s.trim()).filter((s) => s !== '');
-  const aliases = [...rest, ...inner.map((s) => s.trim())].filter((s) => s.length >= 2 && s.length <= 60);
-  return { name: first ?? base, aliases: [...new Set(aliases)] };
+  const [first = base, ...rest] = base.split('/').map((s) => s.trim()).filter((s) => s !== '');
+  const words = (s: string) => s.split(' ');
+  const last = rest.at(-1);
+  const ingredientOnly = last !== undefined && words(first).length === 1 && words(last).length > 1;
+  const spelling = (p: string) => words(p).length === 1 && words(first).length > 1;
+  const others = (ingredientOnly ? rest.slice(0, -1) : rest).filter((p) => !spelling(p));
+  const spellings = rest.filter(spelling).map((p) => [...words(first).slice(0, -1), p].join(' '));
+  const fit = (s: string) => s.length >= 2 && s.length <= 60;
+  const aliases = [...others, ...inner.map((s) => s.trim())].filter(fit);
+  return { name: ingredientOnly ? last : first, slugName: first, aliases: [...new Set(aliases)], spellings: spellings.filter(fit) };
 }
 
 /* ----------------------------------------------------------------- CoFID -- */

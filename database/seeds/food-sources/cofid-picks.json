@@ -35,5 +35,7 @@
       "aliases": ["plain yogurt", "plain yoghurt"],
       "servings": [{ "label": "1 katori", "grams": 120 }]
     }
-  ]
+  ],
+  "oilNote": "Beta 3.9 (owner 2026-10-26, ADR-036 amendment): fried dishes CoFID measured as eaten. They calibrate the oil kept in INDB's deep-fried recipes, per kind of fried food (apps/api food-seed sources.ts FRIED_KINDS), and are never foods themselves.",
+  "oilReferences": ["11-911", "15-620", "15-653", "15-774", "15-826", "15-827", "15-828", "15-830", "15-831", "15-832", "16-426", "16-444", "17-782", "17-836", "19-327", "19-518", "19-594"]
 }

@@ -1007,9 +1007,7 @@
         "fibre": 0.82
       },
       "deepFry": {
-        "oilGrams": 242.5,
-        "solidsGrams": 235.0,
-        "rawGrams": 499.8
+        "panOilGrams": 240.0
       }
     },
     {
@@ -1650,11 +1648,7 @@
         "fat": 48.61,
         "fibre": 7.81
       },
-      "deepFry": {
-        "oilGrams": 30.0,
-        "solidsGrams": 247.9,
-        "rawGrams": 402.0
-      }
+      "deepFry": null
     },
     {
       "code": "ASC080",
@@ -1720,11 +1714,7 @@
         "fat": 60.65,
         "fibre": 6.36
       },
-      "deepFry": {
-        "oilGrams": 30.0,
-        "solidsGrams": 227.9,
-        "rawGrams": 462.9
-      }
+      "deepFry": null
     },
     {
       "code": "ASC083",
@@ -1746,11 +1736,7 @@
         "fat": 60.38,
         "fibre": 12.05
       },
-      "deepFry": {
-        "oilGrams": 30.0,
-        "solidsGrams": 172.5,
-        "rawGrams": 407.8
-      }
+      "deepFry": null
     },
     {
       "code": "ASC084",
@@ -1772,11 +1758,7 @@
         "fat": 61.58,
         "fibre": 8.05
       },
-      "deepFry": {
-        "oilGrams": 30.0,
-        "solidsGrams": 228.1,
-        "rawGrams": 463.1
-      }
+      "deepFry": null
     },
     {
       "code": "ASC085",
@@ -1820,11 +1802,7 @@
         "fat": 58.13,
         "fibre": 5.01
       },
-      "deepFry": {
-        "oilGrams": 30.0,
-        "solidsGrams": 141.0,
-        "rawGrams": 375.3
-      }
+      "deepFry": null
     },
     {
       "code": "ASC087",
@@ -1913,9 +1891,7 @@
         "fibre": 2.63
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 205.7,
-        "rawGrams": 932.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -2291,9 +2267,7 @@
         "fibre": 1.82
       },
       "deepFry": {
-        "oilGrams": 485.0,
-        "solidsGrams": 80.0,
-        "rawGrams": 625.8
+        "panOilGrams": 480.0
       }
     },
     {
@@ -2317,9 +2291,7 @@
         "fibre": 2.09
       },
       "deepFry": {
-        "oilGrams": 485.0,
-        "solidsGrams": 130.0,
-        "rawGrams": 676.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -2343,9 +2315,7 @@
         "fibre": 2.1
       },
       "deepFry": {
-        "oilGrams": 485.0,
-        "solidsGrams": 105.0,
-        "rawGrams": 651.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -2369,9 +2339,7 @@
         "fibre": 2.33
       },
       "deepFry": {
-        "oilGrams": 485.0,
-        "solidsGrams": 106.7,
-        "rawGrams": 595.4
+        "panOilGrams": 480.0
       }
     },
     {
@@ -2395,9 +2363,7 @@
         "fibre": 1.96
       },
       "deepFry": {
-        "oilGrams": 485.0,
-        "solidsGrams": 110.0,
-        "rawGrams": 598.0
+        "panOilGrams": 480.0
       }
     },
     {
@@ -2553,9 +2519,7 @@
         "fibre": 5.19
       },
       "deepFry": {
-        "oilGrams": 575.0,
-        "solidsGrams": 100.4,
-        "rawGrams": 841.4
+        "panOilGrams": 480.0
       }
     },
     {
@@ -2951,9 +2915,7 @@
         "fibre": 5.72
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 399.2,
-        "rawGrams": 966.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -3087,9 +3049,7 @@
         "fibre": 0.55
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 100.0,
-        "rawGrams": 581.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -3134,11 +3094,7 @@
         "fat": 16.44,
         "fibre": 5.29
       },
-      "deepFry": {
-        "oilGrams": 95.0,
-        "solidsGrams": 198.3,
-        "rawGrams": 426.3
-      }
+      "deepFry": null
     },
     {
       "code": "ASC147",
@@ -3183,9 +3139,7 @@
         "fibre": 1.76
       },
       "deepFry": {
-        "oilGrams": 315.0,
-        "solidsGrams": 123.3,
-        "rawGrams": 562.1
+        "panOilGrams": 240.0
       }
     },
     {
@@ -3605,9 +3559,7 @@
         "fibre": 4.76
       },
       "deepFry": {
-        "oilGrams": 495.0,
-        "solidsGrams": 191.7,
-        "rawGrams": 1177.3
+        "panOilGrams": 480.0
       }
     },
     {
@@ -4225,9 +4177,7 @@
         "fibre": 13.3
       },
       "deepFry": {
-        "oilGrams": 495.0,
-        "solidsGrams": 266.2,
-        "rawGrams": 782.9
+        "panOilGrams": 480.0
       }
     },
     {
@@ -4251,9 +4201,7 @@
         "fibre": 7.45
       },
       "deepFry": {
-        "oilGrams": 495.0,
-        "solidsGrams": 287.9,
-        "rawGrams": 810.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -4277,9 +4225,7 @@
         "fibre": 2.81
       },
       "deepFry": {
-        "oilGrams": 495.0,
-        "solidsGrams": 181.2,
-        "rawGrams": 704.6
+        "panOilGrams": 480.0
       }
     },
     {
@@ -4303,9 +4249,7 @@
         "fibre": 7.4
       },
       "deepFry": {
-        "oilGrams": 495.0,
-        "solidsGrams": 212.9,
-        "rawGrams": 735.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -4329,9 +4273,7 @@
         "fibre": 4.3
       },
       "deepFry": {
-        "oilGrams": 495.0,
-        "solidsGrams": 207.9,
-        "rawGrams": 730.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -4355,9 +4297,7 @@
         "fibre": 7.09
       },
       "deepFry": {
-        "oilGrams": 495.0,
-        "solidsGrams": 182.9,
-        "rawGrams": 717.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -4381,9 +4321,7 @@
         "fibre": 6.43
       },
       "deepFry": {
-        "oilGrams": 495.0,
-        "solidsGrams": 182.9,
-        "rawGrams": 720.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -4407,9 +4345,7 @@
         "fibre": 5.95
       },
       "deepFry": {
-        "oilGrams": 495.0,
-        "solidsGrams": 182.9,
-        "rawGrams": 720.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -4433,9 +4369,7 @@
         "fibre": 5.69
       },
       "deepFry": {
-        "oilGrams": 495.0,
-        "solidsGrams": 246.2,
-        "rawGrams": 765.9
+        "panOilGrams": 480.0
       }
     },
     {
@@ -4459,9 +4393,7 @@
         "fibre": 4.72
       },
       "deepFry": {
-        "oilGrams": 495.0,
-        "solidsGrams": 226.2,
-        "rawGrams": 743.6
+        "panOilGrams": 480.0
       }
     },
     {
@@ -4617,9 +4549,7 @@
         "fibre": 4.55
       },
       "deepFry": {
-        "oilGrams": 495.0,
-        "solidsGrams": 164.6,
-        "rawGrams": 676.3
+        "panOilGrams": 480.0
       }
     },
     {
@@ -4665,9 +4595,7 @@
         "fibre": 5.27
       },
       "deepFry": {
-        "oilGrams": 495.0,
-        "solidsGrams": 155.0,
-        "rawGrams": 1005.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -4713,9 +4641,7 @@
         "fibre": 3.7
       },
       "deepFry": {
-        "oilGrams": 490.0,
-        "solidsGrams": 229.6,
-        "rawGrams": 724.7
+        "panOilGrams": 480.0
       }
     },
     {
@@ -4849,9 +4775,7 @@
         "fibre": 1.49
       },
       "deepFry": {
-        "oilGrams": 490.0,
-        "solidsGrams": 71.5,
-        "rawGrams": 595.6
+        "panOilGrams": 480.0
       }
     },
     {
@@ -4875,9 +4799,7 @@
         "fibre": 1.27
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 105.0,
-        "rawGrams": 607.0
+        "panOilGrams": 480.0
       }
     },
     {
@@ -5099,9 +5021,7 @@
         "fibre": 0.6
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 182.3,
-        "rawGrams": 711.8
+        "panOilGrams": 480.0
       }
     },
     {
@@ -5125,9 +5045,7 @@
         "fibre": 1.8
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 189.1,
-        "rawGrams": 689.7
+        "panOilGrams": 480.0
       }
     },
     {
@@ -5151,9 +5069,7 @@
         "fibre": 1.23
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 175.9,
-        "rawGrams": 690.4
+        "panOilGrams": 480.0
       }
     },
     {
@@ -5265,9 +5181,7 @@
         "fibre": 0.26
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 131.2,
-        "rawGrams": 624.1
+        "panOilGrams": 480.0
       }
     },
     {
@@ -5357,9 +5271,7 @@
         "fibre": 2.15
       },
       "deepFry": {
-        "oilGrams": 485.0,
-        "solidsGrams": 180.0,
-        "rawGrams": 713.4
+        "panOilGrams": 480.0
       }
     },
     {
@@ -5383,9 +5295,7 @@
         "fibre": 1.99
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 208.8,
-        "rawGrams": 700.8
+        "panOilGrams": 480.0
       }
     },
     {
@@ -5409,9 +5319,7 @@
         "fibre": 6.93
       },
       "deepFry": {
-        "oilGrams": 495.0,
-        "solidsGrams": 449.9,
-        "rawGrams": 978.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -6005,9 +5913,7 @@
         "fibre": 1.51
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 175.0,
-        "rawGrams": 659.1
+        "panOilGrams": 480.0
       }
     },
     {
@@ -6053,9 +5959,7 @@
         "fibre": 1.66
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 205.0,
-        "rawGrams": 689.0
+        "panOilGrams": 480.0
       }
     },
     {
@@ -6079,9 +5983,7 @@
         "fibre": 1.98
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 217.0,
-        "rawGrams": 700.0
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7491,9 +7393,7 @@
         "fibre": 0.55
       },
       "deepFry": {
-        "oilGrams": 492.0,
-        "solidsGrams": 131.8,
-        "rawGrams": 638.8
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7517,9 +7417,7 @@
         "fibre": 0.12
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 325.0,
-        "rawGrams": 940.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7543,9 +7441,7 @@
         "fibre": 0.92
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 167.8,
-        "rawGrams": 899.3
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7591,9 +7487,7 @@
         "fibre": 6.92
       },
       "deepFry": {
-        "oilGrams": 482.5,
-        "solidsGrams": 130.0,
-        "rawGrams": 676.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7617,9 +7511,7 @@
         "fibre": 7.51
       },
       "deepFry": {
-        "oilGrams": 482.5,
-        "solidsGrams": 130.0,
-        "rawGrams": 676.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7643,9 +7535,7 @@
         "fibre": 8.52
       },
       "deepFry": {
-        "oilGrams": 482.5,
-        "solidsGrams": 130.0,
-        "rawGrams": 676.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7669,9 +7559,7 @@
         "fibre": 7.6
       },
       "deepFry": {
-        "oilGrams": 482.5,
-        "solidsGrams": 130.0,
-        "rawGrams": 676.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7695,9 +7583,7 @@
         "fibre": 6.5
       },
       "deepFry": {
-        "oilGrams": 482.5,
-        "solidsGrams": 90.0,
-        "rawGrams": 636.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7721,9 +7607,7 @@
         "fibre": 7.51
       },
       "deepFry": {
-        "oilGrams": 482.5,
-        "solidsGrams": 90.0,
-        "rawGrams": 636.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7747,9 +7631,7 @@
         "fibre": 5.55
       },
       "deepFry": {
-        "oilGrams": 482.5,
-        "solidsGrams": 100.0,
-        "rawGrams": 646.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7773,9 +7655,7 @@
         "fibre": 7.29
       },
       "deepFry": {
-        "oilGrams": 482.5,
-        "solidsGrams": 110.0,
-        "rawGrams": 656.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7799,9 +7679,7 @@
         "fibre": 5.74
       },
       "deepFry": {
-        "oilGrams": 482.5,
-        "solidsGrams": 100.0,
-        "rawGrams": 649.6
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7825,9 +7703,7 @@
         "fibre": 1.49
       },
       "deepFry": {
-        "oilGrams": 485.0,
-        "solidsGrams": 145.8,
-        "rawGrams": 721.7
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7851,9 +7727,7 @@
         "fibre": 1.68
       },
       "deepFry": {
-        "oilGrams": 502.0,
-        "solidsGrams": 294.6,
-        "rawGrams": 848.6
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7877,9 +7751,7 @@
         "fibre": 0.52
       },
       "deepFry": {
-        "oilGrams": 502.0,
-        "solidsGrams": 261.7,
-        "rawGrams": 812.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7903,9 +7775,7 @@
         "fibre": 1.37
       },
       "deepFry": {
-        "oilGrams": 502.0,
-        "solidsGrams": 261.7,
-        "rawGrams": 812.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7929,9 +7799,7 @@
         "fibre": 0.52
       },
       "deepFry": {
-        "oilGrams": 510.0,
-        "solidsGrams": 102.0,
-        "rawGrams": 614.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7955,9 +7823,7 @@
         "fibre": 0.98
       },
       "deepFry": {
-        "oilGrams": 512.5,
-        "solidsGrams": 147.5,
-        "rawGrams": 711.0
+        "panOilGrams": 480.0
       }
     },
     {
@@ -7981,9 +7847,7 @@
         "fibre": 3.15
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 179.0,
-        "rawGrams": 680.8
+        "panOilGrams": 480.0
       }
     },
     {
@@ -8007,9 +7871,7 @@
         "fibre": 2.84
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 164.2,
-        "rawGrams": 666.9
+        "panOilGrams": 480.0
       }
     },
     {
@@ -8033,9 +7895,7 @@
         "fibre": 4.09
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 179.2,
-        "rawGrams": 681.9
+        "panOilGrams": 480.0
       }
     },
     {
@@ -8059,9 +7919,7 @@
         "fibre": 1.88
       },
       "deepFry": {
-        "oilGrams": 485.0,
-        "solidsGrams": 185.4,
-        "rawGrams": 711.9
+        "panOilGrams": 480.0
       }
     },
     {
@@ -8085,9 +7943,7 @@
         "fibre": 1.41
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 190.0,
-        "rawGrams": 691.8
+        "panOilGrams": 480.0
       }
     },
     {
@@ -8111,9 +7967,7 @@
         "fibre": 3.05
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 159.2,
-        "rawGrams": 660.9
+        "panOilGrams": 480.0
       }
     },
     {
@@ -8137,9 +7991,7 @@
         "fibre": 0.46
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 97.5,
-        "rawGrams": 580.9
+        "panOilGrams": 480.0
       }
     },
     {
@@ -8163,9 +8015,7 @@
         "fibre": 8.75
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 417.5,
-        "rawGrams": 1000.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -8211,9 +8061,7 @@
         "fibre": 0.96
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 173.3,
-        "rawGrams": 658.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -8237,9 +8085,7 @@
         "fibre": 2.88
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 56.5,
-        "rawGrams": 539.0
+        "panOilGrams": 480.0
       }
     },
     {
@@ -8263,9 +8109,7 @@
         "fibre": 1.9
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 126.7,
-        "rawGrams": 611.4
+        "panOilGrams": 480.0
       }
     },
     {
@@ -8289,9 +8133,7 @@
         "fibre": 1.93
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 184.2,
-        "rawGrams": 669.4
+        "panOilGrams": 480.0
       }
     },
     {
@@ -8359,9 +8201,7 @@
         "fibre": 0.63
       },
       "deepFry": {
-        "oilGrams": 485.0,
-        "solidsGrams": 216.5,
-        "rawGrams": 754.1
+        "panOilGrams": 480.0
       }
     },
     {
@@ -8801,9 +8641,7 @@
         "fibre": 0.11
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 145.0,
-        "rawGrams": 709.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -9769,9 +9607,7 @@
         "fibre": 1.97
       },
       "deepFry": {
-        "oilGrams": 500.0,
-        "solidsGrams": 33.3,
-        "rawGrams": 538.6
+        "panOilGrams": 480.0
       }
     },
     {
@@ -9795,9 +9631,7 @@
         "fibre": 3.65
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 180.0,
-        "rawGrams": 663.8
+        "panOilGrams": 480.0
       }
     },
     {
@@ -9821,9 +9655,7 @@
         "fibre": 3.87
       },
       "deepFry": {
-        "oilGrams": 487.5,
-        "solidsGrams": 60.0,
-        "rawGrams": 549.4
+        "panOilGrams": 480.0
       }
     },
     {
@@ -9869,9 +9701,7 @@
         "fibre": 2.56
       },
       "deepFry": {
-        "oilGrams": 490.0,
-        "solidsGrams": 140.0,
-        "rawGrams": 633.4
+        "panOilGrams": 480.0
       }
     },
     {
@@ -9895,9 +9725,7 @@
         "fibre": 2.1
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 120.0,
-        "rawGrams": 603.0
+        "panOilGrams": 480.0
       }
     },
     {
@@ -9921,9 +9749,7 @@
         "fibre": 1.73
       },
       "deepFry": {
-        "oilGrams": 530.0,
-        "solidsGrams": 50.0,
-        "rawGrams": 584.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -9969,9 +9795,7 @@
         "fibre": 2.35
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 130.0,
-        "rawGrams": 610.0
+        "panOilGrams": 480.0
       }
     },
     {
@@ -10171,9 +9995,7 @@
         "fibre": 1.74
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 170.0,
-        "rawGrams": 651.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -10603,9 +10425,7 @@
       },
       "perUnit": null,
       "deepFry": {
-        "oilGrams": 300.0,
-        "solidsGrams": 1326.0,
-        "rawGrams": 1633.0
+        "panOilGrams": 300.0
       }
     },
     {
@@ -11889,9 +11709,7 @@
         "fibre": 1.7
       },
       "deepFry": {
-        "oilGrams": 241.2,
-        "solidsGrams": 130.0,
-        "rawGrams": 409.5
+        "panOilGrams": 240.0
       }
     },
     {
@@ -11915,9 +11733,7 @@
         "fibre": 1.46
       },
       "deepFry": {
-        "oilGrams": 241.2,
-        "solidsGrams": 60.0,
-        "rawGrams": 339.5
+        "panOilGrams": 240.0
       }
     },
     {
@@ -11941,9 +11757,7 @@
         "fibre": 1.44
       },
       "deepFry": {
-        "oilGrams": 241.2,
-        "solidsGrams": 105.0,
-        "rawGrams": 463.7
+        "panOilGrams": 240.0
       }
     },
     {
@@ -11967,9 +11781,7 @@
         "fibre": 1.89
       },
       "deepFry": {
-        "oilGrams": 241.2,
-        "solidsGrams": 140.0,
-        "rawGrams": 419.5
+        "panOilGrams": 240.0
       }
     },
     {
@@ -11993,9 +11805,7 @@
         "fibre": 2.2
       },
       "deepFry": {
-        "oilGrams": 250.0,
-        "solidsGrams": 166.7,
-        "rawGrams": 435.9
+        "panOilGrams": 240.0
       }
     },
     {
@@ -12983,9 +12793,7 @@
         "fibre": 5.59
       },
       "deepFry": {
-        "oilGrams": 255.0,
-        "solidsGrams": 254.5,
-        "rawGrams": 621.9
+        "panOilGrams": 240.0
       }
     },
     {
@@ -13075,9 +12883,7 @@
         "fibre": 2.33
       },
       "deepFry": {
-        "oilGrams": 250.0,
-        "solidsGrams": 284.2,
-        "rawGrams": 777.2
+        "panOilGrams": 240.0
       }
     },
     {
@@ -13101,9 +12907,7 @@
         "fibre": 3.96
       },
       "deepFry": {
-        "oilGrams": 245.0,
-        "solidsGrams": 122.0,
-        "rawGrams": 463.0
+        "panOilGrams": 240.0
       }
     },
     {
@@ -13193,9 +12997,7 @@
         "fibre": 3.52
       },
       "deepFry": {
-        "oilGrams": 250.0,
-        "solidsGrams": 200.4,
-        "rawGrams": 578.4
+        "panOilGrams": 240.0
       }
     },
     {
@@ -13241,9 +13043,7 @@
         "fibre": 3.44
       },
       "deepFry": {
-        "oilGrams": 250.0,
-        "solidsGrams": 353.5,
-        "rawGrams": 794.3
+        "panOilGrams": 240.0
       }
     },
     {
@@ -13399,9 +13199,7 @@
         "fibre": 3.24
       },
       "deepFry": {
-        "oilGrams": 245.0,
-        "solidsGrams": 222.0,
-        "rawGrams": 563.0
+        "panOilGrams": 240.0
       }
     },
     {
@@ -13469,9 +13267,7 @@
         "fibre": 1.51
       },
       "deepFry": {
-        "oilGrams": 240.0,
-        "solidsGrams": 202.5,
-        "rawGrams": 444.1
+        "panOilGrams": 240.0
       }
     },
     {
@@ -13715,9 +13511,7 @@
         "fibre": 5.71
       },
       "deepFry": {
-        "oilGrams": 495.0,
-        "solidsGrams": 239.1,
-        "rawGrams": 1015.0
+        "panOilGrams": 480.0
       }
     },
     {
@@ -13741,9 +13535,7 @@
         "fibre": 7.79
       },
       "deepFry": {
-        "oilGrams": 250.0,
-        "solidsGrams": 215.8,
-        "rawGrams": 742.5
+        "panOilGrams": 240.0
       }
     },
     {
@@ -13767,9 +13559,7 @@
         "fibre": 7.23
       },
       "deepFry": {
-        "oilGrams": 250.0,
-        "solidsGrams": 215.8,
-        "rawGrams": 742.5
+        "panOilGrams": 240.0
       }
     },
     {
@@ -13991,9 +13781,7 @@
         "fibre": 6.01
       },
       "deepFry": {
-        "oilGrams": 240.0,
-        "solidsGrams": 100.0,
-        "rawGrams": 344.1
+        "panOilGrams": 240.0
       }
     },
     {
@@ -14061,9 +13849,7 @@
         "fibre": 6.42
       },
       "deepFry": {
-        "oilGrams": 250.0,
-        "solidsGrams": 189.6,
-        "rawGrams": 483.3
+        "panOilGrams": 240.0
       }
     },
     {
@@ -14087,9 +13873,7 @@
         "fibre": 6.97
       },
       "deepFry": {
-        "oilGrams": 250.0,
-        "solidsGrams": 189.6,
-        "rawGrams": 483.3
+        "panOilGrams": 240.0
       }
     },
     {
@@ -14377,9 +14161,7 @@
         "fibre": 6.06
       },
       "deepFry": {
-        "oilGrams": 245.0,
-        "solidsGrams": 265.0,
-        "rawGrams": 596.5
+        "panOilGrams": 240.0
       }
     },
     {
@@ -15693,9 +15475,7 @@
         "fibre": 0.14
       },
       "deepFry": {
-        "oilGrams": 240.0,
-        "solidsGrams": 190.0,
-        "rawGrams": 603.2
+        "panOilGrams": 240.0
       }
     },
     {
@@ -16049,9 +15829,7 @@
         "fibre": 1.02
       },
       "deepFry": {
-        "oilGrams": 242.5,
-        "solidsGrams": 133.6,
-        "rawGrams": 426.0
+        "panOilGrams": 240.0
       }
     },
     {
@@ -16075,9 +15853,7 @@
         "fibre": 0.92
       },
       "deepFry": {
-        "oilGrams": 242.5,
-        "solidsGrams": 53.6,
-        "rawGrams": 346.0
+        "panOilGrams": 240.0
       }
     },
     {
@@ -16101,9 +15877,7 @@
         "fibre": 0.66
       },
       "deepFry": {
-        "oilGrams": 242.5,
-        "solidsGrams": 119.9,
-        "rawGrams": 416.9
+        "panOilGrams": 240.0
       }
     },
     {
@@ -16127,9 +15901,7 @@
         "fibre": 0.66
       },
       "deepFry": {
-        "oilGrams": 242.5,
-        "solidsGrams": 119.9,
-        "rawGrams": 416.9
+        "panOilGrams": 240.0
       }
     },
     {
@@ -16153,9 +15925,7 @@
         "fibre": 0.71
       },
       "deepFry": {
-        "oilGrams": 240.0,
-        "solidsGrams": 103.3,
-        "rawGrams": 362.3
+        "panOilGrams": 240.0
       }
     },
     {
@@ -16179,9 +15949,7 @@
         "fibre": 1.13
       },
       "deepFry": {
-        "oilGrams": 240.0,
-        "solidsGrams": 133.3,
-        "rawGrams": 422.3
+        "panOilGrams": 240.0
       }
     },
     {
@@ -16205,9 +15973,7 @@
         "fibre": 3.24
       },
       "deepFry": {
-        "oilGrams": 240.0,
-        "solidsGrams": 163.3,
-        "rawGrams": 482.3
+        "panOilGrams": 240.0
       }
     },
     {
@@ -16231,9 +15997,7 @@
         "fibre": 1.18
       },
       "deepFry": {
-        "oilGrams": 240.0,
-        "solidsGrams": 148.3,
-        "rawGrams": 407.3
+        "panOilGrams": 240.0
       }
     },
     {
@@ -16257,9 +16021,7 @@
         "fibre": 0.93
       },
       "deepFry": {
-        "oilGrams": 240.0,
-        "solidsGrams": 148.3,
-        "rawGrams": 467.3
+        "panOilGrams": 240.0
       }
     },
     {
@@ -16283,9 +16045,7 @@
         "fibre": 1.54
       },
       "deepFry": {
-        "oilGrams": 255.0,
-        "solidsGrams": 303.3,
-        "rawGrams": 607.1
+        "panOilGrams": 240.0
       }
     },
     {
@@ -16309,9 +16069,7 @@
         "fibre": 1.79
       },
       "deepFry": {
-        "oilGrams": 240.0,
-        "solidsGrams": 60.0,
-        "rawGrams": 315.8
+        "panOilGrams": 240.0
       }
     },
     {
@@ -16335,9 +16093,7 @@
         "fibre": 2.32
       },
       "deepFry": {
-        "oilGrams": 240.0,
-        "solidsGrams": 101.7,
-        "rawGrams": 342.4
+        "panOilGrams": 240.0
       }
     },
     {
@@ -17857,9 +17613,7 @@
         "fibre": 0.19
       },
       "deepFry": {
-        "oilGrams": 240.0,
-        "solidsGrams": 180.0,
-        "rawGrams": 497.6
+        "panOilGrams": 240.0
       }
     },
     {
@@ -18211,9 +17965,7 @@
         "fibre": 2.04
       },
       "deepFry": {
-        "oilGrams": 248.0,
-        "solidsGrams": 37.0,
-        "rawGrams": 300.4
+        "panOilGrams": 240.0
       }
     },
     {
@@ -18259,9 +18011,7 @@
         "fibre": 2.39
       },
       "deepFry": {
-        "oilGrams": 240.0,
-        "solidsGrams": 120.0,
-        "rawGrams": 360.8
+        "panOilGrams": 240.0
       }
     },
     {
@@ -18285,9 +18035,7 @@
         "fibre": 0.59
       },
       "deepFry": {
-        "oilGrams": 270.0,
-        "solidsGrams": 245.0,
-        "rawGrams": 516.5
+        "panOilGrams": 240.0
       }
     },
     {
@@ -18601,9 +18349,7 @@
       },
       "perUnit": null,
       "deepFry": {
-        "oilGrams": 150.0,
-        "solidsGrams": 1230.0,
-        "rawGrams": 1380.0
+        "panOilGrams": 150.0
       }
     },
     {
@@ -20135,9 +19881,7 @@
         "fibre": 0.96
       },
       "deepFry": {
-        "oilGrams": 500.0,
-        "solidsGrams": 250.0,
-        "rawGrams": 913.2
+        "panOilGrams": 500.0
       }
     },
     {
@@ -20403,9 +20147,7 @@
         "fibre": 2.75
       },
       "deepFry": {
-        "oilGrams": 500.0,
-        "solidsGrams": 280.7,
-        "rawGrams": 2224.7
+        "panOilGrams": 480.0
       }
     },
     {
@@ -20429,9 +20171,7 @@
         "fibre": 4.9
       },
       "deepFry": {
-        "oilGrams": 500.0,
-        "solidsGrams": 178.6,
-        "rawGrams": 1725.3
+        "panOilGrams": 480.0
       }
     },
     {
@@ -21107,9 +20847,7 @@
         "fibre": 25.41
       },
       "deepFry": {
-        "oilGrams": 496.8,
-        "solidsGrams": 647.5,
-        "rawGrams": 1661.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -21133,9 +20871,7 @@
         "fibre": 1.96
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 440.0,
-        "rawGrams": 1162.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -21159,9 +20895,7 @@
         "fibre": 2.26
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 240.1,
-        "rawGrams": 797.7
+        "panOilGrams": 480.0
       }
     },
     {
@@ -21199,9 +20933,7 @@
         "fibre": 0.67
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 510.0,
-        "rawGrams": 1089.0
+        "panOilGrams": 480.0
       }
     },
     {
@@ -21225,9 +20957,7 @@
         "fibre": 15.7
       },
       "deepFry": {
-        "oilGrams": 987.5,
-        "solidsGrams": 422.5,
-        "rawGrams": 2001.8
+        "panOilGrams": 480.0
       }
     },
     {
@@ -21273,9 +21003,7 @@
         "fibre": 12.01
       },
       "deepFry": {
-        "oilGrams": 485.0,
-        "solidsGrams": 401.5,
-        "rawGrams": 1125.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -21299,9 +21027,7 @@
         "fibre": 0.4
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 405.0,
-        "rawGrams": 953.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -21325,9 +21051,7 @@
         "fibre": 1.11
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 200.0,
-        "rawGrams": 682.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -21923,9 +21647,7 @@
         "fibre": 3.21
       },
       "deepFry": {
-        "oilGrams": 485.0,
-        "solidsGrams": 184.0,
-        "rawGrams": 824.5
+        "panOilGrams": 480.0
       }
     },
     {
@@ -21949,9 +21671,7 @@
         "fibre": 0.98
       },
       "deepFry": {
-        "oilGrams": 502.5,
-        "solidsGrams": 120.0,
-        "rawGrams": 698.2
+        "panOilGrams": 480.0
       }
     },
     {
@@ -21997,9 +21717,7 @@
         "fibre": 1.75
       },
       "deepFry": {
-        "oilGrams": 480.0,
-        "solidsGrams": 578.2,
-        "rawGrams": 1219.9
+        "panOilGrams": 480.0
       }
     },
     {

@@ -12,11 +12,12 @@ import { estimateNutrition } from '@fitos/core/mess/nutrition';
 import { FOOD_SOURCES as CORE_FOOD_SOURCES, normaliseFoodText } from '@fitos/core/nutrition/food';
 
 import { assertSeedRules, carriedNutrition, compositeNutrition } from './build.js';
-import { cofidNutrition, energyDisagreement, ifctNutrition, indbNames, indbNutrition } from './sources.js';
+import { FRIED_KINDS, cofidNutrition, energyDisagreement, friedKindOf, ifctNutrition, indbNames, indbNutrition } from './sources.js';
 import {
   FOOD_MANIFEST_FILE,
   FOOD_SEED_FILE,
   FOOD_SOURCES_DIR,
+  INDB_SOURCE_REF,
   SEED_TARGET_APPROX,
   USDA_DATASETS,
   carriedFileSchema,
@@ -270,22 +271,30 @@ describe('measured sources (beta 3.7, ADR-036)', () => {
     expect(manifest.ifctSkipped.find((s) => s.code === 'N001')?.reason).toMatch(/^energy 384 kcal but its macros give 192/);
   });
 
-  it('every INDB food recomputes exactly from indb.json; no deep-fried recipe, no whole dish; never verified', () => {
-    const byRef = new Map(foods.filter((f) => f.source === 'indb').map((f) => [f.sourceRef, f]));
+  it('every INDB food recomputes exactly from indb.json; a deep-fried one only by a checked kind; no whole dish; never verified', () => {
+    const seeded = new Map(manifest.indbFoods.map((e) => [e.code, e]));
+    expect(foods.filter((f) => f.source === 'indb')).toHaveLength(seeded.size);
     for (const r of indb.recipes) {
-      const f = byRef.get(`INDB 2024 · recipe ${r.code}`);
-      if (f === undefined) {
+      const entry = seeded.get(r.code);
+      if (entry === undefined) {
         expect(manifest.indbSkipped.some((s) => s.code === r.code), r.code).toBe(true);
         continue;
       }
+      const f = bySlug.get(entry.slug)!;
       const result = indbNutrition(r);
       expect('nutrition' in result, r.code).toBe(true);
-      expect(r.deepFry).toBeNull();
+      const fried = r.deepFry === null ? null : friedKindOf(r.name)!.kind;
+      expect(entry.fried, r.code).toBe(fried);
+      expect(f.sourceRef).toBe(INDB_SOURCE_REF(r.code, fried));
       expect(f.isVerified).toBe(false);
       expect(f.name).toBe(indbNames(r.name).name);
       expect(f.nutrition).toEqual([(result as { nutrition: unknown }).nutrition]);
     }
-    expect(manifest.indbSkipped.filter((s) => s.reason.startsWith('deep-fried'))).toHaveLength(indb.recipes.filter((r) => r.perUnit !== null && r.deepFry !== null && !manifest.indbSkipped.find((s) => s.code === r.code)?.reason.startsWith('FITOS already')).length);
+    // A deep-fried recipe of no checked kind is never a food.
+    for (const r of indb.recipes.filter((x) => x.perUnit !== null && x.deepFry !== null && friedKindOf(x.name) === null)) {
+      expect(manifest.indbSkipped.find((s) => s.code === r.code)?.reason, r.code).toMatch(/^(deep-fried|FITOS already has)/);
+    }
+    expect(manifest.counts.indbFried).toBe(manifest.indbFoods.filter((e) => e.fried !== null).length);
   });
 
   it('CoFID: a replaced FITOS dish keeps its slug, name and serving with CoFID\'s numbers; the plain foods are added', () => {
@@ -313,10 +322,60 @@ describe('measured sources (beta 3.7, ADR-036)', () => {
     }
   });
 
+  it("INDB names: a one-word spelling is the dish's other spelling, one word before a dish its ingredient; a seeded slug never changes (beta 3.9)", () => {
+    expect(indbNames('Potato pakora/pakoda (Aloo pakoda)')).toEqual({ name: 'Potato pakora', slugName: 'Potato pakora', aliases: ['Aloo pakoda'], spellings: ['Potato pakoda'] });
+    expect(indbNames('Ghiya/Lauki Kofta Curry')).toEqual({ name: 'Lauki Kofta Curry', slugName: 'Ghiya', aliases: [], spellings: [] });
+    expect(indbNames('Chapati/Roti')).toEqual({ name: 'Chapati', slugName: 'Chapati', aliases: ['Roti'], spellings: [] });
+    // A spelling never makes a recipe "one FITOS already has": the pakoras are foods, not skipped for "pakoda".
+    expect(bySlug.get('potato-pakora')?.aliases).toEqual(['aloo pakoda', 'potato pakoda']);
+    expect(bySlug.get('saunth')?.name).toBe('Sonth chutney with ginger');
+    expect(bySlug.get('ghiya')?.name).toBe('Lauki Kofta Curry');
+  });
+
   it('plain milk and paneer are foods now (backlog E24)', () => {
     expect(bySlug.get('paneer')).toMatchObject({ source: 'ifct', name: 'Paneer' });
     expect(bySlug.get('milk-whole-cow')).toMatchObject({ source: 'ifct' });
     expect(bySlug.get('milk-whole-buffalo')).toMatchObject({ source: 'ifct' });
     expect(bySlug.get('milk-semi-skimmed')?.aliases).toContain('double toned milk');
+  });
+});
+
+describe('deep-fried INDB recipes (beta 3.9, ADR-036 amendment)', () => {
+  const ref = new Map(cofid.foods.map((f) => [f.code, f]));
+
+  it("the owner's check: one share per kind puts every CoFID reference's energy within +-15 %", () => {
+    for (const k of FRIED_KINDS) {
+      expect(k.references.length, k.kind).toBeGreaterThan(0);
+      for (const code of k.references) {
+        const c = ref.get(code)!;
+        const measured = 4 * (c.protein + c.carb) + 9 * c.fat;
+        const byShare = (4 + 9 * k.share) * (c.protein + c.carb);
+        expect(Math.abs(byShare / measured - 1), `${k.kind} vs ${code} ${c.name}`).toBeLessThanOrEqual(0.15);
+      }
+    }
+  });
+
+  it("the references are exactly cofid-picks.json's oilReferences, converted, and never foods themselves", () => {
+    const codes = [...new Set(FRIED_KINDS.flatMap((k) => k.references))].sort();
+    expect(codes).toEqual([...cofidPicks.oilReferences].sort());
+    for (const code of codes) expect(ref.has(code), code).toBe(true);
+    const asFoods = new Set([...cofidPicks.replace.map((r) => r.code), ...cofidPicks.foods.map((f) => f.code)]);
+    for (const code of codes) {
+      expect(asFoods.has(code), code).toBe(false);
+      expect(foods.some((f) => f.sourceRef.startsWith(`UK CoFID 2021 · ${code}`)), code).toBe(false);
+    }
+  });
+
+  it('the pan comes out: a poori is ~110 kcal, not ~920; samosa, vada and cutlet stay out', () => {
+    expect(bySlug.get('methi-poori')?.nutrition[0]).toMatchObject({ servingLabel: '1 poori', kcalLow: 90, kcalHigh: 123, fatLow: 5.3, fatHigh: 7.2 });
+    expect(bySlug.get('cauliflower-pakora')?.sourceRef).toMatch(/fried \(cauliflower pakora\)/);
+    for (const code of ['ASC361', 'BFP431', 'BFP437', 'ASC366']) {
+      expect(manifest.indbSkipped.find((s) => s.code === code)?.reason, code).toMatch(/^deep-fried/);
+    }
+    // No fried food keeps a pan's worth of oil (INDB's pakora plate held 485 g).
+    for (const e of manifest.indbFoods.filter((x) => x.fried !== null)) {
+      const n = bySlug.get(e.slug)!.nutrition[0]!;
+      expect(n.fatHigh, e.slug).toBeLessThan(60);
+    }
   });
 });

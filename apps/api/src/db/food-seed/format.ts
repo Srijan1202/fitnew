@@ -8,8 +8,8 @@
  *   database/seeds/food-sources/recipes.json     declared composite recipes
  *   database/seeds/food-sources/ifct2017.json    IFCT 2017 raw foods (beta 3.7, converted)
  *   database/seeds/food-sources/indb.json        INDB 2024 recipes (beta 3.7, converted)
- *   database/seeds/food-sources/cofid-picks.json which CoFID 2021 foods, and what they replace (beta 3.7)
- *   database/seeds/food-sources/cofid.json       those CoFID foods' values (beta 3.7, converted)
+ *   database/seeds/food-sources/cofid-picks.json which CoFID 2021 foods, what they replace (beta 3.7), the oil references (beta 3.9)
+ *   database/seeds/food-sources/cofid.json       those CoFID foods' values (beta 3.7, converted; references beta 3.9)
  *   database/seeds/foods.json                    the generated seed (committed)
  *   database/seeds/foods.manifest.json           provenance + checksums (committed)
  */
@@ -187,7 +187,7 @@ export const indbFileSchema = z
           origin: z.string().nullable(),
           per100gRaw: macroSchema,
           perUnit: macroSchema.extend({ unit: z.string().min(1), unitsInRecipe: z.number().positive() }).strict().nullable(),
-          deepFry: z.object({ oilGrams: z.number(), solidsGrams: z.number(), rawGrams: z.number() }).strict().nullable(),
+          deepFry: z.object({ panOilGrams: z.number().positive() }).strict().nullable(),
         })
         .strict(),
     ),
@@ -229,12 +229,16 @@ export const cofidPicksFileSchema = z
         })
         .strict(),
     ),
+    oilNote: z.string(),
+    /** Beta 3.9: CoFID's fried dishes that calibrate the oil in INDB's deep-fried recipes (sources.ts FRIED_KINDS). */
+    oilReferences: z.array(z.string().regex(/^\d{2}-\d{3,4}$/)),
   })
   .strict();
 export type CofidPicksFile = z.infer<typeof cofidPicksFileSchema>;
 
 export const IFCT_SOURCE_REF = (code: string): string => `IFCT 2017 (NIN-ICMR) · food ${code}`;
-export const INDB_SOURCE_REF = (code: string): string => `INDB 2024 · recipe ${code}`;
+export const INDB_SOURCE_REF = (code: string, friedKind: string | null = null): string =>
+  `INDB 2024 · recipe ${code}${friedKind === null ? '' : ` · fried (${friedKind}): the oil as CoFID measures it`}`;
 export const COFID_SOURCE_REF = (code: string, name: string, grams: number | null): string =>
   `UK CoFID 2021 · ${code} ${name}${grams === null ? '' : ` · at FITOS's ${grams} g serving`}`;
 
@@ -292,6 +296,7 @@ export const manifestSchema = z
         ifctSkipped: z.number().int(),
         indb: z.number().int(),
         indbSkipped: z.number().int(),
+        indbFried: z.number().int(),
         cofidNew: z.number().int(),
         cofidReplaced: z.number().int(),
         targetApprox: z.number().int(),
@@ -356,7 +361,8 @@ export const manifestSchema = z
     ),
     ifctFoods: z.array(z.object({ slug: z.string(), code: z.string() }).strict()),
     ifctSkipped: z.array(z.object({ code: z.string(), name: z.string(), reason: z.string() }).strict()),
-    indbFoods: z.array(z.object({ slug: z.string(), code: z.string() }).strict()),
+    /** `fried`: the FRIED_KINDS kind whose oil a deep-fried recipe keeps (beta 3.9), else null. */
+    indbFoods: z.array(z.object({ slug: z.string(), code: z.string(), fried: z.string().nullable() }).strict()),
     indbSkipped: z.array(z.object({ code: z.string(), name: z.string(), reason: z.string() }).strict()),
     cofidFoods: z.array(z.object({ slug: z.string(), code: z.string(), replaced: z.boolean() }).strict()),
     /** The exact per-100 g USDA values every composite was computed from. */

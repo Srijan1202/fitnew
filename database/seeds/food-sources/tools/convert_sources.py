@@ -22,9 +22,14 @@ What is kept, and what is changed, is documented in ADR-036:
   the water added, not of the cooked dish, so it is kept for reference only.
   INDB counts the whole pan of oil in deep-fried recipes ("Oil, for deep
   frying, 240 ml"), which puts a medu vada at ~590 kcal; such recipes carry
-  `deepFry` (the pan's oil as INDB weighs it, 1 g per ml, and the solids
-  fried) so the builder leaves them out: the oil absorbed cannot be worked
-  out reliably when the solids are measured in cups (ADR-036).
+  `deepFry` (the pan's oil as INDB weighs it, 1 g per ml: a fat line "for
+  frying", or 100 ml of oil, of at least 100 g). The builder takes the pan
+  out and keeps the oil a fried food of that kind holds as CoFID measures
+  it, or leaves the recipe out (ADR-036, beta 3.9). A few tablespoons "for
+  frying" is a saute, all of it eaten.
+- CoFID: the foods cofid-picks.json names, and the fried dishes it lists as
+  oil references (measured as eaten; they calibrate INDB's fried recipes and
+  are never foods themselves).
 """
 import csv
 import hashlib
@@ -72,25 +77,8 @@ LANGS = {'E.': 'English', 'H.': 'Hindi'}
 # INDB weighs oil at 1 g per ml (its totals: 240 ml of oil = 240 g).
 OIL_DENSITY = 1.0
 UNIT_ML = {'ml': 1.0, 'c': 240.0, 'cup': 240.0, 'cups': 240.0, 'tbsp': 15.0, 'tsp': 5.0}
-# Rough grams for the rest of INDB's units; they only size a deep-fried
-# recipe's total weight, where the oil and the main solids dominate.
-UNIT_GRAMS = {'sprig': 1.0, 'nos': 10.0, 'sheet': 5.0, 'drops': 0.05, 'pinch': 0.3, '': 5.0}
-LIQUIDS = ('water', 'milk', 'curd', 'yoghurt', 'yogurt', 'juice', 'vinegar', 'sauce', 'buttermilk', 'stock')
-
-
-def grams_of(name: str, unit: str, amount: float) -> float:
-    """An ingredient's weight: g as is; volumes by density (fat 0.92,
-    liquids 1.0, dry powders and spices ~0.6 g/ml); other units roughly."""
-    if unit == 'g':
-        return amount
-    if unit in UNIT_ML:
-        ml = amount * UNIT_ML[unit]
-        if any(k in name for k in ('oil', 'ghee', 'vanaspati', 'butter')):
-            return ml * OIL_DENSITY
-        if any(k in name for k in LIQUIDS):
-            return ml
-        return ml * 0.6
-    return amount * UNIT_GRAMS.get(unit, 5.0)
+# A fat line this heavy is a frying pan, not a tempering (beta 3.9).
+PAN_GRAMS = 100.0
 
 
 def sha256(path: Path) -> str:
@@ -196,31 +184,23 @@ def indb() -> dict:
         units = None if servings is None or size is None else servings * size
         per_unit = macro(d, 'unit_serving_')
         unit = (d.get('servings_unit') or s.get('servings_unit') or '').strip() or None
-        oil = 0.0
-        solids = 0.0
-        total = 0.0
-        deep = False
+        pan = 0.0
         for i in ing.get(code, []):
             name = str(i.get('food_name') or '').lower()
             org = str(i.get('amount_org') or '').lower()
             unit_i = str(i.get('unit') or '').lower()
             amount = num(i.get('amount')) or 0.0
-            total += grams_of(name, unit_i, amount)
-            is_fat = any(k in name for k in ('oil', 'ghee', 'vanaspati'))
-            if is_fat and ('fry' in org or (unit_i == 'ml' and amount >= 100)):
-                deep = True
-            if is_fat:
+            # A fat "for frying", or 100 ml of oil; ghee in a halwa is eaten.
+            if any(k in name for k in ('oil', 'ghee', 'vanaspati')) and ('fry' in org or (unit_i == 'ml' and amount >= 100)):
                 grams = amount if unit_i == 'g' else amount * UNIT_ML.get(unit_i, 0.0) * OIL_DENSITY
-                oil += grams
-            elif unit_i == 'g' and 'water' not in name:
-                solids += amount
+                pan = max(pan, grams)
         recipes.append({
             'code': code,
             'name': str(d['food_name']).strip(),
             'origin': d.get('primarysource'),
             'per100gRaw': per100,
             'perUnit': None if per_unit is None or unit is None or not units else {'unit': unit, 'unitsInRecipe': r(units, 2), **per_unit},
-            'deepFry': {'oilGrams': r(oil, 1), 'solidsGrams': r(solids, 1), 'rawGrams': r(total, 1)} if deep else None,
+            'deepFry': {'panOilGrams': r(pan, 1)} if pan >= PAN_GRAMS else None,
         })
     recipes.sort(key=lambda x: x['code'])
     return {
@@ -245,7 +225,7 @@ def cofid_value(v):
 def cofid() -> dict:
     path = RAW / 'cofid' / 'CoFID_2021.xlsx'
     picks = json.loads((OUT / 'cofid-picks.json').read_text(encoding='utf-8'))
-    codes = {p['code'] for p in picks['replace']} | {f['code'] for f in picks['foods']}
+    codes = {p['code'] for p in picks['replace']} | {f['code'] for f in picks['foods']} | set(picks['oilReferences'])
     wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
     rows = wb['1.3 Proximates'].iter_rows(values_only=True)
     head = next(rows)

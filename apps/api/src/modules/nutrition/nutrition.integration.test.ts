@@ -163,7 +163,10 @@ describeIfDb('/v1/nutrition/foods (real Postgres, real seed)', () => {
     const paneer = await search(token, 'panee');
     expect(paneer.length).toBeGreaterThan(0);
     for (const i of paneer.slice(0, 3)) expect(i.match).toBe('prefix');
-    expect(paneer.map((i) => i.slug)).toEqual(expect.arrayContaining(['paneer-65', 'paneer-butter-masala']));
+    expect(paneer.map((i) => i.slug)).toContain('paneer-65');
+    // Beta 3.9: more than 20 foods start with "panee" now (INDB's paneer kofta and cheela), so
+    // a FITOS estimate can fall past the first 20; the next word finds it.
+    expect((await search(token, 'paneer but')).map((i) => i.slug)).toContain('paneer-butter-masala');
     // A word inside the name: "tadka" finds dal tadka.
     expect((await search(token, 'tadka')).map((i) => i.slug)).toContain('dal-tadka');
   });

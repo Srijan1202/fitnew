@@ -11,6 +11,15 @@
   ],
   "foods": [
     {
+      "code": "11-911",
+      "name": "Puri, homemade",
+      "kcal": 366.0,
+      "protein": 7.2,
+      "carb": 36.5,
+      "fat": 22.3,
+      "fibre": 3.5
+    },
+    {
       "code": "11-912",
       "name": "Mooli paratha, homemade",
       "kcal": 171.0,
@@ -65,6 +74,15 @@
       "fibre": 0.0
     },
     {
+      "code": "15-620",
+      "name": "Pakora, vegetable, takeaway and restaurant",
+      "kcal": 293.0,
+      "protein": 8.4,
+      "carb": 16.5,
+      "fat": 22.0,
+      "fibre": 3.3
+    },
+    {
       "code": "15-628",
       "name": "Methi aloo, homemade",
       "kcal": 142.0,
@@ -74,6 +92,15 @@
       "fibre": 2.9
     },
     {
+      "code": "15-653",
+      "name": "Pakora/bhajia, vegetable, retail",
+      "kcal": 238.0,
+      "protein": 6.4,
+      "carb": 21.4,
+      "fat": 14.7,
+      "fibre": 3.6
+    },
+    {
       "code": "15-754",
       "name": "Curry, egg, with rapeseed oil, homemade",
       "kcal": 149.0,
@@ -81,6 +108,69 @@
       "carb": 4.7,
       "fat": 12.2,
       "fibre": 1.4
+    },
+    {
+      "code": "15-774",
+      "name": "Curry, dudhi, kofta, homemade",
+      "kcal": 111.0,
+      "protein": 2.6,
+      "carb": 9.3,
+      "fat": 6.9,
+      "fibre": null
+    },
+    {
+      "code": "15-826",
+      "name": "Pakora/bhajia, aubergine, fried in vegetable oil, homemade",
+      "kcal": 294.0,
+      "protein": 7.9,
+      "carb": 17.2,
+      "fat": 22.5,
+      "fibre": 4.8
+    },
+    {
+      "code": "15-827",
+      "name": "Pakora/bhajia, cauliflower, fried in vegetable oil, homemade",
+      "kcal": 320.0,
+      "protein": 9.2,
+      "carb": 18.2,
+      "fat": 23.9,
+      "fibre": 4.7
+    },
+    {
+      "code": "15-828",
+      "name": "Pakora/bhajia, onion, fried in vegetable oil, homemade",
+      "kcal": 270.0,
+      "protein": 11.2,
+      "carb": 24.6,
+      "fat": 14.7,
+      "fibre": 5.7
+    },
+    {
+      "code": "15-830",
+      "name": "Pakora/bhajia, potato, carrot and pea, fried in vegetable oil, homemade",
+      "kcal": 355.0,
+      "protein": 12.5,
+      "carb": 28.9,
+      "fat": 22.7,
+      "fibre": 6.1
+    },
+    {
+      "code": "15-831",
+      "name": "Pakora/bhajia, potato, fried in vegetable oil, homemade",
+      "kcal": 315.0,
+      "protein": 9.2,
+      "carb": 28.4,
+      "fat": 19.6,
+      "fibre": 5.0
+    },
+    {
+      "code": "15-832",
+      "name": "Pakora/bhajia, spinach, fried in vegetable oil, homemade",
+      "kcal": 360.0,
+      "protein": 14.6,
+      "carb": 30.0,
+      "fat": 22.2,
+      "fibre": 7.0
     },
     {
       "code": "15-843",
@@ -119,6 +209,60 @@
       "fibre": 2.1
     },
     {
+      "code": "16-426",
+      "name": "Cod, in batter, fried in rapeseed oil",
+      "kcal": 285.0,
+      "protein": 12.6,
+      "carb": 19.5,
+      "fat": 17.9,
+      "fibre": 1.5
+    },
+    {
+      "code": "16-444",
+      "name": "Fish fingers, cod, fried in rapeseed oil",
+      "kcal": 240.0,
+      "protein": 13.0,
+      "carb": 19.9,
+      "fat": 12.6,
+      "fibre": 1.8
+    },
+    {
+      "code": "17-782",
+      "name": "Chevda/chevra/chewra, homemade",
+      "kcal": 487.0,
+      "protein": 18.6,
+      "carb": 35.5,
+      "fat": 31.8,
+      "fibre": 4.2
+    },
+    {
+      "code": "17-836",
+      "name": "Sev/ganthia, homemade",
+      "kcal": 478.0,
+      "protein": 18.8,
+      "carb": 47.1,
+      "fat": 25.1,
+      "fibre": 8.4
+    },
+    {
+      "code": "19-327",
+      "name": "Spring rolls, meat, takeaway",
+      "kcal": 242.0,
+      "protein": 6.5,
+      "carb": 18.2,
+      "fat": 16.4,
+      "fibre": 2.0
+    },
+    {
+      "code": "19-518",
+      "name": "Scotch eggs, retail",
+      "kcal": 241.0,
+      "protein": 12.0,
+      "carb": 13.1,
+      "fat": 16.0,
+      "fibre": 1.7
+    },
+    {
       "code": "19-565",
       "name": "Curry, chicken korma, homemade",
       "kcal": 127.0,
@@ -126,6 +270,15 @@
       "carb": 4.6,
       "fat": 5.1,
       "fibre": 0.7
+    },
+    {
+      "code": "19-594",
+      "name": "Kofta, lamb, coated with breadcrumbs, homemade",
+      "kcal": 277.0,
+      "protein": 23.8,
+      "carb": 9.7,
+      "fat": 16.0,
+      "fibre": 0.4
     }
   ]
 }
