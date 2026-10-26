@@ -16,85 +16,47 @@ String checkInFailureText(Failure f) => f is Offline
     ? "You're offline. Check-ins are saved online only — nothing was stored. Try again when you're connected."
     : f.message;
 
-/// Phase 13 (§18; ADR-019): the daily check-in (≤ 10 s, every question
-/// optional) and today's readiness, as the server computed it. Nothing here
-/// computes a score or changes the plan; Health Connect's sleep is shown as
-/// a hint from this phone and never sent.
-class RecoveryPanel extends ConsumerStatefulWidget {
+String _hours(double h) =>
+    '${h == h.roundToDouble() ? h.toInt() : h.toStringAsFixed(1)} h';
+
+/// The check-in (≤ 10 s, every question optional) in a sheet: a new one, or
+/// today's opened with its saved answers. Returns true when saved.
+Future<bool> showCheckInSheet(BuildContext context, {RecoveryLog? log}) async =>
+    await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _CheckInSheet(log: log),
+    ) ??
+    false;
+
+/// Phase 13 (§18; ADR-019), beta 3.9's Today strip at the top of Progress:
+/// today's readiness as the server computed it, or the way into the
+/// check-in when there is none yet. Nothing here computes a score or
+/// changes the plan; what went into the score is [ReadinessDetails].
+class RecoveryPanel extends ConsumerWidget {
   const RecoveryPanel({super.key});
 
-  @override
-  ConsumerState<RecoveryPanel> createState() => _RecoveryPanelState();
-}
-
-class _RecoveryPanelState extends ConsumerState<RecoveryPanel> {
-  bool _editing = false;
-  bool _saving = false;
-  String? _error;
-  double? _sleep;
-  final Map<RecoveryScale, int?> _scales = {
-    for (final s in RecoveryScale.values) s: null,
-  };
-
-  static const _sleepBase = 7.5;
-  static const _sleepStep = 0.5;
-  static const _sleepMax = 14.0;
-
-  bool get _empty => _sleep == null && _scales.values.every((v) => v == null);
-
-  void _startEditing(RecoveryLog? log) {
-    setState(() {
-      _editing = true;
-      _error = null;
-      _sleep = log?.sleepHours;
-      for (final s in RecoveryScale.values) {
-        _scales[s] = log?.scale(s);
-      }
-    });
+  static String _summary(RecoveryLog log) {
+    final parts = <String>[
+      if (log.sleepHours != null) '${_hours(log.sleepHours!)} sleep',
+      for (final s in RecoveryScale.values)
+        if (log.scale(s) != null) '${s.label.toLowerCase()} ${log.scale(s)}/5',
+    ];
+    return 'Checked in today: ${parts.join(' · ')}';
   }
 
-  void _nudgeSleep(double by) => setState(() {
-        final next = (_sleep ?? _sleepBase) + (_sleep == null ? 0 : by);
-        _sleep = next.clamp(0, _sleepMax).toDouble();
-      });
-
-  Future<void> _save() async {
-    setState(() {
-      _saving = true;
-      _error = null;
-    });
-    final failure = await ref.read(recoveryActionsProvider).checkIn(
-          LogRecoveryRequest(
-            sleepHours: _sleep,
-            sleepQuality: _scales[RecoveryScale.sleepQuality],
-            soreness: _scales[RecoveryScale.soreness],
-            energy: _scales[RecoveryScale.energy],
-            stress: _scales[RecoveryScale.stress],
-          ),
-        );
-    if (!mounted) return;
-    setState(() {
-      _saving = false;
-      if (failure == null) {
-        _editing = false;
-      } else {
-        _error = checkInFailureText(failure);
-      }
-    });
-  }
-
-  static String _hours(double h) =>
-      '${h == h.roundToDouble() ? h.toInt() : h.toStringAsFixed(1)} h';
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     final async = ref.watch(recoveryTodayProvider);
     final view = async.value;
     final today = view?.today;
     final log = today?.log;
-    final status = _status(view);
+    final status = _status(ref, view);
+    final live = view?.source == RecoverySource.live;
     return Padding(
+      key: const ValueKey('recovery.today'),
       padding: const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -113,8 +75,8 @@ class _RecoveryPanelState extends ConsumerState<RecoveryPanel> {
               key: const ValueKey('recovery.loading'),
               color: FitColors.ink,
             ),
-          if (today != null && log != null && !_editing) ...<Widget>[
-            if (today.readiness case final r?) _ReadinessDisplay(readiness: r),
+          if (today != null && log != null) ...<Widget>[
+            if (today.readiness case final r?) _ReadinessHeadline(readiness: r),
             const SizedBox(height: FitSpacing.sm),
             Text(
               _summary(log),
@@ -125,170 +87,48 @@ class _RecoveryPanelState extends ConsumerState<RecoveryPanel> {
               alignment: Alignment.centerLeft,
               child: TextButton(
                 key: const ValueKey('recovery.edit'),
-                onPressed: view?.source == RecoverySource.live
-                    ? () => _startEditing(log)
-                    : null,
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(0, 40),
+                ),
+                onPressed:
+                    live ? () => showCheckInSheet(context, log: log) : null,
                 child: const Text("Change today's check-in"),
               ),
             ),
           ],
-          if (today != null && (log == null || _editing))
-            _form(context, textTheme, editing: log != null),
-        ],
-      ),
-    );
-  }
-
-  Widget _form(
-    BuildContext context,
-    TextTheme textTheme, {
-    required bool editing,
-  }) {
-    final hc = ref.watch(homeContextProvider).health?.sleep;
-    final hcMinutes = hc != null && hc.isAvailable ? hc.value!.round() : null;
-    return Container(
-      key: const ValueKey('recovery.checkIn'),
-      padding: const EdgeInsets.all(FitSpacing.md),
-      decoration: BoxDecoration(
-        color: FitColors.paper2,
-        borderRadius: BorderRadius.all(FitRadius.medium),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Text('How are you today?', style: textTheme.titleMedium),
-          const SizedBox(height: FitSpacing.xs),
-          Text(
-            'About ten seconds. Every question is optional.',
-            style: textTheme.bodySmall?.copyWith(color: FitColors.ink60),
-          ),
-          const SizedBox(height: FitSpacing.md),
-          Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: FitSpacing.sm,
-            children: <Widget>[
-              SizedBox(
-                width: 112,
-                child: Text('Sleep last night', style: textTheme.bodyMedium),
-              ),
-              IconButton(
-                key: const ValueKey('recovery.sleep.less'),
-                tooltip: 'Less sleep',
-                onPressed: _sleep == null || _sleep! > 0
-                    ? () => _nudgeSleep(-_sleepStep)
-                    : null,
-                icon: const Icon(Icons.remove),
-              ),
-              Text(
-                _sleep == null ? 'Not set' : _hours(_sleep!),
-                key: const ValueKey('recovery.sleep.value'),
-                style: _sleep == null
-                    ? textTheme.bodyMedium?.copyWith(color: FitColors.ink35)
-                    : textTheme.titleLarge,
-              ),
-              IconButton(
-                key: const ValueKey('recovery.sleep.more'),
-                tooltip: 'More sleep',
-                onPressed: _sleep == null || _sleep! < _sleepMax
-                    ? () => _nudgeSleep(_sleepStep)
-                    : null,
-                icon: const Icon(Icons.add),
-              ),
-            ],
-          ),
-          if (hcMinutes != null)
-            Text(
-              'Health Connect: ${hcMinutes ~/ 60} h ${hcMinutes % 60} min last night — on this phone, not sent.',
-              key: const ValueKey('recovery.sleep.healthConnect'),
-              style: textTheme.bodySmall?.copyWith(color: FitColors.ink35),
-            ),
-          for (final s in RecoveryScale.values) ...<Widget>[
-            const SizedBox(height: FitSpacing.sm),
-            Text(s.label, style: textTheme.bodyMedium),
-            Wrap(
-              spacing: FitSpacing.xs,
+          if (today != null && log == null)
+            Row(
               children: <Widget>[
-                for (var v = 1; v <= 5; v++)
-                  Semantics(
-                    label: '${s.label} $v of 5',
-                    child: ChoiceChip(
-                      key: ValueKey('recovery.${s.wire}.$v'),
-                      label: Text('$v'),
-                      selected: _scales[s] == v,
-                      showCheckmark: false,
-                      // §6.2: square corners; the chosen value is a solid ink block.
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(FitRadius.small),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text('Not checked in yet', style: textTheme.titleMedium),
+                      const SizedBox(height: 2),
+                      Text(
+                        'About ten seconds; readiness is worked out from it.',
+                        style: textTheme.bodySmall
+                            ?.copyWith(color: FitColors.ink60),
                       ),
-                      side: BorderSide(
-                        color: _scales[s] == v ? FitColors.ink : FitColors.rule,
-                      ),
-                      backgroundColor: FitColors.paper,
-                      selectedColor: FitColors.ink,
-                      labelStyle: TextStyle(
-                        color:
-                            _scales[s] == v ? FitColors.paper : FitColors.ink,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      onSelected: (on) =>
-                          setState(() => _scales[s] = on ? v : null),
-                    ),
+                    ],
                   ),
+                ),
+                const SizedBox(width: FitSpacing.sm),
+                FilledButton(
+                  key: const ValueKey('recovery.checkIn.open'),
+                  onPressed: () => showCheckInSheet(context),
+                  child: const Text('Check in'),
+                ),
               ],
             ),
-            Text(
-              '1 ${s.low.toLowerCase()} · 5 ${s.high.toLowerCase()}',
-              style: textTheme.bodySmall?.copyWith(color: FitColors.ink35),
-            ),
-          ],
-          if (_error != null) ...<Widget>[
-            const SizedBox(height: FitSpacing.sm),
-            Text(
-              _error!,
-              key: const ValueKey('recovery.error'),
-              style: textTheme.bodyMedium?.copyWith(color: FitColors.oxide),
-            ),
-          ],
-          const SizedBox(height: FitSpacing.md),
-          Wrap(
-            spacing: FitSpacing.sm,
-            runSpacing: FitSpacing.xs,
-            alignment: WrapAlignment.end,
-            children: <Widget>[
-              if (editing)
-                TextButton(
-                  key: const ValueKey('recovery.cancel'),
-                  onPressed: _saving
-                      ? null
-                      : () => setState(() {
-                            _editing = false;
-                            _error = null;
-                          }),
-                  child: const Text('Cancel'),
-                ),
-              FilledButton(
-                key: const ValueKey('recovery.save'),
-                onPressed: _saving || _empty ? null : _save,
-                child: Text(_saving ? 'Saving…' : 'Save check-in'),
-              ),
-            ],
-          ),
         ],
       ),
     );
-  }
-
-  static String _summary(RecoveryLog log) {
-    final parts = <String>[
-      if (log.sleepHours != null) '${_hours(log.sleepHours!)} sleep',
-      for (final s in RecoveryScale.values)
-        if (log.scale(s) != null) '${s.label.toLowerCase()} ${log.scale(s)}/5',
-    ];
-    return 'Checked in today: ${parts.join(' · ')}';
   }
 
   /// The honest line when the view is not live: cached (with its time) or unavailable.
-  (String, String)? _status(RecoveryView? view) {
+  static (String, String)? _status(WidgetRef ref, RecoveryView? view) {
     if (view == null) return null;
     switch (view.source) {
       case RecoverySource.live:
@@ -316,23 +156,12 @@ class _RecoveryPanelState extends ConsumerState<RecoveryPanel> {
   }
 }
 
-/// The server's readiness: the score, its band, the advice, what went into
-/// it (and what was not logged), and the escalation when there is one.
-class _ReadinessDisplay extends ConsumerWidget {
-  const _ReadinessDisplay({required this.readiness});
+/// The server's readiness at a glance: the score, its band, the advice, and
+/// the escalation when there is one.
+class _ReadinessHeadline extends ConsumerWidget {
+  const _ReadinessHeadline({required this.readiness});
 
   final Readiness readiness;
-
-  static String _component(ReadinessComponent c) {
-    if (!c.available) {
-      return switch (c.key) {
-        ReadinessComponentKey.performance => 'Not enough recent training',
-        ReadinessComponentKey.adherence => 'No food logged this week',
-        _ => 'Not answered',
-      };
-    }
-    return c.penalty == 0 ? 'No effect' : '−${c.penalty} of ${c.max}';
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -346,8 +175,6 @@ class _ReadinessDisplay extends ConsumerWidget {
       key: const ValueKey('recovery.readiness'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Text('READINESS', style: textTheme.labelSmall),
-        const SizedBox(height: FitSpacing.xs),
         Wrap(
           crossAxisAlignment: WrapCrossAlignment.end,
           spacing: FitSpacing.sm,
@@ -391,56 +218,358 @@ class _ReadinessDisplay extends ConsumerWidget {
               style: textTheme.bodyMedium,
             ),
           ),
-        const SizedBox(height: FitSpacing.sm),
-        for (final c in r.components)
+      ],
+    );
+  }
+}
+
+/// What went into today's readiness: for each part that had something to
+/// go on, a bar of what is left of its share (full when it took nothing
+/// off); the parts with nothing to go on in one quiet line, never guessed.
+class ReadinessDetails extends StatelessWidget {
+  const ReadinessDetails({required this.readiness, super.key});
+
+  final Readiness readiness;
+
+  static String _missing(ReadinessComponentKey k) => switch (k) {
+        ReadinessComponentKey.performance => 'not enough recent training',
+        ReadinessComponentKey.adherence => 'no food logged this week',
+        _ => 'not answered',
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final used = [
+      for (final c in readiness.components)
+        if (c.available) c,
+    ];
+    final missing = [
+      for (final c in readiness.components)
+        if (!c.available) c,
+    ];
+    return Column(
+      key: const ValueKey('recovery.readiness.details'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        for (final c in used)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 3),
             child: Row(
               children: <Widget>[
-                SizedBox(
-                  width: 84,
+                // Shares, not fixed widths: fits at 200 % text on 360 px.
+                Expanded(
+                  flex: 3,
                   child: Text(
                     c.key.label,
                     style:
                         textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
                   ),
                 ),
-                // How much of this part's share it took off (none when not available).
                 Expanded(
-                  child: c.available
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.all(FitRadius.small),
-                          child: LinearProgressIndicator(
-                            value: c.max == 0 ? 0 : c.penalty / c.max,
-                            minHeight: 6,
-                            color: FitColors.ink60,
-                            backgroundColor: FitColors.paper2,
-                          ),
-                        )
-                      : const SizedBox.shrink(),
+                  flex: 4,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.all(FitRadius.small),
+                    child: LinearProgressIndicator(
+                      key: ValueKey('recovery.component.${c.key.wire}.bar'),
+                      value: c.max == 0 ? 1 : (c.max - c.penalty) / c.max,
+                      minHeight: 6,
+                      // Pine when it took nothing off; amber when it did.
+                      color: c.penalty == 0 ? FitColors.pine : FitColors.amber,
+                      backgroundColor: FitColors.paper2,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: FitSpacing.sm),
-                Flexible(
+                Expanded(
+                  flex: 3,
                   child: Text(
-                    _component(c),
+                    c.penalty == 0 ? 'No effect' : '−${c.penalty} of ${c.max}',
                     key: ValueKey('recovery.component.${c.key.wire}'),
                     textAlign: TextAlign.end,
-                    style: c.available
-                        ? textTheme.bodyMedium
-                        : textTheme.bodyMedium
-                            ?.copyWith(color: FitColors.ink35),
+                    style: textTheme.bodyMedium,
                   ),
                 ),
               ],
             ),
           ),
-        const SizedBox(height: FitSpacing.xs),
+        if (missing.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: FitSpacing.xs),
+            child: Text(
+              'Not in the score: ${missing.map((c) => '${c.key.label.toLowerCase()} (${_missing(c.key)})').join(', ')}.',
+              key: const ValueKey('recovery.components.missing'),
+              style: textTheme.bodySmall?.copyWith(color: FitColors.ink60),
+            ),
+          ),
+        const SizedBox(height: FitSpacing.sm),
         Text(
           'Advice only — your plan never changes on its own. Sleep quality and stress are kept but do not move the score.',
           key: const ValueKey('recovery.readiness.note'),
           style: textTheme.bodySmall?.copyWith(color: FitColors.ink35),
         ),
       ],
+    );
+  }
+}
+
+class _CheckInSheet extends ConsumerStatefulWidget {
+  const _CheckInSheet({required this.log});
+
+  /// Today's saved check-in when changing it; null for a new one.
+  final RecoveryLog? log;
+
+  @override
+  ConsumerState<_CheckInSheet> createState() => _CheckInSheetState();
+}
+
+class _CheckInSheetState extends ConsumerState<_CheckInSheet> {
+  bool _saving = false;
+  String? _error;
+  double? _sleep;
+  final Map<RecoveryScale, int?> _scales = {
+    for (final s in RecoveryScale.values) s: null,
+  };
+
+  static const _sleepBase = 7.5;
+  static const _sleepStep = 0.5;
+  static const _sleepMax = 14.0;
+
+  bool get _empty => _sleep == null && _scales.values.every((v) => v == null);
+
+  @override
+  void initState() {
+    super.initState();
+    _sleep = widget.log?.sleepHours;
+    for (final s in RecoveryScale.values) {
+      _scales[s] = widget.log?.scale(s);
+    }
+  }
+
+  void _nudgeSleep(double by) => setState(() {
+        final next = (_sleep ?? _sleepBase) + (_sleep == null ? 0 : by);
+        _sleep = next.clamp(0, _sleepMax).toDouble();
+      });
+
+  Future<void> _save() async {
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    final failure = await ref.read(recoveryActionsProvider).checkIn(
+          LogRecoveryRequest(
+            sleepHours: _sleep,
+            sleepQuality: _scales[RecoveryScale.sleepQuality],
+            soreness: _scales[RecoveryScale.soreness],
+            energy: _scales[RecoveryScale.energy],
+            stress: _scales[RecoveryScale.stress],
+          ),
+        );
+    if (!mounted) return;
+    if (failure == null) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+    // The answers stay, to try again.
+    setState(() {
+      _saving = false;
+      _error = checkInFailureText(failure);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final hc = ref.watch(homeContextProvider).health?.sleep;
+    final hcMinutes = hc != null && hc.isAvailable ? hc.value!.round() : null;
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          FitSpacing.screen,
+          0,
+          FitSpacing.screen,
+          FitSpacing.md + MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: Column(
+          key: const ValueKey('recovery.checkIn'),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Text('How are you today?', style: textTheme.titleLarge),
+            const SizedBox(height: FitSpacing.xs),
+            Text(
+              'About ten seconds. Every question is optional.',
+              style: textTheme.bodySmall?.copyWith(color: FitColors.ink60),
+            ),
+            const SizedBox(height: FitSpacing.sm),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text('Sleep last night', style: textTheme.bodyMedium),
+                ),
+                IconButton(
+                  key: const ValueKey('recovery.sleep.less'),
+                  tooltip: 'Less sleep',
+                  onPressed: _sleep == null || _sleep! > 0
+                      ? () => _nudgeSleep(-_sleepStep)
+                      : null,
+                  icon: const Icon(Icons.remove),
+                ),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 56),
+                  child: Text(
+                    _sleep == null ? 'Not set' : _hours(_sleep!),
+                    key: const ValueKey('recovery.sleep.value'),
+                    textAlign: TextAlign.center,
+                    style: _sleep == null
+                        ? textTheme.bodyMedium?.copyWith(color: FitColors.ink35)
+                        : textTheme.titleLarge,
+                  ),
+                ),
+                IconButton(
+                  key: const ValueKey('recovery.sleep.more'),
+                  tooltip: 'More sleep',
+                  onPressed: _sleep == null || _sleep! < _sleepMax
+                      ? () => _nudgeSleep(_sleepStep)
+                      : null,
+                  icon: const Icon(Icons.add),
+                ),
+              ],
+            ),
+            if (hcMinutes != null)
+              Text(
+                'Health Connect: ${hcMinutes ~/ 60} h ${hcMinutes % 60} min last night — on this phone, not sent.',
+                key: const ValueKey('recovery.sleep.healthConnect'),
+                style: textTheme.bodySmall?.copyWith(color: FitColors.ink35),
+              ),
+            for (final s in RecoveryScale.values) ...<Widget>[
+              const SizedBox(height: FitSpacing.md),
+              // The question and what each end means, on one line.
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.end,
+                spacing: FitSpacing.sm,
+                children: <Widget>[
+                  Text(s.label, style: textTheme.bodyMedium),
+                  Text(
+                    '1 ${s.low.toLowerCase()} · 5 ${s.high.toLowerCase()}',
+                    style:
+                        textTheme.bodySmall?.copyWith(color: FitColors.ink35),
+                  ),
+                ],
+              ),
+              const SizedBox(height: FitSpacing.xs),
+              Row(
+                children: <Widget>[
+                  for (var v = 1; v <= 5; v++) ...<Widget>[
+                    if (v > 1) const SizedBox(width: FitSpacing.xs),
+                    Expanded(
+                      child: _ScaleBox(
+                        key: ValueKey('recovery.${s.wire}.$v'),
+                        label: '${s.label} $v of 5',
+                        value: v,
+                        selected: _scales[s] == v,
+                        // Tapping the chosen value again clears it.
+                        onTap: () => setState(
+                          () => _scales[s] = _scales[s] == v ? null : v,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+            if (_error != null) ...<Widget>[
+              const SizedBox(height: FitSpacing.sm),
+              Text(
+                _error!,
+                key: const ValueKey('recovery.error'),
+                style: textTheme.bodyMedium?.copyWith(color: FitColors.oxide),
+              ),
+            ],
+            const SizedBox(height: FitSpacing.lg),
+            Row(
+              children: <Widget>[
+                if (widget.log != null) ...<Widget>[
+                  TextButton(
+                    key: const ValueKey('recovery.cancel'),
+                    onPressed:
+                        _saving ? null : () => Navigator.of(context).pop(false),
+                    child: const Text('Cancel'),
+                  ),
+                  const SizedBox(width: FitSpacing.sm),
+                ],
+                Expanded(
+                  child: FilledButton(
+                    key: const ValueKey('recovery.save'),
+                    onPressed: _saving || _empty ? null : _save,
+                    child: Text(
+                      _saving
+                          ? 'Saving…'
+                          : _empty
+                              ? 'Answer one to save'
+                              : 'Save check-in',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One of a question's five values: a full-width share of the row; the
+/// chosen one a solid ink block (§6.2).
+class _ScaleBox extends StatelessWidget {
+  const _ScaleBox({
+    required this.label,
+    required this.value,
+    required this.selected,
+    required this.onTap,
+    super.key,
+  });
+
+  final String label;
+  final int value;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.all(FitRadius.small);
+    return Semantics(
+      label: label,
+      button: true,
+      selected: selected,
+      child: ExcludeSemantics(
+        child: Material(
+          color: selected ? FitColors.ink : FitColors.paper,
+          shape: RoundedRectangleBorder(
+            borderRadius: radius,
+            side: BorderSide(
+              color: selected ? FitColors.ink : FitColors.rule,
+            ),
+          ),
+          child: InkWell(
+            borderRadius: radius,
+            onTap: onTap,
+            child: SizedBox(
+              height: 40,
+              child: Center(
+                child: Text(
+                  '$value',
+                  style: TextStyle(
+                    color: selected ? FitColors.paper : FitColors.ink,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

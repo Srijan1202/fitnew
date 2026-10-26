@@ -6,6 +6,7 @@ import 'package:fitos/core/theme/tokens.dart';
 import 'package:fitos/features/auth/domain/entities/auth_state.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_providers.dart';
+import 'package:fitos/features/exercise/domain/entities/exercise.dart';
 import 'package:fitos/features/exercise/presentation/controllers/exercise_providers.dart';
 import 'package:fitos/features/health/domain/entities/health.dart';
 import 'package:fitos/features/health/presentation/controllers/health_providers.dart';
@@ -38,7 +39,9 @@ import '../../support/workout_overrides.dart';
 /// rate only after 10 days, changes only over ≥ 7 days, never a
 /// day-over-day figure — plus the Volume heatmap, adherence, consistency and
 /// the phone's own Health Connect recovery context (no score). Offline: the
-/// cached summary, labelled; readings online only.
+/// cached summary, labelled; readings online only. Beta 3.9 (owner-approved
+/// redesign): today first, a section with nothing to show is a line in "Get
+/// started", the newest record in Strength, weeks named by their Monday.
 void main() {
   const today = '2026-09-21';
   late AppDatabase db;
@@ -137,6 +140,37 @@ void main() {
     );
   }
 
+  /// Two weeks of chest volume, owned (the Volume screen's own shape).
+  VolumeResponse someVolume() {
+    MuscleWeek chest(double sets, LandmarkStatus status) => MuscleWeek(
+          muscle: MuscleGroup.chest,
+          hardSets: sets,
+          tonnageKg: sets * 400,
+          status: status,
+          landmarks: const VolumeLandmarks(
+            mv: 4,
+            mev: 8,
+            mavLow: 12,
+            mavHigh: 20,
+            mrv: 22,
+          ),
+          owned: true,
+        );
+    return api.volumeResponse.copyWith(
+      weeks: [
+        VolumeWeek(
+          isoWeek: '2026-W37',
+          muscles: [chest(6, LandmarkStatus.belowMev)],
+        ),
+        VolumeWeek(
+          isoWeek: '2026-W38',
+          muscles: [chest(10, LandmarkStatus.mevToMav)],
+        ),
+      ],
+      owned: [MuscleGroup.chest],
+    );
+  }
+
   Widget app() {
     final router = GoRouter(
       initialLocation: Routes.progress,
@@ -204,6 +238,7 @@ void main() {
       'the header and every section; the trend is the headline, the raw reading small below it',
       (tester) async {
     progress.summaries[ProgressWindow.d7] = rich();
+    api.volumeResponse = someVolume();
     await tester.pumpWidget(app());
     await settle(tester);
     expect(textOf(tester, 'progress.title'), 'Progress & Recovery');
@@ -219,19 +254,19 @@ void main() {
       textOf(tester, 'progress.weight.fluctuation'),
       ProgressScreen.fluctuation,
     );
-    // The redesigned order: weight, recovery, then the rest; records last.
+    // Beta 3.9's order: today first, then what was logged; nothing to start.
     for (final label in [
+      'TODAY',
       'WEIGHT',
-      'RECOVERY',
-      'BODY MEASUREMENTS',
       'STRENGTH',
       'TRAINING',
-      'WEEKLY VOLUME PER MUSCLE',
+      'Weekly volume per muscle',
       'NUTRITION',
-      'RECORDS',
+      'BODY',
     ]) {
       await reveal(tester, find.text(label));
     }
+    expect(key('progress.start'), findsNothing);
   });
 
   testWidgets('before 10 days of readings there is no weekly rate — it says so',
@@ -290,7 +325,7 @@ void main() {
     progress.summaries[ProgressWindow.d7] = rich();
     await tester.pumpWidget(app());
     await settle(tester);
-    await reveal(tester, key('progress.recovery.note'));
+    await reveal(tester, key('photos.card'));
     final forbidden = RegExp(
       r'yesterday|since last|day-over-day|vs\.? yesterday|today vs|per day change',
       caseSensitive: false,
@@ -309,6 +344,28 @@ void main() {
     progress.summaries[ProgressWindow.d7] = rich();
     await tester.pumpWidget(app());
     await settle(tester);
+    await reveal(tester, key('progress.best.ex-bench'));
+    expect(textOf(tester, 'progress.best.ex-bench'), '93.5 kg');
+    expect(find.text('From 85.0 kg × 3 · 19 Sep'), findsOneWidget);
+    await reveal(tester, key('progress.consistency'));
+    expect(textOf(tester, 'progress.consistency'), '4 / 4');
+    expect(
+      textOf(tester, 'progress.consistency.caption'),
+      'Planned sessions done · 100%',
+    );
+    // Beta 3.9: a week is named by its Monday, not its ISO number.
+    expect(textOf(tester, 'progress.consistency.2026-W38'), '14 Sep · 3/3');
+    await reveal(tester, key('progress.adherence.calories'));
+    expect(textOf(tester, 'progress.adherence.protein'), '50%');
+    expect(
+      textOf(tester, 'progress.adherence.protein.days'),
+      '2 of 4 logged days',
+    );
+    expect(textOf(tester, 'progress.adherence.calories'), '75%');
+    expect(
+      textOf(tester, 'progress.adherence.calories.days'),
+      '3 of 4 logged days',
+    );
     await reveal(tester, key('progress.measurement.arm'));
     expect(textOf(tester, 'progress.measurement.waist'), '84.5 cm');
     expect(
@@ -323,27 +380,6 @@ void main() {
     expect(
       textOf(tester, 'progress.measurement.missing'),
       'Not measured yet: chest, thigh, hip',
-    );
-    await reveal(tester, key('progress.best.ex-bench'));
-    expect(textOf(tester, 'progress.best.ex-bench'), '93.5 kg');
-    expect(find.text('From 85.0 kg × 3 · 19 Sep'), findsOneWidget);
-    await reveal(tester, key('progress.consistency'));
-    expect(textOf(tester, 'progress.consistency'), '4 / 4');
-    expect(
-      textOf(tester, 'progress.consistency.caption'),
-      'Planned sessions done · 100%',
-    );
-    expect(textOf(tester, 'progress.consistency.2026-W38'), 'W38 3/3');
-    await reveal(tester, key('progress.adherence.calories'));
-    expect(textOf(tester, 'progress.adherence.protein'), '50%');
-    expect(
-      textOf(tester, 'progress.adherence.protein.days'),
-      '2 of 4 logged days',
-    );
-    expect(textOf(tester, 'progress.adherence.calories'), '75%');
-    expect(
-      textOf(tester, 'progress.adherence.calories.days'),
-      '3 of 4 logged days',
     );
   });
 
@@ -381,51 +417,125 @@ void main() {
     await settle(tester);
     await reveal(tester, key('progress.consistency.2026-W43'));
     expect(tester.takeException(), isNull);
-    expect(textOf(tester, 'progress.consistency.2026-W39'), 'W39 24/4');
+    expect(textOf(tester, 'progress.consistency.2026-W39'), '21 Sep · 24/4');
     expect(textOf(tester, 'progress.consistency.2026-W39.extra'), '+20');
     expect(key('progress.consistency.2026-W40.extra'), findsNothing);
   });
 
   testWidgets(
-      'records sit at the bottom, collapsed: counted, opened on a tap, closed again',
+      'beta 3.9: the newest record sits in Strength; the rest open on a tap and close again',
       (tester) async {
-    progress.summaries[ProgressWindow.d7] = rich();
+    final base = rich();
+    progress.summaries[ProgressWindow.d7] = ProgressSummary(
+      window: base.window,
+      today: base.today,
+      from: base.from,
+      weight: base.weight,
+      measurements: base.measurements,
+      prs: [
+        ...base.prs,
+        const PrRecord(
+          id: 'pr-2',
+          exerciseId: 'ex-squat',
+          exerciseName: 'Back Squat',
+          prType: 'weight',
+          value: 110,
+          previous: 105,
+          reason: '110 kg beats your best of 105 kg.',
+          achievedOn: '2026-09-17',
+        ),
+      ],
+      bestLifts: base.bestLifts,
+      adherence: base.adherence,
+      consistency: base.consistency,
+    );
     await tester.pumpWidget(app());
     await settle(tester);
     await reveal(tester, key('progress.records.toggle'));
-    expect(textOf(tester, 'progress.records.count'), '1 record this period');
+    // 19 Sep is newer than 17 Sep.
+    expect(
+      find.descendant(
+        of: key('progress.records.latest'),
+        matching: find.text('New best: Bench Press · 19 Sep'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      textOf(tester, 'progress.records.count'),
+      'All 2 records this period',
+    );
     expect(key('progress.pr.pr-1'), findsNothing);
     await tester.tap(key('progress.records.toggle'));
     await settle(tester);
     expect(key('progress.pr.pr-1'), findsOneWidget);
-    expect(find.text('85 kg beats your best of 80 kg.'), findsOneWidget);
+    expect(key('progress.pr.pr-2'), findsOneWidget);
+    expect(find.text('110 kg beats your best of 105 kg.'), findsOneWidget);
+    expect(key('progress.records.latest'), findsNothing);
     await tester.tap(key('progress.records.toggle'));
     await settle(tester);
     expect(key('progress.pr.pr-1'), findsNothing);
+    expect(key('progress.records.latest'), findsOneWidget);
   });
 
-  testWidgets('empty history: honest empty states, nothing invented',
+  testWidgets('one record: shown in Strength with nothing to open',
       (tester) async {
+    progress.summaries[ProgressWindow.d7] = rich();
     await tester.pumpWidget(app());
     await settle(tester);
-    expect(key('progress.weight.empty'), findsOneWidget);
+    await reveal(tester, key('progress.records.latest'));
+    expect(find.text('85 kg beats your best of 80 kg.'), findsOneWidget);
+    expect(key('progress.records.toggle'), findsNothing);
+  });
+
+  testWidgets(
+      'empty history: no empty sections — each is a line in the start list, nothing invented',
+      (tester) async {
+    api.volumeResponse = someVolume();
+    await tester.pumpWidget(app());
+    await settle(tester);
     expect(key('progress.weight.trend'), findsNothing);
-    await reveal(tester, key('progress.measurements.empty'));
-    await reveal(tester, key('progress.strength.empty'));
+    for (final label in [
+      'WEIGHT',
+      'STRENGTH',
+      'NUTRITION',
+      'BODY',
+      'RECOVERY',
+    ]) {
+      expect(find.text(label), findsNothing, reason: label);
+    }
+    // The Volume screen has weeks, so Training is drawn and says 0.
     await reveal(tester, key('progress.consistency'));
     expect(textOf(tester, 'progress.consistency'), '0');
     expect(
       textOf(tester, 'progress.consistency.caption'),
       'Completed · no programme to compare',
     );
-    await reveal(tester, key('progress.adherence.protein'));
-    expect(textOf(tester, 'progress.adherence.protein'), '—');
+    await reveal(tester, key('progress.start'));
+    expect(find.text('STILL TO START'), findsOneWidget);
+    for (final k in [
+      'progress.weight.log',
+      'progress.start.food',
+      'progress.measurement.log',
+      'progress.start.photo',
+    ]) {
+      await reveal(tester, key(k));
+    }
+    expect(key('progress.start.training'), findsNothing);
+    // Health Connect is not on this phone: nothing to connect.
+    expect(key('progress.start.health'), findsNothing);
+  });
+
+  testWidgets('nothing at all: "Get started" leads, straight after Today',
+      (tester) async {
+    await tester.pumpWidget(app());
+    await settle(tester);
+    expect(find.text('GET STARTED'), findsOneWidget);
+    expect(key('progress.start.training'), findsOneWidget);
+    expect(find.text('TRAINING'), findsNothing);
     expect(
-      textOf(tester, 'progress.adherence.protein.days'),
-      'No logged days with a target yet',
+      tester.getTopLeft(find.text('GET STARTED')).dy,
+      greaterThan(tester.getTopLeft(find.text('TODAY')).dy),
     );
-    await reveal(tester, key('progress.records.count'));
-    expect(textOf(tester, 'progress.records.count'), 'No records this period');
   });
 
   testWidgets('loading shows a quiet bar; the window switch fetches 90 days',
@@ -577,9 +687,11 @@ void main() {
   testWidgets(
       'the heatmap is the Volume screen\'s own weeks, statuses and words; it opens Volume',
       (tester) async {
+    api.volumeResponse = someVolume();
     await tester.pumpWidget(app());
     await settle(tester);
     final v = api.volumeResponse;
+    expect(v.weeks, hasLength(2));
     await reveal(tester, key('progress.volume.open'));
     for (final muscle in v.owned) {
       for (final (i, w) in v.weeks.indexed) {
@@ -600,22 +712,16 @@ void main() {
   });
 
   testWidgets(
-      'recovery: device-only context, the connect state — Health Connect is never part of readiness (Phase 13)',
+      'recovery: no check-in and no Health Connect — Today offers the check-in and no Recovery section is drawn (Phase 13)',
       (tester) async {
     await tester.pumpWidget(app());
     await settle(tester);
-    await reveal(tester, key('progress.recovery.note'));
-    expect(
-      textOf(tester, 'home.recovery.empty'),
-      'Recovery metrics need Health Connect, which is not on this phone.',
-    );
-    expect(
-      textOf(tester, 'progress.recovery.note'),
-      contains('not part of readiness'),
-    );
     // Phase 13: a score exists only from the server, after a check-in — none here.
     expect(key('recovery.readiness'), findsNothing);
-    expect(key('recovery.checkIn'), findsOneWidget);
+    expect(key('recovery.checkIn.open'), findsOneWidget);
+    expect(key('recovery.readiness.details'), findsNothing);
+    expect(key('progress.recovery.empty'), findsNothing);
+    expect(key('progress.recovery.note'), findsNothing);
   });
 
   testWidgets(
@@ -647,8 +753,12 @@ void main() {
     );
     expect(textOf(tester, 'progress.weight.trend'), '74.1 kg');
     await reveal(tester, key('progress.recovery.advisory'));
-    expect(textOf(tester, 'home.sleep'), '5h 30m');
-    expect(textOf(tester, 'home.rhr'), '58 bpm');
+    expect(textOf(tester, 'progress.sleep'), '5h 30m');
+    expect(textOf(tester, 'progress.rhr'), '58 bpm');
+    expect(
+      textOf(tester, 'progress.recovery.note'),
+      contains('not part of readiness'),
+    );
   });
 
   test(
@@ -671,6 +781,8 @@ void main() {
     expect(g.raw[0].dy, lessThan(g.raw[1].dy));
     expect(g.minKg, lessThan(74));
     expect(g.maxKg, greaterThan(76));
+    // Beta 3.9: whole kilograms an even number apart — 73 · 75 · 77.
+    expect([g.minKg, g.maxKg], [73, 77]);
     expect(TrendPainter.rawStroke, 1);
     expect(
       TrendPainter.trendStroke,
@@ -707,7 +819,7 @@ void main() {
       await tester.pumpWidget(app());
       await settle(tester);
       expect(tester.takeException(), isNull);
-      await reveal(tester, key('progress.recovery.note'));
+      await reveal(tester, key('photos.card'));
       expect(tester.takeException(), isNull);
       await tester.scrollUntilVisible(
         key('progress.weight.log'),

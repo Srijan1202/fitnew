@@ -80,3 +80,28 @@ What already existed and is reused:
 - **Accepted:**
   - The current programme's rest days and its last skip apply to the whole window, so a programme change reinterprets older days.
   - Only the latest Skip today is known (`programs.skipped_on`).
+
+## Amendment — Progress & Recovery redesign (beta 3.9, owner 2026-10-26; BACKLOG O4)
+
+The owner approved all twelve points of a screenshot proposal. The data and every rule above are unchanged; only the page is.
+
+- **Today first.** A Today strip leads the page: the server's readiness (score, band, advice, the low run, the deload offer) once checked in, otherwise "Not checked in yet" and a **Check in** button.
+  - The check-in opens in a sheet. Each 1–5 question is one row of five full-width boxes, with the end words on the question's line. Tapping the chosen value again clears it, and Save says "Answer one to save" until one is answered.
+- **Order:** Today, Weight, Strength, Training, Nutrition, Body (measurements and photos), Recovery.
+- **A section with nothing to show is not drawn.**
+  - It becomes a line in "Get started" (log weight, a session, a day of food, a measurement, a photo, connect Health data), each opening the way to give it something.
+  - The list comes straight after Today when the page has nothing else ("Get started"), and last otherwise ("Still to start").
+  - Weight and measurements come from all history; training, strength and food follow the chosen window, which the list says.
+- **Strength** shows the newest record ("New best: …"); with more than one, the rest open under it. The separate Records block is gone.
+- **Training:** a week is named by its Monday ("14 Sep · 2/3"), a planned session is a dot, filled when done and a hollow ring when not (still never red, §17). The weekly-volume grid shows only when there is volume; the "Training volume" link is always there.
+- **Recovery** lists what went into readiness.
+  - Each part that had something to go on has a bar of what is left of its share: full and pine when it took nothing off, amber when it did. The parts with nothing to go on are one quiet line.
+  - Sleep and resting heart rate are rows. Without Health Connect they are one line, not a nested card.
+- **Smaller fixes:**
+  - The weekly report entry is a slim row.
+  - The weight chart's scale is whole kilograms an even number apart (72 · 75 · 78).
+  - The photos card is inset like every other section.
+  - Every section has one header style: a label and one line, never repeated inside its block.
+  - A best lift's number shrinks to fit at 200 % text on 360 px (it overflowed before; the old order never scrolled the test to it).
+- `progress_screen.dart` is split into parts (`progress_parts`, `progress_sections`, `progress_start`); Home's Recovery block lost its unused `showReadiness` switch.
+

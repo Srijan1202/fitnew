@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/routing/router.dart';
 import '../../../core/theme/tokens.dart';
-import '../../../shared/widgets/fit_glass.dart';
 import '../../premium/domain/avatars.dart';
 import '../../premium/presentation/premium_providers.dart';
 import '../../../core/config/app_features.dart';
@@ -22,36 +21,29 @@ class WeeklyReportEntry extends ConsumerWidget {
     }
     final textTheme = Theme.of(context).textTheme;
     final locked = ref.watch(isPremiumProvider) == false;
+    // Beta 3.9: one slim row, so it never outweighs the weight above.
     return InkWell(
       key: const ValueKey('progress.weekly'),
       onTap: () => context.push(Routes.weeklyReport),
-      customBorder: fitGlass
-          ? const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(FitRadius.block),
-            )
-          : null,
+      borderRadius: BorderRadius.all(FitRadius.small),
       child: Container(
-        padding: const EdgeInsets.all(FitSpacing.md),
-        decoration: fitGlass
-            ? FitBlock.decoration(glow: true).copyWith(
-                border: Border.all(color: kGold.withValues(alpha: 0.55)),
-              )
-            : BoxDecoration(border: Border.all(color: kGold)),
+        padding: const EdgeInsets.symmetric(
+          horizontal: FitSpacing.md,
+          vertical: FitSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          border: Border.all(color: kGold.withValues(alpha: 0.55)),
+          borderRadius: BorderRadius.all(FitRadius.small),
+        ),
         child: Row(
           children: <Widget>[
-            const Icon(Icons.insights, color: kGoldDeep),
+            const Icon(Icons.insights, color: kGoldDeep, size: 20),
             const SizedBox(width: FitSpacing.sm),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text('Weekly report', style: textTheme.titleMedium),
-                  Text(
-                    'Your week on one page: sessions, volume, records, protein, trend weight.',
-                    style:
-                        textTheme.bodySmall?.copyWith(color: FitColors.ink60),
-                  ),
-                ],
+              child: Text(
+                'Weekly report',
+                style: textTheme.titleSmall,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             Icon(
@@ -59,6 +51,7 @@ class WeeklyReportEntry extends ConsumerWidget {
               key: ValueKey(
                 locked ? 'progress.weekly.locked' : 'progress.weekly.open',
               ),
+              size: 20,
               color: locked ? kGoldDeep : FitColors.ink60,
             ),
           ],

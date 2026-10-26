@@ -254,7 +254,11 @@ void main() {
       required bool camera,
       PhotoPose pose = PhotoPose.front,
     }) async {
-      final button = find.byKey(const ValueKey('photos.add'));
+      // Beta 3.9: before the first photo, the way in is a "Get started" line.
+      final card = find.byKey(const ValueKey('photos.add'));
+      final button = card.evaluate().isEmpty
+          ? find.byKey(const ValueKey('progress.start.photo'))
+          : card;
       await tester.ensureVisible(button);
       await tester.tap(button);
       await tester.pumpAndSettle();
@@ -276,11 +280,20 @@ void main() {
       await tall(tester);
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('photos.card')), findsOneWidget);
-      expect(find.textContaining('Photos stay on this phone'), findsOneWidget);
+      // No photo yet: a line in "Get started", saying where they are kept.
+      expect(find.byKey(const ValueKey('photos.card')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('progress.start.photo')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Kept on this phone only'), findsOneWidget);
 
       await add(tester, camera: true);
       expect(source.lastCamera, isTrue);
+      // The first photo brings the Body section and its card.
+      expect(find.byKey(const ValueKey('photos.card')), findsOneWidget);
+      expect(find.textContaining('Photos stay on this phone'), findsOneWidget);
+      expect(find.byKey(const ValueKey('progress.start.photo')), findsNothing);
       await add(tester, camera: false, pose: PhotoPose.side);
       expect(source.lastCamera, isFalse);
       final stored =
@@ -297,7 +310,7 @@ void main() {
       source.cancel = true;
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
-      final button = find.byKey(const ValueKey('photos.add'));
+      final button = find.byKey(const ValueKey('progress.start.photo'));
       await tester.ensureVisible(button);
       await tester.tap(button);
       await tester.pumpAndSettle();
@@ -402,7 +415,7 @@ void main() {
       source.hold = Completer<void>();
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
-      final button = find.byKey(const ValueKey('photos.add'));
+      final button = find.byKey(const ValueKey('progress.start.photo'));
       await tester.ensureVisible(button);
       await tester.tap(button);
       await tester.pumpAndSettle();
@@ -411,7 +424,7 @@ void main() {
       // The camera app is open; FITOS returns to a rebuilt screen.
       router.go('/elsewhere');
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('photos.card')), findsNothing);
+      expect(find.byKey(const ValueKey('progress.start.photo')), findsNothing);
       source.hold!.complete();
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('photos.details')), findsOneWidget);
@@ -456,6 +469,7 @@ void main() {
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('photos.card')), findsNothing);
+      expect(find.byKey(const ValueKey('progress.start.photo')), findsNothing);
     });
   });
 }

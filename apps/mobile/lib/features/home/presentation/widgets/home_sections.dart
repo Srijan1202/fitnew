@@ -456,7 +456,6 @@ class RecoverySection extends StatelessWidget {
   const RecoverySection({
     required this.context,
     this.checkIn,
-    this.showReadiness = true,
     super.key,
   });
 
@@ -467,9 +466,6 @@ class RecoverySection extends StatelessWidget {
   /// Connect has none — found on the S24: a logged sleep still read
   /// "No data yet" here.
   final RecoveryToday? checkIn;
-
-  /// False where readiness is already on screen (Progress & Recovery).
-  final bool showReadiness;
 
   @override
   Widget build(BuildContext buildContext) {
@@ -485,7 +481,7 @@ class RecoverySection extends StatelessWidget {
             m.availability == HealthAvailability.temporarilyUnavailable);
     final anyGranted = readable(sleep) || readable(rhr);
     final loggedSleep = checkIn?.log?.sleepHours;
-    final readiness = showReadiness ? checkIn?.readiness : null;
+    final readiness = checkIn?.readiness;
     final unsupported = c.healthUnsupported;
     final connect = TextButton(
       key: const ValueKey('home.recovery.connect'),

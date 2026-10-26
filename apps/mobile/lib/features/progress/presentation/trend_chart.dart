@@ -74,12 +74,12 @@ class TrendChart extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Text(g.maxKg.toStringAsFixed(1), style: axis),
+                        Text(g.maxKg.toStringAsFixed(0), style: axis),
                         Text(
-                          ((g.maxKg + g.minKg) / 2).toStringAsFixed(1),
+                          ((g.maxKg + g.minKg) / 2).toStringAsFixed(0),
                           style: axis,
                         ),
-                        Text(g.minKg.toStringAsFixed(1), style: axis),
+                        Text(g.minKg.toStringAsFixed(0), style: axis),
                       ],
                     ),
                   ],
@@ -120,7 +120,9 @@ class TrendGeometry {
   final double maxKg;
 
   /// Every raw point and trend vertex is laid out on the window's calendar
-  /// dates (x) and the combined kg range of both series with a 10 % margin (y).
+  /// dates (x) and the combined kg range of both series with a 10 % margin (y),
+  /// widened to whole kilograms an even number apart (beta 3.9), so the top,
+  /// middle and bottom labels are all whole: 72 · 75 · 78, never 72.9.
   static TrendGeometry of(
     List<WeightPoint> points,
     String from,
@@ -138,8 +140,9 @@ class TrendGeometry {
     var lo = values.reduce((a, b) => a < b ? a : b);
     var hi = values.reduce((a, b) => a > b ? a : b);
     final pad = (hi - lo) == 0 ? 0.5 : (hi - lo) * 0.1;
-    lo -= pad;
-    hi += pad;
+    lo = (lo - pad).floorToDouble();
+    hi = (hi + pad).ceilToDouble();
+    if ((hi - lo) % 2 == 1) hi += 1;
     double x(String date) => days <= 0
         ? size.width / 2
         : DateTime.parse(date).difference(start).inDays / days * size.width;

@@ -33,11 +33,12 @@ import '../../support/fake_training_repository.dart';
 import '../../support/fake_workout_api.dart';
 import '../../support/workout_overrides.dart';
 
-/// Phase 13 — Recovery (§18; ADR-019): the check-in card (every question
+/// Phase 13 — Recovery (§18; ADR-019): the check-in (every question
 /// optional, online only), the server's readiness drawn as is (score, band,
 /// advice, what went in and what was not logged, the escalation), Health
 /// Connect's sleep as a hint that is never sent, and TODAY's advisory
-/// low-readiness words.
+/// low-readiness words. Beta 3.9: the check-in opens in a sheet from the
+/// Today strip at the top of Progress; what went in is in Recovery below.
 void main() {
   const today = '2026-09-21';
   late AppDatabase db;
@@ -156,35 +157,54 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// A tap inside the check-in sheet (its own scroll view).
+  Future<void> tapIn(WidgetTester tester, String k) async {
+    await tester.ensureVisible(key(k));
+    await tester.pumpAndSettle();
+    await tester.tap(key(k));
+    await tester.pumpAndSettle();
+  }
+
+  bool selected(WidgetTester tester, String k) => tester
+      .widgetList<Semantics>(
+        find.descendant(of: key(k), matching: find.byType(Semantics)),
+      )
+      .any((s) => s.properties.selected ?? false);
+
   testWidgets(
-      'no check-in yet: the card, every question optional; Save waits for one answer and sends exactly what was answered',
+      'no check-in yet: Today offers it; the sheet, every question optional; Save waits for one answer and sends exactly what was answered',
       (tester) async {
     recovery.readinessAfterCheckIn = readiness();
     await tester.pumpWidget(app());
     await settle(tester);
-    await reveal(tester, key('recovery.checkIn'));
+    expect(key('recovery.checkIn'), findsNothing);
+    await tap(tester, 'recovery.checkIn.open');
     expect(find.text('How are you today?'), findsOneWidget);
     expect(key('recovery.readiness'), findsNothing);
     expect(textOf(tester, 'recovery.sleep.value'), 'Not set');
     final save = key('recovery.save');
     expect(tester.widget<FilledButton>(save).onPressed, isNull);
 
+    expect(find.text('Answer one to save'), findsOneWidget);
+
     // Sleep starts at 7.5 h on the first tap, then moves by half an hour.
-    await tap(tester, 'recovery.sleep.more');
+    await tapIn(tester, 'recovery.sleep.more');
     expect(textOf(tester, 'recovery.sleep.value'), '7.5 h');
-    await tap(tester, 'recovery.sleep.more');
+    await tapIn(tester, 'recovery.sleep.more');
     expect(textOf(tester, 'recovery.sleep.value'), '8 h');
-    await tap(tester, 'recovery.sleep.less');
-    await tap(tester, 'recovery.sleep.less');
-    await tap(tester, 'recovery.sleep.less');
+    await tapIn(tester, 'recovery.sleep.less');
+    await tapIn(tester, 'recovery.sleep.less');
+    await tapIn(tester, 'recovery.sleep.less');
     expect(textOf(tester, 'recovery.sleep.value'), '6.5 h');
-    await tap(tester, 'recovery.soreness.3');
-    await tap(tester, 'recovery.energy.4');
+    await tapIn(tester, 'recovery.soreness.3');
+    await tapIn(tester, 'recovery.energy.4');
+    expect(selected(tester, 'recovery.energy.4'), isTrue);
     // Tapping the chosen value again clears it: the question goes unanswered.
-    await tap(tester, 'recovery.stress.2');
-    await tap(tester, 'recovery.stress.2');
+    await tapIn(tester, 'recovery.stress.2');
+    await tapIn(tester, 'recovery.stress.2');
+    expect(selected(tester, 'recovery.stress.2'), isFalse);
     expect(tester.widget<FilledButton>(save).onPressed, isNotNull);
-    await tap(tester, 'recovery.save');
+    await tapIn(tester, 'recovery.save');
     await settle(tester);
 
     expect(recovery.writes, [
@@ -196,7 +216,9 @@ void main() {
         'stress': null,
       },
     ]);
-    // The server's readiness, drawn as is.
+    // The sheet closes; the server's readiness leads Today, drawn as is.
+    expect(key('recovery.checkIn'), findsNothing);
+    expect(key('recovery.checkIn.open'), findsNothing);
     await reveal(tester, key('recovery.readiness'));
     expect(textOf(tester, 'recovery.readiness.score'), '48');
     expect(textOf(tester, 'recovery.readiness.band'), '/ 100 · Go lighter');
@@ -229,18 +251,6 @@ void main() {
     );
     await tester.pumpWidget(app());
     await settle(tester);
-    await reveal(tester, key('recovery.readiness.note'));
-    expect(textOf(tester, 'recovery.component.sleep'), '−20 of 25');
-    expect(textOf(tester, 'recovery.component.soreness'), 'No effect');
-    expect(textOf(tester, 'recovery.component.energy'), 'Not answered');
-    expect(
-      textOf(tester, 'recovery.component.performance'),
-      'Not enough recent training',
-    );
-    expect(
-      textOf(tester, 'recovery.component.adherence'),
-      'No food logged this week',
-    );
     expect(
       textOf(tester, 'recovery.readiness.run'),
       'Under 35 for 3 days running.',
@@ -249,6 +259,27 @@ void main() {
       textOf(tester, 'recovery.readiness.deload'),
       'A lighter week is offered in Training. Nothing changes unless you accept it.',
     );
+    await reveal(tester, key('recovery.readiness.note'));
+    expect(textOf(tester, 'recovery.component.sleep'), '−20 of 25');
+    expect(textOf(tester, 'recovery.component.soreness'), 'No effect');
+    // Beta 3.9: a bar is what is left of the part's share, full when it took nothing.
+    LinearProgressIndicator bar(String part) => tester.widget(
+          key('recovery.component.$part.bar'),
+        );
+    expect(bar('sleep').value, closeTo(5 / 25, 1e-9));
+    expect(bar('soreness').value, 1);
+    // The parts with nothing to go on: one quiet line, never guessed.
+    expect(key('recovery.component.energy'), findsNothing);
+    expect(
+      textOf(tester, 'recovery.components.missing'),
+      'Not in the score: energy (not answered), training (not enough recent training), nutrition (no food logged this week).',
+    );
+    // Health Connect is not on this phone: one line, not a card.
+    expect(
+      textOf(tester, 'progress.recovery.empty'),
+      'Sleep and resting heart rate need Health Connect, which is not on this phone.',
+    );
+    expect(textOf(tester, 'progress.sleep'), '5h 00m');
     expect(
       textOf(tester, 'recovery.readiness.note'),
       startsWith('Advice only — your plan never changes on its own.'),
@@ -273,12 +304,10 @@ void main() {
     await settle(tester);
     await tap(tester, 'recovery.edit');
     expect(textOf(tester, 'recovery.sleep.value'), '7 h');
-    expect(
-      tester.widget<ChoiceChip>(key('recovery.soreness.2')).selected,
-      isTrue,
-    );
-    await tap(tester, 'recovery.soreness.4');
-    await tap(tester, 'recovery.save');
+    expect(selected(tester, 'recovery.soreness.2'), isTrue);
+    await tapIn(tester, 'recovery.soreness.4');
+    expect(selected(tester, 'recovery.soreness.2'), isFalse);
+    await tapIn(tester, 'recovery.save');
     await settle(tester);
     expect(recovery.writes.single, {
       'sleepHours': 7.0,
@@ -296,8 +325,9 @@ void main() {
     await tester.pumpWidget(app());
     await settle(tester);
     recovery.failure = const Offline();
-    await tap(tester, 'recovery.energy.2');
-    await tap(tester, 'recovery.save');
+    await tap(tester, 'recovery.checkIn.open');
+    await tapIn(tester, 'recovery.energy.2');
+    await tapIn(tester, 'recovery.save');
     await settle(tester);
     expect(
       textOf(tester, 'recovery.error'),
@@ -343,6 +373,7 @@ void main() {
       textOf(tester, 'recovery.unavailable'),
       'Check-ins need a connection.',
     );
+    expect(key('recovery.checkIn.open'), findsNothing);
     expect(key('recovery.checkIn'), findsNothing);
   });
 
@@ -362,14 +393,15 @@ void main() {
       ).copyWith(sleep: metricOf(HealthMetricKind.sleep, 400, unit: 'min'));
     await tester.pumpWidget(app());
     await settle(tester);
-    await reveal(tester, key('recovery.sleep.healthConnect'));
+    await tap(tester, 'recovery.checkIn.open');
+    await tester.ensureVisible(key('recovery.sleep.healthConnect'));
     expect(
       textOf(tester, 'recovery.sleep.healthConnect'),
       'Health Connect: 6 h 40 min last night — on this phone, not sent.',
     );
     expect(textOf(tester, 'recovery.sleep.value'), 'Not set');
-    await tap(tester, 'recovery.soreness.1');
-    await tap(tester, 'recovery.save');
+    await tapIn(tester, 'recovery.soreness.1');
+    await tapIn(tester, 'recovery.save');
     await settle(tester);
     expect(recovery.writes.single['sleepHours'], isNull);
   });
@@ -378,7 +410,8 @@ void main() {
     ('360x640 at 200 % text', const Size(360, 640), 2.0),
     ('S24 (412x915) at 200 % text', const Size(412, 915), 2.0),
   ]) {
-    testWidgets('layout: $name — the card and the display fit', (tester) async {
+    testWidgets('layout: $name — the sheet and the display fit',
+        (tester) async {
       tester.view
         ..physicalSize = size * 3
         ..devicePixelRatio = 3;
@@ -388,9 +421,10 @@ void main() {
       recovery.readinessAfterCheckIn = readiness(lowDays: 2);
       await tester.pumpWidget(app());
       await settle(tester);
-      await reveal(tester, key('recovery.save'));
-      await tap(tester, 'recovery.stress.5');
-      await tap(tester, 'recovery.save');
+      await tap(tester, 'recovery.checkIn.open');
+      expect(tester.takeException(), isNull);
+      await tapIn(tester, 'recovery.stress.5');
+      await tapIn(tester, 'recovery.save');
       await settle(tester);
       await reveal(tester, key('recovery.readiness.note'));
       expect(tester.takeException(), isNull);
