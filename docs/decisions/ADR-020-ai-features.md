@@ -113,3 +113,7 @@
 4. **What the model sees:** the meal, the candidates' names, servings and rough numbers, what is left of today, and what they feel like. Never their name, weight or history.
 5. **Logging:** nothing is stored by the call. **Log this** logs the plate as one search log (foods) and one mess log (dishes), through the queue.
 6. **Limits:** premium, the FITOS AI consent, its own purpose in `ai_usage` (`guide`, migration 0033), `AI_GUIDE_PER_HOUR` (default 10) and `MODEL_FOOD_GUIDE`, and the `food-guide` switch (ADR-033). The privacy policy says what is sent.
+
+## Amendment — a streamed chat (beta 3.8, owner 2026-10-26)
+
+`POST /v1/ai/chat/stream` answers the same chat as server-sent events: the answer as it is written, then the whole answer to keep. `/ai/chat` stays for older builds. The details and the off-topic holdback are in ADR-037 item 7.

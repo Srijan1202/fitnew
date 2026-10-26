@@ -34,3 +34,4 @@ Backlog F8. The owner chose: **free** for everyone, and kept **inside FITOS only
    - **Cause:** the camera sends FITOS to the background. On return, the screen that asked for the photo can be rebuilt (fresh switches, health, sync), and the photo was dropped with it.
    - **Fix:** once a photo is picked, the pose and day are asked on the app's root navigator and saved through the app's provider container, never through that screen.
    - **If Android closes FITOS while the camera is open**, the photo it keeps is handed back on the next start (`retrieveLostData`), and a dialog offers **Add photo** or **Discard**. Never during a workout.
+   - `AMENDED 2026-10-26 (beta 3.8, ADR-037 item 4)`: photos are now taken with a camera inside FITOS, so the phone's camera app is never opened and Android has no reason to close FITOS. The recovery stays for a photo taken with an older build.

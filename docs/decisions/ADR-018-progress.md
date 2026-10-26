@@ -64,6 +64,7 @@ What already existed and is reused:
 - **The streak** (core `progress/streak.ts`, 100 % branch coverage).
   - A day **counts** when a workout is completed or any food is logged, in the user's time zone.
   - A planned rest day of the active programme, and the day used by Skip today (ADR-030), are **excused**: they neither break nor add to the run.
+    - `AMENDED 2026-10-26 (beta 3.8, ADR-037 item 6)`: a planned rest day now **counts by itself** when it continues a run (it never starts one); Skip today stays excused. `todayRest` is added to the response, and no "streak at risk" reminder is planned on a rest or skipped day.
   - Any other day without a log ends the run. Today not logged yet does not end it.
   - **Without a programme** there are no rest days.
   - The run is looked for back to the account's first day, at most 400 days, and the best run within that window is reported too.
