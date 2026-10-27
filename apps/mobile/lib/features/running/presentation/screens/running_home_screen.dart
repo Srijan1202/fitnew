@@ -46,11 +46,14 @@ class RunningHomeScreen extends ConsumerWidget {
             await ref.read(runListProvider.future);
           },
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(
+            key: const ValueKey('running.list'),
+            // The tab bar floats over the content (AppShell's extendBody):
+            // its height arrives as bottom padding, kept clear here.
+            padding: EdgeInsets.fromLTRB(
               FitSpacing.screen,
               FitSpacing.sm,
               FitSpacing.screen,
-              FitSpacing.xl,
+              FitSpacing.xl + MediaQuery.paddingOf(context).bottom,
             ),
             children: [
               if (live != null)
@@ -175,6 +178,8 @@ class RunningHomeScreen extends ConsumerWidget {
 
   void _settings(BuildContext context) => showModalBottomSheet<void>(
         context: context,
+        // Above the bottom bar, like the setup sheet.
+        useRootNavigator: true,
         showDragHandle: true,
         builder: (_) => const _RunSettingsSheet(),
       );

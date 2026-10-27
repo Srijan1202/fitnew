@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:fitos/core/db/app_database.dart';
+import 'package:fitos/core/routing/app_shell.dart';
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
@@ -58,40 +59,60 @@ void main() {
     () => db.close().timeout(const Duration(seconds: 5), onTimeout: () {}),
   );
 
-  Widget harness() {
-    final router = GoRouter(
-      initialLocation: Routes.plan,
-      routes: [
-        GoRoute(
-          path: Routes.plan,
-          builder: (_, __) => const TrainingTabScreen(),
-          routes: [
-            GoRoute(
-              path: 'run',
-              builder: (_, __) => const LiveRunScreen(),
-              routes: [
-                GoRoute(
-                  path: 'finish',
-                  builder: (_, __) => const RunFinishScreen(),
-                ),
-              ],
-            ),
-            GoRoute(
-              path: 'runs/:runId',
-              builder: (_, s) =>
-                  RunDetailScreen(id: s.pathParameters['runId']!),
-              routes: [
-                GoRoute(
-                  path: 'share',
-                  builder: (_, s) =>
-                      ShareRunScreen(id: s.pathParameters['runId']!),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    );
+  /// The Training route and the running screens. With [root], the running
+  /// screens go on the root navigator, as in the app.
+  GoRoute planRoute({GlobalKey<NavigatorState>? root}) => GoRoute(
+        path: Routes.plan,
+        builder: (_, __) => const TrainingTabScreen(),
+        routes: [
+          GoRoute(
+            path: 'run',
+            parentNavigatorKey: root,
+            builder: (_, __) => const LiveRunScreen(),
+            routes: [
+              GoRoute(
+                path: 'finish',
+                parentNavigatorKey: root,
+                builder: (_, __) => const RunFinishScreen(),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: 'runs/:runId',
+            parentNavigatorKey: root,
+            builder: (_, s) => RunDetailScreen(id: s.pathParameters['runId']!),
+            routes: [
+              GoRoute(
+                path: 'share',
+                parentNavigatorKey: root,
+                builder: (_, s) =>
+                    ShareRunScreen(id: s.pathParameters['runId']!),
+              ),
+            ],
+          ),
+        ],
+      );
+
+  /// [shell]: Training inside a tab shell with a bottom bar, as in the app
+  /// (the tab has its own navigator under the bar).
+  Widget harness({bool shell = false}) {
+    final root = GlobalKey<NavigatorState>();
+    final router = shell
+        ? GoRouter(
+            navigatorKey: root,
+            initialLocation: Routes.plan,
+            routes: [
+              StatefulShellRoute.indexedStack(
+                // The app's own shell: its bar floats over the tab.
+                builder: (_, __, navigationShell) =>
+                    AppShell(navigationShell: navigationShell),
+                branches: [
+                  StatefulShellBranch(routes: [planRoute(root: root)]),
+                ],
+              ),
+            ],
+          )
+        : GoRouter(initialLocation: Routes.plan, routes: [planRoute()]);
     return ProviderScope(
       overrides: [
         sessionUserIdProvider.overrideWithValue('user-1'),
@@ -207,6 +228,44 @@ void main() {
     expect(find.byKey(const ValueKey('running.start')), findsOneWidget);
     expect(find.byKey(const ValueKey('running.empty')), findsOneWidget);
     expect(find.text('0.00 km'), findsNWidgets(2));
+  });
+
+  testWidgets(
+      'inside the app’s tabs, the setup sheet’s Start is above the bottom bar and starts the run',
+      (tester) async {
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(harness(shell: true));
+    await settle(tester);
+    await tester.tap(find.byKey(const ValueKey('training.mode.running')));
+    await settle(tester);
+    await tester.tap(find.byKey(const ValueKey('running.start')));
+    await settle(tester);
+    final start = find.byKey(const ValueKey('run.start'));
+    // A tap that would land on the bar instead fails the test.
+    WidgetController.hitTestWarningShouldBeFatal = true;
+    addTearDown(() => WidgetController.hitTestWarningShouldBeFatal = false);
+    await tester.tap(start);
+    await settle(tester);
+    expect(container(tester).read(runRecorderProvider), isNotNull);
+    expect(find.byKey(const ValueKey('run.pause')), findsOneWidget);
+  });
+
+  testWidgets('the history leaves room for the floating tab bar',
+      (tester) async {
+    await tester.pumpWidget(harness(shell: true));
+    await settle(tester);
+    await tester.tap(find.byKey(const ValueKey('training.mode.running')));
+    await settle(tester);
+    final list = tester.widget<ListView>(
+      find.byKey(const ValueKey('running.list')),
+    );
+    final bar = tester.getSize(find.byType(FitBottomBar));
+    expect(
+      (list.padding! as EdgeInsets).bottom,
+      greaterThanOrEqualTo(bar.height),
+    );
   });
 
   testWidgets('switched off by the admin: Training is the gym alone',

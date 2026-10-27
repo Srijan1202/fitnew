@@ -17,6 +17,9 @@ import '../controllers/running_providers.dart';
 Future<void> startRunFlow(BuildContext context, WidgetRef ref) async {
   final choice = await showModalBottomSheet<(RunKind, RunGoal)>(
     context: context,
+    // Above the whole app: the Training tab's own navigator sits under the
+    // bottom bar, which covered the sheet's Start button (beta 4.0.1).
+    useRootNavigator: true,
     isScrollControlled: true,
     useSafeArea: true,
     showDragHandle: true,
