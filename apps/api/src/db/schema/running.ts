@@ -17,7 +17,7 @@
  * go with the account (CASCADE) and appear in the data export.
  */
 import { sql } from 'drizzle-orm';
-import { boolean, check, index, integer, jsonb, numeric, pgEnum, pgTable, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { boolean, check, date, index, integer, jsonb, numeric, pgEnum, pgTable, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
 import { users } from './users.js';
 
@@ -52,6 +52,9 @@ export const runs = pgTable(
     elevationGainM: numeric('elevation_gain_m', { precision: 7, scale: 1 }),
     calories: integer('calories'),
     outline: jsonb('outline').$type<[number, number][]>().notNull().default(sql`'[]'::jsonb`),
+    /** Beta 4.1: the structured session run (core WorkoutStep[] with its name), and where each step began and ended. */
+    workout: jsonb('workout').$type<{ name: string; steps: unknown[] }>(),
+    lapMarks: jsonb('lap_marks').$type<{ step: number; startT: number; endT: number }[]>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -71,3 +74,83 @@ export const runs = pgTable(
 );
 
 export type RunRow = typeof runs.$inferSelect;
+
+/*
+ * Beta 4.1 (ADR-039): running plans. `running_plans` holds what the runner
+ * chose (one active at a time); `planned_runs` its dated runs, generated
+ * once by packages/core when the plan is made. A planned run is done when a
+ * run links to it (`run_id`), skipped by the runner, or still planned; a
+ * move keeps the date it came from. Zones are recomputed from `vdot`.
+ */
+export const planGoalEnum = pgEnum('plan_goal', ['5k', '10k', 'half', 'marathon']);
+export const planLevelEnum = pgEnum('plan_level', ['beginner', 'runner']);
+export const planStatusEnum = pgEnum('plan_status', ['active', 'stopped', 'done']);
+export const plannedRunKindEnum = pgEnum('planned_run_kind', ['easy', 'long', 'tempo', 'intervals', 'run-walk', 'race']);
+export const plannedRunStatusEnum = pgEnum('planned_run_status', ['planned', 'done', 'skipped']);
+
+export const runningPlans = pgTable(
+  'running_plans',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    goal: planGoalEnum('goal').notNull(),
+    level: planLevelEnum('level').notNull(),
+    status: planStatusEnum('status').notNull().default('active'),
+    vdot: numeric('vdot', { precision: 4, scale: 1 }),
+    daysPerWeek: smallint('days_per_week').notNull(),
+    weekdays: jsonb('weekdays').$type<number[]>().notNull(),
+    longRunWeekday: smallint('long_run_weekday').notNull(),
+    startDate: date('start_date', { mode: 'string' }).notNull(),
+    weeks: smallint('weeks').notNull(),
+    predictedSeconds: integer('predicted_seconds'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('running_plans_one_active').on(t.userId).where(sql`${t.status} = 'active'`),
+    check('running_plans_days', sql`${t.daysPerWeek} between 3 and 5`),
+    check('running_plans_level', sql`(${t.level} = 'beginner') = (${t.vdot} is null)`),
+  ],
+);
+
+export type RunningPlanRow = typeof runningPlans.$inferSelect;
+
+export const plannedRuns = pgTable(
+  'planned_runs',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    planId: uuid('plan_id')
+      .notNull()
+      .references(() => runningPlans.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    date: date('date', { mode: 'string' }).notNull(),
+    week: smallint('week').notNull(),
+    kind: plannedRunKindEnum('kind').notNull(),
+    title: text('title').notNull(),
+    distanceM: numeric('distance_m', { precision: 9, scale: 1 }),
+    seconds: integer('seconds'),
+    paceFast: integer('pace_fast'),
+    paceSlow: integer('pace_slow'),
+    steps: jsonb('steps').$type<unknown[]>(),
+    note: text('note').notNull(),
+    status: plannedRunStatusEnum('status').notNull().default('planned'),
+    runId: uuid('run_id').references(() => runs.id, { onDelete: 'set null' }),
+    movedFrom: date('moved_from', { mode: 'string' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('planned_runs_user_date_idx').on(t.userId, t.date),
+    index('planned_runs_plan_idx').on(t.planId, t.date),
+    uniqueIndex('planned_runs_run').on(t.runId),
+    // No "done ⇔ run_id" CHECK: deleting a run sets run_id null before the
+    // service resets the status, and an account deletion cascades both at
+    // once. The service keeps the two in step.
+    check('planned_runs_pace', sql`(${t.paceFast} is null) = (${t.paceSlow} is null)`),
+  ],
+);
+
+export type PlannedRunRow = typeof plannedRuns.$inferSelect;

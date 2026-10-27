@@ -27,6 +27,7 @@ import { ReadinessAssembler } from '../recovery/readiness.js';
 import { TrainingRepository } from '../training/repository.js';
 import { WorkoutRepository } from '../workout/repository.js';
 import { WorkoutService } from '../workout/service.js';
+import { PlanRepository } from '../running/plan-repository.js';
 import { ProgressRepository } from './repository.js';
 import { ProgressService } from './service.js';
 
@@ -36,7 +37,7 @@ function requireUserId(userId: string | null): string {
 }
 
 export async function progressRoutes(app: FastifyInstance): Promise<void> {
-  const service = new ProgressService(new ProgressRepository(app.database.db), new FoodLogRepository(app.database.db));
+  const service = new ProgressService(new ProgressRepository(app.database.db), new FoodLogRepository(app.database.db), new PlanRepository(app.database.db));
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const security = [{ bearerAuth: [] }];
   const errors = { 401: errorEnvelopeSchema, 422: errorEnvelopeSchema };

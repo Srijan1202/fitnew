@@ -18,7 +18,9 @@ export const RECOVERY_SOURCES = ['manual'] as const;
 export const READINESS_BANDS = ['ready', 'advisory', 'reduce', 'rest'] as const;
 export const readinessBandSchema = z.enum(READINESS_BANDS);
 
-export const READINESS_COMPONENTS = ['sleep', 'soreness', 'energy', 'performance', 'adherence'] as const;
+export const READINESS_COMPONENTS = ['sleep', 'soreness', 'energy', 'performance', 'adherence', 'running'] as const;
+/** Beta 4.1: builds below this get the five Phase 13 parts only (they cannot read the sixth). */
+export const READINESS_RUNNING_FROM_BUILD = 18;
 
 /** Owner D2: a check-in can be dated up to this many days back, never ahead. */
 export const RECOVERY_DAYS_BACK = 7;
@@ -59,7 +61,9 @@ export const readinessSchema = z
           })
           .strict(),
       )
-      .length(READINESS_COMPONENTS.length),
+      // Beta 4.1: six for builds that know running load, five for older ones.
+      .min(READINESS_COMPONENTS.length - 1)
+      .max(READINESS_COMPONENTS.length),
     /** Local days running with readiness under 35 (three escalate to a deload check). */
     lowDays: z.number().int().min(0),
   })

@@ -4,19 +4,22 @@
  * core's. Used by Recovery (the display), by the deload state (the
  * three-day escalation) and by TODAY (the recovery fields).
  */
-import { addDays } from '@fitos/core/nutrition/log';
+import { addDays, localDateOf } from '@fitos/core/nutrition/log';
 import {
   ADHERENCE_WINDOW_DAYS,
   LOW_READINESS_RUN_MAX,
   SLEEP_WINDOW_DAYS,
+  RUNNING_LOAD,
   lowReadinessRun,
   readinessOn,
   type Readiness,
+  type RunLoad,
 } from '@fitos/core/recovery/readiness';
 import type { SessionLog } from '@fitos/core/training/progression';
 
 import type { DatabaseHandle } from '../../db/client.js';
 import { ProgressRepository } from '../progress/repository.js';
+import { PlanRepository } from '../running/plan-repository.js';
 import { TrainingRepository, type ProgramBundle } from '../training/repository.js';
 import { ProgressionAssembler, localDate } from '../workout/progression.js';
 import { WorkoutRepository, type PriorWork } from '../workout/repository.js';
@@ -40,10 +43,18 @@ export class ReadinessAssembler implements LowReadinessSource {
     private readonly workout: WorkoutRepository,
     private readonly training: TrainingRepository,
     private readonly progress: ProgressRepository,
+    /** Beta 4.1: runs, for running load. */
+    private readonly plans: PlanRepository,
   ) {}
 
   static forDb(db: DatabaseHandle['db']): ReadinessAssembler {
-    return new ReadinessAssembler(new RecoveryRepository(db), new WorkoutRepository(db), new TrainingRepository(db), new ProgressRepository(db));
+    return new ReadinessAssembler(
+      new RecoveryRepository(db),
+      new WorkoutRepository(db),
+      new TrainingRepository(db),
+      new ProgressRepository(db),
+      new PlanRepository(db),
+    );
   }
 
   /**
@@ -85,16 +96,20 @@ export class ReadinessAssembler implements LowReadinessSource {
       const prior = program === null ? [] : await this.workout.priorWork(userId, [...new Set(program.exercises.map((x) => x.exerciseId))]);
       return { program, prior };
     };
-    const [{ program, prior }, nutritionDays, targets] = await Promise.all([
+    // Running load looks 28 days back from the oldest day judged; a day of margin covers every zone.
+    const runsFrom = new Date(Date.parse(`${addDays(oldest, -RUNNING_LOAD.chronicDays)}T00:00:00Z`));
+    const [{ program, prior }, nutritionDays, targets, loads] = await Promise.all([
       training(),
       this.progress.nutritionDays(userId, addDays(oldest, -ADHERENCE_WINDOW_DAYS), addDays(today, -1)),
       this.progress.targets(userId),
+      this.plans.loads(userId, runsFrom),
     ]);
+    const runs: RunLoad[] = loads.map((r) => ({ date: localDateOf(r.startedAt, tz), minutes: r.durationSeconds / 60, effort: r.effort }));
     const lifts = ReadinessAssembler.lifts(program, prior, tz);
 
     const memo = new Map<string, Readiness | null>();
     const on = (day: string): Readiness | null => {
-      if (!memo.has(day)) memo.set(day, readinessOn({ day, checkIns, lifts, nutritionDays, targets }));
+      if (!memo.has(day)) memo.set(day, readinessOn({ day, checkIns, lifts, nutritionDays, targets, runs }));
       return memo.get(day)!;
     };
     return { readiness: on(today), lowDays: lowReadinessRun((d) => on(d)?.score ?? null, today) };

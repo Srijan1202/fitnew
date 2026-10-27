@@ -25,6 +25,7 @@ export const TODAY_ACTION_KINDS = [
   'calorie-adjust', // Phase 12
   'celebrate-pr',
   'log-weight',
+  'start-run', // beta 4.1
 ] as const;
 export const todayActionKindSchema = z.enum(TODAY_ACTION_KINDS);
 export type TodayActionKind = z.infer<typeof todayActionKindSchema>;
@@ -42,6 +43,7 @@ export const TODAY_REASON_CODES = [
   'calorie-target-off-trend', // Phase 12
   'pr-today',
   'weigh-in-due',
+  'run-scheduled', // beta 4.1
 ] as const;
 
 export const ACTION_BASES = ['logged', 'calculated', 'estimated'] as const;
@@ -149,6 +151,19 @@ export const todayReasonSchema = z.discriminatedUnion('code', [
   z.object({
     code: z.literal('weigh-in-due'),
     values: z.object({ daysSinceWeighIn: z.number().int().min(0).nullable() }).strict(),
+  }).strict(),
+  // Beta 4.1 (ADR-039): today's run from the running plan.
+  z.object({
+    code: z.literal('run-scheduled'),
+    values: z
+      .object({
+        title: name,
+        distanceM: z.number().min(0).nullable(),
+        seconds: z.number().int().min(0).nullable(),
+        paceFast: z.number().int().min(0).nullable(),
+        paceSlow: z.number().int().min(0).nullable(),
+      })
+      .strict(),
   }).strict(),
 ]);
 export type TodayReason = z.infer<typeof todayReasonSchema>;

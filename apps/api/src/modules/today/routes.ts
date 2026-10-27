@@ -20,6 +20,7 @@ import { FoodLogRepository } from '../nutrition/log-repository.js';
 import { TrainingRepository } from '../training/repository.js';
 import { WorkoutRepository } from '../workout/repository.js';
 import { WorkoutService } from '../workout/service.js';
+import { PlanRepository } from '../running/plan-repository.js';
 import { TodayRepository } from './repository.js';
 import { TodayService } from './service.js';
 
@@ -39,6 +40,7 @@ export async function todayRoutes(app: FastifyInstance): Promise<void> {
     new FoodLogRepository(db),
     new RecommendRepository(db),
     readiness,
+    new PlanRepository(db),
   );
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const security = [{ bearerAuth: [] }];

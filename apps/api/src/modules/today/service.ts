@@ -22,6 +22,7 @@ import type { RecommendationEventRow, RecommendationRow } from '../../db/schema.
 import { AppError } from '../../lib/errors.js';
 import type { RecommendRepository } from '../mess/recommend-repository.js';
 import type { ReadinessAssembler } from '../recovery/readiness.js';
+import type { PlanRepository } from '../running/plan-repository.js';
 import type { FoodLogRepository } from '../nutrition/log-repository.js';
 import type { TrainingRepository } from '../training/repository.js';
 import { isoDayOfWeek, type WorkoutService } from '../workout/service.js';
@@ -58,6 +59,8 @@ export class TodayService {
     private readonly slots: RecommendRepository,
     /** Phase 13: today's readiness and the low run (§18). */
     private readonly readiness: ReadinessAssembler,
+    /** Beta 4.1: today's run from the running plan. */
+    private readonly plans: PlanRepository,
     private readonly now: () => Date = () => new Date(),
   ) {}
 
@@ -81,6 +84,11 @@ export class TodayService {
       this.repo.lastAdjustmentOn(userId),
       this.readiness.assess(userId, localDate, timeZone),
     ]);
+    // Beta 4.1: the plan's run for today (the first not skipped).
+    const plannedToday = (await this.plans.on(userId, localDate)).filter((p) => p.status !== 'skipped');
+    const nextRun = plannedToday.find((p) => p.status === 'planned') ?? null;
+    // When every run today is done, the done one stands for the day (it is still a run day, not a rest day).
+    const shownRun = nextRun ?? plannedToday[0] ?? null;
 
     // Owner Q1: the facts go through core's `trainingFromPlan`, which keeps a
     // ruled-out exercise out of `increaseLoad`. Nothing here re-derives either list.
@@ -158,6 +166,25 @@ export class TodayService {
       },
       // Phase 13: readiness from today's check-in, computed on read (§18); advice only.
       recovery: recoveryState(recovery.readiness, recovery.lowDays),
+      // Beta 4.1: absent without a planned run today, so older models (and their digests) are unchanged.
+      ...(plannedToday.length === 0
+        ? {}
+        : {
+            running: {
+              planned:
+                shownRun === null
+                  ? null
+                  : {
+                      plannedRunId: shownRun.id,
+                      title: shownRun.title,
+                      distanceM: shownRun.distanceM === null ? null : Number(shownRun.distanceM),
+                      seconds: shownRun.seconds,
+                      paceFast: shownRun.paceFast,
+                      paceSlow: shownRun.paceSlow,
+                    },
+              doneToday: nextRun === null,
+            },
+          }),
       dismissedToday: dismissed,
     };
     return { model, timeZone, trainingDate: day.date };
@@ -247,6 +274,11 @@ export class TodayService {
         return this.repo.foodLoggedIn(userId, day, rec.subjectKey);
       case 'weight-logged':
         return this.repo.weighedOn(userId, day);
+      case 'run-completed': {
+        // Beta 4.1: the planned run this action is about has a run linked to it.
+        const planned = await this.plans.mine(userId, rec.subjectKey);
+        return planned !== null && planned.status === 'done';
+      }
       case 'target-adjusted':
         // Phase 12: the target row this action's acceptance created (it is
         // written with the accepted event, so it lies between the action and

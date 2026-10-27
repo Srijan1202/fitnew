@@ -10,6 +10,7 @@
  */
 import { z } from 'zod';
 
+import { isoDateSchema } from './profile.js';
 import { clientIdSchema } from './workout.js';
 
 /* ------------------------------------------------------------- vocabulary -- */
@@ -71,6 +72,45 @@ export const runEffortSchema = z.number().int().min(1).max(10);
 export const runNameSchema = z.string().trim().min(1).max(RUN_NAME_MAX);
 export const runNoteSchema = z.string().trim().max(RUN_NOTE_MAX);
 
+/* ------------------------------------------- beta 4.1: workouts and laps -- */
+
+/** A pace range, seconds per km (`fast` the lower). */
+export const paceRangeSchema = z
+  .object({ fast: z.number().int().min(60).max(1800), slow: z.number().int().min(60).max(1800) })
+  .strict()
+  .refine((p) => p.fast <= p.slow, { message: 'fast is the lower number' });
+
+export const WORKOUT_STEP_KINDS = ['warmup', 'work', 'recover', 'cooldown'] as const;
+export const MAX_WORKOUT_STEPS = 120;
+
+/** One step of a structured run (packages/core running/workout): it ends after its distance or its time. */
+export const workoutStepSchema = z
+  .object({
+    kind: z.enum(WORKOUT_STEP_KINDS),
+    distanceM: z.number().min(1).max(100_000).nullable(),
+    seconds: z.number().int().min(1).max(36_000).nullable(),
+    pace: paceRangeSchema.nullable(),
+    effort: z.string().max(40),
+    rep: z.object({ index: z.number().int().min(1), of: z.number().int().min(1) }).strict().nullable(),
+  })
+  .strict()
+  .refine((st) => (st.distanceM === null) !== (st.seconds === null), { message: 'a step ends after a distance or a time, exactly one' });
+export type WorkoutStep = z.infer<typeof workoutStepSchema>;
+
+export const runWorkoutSchema = z
+  .object({ name: z.string().trim().min(1).max(60), steps: z.array(workoutStepSchema).min(1).max(MAX_WORKOUT_STEPS) })
+  .strict();
+export type RunWorkout = z.infer<typeof runWorkoutSchema>;
+
+/** Where a step began and ended on the run's clock (the track's own seconds). */
+export const lapMarkSchema = z
+  .object({ step: z.number().int().min(0), startT: z.number().min(0), endT: z.number().min(0) })
+  .strict();
+export const lapSchema = z
+  .object({ step: z.number().int().min(0), distanceM: z.number(), seconds: z.number(), pace: z.number().nullable() })
+  .strict();
+export type Lap = z.infer<typeof lapSchema>;
+
 /* ---------------------------------------------------------------- results -- */
 
 export const runSplitSchema = z
@@ -122,6 +162,10 @@ export const runDetailSchema = runSummarySchema
     splitsKm: z.array(runSplitSchema),
     splitsMi: z.array(runSplitSchema),
     series: z.array(runSeriesPointSchema),
+    /** Beta 4.1: the structured session, its laps (core, from the track) and the planned run it did. */
+    workout: runWorkoutSchema.nullable(),
+    laps: z.array(lapSchema),
+    plannedRunId: z.string().uuid().nullable(),
   })
   .strict();
 export type RunDetail = z.infer<typeof runDetailSchema>;
@@ -149,6 +193,11 @@ export const createRunRequestSchema = z
     track: runTrackSchema.optional(),
     /** Treadmill only, and required there. */
     distanceM: z.number().min(0).max(RUN_MAX_TREADMILL_M).optional(),
+    /** Beta 4.1: the structured session run, and where each step began and ended (outdoor). */
+    workout: runWorkoutSchema.optional(),
+    laps: z.array(lapMarkSchema).max(MAX_WORKOUT_STEPS).optional(),
+    /** Beta 4.1: the plan's run this one did. */
+    plannedRunId: z.string().uuid().optional(),
   })
   .strict()
   .superRefine((r, ctx) => {
@@ -159,6 +208,7 @@ export const createRunRequestSchema = z
       if (r.distanceM === undefined) ctx.addIssue({ code: 'custom', path: ['distanceM'], message: 'a treadmill run needs its distance' });
       if (r.track !== undefined) ctx.addIssue({ code: 'custom', path: ['track'], message: 'a treadmill run has no track' });
     }
+    if (r.laps !== undefined && r.workout === undefined) ctx.addIssue({ code: 'custom', path: ['laps'], message: 'laps need their workout' });
     const start = Date.parse(r.startedAt);
     const end = Date.parse(r.endedAt);
     if (end < start) ctx.addIssue({ code: 'custom', path: ['endedAt'], message: 'a run ends after it starts' });
@@ -197,3 +247,113 @@ export const runListSchema = z
   })
   .strict();
 export type RunList = z.infer<typeof runListSchema>;
+
+/* --------------------------------------------------- beta 4.1: plans -- */
+
+export const PLAN_GOALS = ['5k', '10k', 'half', 'marathon'] as const;
+export const planGoalSchema = z.enum(PLAN_GOALS);
+export type PlanGoal = z.infer<typeof planGoalSchema>;
+export const PLAN_LEVELS = ['beginner', 'runner'] as const;
+export const PLANNED_RUN_KINDS = ['easy', 'long', 'tempo', 'intervals', 'run-walk', 'race'] as const;
+export const PLANNED_RUN_STATUSES = ['planned', 'done', 'skipped'] as const;
+export const RUNNING_PLAN_STATUSES = ['active', 'stopped', 'done'] as const;
+
+const weekdaySchema = z.number().int().min(1).max(7);
+
+/** POST /running/plans: replaces the active plan, if any. */
+export const createPlanRequestSchema = z
+  .object({
+    goal: planGoalSchema,
+    level: z.enum(PLAN_LEVELS),
+    /** A recent race or time trial (runner), at any of the four distances. */
+    race: z.object({ distance: planGoalSchema, seconds: z.number().int().min(60).max(86_400) }).strict().nullable(),
+    /** Or a goal time at the plan's own distance. */
+    goalSeconds: z.number().int().min(600).max(86_400).nullable(),
+    daysPerWeek: z.union([z.literal(3), z.literal(4), z.literal(5)]),
+    weekdays: z.array(weekdaySchema).min(3).max(5),
+    longRunWeekday: weekdaySchema,
+    /** Defaults to today (the user's zone). */
+    startDate: isoDateSchema.optional(),
+  })
+  .strict()
+  .superRefine((p, ctx) => {
+    if (p.level === 'runner' && p.race === null && p.goalSeconds === null) {
+      ctx.addIssue({ code: 'custom', path: ['race'], message: 'a recent race or a goal time is needed' });
+    }
+  });
+export type CreatePlanRequest = z.infer<typeof createPlanRequestSchema>;
+
+export const plannedRunSchema = z
+  .object({
+    id: z.string().uuid(),
+    date: isoDateSchema,
+    week: z.number().int().min(1),
+    kind: z.enum(PLANNED_RUN_KINDS),
+    title: z.string(),
+    distanceM: z.number().nullable(),
+    seconds: z.number().int().nullable(),
+    pace: paceRangeSchema.nullable(),
+    steps: z.array(workoutStepSchema).nullable(),
+    note: z.string(),
+    status: z.enum(PLANNED_RUN_STATUSES),
+    /** The run that did it. */
+    runId: z.string().uuid().nullable(),
+    /** The date it was planned for before a move. */
+    movedFrom: isoDateSchema.nullable(),
+  })
+  .strict();
+export type PlannedRun = z.infer<typeof plannedRunSchema>;
+
+export const paceZonesSchema = z
+  .object({
+    vdot: z.number(),
+    easy: paceRangeSchema,
+    marathon: z.number().int(),
+    threshold: z.number().int(),
+    interval: z.number().int(),
+    repetition: z.number().int(),
+  })
+  .strict();
+export type PaceZones = z.infer<typeof paceZonesSchema>;
+
+export const runningPlanSchema = z
+  .object({
+    id: z.string().uuid(),
+    goal: planGoalSchema,
+    level: z.enum(PLAN_LEVELS),
+    status: z.enum(RUNNING_PLAN_STATUSES),
+    daysPerWeek: z.number().int(),
+    weekdays: z.array(weekdaySchema),
+    longRunWeekday: weekdaySchema,
+    startDate: isoDateSchema,
+    weeks: z.number().int(),
+    zones: paceZonesSchema.nullable(),
+    /** The predicted race time at the plan's fitness; null for a beginner. */
+    predictedSeconds: z.number().int().nullable(),
+    /** Running weekdays that are also gym days: a warning (owner: allowed). */
+    gymOverlap: z.array(weekdaySchema),
+    runs: z.array(plannedRunSchema),
+  })
+  .strict();
+export type RunningPlan = z.infer<typeof runningPlanSchema>;
+
+/** GET /running/plans/current. */
+export const currentPlanSchema = z.object({ plan: runningPlanSchema.nullable() }).strict();
+export type CurrentPlan = z.infer<typeof currentPlanSchema>;
+
+/** PATCH /running/planned/{id}: skip, un-skip, or move within its week. */
+export const patchPlannedRunRequestSchema = z
+  .object({ action: z.enum(['skip', 'unskip', 'move']), date: isoDateSchema.optional() })
+  .strict()
+  .refine((p) => (p.action === 'move') === (p.date !== undefined), { message: 'a move needs its date, and only a move' });
+export type PatchPlannedRunRequest = z.infer<typeof patchPlannedRunRequestSchema>;
+export const plannedRunParamsSchema = z.object({ id: z.string().uuid() }).strict();
+
+/** GET /running/workouts: FITOS's ready-made sessions, paced from the active plan's zones when there is one. */
+export const workoutPresetsSchema = z
+  .object({
+    zones: paceZonesSchema.nullable(),
+    presets: z.array(z.object({ id: z.string(), name: z.string(), about: z.string(), steps: z.array(workoutStepSchema) }).strict()),
+  })
+  .strict();
+export type WorkoutPresets = z.infer<typeof workoutPresetsSchema>;

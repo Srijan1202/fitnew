@@ -33,6 +33,7 @@ export const todayActionKindEnum = pgEnum('today_action_kind', [
   'calorie-adjust', // Phase 12 (migration 0015)
   'celebrate-pr',
   'log-weight',
+  'start-run', // beta 4.1 (migration 0036)
 ]);
 export const actionBasisEnum = pgEnum('action_basis', ['logged', 'calculated', 'estimated']);
 export const actionTargetEnum = pgEnum('action_target', ['train', 'eat', 'progress', 'today']);

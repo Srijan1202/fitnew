@@ -14,6 +14,13 @@ import { ReadinessAssembler } from './readiness.js';
 import { RecoveryRepository } from './repository.js';
 import { RecoveryService } from './service.js';
 
+/** Beta 4.1: the phone's build number, from X-FITOS-Build (absent on builds before 4.1). */
+export function appBuildOf(header: string | string[] | undefined): number | null {
+  const v = Array.isArray(header) ? header[0] : header;
+  if (v === undefined || !/^\d{1,6}$/.test(v)) return null;
+  return Number(v);
+}
+
 function requireUserId(userId: string | null): string {
   if (userId === null) throw new AppError('UNAUTHENTICATED', 'Create a session first (POST /auth/session).');
   return userId;
@@ -40,7 +47,7 @@ export async function recoveryRoutes(app: FastifyInstance): Promise<void> {
         response: { 200: recoveryTodaySchema, ...errors },
       },
     },
-    async (request) => service.today(requireUserId(request.userId)),
+    async (request) => service.today(requireUserId(request.userId), appBuildOf(request.headers['x-fitos-build'])),
   );
 
   typed.post(

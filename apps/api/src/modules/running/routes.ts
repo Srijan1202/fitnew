@@ -8,8 +8,15 @@ import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import {
+  createPlanRequestSchema,
   createRunRequestSchema,
+  currentPlanSchema,
   errorEnvelopeSchema,
+  patchPlannedRunRequestSchema,
+  plannedRunParamsSchema,
+  plannedRunSchema,
+  runningPlanSchema,
+  workoutPresetsSchema,
   patchRunRequestSchema,
   runDetailSchema,
   runListQuerySchema,
@@ -18,6 +25,9 @@ import {
 } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
+import { ProgressRepository } from '../progress/repository.js';
+import { PlanRepository } from './plan-repository.js';
+import { PlanService } from './plan-service.js';
 import { RunningRepository } from './repository.js';
 import { RunningService } from './service.js';
 
@@ -30,7 +40,11 @@ function requireUserId(userId: string | null): string {
 }
 
 export async function runningRoutes(app: FastifyInstance): Promise<void> {
-  const service = new RunningService(new RunningRepository(app.database.db));
+  const runsRepo = new RunningRepository(app.database.db);
+  const plansRepo = new PlanRepository(app.database.db);
+  const service = new RunningService(runsRepo, plansRepo);
+  const progress = new ProgressRepository(app.database.db);
+  const plans = new PlanService(plansRepo, runsRepo, (userId) => progress.plannedDays(userId));
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const security = [{ bearerAuth: [] }];
   const tags = ['running'];
@@ -107,5 +121,66 @@ export async function runningRoutes(app: FastifyInstance): Promise<void> {
       await service.remove(requireUserId(request.userId), request.params.id);
       return reply.code(204).send(null);
     },
+  );
+
+  /* ---------------------------------------------- beta 4.1: plans -- */
+
+  typed.get(
+    '/running/plans/current',
+    { schema: { summary: 'The active running plan, with every planned run (null without one)', tags, security, response: { 200: currentPlanSchema, ...errors } } },
+    async (request) => ({ plan: await plans.current(requireUserId(request.userId)) }),
+  );
+
+  typed.post(
+    '/running/plans',
+    {
+      schema: {
+        summary: 'Make a running plan (5K, 10K, half, marathon); the active one stops',
+        description:
+          'Built by packages/core from the goal, the level, a recent race (or a goal time) and the running days. Paces are ' +
+          "Daniels' VDOT zones; a beginner 5K is run/walk with no paces. 422 for a plan that cannot be made.",
+        tags,
+        security,
+        body: createPlanRequestSchema,
+        response: { 201: runningPlanSchema, ...errors },
+      },
+    },
+    async (request, reply) => {
+      await app.features.require('running');
+      return reply.code(201).send(await plans.create(requireUserId(request.userId), request.body));
+    },
+  );
+
+  typed.delete(
+    '/running/plans/current',
+    { schema: { summary: 'Stop the active plan; its runs still to come go', tags, security, response: { 204: z.null(), ...errors } } },
+    async (request, reply) => {
+      await plans.stop(requireUserId(request.userId));
+      return reply.code(204).send(null);
+    },
+  );
+
+  typed.patch(
+    '/running/planned/:id',
+    {
+      schema: {
+        summary: 'Skip, un-skip, or move a planned run within its week',
+        tags,
+        security,
+        params: plannedRunParamsSchema,
+        body: patchPlannedRunRequestSchema,
+        response: { 200: plannedRunSchema, ...errors },
+      },
+    },
+    async (request) => {
+      await app.features.require('running');
+      return plans.patch(requireUserId(request.userId), request.params.id, request.body);
+    },
+  );
+
+  typed.get(
+    '/running/workouts',
+    { schema: { summary: "FITOS's ready-made sessions, paced from the plan's zones when there is one", tags, security, response: { 200: workoutPresetsSchema, ...errors } } },
+    async (request) => plans.presets(requireUserId(request.userId)),
   );
 }

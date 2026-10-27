@@ -46577,7 +46577,8 @@
                               "rest-day",
                               "calorie-adjust",
                               "celebrate-pr",
-                              "log-weight"
+                              "log-weight",
+                              "start-run"
                             ]
                           },
                           "subjectKey": {
@@ -47188,6 +47189,68 @@
                                     },
                                     "required": [
                                       "daysSinceWeighIn"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "code",
+                                  "values"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "code": {
+                                    "type": "string",
+                                    "enum": [
+                                      "run-scheduled"
+                                    ]
+                                  },
+                                  "values": {
+                                    "type": "object",
+                                    "properties": {
+                                      "title": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 200
+                                      },
+                                      "distanceM": {
+                                        "type": [
+                                          "number",
+                                          "null"
+                                        ],
+                                        "minimum": 0
+                                      },
+                                      "seconds": {
+                                        "type": [
+                                          "integer",
+                                          "null"
+                                        ],
+                                        "minimum": 0
+                                      },
+                                      "paceFast": {
+                                        "type": [
+                                          "integer",
+                                          "null"
+                                        ],
+                                        "minimum": 0
+                                      },
+                                      "paceSlow": {
+                                        "type": [
+                                          "integer",
+                                          "null"
+                                        ],
+                                        "minimum": 0
+                                      }
+                                    },
+                                    "required": [
+                                      "title",
+                                      "distanceM",
+                                      "seconds",
+                                      "paceFast",
+                                      "paceSlow"
                                     ],
                                     "additionalProperties": false
                                   }
@@ -49629,7 +49692,8 @@
                                   "soreness",
                                   "energy",
                                   "performance",
-                                  "adherence"
+                                  "adherence",
+                                  "running"
                                 ]
                               },
                               "penalty": {
@@ -49653,7 +49717,7 @@
                             "additionalProperties": false
                           },
                           "minItems": 5,
-                          "maxItems": 5
+                          "maxItems": 6
                         },
                         "lowDays": {
                           "type": "integer",
@@ -50294,6 +50358,144 @@
                     "type": "number",
                     "minimum": 0,
                     "maximum": 200000
+                  },
+                  "workout": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 60
+                      },
+                      "steps": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "warmup",
+                                "work",
+                                "recover",
+                                "cooldown"
+                              ]
+                            },
+                            "distanceM": {
+                              "type": [
+                                "number",
+                                "null"
+                              ],
+                              "minimum": 1,
+                              "maximum": 100000
+                            },
+                            "seconds": {
+                              "type": [
+                                "integer",
+                                "null"
+                              ],
+                              "minimum": 1,
+                              "maximum": 36000
+                            },
+                            "pace": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "properties": {
+                                "fast": {
+                                  "type": "integer",
+                                  "minimum": 60,
+                                  "maximum": 1800
+                                },
+                                "slow": {
+                                  "type": "integer",
+                                  "minimum": 60,
+                                  "maximum": 1800
+                                }
+                              },
+                              "required": [
+                                "fast",
+                                "slow"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "effort": {
+                              "type": "string",
+                              "maxLength": 40
+                            },
+                            "rep": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "properties": {
+                                "index": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "of": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                }
+                              },
+                              "required": [
+                                "index",
+                                "of"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "distanceM",
+                            "seconds",
+                            "pace",
+                            "effort",
+                            "rep"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "minItems": 1,
+                        "maxItems": 120
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "steps"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "laps": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "step": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "startT": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "endT": {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "step",
+                        "startT",
+                        "endT"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 120
+                  },
+                  "plannedRunId": {
+                    "type": "string",
+                    "format": "uuid"
                   }
                 },
                 "required": [
@@ -50555,6 +50757,154 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "workout": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "steps": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "warmup",
+                                  "work",
+                                  "recover",
+                                  "cooldown"
+                                ]
+                              },
+                              "distanceM": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ],
+                                "minimum": 1,
+                                "maximum": 100000
+                              },
+                              "seconds": {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ],
+                                "minimum": 1,
+                                "maximum": 36000
+                              },
+                              "pace": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "fast": {
+                                    "type": "integer",
+                                    "minimum": 60,
+                                    "maximum": 1800
+                                  },
+                                  "slow": {
+                                    "type": "integer",
+                                    "minimum": 60,
+                                    "maximum": 1800
+                                  }
+                                },
+                                "required": [
+                                  "fast",
+                                  "slow"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "effort": {
+                                "type": "string",
+                                "maxLength": 40
+                              },
+                              "rep": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "index": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  },
+                                  "of": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  }
+                                },
+                                "required": [
+                                  "index",
+                                  "of"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "distanceM",
+                              "seconds",
+                              "pace",
+                              "effort",
+                              "rep"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "minItems": 1,
+                          "maxItems": 120
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "steps"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "laps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "step": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "distanceM": {
+                            "type": "number"
+                          },
+                          "seconds": {
+                            "type": "number"
+                          },
+                          "pace": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "step",
+                          "distanceM",
+                          "seconds",
+                          "pace"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "plannedRunId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -50575,7 +50925,10 @@
                     "track",
                     "splitsKm",
                     "splitsMi",
-                    "series"
+                    "series",
+                    "workout",
+                    "laps",
+                    "plannedRunId"
                   ],
                   "additionalProperties": false
                 }
@@ -50821,6 +51174,154 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "workout": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "steps": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "warmup",
+                                  "work",
+                                  "recover",
+                                  "cooldown"
+                                ]
+                              },
+                              "distanceM": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ],
+                                "minimum": 1,
+                                "maximum": 100000
+                              },
+                              "seconds": {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ],
+                                "minimum": 1,
+                                "maximum": 36000
+                              },
+                              "pace": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "fast": {
+                                    "type": "integer",
+                                    "minimum": 60,
+                                    "maximum": 1800
+                                  },
+                                  "slow": {
+                                    "type": "integer",
+                                    "minimum": 60,
+                                    "maximum": 1800
+                                  }
+                                },
+                                "required": [
+                                  "fast",
+                                  "slow"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "effort": {
+                                "type": "string",
+                                "maxLength": 40
+                              },
+                              "rep": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "index": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  },
+                                  "of": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  }
+                                },
+                                "required": [
+                                  "index",
+                                  "of"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "distanceM",
+                              "seconds",
+                              "pace",
+                              "effort",
+                              "rep"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "minItems": 1,
+                          "maxItems": 120
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "steps"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "laps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "step": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "distanceM": {
+                            "type": "number"
+                          },
+                          "seconds": {
+                            "type": "number"
+                          },
+                          "pace": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "step",
+                          "distanceM",
+                          "seconds",
+                          "pace"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "plannedRunId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -50841,7 +51342,10 @@
                     "track",
                     "splitsKm",
                     "splitsMi",
-                    "series"
+                    "series",
+                    "workout",
+                    "laps",
+                    "plannedRunId"
                   ],
                   "additionalProperties": false
                 }
@@ -51969,6 +52473,154 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "workout": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "steps": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "warmup",
+                                  "work",
+                                  "recover",
+                                  "cooldown"
+                                ]
+                              },
+                              "distanceM": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ],
+                                "minimum": 1,
+                                "maximum": 100000
+                              },
+                              "seconds": {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ],
+                                "minimum": 1,
+                                "maximum": 36000
+                              },
+                              "pace": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "fast": {
+                                    "type": "integer",
+                                    "minimum": 60,
+                                    "maximum": 1800
+                                  },
+                                  "slow": {
+                                    "type": "integer",
+                                    "minimum": 60,
+                                    "maximum": 1800
+                                  }
+                                },
+                                "required": [
+                                  "fast",
+                                  "slow"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "effort": {
+                                "type": "string",
+                                "maxLength": 40
+                              },
+                              "rep": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "index": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  },
+                                  "of": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  }
+                                },
+                                "required": [
+                                  "index",
+                                  "of"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "distanceM",
+                              "seconds",
+                              "pace",
+                              "effort",
+                              "rep"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "minItems": 1,
+                          "maxItems": 120
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "steps"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "laps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "step": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "distanceM": {
+                            "type": "number"
+                          },
+                          "seconds": {
+                            "type": "number"
+                          },
+                          "pace": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "step",
+                          "distanceM",
+                          "seconds",
+                          "pace"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "plannedRunId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -51989,7 +52641,10 @@
                     "track",
                     "splitsKm",
                     "splitsMi",
-                    "series"
+                    "series",
+                    "workout",
+                    "laps",
+                    "plannedRunId"
                   ],
                   "additionalProperties": false
                 }
@@ -52617,6 +53272,154 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "workout": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "steps": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "warmup",
+                                  "work",
+                                  "recover",
+                                  "cooldown"
+                                ]
+                              },
+                              "distanceM": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ],
+                                "minimum": 1,
+                                "maximum": 100000
+                              },
+                              "seconds": {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ],
+                                "minimum": 1,
+                                "maximum": 36000
+                              },
+                              "pace": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "fast": {
+                                    "type": "integer",
+                                    "minimum": 60,
+                                    "maximum": 1800
+                                  },
+                                  "slow": {
+                                    "type": "integer",
+                                    "minimum": 60,
+                                    "maximum": 1800
+                                  }
+                                },
+                                "required": [
+                                  "fast",
+                                  "slow"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "effort": {
+                                "type": "string",
+                                "maxLength": 40
+                              },
+                              "rep": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "index": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  },
+                                  "of": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  }
+                                },
+                                "required": [
+                                  "index",
+                                  "of"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "distanceM",
+                              "seconds",
+                              "pace",
+                              "effort",
+                              "rep"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "minItems": 1,
+                          "maxItems": 120
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "steps"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "laps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "step": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "distanceM": {
+                            "type": "number"
+                          },
+                          "seconds": {
+                            "type": "number"
+                          },
+                          "pace": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "step",
+                          "distanceM",
+                          "seconds",
+                          "pace"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "plannedRunId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -52637,7 +53440,10 @@
                     "track",
                     "splitsKm",
                     "splitsMi",
-                    "series"
+                    "series",
+                    "workout",
+                    "laps",
+                    "plannedRunId"
                   ],
                   "additionalProperties": false
                 }
@@ -53001,6 +53807,2968 @@
                   "enum": [
                     "null"
                   ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/running/plans/current": {
+      "get": {
+        "summary": "The active running plan, with every planned run (null without one)",
+        "tags": [
+          "running"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "plan": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "goal": {
+                          "type": "string",
+                          "enum": [
+                            "5k",
+                            "10k",
+                            "half",
+                            "marathon"
+                          ]
+                        },
+                        "level": {
+                          "type": "string",
+                          "enum": [
+                            "beginner",
+                            "runner"
+                          ]
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "stopped",
+                            "done"
+                          ]
+                        },
+                        "daysPerWeek": {
+                          "type": "integer"
+                        },
+                        "weekdays": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 7
+                          }
+                        },
+                        "longRunWeekday": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 7
+                        },
+                        "startDate": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        "weeks": {
+                          "type": "integer"
+                        },
+                        "zones": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "vdot": {
+                              "type": "number"
+                            },
+                            "easy": {
+                              "type": "object",
+                              "properties": {
+                                "fast": {
+                                  "type": "integer",
+                                  "minimum": 60,
+                                  "maximum": 1800
+                                },
+                                "slow": {
+                                  "type": "integer",
+                                  "minimum": 60,
+                                  "maximum": 1800
+                                }
+                              },
+                              "required": [
+                                "fast",
+                                "slow"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "marathon": {
+                              "type": "integer"
+                            },
+                            "threshold": {
+                              "type": "integer"
+                            },
+                            "interval": {
+                              "type": "integer"
+                            },
+                            "repetition": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "vdot",
+                            "easy",
+                            "marathon",
+                            "threshold",
+                            "interval",
+                            "repetition"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "predictedSeconds": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "gymOverlap": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 7
+                          }
+                        },
+                        "runs": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "date": {
+                                "type": "string",
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                              },
+                              "week": {
+                                "type": "integer",
+                                "minimum": 1
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "easy",
+                                  "long",
+                                  "tempo",
+                                  "intervals",
+                                  "run-walk",
+                                  "race"
+                                ]
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "distanceM": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "seconds": {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ]
+                              },
+                              "pace": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "fast": {
+                                    "type": "integer",
+                                    "minimum": 60,
+                                    "maximum": 1800
+                                  },
+                                  "slow": {
+                                    "type": "integer",
+                                    "minimum": 60,
+                                    "maximum": 1800
+                                  }
+                                },
+                                "required": [
+                                  "fast",
+                                  "slow"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "steps": {
+                                "type": [
+                                  "array",
+                                  "null"
+                                ],
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "warmup",
+                                        "work",
+                                        "recover",
+                                        "cooldown"
+                                      ]
+                                    },
+                                    "distanceM": {
+                                      "type": [
+                                        "number",
+                                        "null"
+                                      ],
+                                      "minimum": 1,
+                                      "maximum": 100000
+                                    },
+                                    "seconds": {
+                                      "type": [
+                                        "integer",
+                                        "null"
+                                      ],
+                                      "minimum": 1,
+                                      "maximum": 36000
+                                    },
+                                    "pace": {
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ],
+                                      "properties": {
+                                        "fast": {
+                                          "type": "integer",
+                                          "minimum": 60,
+                                          "maximum": 1800
+                                        },
+                                        "slow": {
+                                          "type": "integer",
+                                          "minimum": 60,
+                                          "maximum": 1800
+                                        }
+                                      },
+                                      "required": [
+                                        "fast",
+                                        "slow"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "effort": {
+                                      "type": "string",
+                                      "maxLength": 40
+                                    },
+                                    "rep": {
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ],
+                                      "properties": {
+                                        "index": {
+                                          "type": "integer",
+                                          "minimum": 1
+                                        },
+                                        "of": {
+                                          "type": "integer",
+                                          "minimum": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "index",
+                                        "of"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "distanceM",
+                                    "seconds",
+                                    "pace",
+                                    "effort",
+                                    "rep"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "note": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "planned",
+                                  "done",
+                                  "skipped"
+                                ]
+                              },
+                              "runId": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "format": "uuid"
+                              },
+                              "movedFrom": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "date",
+                              "week",
+                              "kind",
+                              "title",
+                              "distanceM",
+                              "seconds",
+                              "pace",
+                              "steps",
+                              "note",
+                              "status",
+                              "runId",
+                              "movedFrom"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "goal",
+                        "level",
+                        "status",
+                        "daysPerWeek",
+                        "weekdays",
+                        "longRunWeekday",
+                        "startDate",
+                        "weeks",
+                        "zones",
+                        "predictedSeconds",
+                        "gymOverlap",
+                        "runs"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "plan"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Stop the active plan; its runs still to come go",
+        "tags": [
+          "running"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "enum": [
+                    "null"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/running/plans": {
+      "post": {
+        "summary": "Make a running plan (5K, 10K, half, marathon); the active one stops",
+        "tags": [
+          "running"
+        ],
+        "description": "Built by packages/core from the goal, the level, a recent race (or a goal time) and the running days. Paces are Daniels' VDOT zones; a beginner 5K is run/walk with no paces. 422 for a plan that cannot be made.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "goal": {
+                    "type": "string",
+                    "enum": [
+                      "5k",
+                      "10k",
+                      "half",
+                      "marathon"
+                    ]
+                  },
+                  "level": {
+                    "type": "string",
+                    "enum": [
+                      "beginner",
+                      "runner"
+                    ]
+                  },
+                  "race": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "distance": {
+                        "type": "string",
+                        "enum": [
+                          "5k",
+                          "10k",
+                          "half",
+                          "marathon"
+                        ]
+                      },
+                      "seconds": {
+                        "type": "integer",
+                        "minimum": 60,
+                        "maximum": 86400
+                      }
+                    },
+                    "required": [
+                      "distance",
+                      "seconds"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "goalSeconds": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 600,
+                    "maximum": 86400
+                  },
+                  "daysPerWeek": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "enum": [
+                          3
+                        ]
+                      },
+                      {
+                        "type": "number",
+                        "enum": [
+                          4
+                        ]
+                      },
+                      {
+                        "type": "number",
+                        "enum": [
+                          5
+                        ]
+                      }
+                    ]
+                  },
+                  "weekdays": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 7
+                    },
+                    "minItems": 3,
+                    "maxItems": 5
+                  },
+                  "longRunWeekday": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 7
+                  },
+                  "startDate": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "goal",
+                  "level",
+                  "race",
+                  "goalSeconds",
+                  "daysPerWeek",
+                  "weekdays",
+                  "longRunWeekday"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "goal": {
+                      "type": "string",
+                      "enum": [
+                        "5k",
+                        "10k",
+                        "half",
+                        "marathon"
+                      ]
+                    },
+                    "level": {
+                      "type": "string",
+                      "enum": [
+                        "beginner",
+                        "runner"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "active",
+                        "stopped",
+                        "done"
+                      ]
+                    },
+                    "daysPerWeek": {
+                      "type": "integer"
+                    },
+                    "weekdays": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 7
+                      }
+                    },
+                    "longRunWeekday": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 7
+                    },
+                    "startDate": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "weeks": {
+                      "type": "integer"
+                    },
+                    "zones": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "vdot": {
+                          "type": "number"
+                        },
+                        "easy": {
+                          "type": "object",
+                          "properties": {
+                            "fast": {
+                              "type": "integer",
+                              "minimum": 60,
+                              "maximum": 1800
+                            },
+                            "slow": {
+                              "type": "integer",
+                              "minimum": 60,
+                              "maximum": 1800
+                            }
+                          },
+                          "required": [
+                            "fast",
+                            "slow"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "marathon": {
+                          "type": "integer"
+                        },
+                        "threshold": {
+                          "type": "integer"
+                        },
+                        "interval": {
+                          "type": "integer"
+                        },
+                        "repetition": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "vdot",
+                        "easy",
+                        "marathon",
+                        "threshold",
+                        "interval",
+                        "repetition"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "predictedSeconds": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "gymOverlap": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 7
+                      }
+                    },
+                    "runs": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "date": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                          },
+                          "week": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "easy",
+                              "long",
+                              "tempo",
+                              "intervals",
+                              "run-walk",
+                              "race"
+                            ]
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "distanceM": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "seconds": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "pace": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "properties": {
+                              "fast": {
+                                "type": "integer",
+                                "minimum": 60,
+                                "maximum": 1800
+                              },
+                              "slow": {
+                                "type": "integer",
+                                "minimum": 60,
+                                "maximum": 1800
+                              }
+                            },
+                            "required": [
+                              "fast",
+                              "slow"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "steps": {
+                            "type": [
+                              "array",
+                              "null"
+                            ],
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "warmup",
+                                    "work",
+                                    "recover",
+                                    "cooldown"
+                                  ]
+                                },
+                                "distanceM": {
+                                  "type": [
+                                    "number",
+                                    "null"
+                                  ],
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "seconds": {
+                                  "type": [
+                                    "integer",
+                                    "null"
+                                  ],
+                                  "minimum": 1,
+                                  "maximum": 36000
+                                },
+                                "pace": {
+                                  "type": [
+                                    "object",
+                                    "null"
+                                  ],
+                                  "properties": {
+                                    "fast": {
+                                      "type": "integer",
+                                      "minimum": 60,
+                                      "maximum": 1800
+                                    },
+                                    "slow": {
+                                      "type": "integer",
+                                      "minimum": 60,
+                                      "maximum": 1800
+                                    }
+                                  },
+                                  "required": [
+                                    "fast",
+                                    "slow"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "effort": {
+                                  "type": "string",
+                                  "maxLength": 40
+                                },
+                                "rep": {
+                                  "type": [
+                                    "object",
+                                    "null"
+                                  ],
+                                  "properties": {
+                                    "index": {
+                                      "type": "integer",
+                                      "minimum": 1
+                                    },
+                                    "of": {
+                                      "type": "integer",
+                                      "minimum": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "index",
+                                    "of"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "distanceM",
+                                "seconds",
+                                "pace",
+                                "effort",
+                                "rep"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "note": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "planned",
+                              "done",
+                              "skipped"
+                            ]
+                          },
+                          "runId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "uuid"
+                          },
+                          "movedFrom": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "date",
+                          "week",
+                          "kind",
+                          "title",
+                          "distanceM",
+                          "seconds",
+                          "pace",
+                          "steps",
+                          "note",
+                          "status",
+                          "runId",
+                          "movedFrom"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "goal",
+                    "level",
+                    "status",
+                    "daysPerWeek",
+                    "weekdays",
+                    "longRunWeekday",
+                    "startDate",
+                    "weeks",
+                    "zones",
+                    "predictedSeconds",
+                    "gymOverlap",
+                    "runs"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/running/planned/{id}": {
+      "patch": {
+        "summary": "Skip, un-skip, or move a planned run within its week",
+        "tags": [
+          "running"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "skip",
+                      "unskip",
+                      "move"
+                    ]
+                  },
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "action"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "date": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "week": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "easy",
+                        "long",
+                        "tempo",
+                        "intervals",
+                        "run-walk",
+                        "race"
+                      ]
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "distanceM": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "seconds": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "pace": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "fast": {
+                          "type": "integer",
+                          "minimum": 60,
+                          "maximum": 1800
+                        },
+                        "slow": {
+                          "type": "integer",
+                          "minimum": 60,
+                          "maximum": 1800
+                        }
+                      },
+                      "required": [
+                        "fast",
+                        "slow"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "steps": {
+                      "type": [
+                        "array",
+                        "null"
+                      ],
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "warmup",
+                              "work",
+                              "recover",
+                              "cooldown"
+                            ]
+                          },
+                          "distanceM": {
+                            "type": [
+                              "number",
+                              "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 100000
+                          },
+                          "seconds": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 36000
+                          },
+                          "pace": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "properties": {
+                              "fast": {
+                                "type": "integer",
+                                "minimum": 60,
+                                "maximum": 1800
+                              },
+                              "slow": {
+                                "type": "integer",
+                                "minimum": 60,
+                                "maximum": 1800
+                              }
+                            },
+                            "required": [
+                              "fast",
+                              "slow"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "effort": {
+                            "type": "string",
+                            "maxLength": 40
+                          },
+                          "rep": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "properties": {
+                              "index": {
+                                "type": "integer",
+                                "minimum": 1
+                              },
+                              "of": {
+                                "type": "integer",
+                                "minimum": 1
+                              }
+                            },
+                            "required": [
+                              "index",
+                              "of"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "distanceM",
+                          "seconds",
+                          "pace",
+                          "effort",
+                          "rep"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "note": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "planned",
+                        "done",
+                        "skipped"
+                      ]
+                    },
+                    "runId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
+                    },
+                    "movedFrom": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "date",
+                    "week",
+                    "kind",
+                    "title",
+                    "distanceM",
+                    "seconds",
+                    "pace",
+                    "steps",
+                    "note",
+                    "status",
+                    "runId",
+                    "movedFrom"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/running/workouts": {
+      "get": {
+        "summary": "FITOS's ready-made sessions, paced from the plan's zones when there is one",
+        "tags": [
+          "running"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "zones": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "vdot": {
+                          "type": "number"
+                        },
+                        "easy": {
+                          "type": "object",
+                          "properties": {
+                            "fast": {
+                              "type": "integer",
+                              "minimum": 60,
+                              "maximum": 1800
+                            },
+                            "slow": {
+                              "type": "integer",
+                              "minimum": 60,
+                              "maximum": 1800
+                            }
+                          },
+                          "required": [
+                            "fast",
+                            "slow"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "marathon": {
+                          "type": "integer"
+                        },
+                        "threshold": {
+                          "type": "integer"
+                        },
+                        "interval": {
+                          "type": "integer"
+                        },
+                        "repetition": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "vdot",
+                        "easy",
+                        "marathon",
+                        "threshold",
+                        "interval",
+                        "repetition"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "presets": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "about": {
+                            "type": "string"
+                          },
+                          "steps": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "warmup",
+                                    "work",
+                                    "recover",
+                                    "cooldown"
+                                  ]
+                                },
+                                "distanceM": {
+                                  "type": [
+                                    "number",
+                                    "null"
+                                  ],
+                                  "minimum": 1,
+                                  "maximum": 100000
+                                },
+                                "seconds": {
+                                  "type": [
+                                    "integer",
+                                    "null"
+                                  ],
+                                  "minimum": 1,
+                                  "maximum": 36000
+                                },
+                                "pace": {
+                                  "type": [
+                                    "object",
+                                    "null"
+                                  ],
+                                  "properties": {
+                                    "fast": {
+                                      "type": "integer",
+                                      "minimum": 60,
+                                      "maximum": 1800
+                                    },
+                                    "slow": {
+                                      "type": "integer",
+                                      "minimum": 60,
+                                      "maximum": 1800
+                                    }
+                                  },
+                                  "required": [
+                                    "fast",
+                                    "slow"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "effort": {
+                                  "type": "string",
+                                  "maxLength": 40
+                                },
+                                "rep": {
+                                  "type": [
+                                    "object",
+                                    "null"
+                                  ],
+                                  "properties": {
+                                    "index": {
+                                      "type": "integer",
+                                      "minimum": 1
+                                    },
+                                    "of": {
+                                      "type": "integer",
+                                      "minimum": 1
+                                    }
+                                  },
+                                  "required": [
+                                    "index",
+                                    "of"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "distanceM",
+                                "seconds",
+                                "pace",
+                                "effort",
+                                "rep"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "about",
+                          "steps"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "zones",
+                    "presets"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }

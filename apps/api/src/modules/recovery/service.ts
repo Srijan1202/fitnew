@@ -5,7 +5,7 @@
  * Nothing here changes the plan — the bands only choose what TODAY and the
  * deload offer suggest.
  */
-import { RECOVERY_DAYS_BACK, type LogRecoveryRequest, type LogRecoveryResponse, type RecoveryLog, type RecoveryToday } from '@fitos/contracts';
+import { READINESS_RUNNING_FROM_BUILD, RECOVERY_DAYS_BACK, type LogRecoveryRequest, type LogRecoveryResponse, type RecoveryLog, type RecoveryToday } from '@fitos/contracts';
 import { addDays, localDateOf } from '@fitos/core/nutrition/log';
 
 import type { RecoveryLogRow } from '../../db/schema.js';
@@ -34,7 +34,12 @@ export class RecoveryService {
     private readonly now: () => Date = () => new Date(),
   ) {}
 
-  async today(userId: string): Promise<RecoveryToday> {
+  /**
+   * Beta 4.1: `appBuild` is the phone's build (the X-FITOS-Build header); a
+   * build before running load reads the five Phase 13 parts only, so the
+   * sixth is left out for it (the score is the same for everyone).
+   */
+  async today(userId: string, appBuild: number | null = null): Promise<RecoveryToday> {
     const tz = await this.logs.timezoneOf(userId);
     const today = localDateOf(this.now(), tz);
     const [rows, assessed] = await Promise.all([this.repo.checkIns(userId, today, today), this.readiness.assess(userId, today, tz)]);
@@ -50,7 +55,9 @@ export class RecoveryService {
               score: r.score,
               band: r.band,
               advice: r.advice,
-              components: r.components.map((c) => ({ key: c.key, penalty: c.penalty, max: c.max, available: c.available })),
+              components: r.components
+                .filter((c) => c.key !== 'running' || (appBuild !== null && appBuild >= READINESS_RUNNING_FROM_BUILD))
+                .map((c) => ({ key: c.key, penalty: c.penalty, max: c.max, available: c.available })),
               lowDays: assessed.lowDays,
             },
     };

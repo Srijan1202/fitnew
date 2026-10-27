@@ -22,7 +22,8 @@ const readiness = {
 describe('Recovery contracts (Phase 13)', () => {
   it('vocabularies: four bands, the five §18 components, seven days back', () => {
     expect([...READINESS_BANDS]).toEqual(['ready', 'advisory', 'reduce', 'rest']);
-    expect([...READINESS_COMPONENTS]).toEqual(['sleep', 'soreness', 'energy', 'performance', 'adherence']);
+    // Beta 4.1 (ADR-039): running load is the sixth.
+    expect([...READINESS_COMPONENTS]).toEqual(['sleep', 'soreness', 'energy', 'performance', 'adherence', 'running']);
     expect(RECOVERY_DAYS_BACK).toBe(7);
   });
 
@@ -30,7 +31,9 @@ describe('Recovery contracts (Phase 13)', () => {
     expect(recoveryTodaySchema.safeParse({ date: '2026-09-24', log: null, readiness: null }).success).toBe(true);
     expect(recoveryTodaySchema.safeParse({ date: '2026-09-24', log, readiness }).success).toBe(true);
     expect(recoveryTodaySchema.safeParse({ date: '2026-09-24', log, readiness: { ...readiness, score: 101 } }).success).toBe(false);
-    expect(recoveryTodaySchema.safeParse({ date: '2026-09-24', log, readiness: { ...readiness, components: readiness.components.slice(1) } }).success).toBe(false);
+    // Five parts (an older build) or six; never fewer.
+    expect(recoveryTodaySchema.safeParse({ date: '2026-09-24', log, readiness: { ...readiness, components: readiness.components.slice(1) } }).success).toBe(true);
+    expect(recoveryTodaySchema.safeParse({ date: '2026-09-24', log, readiness: { ...readiness, components: readiness.components.slice(2) } }).success).toBe(false);
     expect(recoveryTodaySchema.safeParse({ date: '2026-09-24', log, readiness, extra: 1 }).success).toBe(false);
     expect(recoveryTodaySchema.safeParse({ date: '2026-09-24', log: { ...log, source: 'health-sync' }, readiness }).success).toBe(false);
   });

@@ -20,8 +20,9 @@ const action = {
 
 describe('TODAY contracts (Phase 11)', () => {
   it('vocabularies: twelve kinds and codes (Phase 12 adds calorie-adjust, Phase 13 low-readiness), five events', () => {
-    expect(TODAY_ACTION_KINDS).toHaveLength(12);
-    expect(TODAY_REASON_CODES).toHaveLength(12);
+    // Beta 4.1 adds start-run / run-scheduled.
+    expect(TODAY_ACTION_KINDS).toHaveLength(13);
+    expect(TODAY_REASON_CODES).toHaveLength(13);
     expect([...TODAY_EVENTS]).toEqual(['shown', 'opened', 'accepted', 'dismissed', 'completed']);
     for (const deferred of ['hydrate', 'add-steps']) {
       expect(TODAY_ACTION_KINDS as readonly string[]).not.toContain(deferred);

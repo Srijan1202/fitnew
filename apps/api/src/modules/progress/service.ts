@@ -7,7 +7,7 @@
  */
 import type { VolumeResponse, WeeklyReport } from '@fitos/contracts';
 import { computeTrend } from '@fitos/core/nutrition/trend';
-import { STREAK_LOOKBACK_DAYS, streak, weekGoal } from '@fitos/core/progress/streak';
+import { STREAK_LOOKBACK_DAYS, isoWeekday, streak, weekGoal } from '@fitos/core/progress/streak';
 import { weeklyReport } from '@fitos/core/progress/weekly';
 import { isoWeekDates } from '@fitos/core/training/mesocycle';
 import {
@@ -26,6 +26,7 @@ import { adherence, bestLifts, consistency, measurementProgress, weightProgress,
 
 import { AppError } from '../../lib/errors.js';
 import type { FoodLogRepository } from '../nutrition/log-repository.js';
+import type { PlanRepository } from '../running/plan-repository.js';
 import type { ProgressRepository } from './repository.js';
 
 /** A day of slack either side of the local window, for any zone; the local date decides. */
@@ -35,6 +36,8 @@ export class ProgressService {
   constructor(
     private readonly repo: ProgressRepository,
     private readonly logs: FoodLogRepository,
+    /** Beta 4.1: runs and the running plan count in the streak and the ring. */
+    private readonly plans: PlanRepository,
     private readonly now: () => Date = () => new Date(),
   ) {}
 
@@ -45,26 +48,35 @@ export class ProgressService {
     const from = addDays(today, -STREAK_LOOKBACK_DAYS);
     const lo = new Date(Date.parse(`${from}T00:00:00Z`) - DAY_MS);
     const hi = new Date(Date.parse(`${today}T00:00:00Z`) + 2 * DAY_MS);
-    const [completed, logged, planned, context] = await Promise.all([
+    const weekFrom = addDays(today, 1 - isoWeekday(today));
+    const [completed, logged, planned, context, runs, plan, weekRuns] = await Promise.all([
       this.repo.completedAt(userId, lo, hi),
       this.repo.loggedDays(userId, from, today),
       this.repo.plannedDays(userId),
       this.repo.streakContext(userId),
+      this.plans.loads(userId, lo),
+      this.plans.active(userId),
+      this.plans.between(userId, weekFrom, addDays(weekFrom, 6)),
     ]);
     const workoutDays = completed.map((at) => localDateOf(at, tz));
-    const training = new Set(planned ?? []);
+    // Beta 4.1: a saved run is a logged day; the plan's running days are not rest days.
+    const runDays = runs.map((r) => localDateOf(r.startedAt, tz));
+    const training = new Set([...(planned ?? []), ...(plan?.weekdays ?? [])]);
     const s = streak({
       today,
-      activeDays: new Set([...workoutDays, ...logged]),
-      // Without a programme there are no rest days: every day asks for a log.
-      restWeekdays: new Set(planned === null ? [] : [1, 2, 3, 4, 5, 6, 7].filter((d) => !training.has(d))),
+      activeDays: new Set([...workoutDays, ...logged, ...runDays]),
+      // Without a programme (or a running plan) there are no rest days: every day asks for a log.
+      restWeekdays: new Set(planned === null && plan === null ? [] : [1, 2, 3, 4, 5, 6, 7].filter((d) => !training.has(d))),
       skippedDays: new Set(context.skippedOn === null ? [] : [context.skippedOn]),
       firstDay: localDateOf(context.createdAt, tz),
     });
     // Beta 3.4 (ADR-027 amendment): every reward the best run has reached, once.
     const reached = STREAK_REWARDS.filter((r) => s.best >= r.days).map((r) => r.id);
     const newRewards = await this.repo.grantRewards(userId, reached);
-    return { ...s, week: weekGoal(today, workoutDays, planned?.length ?? 0), newRewards };
+    // Beta 4.1: the ring counts gym sessions and the plan's runs (skipped ones leave the week).
+    const planRuns = weekRuns.filter((r) => r.status !== 'skipped');
+    const doneRuns = planRuns.filter((r) => r.status === 'done').map((r) => r.date);
+    return { ...s, week: weekGoal(today, [...workoutDays, ...doneRuns], (planned?.length ?? 0) + planRuns.length), newRewards };
   }
 
   async summary(userId: string, window: ProgressWindow): Promise<ProgressSummary> {
