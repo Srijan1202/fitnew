@@ -39,6 +39,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+    <!-- Beta 4.1 (updates plan, U2): "Update now" hands a downloaded FITOS
+         APK to Android's installer; Android still asks the tester once per
+         update. FITOS is not on Play, where this would be policed. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <application
         android:label="FITOS"
         android:name="${applicationName}"
@@ -164,6 +168,18 @@
                 <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
             </intent-filter>
         </activity-alias>
+        <!-- Beta 4.1 (U2): shares only the downloaded update in the cache's
+             updates/ folder with the installer. Its own class, so it never
+             clashes with a plugin's FileProvider. -->
+        <provider
+            android:name=".UpdateFileProvider"
+            android:authorities="${applicationId}.updates"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/update_paths" />
+        </provider>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

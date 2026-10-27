@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Beta 4.1 (U2): the one folder the installer may read, the cache's
+     updates/, where "Update now" downloads the APK. -->
+<paths>
+    <cache-path name="updates" path="updates/" />
+</paths>

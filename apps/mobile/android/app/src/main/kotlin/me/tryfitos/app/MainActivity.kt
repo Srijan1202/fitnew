@@ -78,6 +78,40 @@ class MainActivity : FlutterFragmentActivity() {
                         startActivity(intent)
                         result.success(null)
                     }
+                    // Beta 4.1 (updates plan, U2): FITOS installs its own APK.
+                    "canInstallApks" -> result.success(packageManager.canRequestPackageInstalls())
+                    "openInstallSettings" -> {
+                        // FITOS's own "Install unknown apps" switch.
+                        val intent = android.content.Intent(
+                            android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                            android.net.Uri.parse("package:$packageName"),
+                        )
+                        startActivity(intent)
+                        result.success(null)
+                    }
+                    "installApk" -> {
+                        val path = call.arguments as? String
+                        val file = path?.let { java.io.File(it) }
+                        // Only a file in the cache's updates/ folder (update_paths.xml).
+                        val updates = java.io.File(cacheDir, "updates").canonicalPath
+                        if (file == null || !file.isFile || file.canonicalFile.parent != updates) {
+                            result.error("bad-apk", "Not a downloaded update: $path", null)
+                        } else {
+                            val uri = androidx.core.content.FileProvider.getUriForFile(
+                                this,
+                                "$packageName.updates",
+                                file,
+                            )
+                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW)
+                                .setDataAndType(uri, "application/vnd.android.package-archive")
+                                .addFlags(
+                                    android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                                        android.content.Intent.FLAG_ACTIVITY_NEW_TASK,
+                                )
+                            startActivity(intent)
+                            result.success(null)
+                        }
+                    }
                     else -> result.notImplemented()
                 }
             }

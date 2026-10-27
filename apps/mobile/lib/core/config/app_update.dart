@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../theme/tokens.dart';
 import '../../shared/widgets/fit_glass.dart';
+import 'apk_update.dart';
 import 'app_config.dart';
 
 /// Beta 3.2 (ADR-026 amendment): "a new version is available".
@@ -43,6 +45,9 @@ class LatestRelease {
     required this.build,
     required this.url,
     this.notesUrl,
+    this.apkUrl,
+    this.sha256,
+    this.sizeBytes,
   });
 
   /// Null for anything that is not the expected shape.
@@ -52,12 +57,18 @@ class LatestRelease {
     final build = json['build'];
     final url = json['url'];
     final notes = json['notesUrl'];
+    final apk = json['apkUrl'];
+    final sha = json['sha256'];
+    final size = json['sizeBytes'];
     if (version is! String || build is! int || url is! String) return null;
     return LatestRelease(
       version: version,
       build: build,
       url: url,
       notesUrl: notes is String ? notes : null,
+      apkUrl: apk is String ? apk : null,
+      sha256: sha is String ? sha : null,
+      sizeBytes: size is int ? size : null,
     );
   }
 
@@ -66,11 +77,20 @@ class LatestRelease {
   final String url;
   final String? notesUrl;
 
+  /// Beta 4.1 (U2): the APK itself, for "Update now" inside the app. An
+  /// older version.json has none; the download page is used then.
+  final String? apkUrl;
+  final String? sha256;
+  final int? sizeBytes;
+
   Map<String, dynamic> toJson() => <String, dynamic>{
         'version': version,
         'build': build,
         'url': url,
         if (notesUrl != null) 'notesUrl': notesUrl,
+        if (apkUrl != null) 'apkUrl': apkUrl,
+        if (sha256 != null) 'sha256': sha256,
+        if (sizeBytes != null) 'sizeBytes': sizeBytes,
       };
 
   /// "beta 3.2" for "1.0.0-beta.3.2"; the whole version otherwise.
@@ -181,6 +201,10 @@ final releaseFeedProvider = Provider<ReleaseFeed>((_) => HttpReleaseFeed());
 final updatePrefsProvider = Provider<UpdatePrefs>((_) => SharedUpdatePrefs());
 final linkOpenerProvider = Provider<LinkOpener>((_) => BrowserLinkOpener());
 final updateClockProvider = Provider<DateTime Function()>((_) => DateTime.now);
+
+/// Beta 4.1 (U2): FITOS can install its own APK (Android); elsewhere, and in
+/// tests unless overridden, "Update" opens the download page.
+final inAppInstallProvider = Provider<bool>((_) => Platform.isAndroid);
 
 /// A newer build than this one, and what to show for it.
 class AvailableUpdate {
@@ -352,6 +376,8 @@ class _UpdatePromptHostState extends ConsumerState<UpdatePromptHost> {
       }
       final controller = ref.read(updateControllerProvider.notifier)
         ..markPrompted();
+      final inApp =
+          ref.read(inAppInstallProvider) && ApkFile.of(u.release) != null;
       final update = await showDialog<bool>(
         context: dialogContext,
         builder: (ctx) => AlertDialog(
@@ -369,12 +395,14 @@ class _UpdatePromptHostState extends ConsumerState<UpdatePromptHost> {
             FilledButton(
               key: const ValueKey('update.now'),
               onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('Update'),
+              child: Text(inApp ? 'Update now' : 'Update'),
             ),
           ],
         ),
       );
-      if (update ?? false) await controller.openDownload();
+      if ((update ?? false) && dialogContext.mounted) {
+        await startUpdate(dialogContext, ref, controller);
+      }
       _showing = false;
     });
   }
@@ -415,7 +443,7 @@ class UpdateBanner extends ConsumerWidget {
           ),
           TextButton(
             key: const ValueKey('update.banner.open'),
-            onPressed: controller.openDownload,
+            onPressed: () => startUpdate(context, ref, controller),
             child: const Text('Update'),
           ),
           IconButton(
@@ -427,5 +455,158 @@ class UpdateBanner extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+/// Beta 4.1 (U2): "Update now" — FITOS downloads, checks and hands its own
+/// APK to Android's installer when it can; the download page otherwise, and
+/// whenever the in-app way fails.
+Future<void> startUpdate(
+  BuildContext context,
+  WidgetRef ref,
+  UpdateController controller,
+) async {
+  final u = ref.read(updateControllerProvider).value;
+  final file = u == null ? null : ApkFile.of(u.release);
+  if (u == null || file == null || !ref.read(inAppInstallProvider)) {
+    await controller.openDownload();
+    return;
+  }
+  final flow = ApkUpdateFlow(
+    file: file,
+    build: u.release.build,
+    downloader: ref.read(apkDownloaderProvider),
+    installer: ref.read(apkInstallerProvider),
+  );
+  final fallback = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => ApkUpdateDialog(flow: flow, label: u.release.label),
+  );
+  flow.dispose();
+  if (fallback ?? false) await controller.openDownload();
+}
+
+/// The in-app update as it goes: Android's permission, the download with
+/// Cancel, the check, and a way to the download page when anything fails.
+/// Pops true for "use the download page".
+class ApkUpdateDialog extends StatefulWidget {
+  const ApkUpdateDialog({required this.flow, required this.label, super.key});
+
+  final ApkUpdateFlow flow;
+  final String label;
+
+  @override
+  State<ApkUpdateDialog> createState() => _ApkUpdateDialogState();
+}
+
+class _ApkUpdateDialogState extends State<ApkUpdateDialog> {
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.flow.addListener(_changed);
+    // Back from Android's settings page: carry on if it is now allowed.
+    _lifecycle = AppLifecycleListener(
+      onResume: () {
+        if (widget.flow.value is ApkNeedsPermission) widget.flow.run();
+      },
+    );
+    widget.flow.run();
+  }
+
+  void _changed() {
+    if (!mounted) return;
+    final step = widget.flow.value;
+    if (step is ApkHandedOver || step is ApkCancelledStep) {
+      Navigator.of(context).pop(false);
+      return;
+    }
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    widget.flow.removeListener(_changed);
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  static String _mb(int bytes) => (bytes / (1024 * 1024)).toStringAsFixed(1);
+
+  @override
+  Widget build(BuildContext context) {
+    final step = widget.flow.value;
+    final pop = Navigator.of(context).pop;
+    return switch (step) {
+      ApkNeedsPermission() => AlertDialog(
+          key: const ValueKey('update.permission'),
+          title: const Text('Let FITOS install its updates'),
+          content: const Text(
+            'Android asks once. FITOS only ever installs its own updates, '
+            'downloaded from tryfitos.me and checked first. Turn on '
+            '\u201cAllow from this source\u201d, then come back.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => pop(false),
+              child: const Text('Not now'),
+            ),
+            FilledButton(
+              key: const ValueKey('update.permission.open'),
+              onPressed: widget.flow.openSettings,
+              child: const Text('Open settings'),
+            ),
+          ],
+        ),
+      ApkFailed(:final message) => AlertDialog(
+          key: const ValueKey('update.failed'),
+          title: const Text('The update did not install'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => pop(false),
+              child: const Text('Close'),
+            ),
+            FilledButton(
+              key: const ValueKey('update.failed.page'),
+              onPressed: () => pop(true),
+              child: const Text('Download page'),
+            ),
+          ],
+        ),
+      ApkDownloading(:final received, :final total, :final fraction) =>
+        AlertDialog(
+          key: const ValueKey('update.downloading'),
+          title: Text('Downloading FITOS ${widget.label}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              LinearProgressIndicator(
+                key: const ValueKey('update.progress'),
+                value: fraction,
+              ),
+              const SizedBox(height: FitSpacing.sm),
+              Text(
+                '${_mb(received)} of ${_mb(total)} MB',
+                key: const ValueKey('update.progress.text'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              key: const ValueKey('update.cancel'),
+              onPressed: widget.flow.cancel,
+              child: const Text('Cancel'),
+            ),
+          ],
+        ),
+      _ => const AlertDialog(
+          key: ValueKey('update.verifying'),
+          content: Text('Checking the file\u2026'),
+        ),
+    };
   }
 }
