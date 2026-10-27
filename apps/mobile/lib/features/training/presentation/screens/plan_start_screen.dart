@@ -143,7 +143,7 @@ class _Mode extends StatelessWidget {
               children: <Widget>[
                 Text(number, style: textTheme.labelSmall),
                 const SizedBox(width: FitSpacing.md),
-                Text(title, style: textTheme.displaySmall),
+                Flexible(child: Text(title, style: textTheme.displaySmall)),
               ],
             ),
             const SizedBox(height: FitSpacing.sm),
@@ -151,7 +151,7 @@ class _Mode extends StatelessWidget {
             const SizedBox(height: FitSpacing.md),
             Row(
               children: <Widget>[
-                Text(action, style: textTheme.titleMedium),
+                Flexible(child: Text(action, style: textTheme.titleMedium)),
                 const SizedBox(width: FitSpacing.xs),
                 Icon(Icons.arrow_forward, size: 18, color: FitColors.ink),
               ],

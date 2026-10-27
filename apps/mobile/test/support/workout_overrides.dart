@@ -31,6 +31,8 @@ import 'fake_workout_api.dart';
 import 'fake_streak_api.dart';
 import 'package:fitos/features/home/presentation/controllers/home_providers.dart';
 import 'fake_rewards_api.dart';
+import 'fake_running.dart';
+import 'package:fitos/features/running/presentation/controllers/running_providers.dart';
 import 'package:fitos/features/premium/presentation/rewards_providers.dart';
 
 /// Everything a widget test needs so the workout feature runs on an
@@ -56,6 +58,9 @@ List<Override> workoutOverrides(
   FakeWeeklyReportApi? weekly,
   FakeStreakApi? streak,
   FakeRewardsApi? rewards,
+  FakeRunningApi? running,
+  FakeLocationSource? location,
+  FakeBatteryAccess? battery,
 }) {
   SharedPreferences.setMockInitialValues(const {});
   return [
@@ -102,5 +107,10 @@ List<Override> workoutOverrides(
     streakApiProvider.overrideWithValue(streak ?? FakeStreakApi()),
     // Beta 3.4: nothing earned unless a test says.
     rewardsApiProvider.overrideWithValue(rewards ?? FakeRewardsApi()),
+    // Beta 4.0: runs go to a scripted server; GPS only when a test sends it.
+    runningApiProvider.overrideWithValue(running ?? FakeRunningApi()),
+    locationSourceProvider.overrideWithValue(location ?? FakeLocationSource()),
+    runNotificationProvider.overrideWithValue(FakeRunNotification()),
+    batteryAccessProvider.overrideWithValue(battery ?? FakeBatteryAccess()),
   ];
 }

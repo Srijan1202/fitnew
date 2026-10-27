@@ -36,7 +36,11 @@ import '../../features/training/presentation/screens/generate_options_screen.dar
 import '../../features/training/presentation/screens/plan_start_screen.dart';
 import '../../features/training/presentation/screens/template_library_screen.dart';
 import '../../features/training/presentation/screens/template_preview_screen.dart';
-import '../../features/training/presentation/screens/workout_week_screen.dart';
+import '../../features/training/presentation/screens/training_tab_screen.dart';
+import '../../features/running/presentation/screens/live_run_screen.dart';
+import '../../features/running/presentation/screens/run_detail_screen.dart';
+import '../../features/running/presentation/screens/run_finish_screen.dart';
+import '../../features/running/presentation/screens/share_run_screen.dart';
 import '../../features/workout/presentation/screens/active_session_screen.dart';
 import '../../features/ai/presentation/screens/ai_chat_screen.dart';
 import '../../features/health/presentation/screens/health_data_screen.dart';
@@ -131,6 +135,12 @@ abstract final class Routes {
   static const String history = '/plan/history';
   static const String volume = '/plan/volume';
   static String historyDetail(String serverId) => '/plan/history/$serverId';
+
+  // Beta 4.0 (ADR-038): running. Runs are addressed by the phone's id.
+  static const String runLive = '/plan/run';
+  static const String runFinish = '/plan/run/finish';
+  static String runDetail(String id) => '/plan/runs/$id';
+  static String runShare(String id) => '/plan/runs/$id/share';
 
   /// Screens a signed-out user may see. Everything else needs a session.
   static const Set<String> authRoutes = {signIn, signUp, forgotPassword};
@@ -263,8 +273,40 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
               GoRoute(
                 path: Routes.plan,
                 name: 'plan',
-                builder: (context, state) => const WorkoutWeekScreen(),
+                // Beta 4.0 (ADR-038): Gym | Running at the top.
+                builder: (context, state) => const TrainingTabScreen(),
                 routes: <RouteBase>[
+                  GoRoute(
+                    path: 'run',
+                    name: 'run-live',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const LiveRunScreen(),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: 'finish',
+                        name: 'run-finish',
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (context, state) => const RunFinishScreen(),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'runs/:runId',
+                    name: 'run-detail',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) =>
+                        RunDetailScreen(id: state.pathParameters['runId']!),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: 'share',
+                        name: 'run-share',
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (context, state) => ShareRunScreen(
+                          id: state.pathParameters['runId']!,
+                        ),
+                      ),
+                    ],
+                  ),
                   GoRoute(
                     path: 'new',
                     name: 'plan-new',

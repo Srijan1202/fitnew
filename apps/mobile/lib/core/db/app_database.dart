@@ -186,6 +186,74 @@ class TodayEventLedger extends Table {
   Set<Column<Object>> get primaryKey => {recommendationId, event};
 }
 
+/// Beta 4.0 (ADR-038): a run on this phone — the one being recorded, a
+/// finished one waiting for Save or Discard, or a saved one the server has
+/// not confirmed yet. The row (and its points) goes once the server holds
+/// the run; its answer then lives in [CachedJson].
+///
+/// The timer survives the app being killed: `activeMs` is the active time
+/// before the current stretch, `resumedAt` when that stretch began (null
+/// while paused or finished).
+class LocalRuns extends Table {
+  TextColumn get clientRunId => text()();
+
+  /// `outdoor` | `treadmill`.
+  TextColumn get kind => text()();
+
+  /// `recording` | `paused` | `autoPaused` | `finished` | `saved`.
+  TextColumn get status => text()();
+  TextColumn get goalKind => text()();
+  IntColumn get goalValue => integer().nullable()();
+  TextColumn get startedAt => text()();
+  TextColumn get endedAt => text().nullable()();
+  IntColumn get activeMs => integer().withDefault(const Constant(0))();
+  TextColumn get resumedAt => text().nullable()();
+
+  /// The segment new points go into (a pause starts the next one).
+  IntColumn get segment => integer().withDefault(const Constant(0))();
+  TextColumn get name => text().nullable()();
+  TextColumn get note => text().nullable()();
+  IntColumn get effort => integer().nullable()();
+  RealColumn get treadmillDistanceM => real().nullable()();
+  TextColumn get updatedAt => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {clientRunId};
+}
+
+/// Beta 4.0: a run's stored points, already filtered and rounded the way the
+/// track encoding keeps them (features/running/domain/gps_filter.dart).
+class LocalRunPoints extends Table {
+  TextColumn get clientRunId => text()();
+  IntColumn get seq => integer()();
+  IntColumn get segment => integer()();
+
+  /// Seconds since the run started.
+  RealColumn get t => real()();
+  RealColumn get lat => real()();
+  RealColumn get lon => real()();
+  RealColumn get ele => real().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {clientRunId, seq};
+}
+
+/// Beta 4.0: run uploads, edits and deletions the server has not confirmed,
+/// drained FIFO by the RunSyncEngine (ADR-006's policy, its own queue).
+class RunSyncQueue extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// `create` | `patch` | `delete`.
+  TextColumn get kind => text()();
+  TextColumn get clientRunId => text()();
+  TextColumn get payloadJson => text()();
+  IntColumn get attempts => integer().withDefault(const Constant(0))();
+  TextColumn get nextAttemptAt => text().nullable()();
+  TextColumn get lastError => text().nullable()();
+  BoolColumn get parked => boolean().withDefault(const Constant(false))();
+  TextColumn get createdAt => text()();
+}
+
 @DriftDatabase(
   tables: [
     LocalSessions,
@@ -197,6 +265,9 @@ class TodayEventLedger extends Table {
     NutritionSyncQueue,
     TodayEventQueue,
     TodayEventLedger,
+    LocalRuns,
+    LocalRunPoints,
+    RunSyncQueue,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -224,11 +295,12 @@ class AppDatabase extends _$AppDatabase {
       );
 
   /// 1 — Phase 5 (workout, sync queue, cache). 2 — Phase 8 (food logs and
-  /// their own queue). 3 — Phase 11 (TODAY events: queue and ledger). An
-  /// upgrade only ADDS tables: a phone that still holds an unsent workout or
-  /// food log keeps it.
+  /// their own queue). 3 — Phase 11 (TODAY events: queue and ledger).
+  /// 4 — beta 4.0 (runs, their points and their queue). An upgrade only
+  /// ADDS tables: a phone that still holds an unsent workout or food log
+  /// keeps it.
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -241,6 +313,11 @@ class AppDatabase extends _$AppDatabase {
           if (from < 3) {
             await m.createTable(todayEventQueue);
             await m.createTable(todayEventLedger);
+          }
+          if (from < 4) {
+            await m.createTable(localRuns);
+            await m.createTable(localRunPoints);
+            await m.createTable(runSyncQueue);
           }
         },
       );

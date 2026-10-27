@@ -1,0 +1,434 @@
+{
+ "name": "no-elevation",
+ "description": "A 1.3 km straight run from a phone that gave no altitude, no weight known.",
+ "track": {
+  "v": 1,
+  "points": "soqvWwkh~uC?So@[?Us@]?Ss@_@?Sq@]?Qu@]?Su@_@?So@[?Sq@_@?Sq@_@?Uu@_@?Sq@[?Sq@Y?Su@[?Uw@]?Sq@Y?Qq@[?Sq@[?So@[?Su@a@?Sq@_@?Sm@_@?Qo@]?Sq@a@?Us@a@?Sq@c@?Sq@a@?Qo@_@?Ss@a@?Uo@]?Uq@a@?So@]?Us@a@?Qs@[?Us@_@?Sq@[?Sw@]?Qw@_@?Us@]?Qq@Y?Ss@[?Su@[?Qs@Y?Uu@Y?Us@U?Qs@W?Qw@[?Uq@Y?Qy@[?Qw@Y?Uq@Y?So@Y?Qu@]?Uu@]?Qw@]?Uq@[?Uq@Y?Ss@]?Qo@]?Qs@]?So@Y?Qw@_@?Sq@[?Su@[?Uu@[?So@[?Qu@]?Su@]?So@[?So@[?Sw@_@?Uu@]?Ss@[?Su@Y?Ss@[?Sq@W?Us@[?Qu@[?Qu@[?Sq@[?Ss@[?Su@]?Sy@Y?Qs@Y?Su@Y?Qs@W?Su@W?Su@Y?Ss@U?Uq@W?Qw@[?Qs@U?Sq@U?Ss@S?Su@U?Sw@S?Sy@S?Sy@S?Sw@S?Su@U?Ss@U?Qw@W?Qs@W?Us@W?Qq@Y?Us@Y?Ss@W?Qu@Y?Qw@Y?Sq@W?Sw@Y?Qq@W?Ss@U?Qu@U?Ss@W?Ss@W?Sy@[?Qy@Y?Su@Y?Qw@Y?Sw@]?Qs@W?So@[?Su@]?Ss@]?Qu@_@?Uu@_@?Ss@]?Qs@[?Uu@[?Sw@[?Qs@Y?Qq@[?Uq@W?Qw@]?Qw@]?So@Y?Qq@W?Sw@]?So@Y?Sq@]?Us@]?Ss@[?Qw@]?Su@[?Qq@W?Su@Y?Qs@W?Uy@W?Qw@U?Uu@S?Sw@W?Qu@U?Uu@U?Qw@W?Qy@U?Us@U?Sw@S?Su@Q?Su@Q?S{@U?Qw@S?Qu@U?Sw@U?Q{@U?Su@Q?Su@S?Sy@W?Us@S?Su@Q?Uw@S?Qy@U?Ss@S?Q{@Y?Uw@Y?Ss@U?Uw@Y?Qs@S?Uy@W?Uw@Y?Qu@[?Qs@W?Sw@W?Ss@U?Us@W?Uw@W?Qw@W?Su@U?Uy@Y?Sw@Y?Sy@W?Ss@S?Uw@W?Uw@S?Sw@U?Qw@Q?Qw@S?Uu@Q?Su@M?S}@O?Qu@Q?Qy@Q?Uy@S?U{@S?Qw@S?Qy@U?Ss@Q?Ss@S?Sy@W?Su@S?U{@S?Qy@S?S{@U?Ss@S?U{@U?Sw@S?Sy@U?Uw@S?Qy@Q?S{@Q?Uu@O?U{@S?Q{@U?Uu@S?Uu@U?Ss@U?Ss@W?Qw@W?Su@Y?Uu@Y?Uu@[?Ss@W?Sy@Y?Ss@W?Uq@Y?Qy@]?Ss@[?Ss@]?Sw@]?Sw@]?Qq@[?Ss@Y?Uu@[?Ss@Y?Qw@[?Sw@Y?Uq@W?Ss@Y?Sq@W?Ss@Y?Uw@W?Su@Y?Ss@U?Q{@U?Ss@U?Qw@U?Uy@U?Sy@W?Qq@W?Qs@W?Uq@W?Sy@[?Qs@[?Uq@[?Uo@[?Ss@_@?Su@a@?Uo@[?Sq@]?Qm@_@?Qm@]?Ss@a@?Ss@a@?Ss@e@?Sm@_@?So@c@?Uo@_@?So@a@?So@a@?Qs@e@?Sq@_@?Us@a@?So@c@?Ss@c@?Uq@a@?Qu@a@?Ss@a@?Sq@[?So@]?Su@a@?Us@a@?Qs@a@?Su@a@?Us@c@?Uu@a@?Qq@]?Qq@_@?Uo@_@?Qq@a@?Su@a@?So@a@?Qo@_@?Us@c@?Qu@e@?Ss@a@?Us@a@?Us@_@?Qu@c@?Qo@]?So@_@?Ss@c@?Uo@]?Qm@_@?Sq@]?So@]?Uu@]?Qw@]?Ss@[?Uu@_@?Sw@]?Qq@Y?Su@]?Ss@Y?Sy@[?Su@[?Uo@Y?Qu@[?Su@[?Ss@[?Qu@[?Uo@Y?Uy@[?Ss@Y?Uu@[?Sw@[?Sq@[?Us@_@?Sq@Y?Qq@Y?Su@[?Sy@Y?Us@W?Qu@Y?Uw@[?Ss@Y?Us@W?Sq@Y?Uq@W?Sq@[?Qw@_@?Qq@]?Ss@a@?Qu@_@?Ss@_@?Uo@_@?Ss@_@?Uq@a@?Um@_@?Qs@a@?Qo@]?Us@]?Qu@c@?Uu@a@?So@_@?So@]?Sm@_@?Qs@e@?Us@c@?Uq@c@?Qm@a@?Qo@c@?So@c@?Sm@a@?Sm@c@?Qk@c@?Qk@c@?Uo@e@?Qm@a@?Uk@c@?Uq@g@?Sk@a@?Um@e@?Qo@e@?So@e@?Uk@c@?Uq@c@?So@g@?Sq@c@?Qm@a@?Sm@_@?Sq@c@?Sm@_@?Um@_@?Sq@c@?Qs@e@?Qk@a@?So@c@?Qo@e@?Sm@a@?Um@_@?S",
+  "breaks": [],
+  "elevation": false
+ },
+ "durationSeconds": 399,
+ "weightKg": null,
+ "expected": {
+  "distanceM": 1314.8,
+  "durationSeconds": 399,
+  "avgPaceSecPerKm": 303.5,
+  "elevationGainM": null,
+  "calories": null,
+  "splitsKm": [
+   {
+    "index": 1,
+    "distanceM": 1000,
+    "seconds": 301.9,
+    "pace": 301.9,
+    "elevationChangeM": null
+   },
+   {
+    "index": 2,
+    "distanceM": 314.8,
+    "seconds": 95.9,
+    "pace": 304.8,
+    "elevationChangeM": null
+   }
+  ],
+  "splitsMi": [
+   {
+    "index": 1,
+    "distanceM": 1314.8,
+    "seconds": 397.8,
+    "pace": 486.9,
+    "elevationChangeM": null
+   }
+  ],
+  "series": [
+   {
+    "distanceM": 50.6,
+    "pace": 307,
+    "ele": null
+   },
+   {
+    "distanceM": 101.1,
+    "pace": 310.6,
+    "ele": null
+   },
+   {
+    "distanceM": 151.7,
+    "pace": 300.1,
+    "ele": null
+   },
+   {
+    "distanceM": 202.3,
+    "pace": 299.7,
+    "ele": null
+   },
+   {
+    "distanceM": 252.8,
+    "pace": 304.6,
+    "ele": null
+   },
+   {
+    "distanceM": 303.4,
+    "pace": 301.9,
+    "ele": null
+   },
+   {
+    "distanceM": 354,
+    "pace": 301.2,
+    "ele": null
+   },
+   {
+    "distanceM": 404.5,
+    "pace": 293.4,
+    "ele": null
+   },
+   {
+    "distanceM": 455.1,
+    "pace": 296.4,
+    "ele": null
+   },
+   {
+    "distanceM": 505.7,
+    "pace": 297.9,
+    "ele": null
+   },
+   {
+    "distanceM": 556.3,
+    "pace": 303.4,
+    "ele": null
+   },
+   {
+    "distanceM": 606.8,
+    "pace": 303.5,
+    "ele": null
+   },
+   {
+    "distanceM": 657.4,
+    "pace": 302.4,
+    "ele": null
+   },
+   {
+    "distanceM": 708,
+    "pace": 300.9,
+    "ele": null
+   },
+   {
+    "distanceM": 758.5,
+    "pace": 309,
+    "ele": null
+   },
+   {
+    "distanceM": 809.1,
+    "pace": 300.4,
+    "ele": null
+   },
+   {
+    "distanceM": 859.7,
+    "pace": 302.2,
+    "ele": null
+   },
+   {
+    "distanceM": 910.2,
+    "pace": 311,
+    "ele": null
+   },
+   {
+    "distanceM": 960.8,
+    "pace": 297.3,
+    "ele": null
+   },
+   {
+    "distanceM": 1011.4,
+    "pace": 292.2,
+    "ele": null
+   },
+   {
+    "distanceM": 1061.9,
+    "pace": 303.1,
+    "ele": null
+   },
+   {
+    "distanceM": 1112.5,
+    "pace": 306.9,
+    "ele": null
+   },
+   {
+    "distanceM": 1163.1,
+    "pace": 304.5,
+    "ele": null
+   },
+   {
+    "distanceM": 1213.6,
+    "pace": 304.2,
+    "ele": null
+   },
+   {
+    "distanceM": 1264.2,
+    "pace": 309.3,
+    "ele": null
+   },
+   {
+    "distanceM": 1314.8,
+    "pace": 303.8,
+    "ele": null
+   }
+  ],
+  "outline": [
+   [
+    12.96923,
+    79.15592
+   ],
+   [
+    12.96938,
+    79.15601
+   ],
+   [
+    12.96956,
+    79.15611
+   ],
+   [
+    12.96971,
+    79.1562
+   ],
+   [
+    12.96986,
+    79.1563
+   ],
+   [
+    12.97004,
+    79.15641
+   ],
+   [
+    12.97019,
+    79.1565
+   ],
+   [
+    12.97035,
+    79.15658
+   ],
+   [
+    12.97054,
+    79.15667
+   ],
+   [
+    12.97069,
+    79.15676
+   ],
+   [
+    12.97085,
+    79.15684
+   ],
+   [
+    12.97103,
+    79.15695
+   ],
+   [
+    12.97119,
+    79.15703
+   ],
+   [
+    12.97135,
+    79.15711
+   ],
+   [
+    12.97153,
+    79.1572
+   ],
+   [
+    12.97169,
+    79.15726
+   ],
+   [
+    12.97186,
+    79.15733
+   ],
+   [
+    12.97204,
+    79.15742
+   ],
+   [
+    12.9722,
+    79.15749
+   ],
+   [
+    12.97237,
+    79.15757
+   ],
+   [
+    12.97255,
+    79.15767
+   ],
+   [
+    12.97271,
+    79.15775
+   ],
+   [
+    12.97286,
+    79.15784
+   ],
+   [
+    12.97305,
+    79.15793
+   ],
+   [
+    12.97321,
+    79.158
+   ],
+   [
+    12.97338,
+    79.15806
+   ],
+   [
+    12.97357,
+    79.15814
+   ],
+   [
+    12.97374,
+    79.1582
+   ],
+   [
+    12.9739,
+    79.15827
+   ],
+   [
+    12.97409,
+    79.15836
+   ],
+   [
+    12.97426,
+    79.15843
+   ],
+   [
+    12.97443,
+    79.15849
+   ],
+   [
+    12.97463,
+    79.15855
+   ],
+   [
+    12.97479,
+    79.15861
+   ],
+   [
+    12.97497,
+    79.15868
+   ],
+   [
+    12.97517,
+    79.15874
+   ],
+   [
+    12.97533,
+    79.15881
+   ],
+   [
+    12.97549,
+    79.15889
+   ],
+   [
+    12.97568,
+    79.15899
+   ],
+   [
+    12.97584,
+    79.15907
+   ],
+   [
+    12.976,
+    79.15914
+   ],
+   [
+    12.97619,
+    79.15922
+   ],
+   [
+    12.97635,
+    79.15931
+   ],
+   [
+    12.97649,
+    79.15941
+   ],
+   [
+    12.97666,
+    79.15953
+   ],
+   [
+    12.97682,
+    79.15963
+   ],
+   [
+    12.97697,
+    79.15973
+   ],
+   [
+    12.97715,
+    79.15984
+   ],
+   [
+    12.9773,
+    79.15995
+   ],
+   [
+    12.97746,
+    79.16005
+   ],
+   [
+    12.97763,
+    79.16015
+   ],
+   [
+    12.9778,
+    79.16024
+   ],
+   [
+    12.97795,
+    79.16032
+   ],
+   [
+    12.97814,
+    79.16042
+   ],
+   [
+    12.9783,
+    79.1605
+   ],
+   [
+    12.97845,
+    79.16058
+   ],
+   [
+    12.97864,
+    79.16069
+   ],
+   [
+    12.97879,
+    79.16079
+   ],
+   [
+    12.97894,
+    79.16089
+   ],
+   [
+    12.9791,
+    79.16101
+   ],
+   [
+    12.97924,
+    79.16112
+   ],
+   [
+    12.97938,
+    79.16123
+   ],
+   [
+    12.97955,
+    79.16135
+   ],
+   [
+    12.97969,
+    79.16146
+   ]
+  ]
+ }
+}

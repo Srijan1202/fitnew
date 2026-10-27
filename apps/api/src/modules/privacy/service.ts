@@ -22,6 +22,7 @@ export const EXPORT_NOTES = [
   'FITOS data export (MASTER-SPEC §23.4). Every table that holds rows you own, by table name; each row as stored.',
   'Times are UTC (ISO 8601). Local dates (local_date, logged_on, measured_on) are in your stored time zone.',
   'Nutrition values are ranges (low/high) because FITOS estimates; a logged item keeps the numbers it was logged with.',
+  'Runs: track_points is the GPS route in FITOS track encoding v1 (polyline-style: lat/lon ×1e6, elevation ×10, seconds ×10); the app exports any run as GPX.',
   'Not included: the shared FITOS food and exercise libraries and mess menus (not yours), and records about other people.',
 ];
 

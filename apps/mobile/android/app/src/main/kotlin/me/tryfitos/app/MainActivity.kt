@@ -63,6 +63,21 @@ class MainActivity : FlutterFragmentActivity() {
                             result.success(null)
                         }
                     }
+                    // Beta 4.0 (ADR-038): a run must keep recording with the
+                    // screen off, which battery optimisation can prevent.
+                    "batteryUnrestricted" -> {
+                        val power = getSystemService(POWER_SERVICE) as android.os.PowerManager
+                        result.success(power.isIgnoringBatteryOptimizations(packageName))
+                    }
+                    "openBatterySettings" -> {
+                        // The app's own page: Battery → Unrestricted is one tap there.
+                        val intent = android.content.Intent(
+                            android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            android.net.Uri.fromParts("package", packageName, null),
+                        )
+                        startActivity(intent)
+                        result.success(null)
+                    }
                     else -> result.notImplemented()
                 }
             }

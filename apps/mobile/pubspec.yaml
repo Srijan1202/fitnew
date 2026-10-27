@@ -74,6 +74,10 @@ dependencies:
   # Beta 3.8 (tester feedback): photos taken inside FITOS, so Android never
   # closes it while the phone's camera app is open (the official plugin).
   camera: 0.12.1
+  # Beta 4.0 (ADR-038): GPS for runs (Fused Location on Android) and the map
+  # (MapLibre drawing OpenFreeMap's tiles; no key, no account).
+  geolocator: 14.0.1
+  maplibre_gl: 0.27.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -13,6 +13,7 @@ import '../../../core/notifications/activity_signal.dart';
 import '../../../core/notifications/local_notifications.dart';
 import '../../../core/config/app_update.dart';
 import '../../../core/routing/router.dart';
+import '../../training/presentation/screens/training_tab_screen.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
 import '../../auth/presentation/controllers/auth_providers.dart';
 import '../../health/presentation/controllers/health_providers.dart';
@@ -481,6 +482,12 @@ class NotificationCoordinator extends Notifier<NotifyState> {
     switch (p['screen']) {
       case 'plan':
         router.go(Routes.plan);
+      // Beta 4.0 (ADR-038): the run notification brings the run back.
+      case 'run':
+        ref.read(trainingModeProvider.notifier).set(TrainingMode.running);
+        router
+          ..go(Routes.plan)
+          ..push(Routes.runLive);
       case 'progress':
         router.go(Routes.progress);
       case 'food-log':

@@ -1,6 +1,6 @@
 # Beta 4 — plan: running
 
-**Date** 2026-10-27 · **Branch** `phase-19` · **Status: the owner answered all four questions on 2026-10-27 (the table below). Waiting for the owner's go on beta 4.0; no code before it.**
+**Date** 2026-10-27 · **Branch** `phase-19` · **Status: the owner answered all four questions and said go on 2026-10-27. 4.0 is built on `phase-19` (ADR-038). It is released only on the owner's word, after field runs on the S24.**
 
 The owner's brief (2026-10-27):
 

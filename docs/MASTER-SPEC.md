@@ -236,6 +236,8 @@ Permitted client-side computation, exhaustively:
 
 If the agent is about to write a calorie or progression formula in Dart, **that is a specification violation.** Add the endpoint instead.
 
+`AMENDED 2026-10-27 (beta 4.0, ADR-038 D8, owner-approved plan)`: **one exception, running.** A run's numbers must show every second with no signal, and a finished run must show its summary before it uploads. So the phone carries a Dart port of `packages/core running/summary` (distance, splits, chart, elevation gain, ACSM calories) and cleans GPS before storing it. The server's figures replace the phone's once it has the run; until then the phone's are marked "not synced yet". Shared fixtures (`packages/core/test/fixtures/running`) hold both to the same numbers. Nothing else moves to the phone.
+
 ### 7.4 Widget rules
 
 - No business logic in `build()`.
@@ -410,6 +412,7 @@ Everything else in your preferred stack is kept: Cloud Run, Firebase Auth, FCM, 
 |---|---|---|
 | `recommendations` | `id`, `user_id`, `generated_for date`, `kind`, `headline`, `detail`, `target`, `priority`, `basis`, `payload jsonb` | `AMENDED 2026-09-24 (Phase 11, ADR-017)`: also `subject_key`, `rank` (at first generation), `engine_version`, `input_digest`, `content_hash`, `created_at`. **Immutable**; UNIQUE `(user_id, generated_for, kind, subject_key, content_hash)`, so the same content reuses its id. Never stores the whole `UserModel`. Kept indefinitely; cascades on user deletion |
 | `recommendation_events` | `id`, `recommendation_id`, `event` (`shown`/`opened`/`accepted`/`dismissed`/`completed`), `occurred_at` | Measures whether the engine actually helps. `AMENDED 2026-09-24 (Phase 11, ADR-017)`: also `user_id`, `client_event_id` (UNIQUE per user: idempotency) and `received_at`. Each event at most once per recommendation. Product records, not analytics |
+| `runs` | `id`, `user_id`, `client_run_id` UNIQUE, `kind` (`outdoor`/`treadmill`), `name`, `note`, `effort` 1–10, `started_at`, `ended_at`, `duration_seconds`, `goal_kind`/`goal_value`, `track_points`/`track_breaks`/`track_elevation`, `distance_m`, `avg_pace_sec_per_km`, `elevation_gain_m`, `calories`, `outline` | `AMENDED 2026-10-27 (beta 4.0, ADR-038)`: one row per run; the GPS track is one encoded column (encoding v1), not a row per point; outdoor ⇔ track (a CHECK). The figures are core's, kept for the list (rebuildable from the track). Hard delete; CASCADE with the user; in the export. |
 | `recovery_logs` | `id`, `user_id`, `logged_on date`, `sleep_hours`, `sleep_quality`, `soreness`, `energy`, `stress`, `source` | UNIQUE `(user_id, logged_on)`. `AMENDED 2026-09-25 (Phase 13, ADR-019)`: every value optional, at least one present; `source` is `manual` only (Health Connect never leaves the phone); hard delete. |
 | `ai_usage` | `id`, `user_id`, `route` (`chat` \| `parse` \| `explain`), `model`, `input_tokens`, `output_tokens`, `outcome` (`ok` \| `discarded` \| `failed`), `created_at` | `ADDED 2026-10-21 (Phase 14, ADR-020 D3)`: one row per model call, never the prompt or the answer; the hourly limits and the daily token budget are counted from it; cascade from `users`. |
 | `health_samples` | `id`, `user_id`, `sample_type`, `value`, `unit`, `recorded_at`, `source` | Health Connect / HealthKit (V2) |
@@ -512,6 +515,9 @@ Codes: `UNAUTHENTICATED` 401 · `FORBIDDEN` 403 · `NOT_FOUND` 404 · `VALIDATIO
 | POST | `/progress/photo` | Signed upload URL | Bytes never transit the API |
 | GET | `/recovery/today` | Today's recovery state | |
 | POST | `/recovery/log` | Sleep, soreness, energy | Upsert on date |
+| POST | `/running/runs` | Save a finished run (beta 4.0, ADR-038) | Idempotent on `clientRunId`: 201, then 200 with the same run |
+| GET | `/running/runs` | Runs newest first, with this week and this month | `before`, `limit` ≤ 50 |
+| GET/PATCH/DELETE | `/running/runs/{id}` | One run (track, splits, chart); its name, note, effort; delete | Addressed by the phone's id |
 | POST | `/recovery/health-sync` | Bulk health samples | V2 |
 | POST | `/notifications/token` | Register FCM token | Phase 15: 204; stored, no push yet |
 | GET/PATCH | `/notifications/settings` | On/off, tone, each kind, quiet hours | Phase 15 (ADR-021 D7) |
@@ -615,6 +621,10 @@ Triggered by rule 2 above, **or** `mesocycle_week >= 6` with any muscle at MRV. 
 ### 12.6 Exercise substitution
 
 Triggered by: equipment unavailable, `user_limitations` match, or user rejects an exercise twice. Selects from `exercise_alternatives` matching movement pattern and primary muscle. **Load does not carry over between different exercises** — the substitute starts at `establish-baseline`.
+
+### 12.7 Running
+
+`AMENDED 2026-10-27 (beta 4.0, ADR-038, owner)`: the Training tab is **Gym | Running** (Gym by default). A run is recorded on the phone with GPS, with the screen off if need be, and saved to the account. Every figure kept is computed on the server from the track (§7.3's one exception covers the live view). The map is OpenFreeMap through MapLibre. Shares and GPX hide the first and last 200 m by default. Running is free. In steps: 4.0 recording, history, share and GPX; 4.1 voice coach and plans; 4.2 records, badges and replay; 4.3 Galaxy Watch runs through Health Connect. Plan: `docs/phase-plans/beta-4.0-plan.md`.
 
 ---
 
@@ -1105,6 +1115,8 @@ Firebase Analytics, privacy-conscious.
 4. **Export.** It follows the same foreign keys, so it is complete by construction.
 5. The breach procedure is in `docs/legal/breach-procedure.md`.
 6. The policy is `docs/legal/privacy-policy.md` (v2026-10-22), and the app shows the same text.
+
+`AMENDED 2026-10-27 (beta 4.0, ADR-038 D11)`: **runs carry location.** It is recorded only while a run records, with "while using the app" permission and never "all the time". Runs are deleted outright, go with the account and are in the export. Shares and GPX hide the first and last 200 m by default. The policy names runs, their route, and OpenFreeMap (map tiles for the area on screen). Its version is now `2026-10-27.1`, so everyone accepts it once.
 
 **Our commitments beyond the legal minimum:**
 - Body photos never leave the device except to our private Cloud Storage bucket, and are never sent to any AI provider.

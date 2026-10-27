@@ -18,6 +18,7 @@ import 'features/today/presentation/today_providers.dart';
 import 'core/config/app_features.dart';
 import 'features/premium/presentation/rewards_providers.dart';
 import 'features/progress/presentation/photos/progress_photos_screen.dart';
+import 'features/running/presentation/controllers/running_providers.dart';
 
 /// Root widget. Owns the theme; the router comes from Riverpod so the auth
 /// guard can read the same provider the screens do.
@@ -31,6 +32,8 @@ class FitOSApp extends ConsumerWidget {
     ref.watch(syncCoordinatorProvider);
     // …and the food-log queue, with its own engine (Phase 8).
     ref.watch(nutritionSyncCoordinatorProvider);
+    // …and finished runs, with their own queue (beta 4.0, ADR-038).
+    ref.watch(runSyncCoordinatorProvider);
     // …and TODAY's events, with a third, separate queue (Phase 11, D9);
     // `completed` goes once the server holds the evidence.
     ref.watch(todayCoordinatorProvider);

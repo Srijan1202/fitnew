@@ -15,7 +15,9 @@ enum AppFeature {
   weeklyReport('weekly-report'),
   progressPhotos('progress-photos'),
   // Beta 3.6 (F15): "What should I eat?" from FITOS AI.
-  foodGuide('food-guide');
+  foodGuide('food-guide'),
+  // Beta 4.0 (ADR-038): the Running half of Training.
+  running('running');
 
   const AppFeature(this.key);
 

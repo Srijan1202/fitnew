@@ -607,7 +607,8 @@ void main() {
       await onV3.drain();
       expect(await v3.select(v3.todayEventQueue).get(), hasLength(1));
       final version = await v3.customSelect('PRAGMA user_version').getSingle();
-      expect(version.data.values.single, 3);
+      // Upgraded to the current schema (3 in Phase 11; beta 4.0 adds runs).
+      expect(version.data.values.single, v3.schemaVersion);
     });
   });
 }

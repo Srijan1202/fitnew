@@ -4253,6 +4253,1583 @@ class TodayEventLedgerCompanion extends UpdateCompanion<TodayEventLedgerData> {
   }
 }
 
+class $LocalRunsTable extends LocalRuns
+    with TableInfo<$LocalRunsTable, LocalRun> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalRunsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _clientRunIdMeta =
+      const VerificationMeta('clientRunId');
+  @override
+  late final GeneratedColumn<String> clientRunId = GeneratedColumn<String>(
+      'client_run_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+      'kind', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+      'status', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _goalKindMeta =
+      const VerificationMeta('goalKind');
+  @override
+  late final GeneratedColumn<String> goalKind = GeneratedColumn<String>(
+      'goal_kind', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _goalValueMeta =
+      const VerificationMeta('goalValue');
+  @override
+  late final GeneratedColumn<int> goalValue = GeneratedColumn<int>(
+      'goal_value', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _startedAtMeta =
+      const VerificationMeta('startedAt');
+  @override
+  late final GeneratedColumn<String> startedAt = GeneratedColumn<String>(
+      'started_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _endedAtMeta =
+      const VerificationMeta('endedAt');
+  @override
+  late final GeneratedColumn<String> endedAt = GeneratedColumn<String>(
+      'ended_at', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _activeMsMeta =
+      const VerificationMeta('activeMs');
+  @override
+  late final GeneratedColumn<int> activeMs = GeneratedColumn<int>(
+      'active_ms', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _resumedAtMeta =
+      const VerificationMeta('resumedAt');
+  @override
+  late final GeneratedColumn<String> resumedAt = GeneratedColumn<String>(
+      'resumed_at', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _segmentMeta =
+      const VerificationMeta('segment');
+  @override
+  late final GeneratedColumn<int> segment = GeneratedColumn<int>(
+      'segment', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+      'note', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _effortMeta = const VerificationMeta('effort');
+  @override
+  late final GeneratedColumn<int> effort = GeneratedColumn<int>(
+      'effort', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _treadmillDistanceMMeta =
+      const VerificationMeta('treadmillDistanceM');
+  @override
+  late final GeneratedColumn<double> treadmillDistanceM =
+      GeneratedColumn<double>('treadmill_distance_m', aliasedName, true,
+          type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        clientRunId,
+        kind,
+        status,
+        goalKind,
+        goalValue,
+        startedAt,
+        endedAt,
+        activeMs,
+        resumedAt,
+        segment,
+        name,
+        note,
+        effort,
+        treadmillDistanceM,
+        updatedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_runs';
+  @override
+  VerificationContext validateIntegrity(Insertable<LocalRun> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('client_run_id')) {
+      context.handle(
+          _clientRunIdMeta,
+          clientRunId.isAcceptableOrUnknown(
+              data['client_run_id']!, _clientRunIdMeta));
+    } else if (isInserting) {
+      context.missing(_clientRunIdMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+          _kindMeta, kind.isAcceptableOrUnknown(data['kind']!, _kindMeta));
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(_statusMeta,
+          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('goal_kind')) {
+      context.handle(_goalKindMeta,
+          goalKind.isAcceptableOrUnknown(data['goal_kind']!, _goalKindMeta));
+    } else if (isInserting) {
+      context.missing(_goalKindMeta);
+    }
+    if (data.containsKey('goal_value')) {
+      context.handle(_goalValueMeta,
+          goalValue.isAcceptableOrUnknown(data['goal_value']!, _goalValueMeta));
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(_startedAtMeta,
+          startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta));
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('ended_at')) {
+      context.handle(_endedAtMeta,
+          endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta));
+    }
+    if (data.containsKey('active_ms')) {
+      context.handle(_activeMsMeta,
+          activeMs.isAcceptableOrUnknown(data['active_ms']!, _activeMsMeta));
+    }
+    if (data.containsKey('resumed_at')) {
+      context.handle(_resumedAtMeta,
+          resumedAt.isAcceptableOrUnknown(data['resumed_at']!, _resumedAtMeta));
+    }
+    if (data.containsKey('segment')) {
+      context.handle(_segmentMeta,
+          segment.isAcceptableOrUnknown(data['segment']!, _segmentMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+          _noteMeta, note.isAcceptableOrUnknown(data['note']!, _noteMeta));
+    }
+    if (data.containsKey('effort')) {
+      context.handle(_effortMeta,
+          effort.isAcceptableOrUnknown(data['effort']!, _effortMeta));
+    }
+    if (data.containsKey('treadmill_distance_m')) {
+      context.handle(
+          _treadmillDistanceMMeta,
+          treadmillDistanceM.isAcceptableOrUnknown(
+              data['treadmill_distance_m']!, _treadmillDistanceMMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {clientRunId};
+  @override
+  LocalRun map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalRun(
+      clientRunId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}client_run_id'])!,
+      kind: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}kind'])!,
+      status: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
+      goalKind: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}goal_kind'])!,
+      goalValue: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}goal_value']),
+      startedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}started_at'])!,
+      endedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}ended_at']),
+      activeMs: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}active_ms'])!,
+      resumedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}resumed_at']),
+      segment: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}segment'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name']),
+      note: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}note']),
+      effort: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}effort']),
+      treadmillDistanceM: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}treadmill_distance_m']),
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $LocalRunsTable createAlias(String alias) {
+    return $LocalRunsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalRun extends DataClass implements Insertable<LocalRun> {
+  final String clientRunId;
+
+  /// `outdoor` | `treadmill`.
+  final String kind;
+
+  /// `recording` | `paused` | `autoPaused` | `finished` | `saved`.
+  final String status;
+  final String goalKind;
+  final int? goalValue;
+  final String startedAt;
+  final String? endedAt;
+  final int activeMs;
+  final String? resumedAt;
+
+  /// The segment new points go into (a pause starts the next one).
+  final int segment;
+  final String? name;
+  final String? note;
+  final int? effort;
+  final double? treadmillDistanceM;
+  final String updatedAt;
+  const LocalRun(
+      {required this.clientRunId,
+      required this.kind,
+      required this.status,
+      required this.goalKind,
+      this.goalValue,
+      required this.startedAt,
+      this.endedAt,
+      required this.activeMs,
+      this.resumedAt,
+      required this.segment,
+      this.name,
+      this.note,
+      this.effort,
+      this.treadmillDistanceM,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['client_run_id'] = Variable<String>(clientRunId);
+    map['kind'] = Variable<String>(kind);
+    map['status'] = Variable<String>(status);
+    map['goal_kind'] = Variable<String>(goalKind);
+    if (!nullToAbsent || goalValue != null) {
+      map['goal_value'] = Variable<int>(goalValue);
+    }
+    map['started_at'] = Variable<String>(startedAt);
+    if (!nullToAbsent || endedAt != null) {
+      map['ended_at'] = Variable<String>(endedAt);
+    }
+    map['active_ms'] = Variable<int>(activeMs);
+    if (!nullToAbsent || resumedAt != null) {
+      map['resumed_at'] = Variable<String>(resumedAt);
+    }
+    map['segment'] = Variable<int>(segment);
+    if (!nullToAbsent || name != null) {
+      map['name'] = Variable<String>(name);
+    }
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    if (!nullToAbsent || effort != null) {
+      map['effort'] = Variable<int>(effort);
+    }
+    if (!nullToAbsent || treadmillDistanceM != null) {
+      map['treadmill_distance_m'] = Variable<double>(treadmillDistanceM);
+    }
+    map['updated_at'] = Variable<String>(updatedAt);
+    return map;
+  }
+
+  LocalRunsCompanion toCompanion(bool nullToAbsent) {
+    return LocalRunsCompanion(
+      clientRunId: Value(clientRunId),
+      kind: Value(kind),
+      status: Value(status),
+      goalKind: Value(goalKind),
+      goalValue: goalValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(goalValue),
+      startedAt: Value(startedAt),
+      endedAt: endedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endedAt),
+      activeMs: Value(activeMs),
+      resumedAt: resumedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resumedAt),
+      segment: Value(segment),
+      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      effort:
+          effort == null && nullToAbsent ? const Value.absent() : Value(effort),
+      treadmillDistanceM: treadmillDistanceM == null && nullToAbsent
+          ? const Value.absent()
+          : Value(treadmillDistanceM),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory LocalRun.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalRun(
+      clientRunId: serializer.fromJson<String>(json['clientRunId']),
+      kind: serializer.fromJson<String>(json['kind']),
+      status: serializer.fromJson<String>(json['status']),
+      goalKind: serializer.fromJson<String>(json['goalKind']),
+      goalValue: serializer.fromJson<int?>(json['goalValue']),
+      startedAt: serializer.fromJson<String>(json['startedAt']),
+      endedAt: serializer.fromJson<String?>(json['endedAt']),
+      activeMs: serializer.fromJson<int>(json['activeMs']),
+      resumedAt: serializer.fromJson<String?>(json['resumedAt']),
+      segment: serializer.fromJson<int>(json['segment']),
+      name: serializer.fromJson<String?>(json['name']),
+      note: serializer.fromJson<String?>(json['note']),
+      effort: serializer.fromJson<int?>(json['effort']),
+      treadmillDistanceM:
+          serializer.fromJson<double?>(json['treadmillDistanceM']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'clientRunId': serializer.toJson<String>(clientRunId),
+      'kind': serializer.toJson<String>(kind),
+      'status': serializer.toJson<String>(status),
+      'goalKind': serializer.toJson<String>(goalKind),
+      'goalValue': serializer.toJson<int?>(goalValue),
+      'startedAt': serializer.toJson<String>(startedAt),
+      'endedAt': serializer.toJson<String?>(endedAt),
+      'activeMs': serializer.toJson<int>(activeMs),
+      'resumedAt': serializer.toJson<String?>(resumedAt),
+      'segment': serializer.toJson<int>(segment),
+      'name': serializer.toJson<String?>(name),
+      'note': serializer.toJson<String?>(note),
+      'effort': serializer.toJson<int?>(effort),
+      'treadmillDistanceM': serializer.toJson<double?>(treadmillDistanceM),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+    };
+  }
+
+  LocalRun copyWith(
+          {String? clientRunId,
+          String? kind,
+          String? status,
+          String? goalKind,
+          Value<int?> goalValue = const Value.absent(),
+          String? startedAt,
+          Value<String?> endedAt = const Value.absent(),
+          int? activeMs,
+          Value<String?> resumedAt = const Value.absent(),
+          int? segment,
+          Value<String?> name = const Value.absent(),
+          Value<String?> note = const Value.absent(),
+          Value<int?> effort = const Value.absent(),
+          Value<double?> treadmillDistanceM = const Value.absent(),
+          String? updatedAt}) =>
+      LocalRun(
+        clientRunId: clientRunId ?? this.clientRunId,
+        kind: kind ?? this.kind,
+        status: status ?? this.status,
+        goalKind: goalKind ?? this.goalKind,
+        goalValue: goalValue.present ? goalValue.value : this.goalValue,
+        startedAt: startedAt ?? this.startedAt,
+        endedAt: endedAt.present ? endedAt.value : this.endedAt,
+        activeMs: activeMs ?? this.activeMs,
+        resumedAt: resumedAt.present ? resumedAt.value : this.resumedAt,
+        segment: segment ?? this.segment,
+        name: name.present ? name.value : this.name,
+        note: note.present ? note.value : this.note,
+        effort: effort.present ? effort.value : this.effort,
+        treadmillDistanceM: treadmillDistanceM.present
+            ? treadmillDistanceM.value
+            : this.treadmillDistanceM,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  LocalRun copyWithCompanion(LocalRunsCompanion data) {
+    return LocalRun(
+      clientRunId:
+          data.clientRunId.present ? data.clientRunId.value : this.clientRunId,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      status: data.status.present ? data.status.value : this.status,
+      goalKind: data.goalKind.present ? data.goalKind.value : this.goalKind,
+      goalValue: data.goalValue.present ? data.goalValue.value : this.goalValue,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
+      activeMs: data.activeMs.present ? data.activeMs.value : this.activeMs,
+      resumedAt: data.resumedAt.present ? data.resumedAt.value : this.resumedAt,
+      segment: data.segment.present ? data.segment.value : this.segment,
+      name: data.name.present ? data.name.value : this.name,
+      note: data.note.present ? data.note.value : this.note,
+      effort: data.effort.present ? data.effort.value : this.effort,
+      treadmillDistanceM: data.treadmillDistanceM.present
+          ? data.treadmillDistanceM.value
+          : this.treadmillDistanceM,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalRun(')
+          ..write('clientRunId: $clientRunId, ')
+          ..write('kind: $kind, ')
+          ..write('status: $status, ')
+          ..write('goalKind: $goalKind, ')
+          ..write('goalValue: $goalValue, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('activeMs: $activeMs, ')
+          ..write('resumedAt: $resumedAt, ')
+          ..write('segment: $segment, ')
+          ..write('name: $name, ')
+          ..write('note: $note, ')
+          ..write('effort: $effort, ')
+          ..write('treadmillDistanceM: $treadmillDistanceM, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      clientRunId,
+      kind,
+      status,
+      goalKind,
+      goalValue,
+      startedAt,
+      endedAt,
+      activeMs,
+      resumedAt,
+      segment,
+      name,
+      note,
+      effort,
+      treadmillDistanceM,
+      updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalRun &&
+          other.clientRunId == this.clientRunId &&
+          other.kind == this.kind &&
+          other.status == this.status &&
+          other.goalKind == this.goalKind &&
+          other.goalValue == this.goalValue &&
+          other.startedAt == this.startedAt &&
+          other.endedAt == this.endedAt &&
+          other.activeMs == this.activeMs &&
+          other.resumedAt == this.resumedAt &&
+          other.segment == this.segment &&
+          other.name == this.name &&
+          other.note == this.note &&
+          other.effort == this.effort &&
+          other.treadmillDistanceM == this.treadmillDistanceM &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
+  final Value<String> clientRunId;
+  final Value<String> kind;
+  final Value<String> status;
+  final Value<String> goalKind;
+  final Value<int?> goalValue;
+  final Value<String> startedAt;
+  final Value<String?> endedAt;
+  final Value<int> activeMs;
+  final Value<String?> resumedAt;
+  final Value<int> segment;
+  final Value<String?> name;
+  final Value<String?> note;
+  final Value<int?> effort;
+  final Value<double?> treadmillDistanceM;
+  final Value<String> updatedAt;
+  final Value<int> rowid;
+  const LocalRunsCompanion({
+    this.clientRunId = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.status = const Value.absent(),
+    this.goalKind = const Value.absent(),
+    this.goalValue = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.activeMs = const Value.absent(),
+    this.resumedAt = const Value.absent(),
+    this.segment = const Value.absent(),
+    this.name = const Value.absent(),
+    this.note = const Value.absent(),
+    this.effort = const Value.absent(),
+    this.treadmillDistanceM = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalRunsCompanion.insert({
+    required String clientRunId,
+    required String kind,
+    required String status,
+    required String goalKind,
+    this.goalValue = const Value.absent(),
+    required String startedAt,
+    this.endedAt = const Value.absent(),
+    this.activeMs = const Value.absent(),
+    this.resumedAt = const Value.absent(),
+    this.segment = const Value.absent(),
+    this.name = const Value.absent(),
+    this.note = const Value.absent(),
+    this.effort = const Value.absent(),
+    this.treadmillDistanceM = const Value.absent(),
+    required String updatedAt,
+    this.rowid = const Value.absent(),
+  })  : clientRunId = Value(clientRunId),
+        kind = Value(kind),
+        status = Value(status),
+        goalKind = Value(goalKind),
+        startedAt = Value(startedAt),
+        updatedAt = Value(updatedAt);
+  static Insertable<LocalRun> custom({
+    Expression<String>? clientRunId,
+    Expression<String>? kind,
+    Expression<String>? status,
+    Expression<String>? goalKind,
+    Expression<int>? goalValue,
+    Expression<String>? startedAt,
+    Expression<String>? endedAt,
+    Expression<int>? activeMs,
+    Expression<String>? resumedAt,
+    Expression<int>? segment,
+    Expression<String>? name,
+    Expression<String>? note,
+    Expression<int>? effort,
+    Expression<double>? treadmillDistanceM,
+    Expression<String>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (clientRunId != null) 'client_run_id': clientRunId,
+      if (kind != null) 'kind': kind,
+      if (status != null) 'status': status,
+      if (goalKind != null) 'goal_kind': goalKind,
+      if (goalValue != null) 'goal_value': goalValue,
+      if (startedAt != null) 'started_at': startedAt,
+      if (endedAt != null) 'ended_at': endedAt,
+      if (activeMs != null) 'active_ms': activeMs,
+      if (resumedAt != null) 'resumed_at': resumedAt,
+      if (segment != null) 'segment': segment,
+      if (name != null) 'name': name,
+      if (note != null) 'note': note,
+      if (effort != null) 'effort': effort,
+      if (treadmillDistanceM != null)
+        'treadmill_distance_m': treadmillDistanceM,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalRunsCompanion copyWith(
+      {Value<String>? clientRunId,
+      Value<String>? kind,
+      Value<String>? status,
+      Value<String>? goalKind,
+      Value<int?>? goalValue,
+      Value<String>? startedAt,
+      Value<String?>? endedAt,
+      Value<int>? activeMs,
+      Value<String?>? resumedAt,
+      Value<int>? segment,
+      Value<String?>? name,
+      Value<String?>? note,
+      Value<int?>? effort,
+      Value<double?>? treadmillDistanceM,
+      Value<String>? updatedAt,
+      Value<int>? rowid}) {
+    return LocalRunsCompanion(
+      clientRunId: clientRunId ?? this.clientRunId,
+      kind: kind ?? this.kind,
+      status: status ?? this.status,
+      goalKind: goalKind ?? this.goalKind,
+      goalValue: goalValue ?? this.goalValue,
+      startedAt: startedAt ?? this.startedAt,
+      endedAt: endedAt ?? this.endedAt,
+      activeMs: activeMs ?? this.activeMs,
+      resumedAt: resumedAt ?? this.resumedAt,
+      segment: segment ?? this.segment,
+      name: name ?? this.name,
+      note: note ?? this.note,
+      effort: effort ?? this.effort,
+      treadmillDistanceM: treadmillDistanceM ?? this.treadmillDistanceM,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (clientRunId.present) {
+      map['client_run_id'] = Variable<String>(clientRunId.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (goalKind.present) {
+      map['goal_kind'] = Variable<String>(goalKind.value);
+    }
+    if (goalValue.present) {
+      map['goal_value'] = Variable<int>(goalValue.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<String>(startedAt.value);
+    }
+    if (endedAt.present) {
+      map['ended_at'] = Variable<String>(endedAt.value);
+    }
+    if (activeMs.present) {
+      map['active_ms'] = Variable<int>(activeMs.value);
+    }
+    if (resumedAt.present) {
+      map['resumed_at'] = Variable<String>(resumedAt.value);
+    }
+    if (segment.present) {
+      map['segment'] = Variable<int>(segment.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (effort.present) {
+      map['effort'] = Variable<int>(effort.value);
+    }
+    if (treadmillDistanceM.present) {
+      map['treadmill_distance_m'] = Variable<double>(treadmillDistanceM.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalRunsCompanion(')
+          ..write('clientRunId: $clientRunId, ')
+          ..write('kind: $kind, ')
+          ..write('status: $status, ')
+          ..write('goalKind: $goalKind, ')
+          ..write('goalValue: $goalValue, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('activeMs: $activeMs, ')
+          ..write('resumedAt: $resumedAt, ')
+          ..write('segment: $segment, ')
+          ..write('name: $name, ')
+          ..write('note: $note, ')
+          ..write('effort: $effort, ')
+          ..write('treadmillDistanceM: $treadmillDistanceM, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalRunPointsTable extends LocalRunPoints
+    with TableInfo<$LocalRunPointsTable, LocalRunPoint> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalRunPointsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _clientRunIdMeta =
+      const VerificationMeta('clientRunId');
+  @override
+  late final GeneratedColumn<String> clientRunId = GeneratedColumn<String>(
+      'client_run_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _seqMeta = const VerificationMeta('seq');
+  @override
+  late final GeneratedColumn<int> seq = GeneratedColumn<int>(
+      'seq', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _segmentMeta =
+      const VerificationMeta('segment');
+  @override
+  late final GeneratedColumn<int> segment = GeneratedColumn<int>(
+      'segment', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _tMeta = const VerificationMeta('t');
+  @override
+  late final GeneratedColumn<double> t = GeneratedColumn<double>(
+      't', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _latMeta = const VerificationMeta('lat');
+  @override
+  late final GeneratedColumn<double> lat = GeneratedColumn<double>(
+      'lat', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _lonMeta = const VerificationMeta('lon');
+  @override
+  late final GeneratedColumn<double> lon = GeneratedColumn<double>(
+      'lon', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _eleMeta = const VerificationMeta('ele');
+  @override
+  late final GeneratedColumn<double> ele = GeneratedColumn<double>(
+      'ele', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [clientRunId, seq, segment, t, lat, lon, ele];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_run_points';
+  @override
+  VerificationContext validateIntegrity(Insertable<LocalRunPoint> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('client_run_id')) {
+      context.handle(
+          _clientRunIdMeta,
+          clientRunId.isAcceptableOrUnknown(
+              data['client_run_id']!, _clientRunIdMeta));
+    } else if (isInserting) {
+      context.missing(_clientRunIdMeta);
+    }
+    if (data.containsKey('seq')) {
+      context.handle(
+          _seqMeta, seq.isAcceptableOrUnknown(data['seq']!, _seqMeta));
+    } else if (isInserting) {
+      context.missing(_seqMeta);
+    }
+    if (data.containsKey('segment')) {
+      context.handle(_segmentMeta,
+          segment.isAcceptableOrUnknown(data['segment']!, _segmentMeta));
+    } else if (isInserting) {
+      context.missing(_segmentMeta);
+    }
+    if (data.containsKey('t')) {
+      context.handle(_tMeta, t.isAcceptableOrUnknown(data['t']!, _tMeta));
+    } else if (isInserting) {
+      context.missing(_tMeta);
+    }
+    if (data.containsKey('lat')) {
+      context.handle(
+          _latMeta, lat.isAcceptableOrUnknown(data['lat']!, _latMeta));
+    } else if (isInserting) {
+      context.missing(_latMeta);
+    }
+    if (data.containsKey('lon')) {
+      context.handle(
+          _lonMeta, lon.isAcceptableOrUnknown(data['lon']!, _lonMeta));
+    } else if (isInserting) {
+      context.missing(_lonMeta);
+    }
+    if (data.containsKey('ele')) {
+      context.handle(
+          _eleMeta, ele.isAcceptableOrUnknown(data['ele']!, _eleMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {clientRunId, seq};
+  @override
+  LocalRunPoint map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalRunPoint(
+      clientRunId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}client_run_id'])!,
+      seq: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}seq'])!,
+      segment: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}segment'])!,
+      t: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}t'])!,
+      lat: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}lat'])!,
+      lon: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}lon'])!,
+      ele: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}ele']),
+    );
+  }
+
+  @override
+  $LocalRunPointsTable createAlias(String alias) {
+    return $LocalRunPointsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalRunPoint extends DataClass implements Insertable<LocalRunPoint> {
+  final String clientRunId;
+  final int seq;
+  final int segment;
+
+  /// Seconds since the run started.
+  final double t;
+  final double lat;
+  final double lon;
+  final double? ele;
+  const LocalRunPoint(
+      {required this.clientRunId,
+      required this.seq,
+      required this.segment,
+      required this.t,
+      required this.lat,
+      required this.lon,
+      this.ele});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['client_run_id'] = Variable<String>(clientRunId);
+    map['seq'] = Variable<int>(seq);
+    map['segment'] = Variable<int>(segment);
+    map['t'] = Variable<double>(t);
+    map['lat'] = Variable<double>(lat);
+    map['lon'] = Variable<double>(lon);
+    if (!nullToAbsent || ele != null) {
+      map['ele'] = Variable<double>(ele);
+    }
+    return map;
+  }
+
+  LocalRunPointsCompanion toCompanion(bool nullToAbsent) {
+    return LocalRunPointsCompanion(
+      clientRunId: Value(clientRunId),
+      seq: Value(seq),
+      segment: Value(segment),
+      t: Value(t),
+      lat: Value(lat),
+      lon: Value(lon),
+      ele: ele == null && nullToAbsent ? const Value.absent() : Value(ele),
+    );
+  }
+
+  factory LocalRunPoint.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalRunPoint(
+      clientRunId: serializer.fromJson<String>(json['clientRunId']),
+      seq: serializer.fromJson<int>(json['seq']),
+      segment: serializer.fromJson<int>(json['segment']),
+      t: serializer.fromJson<double>(json['t']),
+      lat: serializer.fromJson<double>(json['lat']),
+      lon: serializer.fromJson<double>(json['lon']),
+      ele: serializer.fromJson<double?>(json['ele']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'clientRunId': serializer.toJson<String>(clientRunId),
+      'seq': serializer.toJson<int>(seq),
+      'segment': serializer.toJson<int>(segment),
+      't': serializer.toJson<double>(t),
+      'lat': serializer.toJson<double>(lat),
+      'lon': serializer.toJson<double>(lon),
+      'ele': serializer.toJson<double?>(ele),
+    };
+  }
+
+  LocalRunPoint copyWith(
+          {String? clientRunId,
+          int? seq,
+          int? segment,
+          double? t,
+          double? lat,
+          double? lon,
+          Value<double?> ele = const Value.absent()}) =>
+      LocalRunPoint(
+        clientRunId: clientRunId ?? this.clientRunId,
+        seq: seq ?? this.seq,
+        segment: segment ?? this.segment,
+        t: t ?? this.t,
+        lat: lat ?? this.lat,
+        lon: lon ?? this.lon,
+        ele: ele.present ? ele.value : this.ele,
+      );
+  LocalRunPoint copyWithCompanion(LocalRunPointsCompanion data) {
+    return LocalRunPoint(
+      clientRunId:
+          data.clientRunId.present ? data.clientRunId.value : this.clientRunId,
+      seq: data.seq.present ? data.seq.value : this.seq,
+      segment: data.segment.present ? data.segment.value : this.segment,
+      t: data.t.present ? data.t.value : this.t,
+      lat: data.lat.present ? data.lat.value : this.lat,
+      lon: data.lon.present ? data.lon.value : this.lon,
+      ele: data.ele.present ? data.ele.value : this.ele,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalRunPoint(')
+          ..write('clientRunId: $clientRunId, ')
+          ..write('seq: $seq, ')
+          ..write('segment: $segment, ')
+          ..write('t: $t, ')
+          ..write('lat: $lat, ')
+          ..write('lon: $lon, ')
+          ..write('ele: $ele')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(clientRunId, seq, segment, t, lat, lon, ele);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalRunPoint &&
+          other.clientRunId == this.clientRunId &&
+          other.seq == this.seq &&
+          other.segment == this.segment &&
+          other.t == this.t &&
+          other.lat == this.lat &&
+          other.lon == this.lon &&
+          other.ele == this.ele);
+}
+
+class LocalRunPointsCompanion extends UpdateCompanion<LocalRunPoint> {
+  final Value<String> clientRunId;
+  final Value<int> seq;
+  final Value<int> segment;
+  final Value<double> t;
+  final Value<double> lat;
+  final Value<double> lon;
+  final Value<double?> ele;
+  final Value<int> rowid;
+  const LocalRunPointsCompanion({
+    this.clientRunId = const Value.absent(),
+    this.seq = const Value.absent(),
+    this.segment = const Value.absent(),
+    this.t = const Value.absent(),
+    this.lat = const Value.absent(),
+    this.lon = const Value.absent(),
+    this.ele = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalRunPointsCompanion.insert({
+    required String clientRunId,
+    required int seq,
+    required int segment,
+    required double t,
+    required double lat,
+    required double lon,
+    this.ele = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : clientRunId = Value(clientRunId),
+        seq = Value(seq),
+        segment = Value(segment),
+        t = Value(t),
+        lat = Value(lat),
+        lon = Value(lon);
+  static Insertable<LocalRunPoint> custom({
+    Expression<String>? clientRunId,
+    Expression<int>? seq,
+    Expression<int>? segment,
+    Expression<double>? t,
+    Expression<double>? lat,
+    Expression<double>? lon,
+    Expression<double>? ele,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (clientRunId != null) 'client_run_id': clientRunId,
+      if (seq != null) 'seq': seq,
+      if (segment != null) 'segment': segment,
+      if (t != null) 't': t,
+      if (lat != null) 'lat': lat,
+      if (lon != null) 'lon': lon,
+      if (ele != null) 'ele': ele,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalRunPointsCompanion copyWith(
+      {Value<String>? clientRunId,
+      Value<int>? seq,
+      Value<int>? segment,
+      Value<double>? t,
+      Value<double>? lat,
+      Value<double>? lon,
+      Value<double?>? ele,
+      Value<int>? rowid}) {
+    return LocalRunPointsCompanion(
+      clientRunId: clientRunId ?? this.clientRunId,
+      seq: seq ?? this.seq,
+      segment: segment ?? this.segment,
+      t: t ?? this.t,
+      lat: lat ?? this.lat,
+      lon: lon ?? this.lon,
+      ele: ele ?? this.ele,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (clientRunId.present) {
+      map['client_run_id'] = Variable<String>(clientRunId.value);
+    }
+    if (seq.present) {
+      map['seq'] = Variable<int>(seq.value);
+    }
+    if (segment.present) {
+      map['segment'] = Variable<int>(segment.value);
+    }
+    if (t.present) {
+      map['t'] = Variable<double>(t.value);
+    }
+    if (lat.present) {
+      map['lat'] = Variable<double>(lat.value);
+    }
+    if (lon.present) {
+      map['lon'] = Variable<double>(lon.value);
+    }
+    if (ele.present) {
+      map['ele'] = Variable<double>(ele.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalRunPointsCompanion(')
+          ..write('clientRunId: $clientRunId, ')
+          ..write('seq: $seq, ')
+          ..write('segment: $segment, ')
+          ..write('t: $t, ')
+          ..write('lat: $lat, ')
+          ..write('lon: $lon, ')
+          ..write('ele: $ele, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RunSyncQueueTable extends RunSyncQueue
+    with TableInfo<$RunSyncQueueTable, RunSyncQueueData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RunSyncQueueTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+      'kind', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _clientRunIdMeta =
+      const VerificationMeta('clientRunId');
+  @override
+  late final GeneratedColumn<String> clientRunId = GeneratedColumn<String>(
+      'client_run_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _payloadJsonMeta =
+      const VerificationMeta('payloadJson');
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+      'payload_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _attemptsMeta =
+      const VerificationMeta('attempts');
+  @override
+  late final GeneratedColumn<int> attempts = GeneratedColumn<int>(
+      'attempts', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _nextAttemptAtMeta =
+      const VerificationMeta('nextAttemptAt');
+  @override
+  late final GeneratedColumn<String> nextAttemptAt = GeneratedColumn<String>(
+      'next_attempt_at', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _lastErrorMeta =
+      const VerificationMeta('lastError');
+  @override
+  late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
+      'last_error', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _parkedMeta = const VerificationMeta('parked');
+  @override
+  late final GeneratedColumn<bool> parked = GeneratedColumn<bool>(
+      'parked', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("parked" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        kind,
+        clientRunId,
+        payloadJson,
+        attempts,
+        nextAttemptAt,
+        lastError,
+        parked,
+        createdAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'run_sync_queue';
+  @override
+  VerificationContext validateIntegrity(Insertable<RunSyncQueueData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+          _kindMeta, kind.isAcceptableOrUnknown(data['kind']!, _kindMeta));
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('client_run_id')) {
+      context.handle(
+          _clientRunIdMeta,
+          clientRunId.isAcceptableOrUnknown(
+              data['client_run_id']!, _clientRunIdMeta));
+    } else if (isInserting) {
+      context.missing(_clientRunIdMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+          _payloadJsonMeta,
+          payloadJson.isAcceptableOrUnknown(
+              data['payload_json']!, _payloadJsonMeta));
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    if (data.containsKey('attempts')) {
+      context.handle(_attemptsMeta,
+          attempts.isAcceptableOrUnknown(data['attempts']!, _attemptsMeta));
+    }
+    if (data.containsKey('next_attempt_at')) {
+      context.handle(
+          _nextAttemptAtMeta,
+          nextAttemptAt.isAcceptableOrUnknown(
+              data['next_attempt_at']!, _nextAttemptAtMeta));
+    }
+    if (data.containsKey('last_error')) {
+      context.handle(_lastErrorMeta,
+          lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta));
+    }
+    if (data.containsKey('parked')) {
+      context.handle(_parkedMeta,
+          parked.isAcceptableOrUnknown(data['parked']!, _parkedMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RunSyncQueueData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RunSyncQueueData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      kind: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}kind'])!,
+      clientRunId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}client_run_id'])!,
+      payloadJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}payload_json'])!,
+      attempts: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}attempts'])!,
+      nextAttemptAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}next_attempt_at']),
+      lastError: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}last_error']),
+      parked: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}parked'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $RunSyncQueueTable createAlias(String alias) {
+    return $RunSyncQueueTable(attachedDatabase, alias);
+  }
+}
+
+class RunSyncQueueData extends DataClass
+    implements Insertable<RunSyncQueueData> {
+  final int id;
+
+  /// `create` | `patch` | `delete`.
+  final String kind;
+  final String clientRunId;
+  final String payloadJson;
+  final int attempts;
+  final String? nextAttemptAt;
+  final String? lastError;
+  final bool parked;
+  final String createdAt;
+  const RunSyncQueueData(
+      {required this.id,
+      required this.kind,
+      required this.clientRunId,
+      required this.payloadJson,
+      required this.attempts,
+      this.nextAttemptAt,
+      this.lastError,
+      required this.parked,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['kind'] = Variable<String>(kind);
+    map['client_run_id'] = Variable<String>(clientRunId);
+    map['payload_json'] = Variable<String>(payloadJson);
+    map['attempts'] = Variable<int>(attempts);
+    if (!nullToAbsent || nextAttemptAt != null) {
+      map['next_attempt_at'] = Variable<String>(nextAttemptAt);
+    }
+    if (!nullToAbsent || lastError != null) {
+      map['last_error'] = Variable<String>(lastError);
+    }
+    map['parked'] = Variable<bool>(parked);
+    map['created_at'] = Variable<String>(createdAt);
+    return map;
+  }
+
+  RunSyncQueueCompanion toCompanion(bool nullToAbsent) {
+    return RunSyncQueueCompanion(
+      id: Value(id),
+      kind: Value(kind),
+      clientRunId: Value(clientRunId),
+      payloadJson: Value(payloadJson),
+      attempts: Value(attempts),
+      nextAttemptAt: nextAttemptAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextAttemptAt),
+      lastError: lastError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastError),
+      parked: Value(parked),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory RunSyncQueueData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RunSyncQueueData(
+      id: serializer.fromJson<int>(json['id']),
+      kind: serializer.fromJson<String>(json['kind']),
+      clientRunId: serializer.fromJson<String>(json['clientRunId']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+      attempts: serializer.fromJson<int>(json['attempts']),
+      nextAttemptAt: serializer.fromJson<String?>(json['nextAttemptAt']),
+      lastError: serializer.fromJson<String?>(json['lastError']),
+      parked: serializer.fromJson<bool>(json['parked']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'kind': serializer.toJson<String>(kind),
+      'clientRunId': serializer.toJson<String>(clientRunId),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+      'attempts': serializer.toJson<int>(attempts),
+      'nextAttemptAt': serializer.toJson<String?>(nextAttemptAt),
+      'lastError': serializer.toJson<String?>(lastError),
+      'parked': serializer.toJson<bool>(parked),
+      'createdAt': serializer.toJson<String>(createdAt),
+    };
+  }
+
+  RunSyncQueueData copyWith(
+          {int? id,
+          String? kind,
+          String? clientRunId,
+          String? payloadJson,
+          int? attempts,
+          Value<String?> nextAttemptAt = const Value.absent(),
+          Value<String?> lastError = const Value.absent(),
+          bool? parked,
+          String? createdAt}) =>
+      RunSyncQueueData(
+        id: id ?? this.id,
+        kind: kind ?? this.kind,
+        clientRunId: clientRunId ?? this.clientRunId,
+        payloadJson: payloadJson ?? this.payloadJson,
+        attempts: attempts ?? this.attempts,
+        nextAttemptAt:
+            nextAttemptAt.present ? nextAttemptAt.value : this.nextAttemptAt,
+        lastError: lastError.present ? lastError.value : this.lastError,
+        parked: parked ?? this.parked,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  RunSyncQueueData copyWithCompanion(RunSyncQueueCompanion data) {
+    return RunSyncQueueData(
+      id: data.id.present ? data.id.value : this.id,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      clientRunId:
+          data.clientRunId.present ? data.clientRunId.value : this.clientRunId,
+      payloadJson:
+          data.payloadJson.present ? data.payloadJson.value : this.payloadJson,
+      attempts: data.attempts.present ? data.attempts.value : this.attempts,
+      nextAttemptAt: data.nextAttemptAt.present
+          ? data.nextAttemptAt.value
+          : this.nextAttemptAt,
+      lastError: data.lastError.present ? data.lastError.value : this.lastError,
+      parked: data.parked.present ? data.parked.value : this.parked,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RunSyncQueueData(')
+          ..write('id: $id, ')
+          ..write('kind: $kind, ')
+          ..write('clientRunId: $clientRunId, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('attempts: $attempts, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('lastError: $lastError, ')
+          ..write('parked: $parked, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, kind, clientRunId, payloadJson, attempts,
+      nextAttemptAt, lastError, parked, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RunSyncQueueData &&
+          other.id == this.id &&
+          other.kind == this.kind &&
+          other.clientRunId == this.clientRunId &&
+          other.payloadJson == this.payloadJson &&
+          other.attempts == this.attempts &&
+          other.nextAttemptAt == this.nextAttemptAt &&
+          other.lastError == this.lastError &&
+          other.parked == this.parked &&
+          other.createdAt == this.createdAt);
+}
+
+class RunSyncQueueCompanion extends UpdateCompanion<RunSyncQueueData> {
+  final Value<int> id;
+  final Value<String> kind;
+  final Value<String> clientRunId;
+  final Value<String> payloadJson;
+  final Value<int> attempts;
+  final Value<String?> nextAttemptAt;
+  final Value<String?> lastError;
+  final Value<bool> parked;
+  final Value<String> createdAt;
+  const RunSyncQueueCompanion({
+    this.id = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.clientRunId = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.attempts = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.parked = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  RunSyncQueueCompanion.insert({
+    this.id = const Value.absent(),
+    required String kind,
+    required String clientRunId,
+    required String payloadJson,
+    this.attempts = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.parked = const Value.absent(),
+    required String createdAt,
+  })  : kind = Value(kind),
+        clientRunId = Value(clientRunId),
+        payloadJson = Value(payloadJson),
+        createdAt = Value(createdAt);
+  static Insertable<RunSyncQueueData> custom({
+    Expression<int>? id,
+    Expression<String>? kind,
+    Expression<String>? clientRunId,
+    Expression<String>? payloadJson,
+    Expression<int>? attempts,
+    Expression<String>? nextAttemptAt,
+    Expression<String>? lastError,
+    Expression<bool>? parked,
+    Expression<String>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (kind != null) 'kind': kind,
+      if (clientRunId != null) 'client_run_id': clientRunId,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (attempts != null) 'attempts': attempts,
+      if (nextAttemptAt != null) 'next_attempt_at': nextAttemptAt,
+      if (lastError != null) 'last_error': lastError,
+      if (parked != null) 'parked': parked,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  RunSyncQueueCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? kind,
+      Value<String>? clientRunId,
+      Value<String>? payloadJson,
+      Value<int>? attempts,
+      Value<String?>? nextAttemptAt,
+      Value<String?>? lastError,
+      Value<bool>? parked,
+      Value<String>? createdAt}) {
+    return RunSyncQueueCompanion(
+      id: id ?? this.id,
+      kind: kind ?? this.kind,
+      clientRunId: clientRunId ?? this.clientRunId,
+      payloadJson: payloadJson ?? this.payloadJson,
+      attempts: attempts ?? this.attempts,
+      nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
+      lastError: lastError ?? this.lastError,
+      parked: parked ?? this.parked,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (clientRunId.present) {
+      map['client_run_id'] = Variable<String>(clientRunId.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (attempts.present) {
+      map['attempts'] = Variable<int>(attempts.value);
+    }
+    if (nextAttemptAt.present) {
+      map['next_attempt_at'] = Variable<String>(nextAttemptAt.value);
+    }
+    if (lastError.present) {
+      map['last_error'] = Variable<String>(lastError.value);
+    }
+    if (parked.present) {
+      map['parked'] = Variable<bool>(parked.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RunSyncQueueCompanion(')
+          ..write('id: $id, ')
+          ..write('kind: $kind, ')
+          ..write('clientRunId: $clientRunId, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('attempts: $attempts, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('lastError: $lastError, ')
+          ..write('parked: $parked, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4269,6 +5846,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $TodayEventQueueTable(this);
   late final $TodayEventLedgerTable todayEventLedger =
       $TodayEventLedgerTable(this);
+  late final $LocalRunsTable localRuns = $LocalRunsTable(this);
+  late final $LocalRunPointsTable localRunPoints = $LocalRunPointsTable(this);
+  late final $RunSyncQueueTable runSyncQueue = $RunSyncQueueTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4282,7 +5862,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         localFoodLogs,
         nutritionSyncQueue,
         todayEventQueue,
-        todayEventLedger
+        todayEventLedger,
+        localRuns,
+        localRunPoints,
+        runSyncQueue
       ];
 }
 
@@ -6397,6 +7980,767 @@ typedef $$TodayEventLedgerTableProcessedTableManager = ProcessedTableManager<
     ),
     TodayEventLedgerData,
     PrefetchHooks Function()>;
+typedef $$LocalRunsTableCreateCompanionBuilder = LocalRunsCompanion Function({
+  required String clientRunId,
+  required String kind,
+  required String status,
+  required String goalKind,
+  Value<int?> goalValue,
+  required String startedAt,
+  Value<String?> endedAt,
+  Value<int> activeMs,
+  Value<String?> resumedAt,
+  Value<int> segment,
+  Value<String?> name,
+  Value<String?> note,
+  Value<int?> effort,
+  Value<double?> treadmillDistanceM,
+  required String updatedAt,
+  Value<int> rowid,
+});
+typedef $$LocalRunsTableUpdateCompanionBuilder = LocalRunsCompanion Function({
+  Value<String> clientRunId,
+  Value<String> kind,
+  Value<String> status,
+  Value<String> goalKind,
+  Value<int?> goalValue,
+  Value<String> startedAt,
+  Value<String?> endedAt,
+  Value<int> activeMs,
+  Value<String?> resumedAt,
+  Value<int> segment,
+  Value<String?> name,
+  Value<String?> note,
+  Value<int?> effort,
+  Value<double?> treadmillDistanceM,
+  Value<String> updatedAt,
+  Value<int> rowid,
+});
+
+class $$LocalRunsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalRunsTable> {
+  $$LocalRunsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get clientRunId => $composableBuilder(
+      column: $table.clientRunId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get kind => $composableBuilder(
+      column: $table.kind, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get goalKind => $composableBuilder(
+      column: $table.goalKind, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get goalValue => $composableBuilder(
+      column: $table.goalValue, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get startedAt => $composableBuilder(
+      column: $table.startedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get endedAt => $composableBuilder(
+      column: $table.endedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get activeMs => $composableBuilder(
+      column: $table.activeMs, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get resumedAt => $composableBuilder(
+      column: $table.resumedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get segment => $composableBuilder(
+      column: $table.segment, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get note => $composableBuilder(
+      column: $table.note, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get effort => $composableBuilder(
+      column: $table.effort, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get treadmillDistanceM => $composableBuilder(
+      column: $table.treadmillDistanceM,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$LocalRunsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalRunsTable> {
+  $$LocalRunsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get clientRunId => $composableBuilder(
+      column: $table.clientRunId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+      column: $table.kind, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get goalKind => $composableBuilder(
+      column: $table.goalKind, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get goalValue => $composableBuilder(
+      column: $table.goalValue, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get startedAt => $composableBuilder(
+      column: $table.startedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get endedAt => $composableBuilder(
+      column: $table.endedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get activeMs => $composableBuilder(
+      column: $table.activeMs, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get resumedAt => $composableBuilder(
+      column: $table.resumedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get segment => $composableBuilder(
+      column: $table.segment, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get note => $composableBuilder(
+      column: $table.note, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get effort => $composableBuilder(
+      column: $table.effort, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get treadmillDistanceM => $composableBuilder(
+      column: $table.treadmillDistanceM,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$LocalRunsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalRunsTable> {
+  $$LocalRunsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get clientRunId => $composableBuilder(
+      column: $table.clientRunId, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get goalKind =>
+      $composableBuilder(column: $table.goalKind, builder: (column) => column);
+
+  GeneratedColumn<int> get goalValue =>
+      $composableBuilder(column: $table.goalValue, builder: (column) => column);
+
+  GeneratedColumn<String> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get endedAt =>
+      $composableBuilder(column: $table.endedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get activeMs =>
+      $composableBuilder(column: $table.activeMs, builder: (column) => column);
+
+  GeneratedColumn<String> get resumedAt =>
+      $composableBuilder(column: $table.resumedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get segment =>
+      $composableBuilder(column: $table.segment, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<int> get effort =>
+      $composableBuilder(column: $table.effort, builder: (column) => column);
+
+  GeneratedColumn<double> get treadmillDistanceM => $composableBuilder(
+      column: $table.treadmillDistanceM, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$LocalRunsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $LocalRunsTable,
+    LocalRun,
+    $$LocalRunsTableFilterComposer,
+    $$LocalRunsTableOrderingComposer,
+    $$LocalRunsTableAnnotationComposer,
+    $$LocalRunsTableCreateCompanionBuilder,
+    $$LocalRunsTableUpdateCompanionBuilder,
+    (LocalRun, BaseReferences<_$AppDatabase, $LocalRunsTable, LocalRun>),
+    LocalRun,
+    PrefetchHooks Function()> {
+  $$LocalRunsTableTableManager(_$AppDatabase db, $LocalRunsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalRunsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalRunsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalRunsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> clientRunId = const Value.absent(),
+            Value<String> kind = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<String> goalKind = const Value.absent(),
+            Value<int?> goalValue = const Value.absent(),
+            Value<String> startedAt = const Value.absent(),
+            Value<String?> endedAt = const Value.absent(),
+            Value<int> activeMs = const Value.absent(),
+            Value<String?> resumedAt = const Value.absent(),
+            Value<int> segment = const Value.absent(),
+            Value<String?> name = const Value.absent(),
+            Value<String?> note = const Value.absent(),
+            Value<int?> effort = const Value.absent(),
+            Value<double?> treadmillDistanceM = const Value.absent(),
+            Value<String> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              LocalRunsCompanion(
+            clientRunId: clientRunId,
+            kind: kind,
+            status: status,
+            goalKind: goalKind,
+            goalValue: goalValue,
+            startedAt: startedAt,
+            endedAt: endedAt,
+            activeMs: activeMs,
+            resumedAt: resumedAt,
+            segment: segment,
+            name: name,
+            note: note,
+            effort: effort,
+            treadmillDistanceM: treadmillDistanceM,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String clientRunId,
+            required String kind,
+            required String status,
+            required String goalKind,
+            Value<int?> goalValue = const Value.absent(),
+            required String startedAt,
+            Value<String?> endedAt = const Value.absent(),
+            Value<int> activeMs = const Value.absent(),
+            Value<String?> resumedAt = const Value.absent(),
+            Value<int> segment = const Value.absent(),
+            Value<String?> name = const Value.absent(),
+            Value<String?> note = const Value.absent(),
+            Value<int?> effort = const Value.absent(),
+            Value<double?> treadmillDistanceM = const Value.absent(),
+            required String updatedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              LocalRunsCompanion.insert(
+            clientRunId: clientRunId,
+            kind: kind,
+            status: status,
+            goalKind: goalKind,
+            goalValue: goalValue,
+            startedAt: startedAt,
+            endedAt: endedAt,
+            activeMs: activeMs,
+            resumedAt: resumedAt,
+            segment: segment,
+            name: name,
+            note: note,
+            effort: effort,
+            treadmillDistanceM: treadmillDistanceM,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable<$LocalRunsTable, LocalRun>(table),
+                    BaseReferences<_$AppDatabase, $LocalRunsTable, LocalRun>(
+                        db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$LocalRunsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $LocalRunsTable,
+    LocalRun,
+    $$LocalRunsTableFilterComposer,
+    $$LocalRunsTableOrderingComposer,
+    $$LocalRunsTableAnnotationComposer,
+    $$LocalRunsTableCreateCompanionBuilder,
+    $$LocalRunsTableUpdateCompanionBuilder,
+    (LocalRun, BaseReferences<_$AppDatabase, $LocalRunsTable, LocalRun>),
+    LocalRun,
+    PrefetchHooks Function()>;
+typedef $$LocalRunPointsTableCreateCompanionBuilder = LocalRunPointsCompanion
+    Function({
+  required String clientRunId,
+  required int seq,
+  required int segment,
+  required double t,
+  required double lat,
+  required double lon,
+  Value<double?> ele,
+  Value<int> rowid,
+});
+typedef $$LocalRunPointsTableUpdateCompanionBuilder = LocalRunPointsCompanion
+    Function({
+  Value<String> clientRunId,
+  Value<int> seq,
+  Value<int> segment,
+  Value<double> t,
+  Value<double> lat,
+  Value<double> lon,
+  Value<double?> ele,
+  Value<int> rowid,
+});
+
+class $$LocalRunPointsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalRunPointsTable> {
+  $$LocalRunPointsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get clientRunId => $composableBuilder(
+      column: $table.clientRunId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get seq => $composableBuilder(
+      column: $table.seq, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get segment => $composableBuilder(
+      column: $table.segment, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get t => $composableBuilder(
+      column: $table.t, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get lat => $composableBuilder(
+      column: $table.lat, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get lon => $composableBuilder(
+      column: $table.lon, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get ele => $composableBuilder(
+      column: $table.ele, builder: (column) => ColumnFilters(column));
+}
+
+class $$LocalRunPointsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalRunPointsTable> {
+  $$LocalRunPointsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get clientRunId => $composableBuilder(
+      column: $table.clientRunId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get seq => $composableBuilder(
+      column: $table.seq, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get segment => $composableBuilder(
+      column: $table.segment, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get t => $composableBuilder(
+      column: $table.t, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get lat => $composableBuilder(
+      column: $table.lat, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get lon => $composableBuilder(
+      column: $table.lon, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get ele => $composableBuilder(
+      column: $table.ele, builder: (column) => ColumnOrderings(column));
+}
+
+class $$LocalRunPointsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalRunPointsTable> {
+  $$LocalRunPointsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get clientRunId => $composableBuilder(
+      column: $table.clientRunId, builder: (column) => column);
+
+  GeneratedColumn<int> get seq =>
+      $composableBuilder(column: $table.seq, builder: (column) => column);
+
+  GeneratedColumn<int> get segment =>
+      $composableBuilder(column: $table.segment, builder: (column) => column);
+
+  GeneratedColumn<double> get t =>
+      $composableBuilder(column: $table.t, builder: (column) => column);
+
+  GeneratedColumn<double> get lat =>
+      $composableBuilder(column: $table.lat, builder: (column) => column);
+
+  GeneratedColumn<double> get lon =>
+      $composableBuilder(column: $table.lon, builder: (column) => column);
+
+  GeneratedColumn<double> get ele =>
+      $composableBuilder(column: $table.ele, builder: (column) => column);
+}
+
+class $$LocalRunPointsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $LocalRunPointsTable,
+    LocalRunPoint,
+    $$LocalRunPointsTableFilterComposer,
+    $$LocalRunPointsTableOrderingComposer,
+    $$LocalRunPointsTableAnnotationComposer,
+    $$LocalRunPointsTableCreateCompanionBuilder,
+    $$LocalRunPointsTableUpdateCompanionBuilder,
+    (
+      LocalRunPoint,
+      BaseReferences<_$AppDatabase, $LocalRunPointsTable, LocalRunPoint>
+    ),
+    LocalRunPoint,
+    PrefetchHooks Function()> {
+  $$LocalRunPointsTableTableManager(
+      _$AppDatabase db, $LocalRunPointsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalRunPointsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalRunPointsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalRunPointsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> clientRunId = const Value.absent(),
+            Value<int> seq = const Value.absent(),
+            Value<int> segment = const Value.absent(),
+            Value<double> t = const Value.absent(),
+            Value<double> lat = const Value.absent(),
+            Value<double> lon = const Value.absent(),
+            Value<double?> ele = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              LocalRunPointsCompanion(
+            clientRunId: clientRunId,
+            seq: seq,
+            segment: segment,
+            t: t,
+            lat: lat,
+            lon: lon,
+            ele: ele,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String clientRunId,
+            required int seq,
+            required int segment,
+            required double t,
+            required double lat,
+            required double lon,
+            Value<double?> ele = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              LocalRunPointsCompanion.insert(
+            clientRunId: clientRunId,
+            seq: seq,
+            segment: segment,
+            t: t,
+            lat: lat,
+            lon: lon,
+            ele: ele,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable<$LocalRunPointsTable, LocalRunPoint>(table),
+                    BaseReferences<_$AppDatabase, $LocalRunPointsTable,
+                        LocalRunPoint>(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$LocalRunPointsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $LocalRunPointsTable,
+    LocalRunPoint,
+    $$LocalRunPointsTableFilterComposer,
+    $$LocalRunPointsTableOrderingComposer,
+    $$LocalRunPointsTableAnnotationComposer,
+    $$LocalRunPointsTableCreateCompanionBuilder,
+    $$LocalRunPointsTableUpdateCompanionBuilder,
+    (
+      LocalRunPoint,
+      BaseReferences<_$AppDatabase, $LocalRunPointsTable, LocalRunPoint>
+    ),
+    LocalRunPoint,
+    PrefetchHooks Function()>;
+typedef $$RunSyncQueueTableCreateCompanionBuilder = RunSyncQueueCompanion
+    Function({
+  Value<int> id,
+  required String kind,
+  required String clientRunId,
+  required String payloadJson,
+  Value<int> attempts,
+  Value<String?> nextAttemptAt,
+  Value<String?> lastError,
+  Value<bool> parked,
+  required String createdAt,
+});
+typedef $$RunSyncQueueTableUpdateCompanionBuilder = RunSyncQueueCompanion
+    Function({
+  Value<int> id,
+  Value<String> kind,
+  Value<String> clientRunId,
+  Value<String> payloadJson,
+  Value<int> attempts,
+  Value<String?> nextAttemptAt,
+  Value<String?> lastError,
+  Value<bool> parked,
+  Value<String> createdAt,
+});
+
+class $$RunSyncQueueTableFilterComposer
+    extends Composer<_$AppDatabase, $RunSyncQueueTable> {
+  $$RunSyncQueueTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get kind => $composableBuilder(
+      column: $table.kind, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get clientRunId => $composableBuilder(
+      column: $table.clientRunId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get attempts => $composableBuilder(
+      column: $table.attempts, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get nextAttemptAt => $composableBuilder(
+      column: $table.nextAttemptAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lastError => $composableBuilder(
+      column: $table.lastError, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get parked => $composableBuilder(
+      column: $table.parked, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$RunSyncQueueTableOrderingComposer
+    extends Composer<_$AppDatabase, $RunSyncQueueTable> {
+  $$RunSyncQueueTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+      column: $table.kind, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get clientRunId => $composableBuilder(
+      column: $table.clientRunId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get attempts => $composableBuilder(
+      column: $table.attempts, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get nextAttemptAt => $composableBuilder(
+      column: $table.nextAttemptAt,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lastError => $composableBuilder(
+      column: $table.lastError, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get parked => $composableBuilder(
+      column: $table.parked, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$RunSyncQueueTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RunSyncQueueTable> {
+  $$RunSyncQueueTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get clientRunId => $composableBuilder(
+      column: $table.clientRunId, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+      column: $table.payloadJson, builder: (column) => column);
+
+  GeneratedColumn<int> get attempts =>
+      $composableBuilder(column: $table.attempts, builder: (column) => column);
+
+  GeneratedColumn<String> get nextAttemptAt => $composableBuilder(
+      column: $table.nextAttemptAt, builder: (column) => column);
+
+  GeneratedColumn<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => column);
+
+  GeneratedColumn<bool> get parked =>
+      $composableBuilder(column: $table.parked, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$RunSyncQueueTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $RunSyncQueueTable,
+    RunSyncQueueData,
+    $$RunSyncQueueTableFilterComposer,
+    $$RunSyncQueueTableOrderingComposer,
+    $$RunSyncQueueTableAnnotationComposer,
+    $$RunSyncQueueTableCreateCompanionBuilder,
+    $$RunSyncQueueTableUpdateCompanionBuilder,
+    (
+      RunSyncQueueData,
+      BaseReferences<_$AppDatabase, $RunSyncQueueTable, RunSyncQueueData>
+    ),
+    RunSyncQueueData,
+    PrefetchHooks Function()> {
+  $$RunSyncQueueTableTableManager(_$AppDatabase db, $RunSyncQueueTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RunSyncQueueTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RunSyncQueueTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RunSyncQueueTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> kind = const Value.absent(),
+            Value<String> clientRunId = const Value.absent(),
+            Value<String> payloadJson = const Value.absent(),
+            Value<int> attempts = const Value.absent(),
+            Value<String?> nextAttemptAt = const Value.absent(),
+            Value<String?> lastError = const Value.absent(),
+            Value<bool> parked = const Value.absent(),
+            Value<String> createdAt = const Value.absent(),
+          }) =>
+              RunSyncQueueCompanion(
+            id: id,
+            kind: kind,
+            clientRunId: clientRunId,
+            payloadJson: payloadJson,
+            attempts: attempts,
+            nextAttemptAt: nextAttemptAt,
+            lastError: lastError,
+            parked: parked,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String kind,
+            required String clientRunId,
+            required String payloadJson,
+            Value<int> attempts = const Value.absent(),
+            Value<String?> nextAttemptAt = const Value.absent(),
+            Value<String?> lastError = const Value.absent(),
+            Value<bool> parked = const Value.absent(),
+            required String createdAt,
+          }) =>
+              RunSyncQueueCompanion.insert(
+            id: id,
+            kind: kind,
+            clientRunId: clientRunId,
+            payloadJson: payloadJson,
+            attempts: attempts,
+            nextAttemptAt: nextAttemptAt,
+            lastError: lastError,
+            parked: parked,
+            createdAt: createdAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable<$RunSyncQueueTable, RunSyncQueueData>(table),
+                    BaseReferences<_$AppDatabase, $RunSyncQueueTable,
+                        RunSyncQueueData>(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$RunSyncQueueTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $RunSyncQueueTable,
+    RunSyncQueueData,
+    $$RunSyncQueueTableFilterComposer,
+    $$RunSyncQueueTableOrderingComposer,
+    $$RunSyncQueueTableAnnotationComposer,
+    $$RunSyncQueueTableCreateCompanionBuilder,
+    $$RunSyncQueueTableUpdateCompanionBuilder,
+    (
+      RunSyncQueueData,
+      BaseReferences<_$AppDatabase, $RunSyncQueueTable, RunSyncQueueData>
+    ),
+    RunSyncQueueData,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6419,4 +8763,10 @@ class $AppDatabaseManager {
       $$TodayEventQueueTableTableManager(_db, _db.todayEventQueue);
   $$TodayEventLedgerTableTableManager get todayEventLedger =>
       $$TodayEventLedgerTableTableManager(_db, _db.todayEventLedger);
+  $$LocalRunsTableTableManager get localRuns =>
+      $$LocalRunsTableTableManager(_db, _db.localRuns);
+  $$LocalRunPointsTableTableManager get localRunPoints =>
+      $$LocalRunPointsTableTableManager(_db, _db.localRunPoints);
+  $$RunSyncQueueTableTableManager get runSyncQueue =>
+      $$RunSyncQueueTableTableManager(_db, _db.runSyncQueue);
 }

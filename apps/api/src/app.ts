@@ -39,6 +39,7 @@ import { foodLogRoutes } from './modules/nutrition/log-routes.js';
 import { messRoutes } from './modules/mess/routes.js';
 import { progressRoutes } from './modules/progress/routes.js';
 import { recoveryRoutes } from './modules/recovery/routes.js';
+import { runningRoutes } from './modules/running/routes.js';
 import { notificationRoutes } from './modules/notifications/routes.js';
 import { adminRoutes } from './modules/admin/routes.js';
 import { updatePushRoutes } from './modules/admin/update-push.js';
@@ -216,6 +217,7 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
       await v1.register(todayRoutes);
       await v1.register(progressRoutes);
       await v1.register(recoveryRoutes);
+      await v1.register(runningRoutes);
       await v1.register(notificationRoutes);
       await v1.register(adminRoutes, { minimumAppBuild: env.MIN_APP_BUILD });
       await v1.register(updatePushRoutes);

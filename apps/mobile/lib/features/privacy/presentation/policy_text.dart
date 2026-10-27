@@ -3,7 +3,7 @@
 /// two stay in step and that the version is the server's CURRENT_POLICY_VERSION.
 library;
 
-const kPolicyVersion = '2026-10-22.2';
+const kPolicyVersion = '2026-10-27.1';
 
 const kPolicySections = <(String, String)>[
   (
@@ -18,7 +18,12 @@ const kPolicySections = <(String, String)>[
     'Your account (email and name, through Google Firebase sign-in). Your '
         'profile: sex, birth date, height, weight, goal, diet, allergies and '
         'any limitations you add. What you log: workouts and sets, meals, '
-        'weigh-ins and body measurements, recovery check-ins, your mess. Your '
+        'weigh-ins and body measurements, recovery check-ins, your mess. Runs '
+        'you record, with their GPS route: where and when you ran, the '
+        'distance, time, pace and climb, and your notes. Your location is '
+        'recorded only while a run is recording. A picture or GPX file of a '
+        'run that you share leaves out its first and last 200 m unless you '
+        'turn that off. Your '
         'reminder settings and this phone\'s notification token. Feedback you '
         'send from the app, with the app\'s version, any pictures you attach '
         '(deleted after six months), your phone\'s model, Android version and '
@@ -78,7 +83,10 @@ const kPolicySections = <(String, String)>[
     'Who else',
     'Amazon Web Services hosts the FITOS server and database, in India. '
         'Google Firebase handles sign-in, notifications and crash reports. '
-        'Google Gemini handles FITOS AI, only with your consent. Nobody else: '
+        'Google Gemini handles FITOS AI, only with your consent. OpenFreeMap '
+        'provides the maps: to draw one, your phone asks OpenFreeMap for the '
+        'map of the area on screen, as any map app does; nothing else of '
+        'yours is sent. Nobody else: '
         'no advertising, no selling, no sharing with other companies. No data '
         'of yours is used to train an AI model by FITOS.',
   ),

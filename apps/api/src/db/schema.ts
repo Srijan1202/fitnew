@@ -20,6 +20,7 @@
  *   Phase 8  food_logs, food_log_items, daily_nutrition, saved_meals
  *   Phase 9  mess_providers, messes, mess_menu_snapshots, mess_dish_nutrition,
  *            mess_dish_corrections (+ food_logs.mess_id, food_log_items.mess_dish_slug)
+ *   Beta 4   runs
  */
 export * from './schema/enums.js';
 export * from './schema/users.js';
@@ -42,3 +43,4 @@ export * from './schema/admin.js';
 export * from './schema/feedback.js';
 export * from './schema/food-requests.js';
 export * from './schema/premium.js';
+export * from './schema/running.js';

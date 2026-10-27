@@ -196,6 +196,7 @@ export const APP_FEATURES = {
   'weekly-report': { name: 'Weekly report', description: 'The premium weekly report on Progress.' },
   'progress-photos': { name: 'Progress photos', description: 'Taking and comparing progress photos (they never leave the phone).' },
   'food-guide': { name: 'AI food guide', description: '"What should I eat?" from what you have and the mess menu (premium FITOS AI).' },
+  running: { name: 'Running', description: 'Recording runs with GPS, the run history, sharing and GPX (beta 4).' },
 } as const;
 export type AppFeature = keyof typeof APP_FEATURES;
 export const APP_FEATURE_KEYS = Object.keys(APP_FEATURES) as AppFeature[];

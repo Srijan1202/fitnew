@@ -1,0 +1,853 @@
+{
+ "name": "easy-loop",
+ "description": "An easy 5 km-ish loop at about 5:40/km, one segment, with elevation.",
+ "track": {
+  "v": 1,
+  "points": "koqvWqkh~uC}eCUk@WAQm@]?Um@]ASm@]ASk@[AUk@]?Qk@]?So@[?Ui@[?Qk@YCSi@]@Ui@[ASk@[AUq@_@?Sk@[AUm@[AQm@Y?Uk@YAUo@]ASm@[CQi@Y@Um@]@Qm@]?Uo@_@?Sk@]ASi@]AUi@]AUk@a@@Qm@a@AUg@]AQi@a@ASk@c@CSm@_@?Si@]?Si@a@CSm@a@?Si@c@?Si@a@ASk@a@CSi@_@AUi@_@CQi@_@ASm@a@?Sg@]?Qm@_@?Sg@[@Ui@a@@Si@c@CQi@c@CUi@g@?Se@e@AUa@e@ASe@i@?Ua@e@?Qe@k@AUe@k@ASc@i@ASa@k@?S_@i@?U_@i@AQa@m@?Sa@o@?S_@o@@S_@k@?S_@k@CS_@i@CSc@m@AU_@o@CS_@k@@U_@m@?U_@i@?S]k@CQ_@k@AQ]m@?U]o@?U]m@EU[m@?S]m@ESYk@?QWm@?UUk@ASWk@AUSo@?QUo@ASWo@AQWs@CQSm@CSSu@?USs@?SSs@CSQm@@SOo@CSOo@AUQw@ESUu@ASSs@?UQs@ESOq@?SOq@CUQw@AUOo@?SQq@CUQu@?SQu@?SQs@?USu@CSSq@CUQo@AQOu@ESQo@@QOq@CSOq@CUQs@?SOq@AQOo@CQOo@CQQq@?UQw@ASOu@?SQq@ASQs@?UQq@ASOq@?QQo@AUQo@CUSu@ESSu@?UOs@?SOq@CSOu@ASMo@CSMq@@SMs@AUKs@AUMw@?SMs@AUOq@?QMs@AQMs@CQIq@EUMq@ASIq@AUKo@CSKw@ASKs@?SKu@CSOw@AUKs@ESKw@AQKs@ASKo@ASKu@?SKw@CSIw@CSIs@CSIu@AUIs@AQIw@?UGw@ESEs@AUGs@CQEu@AUEw@?QCs@?SCu@AQAs@EUAu@ASAu@?UAw@?Q?q@ASAu@?S?s@?S?w@AS?y@CSAu@CUAs@AQ?w@CQ?w@CQ?s@AQ@u@CS@u@AQBu@?U@w@ASBq@?SBs@CUDw@AQDy@?QFw@CQFs@ASFw@?UDu@EQDu@AUFq@@SDy@CUDq@CQDw@?UFy@CSFs@ASDs@?SFq@ASHu@@SJw@?UHs@?SJs@@SJu@?SFu@@SJq@CSJw@ASLq@ASLs@ASLw@?UNw@AQJs@CSJs@ASJw@@SJu@CSJq@@QLy@ASJu@ASJu@?SJs@ASLq@ASJu@EUNw@?UJo@@QJs@AULq@CSLu@AQLs@ASLq@AULs@ASJq@ASLu@@UJq@CSJs@@QJq@ASHu@@SLw@ASLq@CUJu@?QLw@?SNw@?ULo@?QPs@AQPs@CUPs@?STu@@QPm@?QTm@CSTs@?SVu@CQTq@AUTo@ASVs@AUTq@?UTq@ASXq@AUVq@ASTo@CSTo@ASTu@@UTo@?UVo@@SVk@AQXo@CQZq@BS\\o@CQ\\o@?U\\m@?S\\o@@U\\o@?S\\q@@QZo@@SZq@?QZk@?SZo@?S\\o@?S\\q@?U\\m@AQZi@?U\\m@AQ\\k@ASZm@BU\\i@ASXi@?U\\i@?UZk@@U\\g@CU`@m@@S^k@@U`@k@@Sb@k@AU\\g@@S^g@?Qb@k@AQb@i@?U`@g@AU`@g@AQd@i@?S^g@AS`@g@@Sb@i@AQb@k@?Qb@e@?Qd@k@?U^g@?Qb@k@?Ub@k@ASb@i@@S`@i@@S`@k@?U^g@BQb@i@?S^g@@Q`@g@ASb@i@BS^g@BQ^g@?Qd@k@BSb@g@@Ud@k@BQd@i@BU`@c@BSd@e@@Qb@c@?Sb@a@BSf@g@?Qd@g@BQd@e@ASd@g@BQd@g@BSd@i@BQd@g@?Qd@g@@Qf@g@?Sb@e@BQ`@e@DUd@g@@Q`@e@BU`@g@@Sb@e@?S`@i@?Sb@k@?Ub@k@@S`@i@?Qd@k@?Sb@i@?Ub@i@?S`@k@AS`@i@?Q^g@BU`@g@@Qb@k@DS^g@BUf@k@?Q^e@?S`@e@?Sb@g@@Q^i@@U`@i@BSd@i@?Sd@i@AS^g@?S`@i@?Ub@m@BQ`@k@@Sb@m@BQ^e@DUb@i@@S`@e@@Sd@i@?Q`@e@?Q`@e@BS^e@@S`@g@@S`@g@?Q^e@@Ub@e@?Qd@i@BS`@e@?Sd@k@BS`@e@@S`@i@@S`@c@@U`@e@BUd@e@@Qd@e@@Uh@e@BQf@e@@Qh@g@?Ud@e@?Qf@g@ASd@e@BSb@c@BSf@i@?Ub@e@AQd@i@@Sb@g@DS^c@?Qd@k@BUd@g@BQd@k@DSd@k@BU\\g@?Sb@i@BS`@g@@U^e@BS`@g@DSf@i@DSd@e@?Sb@a@@Sf@e@?Qh@e@@Qf@c@?Uf@e@@Qf@e@@Ud@e@@Qd@c@BUb@g@BQh@g@@Ub@c@@Qf@c@BSh@e@?Ud@_@BQh@e@BQd@c@@Sh@e@?Ud@e@@Qb@a@?Ub@c@BSf@i@?Sb@e@BS`@c@BSf@g@?Sf@i@?Q`@c@BQf@g@@Uf@e@BQd@e@BSb@e@BUd@g@@Sb@c@DSf@e@?Qh@g@BUd@e@?Sd@e@@Qb@e@BSb@a@ASf@e@BQh@i@DUb@c@?Qb@e@?Sb@e@@Sh@i@@S`@c@?Sd@e@BSf@e@@Sb@c@?Sh@e@@Sd@c@BSf@c@BQf@c@BUd@a@?Ud@_@@Sf@c@@Uh@e@DSd@_@?Sj@a@@Sf@a@BSf@c@BSj@e@?Sd@a@?Sd@a@@Sh@e@?Sd@a@DUj@e@@Qf@a@@Uj@e@BQj@a@?Sh@_@DQl@c@AUf@]BSh@a@BUh@_@?Sf@[@Qh@_@@Sl@]BUn@_@BSl@]@Sj@[?Sj@Y?Qn@]@Up@]?Qh@YBUh@[?Sh@[@Sl@_@?Sh@Y?Qn@]?Sn@]ASh@[@Qn@]AUh@Y@Un@[?Un@[@Sl@Y?Qn@W?Sp@[@Qn@YAQj@YBSl@Y?Qn@Y@Sl@YBUn@YBUl@W@Sp@[?Sj@W?Un@[?Qj@YASp@Y?Ur@WAQr@W?Sp@U?Sl@U?Qn@Q@Qr@S?Up@QAQr@S?Sr@SBUr@S?Sp@S?Sn@QAQl@S?Sp@QAUp@SAQt@Q@Qr@OASl@M@Sr@O?Sr@QBSn@OASp@Q@Sn@Q?Sr@U@Up@SAQp@S@Sn@S@Sl@UAUp@W@Un@WASp@Y?Sj@WAUn@W?Ur@WASp@U@Sp@U?Sl@S@Sr@S?Qn@QASp@S@Un@SAQl@QAQp@S@Sp@OASr@S@Sn@OAQr@OCSr@O?Qr@O@St@SASt@OASn@M?Sp@OASr@Q@St@M?Qr@O?Sr@K?Sp@KAUr@OASn@KASp@O@Sn@M?St@OASv@M@St@M@Sv@MASp@K?Qt@K@Ut@I?Ut@IAQp@I?St@KCUr@K@Qv@OCSp@K@Sv@M?Sn@KASt@MASp@MASt@M@Sn@MCSp@KAQn@KAUv@KCQp@K?Qt@MCUv@I?Sr@KASr@KCQr@MAQp@KAUt@M?Qp@O@Sv@M?St@KASn@KCUt@I?Qv@KASn@K?St@MAUt@K?St@IAQp@IAUt@KAQv@IAUp@G?Qv@E?Sv@CASt@GCQv@GCSr@E?Up@IAQr@GASr@I?Qt@ECSp@E?Ut@CCQx@C?Sr@C?St@CASp@A?St@C?Qt@C?Uv@A@Qr@E?Sr@CCUp@GCQt@CASr@E?Qv@CCQt@ECUt@EAUv@EASt@EAQv@G?Sr@EAUp@EASv@GCUr@ECUt@E?Qr@GCSt@EASr@EASp@EASt@EASp@GASr@EASp@ECSp@EAQn@CEUt@E?Sp@E?Uv@EESx@EAUv@ECSp@E?Uv@EASr@C?Uv@ECSn@ECQr@GASp@EASp@GAQp@GAUt@IASt@GCSt@I?Ur@I?Ur@I?Qr@ICUt@K?Qp@MCSt@KASp@MASr@MCQt@O?Qn@OESp@OAUl@MAQt@QESn@M?Sp@K?Ur@MCSv@MCUt@M?Sp@KEUp@MASp@OASr@MAUt@Q?St@QAQr@OCQt@MCSp@K?Sr@MCUp@KASr@KASp@I?Ur@KCUt@I?Sp@KCSr@K?Sr@KCQp@GCSt@I?Sp@I?Sv@ICSp@ICUr@ICSt@IEQt@I@Qv@ICUr@IASp@K?Qv@K?Sp@KASr@KAQn@IASt@KCQn@I?Qr@MCUv@ICUt@K?Qr@KCSt@M?St@K?Ut@K?Ur@KCUn@G?St@ICSt@I?Sp@I?Sr@ICSt@ICSp@ICQt@K?Un@GAUv@I?Sr@I?Sn@IAUn@K?Qp@ICQt@GCSn@G?Uv@IASp@G?St@IAQt@I?Up@G?St@ICQp@ICSp@IAQt@IASn@IASp@IAQt@MAQn@I?Ut@KCSr@G@Sp@KASt@K?Sr@MAUp@I?Qt@M?Qp@KCUl@KAQn@K?Up@O@Uv@Q?Ql@OAQr@QAQn@Q?Un@S@Ur@S?Un@OASn@OAUn@OCSn@Q?Qr@Q?Un@OCUn@M?Qp@QCSl@M?Ut@Q@Uv@M?Sn@O?Qn@M@Qn@M?Sv@K?St@M?Sp@I?St@K?St@KASp@I?Sr@K?Sr@M?Sn@MAUv@O?Sp@OAUt@OCUp@Q?Qn@O@Sl@MASp@MASn@KAUr@M?Sp@I?Qp@K?Un@K@Qr@K@Up@K@Sp@K@Ur@M?Sp@K@Sr@I?Un@I@Sr@M?Qt@M?St@K?Ut@KASr@K?Sr@I@Qt@K@Un@G?Ur@IAQr@IAQr@KCUp@KASp@K@Un@K?Ur@OBSt@O?Sr@Q?Qt@O?Sr@Q@Sp@Q@Sp@U@St@S?Ul@Q?Sl@SASn@Q?Ul@S@Un@U?Ql@U@Ul@WAQn@U@Sr@U@Sn@U@Sp@QASn@Q?Sr@QBQn@OAQn@OAUt@O?Qt@OCQt@Q?Sr@O@Qn@Q@St@O?Sr@M@Up@MASp@M@Sr@OBQr@OASn@QBQn@OBSn@QASr@SBUn@UBSp@S?Sl@SBUr@WBSl@Q@Sn@OBUr@S@Sl@OBQr@S?Sr@UBQr@SASr@S@Qp@Q?Un@O?Qt@Q?Sr@Q?St@S?Sr@QDSt@O@Ur@O?Sp@M?Sp@KBSr@M@Qr@K?Up@IBSv@I@Sp@IASv@IBSp@E@Sv@GASt@I@Sp@GBSt@CDQr@G@Sp@EBQp@G?Sv@G@Qt@G?Sv@IAUr@I@Sn@G?Sr@K?St@IAQt@K@Sv@KBSp@IDSv@I@Sn@KBUr@IBSn@GASp@E@Sp@GBUp@E@Sp@G@Sr@G?Uv@G@Qr@E?Uv@GBQp@IBSr@GBUt@G@Qn@G@Qp@IBSt@G@Sv@G?Qp@GBSp@EBUv@EBSv@EBUv@CBSr@A@St@?BQt@?BQv@?@St@?@Qt@?BQt@?BSn@??Qt@?@St@@?Sv@B@Sv@BBSv@B?Qr@B?Ur@@BSp@B@Sp@D@Sr@F?Sr@F@Qv@F@St@HBSn@F@Sv@H@Sv@FBQt@DBUv@F@Un@F?Qp@F?Qt@H@St@H?Qt@FDUn@D@St@DDUt@F?Sp@FBSv@D@Qp@D@St@H?Sv@H@Uv@F@Sr@HBSn@FDUr@HBUn@H@Sv@H?Sr@J?St@J@Ur@L@Sr@LBUp@J@Qt@PBSn@N@St@R@Sn@N@Sr@RBQp@RBUl@TBUr@T@Sn@T@Ql@R?Sr@V?Sn@V@Un@V?Ul@XBSj@VBSn@\\?Sj@X@Sn@Z?Qj@XBSr@ZBSp@XBUr@X?Ql@TBSp@VBSn@V@Sj@TBSn@V@Sl@X@Sl@V@Qn@Z@Ql@X@Qn@\\BUh@Z@Qh@Z@Qn@\\?Up@\\BQh@Z@Sh@Z?Sj@\\?Qf@\\BUh@\\BQl@^BUn@^@Sj@\\?Qj@\\BSf@^BUh@^?Qj@b@?Ud@`@@Sd@^BSd@^@Sj@d@@Qd@^?Sd@^BQf@b@BSh@b@@Sj@`@@Sh@b@BSd@`@?Sb@`@?Sd@`@?Sf@^?Uf@`@?Qd@^?Uh@b@?Uj@`@?Sl@b@?Sj@^@Qj@^?Uf@\\BQh@^?Sl@^BUl@`@BQl@^?Sl@`@BUl@`@?Uf@^?Sh@`@@Sf@b@?Ud@`@?Ud@`@BQj@d@?Sh@d@@Sj@f@?Ud@b@?Qd@`@?Qh@d@ASf@`@?Sh@f@?Sd@b@AUf@d@BQf@f@ASd@f@?Ub@d@?S`@b@BS`@d@AU`@d@@Q`@f@?S`@h@@Q`@h@@Q^h@AQ^h@AS\\f@BQ^j@@S^h@?U`@j@ASd@j@?Q\\d@@S^f@BS^f@?S\\f@@S^f@?U^f@AQ^l@@S^n@?Q^j@?Q^l@@UZj@@Q\\l@?SZp@?SXj@@SXn@ASVj@?QVj@@UVn@@QVl@@QTp@@UVp@AURj@?QXt@@SVj@@QXn@@UXl@CSXp@@SVj@CSZp@?QXn@@SVl@?QVj@CSZj@@SXn@?SXp@ASXl@AQZp@@UXl@?SVl@AUXn@?UXp@ASVp@?QVp@?UTp@@STn@CSRr@?SRr@?QPp@?SNn@ASNp@ASNv@CSNt@?SNt@?UNp@?QPn@?UPr@?SPr@?UNt@AQPp@ASNr@?QLn@AQLt@@SLr@?QLp@CULr@AQJp@AULt@?QJr@?SHt@?SHv@ASFp@CQHt@?SFr@ASFv@?UHv@ASHt@?QHp@AUJv@ASFv@?SHt@CSHt@CSFx@@SHv@?SFp@CSJv@?SHp@ESJv@@UJp@CQHr@CSHp@ASJt@?QHp@CUFp@CSHt@CSJt@EQHt@?SFt@CQFr@ASFt@?UFr@ASFx@?QDr@ASBr@AQDr@?UDp@ASFv@?UFt@AQFv@ASBv@ESBt@?QFv@?SBv@?SDt@AUDx@AQDv@?UDr@CQDx@CUFp@AQFt@AQDx@?SFt@CSBt@AQDv@ESDr@?SDt@CUFp@?SHv@ASJr@ASFr@CSHt@?QFp@EUJt@CUHp@ASJv@ASFr@AQHv@?UHr@CQFp@CUFv@CUFp@ESDp@CSDt@ASFr@?SDv@ASDv@CQDv@?SBp@ESBv@CSBx@AUDx@ES@r@AU@r@AQ?v@CU@v@CQBt@CS@x@CU?v@AU?r@ASAv@ASCv@CSAr@CQ?v@CU?t@?UCr@EQAv@ASEt@CUEp@?QGt@?UEp@?QGr@EUGn@AQGt@CSEx@ASGx@CSIp@CQIv@CSIv@?QIv@CSIr@ASIt@ASKr@?QKv@?SOv@ASMp@?UOn@CQQn@AUQn@CSSn@@UQl@EUUr@CSSl@AUUr@AUSn@?QQn@?SSr@EUQl@CUUt@@SQp@AUSr@CSQt@ASQp@CQQt@?SOr@CSMr@?UOr@?UOr@CSSt@AUQt@AQOp@?SOt@?SSv@AUOp@?SOr@AUOp@CQOn@CUMt@ASMn@ASMr@?QMr@CUOn@?QMr@?SMt@@SMp@EUQt@ASMn@?SMt@?SMt@CSMr@AQOt@AUMp@CSKr@AQMv@ASIx@ASIr@?SMv@?UKp@?QOv@CSOr@?SOv@?SMp@AQOt@CSMt@AUMx@?SMn@?SMp@AQMv@?SOt@?QOp@ASQn@AUSn@?SUt@@QQn@?USn@CSQl@@SUr@CSUt@ASSp@ASSr@?SUr@?SSp@AQSn@@SUp@AUYp@@QWr@AUUp@@USn@AUUr@CSWr@ASUn@?SWt@?SUp@?SYr@CQWr@?SUn@?QUn@@UQl@ASUp@@SUl@ASSp@ASUt@AQSr@@SUr@@QSr@CQSp@?SWt@@SUp@@SSn@@SSp@@SUr@@UQp@@QSp@@SSp@CQQn@?QQp@?SSp@@QSn@@SUt@?USn@ASWr@@UWr@?SWp@?SWp@?UWl@ASWr@BQUp@?QUn@?SUn@ASWn@AUYr@@UYn@BS]p@AS]n@?S]l@?S_@l@?Q]h@@S_@l@?U[h@BQ[h@AS_@l@@Sa@l@?U[h@@U]l@BQ_@n@?S]n@?Ua@n@@Qa@n@?U]h@AQ]l@ASa@h@?Sa@j@@Sa@f@?Sa@j@BU_@d@AUc@j@@Qc@d@@Ua@f@AQc@h@?Sa@d@?Sg@h@@Sa@d@@Qc@d@?Sc@d@?Sc@d@AUc@b@AQc@b@@Uc@d@@Sc@`@@Sg@d@@Se@`@?Ug@b@BSi@`@BQk@d@?Si@b@AUe@b@BSi@d@?Se@`@@Sk@d@?Sk@b@?Ue@b@BSi@`@?Se@`@@Qg@`@ASi@d@?Si@`@@Qi@b@?Ue@`@BSe@^?Sg@`@?Qi@b@?Sg@d@BQe@b@BSc@`@@Ug@b@@Qi@f@BSg@b@BUi@f@BSe@b@BSe@b@@Qe@`@@Se@b@BSg@d@?Sg@`@?Se@b@BSe@b@DQi@d@@Ug@d@?Si@d@@Se@`@@Se@`@BSg@d@?Se@d@DUe@b@AQg@`@DUk@b@?Qk@b@@Qi@`@DSk@^BSe@^BQk@`@BSg@\\BSg@^BUi@\\?Sk@\\BUm@^@Sk@Z@Um@ZBUk@ZBQk@X@Sk@V@Um@X?Sq@ZBQo@Z?Qm@ZBSk@Z@Sm@\\BSm@Z@Si@Z@Sm@Z?Qm@ZBSm@\\BSm@XBSm@X?Uq@\\BQo@Z@Qi@VDSm@X@Qq@XBUq@XBSo@XDSk@TASo@X@Uq@V?Qo@TBSo@V?Uo@X@Sm@XBSm@X@Sq@X?Uq@X@So@Z@So@VBSs@V?Qm@X?Qo@TBSo@V@Uq@T@Qo@P@Ss@T@Sk@T@Sm@R@Sq@V@Us@T@Qq@TBUm@R?Ss@T@Sm@T?Uq@R?Qq@T@Qo@PBQq@R?Ss@RBUs@TBQq@NBSo@PBQs@TBSs@R@Uq@R@Sm@RBSo@TBSq@R?Ss@T?Uq@T@Sm@P@Qs@T?Ss@R@Ss@VDUo@R@Qs@T@Ss@T@Sq@P?Sm@P?Sq@P?Su@PDQs@PBSs@R@Uo@P@Sm@R?Sq@P@Sq@PBSs@N?Sq@P@Qq@N@Sq@LBSu@NBSo@L@Qo@L@Us@L?Us@L@Qo@L@Ss@HBSs@LBSq@H?Qs@H@Sw@J?Sq@HBUu@H?Qo@HBUo@HBSq@J@Ss@JBUs@L?Qs@L@Qw@L?Ss@NBQu@L@Uq@J?So@NBSs@L@Ss@L?Ss@P?Us@P@Qq@P@Qq@N?Qo@NBUq@LBSu@N?So@N@Uq@L?Qq@P?Sq@NBSq@PAQs@PBSs@R@Qq@N?Su@N@Sm@N@Qu@N@Us@PASo@L?So@P?Sq@NBUs@N?So@PBUo@PBSm@NASq@L@Sm@N?Sq@N?Uo@N?Qo@N@Qs@P@Ss@P?Sm@NASs@PASo@N@Uo@L?Qs@PAQs@RBUu@R@Sq@PASo@P?Sq@RASu@R@Uq@T?Qs@TASs@RBQq@R@Sq@RASq@R@So@RAQm@TASk@R?Qm@T?Sm@T?Qo@R@Sk@T?Ss@VASm@TBSk@TASo@T@Sk@T@Uo@TASm@R?So@R@Qm@RAUs@TASo@R@Qm@PCSo@P@Sq@T@Uu@R@So@R?Um@P@Ss@TAUo@P?Sm@NASs@RASs@R?So@LASs@P?Qo@LASo@LASw@N?Su@J@Ss@LAUo@JAQu@LAQs@J@Sq@JCQo@HAUw@JAQu@J?Sq@F@Qq@F?Ss@D?Qs@B?Uq@@?Qs@@?Uu@@?Su@?@Sw@?CSu@@?Su@?ASq@?@Su@@CSs@A?Sw@?@Sq@@CUq@?CQu@??Sy@??Sw@CASs@A@Su@CCUs@C?Su@A@Su@EAQq@C@Qw@GAUu@G?Qu@ICSs@EASw@IAUu@K?Ss@K?Ss@I@Sw@KCSo@G?Us@K?Sq@GCQu@I?So@I?Sq@KCSo@O?Ss@O?Qq@OCUo@OCSs@S?Uo@MCUo@QASs@OASu@Q@Qq@MCUm@M?Sq@MASo@OCQo@O@So@M?Qu@OASs@O?Qm@KCSs@O?Qu@OCQu@OASs@MASo@MCSu@OCSs@O?So@OAUo@MCSo@MAUm@O?So@OEUs@OAS",
+  "breaks": [],
+  "elevation": true
+ },
+ "durationSeconds": 1799,
+ "weightKg": 72,
+ "expected": {
+  "distanceM": 5313.1,
+  "durationSeconds": 1799,
+  "avgPaceSecPerKm": 338.6,
+  "elevationGainM": 65.4,
+  "calories": 420,
+  "splitsKm": [
+   {
+    "index": 1,
+    "distanceM": 1000,
+    "seconds": 339.6,
+    "pace": 339.6,
+    "elevationChangeM": 18.4
+   },
+   {
+    "index": 2,
+    "distanceM": 1000,
+    "seconds": 336,
+    "pace": 336,
+    "elevationChangeM": -9.1
+   },
+   {
+    "index": 3,
+    "distanceM": 1000,
+    "seconds": 339.3,
+    "pace": 339.3,
+    "elevationChangeM": -3.1
+   },
+   {
+    "index": 4,
+    "distanceM": 1000,
+    "seconds": 339.2,
+    "pace": 339.2,
+    "elevationChangeM": 11.6
+   },
+   {
+    "index": 5,
+    "distanceM": 1000,
+    "seconds": 336.7,
+    "pace": 336.7,
+    "elevationChangeM": -21.1
+   },
+   {
+    "index": 6,
+    "distanceM": 313.1,
+    "seconds": 106.8,
+    "pace": 341.2,
+    "elevationChangeM": 5.3
+   }
+  ],
+  "splitsMi": [
+   {
+    "index": 1,
+    "distanceM": 1609.3,
+    "seconds": 544.8,
+    "pace": 544.8,
+    "elevationChangeM": 1.2
+   },
+   {
+    "index": 2,
+    "distanceM": 1609.3,
+    "seconds": 544.2,
+    "pace": 544.2,
+    "elevationChangeM": -2
+   },
+   {
+    "index": 3,
+    "distanceM": 1609.3,
+    "seconds": 543.8,
+    "pace": 543.8,
+    "elevationChangeM": -0.4
+   },
+   {
+    "index": 4,
+    "distanceM": 485.1,
+    "seconds": 164.9,
+    "pace": 547,
+    "elevationChangeM": 3.2
+   }
+  ],
+  "series": [
+   {
+    "distanceM": 53.1,
+    "pace": 349.1,
+    "ele": 216.9
+   },
+   {
+    "distanceM": 106.3,
+    "pace": 336.5,
+    "ele": 217.9
+   },
+   {
+    "distanceM": 159.4,
+    "pace": 339.1,
+    "ele": 219
+   },
+   {
+    "distanceM": 212.5,
+    "pace": 335.2,
+    "ele": 220
+   },
+   {
+    "distanceM": 265.7,
+    "pace": 342.6,
+    "ele": 221.7
+   },
+   {
+    "distanceM": 318.8,
+    "pace": 350.4,
+    "ele": 223.6
+   },
+   {
+    "distanceM": 371.9,
+    "pace": 343.6,
+    "ele": 225.6
+   },
+   {
+    "distanceM": 425.1,
+    "pace": 349.8,
+    "ele": 227.5
+   },
+   {
+    "distanceM": 478.2,
+    "pace": 341.1,
+    "ele": 229.9
+   },
+   {
+    "distanceM": 531.3,
+    "pace": 333.9,
+    "ele": 231.8
+   },
+   {
+    "distanceM": 584.4,
+    "pace": 338.3,
+    "ele": 233.6
+   },
+   {
+    "distanceM": 637.6,
+    "pace": 340,
+    "ele": 234.4
+   },
+   {
+    "distanceM": 690.7,
+    "pace": 345.6,
+    "ele": 235.8
+   },
+   {
+    "distanceM": 743.8,
+    "pace": 331.2,
+    "ele": 236.7
+   },
+   {
+    "distanceM": 797,
+    "pace": 341.6,
+    "ele": 237.5
+   },
+   {
+    "distanceM": 850.1,
+    "pace": 344.3,
+    "ele": 237.6
+   },
+   {
+    "distanceM": 903.2,
+    "pace": 333.6,
+    "ele": 237.7
+   },
+   {
+    "distanceM": 956.4,
+    "pace": 333.1,
+    "ele": 236
+   },
+   {
+    "distanceM": 1009.5,
+    "pace": 326.9,
+    "ele": 234.1
+   },
+   {
+    "distanceM": 1062.6,
+    "pace": 335.8,
+    "ele": 233
+   },
+   {
+    "distanceM": 1115.8,
+    "pace": 336.3,
+    "ele": 231.5
+   },
+   {
+    "distanceM": 1168.9,
+    "pace": 337,
+    "ele": 229.8
+   },
+   {
+    "distanceM": 1222,
+    "pace": 334.8,
+    "ele": 227.3
+   },
+   {
+    "distanceM": 1275.2,
+    "pace": 337,
+    "ele": 225.3
+   },
+   {
+    "distanceM": 1328.3,
+    "pace": 333.1,
+    "ele": 223
+   },
+   {
+    "distanceM": 1381.4,
+    "pace": 344.4,
+    "ele": 221.1
+   },
+   {
+    "distanceM": 1434.5,
+    "pace": 337.3,
+    "ele": 219.1
+   },
+   {
+    "distanceM": 1487.7,
+    "pace": 340.5,
+    "ele": 218.1
+   },
+   {
+    "distanceM": 1540.8,
+    "pace": 331.6,
+    "ele": 217.4
+   },
+   {
+    "distanceM": 1593.9,
+    "pace": 330.6,
+    "ele": 217.4
+   },
+   {
+    "distanceM": 1647.1,
+    "pace": 344.8,
+    "ele": 217.1
+   },
+   {
+    "distanceM": 1700.2,
+    "pace": 327.8,
+    "ele": 217.6
+   },
+   {
+    "distanceM": 1753.3,
+    "pace": 336.6,
+    "ele": 218
+   },
+   {
+    "distanceM": 1806.5,
+    "pace": 329.6,
+    "ele": 219.4
+   },
+   {
+    "distanceM": 1859.6,
+    "pace": 331.1,
+    "ele": 220.4
+   },
+   {
+    "distanceM": 1912.7,
+    "pace": 332.4,
+    "ele": 221.6
+   },
+   {
+    "distanceM": 1965.9,
+    "pace": 335.7,
+    "ele": 223.7
+   },
+   {
+    "distanceM": 2019,
+    "pace": 347.3,
+    "ele": 225.9
+   },
+   {
+    "distanceM": 2072.1,
+    "pace": 337.2,
+    "ele": 227.9
+   },
+   {
+    "distanceM": 2125.3,
+    "pace": 343,
+    "ele": 229.9
+   },
+   {
+    "distanceM": 2178.4,
+    "pace": 335,
+    "ele": 231.9
+   },
+   {
+    "distanceM": 2231.5,
+    "pace": 339,
+    "ele": 233.6
+   },
+   {
+    "distanceM": 2284.6,
+    "pace": 341.9,
+    "ele": 235.2
+   },
+   {
+    "distanceM": 2337.8,
+    "pace": 339.5,
+    "ele": 236.2
+   },
+   {
+    "distanceM": 2390.9,
+    "pace": 350.7,
+    "ele": 236.8
+   },
+   {
+    "distanceM": 2444,
+    "pace": 344.6,
+    "ele": 237.5
+   },
+   {
+    "distanceM": 2497.2,
+    "pace": 347.7,
+    "ele": 236.9
+   },
+   {
+    "distanceM": 2550.3,
+    "pace": 345.4,
+    "ele": 236.7
+   },
+   {
+    "distanceM": 2603.4,
+    "pace": 330.6,
+    "ele": 236.4
+   },
+   {
+    "distanceM": 2656.6,
+    "pace": 338.5,
+    "ele": 234.5
+   },
+   {
+    "distanceM": 2709.7,
+    "pace": 332.7,
+    "ele": 233.3
+   },
+   {
+    "distanceM": 2762.8,
+    "pace": 330.8,
+    "ele": 231.8
+   },
+   {
+    "distanceM": 2816,
+    "pace": 345.2,
+    "ele": 229.7
+   },
+   {
+    "distanceM": 2869.1,
+    "pace": 326.2,
+    "ele": 227.2
+   },
+   {
+    "distanceM": 2922.2,
+    "pace": 332.2,
+    "ele": 225.6
+   },
+   {
+    "distanceM": 2975.4,
+    "pace": 346.7,
+    "ele": 223.3
+   },
+   {
+    "distanceM": 3028.5,
+    "pace": 340.7,
+    "ele": 221.2
+   },
+   {
+    "distanceM": 3081.6,
+    "pace": 328.1,
+    "ele": 218.9
+   },
+   {
+    "distanceM": 3134.7,
+    "pace": 338.5,
+    "ele": 217
+   },
+   {
+    "distanceM": 3187.9,
+    "pace": 342.9,
+    "ele": 215.9
+   },
+   {
+    "distanceM": 3241,
+    "pace": 335.9,
+    "ele": 215
+   },
+   {
+    "distanceM": 3294.1,
+    "pace": 338.5,
+    "ele": 214.6
+   },
+   {
+    "distanceM": 3347.3,
+    "pace": 338.4,
+    "ele": 213.9
+   },
+   {
+    "distanceM": 3400.4,
+    "pace": 336.4,
+    "ele": 213.8
+   },
+   {
+    "distanceM": 3453.5,
+    "pace": 340.6,
+    "ele": 214.5
+   },
+   {
+    "distanceM": 3506.7,
+    "pace": 335.9,
+    "ele": 215.4
+   },
+   {
+    "distanceM": 3559.8,
+    "pace": 338.9,
+    "ele": 216.9
+   },
+   {
+    "distanceM": 3612.9,
+    "pace": 339.4,
+    "ele": 218.8
+   },
+   {
+    "distanceM": 3666.1,
+    "pace": 331.2,
+    "ele": 220.7
+   },
+   {
+    "distanceM": 3719.2,
+    "pace": 348.2,
+    "ele": 223.2
+   },
+   {
+    "distanceM": 3772.3,
+    "pace": 337.8,
+    "ele": 226.1
+   },
+   {
+    "distanceM": 3825.5,
+    "pace": 337.7,
+    "ele": 228.5
+   },
+   {
+    "distanceM": 3878.6,
+    "pace": 356.7,
+    "ele": 230.2
+   },
+   {
+    "distanceM": 3931.7,
+    "pace": 341,
+    "ele": 232
+   },
+   {
+    "distanceM": 3984.9,
+    "pace": 338.7,
+    "ele": 233.5
+   },
+   {
+    "distanceM": 4038,
+    "pace": 334,
+    "ele": 234.3
+   },
+   {
+    "distanceM": 4091.1,
+    "pace": 339.7,
+    "ele": 235.2
+   },
+   {
+    "distanceM": 4144.2,
+    "pace": 327.9,
+    "ele": 235.3
+   },
+   {
+    "distanceM": 4197.4,
+    "pace": 333.6,
+    "ele": 234.8
+   },
+   {
+    "distanceM": 4250.5,
+    "pace": 339.3,
+    "ele": 234.2
+   },
+   {
+    "distanceM": 4303.6,
+    "pace": 336.2,
+    "ele": 233.8
+   },
+   {
+    "distanceM": 4356.8,
+    "pace": 345.7,
+    "ele": 232.8
+   },
+   {
+    "distanceM": 4409.9,
+    "pace": 335.3,
+    "ele": 231.1
+   },
+   {
+    "distanceM": 4463,
+    "pace": 335.5,
+    "ele": 229.1
+   },
+   {
+    "distanceM": 4516.2,
+    "pace": 343.8,
+    "ele": 226.4
+   },
+   {
+    "distanceM": 4569.3,
+    "pace": 334.7,
+    "ele": 223.9
+   },
+   {
+    "distanceM": 4622.4,
+    "pace": 333.4,
+    "ele": 222.2
+   },
+   {
+    "distanceM": 4675.6,
+    "pace": 333.1,
+    "ele": 220.1
+   },
+   {
+    "distanceM": 4728.7,
+    "pace": 332.6,
+    "ele": 218.2
+   },
+   {
+    "distanceM": 4781.8,
+    "pace": 340.1,
+    "ele": 216.3
+   },
+   {
+    "distanceM": 4835,
+    "pace": 338.1,
+    "ele": 214.6
+   },
+   {
+    "distanceM": 4888.1,
+    "pace": 333,
+    "ele": 213.4
+   },
+   {
+    "distanceM": 4941.2,
+    "pace": 348.1,
+    "ele": 212.8
+   },
+   {
+    "distanceM": 4994.3,
+    "pace": 331.9,
+    "ele": 212.5
+   },
+   {
+    "distanceM": 5047.5,
+    "pace": 350.9,
+    "ele": 212.3
+   },
+   {
+    "distanceM": 5100.6,
+    "pace": 334.5,
+    "ele": 213.3
+   },
+   {
+    "distanceM": 5153.7,
+    "pace": 340.1,
+    "ele": 213.8
+   },
+   {
+    "distanceM": 5206.9,
+    "pace": 332,
+    "ele": 214.5
+   },
+   {
+    "distanceM": 5260,
+    "pace": 348.1,
+    "ele": 216
+   },
+   {
+    "distanceM": 5313.1,
+    "pace": 341.2,
+    "ele": 217.9
+   }
+  ],
+  "outline": [
+   [
+    12.96922,
+    79.15591
+   ],
+   [
+    12.96987,
+    79.15634
+   ],
+   [
+    12.97045,
+    79.15683
+   ],
+   [
+    12.97088,
+    79.15749
+   ],
+   [
+    12.97113,
+    79.1582
+   ],
+   [
+    12.97135,
+    79.15894
+   ],
+   [
+    12.97147,
+    79.15969
+   ],
+   [
+    12.97141,
+    79.16048
+   ],
+   [
+    12.97123,
+    79.16122
+   ],
+   [
+    12.97098,
+    79.16197
+   ],
+   [
+    12.97058,
+    79.16265
+   ],
+   [
+    12.97011,
+    79.16324
+   ],
+   [
+    12.96958,
+    79.16382
+   ],
+   [
+    12.96909,
+    79.1644
+   ],
+   [
+    12.96856,
+    79.16497
+   ],
+   [
+    12.96803,
+    79.16551
+   ],
+   [
+    12.96748,
+    79.16606
+   ],
+   [
+    12.96691,
+    79.16654
+   ],
+   [
+    12.96625,
+    79.16695
+   ],
+   [
+    12.96553,
+    79.16725
+   ],
+   [
+    12.96483,
+    79.16753
+   ],
+   [
+    12.96408,
+    79.16773
+   ],
+   [
+    12.96334,
+    79.16789
+   ],
+   [
+    12.96257,
+    79.16797
+   ],
+   [
+    12.96184,
+    79.16806
+   ],
+   [
+    12.96108,
+    79.16826
+   ],
+   [
+    12.96036,
+    79.16841
+   ],
+   [
+    12.9596,
+    79.16856
+   ],
+   [
+    12.95887,
+    79.16876
+   ],
+   [
+    12.95816,
+    79.16896
+   ],
+   [
+    12.95742,
+    79.16915
+   ],
+   [
+    12.95672,
+    79.1694
+   ],
+   [
+    12.95598,
+    79.16966
+   ],
+   [
+    12.95526,
+    79.16978
+   ],
+   [
+    12.95448,
+    79.16983
+   ],
+   [
+    12.95374,
+    79.16973
+   ],
+   [
+    12.95302,
+    79.16945
+   ],
+   [
+    12.95237,
+    79.16904
+   ],
+   [
+    12.95179,
+    79.16857
+   ],
+   [
+    12.95125,
+    79.16801
+   ],
+   [
+    12.95086,
+    79.16738
+   ],
+   [
+    12.95053,
+    79.16666
+   ],
+   [
+    12.95037,
+    79.16592
+   ],
+   [
+    12.95025,
+    79.16515
+   ],
+   [
+    12.95014,
+    79.1644
+   ],
+   [
+    12.95013,
+    79.16361
+   ],
+   [
+    12.95035,
+    79.16287
+   ],
+   [
+    12.95057,
+    79.16214
+   ],
+   [
+    12.9508,
+    79.16138
+   ],
+   [
+    12.9511,
+    79.16068
+   ],
+   [
+    12.95143,
+    79.15995
+   ],
+   [
+    12.95189,
+    79.15935
+   ],
+   [
+    12.95247,
+    79.15883
+   ],
+   [
+    12.95303,
+    79.15833
+   ],
+   [
+    12.95368,
+    79.15792
+   ],
+   [
+    12.95438,
+    79.15758
+   ],
+   [
+    12.95509,
+    79.1573
+   ],
+   [
+    12.95582,
+    79.15709
+   ],
+   [
+    12.95653,
+    79.15687
+   ],
+   [
+    12.95725,
+    79.15661
+   ],
+   [
+    12.95792,
+    79.15632
+   ],
+   [
+    12.95868,
+    79.15621
+   ],
+   [
+    12.95941,
+    79.15631
+   ],
+   [
+    12.96014,
+    79.15654
+   ]
+  ]
+ }
+}

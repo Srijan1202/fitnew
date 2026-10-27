@@ -1,6 +1,6 @@
 # FITOS privacy policy
 
-**Version** 2026-10-22.2 · applies to the closed beta
+**Version** 2026-10-27.1 · applies to the closed beta
 
 This is the text the app shows in Profile → Privacy & data (`apps/mobile/lib/features/privacy/presentation/policy_text.dart`); a test keeps the two in step. MASTER-SPEC §23 · ADR-023 · ADR-026 (beta: AWS hosting, crash reports, feedback).
 
@@ -10,7 +10,7 @@ FITOS is a fitness and nutrition app for VIT students, built and run by its deve
 
 ## What FITOS keeps
 
-Your account (email and name, through Google Firebase sign-in). Your profile: sex, birth date, height, weight, goal, diet, allergies and any limitations you add. What you log: workouts and sets, meals, weigh-ins and body measurements, recovery check-ins, your mess. Your reminder settings and this phone's notification token. Feedback you send from the app, with the app's version, any pictures you attach (deleted after six months), your phone's model, Android version and the screen you came from unless you leave them out, and the FITOS team's replies. Your profile picture choice, and any request for Premium with the answer to it. A count of FITOS AI uses (not what was said). Your consent records, with a one-way scrambled form of the network address you consented from. Foods you add from a label; if you share one with everyone, other people can find and log it, marked Community and never with your name, and it is deleted with your account. A food search that finds nothing is counted without your name, so missing foods can be added. A thumbs up or down you give a mess dish is counted in totals everyone sees, never with your name, and deleted with your account. A programme you share as a code shows its days, exercises, sets and reps to anyone with the code, never your weights or your name; you can stop sharing it, and the codes are deleted with your account. Progress photos stay on your phone: they are never uploaded, not even to a backup, and are deleted with your account.
+Your account (email and name, through Google Firebase sign-in). Your profile: sex, birth date, height, weight, goal, diet, allergies and any limitations you add. What you log: workouts and sets, meals, weigh-ins and body measurements, recovery check-ins, your mess. Runs you record, with their GPS route: where and when you ran, the distance, time, pace and climb, and your notes. Your location is recorded only while a run is recording. A picture or GPX file of a run that you share leaves out its first and last 200 m unless you turn that off. Your reminder settings and this phone's notification token. Feedback you send from the app, with the app's version, any pictures you attach (deleted after six months), your phone's model, Android version and the screen you came from unless you leave them out, and the FITOS team's replies. Your profile picture choice, and any request for Premium with the answer to it. A count of FITOS AI uses (not what was said). Your consent records, with a one-way scrambled form of the network address you consented from. Foods you add from a label; if you share one with everyone, other people can find and log it, marked Community and never with your name, and it is deleted with your account. A food search that finds nothing is counted without your name, so missing foods can be added. A thumbs up or down you give a mess dish is counted in totals everyone sees, never with your name, and deleted with your account. A programme you share as a code shows its days, exercises, sets and reps to anyone with the code, never your weights or your name; you can stop sharing it, and the codes are deleted with your account. Progress photos stay on your phone: they are never uploaded, not even to a backup, and are deleted with your account.
 
 ## What stays on your phone
 
@@ -30,7 +30,7 @@ When the app crashes or hits an error, it sends Google Firebase Crashlytics a re
 
 ## Who else
 
-Amazon Web Services hosts the FITOS server and database, in India. Google Firebase handles sign-in, notifications and crash reports. Google Gemini handles FITOS AI, only with your consent. Nobody else: no advertising, no selling, no sharing with other companies. No data of yours is used to train an AI model by FITOS.
+Amazon Web Services hosts the FITOS server and database, in India. Google Firebase handles sign-in, notifications and crash reports. Google Gemini handles FITOS AI, only with your consent. OpenFreeMap provides the maps: to draw one, your phone asks OpenFreeMap for the map of the area on screen, as any map app does; nothing else of yours is sent. Nobody else: no advertising, no selling, no sharing with other companies. No data of yours is used to train an AI model by FITOS.
 
 ## How long
 
