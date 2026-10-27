@@ -111,7 +111,7 @@ The runs would get the same splits, records and badges. Live heart rate *during*
   - **Accuracy:** points with an accuracy worse than 20 m are dropped, and the track is smoothed (a small Kalman filter) so a standing runner doesn't drift.
   - **Storage:** points go into drift every second.
   - **Voice:** `flutter_tts`.
-  - **Map:** see question 1.
+  - **Map:** MapLibre (`maplibre_gl`) showing OpenFreeMap's tiles: the Dark style for FITOS Dark and Positron for the light themes. A small map-provider setting keeps a later switch to self-hosted tiles a one-line change.
 - **Samsung's battery saver** can kill background apps. The first run asks once to set FITOS to *Unrestricted*, with a button to the right settings page.
 - **Server:**
   - a `runs` table: summary, the kind, the goal and the plan step;
@@ -135,7 +135,7 @@ The runs would get the same splits, records and badges. Live heart rate *during*
 
 | Question | Owner's answer |
 |---|---|
-| Map provider | **Google Maps** (free with no monthly limit in an Android app) |
+| Map provider | ~~Google Maps~~. Google Maps didn't work for the owner (2026-10-27), so it's replaced by **OpenFreeMap through MapLibre** (proposed 2026-10-27, owner to confirm). It needs no key, no account and no billing; app and commercial use are allowed and there's no view limit |
 | Release shape | **In steps:** 4.0, 4.1, 4.2, 4.3 |
 | Where runs are kept | **Synced to the account**, like workouts. Shares hide the first and last 200 m |
 | Free or premium | **All running is free.** FITOS AI stays premium |
@@ -157,15 +157,18 @@ Decided by default, which the owner can change:
 
 Each step gets its own plan check, its own tests and the owner's field runs before release.
 
-## What the owner sets up for 4.0 (Google Maps)
+## The map: OpenFreeMap (replaces Google Maps, 2026-10-27)
 
-The owner does these steps in the Google Cloud console. FITOS never creates the resources itself.
+Google Maps didn't work for the owner, so 4.0 uses **OpenFreeMap**. Its terms, as published on openfreemap.org:
+- free, with no registration, no API keys and no cookies;
+- commercial use allowed;
+- no limit on map views or requests;
+- styles include Dark, Positron, Bright and Liberty;
+- MapLibre adds the OpenStreetMap credit on the map automatically;
+- offline downloads are allowed up to 3,000 tiles or 50 MB per download, with a distinct User-Agent.
 
-1. In the Firebase project's Google Cloud project, link a billing account. Dynamic maps in an Android app have no charge, but Google requires billing to be on.
-2. Turn on **Maps SDK for Android**.
-3. Create an API key restricted in two ways:
-   - to **Android apps**, with the FITOS package name and the release signing certificate's SHA-1. Both are given to the owner when 4.0 is ready to build.
-   - to **Maps SDK for Android** only.
-4. Put the key in the untracked local build settings that `tool/hosted.ps1` reads. It's never pasted in chat or committed.
+**The owner sets up nothing.**
 
-Every Maps key is readable inside an APK; the two restrictions above stop it working anywhere else. Until the key exists, development and tests use a map-less view that draws the line on a grid, which is the same view used offline.
+- **The risk:** OpenFreeMap runs on donations, with no service guarantee.
+- **The fallback:** host our own tiles. That means a Protomaps extract of India as a single file on our AWS server, read by the same MapLibre with a different style. The app reads the map address from one setting, so switching is a small release.
+- **Before 4.0 ships**, the phone check covers the map in Dark and light themes and with no signal.
