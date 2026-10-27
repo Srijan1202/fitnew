@@ -4,6 +4,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/fit_glass.dart';
 import '../../domain/run.dart';
 import '../../domain/units.dart';
+import '../../domain/workout.dart';
 import 'run_map.dart';
 import 'run_widgets.dart';
 
@@ -156,6 +157,11 @@ class RunReport extends StatelessWidget {
               unit: unit,
             ),
           ),
+        if (run.workout != null)
+          RunSection(
+            label: run.workout!.name,
+            child: _Laps(run: run, unit: unit),
+          ),
         if (run.series.length >= 2)
           RunSection(
             label: 'Pace and elevation',
@@ -194,3 +200,81 @@ String effortWord(int effort) => switch (effort) {
       <= 8 => 'hard',
       _ => 'all out',
     };
+
+/// Beta 4.1: a session rep by rep — the server's laps, measured on the track.
+class _Laps extends StatelessWidget {
+  const _Laps({required this.run, required this.unit});
+
+  final RunDetail run;
+  final DistanceUnit unit;
+
+  static String _label(WorkoutStep s) => switch (s.kind) {
+        StepKind.warmup => 'Warm-up',
+        StepKind.cooldown => 'Cool-down',
+        StepKind.recover => 'Recover',
+        StepKind.work =>
+          s.repOf != null && s.repOf! > 1 ? 'Rep ${s.repIndex}' : 'Work',
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final steps = run.workout!.steps;
+    if (run.laps.isEmpty) {
+      return Text(
+        run.pending
+            ? 'Each rep’s distance, time and pace appear once the run is saved.'
+            : 'No laps were recorded.',
+        style: t.bodyMedium,
+      );
+    }
+    return Column(
+      key: const ValueKey('run.report.laps'),
+      children: [
+        for (final l in run.laps)
+          if (l.step < steps.length)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 3),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _label(steps[l.step]),
+                      style: t.bodyLarge?.copyWith(
+                        fontWeight: steps[l.step].kind == StepKind.work
+                            ? FontWeight.w600
+                            : null,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 64,
+                    child: Text(
+                      '${l.distanceM.round()} m',
+                      textAlign: TextAlign.end,
+                      style: t.bodyMedium,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 56,
+                    child: Text(
+                      formatDuration(l.seconds.round()),
+                      textAlign: TextAlign.end,
+                      style: t.bodyMedium,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 64,
+                    child: Text(
+                      formatPace(l.pace, unit),
+                      textAlign: TextAlign.end,
+                      style: t.bodyLarge,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+      ],
+    );
+  }
+}

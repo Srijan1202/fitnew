@@ -1,3 +1,6 @@
+import '../../../running/presentation/controllers/running_providers.dart';
+import '../../../running/presentation/screens/run_start.dart';
+import '../../../training/presentation/screens/training_tab_screen.dart';
 import '../../../../core/config/app_update.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -144,6 +147,15 @@ class HomeScreen extends ConsumerWidget {
             ),
           );
         }
+      case TodayKind.startRun:
+        // Beta 4.1: the plan's run for today, started from Running.
+        final plan = await ref.read(currentPlanProvider.future);
+        if (!context.mounted) return;
+        final planned =
+            plan?.runs.where((r) => r.id == a.subjectKey).firstOrNull;
+        ref.read(trainingModeProvider.notifier).set(TrainingMode.running);
+        context.go(Routes.plan);
+        if (planned != null) await startPlannedRun(context, ref, planned);
       case TodayKind.celebratePr:
         final id = ref.read(completedTodayProvider).value?.id;
         await context

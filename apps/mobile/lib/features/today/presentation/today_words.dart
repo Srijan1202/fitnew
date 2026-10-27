@@ -21,6 +21,7 @@ abstract final class TodayWords {
         TodayKind.calorieAdjust => 'EAT · TARGET',
         TodayKind.celebratePr => 'RECORD',
         TodayKind.logWeight => 'BODY',
+        TodayKind.startRun => 'RUN',
       };
 
   /// Semantic colour only where it carries meaning (§6.2).
@@ -51,7 +52,14 @@ abstract final class TodayWords {
           'Use ${_num(a.reason.values['newKcal'] as num)} kcal',
         TodayKind.celebratePr => 'See the record',
         TodayKind.logWeight => 'Log weight',
+        TodayKind.startRun => 'Start run',
       };
+
+  /// Seconds as m:ss ("5:30").
+  static String _clock(num seconds) {
+    final t = seconds.round();
+    return '${t ~/ 60}:${(t % 60).toString().padLeft(2, '0')}';
+  }
 
   static String _num(num v) =>
       v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
@@ -134,6 +142,19 @@ abstract final class TodayWords {
           if (n('lowDays') >= 2)
             ('Under 35', '${_num(n('lowDays'))} days running'),
           ('Your plan', 'Unchanged unless you choose to'),
+        ],
+      // Beta 4.1 (ADR-039): today's run from the running plan.
+      'run-scheduled' => [
+          ('Run', s('title')),
+          if (v['distanceM'] != null)
+            ('Distance', '${(n('distanceM') / 1000).toStringAsFixed(1)} km'),
+          if (v['seconds'] != null)
+            ('Time', '${_num((n('seconds') / 60).round())} min'),
+          if (v['paceFast'] != null && v['paceSlow'] != null)
+            (
+              'Pace',
+              '${_clock(n('paceFast'))}–${_clock(n('paceSlow'))} /km',
+            ),
         ],
       'session-scheduled' => [
           ('Session', s('sessionName')),

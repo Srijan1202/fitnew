@@ -16,6 +16,7 @@ class CompletionEvidence {
     this.weighed = false,
     this.deloadActive = false,
     this.targetAdjusted = false,
+    this.plannedRunsDone = const {},
   });
 
   /// The local date these facts are for.
@@ -40,6 +41,9 @@ class CompletionEvidence {
   /// Phase 12: the server holds a target row a calorie-adjust acceptance
   /// created, effective on [date].
   final bool targetAdjusted;
+
+  /// Beta 4.1: the plan's runs the server marks done (a run linked to them).
+  final Set<String> plannedRunsDone;
 }
 
 /// The actions accepted on this phone for [CompletionEvidence.date], not yet
@@ -87,6 +91,7 @@ List<ActionRef> dueCompletions(
       TodayKind.logWeight => evidence.weighed,
       TodayKind.deload => evidence.deloadActive,
       TodayKind.calorieAdjust => evidence.targetAdjusted,
+      TodayKind.startRun => evidence.plannedRunsDone.contains(subject),
       TodayKind.injuredLimitation ||
       TodayKind.restDay ||
       TodayKind.celebratePr ||

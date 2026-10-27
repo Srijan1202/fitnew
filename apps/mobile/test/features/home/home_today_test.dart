@@ -21,6 +21,7 @@ import 'package:fitos/features/profile/domain/entities/profile.dart';
 import 'package:fitos/features/today/domain/today.dart';
 import 'package:fitos/features/today/presentation/today_providers.dart';
 import 'package:fitos/features/training/presentation/controllers/program_controller.dart';
+import 'package:fitos/features/training/presentation/screens/training_tab_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -340,6 +341,48 @@ void main() {
     // No mess configured: the log flow for the action's meal and day.
     expect(find.text('LOG $date lunch'), findsOneWidget);
     expect(today.sent, ['a-eat:shown', 'a-eat:opened', 'a-eat:accepted']);
+  });
+
+  testToday(
+      'beta 4.1: today’s planned run is a card; its why names the run, and Start run opens Running',
+      (tester) async {
+    today.plan = plan([
+      FakeTodayApi.action(
+        TodayKind.startRun,
+        id: 'a-run',
+        subjectKey: 'p-1',
+        headline: 'Easy 5 km today',
+        reason: const TodayReason('run-scheduled', {
+          'title': 'Easy 5 km',
+          'distanceM': 5000,
+          'seconds': null,
+          'paceFast': 330,
+          'paceSlow': 370,
+        }),
+      ),
+    ]);
+    await tester.pumpWidget(app());
+    await settle(tester);
+    await tester.tap(key('home.suggestion.start-run.open'));
+    await settle(tester);
+    expect(textOf(tester, 'today.why.fact.Run'), 'Easy 5 km');
+    expect(textOf(tester, 'today.why.fact.Distance'), '5.0 km');
+    expect(textOf(tester, 'today.why.fact.Pace'), '5:30–6:10 /km');
+    expect(
+      find.descendant(
+        of: key('today.why.primary'),
+        matching: find.text('Start run'),
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(key('today.why.primary'));
+    await settle(tester);
+    expect(find.text('PLAN'), findsOneWidget);
+    expect(
+      ProviderScope.containerOf(tester.element(find.text('PLAN')))
+          .read(trainingModeProvider),
+      TrainingMode.running,
+    );
   });
 
   // Phase 14 (ADR-020 D5): "Explain simply" — FITOS AI rewords the reason;

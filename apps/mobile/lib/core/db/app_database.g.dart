@@ -4348,6 +4348,24 @@ class $LocalRunsTable extends LocalRuns
   late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
       'updated_at', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _workoutJsonMeta =
+      const VerificationMeta('workoutJson');
+  @override
+  late final GeneratedColumn<String> workoutJson = GeneratedColumn<String>(
+      'workout_json', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _lapsJsonMeta =
+      const VerificationMeta('lapsJson');
+  @override
+  late final GeneratedColumn<String> lapsJson = GeneratedColumn<String>(
+      'laps_json', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _plannedRunIdMeta =
+      const VerificationMeta('plannedRunId');
+  @override
+  late final GeneratedColumn<String> plannedRunId = GeneratedColumn<String>(
+      'planned_run_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         clientRunId,
@@ -4364,7 +4382,10 @@ class $LocalRunsTable extends LocalRuns
         note,
         effort,
         treadmillDistanceM,
-        updatedAt
+        updatedAt,
+        workoutJson,
+        lapsJson,
+        plannedRunId
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4452,6 +4473,22 @@ class $LocalRunsTable extends LocalRuns
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('workout_json')) {
+      context.handle(
+          _workoutJsonMeta,
+          workoutJson.isAcceptableOrUnknown(
+              data['workout_json']!, _workoutJsonMeta));
+    }
+    if (data.containsKey('laps_json')) {
+      context.handle(_lapsJsonMeta,
+          lapsJson.isAcceptableOrUnknown(data['laps_json']!, _lapsJsonMeta));
+    }
+    if (data.containsKey('planned_run_id')) {
+      context.handle(
+          _plannedRunIdMeta,
+          plannedRunId.isAcceptableOrUnknown(
+              data['planned_run_id']!, _plannedRunIdMeta));
+    }
     return context;
   }
 
@@ -4491,6 +4528,12 @@ class $LocalRunsTable extends LocalRuns
           DriftSqlType.double, data['${effectivePrefix}treadmill_distance_m']),
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}updated_at'])!,
+      workoutJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}workout_json']),
+      lapsJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}laps_json']),
+      plannedRunId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}planned_run_id']),
     );
   }
 
@@ -4522,6 +4565,12 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
   final int? effort;
   final double? treadmillDistanceM;
   final String updatedAt;
+
+  /// Beta 4.1 (ADR-039): the structured session run (JSON), where each of its
+  /// steps began and ended so far (JSON lap marks), and the plan's run it does.
+  final String? workoutJson;
+  final String? lapsJson;
+  final String? plannedRunId;
   const LocalRun(
       {required this.clientRunId,
       required this.kind,
@@ -4537,7 +4586,10 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
       this.note,
       this.effort,
       this.treadmillDistanceM,
-      required this.updatedAt});
+      required this.updatedAt,
+      this.workoutJson,
+      this.lapsJson,
+      this.plannedRunId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -4570,6 +4622,15 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
       map['treadmill_distance_m'] = Variable<double>(treadmillDistanceM);
     }
     map['updated_at'] = Variable<String>(updatedAt);
+    if (!nullToAbsent || workoutJson != null) {
+      map['workout_json'] = Variable<String>(workoutJson);
+    }
+    if (!nullToAbsent || lapsJson != null) {
+      map['laps_json'] = Variable<String>(lapsJson);
+    }
+    if (!nullToAbsent || plannedRunId != null) {
+      map['planned_run_id'] = Variable<String>(plannedRunId);
+    }
     return map;
   }
 
@@ -4599,6 +4660,15 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
           ? const Value.absent()
           : Value(treadmillDistanceM),
       updatedAt: Value(updatedAt),
+      workoutJson: workoutJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(workoutJson),
+      lapsJson: lapsJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lapsJson),
+      plannedRunId: plannedRunId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(plannedRunId),
     );
   }
 
@@ -4622,6 +4692,9 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
       treadmillDistanceM:
           serializer.fromJson<double?>(json['treadmillDistanceM']),
       updatedAt: serializer.fromJson<String>(json['updatedAt']),
+      workoutJson: serializer.fromJson<String?>(json['workoutJson']),
+      lapsJson: serializer.fromJson<String?>(json['lapsJson']),
+      plannedRunId: serializer.fromJson<String?>(json['plannedRunId']),
     );
   }
   @override
@@ -4643,6 +4716,9 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
       'effort': serializer.toJson<int?>(effort),
       'treadmillDistanceM': serializer.toJson<double?>(treadmillDistanceM),
       'updatedAt': serializer.toJson<String>(updatedAt),
+      'workoutJson': serializer.toJson<String?>(workoutJson),
+      'lapsJson': serializer.toJson<String?>(lapsJson),
+      'plannedRunId': serializer.toJson<String?>(plannedRunId),
     };
   }
 
@@ -4661,7 +4737,10 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
           Value<String?> note = const Value.absent(),
           Value<int?> effort = const Value.absent(),
           Value<double?> treadmillDistanceM = const Value.absent(),
-          String? updatedAt}) =>
+          String? updatedAt,
+          Value<String?> workoutJson = const Value.absent(),
+          Value<String?> lapsJson = const Value.absent(),
+          Value<String?> plannedRunId = const Value.absent()}) =>
       LocalRun(
         clientRunId: clientRunId ?? this.clientRunId,
         kind: kind ?? this.kind,
@@ -4680,6 +4759,10 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
             ? treadmillDistanceM.value
             : this.treadmillDistanceM,
         updatedAt: updatedAt ?? this.updatedAt,
+        workoutJson: workoutJson.present ? workoutJson.value : this.workoutJson,
+        lapsJson: lapsJson.present ? lapsJson.value : this.lapsJson,
+        plannedRunId:
+            plannedRunId.present ? plannedRunId.value : this.plannedRunId,
       );
   LocalRun copyWithCompanion(LocalRunsCompanion data) {
     return LocalRun(
@@ -4701,6 +4784,12 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
           ? data.treadmillDistanceM.value
           : this.treadmillDistanceM,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      workoutJson:
+          data.workoutJson.present ? data.workoutJson.value : this.workoutJson,
+      lapsJson: data.lapsJson.present ? data.lapsJson.value : this.lapsJson,
+      plannedRunId: data.plannedRunId.present
+          ? data.plannedRunId.value
+          : this.plannedRunId,
     );
   }
 
@@ -4721,7 +4810,10 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
           ..write('note: $note, ')
           ..write('effort: $effort, ')
           ..write('treadmillDistanceM: $treadmillDistanceM, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('workoutJson: $workoutJson, ')
+          ..write('lapsJson: $lapsJson, ')
+          ..write('plannedRunId: $plannedRunId')
           ..write(')'))
         .toString();
   }
@@ -4742,7 +4834,10 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
       note,
       effort,
       treadmillDistanceM,
-      updatedAt);
+      updatedAt,
+      workoutJson,
+      lapsJson,
+      plannedRunId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4761,7 +4856,10 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
           other.note == this.note &&
           other.effort == this.effort &&
           other.treadmillDistanceM == this.treadmillDistanceM &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.workoutJson == this.workoutJson &&
+          other.lapsJson == this.lapsJson &&
+          other.plannedRunId == this.plannedRunId);
 }
 
 class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
@@ -4780,6 +4878,9 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
   final Value<int?> effort;
   final Value<double?> treadmillDistanceM;
   final Value<String> updatedAt;
+  final Value<String?> workoutJson;
+  final Value<String?> lapsJson;
+  final Value<String?> plannedRunId;
   final Value<int> rowid;
   const LocalRunsCompanion({
     this.clientRunId = const Value.absent(),
@@ -4797,6 +4898,9 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
     this.effort = const Value.absent(),
     this.treadmillDistanceM = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.workoutJson = const Value.absent(),
+    this.lapsJson = const Value.absent(),
+    this.plannedRunId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalRunsCompanion.insert({
@@ -4815,6 +4919,9 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
     this.effort = const Value.absent(),
     this.treadmillDistanceM = const Value.absent(),
     required String updatedAt,
+    this.workoutJson = const Value.absent(),
+    this.lapsJson = const Value.absent(),
+    this.plannedRunId = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : clientRunId = Value(clientRunId),
         kind = Value(kind),
@@ -4838,6 +4945,9 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
     Expression<int>? effort,
     Expression<double>? treadmillDistanceM,
     Expression<String>? updatedAt,
+    Expression<String>? workoutJson,
+    Expression<String>? lapsJson,
+    Expression<String>? plannedRunId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4857,6 +4967,9 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
       if (treadmillDistanceM != null)
         'treadmill_distance_m': treadmillDistanceM,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (workoutJson != null) 'workout_json': workoutJson,
+      if (lapsJson != null) 'laps_json': lapsJson,
+      if (plannedRunId != null) 'planned_run_id': plannedRunId,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4877,6 +4990,9 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
       Value<int?>? effort,
       Value<double?>? treadmillDistanceM,
       Value<String>? updatedAt,
+      Value<String?>? workoutJson,
+      Value<String?>? lapsJson,
+      Value<String?>? plannedRunId,
       Value<int>? rowid}) {
     return LocalRunsCompanion(
       clientRunId: clientRunId ?? this.clientRunId,
@@ -4894,6 +5010,9 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
       effort: effort ?? this.effort,
       treadmillDistanceM: treadmillDistanceM ?? this.treadmillDistanceM,
       updatedAt: updatedAt ?? this.updatedAt,
+      workoutJson: workoutJson ?? this.workoutJson,
+      lapsJson: lapsJson ?? this.lapsJson,
+      plannedRunId: plannedRunId ?? this.plannedRunId,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4946,6 +5065,15 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<String>(updatedAt.value);
     }
+    if (workoutJson.present) {
+      map['workout_json'] = Variable<String>(workoutJson.value);
+    }
+    if (lapsJson.present) {
+      map['laps_json'] = Variable<String>(lapsJson.value);
+    }
+    if (plannedRunId.present) {
+      map['planned_run_id'] = Variable<String>(plannedRunId.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4970,6 +5098,9 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
           ..write('effort: $effort, ')
           ..write('treadmillDistanceM: $treadmillDistanceM, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('workoutJson: $workoutJson, ')
+          ..write('lapsJson: $lapsJson, ')
+          ..write('plannedRunId: $plannedRunId, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -7996,6 +8127,9 @@ typedef $$LocalRunsTableCreateCompanionBuilder = LocalRunsCompanion Function({
   Value<int?> effort,
   Value<double?> treadmillDistanceM,
   required String updatedAt,
+  Value<String?> workoutJson,
+  Value<String?> lapsJson,
+  Value<String?> plannedRunId,
   Value<int> rowid,
 });
 typedef $$LocalRunsTableUpdateCompanionBuilder = LocalRunsCompanion Function({
@@ -8014,6 +8148,9 @@ typedef $$LocalRunsTableUpdateCompanionBuilder = LocalRunsCompanion Function({
   Value<int?> effort,
   Value<double?> treadmillDistanceM,
   Value<String> updatedAt,
+  Value<String?> workoutJson,
+  Value<String?> lapsJson,
+  Value<String?> plannedRunId,
   Value<int> rowid,
 });
 
@@ -8071,6 +8208,15 @@ class $$LocalRunsTableFilterComposer
 
   ColumnFilters<String> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get workoutJson => $composableBuilder(
+      column: $table.workoutJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lapsJson => $composableBuilder(
+      column: $table.lapsJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get plannedRunId => $composableBuilder(
+      column: $table.plannedRunId, builder: (column) => ColumnFilters(column));
 }
 
 class $$LocalRunsTableOrderingComposer
@@ -8127,6 +8273,16 @@ class $$LocalRunsTableOrderingComposer
 
   ColumnOrderings<String> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get workoutJson => $composableBuilder(
+      column: $table.workoutJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lapsJson => $composableBuilder(
+      column: $table.lapsJson, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get plannedRunId => $composableBuilder(
+      column: $table.plannedRunId,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$LocalRunsTableAnnotationComposer
@@ -8182,6 +8338,15 @@ class $$LocalRunsTableAnnotationComposer
 
   GeneratedColumn<String> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get workoutJson => $composableBuilder(
+      column: $table.workoutJson, builder: (column) => column);
+
+  GeneratedColumn<String> get lapsJson =>
+      $composableBuilder(column: $table.lapsJson, builder: (column) => column);
+
+  GeneratedColumn<String> get plannedRunId => $composableBuilder(
+      column: $table.plannedRunId, builder: (column) => column);
 }
 
 class $$LocalRunsTableTableManager extends RootTableManager<
@@ -8222,6 +8387,9 @@ class $$LocalRunsTableTableManager extends RootTableManager<
             Value<int?> effort = const Value.absent(),
             Value<double?> treadmillDistanceM = const Value.absent(),
             Value<String> updatedAt = const Value.absent(),
+            Value<String?> workoutJson = const Value.absent(),
+            Value<String?> lapsJson = const Value.absent(),
+            Value<String?> plannedRunId = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               LocalRunsCompanion(
@@ -8240,6 +8408,9 @@ class $$LocalRunsTableTableManager extends RootTableManager<
             effort: effort,
             treadmillDistanceM: treadmillDistanceM,
             updatedAt: updatedAt,
+            workoutJson: workoutJson,
+            lapsJson: lapsJson,
+            plannedRunId: plannedRunId,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -8258,6 +8429,9 @@ class $$LocalRunsTableTableManager extends RootTableManager<
             Value<int?> effort = const Value.absent(),
             Value<double?> treadmillDistanceM = const Value.absent(),
             required String updatedAt,
+            Value<String?> workoutJson = const Value.absent(),
+            Value<String?> lapsJson = const Value.absent(),
+            Value<String?> plannedRunId = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               LocalRunsCompanion.insert(
@@ -8276,6 +8450,9 @@ class $$LocalRunsTableTableManager extends RootTableManager<
             effort: effort,
             treadmillDistanceM: treadmillDistanceM,
             updatedAt: updatedAt,
+            workoutJson: workoutJson,
+            lapsJson: lapsJson,
+            plannedRunId: plannedRunId,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0

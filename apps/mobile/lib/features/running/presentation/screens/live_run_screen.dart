@@ -10,6 +10,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/fit_glass.dart';
 import '../../domain/run.dart';
 import '../../domain/units.dart';
+import '../../domain/workout.dart';
 import '../controllers/run_recorder.dart';
 import '../controllers/running_providers.dart';
 import '../widgets/run_map.dart';
@@ -153,6 +154,26 @@ class _LiveRunScreenState extends ConsumerState<LiveRunScreen> {
                     key: ValueKey('run.restored'),
                     text: 'FITOS was closed during your run. It is paused at '
                         'your last point: resume or finish.',
+                  ),
+                if (run.plannedTitle != null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      FitSpacing.screen,
+                      FitSpacing.sm,
+                      FitSpacing.screen,
+                      0,
+                    ),
+                    child: Text(
+                      'Plan: ${run.plannedTitle}',
+                      key: const ValueKey('run.planned'),
+                      style: t.bodyMedium?.copyWith(color: FitColors.ink),
+                    ),
+                  ),
+                if (run.session != null)
+                  _SessionCard(
+                    session: run.session!,
+                    unit: unit,
+                    onNext: recorder.nextStep,
                   ),
                 if (run.goal.kind != RunGoalKind.free)
                   _GoalLine(run: run, unit: unit),
@@ -583,6 +604,102 @@ class _LockOverlayState extends State<_LockOverlay> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Beta 4.1: the step in progress, what is left of it, and the next one.
+class _SessionCard extends StatelessWidget {
+  const _SessionCard({
+    required this.session,
+    required this.unit,
+    required this.onNext,
+  });
+
+  final LiveSession session;
+  final DistanceUnit unit;
+  final VoidCallback onNext;
+
+  static String _what(WorkoutStep s, DistanceUnit unit) {
+    final end = s.distanceM != null
+        ? (s.distanceM! >= 1000
+            ? '${formatDistance(s.distanceM!, unit)} ${unit.label}'
+            : '${s.distanceM!.round()} m')
+        : formatDuration(s.seconds!);
+    final how = s.pace != null
+        ? ' at ${formatPace(s.pace!.fast.toDouble(), unit)}–${formatPace(s.pace!.slow.toDouble(), unit)}'
+        : (s.effort.isEmpty ? '' : ', ${s.effort}');
+    final label = switch (s.kind) {
+      StepKind.warmup => 'Warm-up',
+      StepKind.cooldown => 'Cool-down',
+      StepKind.recover => 'Recover',
+      StepKind.work => s.repOf != null && s.repOf! > 1
+          ? 'Rep ${s.repIndex} of ${s.repOf}'
+          : 'Work',
+    };
+    return '$label · $end$how';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final step = session.step;
+    final left = session.metresLeft != null
+        ? '${session.metresLeft!.round()} m left'
+        : session.secondsLeft != null
+            ? '${formatDuration(session.secondsLeft!)} left'
+            : '';
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        FitSpacing.screen,
+        FitSpacing.sm,
+        FitSpacing.screen,
+        0,
+      ),
+      child: FitBlock(
+        key: const ValueKey('run.session'),
+        padding: const EdgeInsets.all(FitSpacing.md),
+        child: step == null
+            ? Text(
+                '${session.name}: done. Finish when you are ready.',
+                style: t.titleMedium,
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    '${session.name.toUpperCase()} · STEP ${session.index + 1} OF ${session.count}',
+                    style: t.labelSmall,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _what(step, unit),
+                    key: const ValueKey('run.session.step'),
+                    style: t.titleMedium,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          [
+                            left,
+                            if (session.next != null)
+                              'next: ${_what(session.next!, unit)}',
+                          ].where((x) => x.isNotEmpty).join(' · '),
+                          key: const ValueKey('run.session.left'),
+                          style: t.bodyMedium,
+                        ),
+                      ),
+                      TextButton(
+                        key: const ValueKey('run.session.next'),
+                        onPressed: onNext,
+                        child: const Text('Next step'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
       ),
     );
   }

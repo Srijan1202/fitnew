@@ -11,6 +11,7 @@ import 'package:fitos/features/running/data/run_sync_engine.dart';
 import 'package:fitos/features/running/domain/gps_filter.dart';
 import 'package:fitos/features/running/domain/run.dart';
 import 'package:fitos/features/running/domain/track.dart';
+import 'package:fitos/features/running/domain/workout.dart';
 import 'package:fitos/features/running/presentation/controllers/run_recorder.dart';
 import 'package:fitos/features/running/presentation/controllers/running_providers.dart';
 import 'package:fitos/features/workout/presentation/controllers/workout_providers.dart';
@@ -29,6 +30,7 @@ void main() {
   late FakeRunningApi api;
   late FakeLocationSource gps;
   late FakeRunNotification note;
+  late FakeRunVoice voice;
   late DateTime clock;
   late ProviderContainer c;
 
@@ -43,6 +45,7 @@ void main() {
         runClockProvider.overrideWithValue(() => clock),
         syncWakesItselfProvider.overrideWithValue(false),
         profileRepositoryProvider.overrideWithValue(FakeProfileRepository()),
+        runVoiceProvider.overrideWithValue(voice),
       ],
     );
     return container;
@@ -54,6 +57,7 @@ void main() {
     api = FakeRunningApi();
     gps = FakeLocationSource();
     note = FakeRunNotification();
+    voice = FakeRunVoice();
     clock = DateTime.utc(2026, 10, 27, 1);
     c = open();
     // Let the recorder's restore find nothing.
@@ -415,6 +419,191 @@ void main() {
         );
     expect(await v4.select(v4.runSyncQueue).get(), hasLength(1));
     final version = await v4.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 4);
+    expect(version.data.values.single, v4.schemaVersion);
+  });
+
+  test(
+      'a phone on beta 4.0 (schema 4) upgrades: a run row gains its workout, laps and plan columns, and an unsent run stays',
+      () async {
+    final dir = Directory.systemTemp.createTempSync('fitos-runs5');
+    final file = File('${dir.path}/fitos.sqlite');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final old = AppDatabase(NativeDatabase(file));
+    await old.into(old.localRuns).insert(
+          LocalRunsCompanion.insert(
+            clientRunId: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+            kind: 'outdoor',
+            status: 'saved',
+            goalKind: 'free',
+            startedAt: '2026-10-27T01:00:00.000Z',
+            updatedAt: '2026-10-27T01:30:00.000Z',
+          ),
+        );
+    for (final c in ['workout_json', 'laps_json', 'planned_run_id']) {
+      await old.customStatement('ALTER TABLE local_runs DROP COLUMN $c');
+    }
+    await old.customStatement('PRAGMA user_version = 4');
+    await old.close();
+
+    final now = AppDatabase(NativeDatabase(file));
+    addTearDown(now.close);
+    final row = (await now.select(now.localRuns).get()).single;
+    expect(row.clientRunId, 'dddddddd-dddd-4ddd-8ddd-dddddddddddd');
+    expect(row.workoutJson, isNull);
+    await (now.update(now.localRuns))
+        .write(const LocalRunsCompanion(plannedRunId: Value('p1')));
+    expect((await now.select(now.localRuns).get()).single.plannedRunId, 'p1');
+  });
+
+  group('beta 4.1: sessions, plans and the coach', () {
+    const session = RunWorkout(
+      name: 'Two reps',
+      steps: [
+        WorkoutStep(
+          kind: StepKind.work,
+          distanceM: 100,
+          effort: 'hard',
+          repIndex: 1,
+          repOf: 2,
+        ),
+        WorkoutStep(
+          kind: StepKind.recover,
+          seconds: 10,
+          effort: 'stand',
+          repIndex: 1,
+          repOf: 2,
+        ),
+        WorkoutStep(
+          kind: StepKind.work,
+          distanceM: 100,
+          effort: 'hard',
+          repIndex: 2,
+          repOf: 2,
+        ),
+      ],
+    );
+
+    Future<void> step(
+      int seconds, {
+      double speed = 3,
+      double lat0 = 12.9692,
+    }) async {
+      await send(
+        runNorth(from: clock, seconds: seconds, speed: speed, lat0: lat0),
+      );
+      clock = clock.add(Duration(seconds: seconds));
+      recorder().tick();
+      await recorder().flush();
+    }
+
+    test(
+        'a session calls each step, keeps its laps, never auto-pauses, and goes up with the run',
+        () async {
+      api.failWith = const Offline();
+      await recorder().start(
+        kind: RunKind.outdoor,
+        goal: const RunGoal.free(),
+        workout: session,
+      );
+      expect(voice.said.single, 'Rep 1 of 2. 100 metres hard.');
+      expect(run().session!.index, 0);
+      await step(40);
+      expect(run().session!.index, 1);
+      expect(voice.said.last, 'Recover. 10 seconds, stand.');
+      // Standing for the rest: auto-pause stays out of a session.
+      await step(12, speed: 0, lat0: 12.9692 + 117 / 111195);
+      expect(run().status, RunStatus.recording);
+      expect(run().session!.index, 2);
+      expect(voice.said.last, 'Go! Rep 2 of 2. 100 metres hard.');
+      recorder().nextStep();
+      expect(run().session!.done, isTrue);
+      expect(voice.said.last, 'Workout done. Well run.');
+      await recorder().finish();
+      await recorder().save(name: 'Reps');
+      final body = jsonDecode(
+        (await db.select(db.runSyncQueue).get()).single.payloadJson,
+      ) as Map<String, dynamic>;
+      expect((body['workout'] as Map)['name'], 'Two reps');
+      expect(
+        [for (final m in body['laps'] as List) (m as Map)['step']],
+        [0, 1, 2],
+      );
+    });
+
+    test(
+        'a planned run: its id goes up; a structured planned run is its session',
+        () async {
+      api.failWith = const Offline();
+      final planned = PlannedRun.fromJson(
+        plannedRunJson(
+          id: 'p1',
+          date: '2026-10-27',
+          kind: 'intervals',
+          title: 'Intervals',
+          distanceM: null,
+          steps: session.steps,
+        ),
+      );
+      await recorder().start(
+        kind: RunKind.outdoor,
+        goal: const RunGoal.free(),
+        planned: planned,
+      );
+      expect(run().plannedTitle, 'Intervals');
+      expect(run().session!.name, 'Intervals');
+      await recorder().finish();
+      await recorder().save(name: 'Intervals');
+      final body = jsonDecode(
+        (await db.select(db.runSyncQueue).get()).single.payloadJson,
+      ) as Map<String, dynamic>;
+      expect(body['plannedRunId'], 'p1');
+      expect((body['workout'] as Map)['steps'], hasLength(3));
+    });
+
+    test('a treadmill cannot run a distance session: it runs as a steady run',
+        () async {
+      await recorder().start(
+        kind: RunKind.treadmill,
+        goal: const RunGoal.free(),
+        workout: session,
+      );
+      expect(run().session, isNull);
+    });
+
+    test('the coach: a km call, pause and resume; nothing with the voice off',
+        () async {
+      await recorder().start(kind: RunKind.outdoor, goal: const RunGoal.free());
+      await step(340);
+      expect(
+        voice.said.where((s) => s.startsWith('1 kilometre.')),
+        hasLength(1),
+      );
+      recorder().pause();
+      expect(voice.said.last, 'Paused.');
+      recorder().resume();
+      expect(voice.said.last, 'Resumed.');
+      final before = voice.said.length;
+      await c.read(runSettingsProvider.notifier).setVoice(false);
+      recorder().pause();
+      expect(voice.said.length, before);
+    });
+
+    test('a session survives FITOS being closed: it comes back at its step',
+        () async {
+      await recorder().start(
+        kind: RunKind.outdoor,
+        goal: const RunGoal.free(),
+        workout: session,
+      );
+      await step(40);
+      expect(run().session!.index, 1);
+      c.dispose();
+      c = open();
+      c.read(runRecorderProvider);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      final back = c.read(runRecorderProvider)!;
+      expect(back.session!.index, 1);
+      expect(back.session!.name, 'Two reps');
+    });
   });
 }

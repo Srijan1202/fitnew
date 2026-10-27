@@ -1,5 +1,6 @@
 import 'run_math.dart';
 import 'track.dart';
+import 'workout.dart';
 
 /// Beta 4.0 (ADR-038): runs as the server keeps them (packages/contracts
 /// `running.ts`) and the few words the app needs around them.
@@ -113,6 +114,9 @@ class RunDetail {
     required this.splitsMi,
     required this.series,
     this.pending = false,
+    this.workout,
+    this.laps = const [],
+    this.plannedRunId,
   });
 
   factory RunDetail.fromJson(Map<String, dynamic> j) {
@@ -134,6 +138,14 @@ class RunDetail {
         for (final s in j['series'] as List)
           SeriesPoint.fromJson(s as Map<String, dynamic>),
       ],
+      workout: j['workout'] == null
+          ? null
+          : RunWorkout.fromJson(j['workout'] as Map<String, dynamic>),
+      laps: [
+        for (final l in (j['laps'] as List?) ?? const [])
+          Lap.fromJson(l as Map<String, dynamic>),
+      ],
+      plannedRunId: j['plannedRunId'] as String?,
     );
   }
 
@@ -149,6 +161,12 @@ class RunDetail {
 
   /// The phone's preview: the server has not confirmed this run yet.
   final bool pending;
+
+  /// Beta 4.1: the structured session, its laps (the server's, from the
+  /// track; none in the phone's preview) and the planned run it did.
+  final RunWorkout? workout;
+  final List<Lap> laps;
+  final String? plannedRunId;
 
   String get id => summary.id;
 }

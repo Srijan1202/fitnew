@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../config/env.dart';
 import 'auth_interceptor.dart';
@@ -22,6 +23,7 @@ Dio buildDio(IdTokenProvider tokens, {String? baseUrl}) {
   );
   dio.interceptors
     ..add(const NoBodyNoContentType())
+    ..add(BuildHeader())
     ..add(RetryInterceptor(dio))
     ..add(AuthInterceptor(tokens, dio));
   return dio;
@@ -42,6 +44,35 @@ class NoBodyNoContentType extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     if (options.data == null) options.contentType = null;
+    handler.next(options);
+  }
+}
+
+/// Beta 4.1: every request says which build of FITOS sends it
+/// (`X-FITOS-Build`), so the server can leave out what an older build cannot
+/// read (readiness's sixth part). Read once from the installed package;
+/// without it (tests, a platform error) no header is sent.
+class BuildHeader extends Interceptor {
+  BuildHeader({Future<int?> Function()? build}) : _load = build ?? _installed;
+
+  final Future<int?> Function() _load;
+  Future<int?>? _build;
+
+  static Future<int?> _installed() async {
+    try {
+      return int.tryParse((await PackageInfo.fromPlatform()).buildNumber);
+    } on Object {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    final build = await (_build ??= _load());
+    if (build != null) options.headers['X-FITOS-Build'] = '$build';
     handler.next(options);
   }
 }

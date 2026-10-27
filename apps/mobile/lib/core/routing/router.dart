@@ -38,6 +38,7 @@ import '../../features/training/presentation/screens/template_library_screen.dar
 import '../../features/training/presentation/screens/template_preview_screen.dart';
 import '../../features/training/presentation/screens/training_tab_screen.dart';
 import '../../features/running/presentation/screens/live_run_screen.dart';
+import '../../features/running/presentation/screens/plan_setup_screen.dart';
 import '../../features/running/presentation/screens/run_detail_screen.dart';
 import '../../features/running/presentation/screens/run_finish_screen.dart';
 import '../../features/running/presentation/screens/share_run_screen.dart';
@@ -141,6 +142,9 @@ abstract final class Routes {
   static const String runFinish = '/plan/run/finish';
   static String runDetail(String id) => '/plan/runs/$id';
   static String runShare(String id) => '/plan/runs/$id/share';
+
+  /// Beta 4.1: choosing a running plan.
+  static const String runPlanNew = '/plan/running-plan';
 
   /// Screens a signed-out user may see. Everything else needs a session.
   static const Set<String> authRoutes = {signIn, signUp, forgotPassword};
@@ -289,6 +293,12 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
                         builder: (context, state) => const RunFinishScreen(),
                       ),
                     ],
+                  ),
+                  GoRoute(
+                    path: 'running-plan',
+                    name: 'run-plan-new',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const PlanSetupScreen(),
                   ),
                   GoRoute(
                     path: 'runs/:runId',

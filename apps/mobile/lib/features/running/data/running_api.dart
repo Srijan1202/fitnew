@@ -4,6 +4,7 @@ import '../../../core/errors/error_mapper.dart';
 import '../../../core/errors/failure.dart';
 import '../../../core/errors/result.dart';
 import '../domain/run.dart';
+import '../domain/workout.dart';
 
 /// Beta 4.0 (ADR-038): the /v1/running endpoints. Envelope mapping only; the
 /// server computes every figure.
@@ -18,6 +19,16 @@ abstract class RunningApi {
   Future<Result<void>> deleteRun(String id);
   Future<Result<Map<String, dynamic>>> run(String id);
   Future<Result<RunList>> runs({String? before});
+
+  /// Beta 4.1: `{"plan": …}` as the server sent it (cached as is); `plan`
+  /// is null without one.
+  Future<Result<Map<String, dynamic>>> currentPlan();
+  Future<Result<RunningPlan>> createPlan(Map<String, dynamic> body);
+  Future<Result<void>> stopPlan();
+
+  /// `skip` | `unskip` | `move` (with `date`).
+  Future<Result<PlannedRun>> patchPlanned(String id, Map<String, dynamic> body);
+  Future<Result<WorkoutPresets>> workouts();
 }
 
 class DioRunningApi implements RunningApi {
@@ -84,5 +95,46 @@ class DioRunningApi implements RunningApi {
           queryParameters: {if (before != null) 'before': before},
         ),
         RunList.fromJson,
+      );
+
+  @override
+  Future<Result<Map<String, dynamic>>> currentPlan() => _guard(
+        () => _dio.get<Map<String, dynamic>>('/v1/running/plans/current'),
+        _same,
+      );
+
+  @override
+  Future<Result<RunningPlan>> createPlan(Map<String, dynamic> body) => _guard(
+        () => _dio.post<Map<String, dynamic>>('/v1/running/plans', data: body),
+        RunningPlan.fromJson,
+      );
+
+  @override
+  Future<Result<void>> stopPlan() async {
+    try {
+      await _dio.delete<void>('/v1/running/plans/current');
+      return const Ok(null);
+    } on DioException catch (e) {
+      return Err(ErrorMapper.fromDio(e));
+    }
+  }
+
+  @override
+  Future<Result<PlannedRun>> patchPlanned(
+    String id,
+    Map<String, dynamic> body,
+  ) =>
+      _guard(
+        () => _dio.patch<Map<String, dynamic>>(
+          '/v1/running/planned/$id',
+          data: body,
+        ),
+        PlannedRun.fromJson,
+      );
+
+  @override
+  Future<Result<WorkoutPresets>> workouts() => _guard(
+        () => _dio.get<Map<String, dynamic>>('/v1/running/workouts'),
+        WorkoutPresets.fromJson,
       );
 }

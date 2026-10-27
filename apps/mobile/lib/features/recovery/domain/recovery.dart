@@ -19,13 +19,15 @@ enum ReadinessBand {
       values.firstWhere((b) => b.wire == w, orElse: () => ready);
 }
 
-/// §18's five components.
+/// §18's components: the five of Phase 13, and running load (beta 4.1,
+/// ADR-039), which the server sends to this build and later ones.
 enum ReadinessComponentKey {
   sleep('sleep', 'Sleep'),
   soreness('soreness', 'Soreness'),
   energy('energy', 'Energy'),
   performance('performance', 'Training'),
-  adherence('adherence', 'Nutrition');
+  adherence('adherence', 'Nutrition'),
+  running('running', 'Running load');
 
   const ReadinessComponentKey(this.wire, this.label);
   final String wire;

@@ -217,6 +217,12 @@ class LocalRuns extends Table {
   RealColumn get treadmillDistanceM => real().nullable()();
   TextColumn get updatedAt => text()();
 
+  /// Beta 4.1 (ADR-039): the structured session run (JSON), where each of its
+  /// steps began and ended so far (JSON lap marks), and the plan's run it does.
+  TextColumn get workoutJson => text().nullable()();
+  TextColumn get lapsJson => text().nullable()();
+  TextColumn get plannedRunId => text().nullable()();
+
   @override
   Set<Column<Object>> get primaryKey => {clientRunId};
 }
@@ -296,11 +302,11 @@ class AppDatabase extends _$AppDatabase {
 
   /// 1 — Phase 5 (workout, sync queue, cache). 2 — Phase 8 (food logs and
   /// their own queue). 3 — Phase 11 (TODAY events: queue and ledger).
-  /// 4 — beta 4.0 (runs, their points and their queue). An upgrade only
-  /// ADDS tables: a phone that still holds an unsent workout or food log
-  /// keeps it.
+  /// 4 — beta 4.0 (runs, their points and their queue). 5 — beta 4.1 (a
+  /// run's workout, laps and planned run). An upgrade only ADDS: a phone that
+  /// still holds an unsent workout, food log or run keeps it.
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -318,6 +324,11 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(localRuns);
             await m.createTable(localRunPoints);
             await m.createTable(runSyncQueue);
+          } else if (from < 5) {
+            // A 4.0 table gains the three columns (a fresh one has them).
+            await m.addColumn(localRuns, localRuns.workoutJson);
+            await m.addColumn(localRuns, localRuns.lapsJson);
+            await m.addColumn(localRuns, localRuns.plannedRunId);
           }
         },
       );

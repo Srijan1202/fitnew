@@ -6,13 +6,16 @@ import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:fitos/features/exercise/presentation/controllers/exercise_providers.dart';
+import 'package:fitos/features/health/presentation/controllers/health_providers.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:fitos/features/running/data/location_source.dart';
 import 'package:fitos/features/running/domain/run.dart';
 import 'package:fitos/features/running/domain/track.dart';
+import 'package:fitos/features/running/domain/workout.dart';
 import 'package:fitos/features/running/presentation/controllers/run_recorder.dart';
 import 'package:fitos/features/running/presentation/controllers/running_providers.dart';
 import 'package:fitos/features/running/presentation/screens/live_run_screen.dart';
+import 'package:fitos/features/running/presentation/screens/plan_setup_screen.dart';
 import 'package:fitos/features/running/presentation/screens/run_detail_screen.dart';
 import 'package:fitos/features/running/presentation/screens/run_finish_screen.dart';
 import 'package:fitos/features/running/presentation/screens/share_run_screen.dart';
@@ -42,6 +45,7 @@ void main() {
   late FakeRunSharer sharer;
   late FakeBatteryAccess battery;
   late FakeMetaApi meta;
+  late FakeRunVoice voice;
   late DateTime clock;
 
   setUp(() {
@@ -51,6 +55,7 @@ void main() {
     sharer = FakeRunSharer();
     battery = FakeBatteryAccess();
     meta = FakeMetaApi();
+    voice = FakeRunVoice();
     clock = DateTime.utc(2026, 10, 27, 1, 30);
   });
   // After a failure the test clock stops, and work it was driving can hold
@@ -76,6 +81,11 @@ void main() {
                 builder: (_, __) => const RunFinishScreen(),
               ),
             ],
+          ),
+          GoRoute(
+            path: 'running-plan',
+            parentNavigatorKey: root,
+            builder: (_, __) => const PlanSetupScreen(),
           ),
           GoRoute(
             path: 'runs/:runId',
@@ -126,7 +136,10 @@ void main() {
           running: api,
           location: gps,
           battery: battery,
+          voice: voice,
         ),
+        // The test clock's day (a Tuesday), for the plan's week.
+        localTodayProvider.overrideWithValue('2026-10-27'),
         runClockProvider.overrideWithValue(() => clock),
         runSharerProvider.overrideWithValue(sharer),
         runMapModeProvider.overrideWithValue(RunMapMode.drawn),
@@ -582,6 +595,232 @@ void main() {
     await run(tester, 60);
     await settle(tester);
     expect(tester.takeException(), isNull);
+  });
+
+  group('beta 4.1: plans, sessions and the coach', () {
+    const today = '2026-10-27';
+    Finder setupList() => find
+        .descendant(
+          of: find.byKey(const ValueKey('plan.setup.list')),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    Future<void> toMake(WidgetTester tester) => tester.scrollUntilVisible(
+          find.byKey(const ValueKey('plan.make')),
+          200,
+          scrollable: setupList(),
+        );
+
+    testWidgets(
+        'no plan: the way to one; making one sends the choices and shows the week',
+        (tester) async {
+      await openRunning(tester);
+      expect(find.byKey(const ValueKey('running.plan.none')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('running.plan.new')));
+      await settle(tester);
+      expect(find.text('New running plan'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('plan.goal.half')));
+      await tester.enterText(find.byKey(const ValueKey('plan.time')), '24:30');
+      api.plan = planJson(
+        goal: 'half',
+        runs: [plannedRunJson(id: 'p-today', date: today)],
+      );
+      await toMake(tester);
+      await tester.tap(find.byKey(const ValueKey('plan.make')));
+      await settle(tester);
+      expect(api.createdPlans.single, {
+        'goal': 'half',
+        'level': 'runner',
+        'race': {'distance': '5k', 'seconds': 1470},
+        'goalSeconds': null,
+        'daysPerWeek': 3,
+        'weekdays': [2, 4, 7],
+        'longRunWeekday': 7,
+      });
+      expect(find.byKey(const ValueKey('running.plan')), findsOneWidget);
+      expect(find.text('Predicted Half marathon: 50:01'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('running.planned.p-today')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('plan setup: a time that is not a time, and the beginner 5K',
+        (tester) async {
+      await openRunning(tester);
+      await tester.tap(find.byKey(const ValueKey('running.plan.new')));
+      await settle(tester);
+      await tester.enterText(find.byKey(const ValueKey('plan.time')), '24');
+      await toMake(tester);
+      await tester.tap(find.byKey(const ValueKey('plan.make')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('plan.error')), findsOneWidget);
+      expect(api.createdPlans, isEmpty);
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('plan.goal.5k')),
+        -200,
+        scrollable: setupList(),
+      );
+      await tester.tap(find.byKey(const ValueKey('plan.goal.5k')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('plan.from.zero')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('plan.time')), findsNothing);
+      await toMake(tester);
+      await tester.tap(find.byKey(const ValueKey('plan.make')));
+      await settle(tester);
+      expect(api.createdPlans.single, containsPair('level', 'beginner'));
+      expect(api.createdPlans.single['race'], isNull);
+    });
+
+    testWidgets(
+        'today’s planned run starts from the plan card: its session runs with the coach',
+        (tester) async {
+      api.plan = planJson(
+        runs: [
+          plannedRunJson(
+            id: 'p-today',
+            date: today,
+            kind: 'intervals',
+            title: 'Intervals: 2 × 400 m',
+            distanceM: null,
+            steps: const [
+              WorkoutStep(
+                kind: StepKind.work,
+                distanceM: 400,
+                pace: PaceRange(270, 290),
+                effort: 'hard',
+                repIndex: 1,
+                repOf: 2,
+              ),
+              WorkoutStep(
+                kind: StepKind.recover,
+                seconds: 60,
+                effort: 'jog',
+                repIndex: 1,
+                repOf: 2,
+              ),
+              WorkoutStep(
+                kind: StepKind.work,
+                distanceM: 400,
+                pace: PaceRange(270, 290),
+                effort: 'hard',
+                repIndex: 2,
+                repOf: 2,
+              ),
+            ],
+          ),
+        ],
+      );
+      await openRunning(tester);
+      await tester
+          .tap(find.byKey(const ValueKey('running.planned.start.p-today')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('run.planned')), findsOneWidget);
+      expect(find.byKey(const ValueKey('run.session')), findsOneWidget);
+      expect(find.textContaining('Rep 1 of 2 · 400 m'), findsOneWidget);
+      expect(voice.said.first, 'Rep 1 of 2. 400 metres at 4 40.');
+      await tester.tap(find.byKey(const ValueKey('run.session.next')));
+      await settle(tester);
+      expect(find.textContaining('Recover · 1:00'), findsOneWidget);
+    });
+
+    testWidgets('a planned run can be skipped and the skip undone',
+        (tester) async {
+      api.plan = planJson(
+        runs: [plannedRunJson(id: 'p-later', date: '2026-10-29')],
+      );
+      await openRunning(tester);
+      await tester
+          .tap(find.byKey(const ValueKey('running.planned.menu.p-later')));
+      await settle(tester);
+      await tester.tap(find.text('Skip'));
+      await settle(tester);
+      expect(api.calls, contains('patchPlanned p-later skip'));
+      await tester.tap(find.text('Undo'));
+      await settle(tester);
+      expect(api.calls, contains('patchPlanned p-later unskip'));
+    });
+
+    testWidgets('the setup sheet: a ready-made session, and sprints',
+        (tester) async {
+      api.presets = {
+        'zones': null,
+        'presets': [
+          {
+            'id': '6x400',
+            'name': '6 × 400 m',
+            'about': 'Speed.',
+            'steps': [
+              const WorkoutStep(
+                kind: StepKind.work,
+                distanceM: 400,
+                effort: 'hard',
+              ).toJson(),
+            ],
+          },
+        ],
+      };
+      await openRunning(tester);
+      await tester.tap(find.byKey(const ValueKey('running.start')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('run.type.session')));
+      await settle(tester);
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const ValueKey('run.start')))
+            .onPressed,
+        isNull,
+      );
+      await tester.tap(find.byKey(const ValueKey('run.session.6x400')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('run.start')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('run.session')), findsOneWidget);
+      expect(voice.said.first, '400 metres hard.');
+      final c = container(tester);
+      expect(c.read(runRecorderProvider)!.session!.name, '6 × 400 m');
+    });
+
+    testWidgets('sprints: reps, distance and rest make the session',
+        (tester) async {
+      await openRunning(tester);
+      await tester.tap(find.byKey(const ValueKey('running.start')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('run.type.sprints')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('run.sprint.reps.4')));
+      await tester.tap(find.byKey(const ValueKey('run.sprint.m.200')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('run.start')));
+      await settle(tester);
+      final session = container(tester).read(runRecorderProvider)!.session!;
+      expect(session.name, 'Sprints: 4 × 200 m');
+      expect(session.count, 9); // warm-up, 4 reps, 3 rests, cool-down
+    });
+
+    testWidgets(
+        'running settings: the voice coach, every half, and a test of the voice',
+        (tester) async {
+      await openRunning(tester);
+      await tester.tap(find.byKey(const ValueKey('running.settings')));
+      await settle(tester);
+      await tester
+          .tap(find.byKey(const ValueKey('running.settings.testVoice')));
+      await settle(tester);
+      expect(voice.said.single, startsWith('1 kilometre.'));
+      await tester
+          .tap(find.byKey(const ValueKey('running.settings.everyHalf')));
+      await settle(tester);
+      expect(container(tester).read(runSettingsProvider).everyHalf, isTrue);
+      await tester.tap(find.byKey(const ValueKey('running.settings.voice')));
+      await settle(tester);
+      expect(container(tester).read(runSettingsProvider).voice, isFalse);
+      expect(
+        find.byKey(const ValueKey('running.settings.testVoice')),
+        findsNothing,
+      );
+    });
   });
 }
 

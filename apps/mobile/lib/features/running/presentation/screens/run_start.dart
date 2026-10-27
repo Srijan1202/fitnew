@@ -7,6 +7,7 @@ import '../../../../core/theme/tokens.dart';
 import '../../data/location_source.dart';
 import '../../domain/run.dart';
 import '../../domain/units.dart';
+import '../../domain/workout.dart';
 import '../controllers/run_recorder.dart';
 import '../controllers/running_providers.dart';
 
@@ -15,7 +16,7 @@ import '../controllers/running_providers.dart';
 
 /// Opens the setup sheet and, on Start, starts the run.
 Future<void> startRunFlow(BuildContext context, WidgetRef ref) async {
-  final choice = await showModalBottomSheet<(RunKind, RunGoal)>(
+  final choice = await showModalBottomSheet<RunChoice>(
     context: context,
     // Above the whole app: the Training tab's own navigator sits under the
     // bottom bar, which covered the sheet's Start button (beta 4.0.1).
@@ -26,7 +27,7 @@ Future<void> startRunFlow(BuildContext context, WidgetRef ref) async {
     builder: (_) => const RunSetupSheet(),
   );
   if (choice == null || !context.mounted) return;
-  final (kind, goal) = choice;
+  final RunChoice(:kind, :goal, :workout) = choice;
   final recorder = ref.read(runRecorderProvider.notifier);
   if (kind == RunKind.outdoor) {
     final access = await recorder.access();
@@ -38,9 +39,50 @@ Future<void> startRunFlow(BuildContext context, WidgetRef ref) async {
     await _askBatteryOnce(context, ref);
     if (!context.mounted) return;
   }
-  await recorder.start(kind: kind, goal: goal);
+  await recorder.start(kind: kind, goal: goal, workout: workout);
   if (context.mounted) await context.push(Routes.runLive);
 }
+
+/// What the setup sheet chose.
+class RunChoice {
+  const RunChoice(this.kind, this.goal, [this.workout]);
+
+  final RunKind kind;
+  final RunGoal goal;
+
+  /// Beta 4.1: a session or sprints; null for a steady run.
+  final RunWorkout? workout;
+}
+
+/// Beta 4.1 (ADR-039): a sprint session — warm-up, [count] reps of
+/// [distanceM] all out from a standing start, [restSeconds] standing between,
+/// cool-down. Built from the runner's three choices (no rule to apply).
+RunWorkout sprintSession(int count, int distanceM, int restSeconds) {
+  final steps = <WorkoutStep>[
+    const WorkoutStep(kind: StepKind.warmup, seconds: 600, effort: 'easy'),
+    for (var i = 1; i <= count; i++) ...[
+      WorkoutStep(
+        kind: StepKind.work,
+        distanceM: distanceM.toDouble(),
+        effort: 'all out',
+        repIndex: i,
+        repOf: count,
+      ),
+      if (i < count)
+        WorkoutStep(
+          kind: StepKind.recover,
+          seconds: restSeconds,
+          effort: 'stand',
+          repIndex: i,
+          repOf: count,
+        ),
+    ],
+    const WorkoutStep(kind: StepKind.cooldown, seconds: 300, effort: 'easy'),
+  ];
+  return RunWorkout(name: 'Sprints: $count × $distanceM m', steps: steps);
+}
+
+enum _Type { steady, session, sprints }
 
 Future<void> _explainLocation(
   BuildContext context,
@@ -93,6 +135,37 @@ Future<void> _explainLocation(
   );
 }
 
+/// Beta 4.1: starts the plan's run (its session, its targets) after the same
+/// location and battery checks as any outdoor run.
+Future<void> startPlannedRun(
+  BuildContext context,
+  WidgetRef ref,
+  PlannedRun planned,
+) async {
+  final recorder = ref.read(runRecorderProvider.notifier);
+  if (ref.read(runRecorderProvider) != null) {
+    await context.push(Routes.runLive);
+    return;
+  }
+  final access = await recorder.access();
+  if (!context.mounted) return;
+  if (access != LocationAccess.granted) {
+    await _explainLocation(context, ref, access);
+    return;
+  }
+  await _askBatteryOnce(context, ref);
+  if (!context.mounted) return;
+  final goal = planned.structured
+      ? const RunGoal.free()
+      : planned.distanceM != null
+          ? RunGoal(RunGoalKind.distance, planned.distanceM!.round())
+          : planned.seconds != null
+              ? RunGoal(RunGoalKind.time, planned.seconds)
+              : const RunGoal.free();
+  await recorder.start(kind: RunKind.outdoor, goal: goal, planned: planned);
+  if (context.mounted) await context.push(Routes.runLive);
+}
+
 /// Once per phone: battery saving may stop FITOS during a run.
 Future<void> _askBatteryOnce(BuildContext context, WidgetRef ref) async {
   final settings = ref.read(runSettingsProvider);
@@ -136,6 +209,11 @@ class RunSetupSheet extends ConsumerStatefulWidget {
 
 class _RunSetupSheetState extends ConsumerState<RunSetupSheet> {
   RunKind _kind = RunKind.outdoor;
+  _Type _type = _Type.steady;
+  String? _presetId;
+  int _reps = 6;
+  int _sprintM = 100;
+  int _rest = 120;
   RunGoalKind _goal = RunGoalKind.free;
   double _distanceUnits = 5;
   int _minutes = 30;
@@ -153,6 +231,133 @@ class _RunSetupSheetState extends ConsumerState<RunSetupSheet> {
         RunGoalKind.pace =>
           RunGoal(_goal, (_paceSeconds * 1000 / unit.metres).round()),
       };
+
+  WorkoutPreset? get _preset {
+    final presets = ref.read(workoutPresetsProvider).value?.presets;
+    if (presets == null) return null;
+    for (final p in presets) {
+      if (p.id == _presetId) return p;
+    }
+    return null;
+  }
+
+  RunChoice _choice(DistanceUnit unit) => switch (_type) {
+        _Type.steady => RunChoice(_kind, _goalValue(unit)),
+        _Type.session =>
+          RunChoice(RunKind.outdoor, const RunGoal.free(), _preset!.workout),
+        _Type.sprints => RunChoice(
+            RunKind.outdoor,
+            const RunGoal.free(),
+            sprintSession(_reps, _sprintM, _rest),
+          ),
+      };
+
+  List<Widget> _sessions(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final async = ref.watch(workoutPresetsProvider);
+    final presets = async.value?.presets;
+    return [
+      const SizedBox(height: FitSpacing.md),
+      if (presets == null)
+        Text(
+          async.isLoading
+              ? 'Loading the sessions…'
+              : 'Sessions need a connection the first time. Try again online.',
+          style: t.bodyMedium,
+        )
+      else ...[
+        if (async.value?.zones == null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: FitSpacing.sm),
+            child: Text(
+              'Paced by effort. With a running plan, every rep gets your pace.',
+              style: t.bodyMedium,
+            ),
+          ),
+        RadioGroup<String>(
+          groupValue: _presetId,
+          onChanged: (v) => setState(() => _presetId = v),
+          child: Column(
+            children: [
+              for (final p in presets)
+                RadioListTile<String>(
+                  key: ValueKey('run.session.${p.id}'),
+                  value: p.id,
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(p.name),
+                  subtitle: Text(p.about),
+                ),
+            ],
+          ),
+        ),
+      ],
+    ];
+  }
+
+  List<Widget> _sprints(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    Widget row(
+      String label,
+      List<int> values,
+      int current,
+      ValueChanged<int> on,
+      String key,
+      String Function(int) word,
+    ) =>
+        Padding(
+          padding: const EdgeInsets.only(top: FitSpacing.sm),
+          child: Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              SizedBox(width: 56, child: Text(label, style: t.bodyMedium)),
+              for (final v in values)
+                ChoiceChip(
+                  key: ValueKey('run.sprint.$key.$v'),
+                  label: Text(word(v)),
+                  selected: current == v,
+                  onSelected: (_) => setState(() => on(v)),
+                ),
+            ],
+          ),
+        );
+    return [
+      row(
+        'Reps',
+        const [4, 6, 8, 10],
+        _reps,
+        (v) => _reps = v,
+        'reps',
+        (v) => '$v',
+      ),
+      row(
+        'Distance',
+        const [60, 100, 200, 400],
+        _sprintM,
+        (v) => _sprintM = v,
+        'm',
+        (v) => '$v m',
+      ),
+      row(
+        'Rest',
+        const [60, 90, 120, 180],
+        _rest,
+        (v) => _rest = v,
+        'rest',
+        (v) => v % 60 == 0 ? '${v ~/ 60} min' : '$v s',
+      ),
+      Padding(
+        padding: const EdgeInsets.only(top: FitSpacing.sm),
+        child: Text(
+          'Stand still for the countdown; each rep starts on Go. Phone GPS is '
+          'good to a few metres, so a 100 m time can be half a second out; '
+          '400 m is far closer.',
+          style: t.bodyMedium,
+        ),
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -215,96 +420,136 @@ class _RunSetupSheetState extends ConsumerState<RunSetupSheet> {
               ),
             ),
           const SizedBox(height: FitSpacing.lg),
-          Text('GOAL', style: t.labelSmall),
+          Text('RUN', style: t.labelSmall),
           const SizedBox(height: FitSpacing.sm),
           Wrap(
             spacing: FitSpacing.sm,
-            runSpacing: FitSpacing.sm,
             children: [
-              for (final g in RunGoalKind.values)
-                chip(
-                  switch (g) {
-                    RunGoalKind.free => 'Free run',
-                    RunGoalKind.distance => 'Distance',
-                    RunGoalKind.time => 'Time',
-                    RunGoalKind.pace => 'Pace',
-                  },
-                  g,
-                  _goal,
-                  (v) => _goal = v,
-                  key: ValueKey('run.goal.${g.name}'),
-                ),
+              chip(
+                'Steady',
+                _Type.steady,
+                _type,
+                (v) => _type = v,
+                key: const ValueKey('run.type.steady'),
+              ),
+              chip(
+                'Session',
+                _Type.session,
+                _type,
+                (v) {
+                  _type = v;
+                  _kind = RunKind.outdoor;
+                },
+                key: const ValueKey('run.type.session'),
+              ),
+              chip(
+                'Sprints',
+                _Type.sprints,
+                _type,
+                (v) {
+                  _type = v;
+                  _kind = RunKind.outdoor;
+                },
+                key: const ValueKey('run.type.sprints'),
+              ),
             ],
           ),
-          const SizedBox(height: FitSpacing.md),
-          if (_goal == RunGoalKind.distance)
+          if (_type == _Type.session) ..._sessions(context),
+          if (_type == _Type.sprints) ..._sprints(context),
+          if (_type == _Type.steady) ...[
+            const SizedBox(height: FitSpacing.lg),
+            Text('GOAL', style: t.labelSmall),
+            const SizedBox(height: FitSpacing.sm),
             Wrap(
               spacing: FitSpacing.sm,
               runSpacing: FitSpacing.sm,
               children: [
-                for (final d in _distances)
+                for (final g in RunGoalKind.values)
                   chip(
-                    d == 21.1
-                        ? 'Half'
-                        : d == 42.2
-                            ? 'Marathon'
-                            : '${d.toStringAsFixed(0)} ${unit.label}',
-                    d,
-                    _distanceUnits,
-                    (v) => _distanceUnits = v,
-                    key: ValueKey('run.goal.distance.$d'),
+                    switch (g) {
+                      RunGoalKind.free => 'Free run',
+                      RunGoalKind.distance => 'Distance',
+                      RunGoalKind.time => 'Time',
+                      RunGoalKind.pace => 'Pace',
+                    },
+                    g,
+                    _goal,
+                    (v) => _goal = v,
+                    key: ValueKey('run.goal.${g.name}'),
                   ),
               ],
             ),
-          if (_goal == RunGoalKind.time)
-            Wrap(
-              spacing: FitSpacing.sm,
-              runSpacing: FitSpacing.sm,
-              children: [
-                for (final m in _times)
-                  chip(
-                    '$m min',
-                    m,
-                    _minutes,
-                    (v) => _minutes = v,
-                    key: ValueKey('run.goal.time.$m'),
+            const SizedBox(height: FitSpacing.md),
+            if (_goal == RunGoalKind.distance)
+              Wrap(
+                spacing: FitSpacing.sm,
+                runSpacing: FitSpacing.sm,
+                children: [
+                  for (final d in _distances)
+                    chip(
+                      d == 21.1
+                          ? 'Half'
+                          : d == 42.2
+                              ? 'Marathon'
+                              : '${d.toStringAsFixed(0)} ${unit.label}',
+                      d,
+                      _distanceUnits,
+                      (v) => _distanceUnits = v,
+                      key: ValueKey('run.goal.distance.$d'),
+                    ),
+                ],
+              ),
+            if (_goal == RunGoalKind.time)
+              Wrap(
+                spacing: FitSpacing.sm,
+                runSpacing: FitSpacing.sm,
+                children: [
+                  for (final m in _times)
+                    chip(
+                      '$m min',
+                      m,
+                      _minutes,
+                      (v) => _minutes = v,
+                      key: ValueKey('run.goal.time.$m'),
+                    ),
+                ],
+              ),
+            if (_goal == RunGoalKind.pace)
+              Row(
+                children: [
+                  IconButton.outlined(
+                    key: const ValueKey('run.goal.pace.faster'),
+                    tooltip: 'Faster',
+                    onPressed: _paceSeconds > 150
+                        ? () => setState(() => _paceSeconds -= 5)
+                        : null,
+                    icon: const Icon(Icons.remove),
                   ),
-              ],
-            ),
-          if (_goal == RunGoalKind.pace)
-            Row(
-              children: [
-                IconButton.outlined(
-                  key: const ValueKey('run.goal.pace.faster'),
-                  tooltip: 'Faster',
-                  onPressed: _paceSeconds > 150
-                      ? () => setState(() => _paceSeconds -= 5)
-                      : null,
-                  icon: const Icon(Icons.remove),
-                ),
-                Expanded(
-                  child: Text(
-                    '${formatUnitPace(_paceSeconds.toDouble())} ${unit.paceLabel}',
-                    key: const ValueKey('run.goal.pace.value'),
-                    textAlign: TextAlign.center,
-                    style: t.displaySmall,
+                  Expanded(
+                    child: Text(
+                      '${formatUnitPace(_paceSeconds.toDouble())} ${unit.paceLabel}',
+                      key: const ValueKey('run.goal.pace.value'),
+                      textAlign: TextAlign.center,
+                      style: t.displaySmall,
+                    ),
                   ),
-                ),
-                IconButton.outlined(
-                  key: const ValueKey('run.goal.pace.slower'),
-                  tooltip: 'Slower',
-                  onPressed: _paceSeconds < 1100
-                      ? () => setState(() => _paceSeconds += 5)
-                      : null,
-                  icon: const Icon(Icons.add),
-                ),
-              ],
-            ),
+                  IconButton.outlined(
+                    key: const ValueKey('run.goal.pace.slower'),
+                    tooltip: 'Slower',
+                    onPressed: _paceSeconds < 1100
+                        ? () => setState(() => _paceSeconds += 5)
+                        : null,
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
+              ),
+          ],
           const SizedBox(height: FitSpacing.lg),
           FilledButton.icon(
             key: const ValueKey('run.start'),
-            onPressed: () =>
-                Navigator.of(context).pop((_kind, _goalValue(unit))),
+            onPressed: _type == _Type.session && _preset == null
+                ? null
+                : () => Navigator.of(context).pop(_choice(unit)),
             icon: const Icon(Icons.play_arrow),
             label: const Text('Start'),
           ),

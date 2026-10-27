@@ -22,7 +22,10 @@ enum TodayKind {
   /// Phase 12: the §13.2 calorie-target adjustment (advisory; accepting applies it).
   calorieAdjust('calorie-adjust'),
   celebratePr('celebrate-pr'),
-  logWeight('log-weight');
+  logWeight('log-weight'),
+
+  /// Beta 4.1 (ADR-039): today's run from the running plan.
+  startRun('start-run');
 
   const TodayKind(this.wire);
   final String wire;

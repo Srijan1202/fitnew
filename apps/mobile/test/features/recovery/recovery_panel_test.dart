@@ -59,43 +59,45 @@ void main() {
     int score = 48,
     ReadinessBand band = ReadinessBand.reduce,
     int lowDays = 0,
+    ReadinessComponent? running,
   }) =>
       Readiness(
         score: score,
         band: band,
         advice:
             'Consider one fewer set on your accessory lifts today. Your main lifts stay as planned.',
-        components: const [
-          ReadinessComponent(
+        components: [
+          const ReadinessComponent(
             key: ReadinessComponentKey.sleep,
             penalty: 20,
             max: 25,
             available: true,
           ),
-          ReadinessComponent(
+          const ReadinessComponent(
             key: ReadinessComponentKey.soreness,
             penalty: 0,
             max: 20,
             available: true,
           ),
-          ReadinessComponent(
+          const ReadinessComponent(
             key: ReadinessComponentKey.energy,
             penalty: 0,
             max: 20,
             available: false,
           ),
-          ReadinessComponent(
+          const ReadinessComponent(
             key: ReadinessComponentKey.performance,
             penalty: 0,
             max: 25,
             available: false,
           ),
-          ReadinessComponent(
+          const ReadinessComponent(
             key: ReadinessComponentKey.adherence,
             penalty: 0,
             max: 10,
             available: false,
           ),
+          if (running != null) running,
         ],
         lowDays: lowDays,
       );
@@ -283,6 +285,57 @@ void main() {
     expect(
       textOf(tester, 'recovery.readiness.note'),
       startsWith('Advice only — your plan never changes on its own.'),
+    );
+  });
+
+  testWidgets(
+      'beta 4.1: running load is a sixth part; with too few runs it is named, never guessed',
+      (tester) async {
+    recovery.current = RecoveryToday(
+      date: today,
+      log: const RecoveryLog(date: today, sleepHours: 5, soreness: 1),
+      readiness: readiness(
+        running: const ReadinessComponent(
+          key: ReadinessComponentKey.running,
+          penalty: 6,
+          max: 10,
+          available: true,
+        ),
+      ),
+    );
+    await tester.pumpWidget(app());
+    await settle(tester);
+    await reveal(tester, key('recovery.readiness.note'));
+    expect(textOf(tester, 'recovery.component.running'), '−6 of 10');
+    expect(
+      tester
+          .widget<LinearProgressIndicator>(
+            key('recovery.component.running.bar'),
+          )
+          .value,
+      closeTo(4 / 10, 1e-9),
+    );
+
+    recovery.current = RecoveryToday(
+      date: today,
+      log: const RecoveryLog(date: today, sleepHours: 5, soreness: 1),
+      readiness: readiness(
+        running: const ReadinessComponent(
+          key: ReadinessComponentKey.running,
+          penalty: 0,
+          max: 10,
+          available: false,
+        ),
+      ),
+    );
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(app());
+    await settle(tester);
+    await reveal(tester, key('recovery.readiness.note'));
+    expect(key('recovery.component.running'), findsNothing);
+    expect(
+      textOf(tester, 'recovery.components.missing'),
+      endsWith('running load (not enough recent running).'),
     );
   });
 

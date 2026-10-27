@@ -5,10 +5,13 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../domain/coach.dart';
 import '../../domain/run.dart';
 import '../../domain/units.dart';
 import '../controllers/run_recorder.dart';
 import '../controllers/running_providers.dart';
+import '../../../health/presentation/controllers/health_providers.dart';
+import '../widgets/plan_card.dart';
 import '../widgets/route_painter.dart';
 import 'run_start.dart';
 
@@ -68,6 +71,9 @@ class RunningHomeScreen extends ConsumerWidget {
                   icon: const Icon(Icons.play_arrow),
                   label: const Text('Start run'),
                 ),
+              const SizedBox(height: FitSpacing.md),
+              // Beta 4.1 (ADR-039): the running plan, or the way to one.
+              PlanCard(today: ref.watch(localTodayProvider)),
               if (parked > 0)
                 Padding(
                   padding: const EdgeInsets.only(top: FitSpacing.md),
@@ -180,6 +186,8 @@ class RunningHomeScreen extends ConsumerWidget {
         context: context,
         // Above the bottom bar, like the setup sheet.
         useRootNavigator: true,
+        isScrollControlled: true,
+        useSafeArea: true,
         showDragHandle: true,
         builder: (_) => const _RunSettingsSheet(),
       );
@@ -352,43 +360,77 @@ class _RunSettingsSheet extends ConsumerWidget {
     final s = ref.watch(runSettingsProvider);
     final c = ref.read(runSettingsProvider.notifier);
     final t = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        FitSpacing.screen,
-        0,
-        FitSpacing.screen,
-        FitSpacing.lg,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text('Running settings', style: t.titleLarge),
-          const SizedBox(height: FitSpacing.md),
-          Text('DISTANCES IN', style: t.labelSmall),
-          const SizedBox(height: FitSpacing.sm),
-          SegmentedButton<DistanceUnit>(
-            key: const ValueKey('running.settings.unit'),
-            segments: const [
-              ButtonSegment(value: DistanceUnit.km, label: Text('Kilometres')),
-              ButtonSegment(value: DistanceUnit.mi, label: Text('Miles')),
-            ],
-            selected: {s.unit},
-            onSelectionChanged: (v) => c.setUnit(v.first),
-          ),
-          const SizedBox(height: FitSpacing.md),
-          SwitchListTile(
-            key: const ValueKey('running.settings.autoPause'),
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Auto-pause'),
-            subtitle: const Text(
-              'Pauses the timer when you stop, for example at a crossing, '
-              'and starts again when you run.',
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          FitSpacing.screen,
+          0,
+          FitSpacing.screen,
+          FitSpacing.lg,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Running settings', style: t.titleLarge),
+            const SizedBox(height: FitSpacing.md),
+            Text('DISTANCES IN', style: t.labelSmall),
+            const SizedBox(height: FitSpacing.sm),
+            SegmentedButton<DistanceUnit>(
+              key: const ValueKey('running.settings.unit'),
+              segments: const [
+                ButtonSegment(
+                  value: DistanceUnit.km,
+                  label: Text('Kilometres'),
+                ),
+                ButtonSegment(value: DistanceUnit.mi, label: Text('Miles')),
+              ],
+              selected: {s.unit},
+              onSelectionChanged: (v) => c.setUnit(v.first),
             ),
-            value: s.autoPause,
-            onChanged: c.setAutoPause,
-          ),
-        ],
+            const SizedBox(height: FitSpacing.md),
+            SwitchListTile(
+              key: const ValueKey('running.settings.voice'),
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Voice coach'),
+              subtitle: const Text(
+                'Every km: your time, the last km and your average; ease off or '
+                'pick it up when you are off pace; each step of a session.',
+              ),
+              value: s.voice,
+              onChanged: c.setVoice,
+            ),
+            if (s.voice)
+              SwitchListTile(
+                key: const ValueKey('running.settings.everyHalf'),
+                contentPadding: EdgeInsets.zero,
+                title: Text('Every half ${s.unit.label} too'),
+                value: s.everyHalf,
+                onChanged: c.setEveryHalf,
+              ),
+            if (s.voice)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  key: const ValueKey('running.settings.testVoice'),
+                  onPressed: () => ref.read(runVoiceProvider).say(Coach.sample),
+                  icon: const Icon(Icons.volume_up),
+                  label: const Text('Hear the voice'),
+                ),
+              ),
+            SwitchListTile(
+              key: const ValueKey('running.settings.autoPause'),
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Auto-pause'),
+              subtitle: const Text(
+                'Pauses the timer when you stop, for example at a crossing, '
+                'and starts again when you run. Off during a session.',
+              ),
+              value: s.autoPause,
+              onChanged: c.setAutoPause,
+            ),
+          ],
+        ),
       ),
     );
   }

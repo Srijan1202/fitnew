@@ -8,6 +8,7 @@ import '../../../core/errors/result.dart';
 import '../domain/run.dart';
 import '../domain/run_math.dart';
 import '../domain/track.dart';
+import '../domain/workout.dart';
 import 'run_store.dart';
 import 'run_sync_engine.dart';
 import 'running_api.dart';
@@ -162,6 +163,12 @@ class RunningRepository {
       splitsMi: f.splitsMi,
       series: f.series,
       pending: true,
+      workout: r.workoutJson == null
+          ? null
+          : RunWorkout.fromJson(
+              jsonDecode(r.workoutJson!) as Map<String, dynamic>,
+            ),
+      plannedRunId: r.plannedRunId,
     );
   }
 
@@ -220,6 +227,13 @@ class RunningRepository {
         'track': encodeTrack(await _store.track(id)).toJson()
       else
         'distanceM': treadmillDistanceM ?? 0,
+      // Beta 4.1: the session, where its steps began and ended, the plan's run.
+      if (row.workoutJson != null) 'workout': jsonDecode(row.workoutJson!),
+      if (row.workoutJson != null &&
+          row.lapsJson != null &&
+          kind == RunKind.outdoor)
+        'laps': jsonDecode(row.lapsJson!),
+      if (row.plannedRunId != null) 'plannedRunId': row.plannedRunId,
     };
     await _db.transaction(() async {
       await _store.update(

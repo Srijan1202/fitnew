@@ -61,6 +61,7 @@ List<Override> workoutOverrides(
   FakeRunningApi? running,
   FakeLocationSource? location,
   FakeBatteryAccess? battery,
+  FakeRunVoice? voice,
 }) {
   SharedPreferences.setMockInitialValues(const {});
   return [
@@ -112,5 +113,6 @@ List<Override> workoutOverrides(
     locationSourceProvider.overrideWithValue(location ?? FakeLocationSource()),
     runNotificationProvider.overrideWithValue(FakeRunNotification()),
     batteryAccessProvider.overrideWithValue(battery ?? FakeBatteryAccess()),
+    runVoiceProvider.overrideWithValue(voice ?? FakeRunVoice()),
   ];
 }

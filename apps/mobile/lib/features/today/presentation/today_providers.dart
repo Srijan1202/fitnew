@@ -16,6 +16,8 @@ import '../../workout/domain/entities/workout.dart';
 import '../../workout/presentation/controllers/workout_providers.dart';
 import '../data/today_api.dart';
 import '../data/today_event_sync.dart';
+import '../../running/domain/workout.dart';
+import '../../running/presentation/controllers/running_providers.dart';
 import '../data/today_repository.dart';
 import '../domain/today.dart';
 import '../domain/today_completion.dart';
@@ -200,6 +202,11 @@ final todayCompletionEvidenceProvider = Provider<CompletionEvidence>((ref) {
     targetAdjusted: targets != null &&
         targets.reason == 'calorie-adjust' &&
         targets.effectiveFrom == date,
+    plannedRunsDone: {
+      for (final r
+          in ref.watch(currentPlanProvider).value?.runs ?? const <PlannedRun>[])
+        if (r.status == PlannedRunStatus.done) r.id,
+    },
   );
 });
 

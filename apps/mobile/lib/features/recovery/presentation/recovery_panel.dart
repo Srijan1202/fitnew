@@ -234,6 +234,7 @@ class ReadinessDetails extends StatelessWidget {
   static String _missing(ReadinessComponentKey k) => switch (k) {
         ReadinessComponentKey.performance => 'not enough recent training',
         ReadinessComponentKey.adherence => 'no food logged this week',
+        ReadinessComponentKey.running => 'not enough recent running',
         _ => 'not answered',
       };
 

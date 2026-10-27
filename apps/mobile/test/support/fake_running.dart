@@ -4,11 +4,13 @@ import 'dart:typed_data';
 import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/features/running/data/location_source.dart';
+import 'package:fitos/features/running/data/run_voice.dart';
 import 'package:fitos/features/running/data/running_api.dart';
 import 'package:fitos/features/running/domain/gps_filter.dart';
 import 'package:fitos/features/running/domain/run.dart';
 import 'package:fitos/features/running/domain/run_math.dart';
 import 'package:fitos/features/running/domain/track.dart';
+import 'package:fitos/features/running/domain/workout.dart';
 import 'package:fitos/features/running/presentation/screens/share_run_screen.dart';
 
 /// Beta 4.0: a scripted running server. It works runs out with the app's
@@ -20,6 +22,11 @@ class FakeRunningApi implements RunningApi {
 
   /// Every request answers this failure while set.
   Failure? failWith;
+
+  /// Beta 4.1: the active plan, as the server would send it (null: none).
+  Map<String, dynamic>? plan;
+  final List<Map<String, dynamic>> createdPlans = [];
+  Map<String, dynamic> presets = {'zones': null, 'presets': <Object>[]};
 
   Map<String, dynamic> _detail(Map<String, dynamic> body) {
     final outdoor = body['kind'] == 'outdoor';
@@ -68,7 +75,35 @@ class FakeRunningApi implements RunningApi {
         for (final p in f.series)
           {'distanceM': p.distanceM, 'pace': p.pace, 'ele': p.ele},
       ],
+      'workout': body['workout'],
+      'laps': [
+        for (final m in (body['laps'] as List?) ?? const [])
+          {
+            'step': (m as Map)['step'],
+            'distanceM': 100.0,
+            'seconds': ((m['endT'] as num) - (m['startT'] as num)).toDouble(),
+            'pace': 300.0,
+          },
+      ],
+      'plannedRunId': _link(body),
     };
+  }
+
+  /// A run does the plan's run it names, else today's still-planned one.
+  String? _link(Map<String, dynamic> body) {
+    final runs = (plan?['runs'] as List?)?.cast<Map<String, dynamic>>();
+    if (runs == null) return null;
+    final named = body['plannedRunId'] as String?;
+    final date = (body['startedAt'] as String).substring(0, 10);
+    for (final r in runs) {
+      final hit = named != null ? r['id'] == named : r['date'] == date;
+      if (hit && r['status'] == 'planned') {
+        r['status'] = 'done';
+        r['runId'] = body['clientRunId'];
+        return r['id'] as String;
+      }
+    }
+    return null;
   }
 
   @override
@@ -107,6 +142,58 @@ class FakeRunningApi implements RunningApi {
     if (failWith != null) return Err(failWith!);
     final run = stored[id];
     return run == null ? const Err(NotFound()) : Ok(run);
+  }
+
+  @override
+  Future<Result<Map<String, dynamic>>> currentPlan() async {
+    calls.add('plan');
+    if (failWith != null) return Err(failWith!);
+    return Ok({'plan': plan});
+  }
+
+  @override
+  Future<Result<RunningPlan>> createPlan(Map<String, dynamic> body) async {
+    calls.add('createPlan');
+    if (failWith != null) return Err(failWith!);
+    createdPlans.add(body);
+    plan ??= planJson(runs: const []);
+    return Ok(RunningPlan.fromJson(plan!));
+  }
+
+  @override
+  Future<Result<void>> stopPlan() async {
+    calls.add('stopPlan');
+    if (failWith != null) return Err(failWith!);
+    plan = null;
+    return const Ok(null);
+  }
+
+  @override
+  Future<Result<PlannedRun>> patchPlanned(
+    String id,
+    Map<String, dynamic> body,
+  ) async {
+    calls.add('patchPlanned $id ${body['action']}');
+    if (failWith != null) return Err(failWith!);
+    final runs = (plan?['runs'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final r = runs.firstWhere((x) => x['id'] == id);
+    switch (body['action']) {
+      case 'skip':
+        r['status'] = 'skipped';
+      case 'unskip':
+        r['status'] = 'planned';
+      case 'move':
+        r['movedFrom'] = r['date'];
+        r['date'] = body['date'];
+    }
+    return Ok(PlannedRun.fromJson(r));
+  }
+
+  @override
+  Future<Result<WorkoutPresets>> workouts() async {
+    calls.add('workouts');
+    if (failWith != null) return Err(failWith!);
+    return Ok(WorkoutPresets.fromJson(presets));
   }
 
   @override
@@ -225,4 +312,73 @@ class FakeRunSharer implements RunSharer {
   @override
   Future<void> share(Uint8List bytes, String fileName, String mimeType) async =>
       shared.add((fileName, mimeType, bytes));
+}
+
+/// Beta 4.1: a planned run as the server sends it.
+Map<String, dynamic> plannedRunJson({
+  required String id,
+  required String date,
+  String kind = 'easy',
+  String title = 'Easy 5 km',
+  double? distanceM = 5000,
+  int? seconds,
+  Map<String, int>? pace = const {'fast': 330, 'slow': 370},
+  List<WorkoutStep>? steps,
+  String status = 'planned',
+  int week = 1,
+}) =>
+    {
+      'id': id,
+      'date': date,
+      'week': week,
+      'kind': kind,
+      'title': title,
+      'distanceM': distanceM,
+      'seconds': seconds,
+      'pace': pace,
+      'steps': steps == null ? null : [for (final s in steps) s.toJson()],
+      'note': 'Conversational.',
+      'status': status,
+      'runId': null,
+      'movedFrom': null,
+    };
+
+/// Beta 4.1: a plan as the server sends it.
+Map<String, dynamic> planJson({
+  required List<Map<String, dynamic>> runs,
+  String goal = '10k',
+  List<int> weekdays = const [2, 4, 7],
+  List<int> gymOverlap = const [],
+}) =>
+    {
+      'id': '7c0d3f1e-6f3c-4a8e-9d55-2f0c3c5a9b77',
+      'goal': goal,
+      'level': 'runner',
+      'status': 'active',
+      'daysPerWeek': weekdays.length,
+      'weekdays': weekdays,
+      'longRunWeekday': weekdays.last,
+      'startDate': runs.isEmpty ? '2026-11-02' : runs.first['date'],
+      'weeks': 8,
+      'zones': {
+        'vdot': 40.1,
+        'easy': {'fast': 351, 'slow': 404},
+        'marathon': 327,
+        'threshold': 306,
+        'interval': 281,
+        'repetition': 263,
+      },
+      'predictedSeconds': 3001,
+      'gymOverlap': gymOverlap,
+      'runs': runs,
+    };
+
+class FakeRunVoice implements RunVoice {
+  final List<String> said = [];
+
+  @override
+  Future<void> say(String text) async => said.add(text);
+
+  @override
+  Future<void> stop() async {}
 }

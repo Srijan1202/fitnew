@@ -2163,9 +2163,10 @@ void main() {
       expect(
         reasons,
         hasLength(
-          12,
+          13,
         ),
-      ); // Phase 12 calorie-target-off-trend, Phase 13 readiness-low
+      ); // Phase 12 calorie-target-off-trend, Phase 13 readiness-low,
+      // beta 4.1 run-scheduled
       for (final variant in reasons) {
         final r = sampleReason(variant);
         expect(TodayWords.facts(r), isNotEmpty, reason: r.code);

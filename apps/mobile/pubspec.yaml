@@ -66,6 +66,9 @@ dependencies:
   package_info_plus: 10.2.2
   # Beta 3.2 (ADR-026 amendment): "Update" opens the download page.
   url_launcher: 6.3.3
+  # Beta 4.1 (U2): the downloaded APK's SHA-256 is checked before it is
+  # installed. Already in the lock (a transitive dependency); now direct.
+  crypto: 3.0.8
   # Beta 3.2 (ADR-029 amendment): two short, quiet chimes made for FITOS.
   audioplayers: 6.8.1
   image_picker: 1.2.4
@@ -78,6 +81,8 @@ dependencies:
   # (MapLibre drawing OpenFreeMap's tiles; no key, no account).
   geolocator: 14.0.1
   maplibre_gl: 0.27.1
+  # Beta 4.1 (ADR-039): the voice coach, the phone's own text-to-speech (offline).
+  flutter_tts: 4.2.5
 dev_dependencies:
   flutter_test:
     sdk: flutter
