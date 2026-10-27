@@ -52,7 +52,11 @@ void main() {
     meta = FakeMetaApi();
     clock = DateTime.utc(2026, 10, 27, 1, 30);
   });
-  tearDown(() => db.close());
+  // After a failure the test clock stops, and work it was driving can hold
+  // the database: close it, but never wait on it for ever.
+  tearDown(
+    () => db.close().timeout(const Duration(seconds: 5), onTimeout: () {}),
+  );
 
   Widget harness() {
     final router = GoRouter(
@@ -262,7 +266,11 @@ void main() {
     await settle(tester);
     final name =
         tester.widget<TextField>(find.byKey(const ValueKey('run.name')));
-    expect(name.controller!.text, 'Morning run');
+    // Named by the time of day where the test runs (CI is in UTC).
+    expect(
+      name.controller!.text,
+      defaultRunName(clock.toLocal(), RunKind.outdoor),
+    );
     await tester.enterText(find.byKey(const ValueKey('run.name')), 'Lake loop');
     await reveal(tester, 'run.effort.4');
     await tester.tap(find.byKey(const ValueKey('run.effort.4')));
