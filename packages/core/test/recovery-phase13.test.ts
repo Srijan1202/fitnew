@@ -132,7 +132,9 @@ describe('readiness: 100 minus the penalties, only from available inputs', () =>
       ['sleep', true], ['soreness', true], ['energy', true], ['performance', false], ['adherence', false],
     ]);
     expect(r.components.map((c) => c.max)).toEqual([25, 20, 20, 25, 10]);
-    expect(Object.values(PENALTY_MAX).reduce((a, b) => a + b, 0)).toBe(100);
+    // The five Phase 13 caps make 100; beta 4.1's running load adds 10 (owner, ADR-039), the score floored at 0.
+    expect(Object.values(PENALTY_MAX).reduce((a, b) => a + b, 0)).toBe(110);
+    expect(PENALTY_MAX.running).toBe(10);
   });
 
   it('a check-in with one answer: only that input counts', () => {

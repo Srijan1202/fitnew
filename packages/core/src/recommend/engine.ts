@@ -43,6 +43,8 @@ export const ACTION_KINDS = [
   'calorie-adjust',
   'celebrate-pr',
   'log-weight',
+  // Beta 4.1 (ADR-039): a running plan's run for today.
+  'start-run',
 ] as const;
 export type ActionKind = (typeof ACTION_KINDS)[number];
 
@@ -62,6 +64,8 @@ export const PRIORITIES = {
   'calorie-adjust': 55,
   'celebrate-pr': 50,
   'log-weight': 45,
+  // Beta 4.1: under the gym session and its readiness note, above food.
+  'start-run': 87,
 } as const;
 
 /** At most this many actions reach the surface (§16.1). */
@@ -90,6 +94,7 @@ export const REASON_CODES = [
   'calorie-target-off-trend',
   'pr-today',
   'weigh-in-due',
+  'run-scheduled',
 ] as const;
 export type ReasonCode = (typeof REASON_CODES)[number];
 
@@ -218,6 +223,22 @@ export interface BodyState {
   readonly daysSinceWeighIn: number | null;
 }
 
+/** Beta 4.1 (ADR-039): today's run from a running plan. */
+export interface RunningState {
+  /** The plan's run for today, or null (no plan, or nothing planned today). */
+  readonly planned: {
+    readonly plannedRunId: string;
+    readonly title: string;
+    readonly distanceM: number | null;
+    readonly seconds: number | null;
+    /** Seconds per km. */
+    readonly paceFast: number | null;
+    readonly paceSlow: number | null;
+  } | null;
+  /** Today's planned run is done (a run is linked to it). */
+  readonly doneToday: boolean;
+}
+
 /** The whole user state TODAY decides from (server-assembled; ADR-017). */
 export interface UserModel {
   /** yyyy-mm-dd in the user's zone. */
@@ -229,6 +250,8 @@ export interface UserModel {
   readonly nutrition: NutritionState;
   readonly body: BodyState;
   readonly recovery: RecoveryState;
+  /** Beta 4.1: absent for a user without a running plan (and in older models). */
+  readonly running?: RunningState;
   /** (kind, subject) the user dismissed today: hidden for the rest of the local day (D7). */
   readonly dismissedToday: readonly { readonly kind: ActionKind; readonly subjectKey: string }[];
 }
@@ -256,6 +279,8 @@ const label = (s: string): string => s.replace(/-/g, ' ');
 const list = (xs: readonly string[]): string =>
   xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`;
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
+/** Seconds as m:ss (a pace). */
+const mss = (sec: number): string => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
 
 const PR_WORDS: Readonly<Record<PrType, (value: number, previous: number) => string>> = {
   weight: (v, p) => `${num(v)} kg, up from ${num(p)} kg.`,
@@ -343,6 +368,12 @@ export function wordReason(reason: ActionReason): { headline: string; detail: st
             ? `No working set for ${label(s('muscle'))} yet this block.`
             : `No working set for ${label(s('muscle'))} in ${plural(n('daysSince'), 'day')}.`,
       };
+    case 'run-scheduled': {
+      const what =
+        v['distanceM'] !== null ? `${num(r1(n('distanceM') / 1000))} km` : v['seconds'] !== null ? `${Math.round(n('seconds') / 60)} minutes` : 'Your planned session';
+      const pace = v['paceFast'] !== null && v['paceSlow'] !== null ? ` at ${mss(n('paceFast'))}–${mss(n('paceSlow'))} per km` : '';
+      return { headline: s('title'), detail: `${what}${pace}. From your running plan.` };
+    }
     case 'rest-day': {
       // §16.2: a rest day carries recovery status (Phase 13), with or without a programme.
       const readiness = v['readiness'] !== null && v['readiness'] !== undefined ? ` Readiness today: ${n('readiness')}.` : '';
@@ -457,6 +488,28 @@ function candidates(m: UserModel): Candidate[] {
     });
   }
 
+  // 87 — beta 4.1: today's run from the running plan, not done yet.
+  const planned = m.running?.planned ?? null;
+  if (planned !== null && m.running!.doneToday !== true) {
+    out.push({
+      kind: 'start-run',
+      subjectKey: planned.plannedRunId,
+      priority: PRIORITIES['start-run'],
+      basis: 'calculated',
+      target: 'train',
+      reason: {
+        code: 'run-scheduled',
+        values: {
+          title: planned.title,
+          distanceM: planned.distanceM,
+          seconds: planned.seconds,
+          paceFast: planned.paceFast,
+          paceSlow: planned.paceSlow,
+        },
+      },
+    });
+  }
+
   // 89 — §18: low readiness on a training day. Advisory: it names what to go
   // easier on; the plan is never changed (ADR-019 D9).
   const rec = m.recovery;
@@ -529,7 +582,8 @@ function candidates(m: UserModel): Candidate[] {
   }
 
   // 60 — a rest day is never a shrug (§16.2); a deload offer suppresses it (§16.1).
-  if (t.sessionName === null && !t.completedToday && t.deload.state !== 'offered') {
+  // Beta 4.1: a day with a planned run is not a rest day.
+  if (t.sessionName === null && !t.completedToday && t.deload.state !== 'offered' && planned === null) {
     out.push({
       kind: 'rest-day', subjectKey: '', priority: PRIORITIES['rest-day'], basis: 'calculated', target: 'today',
       reason: {

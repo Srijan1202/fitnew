@@ -39,6 +39,7 @@ describe('the approved vocabulary, bands and codes (D5, P1)', () => {
     expect([...ACTION_KINDS]).toEqual([
       'deload', 'injured-limitation', 'start-workout', 'low-readiness', 'eat-protein', 'eat-meal',
       'progress-load', 'muscle-neglected', 'rest-day', 'calorie-adjust', 'celebrate-pr', 'log-weight',
+      'start-run', // beta 4.1 (ADR-039)
     ]);
     for (const deferred of ['hydrate', 'add-steps', 'resume', 'workout-done', 'volume-ceiling']) {
       expect(ACTION_KINDS as readonly string[]).not.toContain(deferred);
@@ -49,6 +50,7 @@ describe('the approved vocabulary, bands and codes (D5, P1)', () => {
     expect(PRIORITIES).toEqual({
       deload: 95, 'injured-limitation': 91, 'start-workout': 90, 'low-readiness': 89, 'eat-protein': { dinner: 88, other: 80 }, 'eat-meal': 75,
       'progress-load': 72, 'muscle-neglected': 68, 'rest-day': 60, 'calorie-adjust': 55, 'celebrate-pr': 50, 'log-weight': 45,
+      'start-run': 87,
     });
     expect(PRIORITIES.deload).toBeGreaterThan(PRIORITIES['injured-limitation']);
     expect(PRIORITIES['injured-limitation']).toBeGreaterThan(PRIORITIES['start-workout']);
@@ -74,6 +76,7 @@ describe('the approved vocabulary, bands and codes (D5, P1)', () => {
     expect([...REASON_CODES]).toEqual([
       'deload-offered', 'exercise-contraindicated', 'session-scheduled', 'readiness-low', 'protein-behind', 'meal-remaining',
       'load-increase-due', 'muscle-untrained', 'rest-day', 'calorie-target-off-trend', 'pr-today', 'weigh-in-due',
+      'run-scheduled',
     ]);
   });
 
@@ -214,6 +217,7 @@ describe('reason codes and structured values', () => {
       'calorie-target-off-trend': { currentKcal: 2400, newKcal: 2270, deltaKcal: -130, weeklyChangeKg: 0.25 },
       'pr-today': { exerciseName: 'E', prType: '1rm_est', value: 100, previous: 95, count: 2 },
       'weigh-in-due': { daysSinceWeighIn: null },
+      'run-scheduled': { title: 'Easy 6 km', distanceM: 6000, seconds: null, paceFast: 365, paceSlow: 395 },
     } as const;
     for (const code of REASON_CODES) {
       const w = wordReason({ code, values: samples[code] });
@@ -435,6 +439,7 @@ describe('events (D7, P2, P4)', () => {
       'muscle-neglected': 'session-with-muscle', 'rest-day': null, 'calorie-adjust': 'target-adjusted', // Phase 12
       'low-readiness': null, // Phase 13: advice, never "done"
       'celebrate-pr': null, 'log-weight': 'weight-logged',
+      'start-run': 'run-completed', // beta 4.1
     });
     for (const k of ['rest-day', 'celebrate-pr', 'injured-limitation'] as const) {
       expect(isCompletable(k)).toBe(false);
@@ -583,5 +588,42 @@ describe('Q2: the transition matrix — completed needs accepted; opened is neve
   it('repeats are duplicates, not errors', () => {
     expect(checkTransition('start-workout', ['shown', 'accepted', 'completed'], 'accepted')).toEqual({ outcome: 'duplicate' });
     expect(checkTransition('start-workout', ['shown', 'opened'], 'opened')).toEqual({ outcome: 'duplicate' });
+  });
+});
+
+/* ------------------------------------------------- beta 4.1: runs -- */
+
+describe('a running plan’s run for today (beta 4.1, ADR-039)', () => {
+  const run = (over: Partial<NonNullable<NonNullable<UserModel['running']>['planned']>> = {}, doneToday = false) => ({
+    planned: { plannedRunId: 'p1', title: 'Easy 6 km', distanceM: 6000, seconds: null, paceFast: 365, paceSlow: 395, ...over },
+    doneToday,
+  });
+
+  it('a planned run is today’s run at 87, completable by a saved run; worded from its distance and pace', () => {
+    const m: UserModel = { ...model({ training: { sessionName: null } }), running: run() };
+    const a = find(m, 'start-run')!;
+    expect(a).toMatchObject({ priority: 87, subjectKey: 'p1', target: 'train', basis: 'calculated', headline: 'Easy 6 km' });
+    expect(a.detail).toBe('6 km at 6:05–6:35 per km. From your running plan.');
+    expect(isCompletable('start-run')).toBe(true);
+  });
+
+  it('a day with a planned run is not a rest day, done or not', () => {
+    const rest = model({ training: { sessionName: null } });
+    expect(find(rest, 'rest-day')).toBeDefined();
+    expect(find({ ...rest, running: run() }, 'rest-day')).toBeUndefined();
+    expect(find({ ...rest, running: run({}, true) }, 'rest-day')).toBeUndefined();
+    expect(find({ ...rest, running: run({}, true) }, 'start-run')).toBeUndefined();
+    expect(find({ ...rest, running: { planned: null, doneToday: false } }, 'rest-day')).toBeDefined();
+  });
+
+  it('a timed run, or one with no pace, is worded too; beside a gym session both show, the gym first', () => {
+    expect(wordReason({ code: 'run-scheduled', values: { title: 'Run/walk', distanceM: null, seconds: 1800, paceFast: null, paceSlow: null } }).detail).toBe(
+      '30 minutes. From your running plan.',
+    );
+    expect(wordReason({ code: 'run-scheduled', values: { title: 'Intervals', distanceM: null, seconds: null, paceFast: 230, paceSlow: 240 } }).detail).toBe(
+      'Your planned session at 3:50–4:00 per km. From your running plan.',
+    );
+    const both = buildActions({ ...model(), running: run() }).map((a) => a.kind);
+    expect(both.indexOf('start-workout')).toBeLessThan(both.indexOf('start-run'));
   });
 });

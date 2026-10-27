@@ -26,7 +26,9 @@ export type CompletionEvidence =
   | 'food-logged-in-slot'
   | 'weight-logged'
   /** Phase 12: the target row this action's acceptance created. */
-  | 'target-adjusted';
+  | 'target-adjusted'
+  /** Beta 4.1: a saved run linked to the planned run (the action's subject). */
+  | 'run-completed';
 
 export const COMPLETION_EVIDENCE: Readonly<Record<ActionKind, CompletionEvidence | null>> = {
   deload: 'deload-accepted',
@@ -42,6 +44,7 @@ export const COMPLETION_EVIDENCE: Readonly<Record<ActionKind, CompletionEvidence
   'calorie-adjust': 'target-adjusted',
   'celebrate-pr': null,
   'log-weight': 'weight-logged',
+  'start-run': 'run-completed',
 };
 
 export function isCompletable(kind: ActionKind): boolean {

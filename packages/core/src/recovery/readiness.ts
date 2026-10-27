@@ -29,16 +29,25 @@ export const PERFORMANCE_WINDOW_DAYS = 7;
 /** Nutrition adherence is judged over the seven local days before the day. */
 export const ADHERENCE_WINDOW_DAYS = 7;
 
-/** §18's caps. */
+/** §18's caps. Beta 4.1 (ADR-039, owner): running load, the sixth. */
 export const PENALTY_MAX = {
   sleep: 25,
   soreness: 20,
   energy: 20,
   performance: 25,
   adherence: 10,
+  running: 10,
 } as const;
 export type ReadinessComponentKey = keyof typeof PENALTY_MAX;
-export const READINESS_COMPONENTS = ['sleep', 'soreness', 'energy', 'performance', 'adherence'] as const satisfies readonly ReadinessComponentKey[];
+export const READINESS_COMPONENTS = ['sleep', 'soreness', 'energy', 'performance', 'adherence', 'running'] as const satisfies readonly ReadinessComponentKey[];
+
+/**
+ * Beta 4.1 (ADR-039): running load is effort-weighted minutes, compared the
+ * standard way — the last 7 days (acute) against the average week of the
+ * last 28 (chronic). No penalty up to a ratio of 1.3; it rises evenly to its
+ * cap at 1.8. Judged only with at least 3 runs in the 28 days.
+ */
+export const RUNNING_LOAD = { acuteDays: 7, chronicDays: 28, minRuns: 3, from: 1.3, to: 1.8 } as const;
 
 /** §18's bands: ≥ 75 no change; 55–74 advisory; 35–54 fewer accessory sets; < 35 rest. */
 export const READINESS_BANDS = ['ready', 'advisory', 'reduce', 'rest'] as const;
@@ -92,6 +101,20 @@ export interface ReadinessInput {
   /** Nutrition day ranges and the target history (Phase 12 shapes). */
   readonly nutritionDays: readonly NutritionDayRange[];
   readonly targets: readonly TargetRow[];
+  /**
+   * Beta 4.1: the runs of the last 28 days. Absent, readiness has the five
+   * Phase 13 parts only (callers that predate running).
+   */
+  readonly runs?: readonly RunLoad[];
+}
+
+/** One run, as running load reads it. */
+export interface RunLoad {
+  /** The user's local date of the run. */
+  readonly date: string;
+  readonly minutes: number;
+  /** 1–10 as the runner felt it; null counts as 5 (moderate). */
+  readonly effort: number | null;
 }
 
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
@@ -167,6 +190,32 @@ export function adherenceGapPenalty(
   return { key: 'adherence', penalty: clamp(whole(PENALTY_MAX.adherence * missed), 0, PENALTY_MAX.adherence), max: PENALTY_MAX.adherence, available: true };
 }
 
+/** The acute:chronic ratio of effort-weighted running minutes, or null without a base. */
+export function runningLoadRatio(runs: readonly RunLoad[], day: string): number | null {
+  const chronicFrom = addDays(day, -(RUNNING_LOAD.chronicDays - 1));
+  const acuteFrom = addDays(day, -(RUNNING_LOAD.acuteDays - 1));
+  const inWindow = runs.filter((r) => r.date >= chronicFrom && r.date <= day);
+  if (inWindow.length < RUNNING_LOAD.minRuns) return null;
+  const load = (r: RunLoad) => r.minutes * ((r.effort ?? 5) / 5);
+  const chronicWeekly = inWindow.reduce((n, r) => n + load(r), 0) / (RUNNING_LOAD.chronicDays / 7);
+  // Three runs of some minutes always make a positive base.
+  /* v8 ignore next -- @preserve: minutes are positive for any run with time */
+  if (chronicWeekly <= 0) return null;
+  const acute = inWindow.filter((r) => r.date >= acuteFrom).reduce((n, r) => n + load(r), 0);
+  return acute / chronicWeekly;
+}
+
+/** 0 up to a ratio of 1.3, rising evenly to 10 at 1.8. */
+export function runningLoadPenalty(runs: readonly RunLoad[], day: string): ReadinessComponent {
+  const ratio = runningLoadRatio(runs, day);
+  if (ratio === null) return { key: 'running', penalty: 0, max: PENALTY_MAX.running, available: false };
+  const share = clamp((ratio - RUNNING_LOAD.from) / (RUNNING_LOAD.to - RUNNING_LOAD.from), 0, 1);
+  return { key: 'running', penalty: whole(PENALTY_MAX.running * share), max: PENALTY_MAX.running, available: true };
+}
+
+/** Said after the band's advice when running load is the biggest part taken off. */
+export const RUNNING_LOAD_ADVICE = 'Your running jumped this week; keep today easy.';
+
 export function bandOf(score: number): ReadinessBand {
   if (score >= BAND_FLOOR.ready) return 'ready';
   if (score >= BAND_FLOOR.advisory) return 'advisory';
@@ -193,9 +242,14 @@ export function readinessOn(input: ReadinessInput): Readiness | null {
     performanceDropPenalty(input.lifts, input.day),
     adherenceGapPenalty(input.nutritionDays, input.targets, input.day),
   ];
+  if (input.runs !== undefined) components.push(runningLoadPenalty(input.runs, input.day));
   const score = clamp(100 - components.reduce((n, c) => n + c.penalty, 0), 0, 100);
   const band = bandOf(score);
-  return { date: input.day, score, band, components, advice: BAND_ADVICE[band] };
+  const running = components.find((c) => c.key === 'running');
+  const biggest = Math.max(...components.map((c) => c.penalty));
+  const advice =
+    running !== undefined && running.penalty > 0 && running.penalty === biggest ? `${BAND_ADVICE[band]} ${RUNNING_LOAD_ADVICE}` : BAND_ADVICE[band];
+  return { date: input.day, score, band, components, advice };
 }
 
 /**
