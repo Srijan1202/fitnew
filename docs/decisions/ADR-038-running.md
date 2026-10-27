@@ -65,5 +65,5 @@ These decisions cover 4.0.
 
 - **Not in 4.0:** the voice coach, intervals and plans (4.1); best efforts, badges and route replay (4.2); the watch (4.3). Running does not yet count in Today, Recovery's training load or the streak (4.1).
 - **Field check:** acceptance needs the owner's runs on the S24 (an easy run; one with the screen off and music on; one with stops). GPS, the foreground service, the battery setting and the map cannot be proved on a PC.
-- **APK size** grows by MapLibre's native library (about 10 MB for arm64).
+- **APK size** grows by MapLibre's native library: 39.1 MB for arm64, up from 29.4 MB. Its AAR carries every ABI, so a build for named platforms excludes the others at packaging (`android/app/build.gradle.kts`); Flutter's plugin resets `abiFilters`.
 - **OpenFreeMap** runs on donations with no service guarantee. If it stops, the map falls back to the drawn route until the style address moves.

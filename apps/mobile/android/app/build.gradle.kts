@@ -143,6 +143,26 @@ android {
         versionName = flutter.versionName
     }
 
+    // Beta 4.0 (ADR-038): MapLibre's AAR carries its native library for every
+    // ABI (about 10 MB each), and `--target-platform` only limits Flutter's
+    // own libraries (Flutter's plugin resets `abiFilters` after this file). A
+    // build for named platforms leaves the other ABIs' libraries out.
+    val abiOf = mapOf(
+        "android-arm" to "armeabi-v7a",
+        "android-arm64" to "arm64-v8a",
+        "android-x64" to "x86_64",
+    )
+    val targetAbis = (project.findProperty("target-platform") as String?)
+        ?.split(",")?.mapNotNull { abiOf[it.trim()] }.orEmpty()
+    if (targetAbis.isNotEmpty()) {
+        packaging {
+            jniLibs {
+                excludes += (listOf("armeabi-v7a", "arm64-v8a", "x86_64", "x86") - targetAbis.toSet())
+                    .map { "lib/$it/**" }
+            }
+        }
+    }
+
     signingConfigs {
         if (!uploadKey.isEmpty) {
             create("upload") {
