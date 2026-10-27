@@ -24,10 +24,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # Beta 4.0: maplibre_gl's Android code compiles as Java 21, the JDK
+      # Android Studio bundles (what local builds use).
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
 
       # Pinned to the version the suite is run with locally, so CI and the
       # developer machine analyse and test with the same SDK (audit 2026-10-20).
