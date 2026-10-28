@@ -653,7 +653,9 @@ void main() {
       await settle(tester);
       expect(find.text('New running plan'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('plan.goal.half')));
-      await tester.enterText(find.byKey(const ValueKey('plan.time')), '24:30');
+      // Number boxes: phone number pads have no ":".
+      await tester.enterText(find.byKey(const ValueKey('plan.time.m')), '24');
+      await tester.enterText(find.byKey(const ValueKey('plan.time.s')), '30');
       api.plan = planJson(
         goal: 'half',
         runs: [plannedRunJson(id: 'p-today', date: today)],
@@ -683,14 +685,25 @@ void main() {
       await openRunning(tester);
       await tester.tap(find.byKey(const ValueKey('running.plan.new')));
       await settle(tester);
-      await tester.enterText(find.byKey(const ValueKey('plan.time')), '24');
+      // Nothing typed is not a time, and neither are 75 seconds.
+      await toMake(tester);
+      await tester.tap(find.byKey(const ValueKey('plan.make')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('plan.error')), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('plan.time.s')),
+        -200,
+        scrollable: setupList(),
+      );
+      await tester.enterText(find.byKey(const ValueKey('plan.time.m')), '24');
+      await tester.enterText(find.byKey(const ValueKey('plan.time.s')), '75');
       await toMake(tester);
       await tester.tap(find.byKey(const ValueKey('plan.make')));
       await settle(tester);
       expect(find.byKey(const ValueKey('plan.error')), findsOneWidget);
       expect(api.createdPlans, isEmpty);
       await tester.scrollUntilVisible(
-        find.byKey(const ValueKey('plan.goal.5k')),
+        find.text('DISTANCE'),
         -200,
         scrollable: setupList(),
       );
@@ -703,6 +716,26 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('plan.make')));
       await settle(tester);
       expect(api.createdPlans.single, containsPair('level', 'beginner'));
+      expect(api.createdPlans.single['race'], isNull);
+    });
+
+    testWidgets('plan setup: a goal time in hours, minutes and seconds',
+        (tester) async {
+      await openRunning(tester);
+      await tester.tap(find.byKey(const ValueKey('running.plan.new')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('plan.goal.half')));
+      await tester.tap(find.byKey(const ValueKey('plan.from.goal')));
+      await settle(tester);
+      expect(find.text('Goal time for the Half marathon'), findsOneWidget);
+      // The seconds box left empty counts as 0; letters never get in.
+      await tester.enterText(find.byKey(const ValueKey('plan.time.h')), '1');
+      await tester.enterText(find.byKey(const ValueKey('plan.time.m')), '5a2');
+      api.plan = planJson(goal: 'half', runs: const []);
+      await toMake(tester);
+      await tester.tap(find.byKey(const ValueKey('plan.make')));
+      await settle(tester);
+      expect(api.createdPlans.single, containsPair('goalSeconds', 6720));
       expect(api.createdPlans.single['race'], isNull);
     });
 

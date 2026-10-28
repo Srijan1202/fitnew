@@ -35,7 +35,12 @@ class _PlanSetupScreenState extends ConsumerState<PlanSetupScreen> {
   String _goal = '10k';
   _From _from = _From.race;
   String _raceDistance = '5k';
-  final _time = TextEditingController();
+  // Beta 4.1.0 patch: hours, minutes and seconds in their own number boxes.
+  // Phone keyboards (Samsung's among them) show no ":" on a number pad, so a
+  // single "mm:ss" field could not be filled in.
+  final _hours = TextEditingController();
+  final _minutes = TextEditingController();
+  final _seconds = TextEditingController();
   int _days = 3;
   final Set<int> _weekdays = {2, 4, 7};
   int _longRun = 7;
@@ -44,21 +49,43 @@ class _PlanSetupScreenState extends ConsumerState<PlanSetupScreen> {
 
   @override
   void dispose() {
-    _time.dispose();
+    _hours.dispose();
+    _minutes.dispose();
+    _seconds.dispose();
     super.dispose();
   }
 
-  /// "25:30" or "1:52:10" → seconds; null when it is not a time.
-  static int? parseTime(String text) {
-    final parts = text.trim().split(':');
-    if (parts.length < 2 || parts.length > 3) return null;
-    final n = parts.map(int.tryParse).toList();
-    if (n.any((x) => x == null || x < 0)) return null;
-    if (n.skip(1).any((x) => x! > 59)) return null;
-    final secs =
-        n.length == 2 ? n[0]! * 60 + n[1]! : n[0]! * 3600 + n[1]! * 60 + n[2]!;
+  /// Hours, minutes and seconds as typed → seconds; null when it is not a
+  /// time (minutes or seconds over 59, or nothing at all). An empty box is 0.
+  static int? parseTime(String hours, String minutes, String seconds) {
+    int? part(String s) => s.trim().isEmpty ? 0 : int.tryParse(s.trim());
+    final h = part(hours), m = part(minutes), s = part(seconds);
+    if (h == null || m == null || s == null) return null;
+    if (h < 0 || m < 0 || s < 0 || m > 59 || s > 59) return null;
+    final secs = h * 3600 + m * 60 + s;
     return secs > 0 ? secs : null;
   }
+
+  Widget _timeBox(
+    TextEditingController c,
+    String label,
+    String key, {
+    bool last = false,
+  }) =>
+      Expanded(
+        child: TextField(
+          key: ValueKey(key),
+          controller: c,
+          keyboardType: TextInputType.number,
+          textInputAction: last ? TextInputAction.done : TextInputAction.next,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(2),
+          ],
+          textAlign: TextAlign.center,
+          decoration: InputDecoration(labelText: label, hintText: '0'),
+        ),
+      );
 
   void _toggleDay(int d) => setState(() {
         if (_weekdays.contains(d)) {
@@ -76,9 +103,14 @@ class _PlanSetupScreenState extends ConsumerState<PlanSetupScreen> {
       setState(() => _error = 'Choose $_days days.');
       return;
     }
-    final seconds = _from == _From.zero ? null : parseTime(_time.text);
+    final seconds = _from == _From.zero
+        ? null
+        : parseTime(_hours.text, _minutes.text, _seconds.text);
     if (_from != _From.zero && seconds == null) {
-      setState(() => _error = 'Type the time as mm:ss or h:mm:ss.');
+      setState(
+        () => _error =
+            'Type the time: hours (if any), minutes and seconds, each up to 59.',
+      );
       return;
     }
     setState(() {
@@ -202,21 +234,34 @@ class _PlanSetupScreenState extends ConsumerState<PlanSetupScreen> {
               const SizedBox(height: FitSpacing.sm),
             ],
             if (_from != _From.zero)
-              TextField(
+              Column(
                 key: const ValueKey('plan.time'),
-                controller: _time,
-                keyboardType: TextInputType.datetime,
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp('[0-9:]')),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _from == _From.race
+                        ? 'Your time'
+                        : 'Goal time for the ${_goals[_goal]}',
+                    style: t.bodyMedium,
+                  ),
+                  const SizedBox(height: FitSpacing.sm),
+                  Row(
+                    children: [
+                      _timeBox(_hours, 'Hours', 'plan.time.h'),
+                      const SizedBox(width: FitSpacing.sm),
+                      _timeBox(_minutes, 'Min', 'plan.time.m'),
+                      const SizedBox(width: FitSpacing.sm),
+                      _timeBox(_seconds, 'Sec', 'plan.time.s', last: true),
+                    ],
+                  ),
+                  const SizedBox(height: FitSpacing.xs),
+                  Text(
+                    _from == _From.race
+                        ? 'FITOS works out your paces from it.'
+                        : 'Paces are set for this goal: be honest with yourself.',
+                    style: t.bodySmall,
+                  ),
                 ],
-                decoration: InputDecoration(
-                  labelText: _from == _From.race
-                      ? 'Your time (mm:ss or h:mm:ss)'
-                      : 'Goal time for the ${_goals[_goal]}',
-                  helperText: _from == _From.race
-                      ? 'FITOS works out your paces from it.'
-                      : 'Paces are set for this goal: be honest with yourself.',
-                ),
               )
             else
               Text(
