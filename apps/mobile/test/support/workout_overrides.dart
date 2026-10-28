@@ -54,6 +54,7 @@ List<Override> workoutOverrides(
   FakeFeedbackApi? feedback,
   FakeMetaApi? meta,
   int appBuild = 4,
+  int? appPatch,
   FakePremiumApi? premium,
   FakeWeeklyReportApi? weekly,
   FakeStreakApi? streak,
@@ -101,6 +102,8 @@ List<Override> workoutOverrides(
     feedbackApiProvider.overrideWithValue(feedback ?? FakeFeedbackApi()),
     metaApiProvider.overrideWithValue(meta ?? FakeMetaApi()),
     appBuildProvider.overrideWith((_) async => appBuild),
+    // Beta 4.1 (U1): no Shorebird engine in a test; a patch only when given.
+    appPatchProvider.overrideWith((_) async => appPatch),
     // Phase 19 (ADR-027): free unless a test says; a scripted weekly report.
     premiumApiProvider.overrideWithValue(premium ?? FakePremiumApi()),
     weeklyReportApiProvider.overrideWithValue(weekly ?? FakeWeeklyReportApi()),

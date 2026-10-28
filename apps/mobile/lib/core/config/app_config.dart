@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shorebird_code_push/shorebird_code_push.dart';
 
 import '../../features/auth/presentation/controllers/auth_providers.dart';
 import '../theme/tokens.dart';
@@ -55,6 +56,23 @@ final appBuildProvider = FutureProvider<int>((ref) async {
   final info = await PackageInfo.fromPlatform();
   return int.tryParse(info.buildNumber) ?? 0;
 });
+
+/// Beta 4.1 (updates plan, U1): the Shorebird patch this build runs; null
+/// when none is installed, or the build is not a Shorebird release (a debug
+/// build, a test). A patch never changes the version or build number, so
+/// this is what tells "4.1 patch 2" from 4.1.
+final appPatchProvider = FutureProvider<int?>((ref) async {
+  try {
+    final updater = ShorebirdUpdater();
+    if (!updater.isAvailable) return null;
+    return (await updater.readCurrentPatch())?.number;
+  } on Object {
+    return null;
+  }
+});
+
+/// " · patch 2", or nothing.
+String patchSuffix(int? patch) => patch == null ? '' : ' · patch $patch';
 
 final appConfigProvider = FutureProvider<AppConfig?>(
   (ref) => ref.watch(metaApiProvider).config(),

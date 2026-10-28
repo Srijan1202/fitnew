@@ -83,6 +83,9 @@ dependencies:
   maplibre_gl: 0.27.1
   # Beta 4.1 (ADR-039): the voice coach, the phone's own text-to-speech (offline).
   flutter_tts: 4.2.5
+  # Beta 4.1 (updates plan, U1): the Shorebird patch this build runs, shown
+  # next to the version so a report names it (Dart only; no native code).
+  shorebird_code_push: 2.0.7
 dev_dependencies:
   flutter_test:
     sdk: flutter

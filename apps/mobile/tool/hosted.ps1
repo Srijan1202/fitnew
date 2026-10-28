@@ -12,6 +12,15 @@
   .\tool\hosted.ps1 -AppBundle -Version 1.0.0-beta.1 -BuildNumber 4
                                          # the Play bundle, signed with the upload key
   .\tool\hosted.ps1 -ApiBaseUrl https://<other host>   # e.g. the Cloud Run service
+  .\tool\hosted.ps1 -Shorebird -Version 1.0.0-beta.4.1 -BuildNumber 18 -TargetPlatform android-arm64
+                                         # beta 4.1+: a Shorebird release (code push), built in WSL
+  .\tool\patch.ps1 -Version 1.0.0-beta.4.1 -BuildNumber 18
+                                         # a Shorebird patch to that release (Dart-only fixes)
+
+  Beta 4.1 (updates plan, U1): -Shorebird builds the release through
+  `shorebird release android` in WSL (tool/shorebird.sh), from the committed
+  HEAD only, so its patches can be built from the same code later. It signs
+  with the same debug key as every hosted APK, so it installs over them.
 
   Configuration: apps/mobile/hosted.env (gitignored; see hosted.env.example).
   The five Firebase values fall back to alpha.env — same Firebase project.
@@ -41,7 +50,10 @@ param(
   [ValidateSet('', 'android-arm64', 'android-arm', 'android-x64')][string]$TargetPlatform = '',
   [switch]$Install,
   [switch]$SkipHealthCheck,
-  [switch]$AppBundle
+  [switch]$AppBundle,
+  # Beta 4.1 (U1): a Shorebird release, or (tool/patch.ps1) a patch to one.
+  [switch]$Shorebird,
+  [switch]$Patch
 )
 
 $ErrorActionPreference = 'Stop'
@@ -86,6 +98,23 @@ if ($AppBundle -and -not (Test-Path (Join-Path $mobile 'android\key.properties')
   exit 1
 }
 if ($AppBundle -and $Install) { Write-Host '-Install applies to APKs only: a bundle goes to the Play Console.'; exit 1 }
+$viaShorebird = $Shorebird -or $Patch
+if ($viaShorebird) {
+  if ($AppBundle) { Write-Host 'Shorebird builds the APK here, not the Play bundle.'; exit 1 }
+  if ($Patch -and $Install) { Write-Host 'A patch is not installed: the app downloads it.'; exit 1 }
+  # WSL signs with Windows' debug key; an upload key there is not handled yet.
+  if (Test-Path (Join-Path $mobile 'android\key.properties')) {
+    Write-Host 'Refusing: android/key.properties exists, and the WSL build would not sign with it.'
+    exit 1
+  }
+  # Only committed code: the release and every patch must be rebuildable.
+  $dirty = & git -C $mobile status --porcelain -- . 2>$null
+  if ($dirty) {
+    Write-Host 'Refusing: apps/mobile has uncommitted changes. Commit first; Shorebird builds the commit.'
+    exit 1
+  }
+  $sha = (& git -C $mobile rev-parse HEAD).Trim()
+}
 $ApiBaseUrl = $ApiBaseUrl.TrimEnd('/')
 
 Push-Location $mobile
@@ -150,7 +179,36 @@ Push-Location $mobile
 $ErrorActionPreference = 'Continue'
 try {
   $platform = if ($TargetPlatform) { @('--target-platform', $TargetPlatform) } else { @() }
-  if ($AppBundle) {
+  if ($viaShorebird) {
+    # Beta 4.1 (U1): tool/shorebird.sh in WSL. The defines go in the
+    # environment (WSLENV), never in a file; /p turns paths into WSL ones.
+    $outDir = Join-Path $mobile 'build\app\outputs\flutter-apk'
+    New-Item -ItemType Directory -Force $outDir | Out-Null
+    $env:FITOS_DEFINES = $defines -join "`n"
+    $env:FITOS_REPO = (Resolve-Path (Join-Path $mobile '..\..')).Path
+    $env:FITOS_DEBUG_KEYSTORE = Join-Path $env:USERPROFILE '.android\debug.keystore'
+    $env:FITOS_OUT = Join-Path $outDir 'app-release.apk'
+    $env:WSLENV = 'FITOS_DEFINES/u:FITOS_REPO/p:FITOS_DEBUG_KEYSTORE/p:FITOS_OUT/p'
+    $script = (& wsl --exec wslpath -a ((Join-Path $mobile 'tool\shorebird.sh') -replace '\\', '/')).Trim()
+    $sbPlatform = if ($TargetPlatform) { $TargetPlatform } else { 'android-arm,android-arm64,android-x64' }
+    try {
+      if ($Patch) {
+        & wsl --exec bash $script patch $sha $Version $BuildNumber
+      } else {
+        & wsl --exec bash $script release $sha $Version $BuildNumber $sbPlatform
+      }
+      if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    }
+    finally {
+      Remove-Item Env:FITOS_DEFINES, Env:FITOS_REPO, Env:FITOS_DEBUG_KEYSTORE, Env:FITOS_OUT, Env:WSLENV -ErrorAction SilentlyContinue
+    }
+    if ($Patch) {
+      Write-Host "Patch published for $Version ($BuildNumber) from $($sha.Substring(0, 7)). Phones get it on their next start, and run it the start after."
+      exit 0
+    }
+    $built = 'build\app\outputs\flutter-apk\app-release.apk'
+    $apk = "build\app\outputs\flutter-apk\fitos-hosted-$Version.apk"
+  } elseif ($AppBundle) {
     & flutter build appbundle --release --build-name=$Version --build-number=$BuildNumber @platform @defines
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     $built = 'build\app\outputs\bundle\release\app-release.aab'

@@ -41,6 +41,10 @@ jobs:
       - name: Secret scan (tracked files)
         run: node scripts/check-secrets.mjs
 
+      # Beta 4.1 (U1): which fixes go out as a Shorebird patch, which as an APK.
+      - name: Patch-or-APK rule
+        run: node --test scripts/update-kind.test.mjs
+
       - name: Typecheck (strict, noUncheckedIndexedAccess)
         run: pnpm --filter @fitos/core typecheck
 

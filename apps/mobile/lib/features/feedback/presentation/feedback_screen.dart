@@ -155,12 +155,15 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
       _message = null;
     });
     final build = await ref.read(appBuildProvider.future).catchError((_) => 0);
+    final patch =
+        await ref.read(appPatchProvider.future).catchError((_) => null);
     final device =
         _withDevice ? await ref.read(feedbackDeviceProvider.future) : null;
     final r = await ref.read(feedbackApiProvider).send(
           category: _category!,
           message: _text.text.trim(),
-          appVersion: '${Env.appVersion}+$build',
+          appVersion:
+              '${Env.appVersion}+$build${patch == null ? '' : ' patch $patch'}',
           device: device,
           pictures: List.of(_pictures),
         );
@@ -307,7 +310,8 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                 subtitle: Text(
                   [
                     if (device != null) device.label,
-                    'FITOS ${Env.appVersion}${build == null ? '' : ' ($build)'}',
+                    'FITOS ${Env.appVersion}${build == null ? '' : ' ($build)'}'
+                        '${patchSuffix(ref.watch(appPatchProvider).value)}',
                   ].join(' · '),
                   key: const ValueKey('feedback.device.label'),
                 ),

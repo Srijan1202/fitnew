@@ -1,3 +1,4 @@
+import '../../../../core/config/app_config.dart';
 import '../../../../core/feedback/app_feedback.dart';
 import '../../../feedback/presentation/feedback_screen.dart';
 import '../../../premium/domain/avatars.dart';
@@ -273,7 +274,9 @@ class ProfileScreen extends ConsumerWidget {
                   // Phase 6.6: which build talks to which backend, so a
                   // tester's report can name it. No secrets here.
                   Text(
-                    'FITOS ${Env.appVersion} · ${Env.flavor} · ${Env.apiHost}',
+                    'FITOS ${Env.appVersion}'
+                    '${patchSuffix(ref.watch(appPatchProvider).value)}'
+                    ' · ${Env.flavor} · ${Env.apiHost}',
                     key: const ValueKey('profile.build'),
                     textAlign: TextAlign.center,
                     style:

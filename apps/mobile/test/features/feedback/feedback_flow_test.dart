@@ -78,7 +78,7 @@ void main() {
     await db.close();
   });
 
-  Widget app({int build = 4}) => ProviderScope(
+  Widget app({int build = 4, int? patch}) => ProviderScope(
         overrides: [
           authRepositoryProvider.overrideWithValue(auth),
           onboardingRepositoryProvider
@@ -92,6 +92,7 @@ void main() {
             feedback: feedback,
             meta: meta,
             appBuild: build,
+            appPatch: patch,
           ),
         ],
         child: const FitOSApp(),
@@ -103,9 +104,9 @@ void main() {
     addTearDown(tester.view.reset);
   }
 
-  Future<void> openFeedback(WidgetTester tester) async {
+  Future<void> openFeedback(WidgetTester tester, {int? patch}) async {
     tall(tester);
-    await tester.pumpWidget(app());
+    await tester.pumpWidget(app(patch: patch));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('home.profile')));
     await tester.pumpAndSettle();
@@ -165,6 +166,38 @@ void main() {
           .text,
       isEmpty,
     );
+  });
+
+  testWidgets(
+      'beta 4.1: a Shorebird patch is named next to the version, on Profile and in what is sent',
+      (tester) async {
+    tall(tester);
+    await tester.pumpWidget(app(patch: 2));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('home.profile')));
+    await tester.pumpAndSettle();
+    final line = find.byKey(const ValueKey('profile.build'));
+    await tester.ensureVisible(line);
+    expect(tester.widget<Text>(line).data, contains(' · patch 2 · '));
+    final button = find.byKey(const ValueKey('profile.feedback'));
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<Text>(find.byKey(const ValueKey('feedback.device.label')))
+          .data,
+      endsWith('FITOS 1.0.0-alpha.1 (4) · patch 2'),
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('feedback.message')),
+      'The map froze.',
+    );
+    await tester.tap(find.byKey(const ValueKey('feedback.category.bug')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('feedback.send')));
+    await tester.pumpAndSettle();
+    expect(feedback.sent.single.appVersion, '1.0.0-alpha.1+4 patch 2');
   });
 
   testWidgets('a failure keeps what was typed and says why', (tester) async {
