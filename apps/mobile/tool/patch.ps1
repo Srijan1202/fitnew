@@ -21,6 +21,11 @@ param(
   [Parameter(Mandatory)][int]$BuildNumber,
   [string]$ReleaseRef,
   [string]$ApiBaseUrl,
+  # The platform the release was built for; a patch must match it (beta 4.1
+  # is android-arm64, like every hosted APK since Smart App Control).
+  # '' is a release of every ABI (hosted.ps1's default).
+  [ValidateSet('', 'android-arm64', 'android-arm', 'android-x64')]
+  [string]$TargetPlatform = 'android-arm64',
   [switch]$SkipHealthCheck
 )
 
@@ -53,7 +58,7 @@ switch ($kind) {
   }
 }
 
-$hostedArgs = @{ Version = $Version; BuildNumber = $BuildNumber; Patch = $true }
+$hostedArgs = @{ Version = $Version; BuildNumber = $BuildNumber; Patch = $true; TargetPlatform = $TargetPlatform }
 if ($ApiBaseUrl) { $hostedArgs.ApiBaseUrl = $ApiBaseUrl }
 if ($SkipHealthCheck) { $hostedArgs.SkipHealthCheck = $true }
 & (Join-Path $PSScriptRoot 'hosted.ps1') @hostedArgs

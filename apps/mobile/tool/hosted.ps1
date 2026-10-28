@@ -193,7 +193,7 @@ try {
     $sbPlatform = if ($TargetPlatform) { $TargetPlatform } else { 'android-arm,android-arm64,android-x64' }
     try {
       if ($Patch) {
-        & wsl --exec bash $script patch $sha $Version $BuildNumber
+        & wsl --exec bash $script patch $sha $Version $BuildNumber $sbPlatform
       } else {
         & wsl --exec bash $script release $sha $Version $BuildNumber $sbPlatform
       }

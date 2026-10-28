@@ -4,7 +4,7 @@
 # tool/hosted.ps1 -Shorebird / tool/patch.ps1, never by hand.
 #
 #   shorebird.sh release <sha> <version> <build> <target-platform>
-#   shorebird.sh patch   <sha> <version> <build>
+#   shorebird.sh patch   <sha> <version> <build> <the release's target-platform>
 #
 # It builds the committed <sha>, never the working tree, in a clone on WSL's
 # own disk (~/fitos-build), so the Windows checkout and its build/ are left
@@ -57,9 +57,13 @@ case $mode in
     cp build/app/outputs/flutter-apk/app-release.apk "$FITOS_OUT"
     ;;
   patch)
-    # Shorebird itself refuses a patch with native or asset changes.
+    # Shorebird itself refuses a patch with native or asset changes. The patch
+    # is built for the release's own platform: Flutter lists every ABI it built
+    # in NativeAssetsManifest.json, so all ABIs against an arm64 release reads
+    # as an asset change. `shorebird patch` has no option for it; Flutter does.
     "$sb" patch android --release-version "$version+$build" \
-      --build-name "$version" --build-number "$build" "${defines[@]}"
+      --build-name "$version" --build-number "$build" "${defines[@]}" \
+      -- --target-platform "$platform"
     ;;
   *) echo "release or patch, not $mode" >&2; exit 2 ;;
 esac
