@@ -109,6 +109,8 @@ flutter:
     - assets/sounds/
     # Beta 3.2: the app icon picker's previews (tool/app_icons.py).
     - assets/brand/app_icons/
+    # Beta 4.1 (ADR-040): the Shorebird updater reads the app id from it.
+    - shorebird.yaml
 
   # ADR-028 (brand kit): Barlow for all type — the free (SIL OFL,
   # assets/fonts/OFL.txt) equivalent of the kit's Bahnschrift.
