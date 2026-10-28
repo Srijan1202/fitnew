@@ -267,6 +267,21 @@ describeIfDb('/v1/running plans (beta 4.1, real Postgres)', { timeout: 120_000 }
     expect(after.actions.some((a) => a.kind === 'rest-day')).toBe(false);
   });
 
+  it('reminders: a plan run’s day has its workout reminder, named after the run', async () => {
+    const u = await user();
+    const plan = (await call(u, 'POST', '/running/plans', tenK())).json<RunningPlan>();
+    const r = await call(u, 'POST', '/notifications/plan', { events: [] });
+    expect(r.statusCode, r.body).toBe(200);
+    const items = (r.json() as { items: { kind: string; localDate: string; title: string; body: string }[] }).items;
+    const reminders = items.filter((i) => i.kind === 'workout-reminder');
+    expect(reminders.length).toBeGreaterThan(0);
+    for (const i of reminders) {
+      const run = plan.runs.find((p) => p.date === i.localDate);
+      expect(run, i.localDate).toBeDefined();
+      expect(`${i.title} ${i.body}`).toContain(run!.title);
+    }
+  });
+
   it('readiness: running load counts for everyone; the sixth part goes only to builds that know it', async () => {
     const u = await user();
     expect((await call(u, 'POST', '/recovery/log', { sleepHours: 8, soreness: 1, energy: 5 })).statusCode).toBe(201);

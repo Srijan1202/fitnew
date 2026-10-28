@@ -43,7 +43,9 @@ async function appliedCount(client: postgres.Sql): Promise<number> {
   return Number(rows[0]?.count ?? 0);
 }
 
-describeIfDb('migrations (real Postgres)', () => {
+// Beta 4.1: the older migrations' tests roll back every later migration one
+// at a time and apply them again; with 37 of them that passed vitest's 5 s.
+describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
   const connectionString = url as string;
   let client: postgres.Sql;
 

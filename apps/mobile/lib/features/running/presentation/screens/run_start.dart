@@ -8,6 +8,7 @@ import '../../data/location_source.dart';
 import '../../domain/run.dart';
 import '../../domain/units.dart';
 import '../../domain/workout.dart';
+import '../widgets/session_builder.dart';
 import '../controllers/run_recorder.dart';
 import '../controllers/running_providers.dart';
 
@@ -232,19 +233,43 @@ class _RunSetupSheetState extends ConsumerState<RunSetupSheet> {
           RunGoal(_goal, (_paceSeconds * 1000 / unit.metres).round()),
       };
 
-  WorkoutPreset? get _preset {
+  /// The chosen session: a ready-made one, or (`mine:<i>`) one of yours.
+  RunWorkout? get _preset {
+    final id = _presetId;
+    if (id == null) return null;
+    if (id.startsWith('mine:')) {
+      final mine = ref.read(myWorkoutsProvider).value ?? const [];
+      final i = int.tryParse(id.substring(5));
+      return i == null || i >= mine.length ? null : mine[i];
+    }
     final presets = ref.read(workoutPresetsProvider).value?.presets;
     if (presets == null) return null;
     for (final p in presets) {
-      if (p.id == _presetId) return p;
+      if (p.id == id) return p.workout;
     }
     return null;
+  }
+
+  Future<void> _build(BuildContext context) async {
+    final w = await showModalBottomSheet<RunWorkout>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => SessionBuilderSheet(
+        zones: ref.read(workoutPresetsProvider).value?.zones,
+        unit: ref.read(runSettingsProvider).unit,
+      ),
+    );
+    if (w == null || !mounted) return;
+    final i = await ref.read(myWorkoutsProvider.notifier).add(w);
+    if (mounted) setState(() => _presetId = 'mine:$i');
   }
 
   RunChoice _choice(DistanceUnit unit) => switch (_type) {
         _Type.steady => RunChoice(_kind, _goalValue(unit)),
         _Type.session =>
-          RunChoice(RunKind.outdoor, const RunGoal.free(), _preset!.workout),
+          RunChoice(RunKind.outdoor, const RunGoal.free(), _preset),
         _Type.sprints => RunChoice(
             RunKind.outdoor,
             const RunGoal.free(),
@@ -256,41 +281,69 @@ class _RunSetupSheetState extends ConsumerState<RunSetupSheet> {
     final t = Theme.of(context).textTheme;
     final async = ref.watch(workoutPresetsProvider);
     final presets = async.value?.presets;
+    final mine = ref.watch(myWorkoutsProvider).value ?? const <RunWorkout>[];
     return [
       const SizedBox(height: FitSpacing.md),
       if (presets == null)
         Text(
           async.isLoading
               ? 'Loading the sessions…'
-              : 'Sessions need a connection the first time. Try again online.',
+              : 'The ready-made sessions need a connection the first time. '
+                  'Yours are on this phone.',
           style: t.bodyMedium,
         )
-      else ...[
-        if (async.value?.zones == null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: FitSpacing.sm),
-            child: Text(
-              'Paced by effort. With a running plan, every rep gets your pace.',
-              style: t.bodyMedium,
-            ),
-          ),
-        RadioGroup<String>(
-          groupValue: _presetId,
-          onChanged: (v) => setState(() => _presetId = v),
-          child: Column(
-            children: [
-              for (final p in presets)
-                RadioListTile<String>(
-                  key: ValueKey('run.session.${p.id}'),
-                  value: p.id,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(p.name),
-                  subtitle: Text(p.about),
-                ),
-            ],
+      else if (async.value?.zones == null)
+        Padding(
+          padding: const EdgeInsets.only(bottom: FitSpacing.sm),
+          child: Text(
+            'Paced by effort. With a running plan, every rep gets your pace.',
+            style: t.bodyMedium,
           ),
         ),
-      ],
+      RadioGroup<String>(
+        groupValue: _presetId,
+        onChanged: (v) => setState(() => _presetId = v),
+        child: Column(
+          children: [
+            for (final p in presets ?? const <WorkoutPreset>[])
+              RadioListTile<String>(
+                key: ValueKey('run.session.${p.id}'),
+                value: p.id,
+                contentPadding: EdgeInsets.zero,
+                title: Text(p.name),
+                subtitle: Text(p.about),
+              ),
+            for (var i = 0; i < mine.length; i++)
+              RadioListTile<String>(
+                key: ValueKey('run.session.mine.$i'),
+                value: 'mine:$i',
+                contentPadding: EdgeInsets.zero,
+                title: Text(mine[i].name),
+                subtitle: const Text('Yours'),
+                secondary: IconButton(
+                  key: ValueKey('run.session.mine.delete.$i'),
+                  tooltip: 'Delete this session',
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: () async {
+                    if (_presetId?.startsWith('mine:') ?? false) {
+                      setState(() => _presetId = null);
+                    }
+                    await ref.read(myWorkoutsProvider.notifier).removeAt(i);
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          key: const ValueKey('run.session.build'),
+          onPressed: () => _build(context),
+          icon: const Icon(Icons.add),
+          label: const Text('Build your own'),
+        ),
+      ),
     ];
   }
 

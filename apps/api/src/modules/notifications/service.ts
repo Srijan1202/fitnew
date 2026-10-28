@@ -6,11 +6,13 @@
 import type { NotifyPlanRequest, NotifyPlanResponse, NotifySettings, NotifySettingsPatch, PlannedNotification } from '@fitos/contracts';
 import { TEMPLATES, render } from '@fitos/core/notify/copy';
 import { chooseVariant, planNotifications, type NotifyHistoryItem, type PlanFacts, type ReadinessBand } from '@fitos/core/notify/planner';
-import { DEFAULT_NOTIFY_SETTINGS, NOTIFY_KINDS, PROTEIN_GAP_SHARE, type NotifyKind } from '@fitos/core/notify/types';
+import { isoWeekday } from '@fitos/core/notify/time';
+import { DEFAULT_NOTIFY_SETTINGS, HORIZON_DAYS, NOTIFY_KINDS, PROTEIN_GAP_SHARE, type NotifyKind } from '@fitos/core/notify/types';
 import { addDays, localDateOf } from '@fitos/core/nutrition/log';
 
 import type { FoodLogRepository } from '../nutrition/log-repository.js';
 import type { ReadinessAssembler } from '../recovery/readiness.js';
+import type { PlanRepository } from '../running/plan-repository.js';
 import type { TrainingRepository } from '../training/repository.js';
 import type { NotificationRepository } from './repository.js';
 
@@ -37,12 +39,43 @@ export function settingsFrom(stored: unknown): NotifySettings {
   };
 }
 
+/**
+ * Beta 4.1 (ADR-039 C4/C5): the running plan in the reminders, with the
+ * planner unchanged. A plan run's weekday is a training day named after the
+ * run ("Easy 5 km in about an hour", "Easy 5 km didn't happen"), unless the
+ * gym trains that weekday too: one reminder a day, and the gym session keeps
+ * it (Today shows both). A skipped plan run is a skipped day; a day with any
+ * run counts as trained. `planned` are the active plan's runs from yesterday
+ * to the planner's horizon, earliest first.
+ */
+export function withRunning(
+  gym: Readonly<Record<number, string>> | null,
+  skippedDates: readonly string[],
+  completedDates: readonly string[],
+  planned: readonly { date: string; title: string; status: string }[],
+  runDates: readonly string[],
+): { programme: Record<number, string> | null; skippedDates: string[]; completedDates: string[] } {
+  if (planned.length === 0) {
+    return { programme: gym === null ? null : { ...gym }, skippedDates: [...skippedDates], completedDates: [...new Set([...completedDates, ...runDates])] };
+  }
+  const programme: Record<number, string> = { ...(gym ?? {}) };
+  const skipped = [...skippedDates];
+  for (const p of planned) {
+    const weekday = isoWeekday(p.date);
+    if (gym?.[weekday] !== undefined) continue;
+    programme[weekday] ??= p.title;
+    if (p.status === 'skipped') skipped.push(p.date);
+  }
+  return { programme, skippedDates: skipped, completedDates: [...new Set([...completedDates, ...runDates])] };
+}
+
 export class NotificationService {
   constructor(
     private readonly repo: NotificationRepository,
     private readonly training: TrainingRepository,
     private readonly logs: FoodLogRepository,
     private readonly readiness: ReadinessAssembler,
+    private readonly plans: PlanRepository,
     private readonly now: () => Date = () => new Date(),
   ) {}
 
@@ -70,7 +103,7 @@ export class NotificationService {
     const sinceDate = addDays(today, -LOOKBACK_DAYS);
     const since = new Date(now.getTime() - (LOOKBACK_DAYS + 1) * 86_400_000);
 
-    const [settings, name, program, sessions, foodLogs, weighIns, checkIns, proteinDays, targets, history, assessment] = await Promise.all([
+    const [settings, name, program, sessions, foodLogs, weighIns, checkIns, proteinDays, targets, history, assessment, planned, runs] = await Promise.all([
       this.settings(userId),
       this.repo.displayName(userId),
       this.training.activeProgram(userId),
@@ -82,11 +115,20 @@ export class NotificationService {
       this.logs.targetsOn(userId, today),
       this.repo.history(userId, sinceDate),
       this.readiness.assess(userId, today, timeZone),
+      this.plans.between(userId, addDays(today, -1), addDays(today, HORIZON_DAYS)),
+      this.plans.loads(userId, since),
     ]);
 
     const proteinTargetG = targets?.proteinG ?? null;
     const goal = proteinTargetG === null ? null : Math.ceil(proteinTargetG * PROTEIN_GAP_SHARE);
-    const programme = program === null ? null : Object.fromEntries(program.days.filter((d) => !d.isRest).map((d) => [d.dayOfWeek, d.sessionName]));
+    const gym = program === null ? null : Object.fromEntries(program.days.filter((d) => !d.isRest).map((d) => [d.dayOfWeek, d.sessionName]));
+    const { programme, skippedDates, completedDates } = withRunning(
+      gym,
+      program === null || program.program.skippedOn === null ? [] : [program.program.skippedOn],
+      sessions.filter((s) => s.completedAt !== null).map((s) => localDateOf(s.completedAt!, timeZone)),
+      planned,
+      runs.map((r) => localDateOf(r.startedAt, timeZone)),
+    );
 
     return {
       now,
@@ -95,9 +137,9 @@ export class NotificationService {
       name,
       settings,
       programme,
-      skippedDates: program === null || program.program.skippedOn === null ? [] : [program.program.skippedOn],
+      skippedDates,
       sessionStarts: sessions.map((s) => s.startedAt),
-      completedDates: sessions.filter((s) => s.completedAt !== null).map((s) => localDateOf(s.completedAt!, timeZone)),
+      completedDates,
       foodLogs,
       weighIns,
       checkIns,

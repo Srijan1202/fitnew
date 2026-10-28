@@ -23,6 +23,7 @@ import 'package:fitos/features/running/presentation/widgets/run_map.dart';
 import 'package:fitos/features/training/presentation/controllers/program_controller.dart';
 import 'package:fitos/features/training/presentation/screens/training_tab_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -503,6 +504,38 @@ void main() {
       return id;
     }
 
+    testWidgets(
+        'beta 4.1: a sprint session’s summary names the best rep and how far to trust it',
+        (tester) async {
+      final id = await savedRun(tester);
+      const work =
+          WorkoutStep(kind: StepKind.work, distanceM: 100, effort: 'all out');
+      api.stored[id]!
+        ..['workout'] = const RunWorkout(
+          name: 'Sprints: 2 × 100 m',
+          steps: [
+            work,
+            WorkoutStep(kind: StepKind.recover, seconds: 120, effort: 'stand'),
+            work,
+          ],
+        ).toJson()
+        ..['laps'] = [
+          {'step': 0, 'distanceM': 101.0, 'seconds': 14.2, 'pace': 140.6},
+          {'step': 1, 'distanceM': 20.0, 'seconds': 120.0, 'pace': 6000.0},
+          {'step': 2, 'distanceM': 99.0, 'seconds': 13.6, 'pace': 137.4},
+        ];
+      await tester.tap(find.byKey(ValueKey('running.run.$id')));
+      await settle(tester);
+      await reveal(tester, 'run.report.laps.best');
+      expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('run.report.laps.best')))
+            .data,
+        'Best: Work · 13.6 s',
+      );
+      expect(find.byKey(const ValueKey('run.report.laps.gps')), findsOneWidget);
+    });
+
     testWidgets('shows in the history with this week, and opens',
         (tester) async {
       final id = await savedRun(tester);
@@ -720,8 +753,21 @@ void main() {
       expect(find.byKey(const ValueKey('run.session')), findsOneWidget);
       expect(find.textContaining('Rep 1 of 2 · 400 m'), findsOneWidget);
       expect(voice.said.first, 'Rep 1 of 2. 400 metres at 4 40.');
+      final felt = <Object?>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'HapticFeedback.vibrate') felt.add(call.arguments);
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger
+            .setMockMethodCallHandler(SystemChannels.platform, null),
+      );
       await tester.tap(find.byKey(const ValueKey('run.session.next')));
       await settle(tester);
+      expect(felt, contains('HapticFeedbackType.heavyImpact'));
       expect(find.textContaining('Recover · 1:00'), findsOneWidget);
     });
 
@@ -780,6 +826,58 @@ void main() {
       expect(voice.said.first, '400 metres hard.');
       final c = container(tester);
       expect(c.read(runRecorderProvider)!.session!.name, '6 × 400 m');
+    });
+
+    testWidgets(
+        'build your own: saved on the phone, there next time, deleted; run with its steps',
+        (tester) async {
+      Future<void> openSessions() async {
+        await tester.tap(find.byKey(const ValueKey('running.start')));
+        await settle(tester);
+        await tester.tap(find.byKey(const ValueKey('run.type.session')));
+        await settle(tester);
+      }
+
+      Future<void> buildOne() async {
+        await tester.tap(find.byKey(const ValueKey('run.session.build')));
+        await settle(tester);
+        await tester.tap(find.byKey(const ValueKey('session.build.reps.4')));
+        await tester.tap(find.byKey(const ValueKey('session.build.m.800')));
+        await settle(tester);
+        expect(
+          tester
+              .widget<Text>(find.byKey(const ValueKey('session.build.name')))
+              .data,
+          '4 × 800 m',
+        );
+        final save = find.byKey(const ValueKey('session.build.save'));
+        await tester.ensureVisible(save);
+        await tester.tap(save);
+        await settle(tester);
+      }
+
+      await openRunning(tester);
+      await openSessions();
+      await buildOne();
+      expect(find.byKey(const ValueKey('run.session.mine.0')), findsOneWidget);
+      // Closed and opened again: still there; then deleted.
+      Navigator.of(tester.element(find.byKey(const ValueKey('run.start'))))
+          .pop();
+      await settle(tester);
+      await openSessions();
+      expect(find.byKey(const ValueKey('run.session.mine.0')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('run.session.mine.delete.0')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('run.session.mine.0')), findsNothing);
+      final c = container(tester);
+      expect(await done(tester, c.read(myWorkoutsProvider.future)), isEmpty);
+
+      await buildOne();
+      await tester.tap(find.byKey(const ValueKey('run.start')));
+      await settle(tester);
+      final session = c.read(runRecorderProvider)!.session!;
+      expect(session.name, '4 × 800 m');
+      expect(session.count, 9); // warm-up, 4 reps, 3 recoveries, cool-down
     });
 
     testWidgets('sprints: reps, distance and rest make the session',

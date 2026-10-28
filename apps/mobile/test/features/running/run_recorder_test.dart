@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:fitos/core/db/app_database.dart';
+import 'package:fitos/core/notifications/activity_signal.dart';
 import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
@@ -205,6 +206,20 @@ void main() {
     expect(body['kind'], 'treadmill');
     expect(body['distanceM'], 5000);
     expect(body.containsKey('track'), isFalse);
+  });
+
+  test(
+      'beta 4.1: a run cancels today’s workout reminder as it starts, and "missed" once saved',
+      () async {
+    final seen = <ActivityKind>[];
+    final sub = ActivitySignal.stream.listen((a) => seen.add(a.kind));
+    addTearDown(sub.cancel);
+    await recorder().start(kind: RunKind.treadmill, goal: const RunGoal.free());
+    expect(seen, [ActivityKind.workoutStarted]);
+    clock = clock.add(const Duration(minutes: 20));
+    await recorder().finish();
+    await recorder().save(name: 'Treadmill run', treadmillDistanceM: 4000);
+    expect(seen, [ActivityKind.workoutStarted, ActivityKind.workoutCompleted]);
   });
 
   test('discard leaves nothing', () async {

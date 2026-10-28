@@ -70,6 +70,12 @@ class _LiveRunScreenState extends ConsumerState<LiveRunScreen> {
         ),
       );
     }
+    // Beta 4.1 (C2): every step of a session is felt as well as heard.
+    if (before?.session != null &&
+        now.session != null &&
+        now.session!.index != before!.session!.index) {
+      unawaited(HapticFeedback.heavyImpact());
+    }
     if (before != null &&
         before.status != now.status &&
         now.status == RunStatus.autoPaused) {

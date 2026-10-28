@@ -21,6 +21,7 @@ import { z } from 'zod';
 import { AppError } from '../../lib/errors.js';
 import { FoodLogRepository } from '../nutrition/log-repository.js';
 import { ReadinessAssembler } from '../recovery/readiness.js';
+import { PlanRepository } from '../running/plan-repository.js';
 import { TrainingRepository } from '../training/repository.js';
 import { NotificationRepository } from './repository.js';
 import { NotificationService } from './service.js';
@@ -32,7 +33,13 @@ function requireUserId(userId: string | null): string {
 
 export async function notificationRoutes(app: FastifyInstance): Promise<void> {
   const db = app.database.db;
-  const service = new NotificationService(new NotificationRepository(db), new TrainingRepository(db), new FoodLogRepository(db), ReadinessAssembler.forDb(db));
+  const service = new NotificationService(
+    new NotificationRepository(db),
+    new TrainingRepository(db),
+    new FoodLogRepository(db),
+    ReadinessAssembler.forDb(db),
+    new PlanRepository(db),
+  );
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const security = [{ bearerAuth: [] }];
   const errors = { 401: errorEnvelopeSchema, 422: errorEnvelopeSchema };

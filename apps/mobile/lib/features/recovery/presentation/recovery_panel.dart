@@ -7,6 +7,8 @@ import '../../../core/theme/tokens.dart';
 import '../../health/presentation/controllers/health_providers.dart';
 import '../../home/presentation/controllers/home_providers.dart';
 import '../../workout/domain/entities/workout.dart';
+import '../../running/domain/units.dart';
+import '../../running/presentation/controllers/running_providers.dart';
 import '../../workout/presentation/controllers/workout_providers.dart';
 import '../domain/recovery.dart';
 import 'recovery_providers.dart';
@@ -122,9 +124,30 @@ class RecoveryPanel extends ConsumerWidget {
                 ),
               ],
             ),
+          ..._running(context, ref),
         ],
       ),
     );
+  }
+
+  /// Beta 4.1 (C5): the last 7 days of running, when there was any.
+  static List<Widget> _running(BuildContext context, WidgetRef ref) {
+    final week = ref.watch(runningLast7Provider);
+    if (week == null || week.runs == 0) return const [];
+    final unit = ref.watch(runSettingsProvider).unit;
+    return [
+      const SizedBox(height: FitSpacing.sm),
+      Text(
+        'Running, last 7 days: ${week.runs} ${week.runs == 1 ? 'run' : 'runs'}'
+        ' · ${formatDistance(week.distanceM, unit)} ${unit.label}'
+        ' · ${formatDuration(week.durationSeconds)}',
+        key: const ValueKey('recovery.running.week'),
+        style: Theme.of(context)
+            .textTheme
+            .bodySmall
+            ?.copyWith(color: FitColors.ink60),
+      ),
+    ];
   }
 
   /// The honest line when the view is not live: cached (with its time) or unavailable.

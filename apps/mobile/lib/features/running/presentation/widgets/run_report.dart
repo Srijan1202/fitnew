@@ -274,7 +274,39 @@ class _Laps extends StatelessWidget {
                 ],
               ),
             ),
+        ..._best(context, steps),
       ],
     );
+  }
+
+  /// Beta 4.1 (C3): the fastest rep, and for sprints how far to trust it.
+  List<Widget> _best(BuildContext context, List<WorkoutStep> steps) {
+    final t = Theme.of(context).textTheme;
+    final reps = [
+      for (final l in run.laps)
+        if (l.step < steps.length &&
+            steps[l.step].kind == StepKind.work &&
+            steps[l.step].distanceM != null)
+          (l, steps[l.step]),
+    ];
+    if (reps.length < 2) return const [];
+    final (best, step) =
+        reps.reduce((a, b) => b.$1.seconds < a.$1.seconds ? b : a);
+    final sprint = reps.every((r) => r.$2.distanceM! <= 400);
+    return [
+      const SizedBox(height: FitSpacing.xs),
+      Text(
+        'Best: ${_label(step)} · ${best.seconds < 100 ? '${best.seconds.toStringAsFixed(1)} s' : formatDuration(best.seconds.round())}',
+        key: const ValueKey('run.report.laps.best'),
+        style: t.titleMedium,
+      ),
+      if (sprint)
+        Text(
+          'Phone GPS is good to a few metres, so a 100 m time can be about '
+          'half a second out; 400 m is far closer.',
+          key: const ValueKey('run.report.laps.gps'),
+          style: t.bodyMedium,
+        ),
+    ];
   }
 }

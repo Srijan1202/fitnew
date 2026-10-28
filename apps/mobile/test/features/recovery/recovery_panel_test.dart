@@ -23,6 +23,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../support/fake_running.dart';
 import '../../support/fake_auth_repository.dart';
 import '../../support/fake_exercise_repository.dart';
 import '../../support/fake_health_provider.dart';
@@ -45,6 +46,7 @@ void main() {
   late FakeWorkoutApi api;
   late FakeHealthProvider health;
   late FakeRecoveryApi recovery;
+  late FakeRunningApi running;
 
   setUp(() {
     db = AppDatabase.inMemory();
@@ -52,6 +54,7 @@ void main() {
     health = FakeHealthProvider()
       ..connection_ = HealthConnectionState.disconnected;
     recovery = FakeRecoveryApi(date: today);
+    running = FakeRunningApi();
   });
   tearDown(() => db.close());
 
@@ -123,7 +126,7 @@ void main() {
         trainingRepositoryProvider.overrideWithValue(FakeTrainingRepository()),
         localHourProvider.overrideWithValue(12),
         localTodayProvider.overrideWithValue(today),
-        ...workoutOverrides(db, api, recovery: recovery),
+        ...workoutOverrides(db, api, recovery: recovery, running: running),
         ...healthOverrides(health),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
@@ -336,6 +339,45 @@ void main() {
     expect(
       textOf(tester, 'recovery.components.missing'),
       endsWith('running load (not enough recent running).'),
+    );
+  });
+
+  testWidgets(
+      'beta 4.1: the last 7 days of running, from the runs; nothing when there were none',
+      (tester) async {
+    Map<String, dynamic> run(String id, int daysAgo, double m, int s) {
+      final start = DateTime.now().toUtc().subtract(Duration(days: daysAgo));
+      return {
+        'id': id,
+        'kind': 'outdoor',
+        'name': 'Run',
+        'startedAt': start.toIso8601String(),
+        'endedAt': start.add(Duration(seconds: s)).toIso8601String(),
+        'durationSeconds': s,
+        'distanceM': m,
+        'avgPaceSecPerKm': null,
+        'elevationGainM': null,
+        'calories': null,
+        'effort': null,
+        'outline': const <Object>[],
+      };
+    }
+
+    await tester.pumpWidget(app());
+    await settle(tester);
+    expect(key('recovery.running.week'), findsNothing);
+
+    running.stored
+      ..['a'] = run('a', 1, 5000, 1800)
+      ..['b'] = run('b', 3, 8200, 3000)
+      ..['c'] = run('c', 9, 10000, 3600);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(app());
+    await settle(tester);
+    await reveal(tester, key('recovery.running.week'));
+    expect(
+      textOf(tester, 'recovery.running.week'),
+      'Running, last 7 days: 2 runs · 13.20 km · 1:20:00',
     );
   });
 

@@ -212,6 +212,20 @@ class RunHistory {
       ];
 }
 
+/// Beta 4.1 (C5): the last 7 days of running, for Recovery; null until the
+/// history is known. Saved and not-yet-synced runs both count.
+final runningLast7Provider = Provider<RunTotals?>((ref) {
+  final history = ref.watch(runHistoryProvider).value;
+  if (history == null) return null;
+  final since = ref.watch(runClockProvider)().subtract(const Duration(days: 7));
+  final recent = history.all.where((r) => r.startedAt.isAfter(since));
+  return RunTotals(
+    runs: recent.length,
+    distanceM: recent.fold(0, (sum, r) => sum + r.distanceM),
+    durationSeconds: recent.fold(0, (sum, r) => sum + r.durationSeconds),
+  );
+});
+
 final unsyncedRunsProvider = StreamProvider<List<RunSummary>>(
   (ref) => ref.watch(runningRepositoryProvider).watchUnsynced(),
 );
@@ -297,6 +311,45 @@ final currentPlanProvider = FutureProvider<RunningPlan?>((ref) async {
   final plan = json?['plan'];
   return plan is Map<String, dynamic> ? RunningPlan.fromJson(plan) : null;
 });
+
+/// Beta 4.1 (ADR-039 C2): the sessions the runner built, kept on this phone
+/// for the signed-in account (they need no connection to run).
+class MyWorkouts extends AsyncNotifier<List<RunWorkout>> {
+  String get _key => 'running.myWorkouts.${ref.read(sessionUserIdProvider)}';
+
+  @override
+  Future<List<RunWorkout>> build() async {
+    ref.watch(sessionUserIdProvider);
+    final json = await _cached(ref.read(appDatabaseProvider), _key);
+    final list = json?['workouts'];
+    if (list is! List) return const [];
+    return [
+      for (final w in list)
+        if (w is Map<String, dynamic>) RunWorkout.fromJson(w),
+    ];
+  }
+
+  Future<void> _store(List<RunWorkout> all) async {
+    await _cache(ref.read(appDatabaseProvider), _key, {
+      'workouts': [for (final w in all) w.toJson()],
+    });
+    state = AsyncData(all);
+  }
+
+  /// Saved first in the list; returns its index there (0).
+  Future<int> add(RunWorkout w) async {
+    await _store([w, ...await future]);
+    return 0;
+  }
+
+  Future<void> removeAt(int i) async {
+    final all = [...await future]..removeAt(i);
+    await _store(all);
+  }
+}
+
+final myWorkoutsProvider =
+    AsyncNotifierProvider<MyWorkouts, List<RunWorkout>>(MyWorkouts.new);
 
 /// The ready-made sessions (paced from the plan's zones when there is one).
 final workoutPresetsProvider = FutureProvider<WorkoutPresets?>((ref) async {

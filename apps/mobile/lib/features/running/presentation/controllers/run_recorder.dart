@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../core/db/app_database.dart';
+import '../../../../core/notifications/activity_signal.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../profile/data/profile_repository.dart';
 import '../../data/location_source.dart';
@@ -185,6 +186,8 @@ class RunRecorder extends Notifier<LiveRun?> {
     if (state != null) return;
     final now = _now();
     final id = const Uuid().v4();
+    // Beta 4.1: today's workout reminder is pointless now, as for the gym.
+    ActivitySignal.report(ActivityKind.workoutStarted, at: now);
     // A planned session (intervals, tempo, run/walk) is the workout itself.
     final session = workout ??
         (planned != null && planned.structured
@@ -573,6 +576,8 @@ class RunRecorder extends Notifier<LiveRun?> {
     if (run == null) return null;
     if (run.status != RunStatus.finished) await finish();
     await _writes;
+    // Beta 4.1: a saved run is a trained day ("missed" goes too).
+    ActivitySignal.report(ActivityKind.workoutCompleted, at: run.startedAt);
     await ref.read(runningRepositoryProvider).save(
           run.id,
           name: name,
