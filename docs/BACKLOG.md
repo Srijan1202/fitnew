@@ -28,6 +28,9 @@
 | E2 | `/nutrition/targets` (current + history) | S | §10.1, no owning phase; targets are currently read through `/user/goal` |
 | E3 | `/exercises/{id}/history` (full history of a lift) | S–M | §10.1; today only the last three sessions, via `/training/progression/{id}` |
 | E4 | §33 pre-caching: tomorrow's plan and the 200 most-used foods | M | Tomorrow's mess menu is already cached ahead |
+| E27 | Run-specific reminder copy | S | Beta 4.1 (ADR-039 D12): a plan run's day reuses the gym reminder templates, named after the run; a cheeky gym line can read oddly on a run day. Needs run variants in core's `notify/copy.ts` |
+| E28 | Sync "your own" running sessions to the account | S–M | Beta 4.1 (ADR-039 D3) keeps them on the phone; a second phone does not see them |
+| E29 | Shorebird builds with the Play upload key | S | ADR-040 D4: the WSL build refuses with `key.properties` until the upload keystore is set up in WSL too |
 | E5 | Flutter dependency majors (go_router 14→18, firebase 6→7/4→5, riverpod 3.0→3.4, drift 2.29→2.35, flutter_secure_storage 9→11, connectivity_plus 6→7…) | L | Needs its own pass with device testing; `sqlite3_flutter_libs` is marked end-of-life (drift storage); the Kotlin Gradle Plugin warning comes from the firebase plugins |
 | E6 | `fastify-type-provider-zod` 4 → 7 and zod 3 → 4 | M | Majors; not security-driven |
 | E7 | Remove the pnpm `overrides` once upstream packages ship the patched transitive versions | S | Root `package.json` (`brace-expansion`, `fast-uri`, `postcss`, `source-map-js`) |

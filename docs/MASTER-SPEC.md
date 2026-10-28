@@ -626,6 +626,8 @@ Triggered by: equipment unavailable, `user_limitations` match, or user rejects a
 
 `AMENDED 2026-10-27 (beta 4.0, ADR-038, owner)`: the Training tab is **Gym | Running** (Gym by default). A run is recorded on the phone with GPS, with the screen off if need be, and saved to the account. Every figure kept is computed on the server from the track (§7.3's one exception covers the live view). The map is OpenFreeMap through MapLibre. Shares and GPX hide the first and last 200 m by default. Running is free. In steps: 4.0 recording, history, share and GPX; 4.1 voice coach and plans; 4.2 records, badges and replay; 4.3 Galaxy Watch runs through Health Connect. Plan: `docs/phase-plans/beta-4.0-plan.md`.
 
+`AMENDED 2026-10-28 (beta 4.1, ADR-039, owner)`: **the voice coach, sessions, sprints and plans.** The phone's text-to-speech calls splits, pace, the goal and each session step; its rules run on the phone (§7.3's running exception). A session is a list of steps (warm-up, work, recover, cool-down), ready-made or built by the runner and kept on the phone. Laps are measured on the server from the track. Plans for the 5K (with a run/walk start), 10K, half and marathon (8, 8, 12 and 16 weeks) are built in core from Daniels' VDOT paces, on the runner's days. A gym day and a run on one weekday are allowed, with a warning. Today's planned run is TODAY's `start-run`; plan runs count for the streak, the weekly ring and the reminders. Plan: `docs/phase-plans/beta-4.1-running-plan.md`.
+
 ---
 
 ## 13. Nutrition System
@@ -970,6 +972,8 @@ readiness = 100
 
 **Phase 6.5 (shipped as context, not recovery science):** Health Connect on Android, read-only, on-device — steps, distance, active/total calories, exercise sessions, sleep, resting HR, weight, body fat, BMR — shown on Home with explicit availability and freshness; sleep < 6 h yields an advisory line, never a score (ADR-008, ADR-009). HRV is not read. **V2:** HealthKit as a second provider. `UNVERIFIED` — HRV field availability differs across Android OEMs; treat as directional, never clinical.
 
+`AMENDED 2026-10-28 (beta 4.1, ADR-039 D11, owner)`: **a sixth part, running load.** readiness = 100 − sleep − soreness − energy − performance − adherence − **running load**, still floored at 0; the five parts keep their caps. Running load is effort-weighted minutes (effort ÷ 5, or 1 without an effort). The last 7 days are compared with the average week of the last 28: the penalty is 0 up to a ratio of 1.3, rising evenly to **10** at 1.8 and above. It needs at least 3 runs in the 28 days; otherwise it is "not in the score: not enough recent running". The bands, the three-day escalation and the deload offer are unchanged. The sixth part is sent only to app builds 18 and later (`X-FITOS-Build`); the score is the same for every build.
+
 ---
 
 ## 19. AI Architecture
@@ -1117,6 +1121,8 @@ Firebase Analytics, privacy-conscious.
 6. The policy is `docs/legal/privacy-policy.md` (v2026-10-22), and the app shows the same text.
 
 `AMENDED 2026-10-27 (beta 4.0, ADR-038 D11)`: **runs carry location.** It is recorded only while a run records, with "while using the app" permission and never "all the time". Runs are deleted outright, go with the account and are in the export. Shares and GPX hide the first and last 200 m by default. The policy names runs, their route, and OpenFreeMap (map tiles for the area on screen). Its version is now `2026-10-27.1`, so everyone accepts it once.
+
+`AMENDED 2026-10-28 (beta 4.1, ADR-040)`: **app updates.** Small fixes come by Shorebird code push. On each start the app asks Shorebird whether a fix is waiting, sending the app id, the version, the patch it has, the phone type and a random install id; nothing of the user's. Bigger updates are FITOS's own APK from tryfitos.me, checked against the SHA-256 in version.json before Android's installer opens. The policy names Shorebird. Its version is now `2026-10-28.1`, so everyone accepts it once.
 
 **Our commitments beyond the legal minimum:**
 - Body photos never leave the device except to our private Cloud Storage bucket, and are never sent to any AI provider.

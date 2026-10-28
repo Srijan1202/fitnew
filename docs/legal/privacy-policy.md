@@ -1,6 +1,6 @@
 # FITOS privacy policy
 
-**Version** 2026-10-27.1 · applies to the closed beta
+**Version** 2026-10-28.1 · applies to the closed beta
 
 This is the text the app shows in Profile → Privacy & data (`apps/mobile/lib/features/privacy/presentation/policy_text.dart`); a test keeps the two in step. MASTER-SPEC §23 · ADR-023 · ADR-026 (beta: AWS hosting, crash reports, feedback).
 
@@ -30,7 +30,7 @@ When the app crashes or hits an error, it sends Google Firebase Crashlytics a re
 
 ## Who else
 
-Amazon Web Services hosts the FITOS server and database, in India. Google Firebase handles sign-in, notifications and crash reports. Google Gemini handles FITOS AI, only with your consent. OpenFreeMap provides the maps: to draw one, your phone asks OpenFreeMap for the map of the area on screen, as any map app does; nothing else of yours is sent. Nobody else: no advertising, no selling, no sharing with other companies. No data of yours is used to train an AI model by FITOS.
+Amazon Web Services hosts the FITOS server and database, in India. Google Firebase handles sign-in, notifications and crash reports. Google Gemini handles FITOS AI, only with your consent. OpenFreeMap provides the maps: to draw one, your phone asks OpenFreeMap for the map of the area on screen, as any map app does; nothing else of yours is sent. Shorebird delivers small fixes to the app: each time FITOS starts, it asks Shorebird whether a fix is waiting, sending FITOS's app id, its version, the fix it already has, the kind of phone (such as 64-bit Android) and a random number for this install; nothing of yours or about your account, and Shorebird keeps the network address in its logs only for a limited time. Bigger updates come from tryfitos.me, FITOS's own site. Nobody else: no advertising, no selling, no sharing with other companies. No data of yours is used to train an AI model by FITOS.
 
 ## How long
 

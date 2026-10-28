@@ -3,7 +3,7 @@
 /// two stay in step and that the version is the server's CURRENT_POLICY_VERSION.
 library;
 
-const kPolicyVersion = '2026-10-27.1';
+const kPolicyVersion = '2026-10-28.1';
 
 const kPolicySections = <(String, String)>[
   (
@@ -86,7 +86,13 @@ const kPolicySections = <(String, String)>[
         'Google Gemini handles FITOS AI, only with your consent. OpenFreeMap '
         'provides the maps: to draw one, your phone asks OpenFreeMap for the '
         'map of the area on screen, as any map app does; nothing else of '
-        'yours is sent. Nobody else: '
+        'yours is sent. Shorebird delivers small fixes to the app: each time '
+        'FITOS starts, it asks Shorebird whether a fix is waiting, sending '
+        "FITOS's app id, its version, the fix it already has, the kind of "
+        'phone (such as 64-bit Android) and a random number for this install; '
+        'nothing of yours or about your account, and Shorebird keeps the '
+        'network address in its logs only for a limited time. Bigger updates '
+        "come from tryfitos.me, FITOS's own site. Nobody else: "
         'no advertising, no selling, no sharing with other companies. No data '
         'of yours is used to train an AI model by FITOS.',
   ),
