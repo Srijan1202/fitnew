@@ -19,9 +19,9 @@ set -euo pipefail
 mode=$1 sha=$2 version=$3 build=$4 platform=${5:-android-arm64}
 work=$HOME/fitos-build
 sb=$HOME/.shorebird/bin/shorebird
-export ANDROID_HOME=$HOME/Android
+export ANDROID_HOME=${ANDROID_HOME:-$HOME/sdk/android}
 export ANDROID_SDK_ROOT=$ANDROID_HOME
-export JAVA_HOME=${JAVA_HOME:-/usr/lib/jvm/java-21-openjdk-amd64}
+export JAVA_HOME=${JAVA_HOME:-$HOME/sdk/jdk21}
 export PATH=$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$PATH
 
 [[ $sha =~ ^[0-9a-f]{40}$ ]] || { echo "not a commit: $sha" >&2; exit 2; }
