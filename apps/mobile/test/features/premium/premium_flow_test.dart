@@ -542,6 +542,54 @@ void main() {
       );
     });
 
+    testWidgets(
+        'beta 4.4: the streak card opens Streak & rewards: the streak, the best, this week and the last 4 weeks',
+        (tester) async {
+      streak.next = Streak(
+        current: 5,
+        best: 12,
+        todayCounted: true,
+        weekDone: 2,
+        weekPlanned: 4,
+        days: [
+          for (var i = 0; i < 28; i++)
+            StreakDay(
+              DateTime.utc(2026, 10, 2)
+                  .add(Duration(days: i))
+                  .toIso8601String()
+                  .substring(0, 10),
+              i < 3
+                  ? StreakDayStatus.before
+                  : i == 27
+                      ? StreakDayStatus.logged
+                      : i % 7 == 6
+                          ? StreakDayStatus.rest
+                          : i % 5 == 0
+                              ? StreakDayStatus.missed
+                              : StreakDayStatus.logged,
+            ),
+        ],
+      );
+      await start(tester);
+      await tap(tester, 'home.streak');
+      expect(find.text('Streak & rewards'), findsOneWidget);
+      String text(String key) =>
+          tester.widget<Text>(find.byKey(ValueKey(key))).data!;
+      expect(text('streak.current'), '5-day streak');
+      expect(text('streak.best'), 'Best: 12 days');
+      expect(text('streak.week'), '2/4');
+      expect(find.byKey(const ValueKey('streak.grid')), findsOneWidget);
+      // 2 October 2026 is a Friday: four blanks, then 28 days in 5 rows.
+      expect(
+        find.byKey(const ValueKey('streak.day.2026-10-02')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('streak.day.2026-10-29')),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('new rewards are celebrated once on Home', (tester) async {
       rewards.rewards = {StreakReward.spark};
       streak.next = const Streak(

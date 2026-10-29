@@ -5,7 +5,9 @@ import '../../../../shared/widgets/fit_glass.dart';
 import '../../domain/run.dart';
 import '../../domain/units.dart';
 import '../../domain/workout.dart';
+import '../../domain/replay.dart';
 import 'efforts_widgets.dart';
+import 'route_painter.dart';
 import 'run_map.dart';
 import 'run_widgets.dart';
 
@@ -17,6 +19,7 @@ class RunReport extends StatelessWidget {
     required this.unit,
     this.header,
     this.footer = const [],
+    this.onReplay,
     super.key,
   });
 
@@ -24,6 +27,10 @@ class RunReport extends StatelessWidget {
   final DistanceUnit unit;
   final Widget? header;
   final List<Widget> footer;
+
+  /// Beta 4.4: the run's page offers its replay (null: none, e.g. the
+  /// summary before it is saved).
+  final VoidCallback? onReplay;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +44,8 @@ class RunReport extends StatelessWidget {
               [for (final p in seg) (p.lat, p.lon)],
           ];
     final splits = unit == DistanceUnit.km ? run.splitsKm : run.splitsMi;
+    // Beta 4.4 (owner): the route coloured by pace against the run's average.
+    final pace = track == null ? const <PaceStretch>[] : paceStretches(track);
     final day =
         MaterialLocalizations.of(context).formatFullDate(s.startedAt.toLocal());
     final time = TimeOfDay.fromDateTime(s.startedAt.toLocal()).format(context);
@@ -82,8 +91,28 @@ class RunReport extends StatelessWidget {
               child: RunMap(
                 key: const ValueKey('run.report.map'),
                 segments: segments,
+                coloured: pace.isEmpty
+                    ? null
+                    : [
+                        for (final p in pace)
+                          (p.points, paceColour(p.relative)),
+                      ],
               ),
             ),
+          ),
+          const SizedBox(height: FitSpacing.xs),
+          Row(
+            children: [
+              if (pace.isNotEmpty) const Expanded(child: PaceLegend()),
+              if (pace.isEmpty) const Spacer(),
+              if (onReplay != null)
+                TextButton.icon(
+                  key: const ValueKey('run.replay'),
+                  onPressed: onReplay,
+                  icon: const Icon(Icons.play_circle_outline),
+                  label: const Text('Replay'),
+                ),
+            ],
           ),
         ],
         const SizedBox(height: FitSpacing.md),

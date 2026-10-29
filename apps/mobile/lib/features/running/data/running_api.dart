@@ -33,6 +33,12 @@ abstract class RunningApi {
   /// Beta 4.2: the best three at each distance, as the server sent it
   /// (cached as is).
   Future<Result<Map<String, dynamic>>> records();
+
+  /// Beta 4.4 (E28): the sessions the runner built, kept with the account:
+  /// `[{id, name, steps, updatedAt}]`, newest first.
+  Future<Result<List<Map<String, dynamic>>>> myWorkouts();
+  Future<Result<void>> putMyWorkout(String id, RunWorkout workout);
+  Future<Result<void>> deleteMyWorkout(String id);
 }
 
 class DioRunningApi implements RunningApi {
@@ -147,4 +153,35 @@ class DioRunningApi implements RunningApi {
         () => _dio.get<Map<String, dynamic>>('/v1/running/records'),
         _same,
       );
+
+  @override
+  Future<Result<List<Map<String, dynamic>>>> myWorkouts() => _guard(
+        () => _dio.get<Map<String, dynamic>>('/v1/running/my-workouts'),
+        (j) => [
+          for (final w in j['workouts'] as List) w as Map<String, dynamic>,
+        ],
+      );
+
+  @override
+  Future<Result<void>> putMyWorkout(String id, RunWorkout workout) async {
+    try {
+      await _dio.put<Object?>(
+        '/v1/running/my-workouts/$id',
+        data: workout.toJson(),
+      );
+      return const Ok(null);
+    } on DioException catch (e) {
+      return Err(ErrorMapper.fromDio(e));
+    }
+  }
+
+  @override
+  Future<Result<void>> deleteMyWorkout(String id) async {
+    try {
+      await _dio.delete<void>('/v1/running/my-workouts/$id');
+      return const Ok(null);
+    } on DioException catch (e) {
+      return Err(ErrorMapper.fromDio(e));
+    }
+  }
 }

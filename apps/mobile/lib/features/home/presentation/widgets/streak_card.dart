@@ -50,6 +50,9 @@ class StreakCard extends StatelessWidget {
       ),
       child: FitBlock(
         key: const ValueKey('home.streak'),
+        // Beta 4.4 (owner): the card opens Streak & rewards; the ring still
+        // opens the plan.
+        onTap: () => context.push(Routes.rewards),
         padding: const EdgeInsets.all(FitSpacing.md),
         child: Row(
           children: <Widget>[

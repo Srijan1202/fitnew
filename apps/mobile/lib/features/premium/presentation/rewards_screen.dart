@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/routing/navigation.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../shared/widgets/fit_glass.dart';
+import '../../home/data/streak_api.dart';
 import '../../home/presentation/controllers/home_providers.dart';
 import '../../running/domain/efforts.dart';
 import '../../running/domain/units.dart';
@@ -16,7 +17,9 @@ import 'premium_sheet.dart';
 import 'rewards_providers.dart';
 
 /// Beta 4.3 (owner 2026-10-29): every reward in one place — what it is, and
-/// when it unlocks. Streak rewards against the best streak so far, running
+/// when it unlocks. Beta 4.4 (owner): "Streak & rewards": the streak
+/// itself on top, opened from Home's streak card too. Streak rewards against
+/// the best streak so far, running
 /// badges against the longest run so far, and what Premium includes.
 /// Nothing here ever says "lost": earned is kept for good.
 class RewardsScreen extends ConsumerWidget {
@@ -27,7 +30,8 @@ class RewardsScreen extends ConsumerWidget {
     final t = Theme.of(context).textTheme;
     final streak = ref.watch(earnedRewardsProvider).value;
     final badges = ref.watch(earnedBadgesProvider).value;
-    final best = ref.watch(streakProvider).value?.best;
+    final streakNow = ref.watch(streakProvider).value;
+    final best = streakNow?.best;
     final longest = ref.watch(recordsProvider).value?.longestM;
     final premium = ref.watch(isPremiumProvider) ?? false;
     final unit = ref.watch(runSettingsProvider).unit;
@@ -36,13 +40,17 @@ class RewardsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.popOrHome()),
-        title: const Text('Rewards'),
+        title: const Text('Streak & rewards'),
       ),
       body: FitBackdrop(
         child: ListView(
           key: const ValueKey('rewards.list'),
           padding: const EdgeInsets.all(FitSpacing.screen),
           children: [
+            if (streakNow != null) ...[
+              _StreakHeader(streak: streakNow),
+              const SizedBox(height: FitSpacing.lg),
+            ],
             Text(
               '$earned of $total earned',
               key: const ValueKey('rewards.count'),
@@ -198,6 +206,186 @@ class RewardsScreen extends ConsumerWidget {
         ),
         ('ai', 'The AI coach', 'Chat, meal photos and the weekly report'),
       ];
+}
+
+/// Beta 4.4: the streak now and best, this week's ring, and the last 4 weeks
+/// as a grid of days (Monday first).
+class _StreakHeader extends StatelessWidget {
+  const _StreakHeader({required this.streak});
+
+  final Streak streak;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final s = streak;
+    return FitBlock(
+      key: const ValueKey('streak.header'),
+      glow: true,
+      padding: const EdgeInsets.all(FitSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.local_fire_department,
+                size: 36,
+                color: s.current == 0 ? FitColors.ink35 : FitColors.amber,
+              ),
+              const SizedBox(width: FitSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      s.current == 0
+                          ? 'No streak yet'
+                          : '${s.current}-day streak',
+                      key: const ValueKey('streak.current'),
+                      style: t.titleLarge,
+                    ),
+                    Text(
+                      'Best: ${s.best} ${s.best == 1 ? 'day' : 'days'}',
+                      key: const ValueKey('streak.best'),
+                      style: t.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+              if (s.weekDone != null && s.weekPlanned != null)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${s.weekDone}/${s.weekPlanned}',
+                      key: const ValueKey('streak.week'),
+                      style: t.titleLarge,
+                    ),
+                    Text('this week', style: t.bodySmall),
+                  ],
+                ),
+            ],
+          ),
+          if (s.days.isNotEmpty) ...[
+            const SizedBox(height: FitSpacing.md),
+            _DayGrid(days: s.days),
+            const SizedBox(height: FitSpacing.sm),
+            const _Legend(),
+          ],
+          const SizedBox(height: FitSpacing.xs),
+          Text(
+            'A day counts when you log a workout or a meal; a planned rest '
+            'day counts once a streak is going.',
+            style: t.bodySmall?.copyWith(color: FitColors.ink60),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Color _dayColour(StreakDayStatus s) => switch (s) {
+      StreakDayStatus.logged => FitColors.accent,
+      StreakDayStatus.rest => FitColors.pine.withValues(alpha: 0.45),
+      StreakDayStatus.skipped => FitColors.ink35.withValues(alpha: 0.5),
+      StreakDayStatus.missed => FitColors.rule,
+      StreakDayStatus.today => Colors.transparent,
+      StreakDayStatus.before => Colors.transparent,
+    };
+
+class _DayGrid extends StatelessWidget {
+  const _DayGrid({required this.days});
+
+  final List<StreakDay> days;
+
+  static int _weekday(String d) => DateTime.parse(d).weekday;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    // Monday first: blanks before the first day, so columns are weekdays.
+    final cells = <StreakDay?>[
+      for (var i = 1; i < _weekday(days.first.date); i++) null,
+      ...days,
+    ];
+    final rows = <List<StreakDay?>>[
+      for (var i = 0; i < cells.length; i += 7)
+        cells.sublist(i, i + 7 > cells.length ? cells.length : i + 7),
+    ];
+    const names = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    Widget cell(StreakDay? d) {
+      final today = d?.status == StreakDayStatus.today;
+      return Expanded(
+        child: AspectRatio(
+          aspectRatio: 1,
+          child: Container(
+            key: d == null ? null : ValueKey('streak.day.${d.date}'),
+            margin: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: d == null ? Colors.transparent : _dayColour(d.status),
+              borderRadius: BorderRadius.circular(6),
+              border:
+                  today ? Border.all(color: FitColors.accent, width: 2) : null,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      key: const ValueKey('streak.grid'),
+      children: [
+        Row(
+          children: [
+            for (final n in names)
+              Expanded(child: Center(child: Text(n, style: t.labelSmall))),
+          ],
+        ),
+        for (final r in rows)
+          Row(
+            children: [
+              for (var i = 0; i < 7; i++) cell(i < r.length ? r[i] : null),
+            ],
+          ),
+      ],
+    );
+  }
+}
+
+class _Legend extends StatelessWidget {
+  const _Legend();
+
+  @override
+  Widget build(BuildContext context) {
+    final muted =
+        Theme.of(context).textTheme.bodySmall?.copyWith(color: FitColors.ink60);
+    Widget item(StreakDayStatus s, String label) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                color: _dayColour(s),
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+            const SizedBox(width: FitSpacing.xs),
+            Text(label, style: muted),
+          ],
+        );
+    return Wrap(
+      spacing: FitSpacing.md,
+      runSpacing: FitSpacing.xs,
+      children: [
+        item(StreakDayStatus.logged, 'Logged'),
+        item(StreakDayStatus.rest, 'Rest day'),
+        item(StreakDayStatus.skipped, 'Skipped'),
+        item(StreakDayStatus.missed, 'Missed'),
+      ],
+    );
+  }
 }
 
 class _Section extends StatelessWidget {

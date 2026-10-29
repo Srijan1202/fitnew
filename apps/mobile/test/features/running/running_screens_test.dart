@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:fitos/core/db/app_database.dart';
+import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/routing/app_shell.dart';
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
@@ -21,6 +23,7 @@ import 'package:fitos/features/running/presentation/screens/plan_setup_screen.da
 import 'package:fitos/features/running/presentation/screens/records_screen.dart';
 import 'package:fitos/features/running/presentation/screens/run_detail_screen.dart';
 import 'package:fitos/features/running/presentation/screens/run_finish_screen.dart';
+import 'package:fitos/features/running/presentation/screens/run_replay_screen.dart';
 import 'package:fitos/features/running/presentation/screens/share_run_screen.dart';
 import 'package:fitos/features/running/presentation/widgets/route_snapshot.dart';
 import 'package:fitos/features/running/presentation/widgets/run_map.dart';
@@ -118,6 +121,12 @@ void main() {
                 builder: (_, s) =>
                     ShareRunScreen(id: s.pathParameters['runId']!),
               ),
+              GoRoute(
+                path: 'replay',
+                parentNavigatorKey: root,
+                builder: (_, s) =>
+                    RunReplayScreen(id: s.pathParameters['runId']!),
+              ),
             ],
           ),
         ],
@@ -175,17 +184,21 @@ void main() {
       ProviderScope.containerOf(tester.element(find.byType(MaterialApp)));
 
   /// Scrolls the run report (summary or detail) until [key] is built.
-  Future<void> reveal(WidgetTester tester, String key) =>
-      tester.scrollUntilVisible(
-        find.byKey(ValueKey(key)),
-        200,
-        scrollable: find
-            .descendant(
-              of: find.byKey(const ValueKey('run.report.list')),
-              matching: find.byType(Scrollable),
-            )
-            .first,
-      );
+  Future<void> reveal(WidgetTester tester, String key) async {
+    await tester.scrollUntilVisible(
+      find.byKey(ValueKey(key)),
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const ValueKey('run.report.list')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    // Wholly on screen, not just its edge.
+    await tester.ensureVisible(find.byKey(ValueKey(key)));
+    await tester.pump();
+  }
 
   /// Scrolls the share screen until [key] is built.
   Future<void> shareTo(WidgetTester tester, String key) =>
@@ -812,6 +825,57 @@ void main() {
       expect(find.byKey(const ValueKey('run.report.distance')), findsOneWidget);
     });
 
+    testWidgets(
+        'beta 4.4: a run\u2019s map in pace colours with the legend; Replay plays it, pauses, scrubs and changes speed',
+        (tester) async {
+      final id = await savedRun(tester);
+      await openRun(tester, id);
+      await settle(tester);
+      expect(find.byKey(const ValueKey('run.paceLegend')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('run.replay')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.byKey(const ValueKey('replay.map')), findsOneWidget);
+      String text(String key) =>
+          tester.widget<Text>(find.byKey(ValueKey(key))).data!;
+      Future<void> tapIt(String key) async {
+        await tester.ensureVisible(find.byKey(ValueKey(key)));
+        await tester.pump();
+        await tester.tap(find.byKey(ValueKey(key)));
+      }
+
+      // Half a second into a 20 s replay: under way, not at the end.
+      expect(text('replay.time'), isNot('0:00'));
+      // Pause, then the scrubber to the end: the whole run.
+      await tapIt('replay.play');
+      await tester.pump();
+      final slider =
+          tester.widget<Slider>(find.byKey(const ValueKey('replay.scrub')));
+      slider.onChanged!(1);
+      await tester.pump();
+      final run = api.stored[id]!;
+      expect(
+        text('replay.distance'),
+        formatKm((run['distanceM'] as num).toDouble()),
+      );
+      await tapIt('replay.speed.2.0');
+      await tester.pump();
+      expect(
+        tester
+            .widget<ChoiceChip>(find.byKey(const ValueKey('replay.speed.2.0')))
+            .selected,
+        isTrue,
+      );
+      // Play again from the end: it starts over.
+      await tapIt('replay.play');
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(
+        tester.widget<Slider>(find.byKey(const ValueKey('replay.scrub'))).value,
+        lessThan(0.5),
+      );
+      await tester.pump(const Duration(seconds: 15));
+    });
+
     testWidgets('edit and delete', (tester) async {
       final id = await savedRun(tester);
       await openRun(tester, id);
@@ -910,6 +974,35 @@ void main() {
         find.byKey(const ValueKey('running.planned.p-today')),
         findsOneWidget,
       );
+    });
+
+    testWidgets(
+        'beta 4.4: 1 to 5 runs a week for any plan; a half on 2 says it is harder',
+        (tester) async {
+      await openRunning(tester);
+      await tester.tap(find.byKey(const ValueKey('running.plan.new')));
+      await settle(tester);
+      for (final n in [1, 2, 3, 4, 5]) {
+        expect(find.byKey(ValueKey('plan.days.$n')), findsOneWidget);
+      }
+      await tester.tap(find.byKey(const ValueKey('plan.goal.half')));
+      await tester.enterText(find.byKey(const ValueKey('plan.time.m')), '24');
+      final days2 = find.byKey(const ValueKey('plan.days.2'));
+      await tester.ensureVisible(days2);
+      await tester.tap(days2);
+      await settle(tester);
+      expect(find.byKey(const ValueKey('plan.fewRuns')), findsOneWidget);
+      // Two days: Tuesday and Sunday (Thursday off).
+      final thu = find.byKey(const ValueKey('plan.day.4'));
+      await tester.ensureVisible(thu);
+      await tester.tap(thu);
+      await settle(tester);
+      api.plan = planJson(goal: 'half', runs: const []);
+      await toMake(tester);
+      await tester.tap(find.byKey(const ValueKey('plan.make')));
+      await settle(tester);
+      expect(api.createdPlans.single, containsPair('daysPerWeek', 2));
+      expect(api.createdPlans.single['weekdays'], [2, 7]);
     });
 
     testWidgets('plan setup: a time that is not a time, and the beginner 5K',
@@ -1136,13 +1229,69 @@ void main() {
       expect(find.byKey(const ValueKey('run.session.mine.0')), findsNothing);
       final c = container(tester);
       expect(await done(tester, c.read(myWorkoutsProvider.future)), isEmpty);
+      // Beta 4.4 (E28): kept with the account too, and deleted there.
+      await settle(tester);
+      expect(api.mine, isEmpty);
+      expect(api.calls, containsAll(['putMyWorkout', 'deleteMyWorkout']));
 
       await buildOne();
+      await settle(tester);
+      expect(api.mine.values.single['name'], '4 × 800 m');
       await tester.tap(find.byKey(const ValueKey('run.start')));
       await settle(tester);
       final session = c.read(runRecorderProvider)!.session!;
       expect(session.name, '4 × 800 m');
       expect(session.count, 9); // warm-up, 4 reps, 3 recoveries, cool-down
+    });
+
+    testWidgets(
+        'beta 4.4 (E28): a session made offline goes up later; one from before 4.4 goes up once',
+        (tester) async {
+      // A session kept by 4.3 (no id) is already on the phone.
+      await db.into(db.cachedJson).insert(
+            CachedJsonCompanion.insert(
+              key: 'running.myWorkouts.user-1',
+              json: jsonEncode({
+                'workouts': [
+                  {
+                    'name': 'Old one',
+                    'steps': <Object>[],
+                  },
+                ],
+              }),
+              storedAt: '2026-10-28T00:00:00Z',
+            ),
+          );
+      api.failWith = const Offline();
+      await openRunning(tester);
+      final c = container(tester);
+      expect(
+        (await done(tester, c.read(myWorkoutsProvider.future))).single.name,
+        'Old one',
+      );
+      await done(
+        tester,
+        c.read(myWorkoutsProvider.notifier).add(
+              const RunWorkout(name: 'Offline hills', steps: []),
+            ),
+      );
+      await settle(tester);
+      expect(api.mine, isEmpty);
+      expect(
+        c.read(myWorkoutsProvider).value!.map((w) => w.name),
+        ['Offline hills', 'Old one'],
+      );
+
+      // Back online: the next read sends both, then takes the account's list.
+      api.failWith = null;
+      c.invalidate(myWorkoutsProvider);
+      await done(tester, c.read(myWorkoutsProvider.future));
+      await settle(tester);
+      expect(
+        api.mine.values.map((w) => w['name']).toSet(),
+        {'Old one', 'Offline hills'},
+      );
+      expect(c.read(myWorkoutsProvider).value, hasLength(2));
     });
 
     testWidgets('sprints: reps, distance and rest make the session',

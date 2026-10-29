@@ -5,6 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../../core/errors/result.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
@@ -338,38 +339,128 @@ final recordsProvider = FutureProvider<RunningRecords?>((ref) async {
 });
 
 /// Beta 4.1 (ADR-039 C2): the sessions the runner built, kept on this phone
-/// for the signed-in account (they need no connection to run).
+/// for the signed-in account (they need no connection to run). Beta 4.4
+/// (E28): kept with the account too, so a new phone or a reinstall has them.
+/// Each has the phone's id; a change is saved here at once and sent to the
+/// server, and one that could not be sent (offline) waits in a small queue
+/// sent before the next read. The server's list is then the list, plus what
+/// is still waiting. Sessions from before 4.4 (no id) get one and go up once.
 class MyWorkouts extends AsyncNotifier<List<RunWorkout>> {
+  static const _uuid = Uuid();
+
   String get _key => 'running.myWorkouts.${ref.read(sessionUserIdProvider)}';
+
+  /// The ids of [state], in order.
+  List<String> _ids = [];
+
+  /// Waiting to be sent: ids to put (their session is in the list) or delete.
+  final Set<String> _put = {};
+  final Set<String> _delete = {};
 
   @override
   Future<List<RunWorkout>> build() async {
     ref.watch(sessionUserIdProvider);
     final json = await _cached(ref.read(appDatabaseProvider), _key);
     final list = json?['workouts'];
-    if (list is! List) return const [];
-    return [
-      for (final w in list)
-        if (w is Map<String, dynamic>) RunWorkout.fromJson(w),
-    ];
+    final all = <RunWorkout>[];
+    _ids = [];
+    _put
+      ..clear()
+      ..addAll([for (final x in (json?['put'] as List?) ?? const []) '$x']);
+    _delete
+      ..clear()
+      ..addAll([for (final x in (json?['delete'] as List?) ?? const []) '$x']);
+    if (list is List) {
+      for (final w in list) {
+        if (w is! Map<String, dynamic>) continue;
+        all.add(RunWorkout.fromJson(w));
+        final id = w['id'] as String?;
+        if (id == null) {
+          // From before 4.4: an id now, and up it goes.
+          final fresh = _uuid.v4();
+          _ids.add(fresh);
+          _put.add(fresh);
+        } else {
+          _ids.add(id);
+        }
+      }
+    }
+    unawaited(_sync());
+    return all;
   }
 
   Future<void> _store(List<RunWorkout> all) async {
     await _cache(ref.read(appDatabaseProvider), _key, {
-      'workouts': [for (final w in all) w.toJson()],
+      'workouts': [
+        for (var i = 0; i < all.length; i++)
+          {...all[i].toJson(), 'id': _ids[i]},
+      ],
+      'put': [..._put],
+      'delete': [..._delete],
     });
-    state = AsyncData(all);
+    if (ref.mounted) state = AsyncData(all);
+  }
+
+  /// Sends what waits, then takes the server's list (plus anything still
+  /// waiting). Offline, or an older server: the phone's list stands.
+  Future<void> _sync() async {
+    final api = ref.read(runningApiProvider);
+    final mine = state.value ?? await future;
+    for (final id in [..._put]) {
+      final i = _ids.indexOf(id);
+      if (i < 0) {
+        _put.remove(id);
+        continue;
+      }
+      if (await api.putMyWorkout(id, mine[i]) case Ok()) _put.remove(id);
+    }
+    for (final id in [..._delete]) {
+      if (await api.deleteMyWorkout(id) case Ok()) _delete.remove(id);
+    }
+    if (!ref.mounted) return;
+    final server = await api.myWorkouts();
+    if (!ref.mounted) return;
+    if (server case Ok(:final value)) {
+      final current = state.value ?? mine;
+      final ids = <String>[];
+      final all = <RunWorkout>[];
+      // Still waiting to go up: kept, first, as the phone has them.
+      for (var i = 0; i < _ids.length; i++) {
+        if (_put.contains(_ids[i])) {
+          ids.add(_ids[i]);
+          all.add(current[i]);
+        }
+      }
+      for (final w in value) {
+        final id = w['id'] as String;
+        if (_delete.contains(id) || ids.contains(id)) continue;
+        ids.add(id);
+        all.add(RunWorkout.fromJson(w));
+      }
+      _ids = ids;
+      await _store(all);
+    } else {
+      await _store(state.value ?? mine);
+    }
   }
 
   /// Saved first in the list; returns its index there (0).
   Future<int> add(RunWorkout w) async {
-    await _store([w, ...await future]);
+    final all = [w, ...await future];
+    final id = _uuid.v4();
+    _ids = [id, ..._ids];
+    _put.add(id);
+    await _store(all);
+    unawaited(_sync());
     return 0;
   }
 
   Future<void> removeAt(int i) async {
     final all = [...await future]..removeAt(i);
+    final id = _ids.removeAt(i);
+    if (!_put.remove(id)) _delete.add(id);
     await _store(all);
+    unawaited(_sync());
   }
 }
 

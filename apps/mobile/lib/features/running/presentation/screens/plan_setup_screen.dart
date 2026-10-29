@@ -159,7 +159,9 @@ class _PlanSetupScreenState extends ConsumerState<PlanSetupScreen> {
     final overlap = _weekdays.intersection(gymDays).toList()..sort();
     final beginnerOk = _goal == '5k';
     if (!beginnerOk && _from == _From.zero) _from = _From.race;
-    if (_from == _From.zero && _days != 3) _days = 3;
+    // Beta 4.4 (owner): 1–5 runs a week; the beginner run/walk 1–3.
+    if (_from == _From.zero && _days > 3) _days = 3;
+    final fewForLong = (_goal == 'half' || _goal == 'marathon') && _days <= 2;
     Widget chip(String label, bool on, VoidCallback tap, {Key? key}) =>
         ChoiceChip(
           key: key,
@@ -265,7 +267,7 @@ class _PlanSetupScreenState extends ConsumerState<PlanSetupScreen> {
               )
             else
               Text(
-                'Eight weeks of run/walk, three days a week, up to 30 '
+                'Eight weeks of run/walk, one to three days a week, up to 30 '
                 'minutes of running and a 5K. No paces: run at a pace you '
                 'could talk at.',
                 style: t.bodyMedium,
@@ -276,7 +278,8 @@ class _PlanSetupScreenState extends ConsumerState<PlanSetupScreen> {
             Wrap(
               spacing: FitSpacing.sm,
               children: [
-                for (final n in _from == _From.zero ? [3] : [3, 4, 5])
+                for (final n
+                    in _from == _From.zero ? [1, 2, 3] : [1, 2, 3, 4, 5])
                   chip(
                     '$n',
                     _days == n,
@@ -285,6 +288,16 @@ class _PlanSetupScreenState extends ConsumerState<PlanSetupScreen> {
                   ),
               ],
             ),
+            if (fewForLong)
+              Padding(
+                padding: const EdgeInsets.only(top: FitSpacing.sm),
+                child: Text(
+                  'With so few runs a week, a ${_goals[_goal]!.toLowerCase()} '
+                  'is much harder to finish well. 3 or more is better.',
+                  key: const ValueKey('plan.fewRuns'),
+                  style: t.bodyMedium?.copyWith(color: FitColors.amber),
+                ),
+              ),
             const SizedBox(height: FitSpacing.md),
             Text(
               'WHICH DAYS (${_weekdays.length} of $_days)',

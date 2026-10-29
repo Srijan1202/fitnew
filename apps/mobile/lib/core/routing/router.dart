@@ -40,6 +40,7 @@ import '../../features/training/presentation/screens/training_tab_screen.dart';
 import '../../features/premium/presentation/rewards_screen.dart';
 import '../../features/running/presentation/screens/badges_screen.dart';
 import '../../features/running/presentation/screens/records_screen.dart';
+import '../../features/running/presentation/screens/run_replay_screen.dart';
 import '../../features/running/presentation/screens/live_run_screen.dart';
 import '../../features/running/presentation/screens/plan_setup_screen.dart';
 import '../../features/running/presentation/screens/run_detail_screen.dart';
@@ -148,6 +149,9 @@ abstract final class Routes {
   static const String runFinish = '/plan/run/finish';
   static String runDetail(String id) => '/plan/runs/$id';
   static String runShare(String id) => '/plan/runs/$id/share';
+
+  /// Beta 4.4: a run told again.
+  static String runReplay(String id) => '/plan/runs/$id/replay';
 
   /// Beta 4.1: choosing a running plan.
   static const String runPlanNew = '/plan/running-plan';
@@ -339,6 +343,14 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
                         name: 'run-share',
                         parentNavigatorKey: rootNavigatorKey,
                         builder: (context, state) => ShareRunScreen(
+                          id: state.pathParameters['runId']!,
+                        ),
+                      ),
+                      GoRoute(
+                        path: 'replay',
+                        name: 'run-replay',
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (context, state) => RunReplayScreen(
                           id: state.pathParameters['runId']!,
                         ),
                       ),

@@ -99,7 +99,14 @@ class RunDetailScreen extends ConsumerWidget {
       ),
       body: FitBackdrop(
         child: switch (async) {
-          AsyncData(value: final d?) => RunReport(run: d, unit: unit),
+          AsyncData(value: final d?) => RunReport(
+              run: d,
+              unit: unit,
+              // Beta 4.4: a route to replay.
+              onReplay: d.track == null
+                  ? null
+                  : () => context.push(Routes.runReplay(d.id)),
+            ),
           AsyncData() => Center(
               child: Padding(
                 padding: const EdgeInsets.all(FitSpacing.lg),

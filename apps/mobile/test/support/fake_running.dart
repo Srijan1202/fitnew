@@ -232,6 +232,38 @@ class FakeRunningApi implements RunningApi {
     return Ok(PlannedRun.fromJson(r));
   }
 
+  /// Beta 4.4 (E28): the account's own sessions, by id.
+  final Map<String, Map<String, dynamic>> mine = {};
+
+  @override
+  Future<Result<List<Map<String, dynamic>>>> myWorkouts() async {
+    calls.add('myWorkouts');
+    if (failWith != null) return Err(failWith!);
+    return Ok([
+      for (final e in mine.entries.toList().reversed) {'id': e.key, ...e.value},
+    ]);
+  }
+
+  @override
+  Future<Result<void>> putMyWorkout(String id, RunWorkout workout) async {
+    calls.add('putMyWorkout');
+    if (failWith != null) return Err(failWith!);
+    mine.remove(id);
+    mine[id] = {
+      ...workout.toJson(),
+      'updatedAt': DateTime.utc(2026, 10, 29).toIso8601String(),
+    };
+    return const Ok(null);
+  }
+
+  @override
+  Future<Result<void>> deleteMyWorkout(String id) async {
+    calls.add('deleteMyWorkout');
+    if (failWith != null) return Err(failWith!);
+    mine.remove(id);
+    return const Ok(null);
+  }
+
   @override
   Future<Result<Map<String, dynamic>>> records() async {
     calls.add('records');
