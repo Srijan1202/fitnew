@@ -52421,11 +52421,16 @@
                     "pending": {
                       "type": "integer",
                       "minimum": 0
+                    },
+                    "longestM": {
+                      "type": "number",
+                      "minimum": 0
                     }
                   },
                   "required": [
                     "records",
-                    "pending"
+                    "pending",
+                    "longestM"
                   ],
                   "additionalProperties": false
                 }

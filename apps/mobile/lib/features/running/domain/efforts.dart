@@ -171,7 +171,11 @@ class RecordEntry {
 
 /// GET /running/records: the best three at each distance (none yet: empty).
 class RunningRecords {
-  const RunningRecords({required this.best, required this.pending});
+  const RunningRecords({
+    required this.best,
+    required this.pending,
+    this.longestM,
+  });
 
   factory RunningRecords.fromJson(Map<String, dynamic> j) => RunningRecords(
         best: {
@@ -184,6 +188,7 @@ class RunningRecords {
               ],
         },
         pending: (j['pending'] as num?)?.toInt() ?? 0,
+        longestM: (j['longestM'] as num?)?.toDouble(),
       );
 
   static const empty = RunningRecords(best: {}, pending: 0);
@@ -192,6 +197,9 @@ class RunningRecords {
 
   /// Older runs the server has not worked out yet.
   final int pending;
+
+  /// Beta 4.3: the longest single run, metres; null from a 4.2 server.
+  final double? longestM;
 
   /// The record time at each distance that has one.
   Map<EffortKey, double> get recordTimes => {

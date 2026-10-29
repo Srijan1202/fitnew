@@ -37,6 +37,7 @@ import '../../features/training/presentation/screens/plan_start_screen.dart';
 import '../../features/training/presentation/screens/template_library_screen.dart';
 import '../../features/training/presentation/screens/template_preview_screen.dart';
 import '../../features/training/presentation/screens/training_tab_screen.dart';
+import '../../features/premium/presentation/rewards_screen.dart';
 import '../../features/running/presentation/screens/badges_screen.dart';
 import '../../features/running/presentation/screens/records_screen.dart';
 import '../../features/running/presentation/screens/live_run_screen.dart';
@@ -73,6 +74,9 @@ abstract final class Routes {
   static const String goalEditor = '/profile/goal';
   static const String targetsEditor = '/profile/targets';
   static const String personalDetails = '/profile/details';
+
+  /// Beta 4.3: every reward and when it unlocks.
+  static const String rewards = '/profile/rewards';
 
   /// Phase 10: diet and allergies, the hard rules for food suggestions.
   static const String profileFood = '/profile/food';
@@ -218,6 +222,11 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
             path: 'details',
             name: 'personal-details',
             builder: (context, state) => const PersonalDetailsScreen(),
+          ),
+          GoRoute(
+            path: 'rewards',
+            name: 'rewards',
+            builder: (context, state) => const RewardsScreen(),
           ),
           GoRoute(
             path: 'food',

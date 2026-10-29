@@ -135,6 +135,8 @@ describeIfDb('best efforts and distance badges (real Postgres)', { timeout: 90_0
     expect(five.map((b) => b.name)).toEqual(['Tempo', 'Easy six']);
     expect(rec.records.find((r) => r.key === '10k')!.best).toEqual([]);
     expect(rec.pending).toBe(0);
+    // Beta 4.3: the longest run, for how far each badge is.
+    expect(rec.longestM).toBeCloseTo(6010, -1);
   });
 
   it('deleting the record run: its efforts go and the next best is the record', async () => {

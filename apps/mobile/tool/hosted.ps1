@@ -220,6 +220,39 @@ try {
     $apk = "build\app\outputs\flutter-apk\fitos-hosted-$Version.apk"
   }
   Copy-Item -Force $built $apk
+  # Beta 4.3 (ADR-043): signed with FITOS's release key and the proof of
+  # rotation from the debug key (tool/signing.ps1), so it installs over every
+  # earlier FITOS and keeps the phone's data. v1/v2 stay with the debug key
+  # for Android 8; Android 9+ checks v3, the release key.
+  if (-not $AppBundle) {
+    $signing = Join-Path $env:USERPROFILE '.fitos\signing'
+    if (Test-Path (Join-Path $signing 'fitos-release.jks')) {
+      $password = (Get-Content (Join-Path $signing 'release.properties') | Where-Object { $_ -match '^storePassword=' }) -replace '^storePassword=', ''
+      $apksigner = (Get-ChildItem (Join-Path $env:LOCALAPPDATA 'Android\Sdk\build-tools\*\apksigner.bat') | Sort-Object FullName | Select-Object -Last 1).FullName
+      $env:FITOS_SIGN_PASS = $password
+      try {
+        & $apksigner sign `
+          --ks (Join-Path $env:USERPROFILE '.android\debug.keystore') --ks-key-alias androiddebugkey --ks-pass pass:android `
+          --next-signer --ks (Join-Path $signing 'fitos-release.jks') --ks-key-alias fitos --ks-pass env:FITOS_SIGN_PASS `
+          --lineage (Join-Path $signing 'lineage.bin') --out "$apk.signed" $apk
+        if ($LASTEXITCODE -ne 0) { Write-Host 'Signing with the release key failed.'; exit 1 }
+      }
+      finally {
+        Remove-Item Env:FITOS_SIGN_PASS -ErrorAction SilentlyContinue
+      }
+      Move-Item -Force "$apk.signed" $apk
+      Remove-Item -Force "$apk.signed.idsig" -ErrorAction SilentlyContinue
+      $certs = & $apksigner verify --verbose --print-certs $apk
+      if ($LASTEXITCODE -ne 0 -or -not ($certs -match 'Verified using v3 scheme \(APK Signature Scheme v3\): true') -or -not ($certs -match 'CN=FITOS')) {
+        Write-Host 'The signed APK does not verify with the release key (v3).'
+        exit 1
+      }
+      Write-Host '  signed                v1/v2 debug key, v3 FITOS release key (rotation)'
+    }
+    else {
+      Write-Host '  signed                debug key only (no release key: tool/signing.ps1 -Create)'
+    }
+  }
   # §24 / Phase 17: nothing secret leaves in the binary (the public Firebase
   # client key is allowed in it; a private key or a server key is not).
   & node (Join-Path $mobile '..\..\scripts\check-secrets.mjs') --apk $apk

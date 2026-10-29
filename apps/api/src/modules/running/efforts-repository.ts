@@ -122,6 +122,15 @@ export class EffortsRepository {
     return out;
   }
 
+  /** Beta 4.3: the longest single run in metres (0 with none), treadmill too. */
+  async longest(userId: string): Promise<number> {
+    const [row] = await this.db
+      .select({ m: sql<string>`coalesce(max(${runs.distanceM}), 0)` })
+      .from(runs)
+      .where(eq(runs.userId, userId));
+    return Number(row!.m);
+  }
+
   /**
    * The distance firsts any run reached, each dated by the first run that
    * reached it, kept once (a badge stays if that run is deleted later).

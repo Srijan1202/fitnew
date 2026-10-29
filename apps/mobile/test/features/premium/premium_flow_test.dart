@@ -492,16 +492,53 @@ void main() {
         weekDone: null,
         weekPlanned: null,
       );
+      rewards.badgesEarned = {
+        DistanceBadge.firstRun: DateTime.utc(2026, 10, 1),
+      };
       await start(tester);
       await tap(tester, 'home.profile');
       await tap(tester, 'profile.rewards');
+      String status(String id) =>
+          tester.widget<Text>(find.byKey(ValueKey('rewards.$id.status'))).data!;
       expect(
-        tester
-            .widget<Text>(
-              find.byKey(const ValueKey('rewards.ember-theme.status')),
+        status('ember-theme'),
+        'Unlocks at a 14-day streak: 4 more days than your best',
+      );
+      // Beta 4.3: one page for every reward — the running badges, and what
+      // Premium includes.
+      expect(status('first-run'), startsWith('Earned'));
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('rewards.first-half.status')),
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byKey(const ValueKey('rewards.list')),
+              matching: find.byType(Scrollable),
             )
-            .data,
-        '4 more days than your best',
+            .first,
+      );
+      expect(
+        status('first-half'),
+        'Run a half marathon in one go to unlock it.',
+      );
+      expect(find.text('First half marathon · The Road theme'), findsOneWidget);
+      expect(
+        tester.widget<Text>(find.byKey(const ValueKey('rewards.count'))).data,
+        '1 of 10 earned',
+      );
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('rewards.premium.icons.status')),
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byKey(const ValueKey('rewards.list')),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      expect(
+        status('premium.icons'),
+        'With Premium · Gold, Glow, Lime',
       );
     });
 

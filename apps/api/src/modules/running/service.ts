@@ -219,7 +219,11 @@ export class RunningService {
       await this.efforts.replace(row.id, userId, bestEfforts(decodeTrack(trackOf(row)!)), EFFORTS_VERSION);
     }
     await this.efforts.awardBadges(userId);
-    const [top, pending] = await Promise.all([this.efforts.top3(userId), this.efforts.staleCount(userId, EFFORTS_VERSION)]);
+    const [top, pending, longestM] = await Promise.all([
+      this.efforts.top3(userId),
+      this.efforts.staleCount(userId, EFFORTS_VERSION),
+      this.efforts.longest(userId),
+    ]);
     return {
       records: EFFORT_KEYS.map((key) => ({
         key,
@@ -228,6 +232,7 @@ export class RunningService {
           .map((r) => ({ runId: r.clientRunId, name: r.name, startedAt: r.startedAt.toISOString(), seconds: r.seconds })),
       })),
       pending,
+      longestM,
     };
   }
 

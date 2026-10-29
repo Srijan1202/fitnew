@@ -34,7 +34,7 @@ import '../widgets/targets_display.dart';
 import '../../../premium/domain/streak_rewards.dart';
 import '../../../premium/presentation/rewards_providers.dart';
 import '../../../premium/presentation/streak_rewards_ui.dart';
-import '../../../home/presentation/controllers/home_providers.dart';
+import '../../../running/domain/efforts.dart';
 
 /// Profile (ADR-029, owner): laid out like iPhone Settings — who you are and
 /// your targets at the top, what you are in small tiles, then every setting
@@ -152,18 +152,16 @@ class ProfileScreen extends ConsumerWidget {
                         title: 'Time zone',
                         value: view.profile.timezone,
                       ),
-                      // Beta 3.4: streak rewards, and the Ember rim once earned.
+                      // Beta 3.4: streak rewards, and the Ember rim once
+                      // earned. Beta 4.3: every reward, on its own page.
                       Consumer(
                         builder: (context, ref, _) => FitRow(
                           key: const ValueKey('profile.rewards'),
-                          icon: Icons.local_fire_department,
-                          title: 'Streak rewards',
+                          icon: Icons.emoji_events_outlined,
+                          title: 'Rewards',
                           value:
-                              '${ref.watch(earnedRewardsProvider).value?.length ?? 0} of ${StreakReward.values.length}',
-                          onTap: () => showStreakRewards(
-                            context,
-                            best: ref.read(streakProvider).value?.best,
-                          ),
+                              '${(ref.watch(earnedRewardsProvider).value?.length ?? 0) + (ref.watch(earnedBadgesProvider).value?.length ?? 0)} of ${StreakReward.values.length + DistanceBadge.values.length}',
+                          onTap: () => context.push(Routes.rewards),
                         ),
                       ),
                       Consumer(

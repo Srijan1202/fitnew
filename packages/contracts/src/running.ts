@@ -288,6 +288,8 @@ export const runningRecordsSchema = z
   .object({
     records: z.array(z.object({ key: effortKeySchema, best: z.array(recordEntrySchema).max(3) }).strict()),
     pending: z.number().int().min(0),
+    /** Beta 4.3: the longest single run, metres (0 with none): how far each distance badge is. */
+    longestM: z.number().min(0),
   })
   .strict();
 export type RunningRecords = z.infer<typeof runningRecordsSchema>;
