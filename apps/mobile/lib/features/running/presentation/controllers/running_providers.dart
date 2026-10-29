@@ -17,6 +17,7 @@ import '../../data/run_voice.dart';
 import '../../data/run_sync_engine.dart';
 import '../../data/running_api.dart';
 import '../../data/running_repository.dart';
+import '../../domain/efforts.dart';
 import '../../domain/run.dart';
 import '../../domain/workout.dart';
 import '../../domain/units.dart';
@@ -310,6 +311,30 @@ final currentPlanProvider = FutureProvider<RunningPlan?>((ref) async {
   }
   final plan = json?['plan'];
   return plan is Map<String, dynamic> ? RunningPlan.fromJson(plan) : null;
+});
+
+/* --------------------------------------- beta 4.2: best efforts -- */
+
+const String _recordsCacheKey = 'running.records';
+
+/// The records (the best three at each distance); the last copy when
+/// offline, and refreshed whenever a run reaches the server.
+final recordsProvider = FutureProvider<RunningRecords?>((ref) async {
+  final api = ref.watch(runningApiProvider);
+  final db = ref.watch(appDatabaseProvider);
+  final repo = ref.watch(runningRepositoryProvider);
+  final sub = repo.engine.drained.listen((_) => ref.invalidateSelf());
+  ref.onDispose(sub.cancel);
+  final result = await api.records();
+  final Map<String, dynamic>? json;
+  switch (result) {
+    case Ok(:final value):
+      await _cache(db, _recordsCacheKey, value);
+      json = value;
+    case Err():
+      json = await _cached(db, _recordsCacheKey);
+  }
+  return json == null ? null : RunningRecords.fromJson(json);
 });
 
 /// Beta 4.1 (ADR-039 C2): the sessions the runner built, kept on this phone

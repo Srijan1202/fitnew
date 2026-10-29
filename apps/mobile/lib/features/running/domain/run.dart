@@ -1,3 +1,4 @@
+import 'efforts.dart';
 import 'run_math.dart';
 import 'track.dart';
 import 'workout.dart';
@@ -65,6 +66,7 @@ class RunSummary {
     required this.calories,
     required this.effort,
     required this.outline,
+    this.recordKeys = const [],
   });
 
   factory RunSummary.fromJson(Map<String, dynamic> j) => RunSummary(
@@ -86,6 +88,10 @@ class RunSummary {
               (p[1] as num).toDouble(),
             ),
         ],
+        recordKeys: [
+          for (final k in (j['recordKeys'] as List?) ?? const [])
+            if (EffortKey.parse(k as String?) case final key?) key,
+        ],
       );
 
   final String id;
@@ -100,6 +106,10 @@ class RunSummary {
   final int? calories;
   final int? effort;
   final List<(double, double)> outline;
+
+  /// Beta 4.2: the distances this run holds the record for (history's
+  /// trophy); empty from an older server.
+  final List<EffortKey> recordKeys;
 }
 
 /// One run in full, from the server — or, before it has the run, the
@@ -117,6 +127,7 @@ class RunDetail {
     this.workout,
     this.laps = const [],
     this.plannedRunId,
+    this.efforts = const [],
   });
 
   factory RunDetail.fromJson(Map<String, dynamic> j) {
@@ -146,6 +157,10 @@ class RunDetail {
           Lap.fromJson(l as Map<String, dynamic>),
       ],
       plannedRunId: j['plannedRunId'] as String?,
+      efforts: [
+        for (final e in (j['efforts'] as List?) ?? const [])
+          if (BestEffort.fromJson(e as Map<String, dynamic>) case final x?) x,
+      ],
     );
   }
 
@@ -167,6 +182,10 @@ class RunDetail {
   final RunWorkout? workout;
   final List<Lap> laps;
   final String? plannedRunId;
+
+  /// Beta 4.2: every distance the run covers, at its fastest, ranked (the
+  /// server's; the phone's preview has none).
+  final List<BestEffort> efforts;
 
   String get id => summary.id;
 }

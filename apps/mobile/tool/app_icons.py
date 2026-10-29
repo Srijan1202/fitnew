@@ -9,7 +9,10 @@ sized exactly as the standard launcher icon (tool/brand.py):
     glow      lime F with its glow    Premium (the kit's bold-2-glow)
     lime      carbon F on lime        Premium (the kit's bold-3-lime)
     blaze     ember F on carbon       Streak reward, 30 days (beta 3.4)
+    finisher  lime F in a lime ring   Running badge: first 10K (beta 4.2)
+    fortyTwo  gold "42" on carbon     Running badge: first marathon (beta 4.2)
 
+Resource names are the icon's name in lower case (fortyTwo: ic_launcher_fortytwo).
 Writes, for every icon but standard (which tool/brand.py already makes):
   android/app/src/main/res/drawable-nodpi/ic_launcher_<name>_background.png
   android/app/src/main/res/drawable-nodpi/ic_launcher_<name>_foreground.png
@@ -17,7 +20,8 @@ Writes, for every icon but standard (which tool/brand.py already makes):
 and, for all five, the picker's previews assets/brand/app_icons/<name>.png.
 Needs Chrome or Edge, like the kit.
 
-    python tool/app_icons.py
+    python tool/app_icons.py                      # all of them
+    python tool/app_icons.py finisher fortyTwo    # only these
 """
 import sys
 import tempfile
@@ -65,27 +69,49 @@ ICONS = {
     'glow': (C['graphite'], 'url(#g)', kit.defs_gradient('g'), True),
     'lime': ('url(#limebg)', C['carbon'], lime_bg('limebg'), False),
     'blaze': (C['carbon'], 'url(#ember)', ember_gradient('ember'), False),
+    'finisher': (C['carbon'], 'url(#g)', kit.defs_gradient('g'), False),
+    'fortyTwo': (C['carbon'], 'url(#gold)', gold_gradient('gold'), False),
 }
 
+# Beta 4.2: the running badges' icons. A finisher's medal ring around the F
+# (on the back layer, inside the launcher's mask), and the marathon's 42 in
+# place of the F.
+RING = {'finisher'}
+NUMBER = {'fortyTwo': '42'}
 
-def background(fill: str, defs: str, glow: bool) -> str:
+
+def ring(cx: float, cy: float, r: float, width: float) -> str:
+    return f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="url(#g)" stroke-width="{width}"/>'
+
+
+def number(text: str, fill: str, cx: float, cy: float, size: float) -> str:
+    return (f'<text x="{cx}" y="{cy}" text-anchor="middle" dominant-baseline="central" font-family="{kit.FONT}" '
+            f'font-size="{size}" font-weight="700" fill="{fill}">{text}</text>')
+
+
+def background(fill: str, defs: str, glow: bool, name: str = '') -> str:
     """A full square: the adaptive icon's back layer (the launcher masks it)."""
     s = LAYER
     halo = ''
     if glow:
         defs = defs + kit_assets.glow('ig', 0.75, 0.25, 0.9, C['green_deep'], 0.95)
         halo = f'<rect width="{s}" height="{s}" fill="url(#ig)"/>'
+    if name in RING:
+        # Inside the 66 dp the launcher always shows (radius 0.305 of the side).
+        halo += ring(s / 2, s / 2, s * 0.27, s * 0.022)
     return kit.svg(s, s, f'<rect width="{s}" height="{s}" fill="{fill}"/>{halo}', defs)
 
 
-def foreground(fill: str, defs: str) -> str:
+def foreground(fill: str, defs: str, name: str = '') -> str:
     """The F on clear, as tool/brand.py's icon_foreground (50 % of the side)."""
     s = LAYER
     m = s * 0.50
+    if name in NUMBER:
+        return kit.svg(s, s, number(NUMBER[name], fill, s / 2, s / 2, s * 0.40), defs)
     return kit.svg(s, s, kit_assets.mark_centered(fill, s / 2, s / 2 - 50 * m / 100, m), defs)
 
 
-def preview(bg: str, fill: str, defs: str, glow: bool) -> str:
+def preview(bg: str, fill: str, defs: str, glow: bool, name: str = '') -> str:
     """A whole rounded icon, as the picker shows it."""
     size = 1024
     r = size * 0.225
@@ -96,8 +122,11 @@ def preview(bg: str, fill: str, defs: str, glow: bool) -> str:
         defs = defs + kit_assets.glow('ig', 0.75, 0.25, 0.9, C['green_deep'], 0.95)
         halo = f'<rect width="{size}" height="{size}" rx="{r}" fill="url(#ig)"/>'
     border = f' stroke="{C["steel"]}" stroke-width="{size * 0.012}"' if glow else ''
-    body = (f'<rect width="{size}" height="{size}" rx="{r}" fill="{bg}"{border}/>{halo}'
-            + kit_assets.mark_centered(fill, size / 2, inset, m))
+    if name in RING:
+        halo += ring(size / 2, size / 2, size * 0.42, size * 0.035)
+    mark = (number(NUMBER[name], fill, size / 2, size / 2, size * 0.5) if name in NUMBER
+            else kit_assets.mark_centered(fill, size / 2, inset, m))
+    body = f'<rect width="{size}" height="{size}" rx="{r}" fill="{bg}"{border}/>{halo}' + mark
     return kit.svg(size, size, body, defs)
 
 
@@ -130,13 +159,17 @@ def main() -> None:
             src.write_text(svg, encoding='utf-8')
             kit.render_file(src, out, px, px, 1)
 
+        only = set(sys.argv[1:])
         for name, (bg, fill, defs, glow) in ICONS.items():
-            render(preview(bg, fill, defs, glow), PREVIEWS / f'{name}.png', 192)
+            if only and name not in only:
+                continue
+            res = name.lower()
+            render(preview(bg, fill, defs, glow, name), PREVIEWS / f'{name}.png', 192)
             if name == 'standard':
                 continue
-            render(background(bg, defs, glow), nodpi / f'ic_launcher_{name}_background.png', LAYER)
-            render(foreground(fill, defs), nodpi / f'ic_launcher_{name}_foreground.png', LAYER)
-            (anydpi / f'ic_launcher_{name}.xml').write_text(ADAPTIVE.format(name=name), encoding='utf-8', newline='\n')
+            render(background(bg, defs, glow, name), nodpi / f'ic_launcher_{res}_background.png', LAYER)
+            render(foreground(fill, defs, name), nodpi / f'ic_launcher_{res}_foreground.png', LAYER)
+            (anydpi / f'ic_launcher_{res}.xml').write_text(ADAPTIVE.format(name=res), encoding='utf-8', newline='\n')
             print(name)
     print('wrote', nodpi, anydpi, PREVIEWS)
 

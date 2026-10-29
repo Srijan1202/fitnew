@@ -11,6 +11,7 @@ import '../../domain/units.dart';
 import '../controllers/run_recorder.dart';
 import '../controllers/running_providers.dart';
 import '../../../health/presentation/controllers/health_providers.dart';
+import '../widgets/efforts_widgets.dart';
 import '../widgets/plan_card.dart';
 import '../widgets/route_painter.dart';
 import 'run_start.dart';
@@ -45,6 +46,7 @@ class RunningHomeScreen extends ConsumerWidget {
         child: RefreshIndicator(
           onRefresh: () async {
             ref.read(runningRepositoryProvider).sync();
+            ref.invalidate(recordsProvider);
             ref.invalidate(runListProvider);
             await ref.read(runListProvider.future);
           },
@@ -74,6 +76,9 @@ class RunningHomeScreen extends ConsumerWidget {
               const SizedBox(height: FitSpacing.md),
               // Beta 4.1 (ADR-039): the running plan, or the way to one.
               PlanCard(today: ref.watch(localTodayProvider)),
+              // Beta 4.2: best efforts and the way to the badges.
+              const SizedBox(height: FitSpacing.md),
+              const RecordsLinks(),
               if (parked > 0)
                 Padding(
                   padding: const EdgeInsets.only(top: FitSpacing.md),
@@ -325,11 +330,26 @@ class _RunRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    run.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: t.titleMedium,
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          run.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: t.titleMedium,
+                        ),
+                      ),
+                      // Beta 4.2: this run holds a record.
+                      if (run.recordKeys.isNotEmpty) ...[
+                        const SizedBox(width: FitSpacing.xs),
+                        EffortMedal(
+                          key: ValueKey('running.run.${run.id}.record'),
+                          rank: 1,
+                          size: 16,
+                        ),
+                      ],
+                    ],
                   ),
                   Text(
                     '${formatDistance(run.distanceM, unit)} ${unit.label} · '

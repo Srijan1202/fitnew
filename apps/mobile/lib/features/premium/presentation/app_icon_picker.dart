@@ -22,9 +22,10 @@ class AppIconPicker extends ConsumerWidget {
     if (current == null) return const SizedBox.shrink();
     final textTheme = Theme.of(context).textTheme;
     final premium = ref.watch(isPremiumProvider) ?? false;
-    final earned = ref.watch(earnedRewardsProvider).value ?? const {};
+    // Beta 4.2: a streak reward or a running badge unlocks it.
+    final earned = ref.watch(earnedUnlocksProvider) ?? const <String>{};
     bool streakLocked(AppIcon i) =>
-        i.reward != null && !earned.contains(i.reward);
+        i.unlockId != null && !earned.contains(i.unlockId);
     return Column(
       key: const ValueKey('profile.appIcon'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,11 +42,11 @@ class AppIconPicker extends ConsumerWidget {
                 icon: icon,
                 selected: current == icon,
                 locked: (icon.premium && !premium) || streakLocked(icon),
-                streakLock: icon.reward != null,
+                streakLock: icon.unlockId != null,
                 onTap: () async {
                   if (streakLocked(icon)) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(icon.reward!.howToEarn)),
+                      SnackBar(content: Text(icon.howToEarn!)),
                     );
                     return;
                   }

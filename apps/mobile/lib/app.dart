@@ -73,11 +73,11 @@ class FitOSApp extends ConsumerWidget {
     });
     // Beta 3.4: a streak theme or icon this account has not earned (another
     // account on the phone) goes back once the earned list is known.
-    ref.listen(earnedRewardsProvider, (_, next) {
-      final earned = next.value;
+    // Beta 4.2: and a running badge's (once both lists are known).
+    ref.listen(earnedUnlocksProvider, (_, earned) {
       if (earned == null) return;
       final reward = FitPalette.current.reward;
-      if (reward != null && !earned.any((r) => r.id == reward)) {
+      if (reward != null && !earned.contains(reward)) {
         ref
             .read(themeControllerProvider.notifier)
             .choose(FitPalette.current.freeFallback);

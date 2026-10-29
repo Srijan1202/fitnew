@@ -37,6 +37,8 @@ import '../../features/training/presentation/screens/plan_start_screen.dart';
 import '../../features/training/presentation/screens/template_library_screen.dart';
 import '../../features/training/presentation/screens/template_preview_screen.dart';
 import '../../features/training/presentation/screens/training_tab_screen.dart';
+import '../../features/running/presentation/screens/badges_screen.dart';
+import '../../features/running/presentation/screens/records_screen.dart';
 import '../../features/running/presentation/screens/live_run_screen.dart';
 import '../../features/running/presentation/screens/plan_setup_screen.dart';
 import '../../features/running/presentation/screens/run_detail_screen.dart';
@@ -145,6 +147,10 @@ abstract final class Routes {
 
   /// Beta 4.1: choosing a running plan.
   static const String runPlanNew = '/plan/running-plan';
+
+  /// Beta 4.2: best efforts and the running distance firsts.
+  static const String runRecords = '/plan/running-records';
+  static const String runBadges = '/plan/running-badges';
 
   /// Screens a signed-out user may see. Everything else needs a session.
   static const Set<String> authRoutes = {signIn, signUp, forgotPassword};
@@ -299,6 +305,18 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
                     name: 'run-plan-new',
                     parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) => const PlanSetupScreen(),
+                  ),
+                  GoRoute(
+                    path: 'running-records',
+                    name: 'run-records',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const RecordsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'running-badges',
+                    name: 'run-badges',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const BadgesScreen(),
                   ),
                   GoRoute(
                     path: 'runs/:runId',

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,9 +8,14 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../profile/data/profile_repository.dart';
+import '../../../../shared/widgets/fit_glass.dart';
+import '../../../premium/presentation/rewards_providers.dart';
+import '../../domain/coach.dart';
+import '../../domain/efforts.dart';
 import '../../domain/run.dart';
 import '../controllers/run_recorder.dart';
 import '../controllers/running_providers.dart';
+import '../widgets/efforts_widgets.dart';
 import '../widgets/run_report.dart';
 
 /// Beta 4.0 (ADR-038): the run just finished — its summary from the phone's
@@ -31,6 +38,9 @@ class _RunFinishScreenState extends ConsumerState<RunFinishScreen> {
   String? _distanceError;
   Future<RunDetail?>? _preview;
   String? _previewFor;
+
+  /// Beta 4.2: said once per run, so a rebuild does not repeat it.
+  String? _spokenFor;
 
   @override
   void dispose() {
@@ -105,6 +115,91 @@ class _RunFinishScreenState extends ConsumerState<RunFinishScreen> {
     if (mounted) context.pop();
   }
 
+  /// Beta 4.2 (owner: straight away, offline too): the records this run
+  /// beats and the badges it earns, worked out on the phone (the server's
+  /// figures stand once it has the run). Records are only known against the
+  /// last records this phone saw, badges against the last list of earned
+  /// ones; without either, nothing is claimed. Spoken once if the voice
+  /// coach is on.
+  List<Widget> _achievements(String runId, RunDetail d) {
+    final t = Theme.of(context).textTheme;
+    final records = ref.watch(recordsProvider).value;
+    final earned = ref.watch(earnedBadgesProvider).value;
+    final track = d.track;
+    final beaten = records == null || track == null
+        ? const <BestEffort>[]
+        : newRecords(bestEfforts(track), records.recordTimes);
+    final badges = earned == null || track == null
+        ? const <DistanceBadge>[]
+        : [
+            for (final b in badgesFor(d.summary.distanceM))
+              if (!earned.containsKey(b)) b,
+          ];
+    if (beaten.isEmpty && badges.isEmpty) return const [];
+    if (_spokenFor != runId && ref.read(runSettingsProvider).voice) {
+      _spokenFor = runId;
+      final words = [
+        for (final e in beaten)
+          'New record. ${e.key.label.replaceAll(' km', ' kilometres').replaceAll(' m', ' metres')} in ${spokenDuration(e.seconds.round())}.',
+        for (final b in badges) 'Badge earned: ${b.label}.',
+      ];
+      unawaited(ref.read(runVoiceProvider).say(words.join(' ')));
+    }
+    return [
+      FitBlock(
+        key: const ValueKey('run.achievements'),
+        glow: true,
+        padding: const EdgeInsets.all(FitSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final e in beaten)
+              Padding(
+                padding: const EdgeInsets.only(bottom: FitSpacing.xs),
+                child: Row(
+                  children: [
+                    const EffortMedal(rank: 1),
+                    const SizedBox(width: FitSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        'New record: ${e.key.label} in ${effortTime(e.seconds)}',
+                        key: ValueKey('run.newRecord.${e.key.wire}'),
+                        style: t.titleMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            for (final b in badges)
+              Padding(
+                padding: const EdgeInsets.only(bottom: FitSpacing.xs),
+                child: Row(
+                  children: [
+                    Icon(Icons.military_tech, color: FitColors.accent),
+                    const SizedBox(width: FitSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        b.unlocks == null
+                            ? 'Badge earned: ${b.label}'
+                            : 'Badge earned: ${b.label}. You unlocked ${b.unlocks}.',
+                        key: ValueKey('run.newBadge.${b.id}'),
+                        style: t.titleMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            Text(
+              'Saved with the run.',
+              style: t.bodySmall?.copyWith(color: FitColors.ink60),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: FitSpacing.md),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final run = ref.watch(runRecorderProvider);
@@ -132,15 +227,21 @@ class _RunFinishScreenState extends ConsumerState<RunFinishScreen> {
           return RunReport(
             run: d,
             unit: unit,
-            header: Padding(
-              padding: const EdgeInsets.only(bottom: FitSpacing.sm),
-              child: TextField(
-                key: const ValueKey('run.name'),
-                controller: _name,
-                maxLength: 60,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(labelText: 'Name'),
-              ),
+            header: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ..._achievements(run.id, d),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: FitSpacing.sm),
+                  child: TextField(
+                    key: const ValueKey('run.name'),
+                    controller: _name,
+                    maxLength: 60,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(labelText: 'Name'),
+                  ),
+                ),
+              ],
             ),
             footer: [
               if (run.kind == RunKind.treadmill) ...[

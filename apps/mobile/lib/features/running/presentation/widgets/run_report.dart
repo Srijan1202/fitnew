@@ -5,6 +5,7 @@ import '../../../../shared/widgets/fit_glass.dart';
 import '../../domain/run.dart';
 import '../../domain/units.dart';
 import '../../domain/workout.dart';
+import 'efforts_widgets.dart';
 import 'run_map.dart';
 import 'run_widgets.dart';
 
@@ -156,6 +157,12 @@ class RunReport extends StatelessWidget {
               splits: splits,
               unit: unit,
             ),
+          ),
+        // Beta 4.2: the fastest stretch of each distance, with medals.
+        if (run.efforts.isNotEmpty)
+          RunSection(
+            label: 'Best efforts',
+            child: BestEffortsList(efforts: run.efforts, unit: unit),
           ),
         if (run.workout != null)
           RunSection(

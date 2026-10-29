@@ -6,6 +6,7 @@ import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/features/running/data/location_source.dart';
 import 'package:fitos/features/running/data/run_voice.dart';
 import 'package:fitos/features/running/data/running_api.dart';
+import 'package:fitos/features/running/domain/efforts.dart';
 import 'package:fitos/features/running/domain/gps_filter.dart';
 import 'package:fitos/features/running/domain/run.dart';
 import 'package:fitos/features/running/domain/run_math.dart';
@@ -28,6 +29,42 @@ class FakeRunningApi implements RunningApi {
   Map<String, dynamic>? plan;
   final List<Map<String, dynamic>> createdPlans = [];
   Map<String, dynamic> presets = {'zones': null, 'presets': <Object>[]};
+
+  /// Beta 4.2: the records as the server would send them (none yet).
+  Map<String, dynamic> recordsJson = {
+    'records': [
+      for (final k in EffortKey.values) {'key': k.wire, 'best': <Object>[]},
+    ],
+    'pending': 0,
+  };
+
+  /// A run's efforts (the phone's port of core's rules), ranked against
+  /// the runs stored before it, as the server ranks them.
+  List<Map<String, dynamic>> _efforts(Map<String, dynamic> body) {
+    if (body['kind'] != 'outdoor') return const [];
+    final track = decodeTrack(
+      EncodedTrack.fromJson(body['track'] as Map<String, dynamic>),
+    );
+    return [
+      for (final e in bestEfforts(track))
+        {
+          'key': e.key.wire,
+          'seconds': e.seconds,
+          'startM': e.startM,
+          'rank': () {
+            final faster = stored.values
+                .expand((r) => (r['efforts'] as List?) ?? const [])
+                .where(
+                  (x) =>
+                      (x as Map)['key'] == e.key.wire &&
+                      (x['seconds'] as num) <= e.seconds,
+                )
+                .length;
+            return faster < 3 ? faster + 1 : null;
+          }(),
+        },
+    ];
+  }
 
   Map<String, dynamic> _detail(Map<String, dynamic> body) {
     final outdoor = body['kind'] == 'outdoor';
@@ -87,6 +124,11 @@ class FakeRunningApi implements RunningApi {
           },
       ],
       'plannedRunId': _link(body),
+      'efforts': _efforts(body),
+      'recordKeys': [
+        for (final e in _efforts(body))
+          if (e['rank'] == 1) e['key'],
+      ],
     };
   }
 
@@ -188,6 +230,13 @@ class FakeRunningApi implements RunningApi {
         r['date'] = body['date'];
     }
     return Ok(PlannedRun.fromJson(r));
+  }
+
+  @override
+  Future<Result<Map<String, dynamic>>> records() async {
+    calls.add('records');
+    if (failWith != null) return Err(failWith!);
+    return Ok(recordsJson);
   }
 
   @override

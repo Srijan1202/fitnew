@@ -7,6 +7,7 @@ import '../../../shared/widgets/fit_glass.dart';
 import '../domain/avatars.dart';
 import 'premium_providers.dart';
 import 'premium_sheet.dart';
+import '../../running/domain/efforts.dart';
 import '../domain/streak_rewards.dart';
 import 'rewards_providers.dart';
 
@@ -21,9 +22,10 @@ class ThemePicker extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
     final current = ref.watch(themeControllerProvider);
     final premium = ref.watch(isPremiumProvider) ?? false;
-    final earned = ref.watch(earnedRewardsProvider).value ?? const {};
+    // Beta 4.2: a streak reward's id or a running badge's (the Road theme).
+    final earned = ref.watch(earnedUnlocksProvider) ?? const <String>{};
     bool streakLocked(FitPalette p) =>
-        p.reward != null && !earned.any((r) => r.id == p.reward);
+        p.reward != null && !earned.contains(p.reward);
     return Column(
       key: const ValueKey('profile.theme'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,9 +45,11 @@ class ThemePicker extends ConsumerWidget {
                 streakLock: p.reward != null,
                 onTap: () async {
                   if (streakLocked(p)) {
-                    final reward = StreakReward.byId(p.reward)!;
+                    final how = StreakReward.byId(p.reward)?.howToEarn ??
+                        DistanceBadge.byId(p.reward)?.unlockHowTo ??
+                        'Not unlocked yet.';
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(reward.howToEarn)),
+                      SnackBar(content: Text(how)),
                     );
                     return;
                   }

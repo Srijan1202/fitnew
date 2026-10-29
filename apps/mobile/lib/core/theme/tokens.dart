@@ -112,6 +112,7 @@ class FitPalette {
   final bool premium;
 
   /// Beta 3.4: a theme only a streak earns (its reward id), else null.
+  /// Beta 4.2: or a running badge (its badge id: the Road theme).
   final String? reward;
 
   /// The palette every screen reads now. Set by the theme controller before
@@ -256,6 +257,30 @@ class FitPalette {
     reward: 'ember-theme',
   );
 
+  /// Beta 4.2: earned with a first half marathon (not premium): asphalt,
+  /// with steel-blue actions. Its sky is lighter than the actions, so a
+  /// "too little" volume never reads as a button.
+  static const road = FitPalette(
+    id: 'road',
+    label: 'Road',
+    brightness: Brightness.dark,
+    paper: Color(0xFF0D1116),
+    paper2: Color(0xFF161C24),
+    ink: Color(0xFFEEF2F6),
+    ink60: Color(0xFFAAB4BF),
+    ink35: Color(0xFF75808C),
+    rule: Color(0xFF26303B),
+    pine: Color(0xFF7BD389),
+    amber: Color(0xFFF5B342),
+    oxide: Color(0xFFFF6B57),
+    sky: Color(0xFF8AD4F8),
+    accent: Color(0xFF6FA8DC),
+    onAccent: Color(0xFF0D1116),
+    glow: Color(0xFF6FA8DC),
+    premium: false,
+    reward: 'first-half',
+  );
+
   static const all = <FitPalette>[
     fitosDark,
     fitosLight,
@@ -264,6 +289,7 @@ class FitPalette {
     forest,
     ocean,
     ember,
+    road,
   ];
 
   /// Where a theme the user may no longer have falls back to: the brand

@@ -147,6 +147,29 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity-alias>
+        <!-- Beta 4.2: running badges' icons (first 10K, first marathon). -->
+        <activity-alias
+            android:name=".IconFinisher"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_finisher"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconFortyTwo"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_fortytwo"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
         <!-- Health Connect shows this when the user asks why FITOS wants the
              data: Android 13 and below via the rationale action, Android 14+
              via the permission-usage alias. -->

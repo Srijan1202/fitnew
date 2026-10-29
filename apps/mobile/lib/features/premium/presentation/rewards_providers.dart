@@ -9,6 +9,7 @@ import '../../../core/errors/failure.dart';
 import '../../../core/errors/result.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
 import '../../auth/presentation/controllers/auth_providers.dart';
+import '../../running/domain/efforts.dart';
 import '../domain/streak_rewards.dart';
 
 /// Beta 3.4 (ADR-027 amendment): the streak rewards this account earned
@@ -16,6 +17,10 @@ import '../domain/streak_rewards.dart';
 /// whatever was earned keeps working.
 abstract class RewardsApi {
   Future<Result<Set<StreakReward>>> earned();
+
+  /// Beta 4.2: the running distance firsts, with the day each was earned
+  /// (the server sends them to build 20 and later).
+  Future<Result<Map<DistanceBadge, DateTime>>> badges();
 }
 
 class DioRewardsApi implements RewardsApi {
@@ -39,6 +44,23 @@ class DioRewardsApi implements RewardsApi {
       return const Err(Unknown());
     }
   }
+
+  @override
+  Future<Result<Map<DistanceBadge, DateTime>>> badges() async {
+    try {
+      final r = await _dio.get<Map<String, dynamic>>('/v1/user/rewards');
+      return Ok({
+        for (final e in r.data!['earned'] as List<dynamic>)
+          if (DistanceBadge.byId((e as Map<String, dynamic>)['id'] as String?)
+              case final badge?)
+            badge: DateTime.parse(e['earnedAt'] as String),
+      });
+    } on DioException catch (e) {
+      return Err(ErrorMapper.fromDio(e));
+    } on Object {
+      return const Err(Unknown());
+    }
+  }
 }
 
 final rewardsApiProvider =
@@ -54,6 +76,26 @@ final earnedRewardsProvider = FutureProvider<Set<StreakReward>?>(
   },
   retry: (_, __) => null,
 );
+
+/// Beta 4.2: the running distance firsts earned, with their days; null while
+/// unknown (offline, loading).
+final earnedBadgesProvider = FutureProvider<Map<DistanceBadge, DateTime>?>(
+  (ref) async {
+    requireSession(ref);
+    final r = await ref.watch(rewardsApiProvider).badges();
+    return r.when(ok: (s) => s, err: (_) => null);
+  },
+  retry: (_, __) => null,
+);
+
+/// Every reward and badge id earned (what unlocks a theme or an icon); null
+/// until both are known, so nothing earned is taken away meanwhile.
+final earnedUnlocksProvider = Provider<Set<String>?>((ref) {
+  final streak = ref.watch(earnedRewardsProvider).value;
+  final badges = ref.watch(earnedBadgesProvider).value;
+  if (streak == null || badges == null) return null;
+  return {for (final r in streak) r.id, for (final b in badges.keys) b.id};
+});
 
 /// True once a reward is known to be earned.
 final rewardEarnedProvider = Provider.family<bool, StreakReward>(

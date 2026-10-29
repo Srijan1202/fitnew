@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:fitos/features/running/domain/efforts.dart';
 import 'package:fitos/features/premium/domain/app_icons.dart';
 import 'package:fitos/features/premium/domain/streak_rewards.dart';
 import 'package:fitos/features/premium/presentation/app_icon_controller.dart';
@@ -47,7 +48,8 @@ void main() {
           contains(
             icon == AppIcon.standard
                 ? 'android:icon="@mipmap/ic_launcher"'
-                : 'android:icon="@mipmap/ic_launcher_${icon.name}"',
+                // Resources are lower case (fortyTwo: ic_launcher_fortytwo).
+                : 'android:icon="@mipmap/ic_launcher_${icon.name.toLowerCase()}"',
           ),
         );
       }
@@ -75,9 +77,9 @@ void main() {
         expect(File(icon.preview).existsSync(), isTrue, reason: icon.preview);
         if (icon == AppIcon.standard) continue;
         for (final path in [
-          '$res/mipmap-anydpi-v26/ic_launcher_${icon.name}.xml',
-          '$res/drawable-nodpi/ic_launcher_${icon.name}_background.png',
-          '$res/drawable-nodpi/ic_launcher_${icon.name}_foreground.png',
+          '$res/mipmap-anydpi-v26/ic_launcher_${icon.name.toLowerCase()}.xml',
+          '$res/drawable-nodpi/ic_launcher_${icon.name.toLowerCase()}_background.png',
+          '$res/drawable-nodpi/ic_launcher_${icon.name.toLowerCase()}_foreground.png',
         ]) {
           expect(File(path).existsSync(), isTrue, reason: path);
         }
@@ -86,12 +88,20 @@ void main() {
   });
 
   test(
-      'Standard and White are free; Gold, Glow and Lime are premium; Blaze is a 30-day streak reward',
+      'Standard and White are free; Gold, Glow and Lime are premium; Blaze is a 30-day streak reward; Finisher and 42 are running badges (beta 4.2)',
       () {
     expect(
-      AppIcon.values.where((i) => !i.premium && i.reward == null),
+      AppIcon.values.where((i) => !i.premium && i.unlockId == null),
       [AppIcon.standard, AppIcon.white],
     );
+    expect(AppIcon.finisher.badge, DistanceBadge.first10k);
+    expect(AppIcon.fortyTwo.badge, DistanceBadge.firstMarathon);
+    expect(AppIcon.fortyTwo.unlockId, 'first-marathon');
+    expect(
+      AppIcon.finisher.howToEarn,
+      'Run your first 10K to unlock the Finisher app icon.',
+    );
+    expect(AppIcon.blaze.unlockId, 'blaze-icon');
     expect(
       AppIcon.values.where((i) => i.premium),
       [AppIcon.gold, AppIcon.glow, AppIcon.lime],

@@ -9,13 +9,16 @@ import 'package:fitos/features/exercise/presentation/controllers/exercise_provid
 import 'package:fitos/features/health/presentation/controllers/health_providers.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:fitos/features/running/data/location_source.dart';
+import 'package:fitos/features/running/domain/efforts.dart';
 import 'package:fitos/features/running/domain/run.dart';
 import 'package:fitos/features/running/domain/track.dart';
 import 'package:fitos/features/running/domain/workout.dart';
 import 'package:fitos/features/running/presentation/controllers/run_recorder.dart';
 import 'package:fitos/features/running/presentation/controllers/running_providers.dart';
+import 'package:fitos/features/running/presentation/screens/badges_screen.dart';
 import 'package:fitos/features/running/presentation/screens/live_run_screen.dart';
 import 'package:fitos/features/running/presentation/screens/plan_setup_screen.dart';
+import 'package:fitos/features/running/presentation/screens/records_screen.dart';
 import 'package:fitos/features/running/presentation/screens/run_detail_screen.dart';
 import 'package:fitos/features/running/presentation/screens/run_finish_screen.dart';
 import 'package:fitos/features/running/presentation/screens/share_run_screen.dart';
@@ -32,6 +35,7 @@ import 'package:go_router/go_router.dart';
 import '../../support/fake_exercise_repository.dart';
 import '../../support/fake_feedback_api.dart';
 import '../../support/fake_profile_repository.dart';
+import '../../support/fake_rewards_api.dart';
 import '../../support/fake_running.dart';
 import '../../support/fake_training_repository.dart';
 import '../../support/fake_workout_api.dart';
@@ -49,6 +53,7 @@ void main() {
   late FakeBatteryAccess battery;
   late FakeMetaApi meta;
   late FakeRunVoice voice;
+  late FakeRewardsApi rewards;
   late DateTime clock;
 
   setUp(() {
@@ -60,6 +65,7 @@ void main() {
     battery = FakeBatteryAccess();
     meta = FakeMetaApi();
     voice = FakeRunVoice();
+    rewards = FakeRewardsApi();
     clock = DateTime.utc(2026, 10, 27, 1, 30);
   });
   // After a failure the test clock stops, and work it was driving can hold
@@ -90,6 +96,16 @@ void main() {
             path: 'running-plan',
             parentNavigatorKey: root,
             builder: (_, __) => const PlanSetupScreen(),
+          ),
+          GoRoute(
+            path: 'running-records',
+            parentNavigatorKey: root,
+            builder: (_, __) => const RecordsScreen(),
+          ),
+          GoRoute(
+            path: 'running-badges',
+            parentNavigatorKey: root,
+            builder: (_, __) => const BadgesScreen(),
           ),
           GoRoute(
             path: 'runs/:runId',
@@ -141,6 +157,7 @@ void main() {
           location: gps,
           battery: battery,
           voice: voice,
+          rewards: rewards,
         ),
         // The test clock's day (a Tuesday), for the plan's week.
         localTodayProvider.overrideWithValue('2026-10-27'),
@@ -292,6 +309,89 @@ void main() {
     await tester.pumpWidget(harness());
     await settle(tester);
     expect(find.byKey(const ValueKey('training.mode')), findsNothing);
+  });
+
+  testWidgets(
+      'beta 4.2: a run that beats a record and earns a badge says so on its summary, out loud, before it is saved',
+      (tester) async {
+    // A 400 m record of 3:20 on file; no 1 km yet; no badges yet.
+    api.recordsJson = {
+      'records': [
+        for (final k in EffortKey.values)
+          {
+            'key': k.wire,
+            'best': k == EffortKey.m400
+                ? [
+                    {
+                      'runId': 'old',
+                      'name': 'Old',
+                      'startedAt': '2026-10-01T01:00:00Z',
+                      'seconds': 200.0,
+                    },
+                  ]
+                : <Object>[],
+          },
+      ],
+      'pending': 0,
+    };
+    await openRunning(tester);
+    final c = container(tester);
+    await done(
+      tester,
+      c.read(runRecorderProvider.notifier).start(
+            kind: RunKind.outdoor,
+            goal: const RunGoal.free(),
+          ),
+    );
+    for (final f in runNorth(from: clock, seconds: 400)) {
+      gps.send(f);
+      await tester.pump();
+    }
+    clock = clock.add(const Duration(seconds: 400));
+    await done(tester, c.read(runRecorderProvider.notifier).finish());
+    GoRouter.of(tester.element(find.byType(TrainingTabScreen)))
+        .push(Routes.runFinish);
+    await settle(tester);
+    expect(find.text('Run summary'), findsOneWidget);
+    expect(find.byKey(const ValueKey('run.achievements')), findsOneWidget);
+    expect(find.byKey(const ValueKey('run.newRecord.400m')), findsOneWidget);
+    expect(find.byKey(const ValueKey('run.newRecord.1k')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('run.newBadge.first-run')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('run.newBadge.first-5k')), findsNothing);
+    expect(
+      voice.said.where((x) => x.startsWith('New record. 400 metres in')),
+      hasLength(1),
+    );
+    expect(voice.said.last, contains('Badge earned: First run.'));
+  });
+
+  testWidgets(
+      'beta 4.2: Badges — earned ones with their day and what they unlocked, the rest with how to earn them',
+      (tester) async {
+    rewards.badgesEarned = {
+      DistanceBadge.firstRun: DateTime.utc(2026, 10, 1),
+      DistanceBadge.first5k: DateTime.utc(2026, 10, 2),
+      DistanceBadge.first10k: DateTime.utc(2026, 10, 20),
+    };
+    await openRunning(tester);
+    await tester.tap(find.byKey(const ValueKey('running.badges')));
+    await settle(tester);
+    String text(String key) =>
+        tester.widget<Text>(find.byKey(ValueKey(key))).data!;
+    expect(text('badge.first-10k.status'), startsWith('Earned'));
+    expect(
+      text('badge.first-10k.unlocks'),
+      'Unlocked the Finisher app icon: choose it in Profile.',
+    );
+    expect(
+      text('badge.first-half.status'),
+      'Run a half marathon in one go to earn it.',
+    );
+    expect(text('badge.first-half.unlocks'), 'Unlocks the Road theme.');
+    expect(find.byKey(const ValueKey('badge.first-run.unlocks')), findsNothing);
   });
 
   testWidgets(
@@ -488,6 +588,25 @@ void main() {
   });
 
   group('a saved run', () {
+    /// Beta 4.2: the history sits below Records and Badges; scroll to it.
+    Future<void> openRun(WidgetTester tester, String id) async {
+      final row = find.byKey(ValueKey('running.run.$id'));
+      await tester.scrollUntilVisible(
+        row,
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byKey(const ValueKey('running.list')),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      // Clear of the floating tab bar.
+      await tester.ensureVisible(row);
+      await tester.pump();
+      await tester.tap(row);
+    }
+
     Future<String> savedRun(WidgetTester tester) async {
       await openRunning(tester);
       final c = container(tester);
@@ -528,7 +647,7 @@ void main() {
           {'step': 1, 'distanceM': 20.0, 'seconds': 120.0, 'pace': 6000.0},
           {'step': 2, 'distanceM': 99.0, 'seconds': 13.6, 'pace': 137.4},
         ];
-      await tester.tap(find.byKey(ValueKey('running.run.$id')));
+      await openRun(tester, id);
       await settle(tester);
       await reveal(tester, 'run.report.laps.best');
       expect(
@@ -545,7 +664,7 @@ void main() {
       final id = await savedRun(tester);
       expect(find.byKey(ValueKey('running.run.$id')), findsOneWidget);
       expect(find.text('1 run · 6:40'), findsNWidgets(2));
-      await tester.tap(find.byKey(ValueKey('running.run.$id')));
+      await openRun(tester, id);
       await settle(tester);
       expect(find.byKey(const ValueKey('run.report.distance')), findsOneWidget);
       expect(find.byKey(const ValueKey('run.pending')), findsNothing);
@@ -554,7 +673,7 @@ void main() {
     testWidgets('share: GPX without the first and last 200 m, or with them',
         (tester) async {
       final id = await savedRun(tester);
-      await tester.tap(find.byKey(ValueKey('running.run.$id')));
+      await openRun(tester, id);
       await settle(tester);
       await tester.tap(find.byKey(const ValueKey('run.share')));
       await settle(tester);
@@ -588,7 +707,7 @@ void main() {
         'beta 4.1.1: the share card is the picture shared: the map is made with the route in it, again when the ends are shown',
         (tester) async {
       final id = await savedRun(tester);
-      await tester.tap(find.byKey(ValueKey('running.run.$id')));
+      await openRun(tester, id);
       await settle(tester);
       await tester.tap(find.byKey(const ValueKey('run.share')));
       await settle(tester);
@@ -613,7 +732,7 @@ void main() {
         (tester) async {
       snapshots.image = null;
       final id = await savedRun(tester);
-      await tester.tap(find.byKey(ValueKey('running.run.$id')));
+      await openRun(tester, id);
       await settle(tester);
       await tester.tap(find.byKey(const ValueKey('run.share')));
       await settle(tester);
@@ -621,9 +740,81 @@ void main() {
       expect(find.byKey(const ValueKey('share.map.picture')), findsNothing);
     });
 
+    testWidgets(
+        'beta 4.2: a run’s best efforts with the record’s medal, and its trophy in the history',
+        (tester) async {
+      final id = await savedRun(tester);
+      // About 1.2 km at 3 m/s: 400 m and 1 km, both records (the first run).
+      expect(
+        find.byKey(ValueKey('running.run.$id.record')),
+        findsOneWidget,
+      );
+      await openRun(tester, id);
+      await settle(tester);
+      await reveal(tester, 'run.report.effort.1k');
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('run.report.effort.400m')),
+          matching: find.byIcon(Icons.emoji_events),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('run.report.effort.5k')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('run.report.efforts.record')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+        'beta 4.2: Records — each distance’s record or none; a distance opens its best three, and a run',
+        (tester) async {
+      final id = await savedRun(tester);
+      api.recordsJson = {
+        'records': [
+          for (final k in EffortKey.values)
+            {
+              'key': k.wire,
+              'best': k == EffortKey.k5
+                  ? [
+                      {
+                        'runId': id,
+                        'name': 'Lake loop',
+                        'startedAt': '2026-10-26T01:30:00Z',
+                        'seconds': 1471.4,
+                      },
+                      {
+                        'runId': 'other',
+                        'name': 'Slow one',
+                        'startedAt': '2026-10-20T01:30:00Z',
+                        'seconds': 1600.0,
+                      },
+                    ]
+                  : <Object>[],
+            },
+        ],
+        'pending': 3,
+      };
+      container(tester).invalidate(recordsProvider);
+      await tester.tap(find.byKey(const ValueKey('running.records')));
+      await settle(tester);
+      expect(find.text('Running records'), findsOneWidget);
+      String time(String key) =>
+          tester.widget<Text>(find.byKey(ValueKey('records.$key.time'))).data!;
+      expect(time('5k'), '24:31');
+      expect(time('10k'), '—');
+      expect(find.byKey(const ValueKey('records.pending')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('records.5k')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('records.5k.1')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('records.5k.0')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('run.report.distance')), findsOneWidget);
+    });
+
     testWidgets('edit and delete', (tester) async {
       final id = await savedRun(tester);
-      await tester.tap(find.byKey(ValueKey('running.run.$id')));
+      await openRun(tester, id);
       await settle(tester);
       await tester.tap(find.byKey(const ValueKey('run.menu')));
       await settle(tester);

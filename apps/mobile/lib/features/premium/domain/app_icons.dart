@@ -1,7 +1,9 @@
+import '../../running/domain/efforts.dart';
 import 'streak_rewards.dart';
 
 /// Beta 3.2 (ADR-027 amendment): the launcher icons FITOS offers. Standard
-/// and White for everyone; Gold, Glow and Lime for premium. Each name is an
+/// and White for everyone; Gold, Glow and Lime for premium; Blaze for a
+/// 30-day streak; Finisher and 42 for running badges (beta 4.2). Each name is an
 /// activity-alias `.Icon<Name>` in AndroidManifest.xml and a preview in
 /// assets/brand/app_icons/ (both made by tool/app_icons.py).
 enum AppIcon {
@@ -12,15 +14,35 @@ enum AppIcon {
   lime('Lime'),
 
   /// Beta 3.4: earned with a 30-day streak (not premium).
-  blaze('Blaze', premium: false, reward: StreakReward.blazeIcon);
+  blaze('Blaze', premium: false, reward: StreakReward.blazeIcon),
 
-  const AppIcon(this.label, {this.premium = true, this.reward});
+  /// Beta 4.2: earned with a first 10K run.
+  finisher('Finisher', premium: false, badge: DistanceBadge.first10k),
+
+  /// Beta 4.2: earned with a first marathon.
+  fortyTwo('42', premium: false, badge: DistanceBadge.firstMarathon);
+
+  const AppIcon(
+    this.label, {
+    this.premium = true,
+    this.reward,
+    this.badge,
+  });
 
   final String label;
   final bool premium;
 
   /// A streak reward rather than a premium icon; null for the others.
   final StreakReward? reward;
+
+  /// Beta 4.2: a running badge's reward; null for the others.
+  final DistanceBadge? badge;
+
+  /// The earned reward or badge id that unlocks it; null when none does.
+  String? get unlockId => reward?.id ?? badge?.id;
+
+  /// "Reach a 30-day streak…" / "Run 10K in one go…".
+  String? get howToEarn => reward?.howToEarn ?? badge?.unlockHowTo;
 
   String get preview => 'assets/brand/app_icons/$name.png';
 

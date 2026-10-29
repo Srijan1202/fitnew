@@ -11,7 +11,8 @@ import android.content.pm.PackageManager
  * Whether a premium icon may be chosen is decided in Dart, like the themes.
  */
 object AppIcons {
-    val NAMES = listOf("standard", "white", "gold", "glow", "lime", "blaze")
+    // Beta 4.2: finisher and fortyTwo, the running badges' icons.
+    val NAMES = listOf("standard", "white", "gold", "glow", "lime", "blaze", "finisher", "fortyTwo")
 
     private fun component(context: Context, name: String) =
         ComponentName(context, "me.tryfitos.app.Icon" + name.replaceFirstChar { it.uppercase() })

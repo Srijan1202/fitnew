@@ -6,6 +6,7 @@ import 'package:fitos/features/auth/presentation/controllers/auth_providers.dart
 import 'package:fitos/features/onboarding/presentation/controllers/onboarding_controller.dart';
 import 'package:fitos/features/premium/domain/app_icons.dart';
 import 'package:fitos/features/premium/domain/streak_rewards.dart';
+import 'package:fitos/features/running/domain/efforts.dart';
 import 'package:fitos/features/home/data/streak_api.dart';
 import 'package:fitos/features/premium/domain/premium.dart';
 import 'package:fitos/features/premium/presentation/app_icon_controller.dart';
@@ -411,6 +412,35 @@ void main() {
       await tester.pumpAndSettle();
       await tap(tester, 'theme.ember');
       expect(FitPalette.current.id, 'ember');
+    });
+
+    testWidgets(
+        'beta 4.2: the Road theme opens with a first half marathon, and a phone that has it but not the badge goes back to FITOS Dark',
+        (tester) async {
+      await start(tester);
+      await tap(tester, 'home.profile');
+      await tap(tester, 'theme.road');
+      expect(
+        find.text(DistanceBadge.firstHalf.unlockHowTo!),
+        findsOneWidget,
+      );
+      expect(FitPalette.current.id, 'fitos-dark');
+
+      rewards.badgesEarned = {
+        DistanceBadge.firstHalf: DateTime.utc(2026, 10, 20),
+      };
+      ProviderScope.containerOf(tester.element(find.byType(FitOSApp)))
+          .invalidate(earnedBadgesProvider);
+      await tester.pumpAndSettle();
+      await tap(tester, 'theme.road');
+      expect(FitPalette.current.id, 'road');
+
+      // Another account on the phone, without the badge.
+      rewards.badgesEarned = {};
+      ProviderScope.containerOf(tester.element(find.byType(FitOSApp)))
+          .invalidate(earnedBadgesProvider);
+      await tester.pumpAndSettle();
+      expect(FitPalette.current.id, 'fitos-dark');
     });
 
     testWidgets(

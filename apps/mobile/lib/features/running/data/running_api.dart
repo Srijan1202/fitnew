@@ -29,6 +29,10 @@ abstract class RunningApi {
   /// `skip` | `unskip` | `move` (with `date`).
   Future<Result<PlannedRun>> patchPlanned(String id, Map<String, dynamic> body);
   Future<Result<WorkoutPresets>> workouts();
+
+  /// Beta 4.2: the best three at each distance, as the server sent it
+  /// (cached as is).
+  Future<Result<Map<String, dynamic>>> records();
 }
 
 class DioRunningApi implements RunningApi {
@@ -136,5 +140,11 @@ class DioRunningApi implements RunningApi {
   Future<Result<WorkoutPresets>> workouts() => _guard(
         () => _dio.get<Map<String, dynamic>>('/v1/running/workouts'),
         WorkoutPresets.fromJson,
+      );
+
+  @override
+  Future<Result<Map<String, dynamic>>> records() => _guard(
+        () => _dio.get<Map<String, dynamic>>('/v1/running/records'),
+        _same,
       );
 }
