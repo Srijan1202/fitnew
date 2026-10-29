@@ -144,8 +144,8 @@ describeIfDb('best efforts and distance badges (real Postgres)', { timeout: 90_0
     expect((await call(u, 'DELETE', `/running/runs/${fast.id}`)).statusCode).toBe(204);
     const five = (await records(u)).records.find((r) => r.key === '5k')!.best;
     expect(five.map((b) => b.runId)).toEqual([slow.id]);
-    const [{ n: left }] = await sql<{ n: number }[]>`select count(*)::int as n from run_best_efforts where user_id = ${u.id}`;
-    expect(left).toBe(4);
+    const [left] = await sql<{ n: number }[]>`select count(*)::int as n from run_best_efforts where user_id = ${u.id}`;
+    expect(left!.n).toBe(4);
   });
 
   it('older runs (saved before 4.2) are worked out when the records are read', async () => {
