@@ -130,6 +130,28 @@ export const runSeriesPointSchema = z
   .strict();
 export type RunSeriesPoint = z.infer<typeof runSeriesPointSchema>;
 
+/* ------------------------------------------------ best efforts (beta 4.2) -- */
+
+/**
+ * Beta 4.2 (owner 2026-10-29): the fastest stretch of each distance inside a
+ * run, on moving time (core running/efforts.ts, the same keys).
+ */
+export const EFFORT_KEYS = ['400m', '1k', '1mile', '5k', '10k', 'half', 'marathon'] as const;
+export const effortKeySchema = z.enum(EFFORT_KEYS);
+export type EffortKey = z.infer<typeof effortKeySchema>;
+
+/** One distance in one run, and where it stands among all the user's (1 = the record). */
+export const runBestEffortSchema = z
+  .object({
+    key: effortKeySchema,
+    seconds: z.number(),
+    /** Metres from the start of the run where the stretch begins. */
+    startM: z.number(),
+    rank: z.number().int().min(1).max(3).nullable(),
+  })
+  .strict();
+export type RunBestEffort = z.infer<typeof runBestEffortSchema>;
+
 /** A history-list row. */
 export const runSummarySchema = z
   .object({
@@ -149,6 +171,8 @@ export const runSummarySchema = z
     effort: runEffortSchema.nullable(),
     /** Up to 64 [lat, lon] points for the list's little map; empty indoors. */
     outline: z.array(z.tuple([z.number(), z.number()])),
+    /** Beta 4.2: the distances this run holds the record for (history's trophy). */
+    recordKeys: z.array(effortKeySchema),
   })
   .strict();
 export type RunSummary = z.infer<typeof runSummarySchema>;
@@ -166,6 +190,8 @@ export const runDetailSchema = runSummarySchema
     workout: runWorkoutSchema.nullable(),
     laps: z.array(lapSchema),
     plannedRunId: z.string().uuid().nullable(),
+    /** Beta 4.2: every distance the run covers, at its fastest (outdoor only). */
+    efforts: z.array(runBestEffortSchema),
   })
   .strict();
 export type RunDetail = z.infer<typeof runDetailSchema>;
@@ -247,6 +273,24 @@ export const runListSchema = z
   })
   .strict();
 export type RunList = z.infer<typeof runListSchema>;
+
+/** One of the best three efforts at a distance. */
+export const recordEntrySchema = z
+  .object({ runId: clientIdSchema, name: z.string(), startedAt: z.string().datetime(), seconds: z.number() })
+  .strict();
+
+/**
+ * GET /running/records (beta 4.2): the best three at each distance, in
+ * [EFFORT_KEYS] order (empty where none yet). `pending`: older runs not
+ * worked out yet (they are, a batch a request).
+ */
+export const runningRecordsSchema = z
+  .object({
+    records: z.array(z.object({ key: effortKeySchema, best: z.array(recordEntrySchema).max(3) }).strict()),
+    pending: z.number().int().min(0),
+  })
+  .strict();
+export type RunningRecords = z.infer<typeof runningRecordsSchema>;
 
 /* --------------------------------------------------- beta 4.1: plans -- */
 

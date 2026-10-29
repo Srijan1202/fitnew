@@ -53,7 +53,31 @@ export const streakRewardIdSchema = z.enum(STREAK_REWARD_IDS);
 /** Pictures a streak earns (their avatar id is the reward id). */
 export const REWARD_AVATAR_IDS: readonly string[] = STREAK_REWARDS.filter((r) => r.kind === 'avatar').map((r) => r.id);
 
-export const earnedRewardSchema = z.object({ id: streakRewardIdSchema, earnedAt: iso }).strict();
+/**
+ * Beta 4.2 (owner 2026-10-29): the running distance firsts, kept like the
+ * streak rewards (core running/efforts.ts earns them). Three unlock a
+ * reward: the Finisher app icon, the Road theme, the gold 42 app icon.
+ */
+export const RUNNING_BADGES = [
+  { id: 'first-run', name: 'First run', unlocks: null },
+  { id: 'first-5k', name: 'First 5K', unlocks: null },
+  { id: 'first-10k', name: 'First 10K', unlocks: { kind: 'app-icon', name: 'Finisher app icon' } },
+  { id: 'first-half', name: 'First half marathon', unlocks: { kind: 'theme', name: 'Road theme' } },
+  { id: 'first-marathon', name: 'First marathon', unlocks: { kind: 'app-icon', name: 'Gold 42 app icon' } },
+] as const;
+export type RunningBadgeId = (typeof RUNNING_BADGES)[number]['id'];
+export const RUNNING_BADGE_IDS = RUNNING_BADGES.map((b) => b.id) as unknown as readonly [RunningBadgeId, ...RunningBadgeId[]];
+
+/**
+ * The first build that reads running badges in the rewards list: older
+ * phones check its ids strictly, so they are not sent to them.
+ */
+export const RUNNING_BADGES_MIN_BUILD = 20;
+
+export const rewardIdSchema = z.enum([...STREAK_REWARD_IDS, ...RUNNING_BADGE_IDS]);
+export type RewardId = z.infer<typeof rewardIdSchema>;
+
+export const earnedRewardSchema = z.object({ id: rewardIdSchema, earnedAt: iso }).strict();
 /** GET /user/rewards: what you earned (readable even while streaks are switched off). */
 export const rewardsResponseSchema = z.object({ earned: z.array(earnedRewardSchema) }).strict();
 export type EarnedReward = z.infer<typeof earnedRewardSchema>;

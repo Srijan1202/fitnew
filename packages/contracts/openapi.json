@@ -50595,420 +50595,18 @@
                         ]
                       }
                     },
-                    "note": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    },
-                    "goal": {
-                      "type": "object",
-                      "properties": {
-                        "kind": {
-                          "type": "string",
-                          "enum": [
-                            "free",
-                            "distance",
-                            "time",
-                            "pace"
-                          ]
-                        },
-                        "value": {
-                          "type": [
-                            "integer",
-                            "null"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "kind",
-                        "value"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "track": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
-                      "properties": {
-                        "v": {
-                          "type": "number",
-                          "enum": [
-                            1
-                          ]
-                        },
-                        "points": {
-                          "type": "string",
-                          "maxLength": 1500000
-                        },
-                        "breaks": {
-                          "type": "array",
-                          "items": {
-                            "type": "integer",
-                            "minimum": 1
-                          },
-                          "maxItems": 5000
-                        },
-                        "elevation": {
-                          "type": "boolean"
-                        }
-                      },
-                      "required": [
-                        "v",
-                        "points",
-                        "breaks",
-                        "elevation"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "splitsKm": {
+                    "recordKeys": {
                       "type": "array",
                       "items": {
-                        "type": "object",
-                        "properties": {
-                          "index": {
-                            "type": "integer",
-                            "minimum": 1
-                          },
-                          "distanceM": {
-                            "type": "number"
-                          },
-                          "seconds": {
-                            "type": "number"
-                          },
-                          "pace": {
-                            "type": "number"
-                          },
-                          "elevationChangeM": {
-                            "type": [
-                              "number",
-                              "null"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "index",
-                          "distanceM",
-                          "seconds",
-                          "pace",
-                          "elevationChangeM"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "splitsMi": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "index": {
-                            "type": "integer",
-                            "minimum": 1
-                          },
-                          "distanceM": {
-                            "type": "number"
-                          },
-                          "seconds": {
-                            "type": "number"
-                          },
-                          "pace": {
-                            "type": "number"
-                          },
-                          "elevationChangeM": {
-                            "type": [
-                              "number",
-                              "null"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "index",
-                          "distanceM",
-                          "seconds",
-                          "pace",
-                          "elevationChangeM"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "series": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "distanceM": {
-                            "type": "number"
-                          },
-                          "pace": {
-                            "type": "number"
-                          },
-                          "ele": {
-                            "type": [
-                              "number",
-                              "null"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "distanceM",
-                          "pace",
-                          "ele"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "workout": {
-                      "type": [
-                        "object",
-                        "null"
-                      ],
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 60
-                        },
-                        "steps": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "kind": {
-                                "type": "string",
-                                "enum": [
-                                  "warmup",
-                                  "work",
-                                  "recover",
-                                  "cooldown"
-                                ]
-                              },
-                              "distanceM": {
-                                "type": [
-                                  "number",
-                                  "null"
-                                ],
-                                "minimum": 1,
-                                "maximum": 100000
-                              },
-                              "seconds": {
-                                "type": [
-                                  "integer",
-                                  "null"
-                                ],
-                                "minimum": 1,
-                                "maximum": 36000
-                              },
-                              "pace": {
-                                "type": [
-                                  "object",
-                                  "null"
-                                ],
-                                "properties": {
-                                  "fast": {
-                                    "type": "integer",
-                                    "minimum": 60,
-                                    "maximum": 1800
-                                  },
-                                  "slow": {
-                                    "type": "integer",
-                                    "minimum": 60,
-                                    "maximum": 1800
-                                  }
-                                },
-                                "required": [
-                                  "fast",
-                                  "slow"
-                                ],
-                                "additionalProperties": false
-                              },
-                              "effort": {
-                                "type": "string",
-                                "maxLength": 40
-                              },
-                              "rep": {
-                                "type": [
-                                  "object",
-                                  "null"
-                                ],
-                                "properties": {
-                                  "index": {
-                                    "type": "integer",
-                                    "minimum": 1
-                                  },
-                                  "of": {
-                                    "type": "integer",
-                                    "minimum": 1
-                                  }
-                                },
-                                "required": [
-                                  "index",
-                                  "of"
-                                ],
-                                "additionalProperties": false
-                              }
-                            },
-                            "required": [
-                              "kind",
-                              "distanceM",
-                              "seconds",
-                              "pace",
-                              "effort",
-                              "rep"
-                            ],
-                            "additionalProperties": false
-                          },
-                          "minItems": 1,
-                          "maxItems": 120
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "steps"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "laps": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "step": {
-                            "type": "integer",
-                            "minimum": 0
-                          },
-                          "distanceM": {
-                            "type": "number"
-                          },
-                          "seconds": {
-                            "type": "number"
-                          },
-                          "pace": {
-                            "type": [
-                              "number",
-                              "null"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "step",
-                          "distanceM",
-                          "seconds",
-                          "pace"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "plannedRunId": {
-                      "type": [
-                        "string",
-                        "null"
-                      ],
-                      "format": "uuid"
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "kind",
-                    "name",
-                    "startedAt",
-                    "endedAt",
-                    "durationSeconds",
-                    "distanceM",
-                    "avgPaceSecPerKm",
-                    "elevationGainM",
-                    "calories",
-                    "effort",
-                    "outline",
-                    "note",
-                    "goal",
-                    "track",
-                    "splitsKm",
-                    "splitsMi",
-                    "series",
-                    "workout",
-                    "laps",
-                    "plannedRunId"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "kind": {
-                      "type": "string",
-                      "enum": [
-                        "outdoor",
-                        "treadmill"
-                      ]
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "startedAt": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "endedAt": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "durationSeconds": {
-                      "type": "integer"
-                    },
-                    "distanceM": {
-                      "type": "number"
-                    },
-                    "avgPaceSecPerKm": {
-                      "type": [
-                        "number",
-                        "null"
-                      ]
-                    },
-                    "elevationGainM": {
-                      "type": [
-                        "number",
-                        "null"
-                      ]
-                    },
-                    "calories": {
-                      "type": [
-                        "integer",
-                        "null"
-                      ]
-                    },
-                    "effort": {
-                      "type": [
-                        "integer",
-                        "null"
-                      ],
-                      "minimum": 1,
-                      "maximum": 10
-                    },
-                    "outline": {
-                      "type": "array",
-                      "items": {
-                        "type": "array",
-                        "minItems": 2,
-                        "maxItems": 2,
-                        "items": [
-                          {
-                            "type": "number"
-                          },
-                          {
-                            "type": "number"
-                          }
+                        "type": "string",
+                        "enum": [
+                          "400m",
+                          "1k",
+                          "1mile",
+                          "5k",
+                          "10k",
+                          "half",
+                          "marathon"
                         ]
                       }
                     },
@@ -51322,6 +50920,47 @@
                         "null"
                       ],
                       "format": "uuid"
+                    },
+                    "efforts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "enum": [
+                              "400m",
+                              "1k",
+                              "1mile",
+                              "5k",
+                              "10k",
+                              "half",
+                              "marathon"
+                            ]
+                          },
+                          "seconds": {
+                            "type": "number"
+                          },
+                          "startM": {
+                            "type": "number"
+                          },
+                          "rank": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 3
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "seconds",
+                          "startM",
+                          "rank"
+                        ],
+                        "additionalProperties": false
+                      }
                     }
                   },
                   "required": [
@@ -51337,6 +50976,7 @@
                     "calories",
                     "effort",
                     "outline",
+                    "recordKeys",
                     "note",
                     "goal",
                     "track",
@@ -51345,7 +50985,483 @@
                     "series",
                     "workout",
                     "laps",
-                    "plannedRunId"
+                    "plannedRunId",
+                    "efforts"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "outdoor",
+                        "treadmill"
+                      ]
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "startedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "endedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "durationSeconds": {
+                      "type": "integer"
+                    },
+                    "distanceM": {
+                      "type": "number"
+                    },
+                    "avgPaceSecPerKm": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "elevationGainM": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "calories": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "effort": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1,
+                      "maximum": 10
+                    },
+                    "outline": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "items": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      }
+                    },
+                    "recordKeys": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "400m",
+                          "1k",
+                          "1mile",
+                          "5k",
+                          "10k",
+                          "half",
+                          "marathon"
+                        ]
+                      }
+                    },
+                    "note": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "goal": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "free",
+                            "distance",
+                            "time",
+                            "pace"
+                          ]
+                        },
+                        "value": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "value"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "track": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "v": {
+                          "type": "number",
+                          "enum": [
+                            1
+                          ]
+                        },
+                        "points": {
+                          "type": "string",
+                          "maxLength": 1500000
+                        },
+                        "breaks": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "maxItems": 5000
+                        },
+                        "elevation": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "v",
+                        "points",
+                        "breaks",
+                        "elevation"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "splitsKm": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "index": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "distanceM": {
+                            "type": "number"
+                          },
+                          "seconds": {
+                            "type": "number"
+                          },
+                          "pace": {
+                            "type": "number"
+                          },
+                          "elevationChangeM": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "index",
+                          "distanceM",
+                          "seconds",
+                          "pace",
+                          "elevationChangeM"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "splitsMi": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "index": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "distanceM": {
+                            "type": "number"
+                          },
+                          "seconds": {
+                            "type": "number"
+                          },
+                          "pace": {
+                            "type": "number"
+                          },
+                          "elevationChangeM": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "index",
+                          "distanceM",
+                          "seconds",
+                          "pace",
+                          "elevationChangeM"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "series": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "distanceM": {
+                            "type": "number"
+                          },
+                          "pace": {
+                            "type": "number"
+                          },
+                          "ele": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "distanceM",
+                          "pace",
+                          "ele"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "workout": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "steps": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "warmup",
+                                  "work",
+                                  "recover",
+                                  "cooldown"
+                                ]
+                              },
+                              "distanceM": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ],
+                                "minimum": 1,
+                                "maximum": 100000
+                              },
+                              "seconds": {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ],
+                                "minimum": 1,
+                                "maximum": 36000
+                              },
+                              "pace": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "fast": {
+                                    "type": "integer",
+                                    "minimum": 60,
+                                    "maximum": 1800
+                                  },
+                                  "slow": {
+                                    "type": "integer",
+                                    "minimum": 60,
+                                    "maximum": 1800
+                                  }
+                                },
+                                "required": [
+                                  "fast",
+                                  "slow"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "effort": {
+                                "type": "string",
+                                "maxLength": 40
+                              },
+                              "rep": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "index": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  },
+                                  "of": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                  }
+                                },
+                                "required": [
+                                  "index",
+                                  "of"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "distanceM",
+                              "seconds",
+                              "pace",
+                              "effort",
+                              "rep"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "minItems": 1,
+                          "maxItems": 120
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "steps"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "laps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "step": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "distanceM": {
+                            "type": "number"
+                          },
+                          "seconds": {
+                            "type": "number"
+                          },
+                          "pace": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "step",
+                          "distanceM",
+                          "seconds",
+                          "pace"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "plannedRunId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
+                    },
+                    "efforts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "enum": [
+                              "400m",
+                              "1k",
+                              "1mile",
+                              "5k",
+                              "10k",
+                              "half",
+                              "marathon"
+                            ]
+                          },
+                          "seconds": {
+                            "type": "number"
+                          },
+                          "startM": {
+                            "type": "number"
+                          },
+                          "rank": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 3
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "seconds",
+                          "startM",
+                          "rank"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "kind",
+                    "name",
+                    "startedAt",
+                    "endedAt",
+                    "durationSeconds",
+                    "distanceM",
+                    "avgPaceSecPerKm",
+                    "elevationGainM",
+                    "calories",
+                    "effort",
+                    "outline",
+                    "recordKeys",
+                    "note",
+                    "goal",
+                    "track",
+                    "splitsKm",
+                    "splitsMi",
+                    "series",
+                    "workout",
+                    "laps",
+                    "plannedRunId",
+                    "efforts"
                   ],
                   "additionalProperties": false
                 }
@@ -51792,6 +51908,21 @@
                                 }
                               ]
                             }
+                          },
+                          "recordKeys": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "400m",
+                                "1k",
+                                "1mile",
+                                "5k",
+                                "10k",
+                                "half",
+                                "marathon"
+                              ]
+                            }
                           }
                         },
                         "required": [
@@ -51806,7 +51937,8 @@
                           "elevationGainM",
                           "calories",
                           "effort",
-                          "outline"
+                          "outline",
+                          "recordKeys"
                         ],
                         "additionalProperties": false
                       }
@@ -51877,6 +52009,423 @@
                     "runs",
                     "nextBefore",
                     "totals"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/running/records": {
+      "get": {
+        "summary": "Your best efforts: the best three at each distance (beta 4.2)",
+        "tags": [
+          "running"
+        ],
+        "description": "The fastest stretch of 400 m, 1 km, 1 mile, 5 km, 10 km, half and marathon inside any outdoor run, on moving time (packages/core running/efforts). Older runs are worked out a batch a request; `pending` says how many remain. Also records the distance firsts your runs reached (in GET /user/rewards).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "records": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "enum": [
+                              "400m",
+                              "1k",
+                              "1mile",
+                              "5k",
+                              "10k",
+                              "half",
+                              "marathon"
+                            ]
+                          },
+                          "best": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "runId": {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "startedAt": {
+                                  "type": "string",
+                                  "format": "date-time"
+                                },
+                                "seconds": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "runId",
+                                "name",
+                                "startedAt",
+                                "seconds"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "maxItems": 3
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "best"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "pending": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "records",
+                    "pending"
                   ],
                   "additionalProperties": false
                 }
@@ -52311,6 +52860,21 @@
                         ]
                       }
                     },
+                    "recordKeys": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "400m",
+                          "1k",
+                          "1mile",
+                          "5k",
+                          "10k",
+                          "half",
+                          "marathon"
+                        ]
+                      }
+                    },
                     "note": {
                       "type": [
                         "string",
@@ -52621,6 +53185,47 @@
                         "null"
                       ],
                       "format": "uuid"
+                    },
+                    "efforts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "enum": [
+                              "400m",
+                              "1k",
+                              "1mile",
+                              "5k",
+                              "10k",
+                              "half",
+                              "marathon"
+                            ]
+                          },
+                          "seconds": {
+                            "type": "number"
+                          },
+                          "startM": {
+                            "type": "number"
+                          },
+                          "rank": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 3
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "seconds",
+                          "startM",
+                          "rank"
+                        ],
+                        "additionalProperties": false
+                      }
                     }
                   },
                   "required": [
@@ -52636,6 +53241,7 @@
                     "calories",
                     "effort",
                     "outline",
+                    "recordKeys",
                     "note",
                     "goal",
                     "track",
@@ -52644,7 +53250,8 @@
                     "series",
                     "workout",
                     "laps",
-                    "plannedRunId"
+                    "plannedRunId",
+                    "efforts"
                   ],
                   "additionalProperties": false
                 }
@@ -53110,6 +53717,21 @@
                         ]
                       }
                     },
+                    "recordKeys": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "400m",
+                          "1k",
+                          "1mile",
+                          "5k",
+                          "10k",
+                          "half",
+                          "marathon"
+                        ]
+                      }
+                    },
                     "note": {
                       "type": [
                         "string",
@@ -53420,6 +54042,47 @@
                         "null"
                       ],
                       "format": "uuid"
+                    },
+                    "efforts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string",
+                            "enum": [
+                              "400m",
+                              "1k",
+                              "1mile",
+                              "5k",
+                              "10k",
+                              "half",
+                              "marathon"
+                            ]
+                          },
+                          "seconds": {
+                            "type": "number"
+                          },
+                          "startM": {
+                            "type": "number"
+                          },
+                          "rank": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 3
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "seconds",
+                          "startM",
+                          "rank"
+                        ],
+                        "additionalProperties": false
+                      }
                     }
                   },
                   "required": [
@@ -53435,6 +54098,7 @@
                     "calories",
                     "effort",
                     "outline",
+                    "recordKeys",
                     "note",
                     "goal",
                     "track",
@@ -53443,7 +54107,8 @@
                     "series",
                     "workout",
                     "laps",
-                    "plannedRunId"
+                    "plannedRunId",
+                    "efforts"
                   ],
                   "additionalProperties": false
                 }
@@ -76313,7 +76978,7 @@
     },
     "/user/rewards": {
       "get": {
-        "summary": "Streak rewards you earned, kept forever (beta 3.4)",
+        "summary": "Streak rewards you earned, kept forever (beta 3.4); the running distance firsts from build 20 (beta 4.2)",
         "tags": [
           "premium"
         ],
@@ -76342,7 +77007,12 @@
                               "ember-theme",
                               "blaze-icon",
                               "ember-rim",
-                              "century"
+                              "century",
+                              "first-run",
+                              "first-5k",
+                              "first-10k",
+                              "first-half",
+                              "first-marathon"
                             ]
                           },
                           "earnedAt": {

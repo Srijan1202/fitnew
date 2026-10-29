@@ -4,19 +4,24 @@
  * packages/core and keeps the run. The phone's own figures were its live
  * view; what is kept and shown afterwards is this.
  */
-import type { CreateRunRequest, PatchRunRequest, RunDetail, RunGoal, RunList, RunSummary, RunWorkout } from '@fitos/contracts';
+import { EFFORT_KEYS, type CreateRunRequest, type EffortKey, type PatchRunRequest, type RunDetail, type RunGoal, type RunList, type RunSummary, type RunWorkout, type RunningRecords } from '@fitos/contracts';
 import { localDateOf, addDays } from '@fitos/core/nutrition/log';
 import { isoWeekday } from '@fitos/core/progress/streak';
 import { summarizeTrack, summarizeTreadmill, type RunSummary as CoreSummary } from '@fitos/core/running/summary';
+import { EFFORTS_VERSION, bestEfforts } from '@fitos/core/running/efforts';
 import { LapError, checkMarks, lapsOf } from '@fitos/core/running/laps';
 import { TrackError, decodeTrack, type EncodedTrack } from '@fitos/core/running/track';
 
 import type { RunRow } from '../../db/schema.js';
 import { AppError } from '../../lib/errors.js';
+import type { EffortsRepository, RankedEffort } from './efforts-repository.js';
 import type { PlanRepository } from './plan-repository.js';
 import type { RunningRepository } from './repository.js';
 
 export const RUN_PAGE_SIZE = 20;
+
+/** Beta 4.2: older runs worked out a batch a records request, so no request runs long. */
+export const EFFORTS_BATCH = 200;
 
 const num = (v: string | null): number | null => (v === null ? null : Number(v));
 
@@ -25,7 +30,7 @@ function trackOf(row: RunRow): EncodedTrack | null {
   return { v: 1, points: row.trackPoints, breaks: row.trackBreaks, elevation: row.trackElevation };
 }
 
-export function toSummary(row: RunRow): RunSummary {
+export function toSummary(row: RunRow, recordKeys: readonly EffortKey[] = []): RunSummary {
   return {
     id: row.clientRunId,
     kind: row.kind,
@@ -39,17 +44,18 @@ export function toSummary(row: RunRow): RunSummary {
     calories: row.calories,
     effort: row.effort,
     outline: row.outline,
+    recordKeys: [...recordKeys],
   };
 }
 
-export function toDetail(row: RunRow, plannedRunId: string | null = null): RunDetail {
+export function toDetail(row: RunRow, plannedRunId: string | null = null, efforts: readonly RankedEffort[] = []): RunDetail {
   const track = trackOf(row);
   // Splits, the chart and the laps are computed on read, from the kept track.
   const decoded = track === null ? null : decodeTrack(track);
   const computed = decoded === null ? null : summarizeTrack(decoded, row.durationSeconds, null);
   const goal: RunGoal = row.goalKind === 'free' ? { kind: 'free', value: null } : { kind: row.goalKind, value: row.goalValue };
   return {
-    ...toSummary(row),
+    ...toSummary(row, efforts.filter((e) => e.rank === 1).map((e) => e.key)),
     note: row.note,
     goal,
     track: track === null ? null : { ...track, breaks: [...track.breaks] },
@@ -59,6 +65,7 @@ export function toDetail(row: RunRow, plannedRunId: string | null = null): RunDe
     workout: (row.workout as RunWorkout | null) ?? null,
     laps: decoded === null || row.lapMarks === null ? [] : lapsOf(decoded, row.lapMarks),
     plannedRunId,
+    efforts: efforts.map((e) => ({ key: e.key, seconds: e.seconds, startM: e.startM, rank: e.rank })),
   };
 }
 
@@ -66,8 +73,27 @@ export class RunningService {
   constructor(
     private readonly repo: RunningRepository,
     private readonly plans: PlanRepository,
+    private readonly efforts: EffortsRepository,
     private readonly now: () => Date = () => new Date(),
   ) {}
+
+  /**
+   * Beta 4.2: a run's best efforts by the current rules (worked out now if
+   * missing or older), ranked among the user's.
+   */
+  private async effortsOf(row: RunRow): Promise<RankedEffort[]> {
+    const track = trackOf(row);
+    if (track === null) return [];
+    if (row.effortsVersion < EFFORTS_VERSION) {
+      await this.efforts.replace(row.id, row.userId, bestEfforts(decodeTrack(track)), EFFORTS_VERSION);
+    }
+    return this.efforts.ranked(row.userId, row.id);
+  }
+
+  private async detail(row: RunRow): Promise<RunDetail> {
+    const plannedRunId = await this.plans.plannedFor(row.id);
+    return toDetail(row, plannedRunId, await this.effortsOf(row));
+  }
 
   /** 201 with the run the first time; 200 with the same run on a replay. */
   async create(userId: string, req: CreateRunRequest): Promise<{ created: boolean; body: RunDetail }> {
@@ -132,18 +158,21 @@ export class RunningService {
     // Two uploads racing on one id: the loser reads the winner's row.
     if (row === null) return this.replay(userId, (await this.repo.byClientId(req.clientRunId))!);
     const linked = plannedId !== null && (await this.plans.link(plannedId, row.id)) ? plannedId : null;
-    return { created: true, body: toDetail(row, linked) };
+    // Beta 4.2: its best efforts, and any distance first it reached.
+    const efforts = await this.effortsOf(row);
+    await this.efforts.awardBadges(userId);
+    return { created: true, body: toDetail(row, linked, efforts) };
   }
 
   private async replay(userId: string, row: RunRow): Promise<{ created: boolean; body: RunDetail }> {
     if (row.userId !== userId) throw new AppError('CONFLICT', 'That run id is already taken.', [{ path: 'clientRunId', issue: 'taken' }]);
-    return { created: false, body: toDetail(row, await this.plans.plannedFor(row.id)) };
+    return { created: false, body: await this.detail(row) };
   }
 
   async get(userId: string, id: string): Promise<RunDetail> {
     const row = await this.repo.mine(userId, id);
     if (row === null) throw new AppError('NOT_FOUND', 'No such run.');
-    return toDetail(row, await this.plans.plannedFor(row.id));
+    return this.detail(row);
   }
 
   async list(userId: string, before: string | undefined, limit: number | undefined): Promise<RunList> {
@@ -159,8 +188,9 @@ export class RunningService {
     ]);
     const more = rows.length > size;
     const pageRows = more ? rows.slice(0, size) : rows;
+    const records = await this.efforts.recordKeys(userId, pageRows.map((r) => r.id));
     return {
-      runs: pageRows.map(toSummary),
+      runs: pageRows.map((r) => toSummary(r, records.get(r.id) ?? [])),
       nextBefore: more ? pageRows[pageRows.length - 1]!.startedAt.toISOString() : null,
       totals: {
         week: { ...week, distanceM: Math.round(week.distanceM * 10) / 10 },
@@ -176,7 +206,29 @@ export class RunningService {
     if (req.effort !== undefined) set.effort = req.effort;
     const row = await this.repo.patch(userId, id, set);
     if (row === null) throw new AppError('NOT_FOUND', 'No such run.');
-    return toDetail(row, await this.plans.plannedFor(row.id));
+    return this.detail(row);
+  }
+
+  /**
+   * Beta 4.2: the best three at each distance. Older runs are worked out
+   * first, [EFFORTS_BATCH] at a time (`pending` says how many remain), and
+   * the distance firsts are checked, so past runs count (owner).
+   */
+  async records(userId: string): Promise<RunningRecords> {
+    for (const row of await this.efforts.stale(userId, EFFORTS_VERSION, EFFORTS_BATCH)) {
+      await this.efforts.replace(row.id, userId, bestEfforts(decodeTrack(trackOf(row)!)), EFFORTS_VERSION);
+    }
+    await this.efforts.awardBadges(userId);
+    const [top, pending] = await Promise.all([this.efforts.top3(userId), this.efforts.staleCount(userId, EFFORTS_VERSION)]);
+    return {
+      records: EFFORT_KEYS.map((key) => ({
+        key,
+        best: top
+          .filter((r) => r.key === key)
+          .map((r) => ({ runId: r.clientRunId, name: r.name, startedAt: r.startedAt.toISOString(), seconds: r.seconds })),
+      })),
+      pending,
+    };
   }
 
   /** Deletes a run; the planned run it did, if any, is planned again. */

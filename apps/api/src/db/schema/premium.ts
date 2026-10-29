@@ -31,7 +31,8 @@ export const premiumRequests = pgTable(
 
 /**
  * Beta 3.4 (ADR-027 amendment): streak rewards a person earned, once each,
- * kept forever. Granted when the streak is read and its best run has reached
+ * kept forever; beta 4.2, the running distance firsts too (earned when a run
+ * reaches the distance, dated by that run; kept if the run is deleted). Granted when the streak is read and its best run has reached
  * the reward's days. The person's own data: exported, deleted with them.
  */
 export const userRewards = pgTable(
@@ -45,6 +46,10 @@ export const userRewards = pgTable(
   },
   (t) => [
     primaryKey({ columns: [t.userId, t.reward] }),
-    check('user_rewards_reward', sql`${t.reward} in ('spark', 'ember-theme', 'blaze-icon', 'ember-rim', 'century')`),
+    // Beta 4.2: and the running distance firsts.
+    check(
+      'user_rewards_reward',
+      sql`${t.reward} in ('spark', 'ember-theme', 'blaze-icon', 'ember-rim', 'century', 'first-run', 'first-5k', 'first-10k', 'first-half', 'first-marathon')`,
+    ),
   ],
 );

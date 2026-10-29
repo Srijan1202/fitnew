@@ -17,7 +17,7 @@
  * go with the account (CASCADE) and appear in the data export.
  */
 import { sql } from 'drizzle-orm';
-import { boolean, check, date, index, integer, jsonb, numeric, pgEnum, pgTable, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { boolean, check, date, index, integer, jsonb, numeric, pgEnum, pgTable, primaryKey, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
 import { users } from './users.js';
 
@@ -55,6 +55,8 @@ export const runs = pgTable(
     /** Beta 4.1: the structured session run (core WorkoutStep[] with its name), and where each step began and ended. */
     workout: jsonb('workout').$type<{ name: string; steps: unknown[] }>(),
     lapMarks: jsonb('lap_marks').$type<{ step: number; startT: number; endT: number }[]>(),
+    /** Beta 4.2: the version of core's best-effort rules its `run_best_efforts` rows come from (0: none yet). */
+    effortsVersion: smallint('efforts_version').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -74,6 +76,36 @@ export const runs = pgTable(
 );
 
 export type RunRow = typeof runs.$inferSelect;
+
+/**
+ * Beta 4.2 (owner 2026-10-29): the fastest stretch of each distance inside
+ * a run (packages/core running/efforts.ts), one row per run and distance,
+ * kept so records are a query, not a decode of every track. Rebuildable from
+ * the track (§9.4; `runs.efforts_version`); deleted with the run.
+ */
+export const effortKeyEnum = pgEnum('effort_key', ['400m', '1k', '1mile', '5k', '10k', 'half', 'marathon']);
+
+export const runBestEfforts = pgTable(
+  'run_best_efforts',
+  {
+    runId: uuid('run_id')
+      .notNull()
+      .references(() => runs.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    key: effortKeyEnum('key').notNull(),
+    /** Moving seconds, to 0.1 s. */
+    seconds: numeric('seconds', { precision: 8, scale: 1 }).notNull(),
+    /** Metres from the start of the run where the stretch begins. */
+    startM: numeric('start_m', { precision: 9, scale: 1 }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.runId, t.key] }),
+    index('run_best_efforts_user_key_idx').on(t.userId, t.key, t.seconds),
+    check('run_best_efforts_seconds', sql`${t.seconds} > 0`),
+  ],
+);
 
 /*
  * Beta 4.1 (ADR-039): running plans. `running_plans` holds what the runner

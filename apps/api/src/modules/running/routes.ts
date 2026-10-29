@@ -22,10 +22,12 @@ import {
   runListQuerySchema,
   runListSchema,
   runParamsSchema,
+  runningRecordsSchema,
 } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
 import { ProgressRepository } from '../progress/repository.js';
+import { EffortsRepository } from './efforts-repository.js';
 import { PlanRepository } from './plan-repository.js';
 import { PlanService } from './plan-service.js';
 import { RunningRepository } from './repository.js';
@@ -42,7 +44,7 @@ function requireUserId(userId: string | null): string {
 export async function runningRoutes(app: FastifyInstance): Promise<void> {
   const runsRepo = new RunningRepository(app.database.db);
   const plansRepo = new PlanRepository(app.database.db);
-  const service = new RunningService(runsRepo, plansRepo);
+  const service = new RunningService(runsRepo, plansRepo, new EffortsRepository(app.database.db));
   const progress = new ProgressRepository(app.database.db);
   const plans = new PlanService(plansRepo, runsRepo, (userId) => progress.plannedDays(userId));
   const typed = app.withTypeProvider<ZodTypeProvider>();
@@ -70,6 +72,23 @@ export async function runningRoutes(app: FastifyInstance): Promise<void> {
       const { created, body } = await service.create(requireUserId(request.userId), request.body);
       return reply.code(created ? 201 : 200).send(body);
     },
+  );
+
+  typed.get(
+    '/running/records',
+    {
+      schema: {
+        summary: 'Your best efforts: the best three at each distance (beta 4.2)',
+        description:
+          'The fastest stretch of 400 m, 1 km, 1 mile, 5 km, 10 km, half and marathon inside any outdoor run, on moving time ' +
+          '(packages/core running/efforts). Older runs are worked out a batch a request; `pending` says how many remain. ' +
+          'Also records the distance firsts your runs reached (in GET /user/rewards).',
+        tags,
+        security,
+        response: { 200: runningRecordsSchema, ...errors },
+      },
+    },
+    async (request) => service.records(requireUserId(request.userId)),
   );
 
   typed.get(

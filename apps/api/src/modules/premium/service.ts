@@ -6,13 +6,15 @@
 import {
   PREMIUM_AVATAR_IDS,
   REWARD_AVATAR_IDS,
+  RUNNING_BADGES,
+  RUNNING_BADGES_MIN_BUILD,
   STREAK_REWARDS,
   type AdminPremiumMember,
   type AdminPremiumRequest,
   type PremiumRequest,
   type PremiumStatus,
+  type RewardId,
   type RewardsResponse,
-  type StreakRewardId,
 } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
@@ -38,7 +40,15 @@ export const premiumRequired = (what: string): AppError =>
   new AppError('FORBIDDEN', `${what} is part of FITOS Premium. Ask for it in Profile → Premium.`, [{ path: 'premium', issue: 'premium-required' }]);
 
 export class PremiumService {
-  constructor(private readonly repo: PremiumRepository) {}
+  /**
+   * [awardBadges]: beta 4.2, records the running distance firsts before the
+   * rewards are read (EffortsRepository.awardBadges); absent where only
+   * premium status is needed.
+   */
+  constructor(
+    private readonly repo: PremiumRepository,
+    private readonly awardBadges?: (userId: string) => Promise<unknown>,
+  ) {}
 
   async isPremium(userId: string, claims: Readonly<Record<string, unknown>> | undefined): Promise<boolean> {
     if (isAdminClaims(claims)) return true;
@@ -77,12 +87,21 @@ export class PremiumService {
     return { avatarId };
   }
 
-  /** Beta 3.4: streak rewards earned (readable whether or not streaks are switched on). */
-  async rewards(userId: string): Promise<RewardsResponse> {
+  /**
+   * Beta 3.4: streak rewards earned (readable whether or not streaks are
+   * switched on). Beta 4.2: and the running distance firsts, checked first
+   * so past runs count — sent only to builds that read them ([appBuild] ≥
+   * RUNNING_BADGES_MIN_BUILD): older phones check the ids strictly.
+   */
+  async rewards(userId: string, appBuild: number | null = null): Promise<RewardsResponse> {
+    const badges = appBuild !== null && appBuild >= RUNNING_BADGES_MIN_BUILD;
+    if (badges) await this.awardBadges?.(userId);
     const rows = await this.repo.rewards(userId);
+    const known = (id: string): id is RewardId =>
+      STREAK_REWARDS.some((x) => x.id === id) || (badges && RUNNING_BADGES.some((x) => x.id === id));
     return {
       earned: rows
-        .filter((r): r is { reward: StreakRewardId; earnedAt: Date } => STREAK_REWARDS.some((x) => x.id === r.reward))
+        .filter((r): r is { reward: RewardId; earnedAt: Date } => known(r.reward))
         .map((r) => ({ id: r.reward, earnedAt: r.earnedAt.toISOString() })),
     };
   }

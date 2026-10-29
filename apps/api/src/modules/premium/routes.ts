@@ -23,6 +23,8 @@ import {
 
 import { AppError } from '../../lib/errors.js';
 import { requireAdmin } from '../../plugins/auth.js';
+import { appBuildOf } from '../recovery/routes.js';
+import { EffortsRepository } from '../running/efforts-repository.js';
 import { PremiumRepository } from './repository.js';
 import { PremiumService } from './service.js';
 
@@ -38,7 +40,8 @@ const idParams = z.object({ id: z.string().uuid() }).strict();
 const userParams = z.object({ userId: z.string().uuid() }).strict();
 
 export async function premiumRoutes(app: FastifyInstance): Promise<void> {
-  const service = new PremiumService(new PremiumRepository(app.database.db));
+  const efforts = new EffortsRepository(app.database.db);
+  const service = new PremiumService(new PremiumRepository(app.database.db), (userId) => efforts.awardBadges(userId));
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const security = [{ bearerAuth: [] }];
   const errors = { 401: errorEnvelopeSchema, 403: errorEnvelopeSchema, 404: errorEnvelopeSchema, 409: errorEnvelopeSchema, 422: errorEnvelopeSchema, 429: errorEnvelopeSchema };
@@ -66,12 +69,12 @@ export async function premiumRoutes(app: FastifyInstance): Promise<void> {
 
   typed.get('/user/rewards', {
     schema: {
-      summary: 'Streak rewards you earned, kept forever (beta 3.4)',
+      summary: 'Streak rewards you earned, kept forever (beta 3.4); the running distance firsts from build 20 (beta 4.2)',
       tags: ['premium'],
       security,
       response: { 200: rewardsResponseSchema, ...errors },
     },
-  }, async (request) => service.rewards(requireUserId(request.userId)));
+  }, async (request) => service.rewards(requireUserId(request.userId), appBuildOf(request.headers['x-fitos-build'])));
 
   typed.put('/user/avatar', {
     schema: {
