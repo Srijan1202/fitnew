@@ -18,9 +18,9 @@ class FakeRewardsApi implements RewardsApi {
       offline ? const Err(Offline()) : Ok({...rewards});
 
   /// Beta 4.2: the running distance firsts earned, with their days.
-  Map<DistanceBadge, DateTime> badgesEarned = {};
+  Map<RunBadge, DateTime> badgesEarned = {};
 
   @override
-  Future<Result<Map<DistanceBadge, DateTime>>> badges() async =>
+  Future<Result<Map<RunBadge, DateTime>>> badges() async =>
       offline ? const Err(Offline()) : Ok({...badgesEarned});
 }

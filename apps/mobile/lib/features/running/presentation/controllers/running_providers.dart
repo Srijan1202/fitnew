@@ -18,6 +18,8 @@ import '../../data/run_voice.dart';
 import '../../data/run_sync_engine.dart';
 import '../../data/running_api.dart';
 import '../../data/running_repository.dart';
+import '../../data/watch_import.dart';
+import '../../../health/data/health_connect_channel.dart';
 import '../../domain/efforts.dart';
 import '../../domain/run.dart';
 import '../../domain/workout.dart';
@@ -84,6 +86,7 @@ class RunSettings {
     this.batteryAsked = false,
     this.voice = true,
     this.everyHalf = false,
+    this.watchImport = true,
   });
 
   final DistanceUnit unit;
@@ -96,18 +99,23 @@ class RunSettings {
   /// The battery question was asked once (the answer is the phone's).
   final bool batteryAsked;
 
+  /// Beta 4.5 (owner): Galaxy Watch runs come in from Health Connect.
+  final bool watchImport;
+
   RunSettings copyWith({
     DistanceUnit? unit,
     bool? autoPause,
     bool? batteryAsked,
     bool? voice,
     bool? everyHalf,
+    bool? watchImport,
   }) =>
       RunSettings(
         unit: unit ?? this.unit,
         autoPause: autoPause ?? this.autoPause,
         batteryAsked: batteryAsked ?? this.batteryAsked,
         voice: voice ?? this.voice,
+        watchImport: watchImport ?? this.watchImport,
         everyHalf: everyHalf ?? this.everyHalf,
       );
 }
@@ -119,6 +127,7 @@ class RunSettingsController extends Notifier<RunSettings> {
   static const _battery = 'running.batteryAsked';
   static const _voice = 'running.voice';
   static const _everyHalf = 'running.everyHalf';
+  static const _watchImport = 'running.watchImport';
 
   /// Set once the runner changes something: a late load must not undo it.
   bool _changed = false;
@@ -139,6 +148,7 @@ class RunSettingsController extends Notifier<RunSettings> {
         batteryAsked: p.getBool(_battery) ?? false,
         voice: p.getBool(_voice) ?? true,
         everyHalf: p.getBool(_everyHalf) ?? false,
+        watchImport: p.getBool(_watchImport) ?? true,
       );
     } on Object {
       // Defaults stand.
@@ -154,6 +164,7 @@ class RunSettingsController extends Notifier<RunSettings> {
       await p.setBool(_battery, state.batteryAsked);
       await p.setBool(_voice, state.voice);
       await p.setBool(_everyHalf, state.everyHalf);
+      await p.setBool(_watchImport, state.watchImport);
     } on Object {
       // Kept for this session only.
     }
@@ -176,6 +187,11 @@ class RunSettingsController extends Notifier<RunSettings> {
 
   Future<void> setEveryHalf(bool on) async {
     state = state.copyWith(everyHalf: on);
+    await _save();
+  }
+
+  Future<void> setWatchImport(bool on) async {
+    state = state.copyWith(watchImport: on);
     await _save();
   }
 
@@ -312,6 +328,36 @@ final currentPlanProvider = FutureProvider<RunningPlan?>((ref) async {
   }
   final plan = json?['plan'];
   return plan is Map<String, dynamic> ? RunningPlan.fromJson(plan) : null;
+});
+
+/* ------------------------------------ beta 4.5: Galaxy Watch runs -- */
+
+/// Where watch runs are read from (Health Connect); tests hand in a fake.
+final watchSourceProvider = Provider<WatchRunSource>(
+  (_) => const HealthConnectWatchSource(MethodChannelHealthConnect()),
+);
+
+/// Each time Running opens (and the switch is on): the watch runs not in
+/// FITOS yet come in, and the history and records follow.
+final watchImportProvider =
+    FutureProvider.autoDispose<WatchImportResult?>((ref) async {
+  final userId = ref.watch(sessionUserIdProvider);
+  if (userId == null || !ref.watch(runSettingsProvider).watchImport) {
+    return null;
+  }
+  final (list, _) = await ref.read(runListProvider.future);
+  final unsynced = ref.read(unsyncedRunsProvider).value ?? const [];
+  final result = await WatchImporter(
+    source: ref.read(watchSourceProvider),
+    api: ref.read(runningApiProvider),
+    userId: userId,
+  ).run([...unsynced, ...?list?.runs]);
+  if (result.imported > 0) {
+    ref
+      ..invalidate(runListProvider)
+      ..invalidate(recordsProvider);
+  }
+  return result;
 });
 
 /* --------------------------------------- beta 4.2: best efforts -- */

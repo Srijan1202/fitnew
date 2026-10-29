@@ -9,7 +9,10 @@ import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BasalMetabolicRateRecord
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.DistanceRecord
+import androidx.health.connect.client.records.ExerciseRouteResult
+import androidx.health.connect.client.records.ExerciseSegment
 import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
@@ -60,6 +63,9 @@ class HealthConnectChannel(
             "weight" to "android.permission.health.READ_WEIGHT",
             "bodyFat" to "android.permission.health.READ_BODY_FAT",
             "bmr" to "android.permission.health.READ_BASAL_METABOLIC_RATE",
+            // Beta 4.5: Galaxy Watch runs — heart rate during them, and their route.
+            "heartRate" to "android.permission.health.READ_HEART_RATE",
+            "exerciseRoutes" to "android.permission.health.READ_EXERCISE_ROUTES",
         )
     }
 
@@ -78,6 +84,7 @@ class HealthConnectChannel(
             "aggregate" -> launch(result) { aggregate(call) }
             "latest" -> launch(result) { latest(call) }
             "exerciseSessions" -> launch(result) { exerciseSessions(call) }
+            "runningSessions" -> launch(result) { runningSessions(call) }
             "openSettings" -> result.success(openSettings())
             else -> result.notImplemented()
         }
@@ -278,6 +285,61 @@ class HealthConnectChannel(
                     "source" to it.metadata.dataOrigin.packageName,
                 )
             }
+        }
+    }
+
+    /**
+     * Beta 4.5 (owner): runs recorded by another app (a Galaxy Watch through
+     * Samsung Health) overlapping the range: the record id, start and end,
+     * whether on a treadmill, the seconds paused, and — each only with its
+     * permission — the distance and heart rate of that app's own records in
+     * the run's time, and the route when that app shared one. Read only.
+     */
+    private suspend fun runningSessions(call: MethodCall): List<Map<String, Any?>> {
+        val c = client() ?: throw IllegalStateException("unavailable")
+        val granted = c.permissionController.getGrantedPermissions()
+        val distanceOk = READ_PERMISSIONS["distance"] in granted
+        val heartOk = READ_PERMISSIONS["heartRate"] in granted
+        val filter = range(call)
+        return withContext(Dispatchers.IO) {
+            c.readRecords(ReadRecordsRequest(ExerciseSessionRecord::class, filter)).records
+                .filter {
+                    (it.exerciseType == ExerciseSessionRecord.EXERCISE_TYPE_RUNNING ||
+                        it.exerciseType == ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL) &&
+                        it.metadata.dataOrigin.packageName != activity.packageName
+                }
+                .map { s ->
+                    val origin = setOf(s.metadata.dataOrigin)
+                    val window = TimeRangeFilter.between(s.startTime, s.endTime)
+                    val distance = if (!distanceOk) null else c.aggregate(
+                        AggregateRequest(setOf(DistanceRecord.DISTANCE_TOTAL), window, origin),
+                    )[DistanceRecord.DISTANCE_TOTAL]?.inMeters
+                    val heart = if (!heartOk) null else c.aggregate(
+                        AggregateRequest(setOf(HeartRateRecord.BPM_AVG, HeartRateRecord.BPM_MAX), window, origin),
+                    )
+                    val paused = s.segments
+                        .filter { it.segmentType == ExerciseSegment.EXERCISE_SEGMENT_TYPE_PAUSE }
+                        .sumOf { java.time.Duration.between(it.startTime, it.endTime).seconds }
+                    val route = when (val r = s.exerciseRouteResult) {
+                        is ExerciseRouteResult.Data -> r.exerciseRoute.route.map {
+                            listOf(it.time.toEpochMilli(), it.latitude, it.longitude, it.altitude?.inMeters)
+                        }
+                        else -> null
+                    }
+                    mapOf(
+                        "id" to s.metadata.id,
+                        "start" to s.startTime.toEpochMilli(),
+                        "end" to s.endTime.toEpochMilli(),
+                        "title" to s.title,
+                        "treadmill" to (s.exerciseType == ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL),
+                        "source" to s.metadata.dataOrigin.packageName,
+                        "pausedSeconds" to paused,
+                        "distanceM" to distance,
+                        "hrAvg" to heart?.get(HeartRateRecord.BPM_AVG),
+                        "hrMax" to heart?.get(HeartRateRecord.BPM_MAX),
+                        "route" to route,
+                    )
+                }
         }
     }
 

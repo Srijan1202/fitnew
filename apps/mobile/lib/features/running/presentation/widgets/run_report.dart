@@ -59,7 +59,24 @@ class RunReport extends StatelessWidget {
       ),
       children: [
         if (header != null) header!,
-        Text('$day · $time', style: t.bodyMedium),
+        Text(
+          s.source == RunSource.watch
+              ? '$day · $time · Galaxy Watch'
+              : '$day · $time',
+          key: const ValueKey('run.report.when'),
+          style: t.bodyMedium,
+        ),
+        if (s.source == RunSource.watch &&
+            track == null &&
+            s.kind == RunKind.outdoor)
+          Padding(
+            padding: const EdgeInsets.only(top: FitSpacing.xs),
+            child: Text(
+              'No map: Samsung Health did not share this run\u2019s route.',
+              key: const ValueKey('run.report.noRoute'),
+              style: t.bodyMedium,
+            ),
+          ),
         if (run.pending)
           Padding(
             padding: const EdgeInsets.only(top: FitSpacing.xs),
@@ -170,6 +187,35 @@ class RunReport extends StatelessWidget {
             ],
           ),
         ),
+        // Beta 4.5: the watch's heart rate.
+        if (s.hrAvg != null || s.hrMax != null)
+          Padding(
+            padding: const EdgeInsets.only(top: FitSpacing.sm),
+            child: FitBlock(
+              key: const ValueKey('run.report.heart'),
+              padding: const EdgeInsets.all(FitSpacing.md),
+              child: Row(
+                children: [
+                  Icon(Icons.favorite, color: FitColors.oxide),
+                  const SizedBox(width: FitSpacing.sm),
+                  Expanded(
+                    child: RunStat(
+                      value: s.hrAvg?.toString() ?? '–',
+                      label: 'Avg bpm',
+                      valueKey: const ValueKey('run.report.hrAvg'),
+                    ),
+                  ),
+                  Expanded(
+                    child: RunStat(
+                      value: s.hrMax?.toString() ?? '–',
+                      label: 'Max bpm',
+                      valueKey: const ValueKey('run.report.hrMax'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         if (s.calories == null && s.distanceM > 0)
           Padding(
             padding: const EdgeInsets.only(top: FitSpacing.xs),

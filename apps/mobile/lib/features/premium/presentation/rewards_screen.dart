@@ -32,10 +32,17 @@ class RewardsScreen extends ConsumerWidget {
     final badges = ref.watch(earnedBadgesProvider).value;
     final streakNow = ref.watch(streakProvider).value;
     final best = streakNow?.best;
-    final longest = ref.watch(recordsProvider).value?.longestM;
+    final records = ref.watch(recordsProvider).value;
+    final longest = records?.longestM;
+    // Beta 4.5: how far each speed and lifetime badge is.
+    final run = _RunProgress(
+      longest: longest,
+      total: records?.totalM,
+      best: records?.recordTimes ?? const {},
+    );
     final premium = ref.watch(isPremiumProvider) ?? false;
     final unit = ref.watch(runSettingsProvider).unit;
-    final total = StreakReward.values.length + DistanceBadge.values.length;
+    final total = StreakReward.values.length + RunBadge.values.length;
     final earned = (streak?.length ?? 0) + (badges?.length ?? 0);
     return Scaffold(
       appBar: AppBar(
@@ -97,19 +104,27 @@ class RewardsScreen extends ConsumerWidget {
                       '${unit.label}. One run of at least the distance, '
                       'treadmill too.',
               children: [
-                for (final b in DistanceBadge.values)
-                  _RewardTile(
-                    key: ValueKey('rewards.${b.id}'),
-                    icon: Icons.military_tech,
-                    title: b.unlocks == null
-                        ? b.label
-                        : '${b.label} · ${_capital(b.unlocks!)}',
-                    earned: badges?.containsKey(b) ?? false,
-                    status: _badgeStatus(context, b, badges, longest, unit),
-                    progress: b.metres == 0 || longest == null
-                        ? null
-                        : longest / b.metres,
+                for (final g in BadgeGroup.values) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: FitSpacing.xs,
+                      bottom: FitSpacing.xs,
+                    ),
+                    child: Text(g.label, style: t.titleSmall),
                   ),
+                  for (final b in RunBadge.values)
+                    if (b.group == g)
+                      _RewardTile(
+                        key: ValueKey('rewards.${b.id}'),
+                        icon: Icons.military_tech,
+                        title: b.unlocks == null
+                            ? b.label
+                            : '${b.label} · ${_capital(b.unlocks!)}',
+                        earned: badges?.containsKey(b) ?? false,
+                        status: _badgeStatus(context, b, badges, run, unit),
+                        progress: run.of(b),
+                      ),
+                ],
               ],
             ),
             _Section(
@@ -161,9 +176,9 @@ class RewardsScreen extends ConsumerWidget {
 
   static String _badgeStatus(
     BuildContext context,
-    DistanceBadge b,
-    Map<DistanceBadge, DateTime>? earned,
-    double? longest,
+    RunBadge b,
+    Map<RunBadge, DateTime>? earned,
+    _RunProgress run,
     DistanceUnit unit,
   ) {
     final on = earned?[b];
@@ -171,12 +186,29 @@ class RewardsScreen extends ConsumerWidget {
       return 'Earned ${MaterialLocalizations.of(context).formatMediumDate(on.toLocal())}';
     }
     if (b.metres == 0) return 'Unlocks with your first saved run';
-    final left = longest == null ? null : b.metres - longest;
-    return left == null || left <= 0
-        ? b.howToEarn.replaceFirst('to earn it', 'to unlock it')
-        : '${b.howToEarn.replaceFirst('to earn it', 'to unlock it')} '
-            '${formatDistance(left, unit)} ${unit.label} more than your '
-            'longest.';
+    final how = b.howToEarn.replaceFirst('to earn it', 'to unlock it');
+    switch (b.group) {
+      case BadgeGroup.distance:
+        final longest = run.longest;
+        final left = longest == null ? null : b.metres! - longest;
+        return left == null || left <= 0
+            ? how
+            : '$how ${formatDistance(left, unit)} ${unit.label} more than '
+                'your longest.';
+      case BadgeGroup.speed:
+        final best = run.best[b.effort];
+        return best == null
+            ? how
+            : '$how Your best: ${formatDuration(best.round())}.';
+      case BadgeGroup.lifetime:
+        final total = run.total;
+        final left = total == null ? null : b.totalM! - total;
+        return left == null || left <= 0
+            ? how
+            : '$how ${formatDistance(left, unit)} ${unit.label} to go.';
+      case BadgeGroup.consistency:
+        return how;
+    }
   }
 
   static List<(String, String, String)> _premiumItems() => [
@@ -433,6 +465,30 @@ class _Legend extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Beta 4.5: what a badge's bar measures — the longest run (distance
+/// firsts), the best effort (speed: the target time over it), the total run
+/// (lifetime); nothing for consistency.
+class _RunProgress {
+  const _RunProgress({
+    required this.longest,
+    required this.total,
+    required this.best,
+  });
+
+  final double? longest;
+  final double? total;
+  final Map<EffortKey, double> best;
+
+  double? of(RunBadge b) => switch (b.group) {
+        BadgeGroup.distance =>
+          b.metres == 0 || longest == null ? null : longest! / b.metres!,
+        BadgeGroup.speed =>
+          best[b.effort] == null ? null : b.underSeconds! / best[b.effort]!,
+        BadgeGroup.lifetime => total == null ? null : total! / b.totalM!,
+        BadgeGroup.consistency => null,
+      };
 }
 
 class _Section extends StatelessWidget {

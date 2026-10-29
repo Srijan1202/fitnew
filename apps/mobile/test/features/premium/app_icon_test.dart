@@ -94,9 +94,15 @@ void main() {
       AppIcon.values.where((i) => !i.premium && i.unlockId == null),
       [AppIcon.standard, AppIcon.white],
     );
-    expect(AppIcon.finisher.badge, DistanceBadge.first10k);
-    expect(AppIcon.fortyTwo.badge, DistanceBadge.firstMarathon);
+    expect(AppIcon.finisher.badge, RunBadge.first10k);
+    expect(AppIcon.fortyTwo.badge, RunBadge.firstMarathon);
     expect(AppIcon.fortyTwo.unlockId, 'first-marathon');
+    // Beta 4.5: a 5K under 20 minutes.
+    expect(AppIcon.bolt.badge, RunBadge.speed5k20);
+    expect(
+      AppIcon.bolt.howToEarn,
+      'Run 5 km in under 20 min to unlock the Bolt app icon.',
+    );
     expect(
       AppIcon.finisher.howToEarn,
       'Run your first 10K to unlock the Finisher app icon.',

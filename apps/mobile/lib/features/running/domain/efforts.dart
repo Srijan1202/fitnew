@@ -175,6 +175,7 @@ class RunningRecords {
     required this.best,
     required this.pending,
     this.longestM,
+    this.totalM,
   });
 
   factory RunningRecords.fromJson(Map<String, dynamic> j) => RunningRecords(
@@ -189,6 +190,7 @@ class RunningRecords {
         },
         pending: (j['pending'] as num?)?.toInt() ?? 0,
         longestM: (j['longestM'] as num?)?.toDouble(),
+        totalM: (j['totalM'] as num?)?.toDouble(),
       );
 
   static const empty = RunningRecords(best: {}, pending: 0);
@@ -200,6 +202,9 @@ class RunningRecords {
 
   /// Beta 4.3: the longest single run, metres; null from a 4.2 server.
   final double? longestM;
+
+  /// Beta 4.5: every run added up, metres; null from an older server.
+  final double? totalM;
 
   /// The record time at each distance that has one.
   Map<EffortKey, double> get recordTimes => {
@@ -213,29 +218,141 @@ class RunningRecords {
 /// A run shown as "5.00 km" (4.995 km and up) reads as 5 km.
 const double badgeSlackM = 5;
 
-/// The distance firsts (owner): three unlock a reward.
-enum DistanceBadge {
-  firstRun('first-run', 0, 'First run', null),
-  first5k('first-5k', 5000, 'First 5K', null),
-  first10k('first-10k', 10000, 'First 10K', 'the Finisher app icon'),
-  firstHalf('first-half', 21097.5, 'First half marathon', 'the Road theme'),
+/// Beta 4.5: what kind of badge.
+enum BadgeGroup {
+  distance('Distance firsts'),
+  speed('Speed'),
+  lifetime('Lifetime distance'),
+  consistency('Consistency');
+
+  const BadgeGroup(this.label);
+  final String label;
+}
+
+/// The running badges (owner): the distance firsts (beta 4.2), and speed,
+/// lifetime and consistency (beta 4.5). Five unlock a reward.
+enum RunBadge {
+  firstRun('first-run', BadgeGroup.distance, 'First run', metres: 0),
+  first5k('first-5k', BadgeGroup.distance, 'First 5K', metres: 5000),
+  first10k(
+    'first-10k',
+    BadgeGroup.distance,
+    'First 10K',
+    metres: 10000,
+    unlocks: 'the Finisher app icon',
+  ),
+  firstHalf(
+    'first-half',
+    BadgeGroup.distance,
+    'First half marathon',
+    metres: 21097.5,
+    unlocks: 'the Road theme',
+  ),
   firstMarathon(
     'first-marathon',
-    42195,
+    BadgeGroup.distance,
     'First marathon',
-    'the gold 42 app icon',
-  );
+    metres: 42195,
+    unlocks: 'the gold 42 app icon',
+  ),
+  speed5k30(
+    'speed-5k-30',
+    BadgeGroup.speed,
+    '5K under 30 min',
+    effort: EffortKey.k5,
+    underSeconds: 1800,
+  ),
+  speed5k25(
+    'speed-5k-25',
+    BadgeGroup.speed,
+    '5K under 25 min',
+    effort: EffortKey.k5,
+    underSeconds: 1500,
+  ),
+  speed5k20(
+    'speed-5k-20',
+    BadgeGroup.speed,
+    '5K under 20 min',
+    effort: EffortKey.k5,
+    underSeconds: 1200,
+    unlocks: 'the Bolt app icon',
+  ),
+  speed10k60(
+    'speed-10k-60',
+    BadgeGroup.speed,
+    '10K under 60 min',
+    effort: EffortKey.k10,
+    underSeconds: 3600,
+  ),
+  speed10k50(
+    'speed-10k-50',
+    BadgeGroup.speed,
+    '10K under 50 min',
+    effort: EffortKey.k10,
+    underSeconds: 3000,
+  ),
+  speedHalf2h(
+    'speed-half-2h',
+    BadgeGroup.speed,
+    'Half marathon under 2 h',
+    effort: EffortKey.half,
+    underSeconds: 7200,
+  ),
+  speedMarathon4h(
+    'speed-marathon-4h',
+    BadgeGroup.speed,
+    'Marathon under 4 h',
+    effort: EffortKey.marathon,
+    underSeconds: 14400,
+  ),
+  total50('total-50k', BadgeGroup.lifetime, '50 km run', totalM: 50000),
+  total100('total-100k', BadgeGroup.lifetime, '100 km run', totalM: 100000),
+  total250('total-250k', BadgeGroup.lifetime, '250 km run', totalM: 250000),
+  total500('total-500k', BadgeGroup.lifetime, '500 km run', totalM: 500000),
+  total1000(
+    'total-1000k',
+    BadgeGroup.lifetime,
+    '1,000 km run',
+    totalM: 1000000,
+    unlocks: 'the Mileage theme',
+  ),
+  weeks4('weeks-4', BadgeGroup.consistency, 'Four weeks in a row'),
+  threeInAWeek(
+    'three-in-a-week',
+    BadgeGroup.consistency,
+    'Three runs in a week',
+  ),
+  planFinished('plan-finished', BadgeGroup.consistency, 'Plan finished');
 
-  const DistanceBadge(this.id, this.metres, this.label, this.unlocks);
+  const RunBadge(
+    this.id,
+    this.group,
+    this.label, {
+    this.metres,
+    this.effort,
+    this.underSeconds,
+    this.totalM,
+    this.unlocks,
+  });
 
   final String id;
-  final double metres;
+  final BadgeGroup group;
   final String label;
+
+  /// A distance first: one run of at least this far (0: any run).
+  final double? metres;
+
+  /// A speed badge: the best effort at [effort] under [underSeconds].
+  final EffortKey? effort;
+  final double? underSeconds;
+
+  /// A lifetime badge: all runs added up to this far.
+  final double? totalM;
 
   /// What it unlocks, in words; null for none.
   final String? unlocks;
 
-  static DistanceBadge? byId(String? id) {
+  static RunBadge? byId(String? id) {
     for (final b in values) {
       if (b.id == id) return b;
     }
@@ -243,26 +360,71 @@ enum DistanceBadge {
   }
 
   /// "Run a 10K in one go to earn it."
-  String get howToEarn => metres == 0
-      ? 'Save your first run to earn it.'
-      : 'Run ${_distance()} in one go to earn it.';
+  String get howToEarn => switch (group) {
+        BadgeGroup.distance => metres == 0
+            ? 'Save your first run to earn it.'
+            : 'Run ${_distance()} in one go to earn it.',
+        BadgeGroup.speed =>
+          'Run ${effort!.label == 'Half marathon' || effort!.label == 'Marathon' ? 'a ${effort!.label.toLowerCase()}' : effort!.label} in under ${_time(underSeconds!)} to earn it.',
+        BadgeGroup.lifetime => 'Run ${_km(totalM!)} km in total to earn it.',
+        BadgeGroup.consistency => switch (this) {
+            weeks4 => 'Run at least once a week, 4 weeks in a row.',
+            threeInAWeek => 'Run 3 times in one week (Monday to Sunday).',
+            _ => 'Finish a running plan: its race run done.',
+          },
+      };
 
   /// "Run your first 10K to unlock the Finisher app icon."
   String? get unlockHowTo => unlocks == null
       ? null
-      : 'Run your first ${_distance(article: false)} to unlock $unlocks.';
+      : switch (group) {
+          BadgeGroup.distance =>
+            'Run your first ${_distance(article: false)} to unlock $unlocks.',
+          BadgeGroup.speed =>
+            'Run ${effort!.label} in under ${_time(underSeconds!)} to unlock $unlocks.',
+          BadgeGroup.lifetime =>
+            'Run ${_km(totalM!)} km in total to unlock $unlocks.',
+          BadgeGroup.consistency => null,
+        };
 
   String _distance({bool article = true}) => switch (this) {
         first5k => article ? 'a 5K' : '5K',
         first10k => article ? 'a 10K' : '10K',
         firstHalf => article ? 'a half marathon' : 'half marathon',
         firstMarathon => article ? 'a marathon' : 'marathon',
-        firstRun => 'a run',
+        _ => 'a run',
       };
+
+  static String _time(double s) =>
+      s >= 3600 ? '${(s / 3600).round()} h' : '${(s / 60).round()} min';
+
+  static String _km(double m) {
+    final km = (m / 1000).round();
+    return km >= 1000
+        ? '${km ~/ 1000},${(km % 1000).toString().padLeft(3, '0')}'
+        : '$km';
+  }
 }
 
-/// The badges one run of [distanceM] earns.
-List<DistanceBadge> badgesFor(double distanceM) => [
-      for (final b in DistanceBadge.values)
-        if (b.metres == 0 || distanceM >= b.metres - badgeSlackM) b,
+/// The distance firsts one run of [distanceM] earns.
+List<RunBadge> badgesFor(double distanceM) => [
+      for (final b in RunBadge.values)
+        if (b.metres != null &&
+            (b.metres == 0 || distanceM >= b.metres! - badgeSlackM))
+          b,
+    ];
+
+/// Beta 4.5: the speed badges a run's efforts earn.
+List<RunBadge> speedBadgesFor(List<BestEffort> efforts) => [
+      for (final b in RunBadge.values)
+        if (b.group == BadgeGroup.speed &&
+            efforts
+                .any((e) => e.key == b.effort && e.seconds < b.underSeconds!))
+          b,
+    ];
+
+/// Beta 4.5: the lifetime badges a total of [totalM] reaches.
+List<RunBadge> lifetimeBadgesFor(double totalM) => [
+      for (final b in RunBadge.values)
+        if (b.totalM != null && totalM >= b.totalM!) b,
     ];

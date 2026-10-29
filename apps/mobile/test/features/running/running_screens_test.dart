@@ -11,6 +11,7 @@ import 'package:fitos/features/exercise/presentation/controllers/exercise_provid
 import 'package:fitos/features/health/presentation/controllers/health_providers.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:fitos/features/running/data/location_source.dart';
+import 'package:fitos/features/running/data/watch_import.dart';
 import 'package:fitos/features/running/domain/efforts.dart';
 import 'package:fitos/features/running/domain/run.dart';
 import 'package:fitos/features/running/domain/track.dart';
@@ -34,6 +35,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/fake_exercise_repository.dart';
 import '../../support/fake_feedback_api.dart';
@@ -57,6 +59,7 @@ void main() {
   late FakeMetaApi meta;
   late FakeRunVoice voice;
   late FakeRewardsApi rewards;
+  late FakeWatch watch;
   late DateTime clock;
 
   setUp(() {
@@ -69,6 +72,7 @@ void main() {
     meta = FakeMetaApi();
     voice = FakeRunVoice();
     rewards = FakeRewardsApi();
+    watch = FakeWatch()..allowed = false;
     clock = DateTime.utc(2026, 10, 27, 1, 30);
   });
   // After a failure the test clock stops, and work it was driving can hold
@@ -173,6 +177,7 @@ void main() {
         runClockProvider.overrideWithValue(() => clock),
         runSharerProvider.overrideWithValue(sharer),
         routeSnapshotterProvider.overrideWithValue(snapshots),
+        watchSourceProvider.overrideWithValue(watch),
         runMapModeProvider.overrideWithValue(RunMapMode.drawn),
         mapOnlineProvider.overrideWith((_) => Stream.value(true)),
       ],
@@ -385,9 +390,9 @@ void main() {
       'beta 4.2: Badges — earned ones with their day and what they unlocked, the rest with how to earn them',
       (tester) async {
     rewards.badgesEarned = {
-      DistanceBadge.firstRun: DateTime.utc(2026, 10, 1),
-      DistanceBadge.first5k: DateTime.utc(2026, 10, 2),
-      DistanceBadge.first10k: DateTime.utc(2026, 10, 20),
+      RunBadge.firstRun: DateTime.utc(2026, 10, 1),
+      RunBadge.first5k: DateTime.utc(2026, 10, 2),
+      RunBadge.first10k: DateTime.utc(2026, 10, 20),
     };
     await openRunning(tester);
     await tester.tap(find.byKey(const ValueKey('running.badges')));
@@ -405,6 +410,67 @@ void main() {
     );
     expect(text('badge.first-half.unlocks'), 'Unlocks the Road theme.');
     expect(find.byKey(const ValueKey('badge.first-run.unlocks')), findsNothing);
+  });
+
+  testWidgets(
+      'beta 4.5: a Galaxy Watch run comes in by itself when Running opens: marked as the watch\u2019s, with heart rate, and no map when the route was not shared',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final start = DateTime.utc(2026, 10, 26, 1);
+    watch
+      ..allowed = true
+      ..found = [
+        WatchRun(
+          id: 'hc-1',
+          start: start,
+          end: start.add(const Duration(minutes: 30)),
+          treadmill: false,
+          pausedSeconds: 0,
+          distanceM: 5200,
+          hrAvg: 150,
+          hrMax: 176,
+        ),
+      ];
+    await openRunning(tester);
+    await settle(tester);
+    expect(api.stored.values.single['source'], 'watch');
+    final id = api.stored.keys.single;
+    expect(find.byKey(ValueKey('running.run.$id.watch')), findsOneWidget);
+    final row = find.byKey(ValueKey('running.run.$id'));
+    await tester.ensureVisible(row);
+    await tester.pump();
+    await tester.tap(row);
+    await settle(tester);
+    expect(find.byKey(const ValueKey('run.report.noRoute')), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('run.report.when'))).data,
+      endsWith('Galaxy Watch'),
+    );
+    await reveal(tester, 'run.report.hrMax');
+    expect(
+      tester.widget<Text>(find.byKey(const ValueKey('run.report.hrAvg'))).data,
+      '150',
+    );
+  });
+
+  testWidgets(
+      'beta 4.5: the watch switch in Running settings asks Health Connect; turned off, nothing is imported',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await openRunning(tester);
+    await tester.tap(find.byKey(const ValueKey('running.settings')));
+    await settle(tester);
+    final sw = find.byKey(const ValueKey('running.settings.watch'));
+    await tester.ensureVisible(sw);
+    // On by default; off, then on again (Health Connect asked).
+    await tester.tap(sw);
+    await settle(tester);
+    expect(container(tester).read(runSettingsProvider).watchImport, isFalse);
+    watch.grantOnAsk = true;
+    await tester.tap(sw);
+    await settle(tester);
+    expect(watch.asks, [true]);
+    expect(container(tester).read(runSettingsProvider).watchImport, isTrue);
   });
 
   testWidgets(

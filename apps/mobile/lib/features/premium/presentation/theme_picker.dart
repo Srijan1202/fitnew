@@ -46,7 +46,7 @@ class ThemePicker extends ConsumerWidget {
                 onTap: () async {
                   if (streakLocked(p)) {
                     final how = StreakReward.byId(p.reward)?.howToEarn ??
-                        DistanceBadge.byId(p.reward)?.unlockHowTo ??
+                        RunBadge.byId(p.reward)?.unlockHowTo ??
                         'Not unlocked yet.';
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(how)),

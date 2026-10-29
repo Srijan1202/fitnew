@@ -44,14 +44,28 @@ class BadgesScreen extends ConsumerWidget {
                     style: t.bodyMedium,
                   ),
                 ),
-              for (final b in DistanceBadge.values)
+              // Beta 4.5: in groups — distance firsts, speed, lifetime,
+              // consistency.
+              for (final g in BadgeGroup.values) ...[
                 Padding(
-                  padding: const EdgeInsets.only(bottom: FitSpacing.sm),
-                  child: _BadgeTile(badge: b, earnedOn: earned?[b]),
+                  key: ValueKey('badges.group.${g.name}'),
+                  padding: const EdgeInsets.only(
+                    top: FitSpacing.sm,
+                    bottom: FitSpacing.sm,
+                  ),
+                  child: Text(g.label.toUpperCase(), style: t.labelSmall),
                 ),
+                for (final b in RunBadge.values)
+                  if (b.group == g)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: FitSpacing.sm),
+                      child: _BadgeTile(badge: b, earnedOn: earned?[b]),
+                    ),
+              ],
               Text(
-                'Each is earned by one run of at least that distance, '
-                'treadmill runs too. Past runs count.',
+                'Distance firsts need one run of at least that distance, '
+                'treadmill and watch runs too. Speed badges need a run with '
+                'its route. Past runs count.',
                 style: t.bodySmall?.copyWith(color: FitColors.ink60),
               ),
             ],
@@ -65,7 +79,7 @@ class BadgesScreen extends ConsumerWidget {
 class _BadgeTile extends StatelessWidget {
   const _BadgeTile({required this.badge, required this.earnedOn});
 
-  final DistanceBadge badge;
+  final RunBadge badge;
   final DateTime? earnedOn;
 
   @override

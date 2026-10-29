@@ -141,20 +141,51 @@ void main() {
 
   test('distance badges: any run is a first run; what reads as 5 km is 5 km',
       () {
-    expect(badgesFor(0), [DistanceBadge.firstRun]);
-    expect(badgesFor(5000 - badgeSlackM - 0.1), [DistanceBadge.firstRun]);
+    expect(badgesFor(0), [RunBadge.firstRun]);
+    expect(badgesFor(5000 - badgeSlackM - 0.1), [RunBadge.firstRun]);
     expect(
       badgesFor(5000 - badgeSlackM),
-      [DistanceBadge.firstRun, DistanceBadge.first5k],
+      [RunBadge.firstRun, RunBadge.first5k],
     );
-    expect(badgesFor(42195), DistanceBadge.values);
-    expect(DistanceBadge.byId('first-half'), DistanceBadge.firstHalf);
-    expect(DistanceBadge.byId('first-ultra'), isNull);
-    expect(DistanceBadge.first5k.howToEarn, 'Run a 5K in one go to earn it.');
-    expect(DistanceBadge.firstRun.howToEarn, 'Save your first run to earn it.');
-    expect(DistanceBadge.first5k.unlockHowTo, isNull);
+    // Beta 4.5: the distance firsts only (the other groups have their own rules).
     expect(
-      DistanceBadge.firstHalf.unlockHowTo,
+      badgesFor(42195),
+      [
+        for (final b in RunBadge.values)
+          if (b.group == BadgeGroup.distance) b,
+      ],
+    );
+    expect(
+      speedBadgesFor(
+        const [BestEffort(key: EffortKey.k5, seconds: 1499, startM: 0)],
+      ),
+      [RunBadge.speed5k30, RunBadge.speed5k25],
+    );
+    expect(
+      lifetimeBadgesFor(260000),
+      [RunBadge.total50, RunBadge.total100, RunBadge.total250],
+    );
+    expect(
+      RunBadge.speed5k20.unlockHowTo,
+      'Run 5 km in under 20 min to unlock the Bolt app icon.',
+    );
+    expect(RunBadge.total1000.howToEarn, 'Run 1,000 km in total to earn it.');
+    expect(
+      RunBadge.speedHalf2h.howToEarn,
+      'Run a half marathon in under 2 h to earn it.',
+    );
+    expect(
+      RunBadge.weeks4.howToEarn,
+      'Run at least once a week, 4 weeks in a row.',
+    );
+    expect(RunBadge.weeks4.unlockHowTo, isNull);
+    expect(RunBadge.byId('first-half'), RunBadge.firstHalf);
+    expect(RunBadge.byId('first-ultra'), isNull);
+    expect(RunBadge.first5k.howToEarn, 'Run a 5K in one go to earn it.');
+    expect(RunBadge.firstRun.howToEarn, 'Save your first run to earn it.');
+    expect(RunBadge.first5k.unlockHowTo, isNull);
+    expect(
+      RunBadge.firstHalf.unlockHowTo,
       'Run your first half marathon to unlock the Road theme.',
     );
   });

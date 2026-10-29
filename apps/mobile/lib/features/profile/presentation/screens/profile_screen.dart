@@ -160,7 +160,7 @@ class ProfileScreen extends ConsumerWidget {
                           icon: Icons.emoji_events_outlined,
                           title: 'Streak & rewards',
                           value:
-                              '${(ref.watch(earnedRewardsProvider).value?.length ?? 0) + (ref.watch(earnedBadgesProvider).value?.length ?? 0)} of ${StreakReward.values.length + DistanceBadge.values.length}',
+                              '${(ref.watch(earnedRewardsProvider).value?.length ?? 0) + (ref.watch(earnedBadgesProvider).value?.length ?? 0)} of ${StreakReward.values.length + RunBadge.values.length}',
                           onTap: () => context.push(Routes.rewards),
                         ),
                       ),

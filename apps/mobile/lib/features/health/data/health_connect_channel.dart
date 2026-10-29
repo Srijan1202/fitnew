@@ -35,6 +35,15 @@ abstract class HealthConnectChannel {
     required DateTime end,
   });
 
+  /// Beta 4.5: runs another app recorded (a Galaxy Watch through Samsung
+  /// Health) overlapping the range: `id`, `start`/`end` (UTC ms),
+  /// `treadmill`, `pausedSeconds`, and with their permissions `distanceM`,
+  /// `hrAvg`, `hrMax` and `route` (`[[ms, lat, lon, ele?], …]`).
+  Future<List<Map<String, Object?>>> runningSessions({
+    required DateTime start,
+    required DateTime end,
+  });
+
   /// Opens Health Connect's settings (manage permissions). False when the
   /// device has no such screen.
   Future<bool> openSettings();
@@ -135,6 +144,15 @@ class MethodChannelHealthConnect implements HealthConnectChannel {
     required DateTime end,
   }) async =>
       (await _call<List<Object?>>('exerciseSessions', _range(start, end)))
+          .map((e) => (e! as Map<Object?, Object?>).cast<String, Object?>())
+          .toList();
+
+  @override
+  Future<List<Map<String, Object?>>> runningSessions({
+    required DateTime start,
+    required DateTime end,
+  }) async =>
+      (await _call<List<Object?>>('runningSessions', _range(start, end)))
           .map((e) => (e! as Map<Object?, Object?>).cast<String, Object?>())
           .toList();
 

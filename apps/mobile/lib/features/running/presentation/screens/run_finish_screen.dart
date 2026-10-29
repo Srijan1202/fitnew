@@ -129,10 +129,20 @@ class _RunFinishScreenState extends ConsumerState<RunFinishScreen> {
     final beaten = records == null || track == null
         ? const <BestEffort>[]
         : newRecords(bestEfforts(track), records.recordTimes);
+    // Beta 4.5: speed badges from this run's efforts, lifetime from the
+    // total so far plus this run (consistency is the server's, after sync).
+    final runEfforts =
+        track == null ? const <BestEffort>[] : bestEfforts(track);
+    final totalAfter =
+        records?.totalM == null ? null : records!.totalM! + d.summary.distanceM;
     final badges = earned == null || track == null
-        ? const <DistanceBadge>[]
+        ? const <RunBadge>[]
         : [
-            for (final b in badgesFor(d.summary.distanceM))
+            for (final b in {
+              ...badgesFor(d.summary.distanceM),
+              ...speedBadgesFor(runEfforts),
+              if (totalAfter != null) ...lifetimeBadgesFor(totalAfter),
+            })
               if (!earned.containsKey(b)) b,
           ];
     if (beaten.isEmpty && badges.isEmpty) return const [];

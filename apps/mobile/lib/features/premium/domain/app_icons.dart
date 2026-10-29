@@ -17,10 +17,13 @@ enum AppIcon {
   blaze('Blaze', premium: false, reward: StreakReward.blazeIcon),
 
   /// Beta 4.2: earned with a first 10K run.
-  finisher('Finisher', premium: false, badge: DistanceBadge.first10k),
+  finisher('Finisher', premium: false, badge: RunBadge.first10k),
 
   /// Beta 4.2: earned with a first marathon.
-  fortyTwo('42', premium: false, badge: DistanceBadge.firstMarathon);
+  fortyTwo('42', premium: false, badge: RunBadge.firstMarathon),
+
+  /// Beta 4.5: earned with a 5K under 20 minutes.
+  bolt('Bolt', premium: false, badge: RunBadge.speed5k20);
 
   const AppIcon(
     this.label, {
@@ -36,7 +39,7 @@ enum AppIcon {
   final StreakReward? reward;
 
   /// Beta 4.2: a running badge's reward; null for the others.
-  final DistanceBadge? badge;
+  final RunBadge? badge;
 
   /// The earned reward or badge id that unlocks it; null when none does.
   String? get unlockId => reward?.id ?? badge?.id;

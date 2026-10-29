@@ -281,6 +281,29 @@ class FitPalette {
     reward: 'first-half',
   );
 
+  /// Beta 4.5: earned with 1,000 km run in total (not premium): a dark
+  /// night road, deep orange actions.
+  static const mileage = FitPalette(
+    id: 'mileage',
+    label: 'Mileage',
+    brightness: Brightness.dark,
+    paper: Color(0xFF110D0A),
+    paper2: Color(0xFF1C1612),
+    ink: Color(0xFFF7F0EA),
+    ink60: Color(0xFFC2B3A6),
+    ink35: Color(0xFF8A7B6F),
+    rule: Color(0xFF332820),
+    pine: Color(0xFF8FD16A),
+    amber: Color(0xFFF5B342),
+    oxide: Color(0xFFFF6B57),
+    sky: Color(0xFF8AD4F8),
+    accent: Color(0xFFFF8A1F),
+    onAccent: Color(0xFF110D0A),
+    glow: Color(0xFFFF8A1F),
+    premium: false,
+    reward: 'total-1000k',
+  );
+
   static const all = <FitPalette>[
     fitosDark,
     fitosLight,
@@ -290,6 +313,7 @@ class FitPalette {
     ocean,
     ember,
     road,
+    mileage,
   ];
 
   /// Where a theme the user may no longer have falls back to: the brand

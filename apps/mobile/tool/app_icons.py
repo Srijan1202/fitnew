@@ -11,6 +11,7 @@ sized exactly as the standard launcher icon (tool/brand.py):
     blaze     ember F on carbon       Streak reward, 30 days (beta 3.4)
     finisher  lime F in a lime ring   Running badge: first 10K (beta 4.2)
     fortyTwo  gold "42" on carbon     Running badge: first marathon (beta 4.2)
+    bolt      lime F, amber lightning Running badge: a 5K under 20 min (beta 4.5)
 
 Resource names are the icon's name in lower case (fortyTwo: ic_launcher_fortytwo).
 Writes, for every icon but standard (which tool/brand.py already makes):
@@ -71,7 +72,21 @@ ICONS = {
     'blaze': (C['carbon'], 'url(#ember)', ember_gradient('ember'), False),
     'finisher': (C['carbon'], 'url(#g)', kit.defs_gradient('g'), False),
     'fortyTwo': (C['carbon'], 'url(#gold)', gold_gradient('gold'), False),
+    'bolt': (C['carbon'], 'url(#g)', kit.defs_gradient('g'), False),
 }
+
+# Beta 4.5: a lightning streak behind the F (on the back layer).
+BOLT = {'bolt'}
+BOLT_COLOUR = '#F5B342'
+
+
+def lightning(cx: float, cy: float, h: float) -> str:
+    # A zig-zag bolt, h tall, centred on (cx, cy), leaning right.
+    w = h * 0.55
+    pts = [(0.62, 0.0), (0.18, 0.56), (0.47, 0.56), (0.32, 1.0), (0.84, 0.38), (0.53, 0.38), (0.78, 0.0)]
+    path = ' '.join(f'{cx - w / 2 + x * w:.1f},{cy - h / 2 + y * h:.1f}' for x, y in pts)
+    return f'<polygon points="{path}" fill="{BOLT_COLOUR}" opacity="0.9"/>'
+
 
 # Beta 4.2: the running badges' icons. A finisher's medal ring around the F
 # (on the back layer, inside the launcher's mask), and the marathon's 42 in
@@ -99,6 +114,8 @@ def background(fill: str, defs: str, glow: bool, name: str = '') -> str:
     if name in RING:
         # Inside the 66 dp the launcher always shows (radius 0.305 of the side).
         halo += ring(s / 2, s / 2, s * 0.27, s * 0.022)
+    if name in BOLT:
+        halo += lightning(s * 0.64, s * 0.52, s * 0.5)
     return kit.svg(s, s, f'<rect width="{s}" height="{s}" fill="{fill}"/>{halo}', defs)
 
 
@@ -124,6 +141,8 @@ def preview(bg: str, fill: str, defs: str, glow: bool, name: str = '') -> str:
     border = f' stroke="{C["steel"]}" stroke-width="{size * 0.012}"' if glow else ''
     if name in RING:
         halo += ring(size / 2, size / 2, size * 0.42, size * 0.035)
+    if name in BOLT:
+        halo += lightning(size * 0.66, size * 0.52, size * 0.72)
     mark = (number(NUMBER[name], fill, size / 2, size / 2, size * 0.5) if name in NUMBER
             else kit_assets.mark_centered(fill, size / 2, inset, m))
     body = f'<rect width="{size}" height="{size}" rx="{r}" fill="{bg}"{border}/>{halo}' + mark

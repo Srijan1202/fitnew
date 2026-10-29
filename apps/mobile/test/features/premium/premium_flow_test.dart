@@ -421,13 +421,13 @@ void main() {
       await tap(tester, 'home.profile');
       await tap(tester, 'theme.road');
       expect(
-        find.text(DistanceBadge.firstHalf.unlockHowTo!),
+        find.text(RunBadge.firstHalf.unlockHowTo!),
         findsOneWidget,
       );
       expect(FitPalette.current.id, 'fitos-dark');
 
       rewards.badgesEarned = {
-        DistanceBadge.firstHalf: DateTime.utc(2026, 10, 20),
+        RunBadge.firstHalf: DateTime.utc(2026, 10, 20),
       };
       ProviderScope.containerOf(tester.element(find.byType(FitOSApp)))
           .invalidate(earnedBadgesProvider);
@@ -493,7 +493,7 @@ void main() {
         weekPlanned: null,
       );
       rewards.badgesEarned = {
-        DistanceBadge.firstRun: DateTime.utc(2026, 10, 1),
+        RunBadge.firstRun: DateTime.utc(2026, 10, 1),
       };
       await start(tester);
       await tap(tester, 'home.profile');
@@ -524,7 +524,7 @@ void main() {
       expect(find.text('First half marathon · The Road theme'), findsOneWidget);
       expect(
         tester.widget<Text>(find.byKey(const ValueKey('rewards.count'))).data,
-        '1 of 10 earned',
+        '1 of 25 earned',
       );
       await tester.scrollUntilVisible(
         find.byKey(const ValueKey('rewards.premium.icons.status')),

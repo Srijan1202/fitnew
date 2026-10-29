@@ -20,7 +20,7 @@ abstract class RewardsApi {
 
   /// Beta 4.2: the running distance firsts, with the day each was earned
   /// (the server sends them to build 20 and later).
-  Future<Result<Map<DistanceBadge, DateTime>>> badges();
+  Future<Result<Map<RunBadge, DateTime>>> badges();
 }
 
 class DioRewardsApi implements RewardsApi {
@@ -46,12 +46,12 @@ class DioRewardsApi implements RewardsApi {
   }
 
   @override
-  Future<Result<Map<DistanceBadge, DateTime>>> badges() async {
+  Future<Result<Map<RunBadge, DateTime>>> badges() async {
     try {
       final r = await _dio.get<Map<String, dynamic>>('/v1/user/rewards');
       return Ok({
         for (final e in r.data!['earned'] as List<dynamic>)
-          if (DistanceBadge.byId((e as Map<String, dynamic>)['id'] as String?)
+          if (RunBadge.byId((e as Map<String, dynamic>)['id'] as String?)
               case final badge?)
             badge: DateTime.parse(e['earnedAt'] as String),
       });
@@ -79,7 +79,7 @@ final earnedRewardsProvider = FutureProvider<Set<StreakReward>?>(
 
 /// Beta 4.2: the running distance firsts earned, with their days; null while
 /// unknown (offline, loading).
-final earnedBadgesProvider = FutureProvider<Map<DistanceBadge, DateTime>?>(
+final earnedBadgesProvider = FutureProvider<Map<RunBadge, DateTime>?>(
   (ref) async {
     requireSession(ref);
     final r = await ref.watch(rewardsApiProvider).badges();

@@ -30,6 +30,9 @@
     <uses-permission android:name="android.permission.health.READ_WEIGHT" />
     <uses-permission android:name="android.permission.health.READ_BODY_FAT" />
     <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE" />
+    <!-- Beta 4.5: Galaxy Watch runs (heart rate during them, and their route). -->
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.READ_EXERCISE_ROUTES" />
     <!-- Beta 4.0 (ADR-038): runs. Precise location only while FITOS is in use
          (never "all the time"); geolocator's foreground service, type
          location, keeps a run recording with the screen off. -->
@@ -164,6 +167,18 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_fortytwo"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+        <!-- Beta 4.5: a 5K under 20 minutes. -->
+        <activity-alias
+            android:name=".IconBolt"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_bolt"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

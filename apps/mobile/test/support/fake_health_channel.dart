@@ -106,6 +106,20 @@ class FakeHealthChannel implements HealthConnectChannel {
     return sessions;
   }
 
+  /// Beta 4.5: the watch runs Health Connect holds.
+  List<Map<String, Object?>> runs = [];
+
+  @override
+  Future<List<Map<String, Object?>>> runningSessions({
+    required DateTime start,
+    required DateTime end,
+  }) async {
+    calls.add('runningSessions');
+    ranges.add(('runningSessions', start, end));
+    _maybeFail();
+    return runs;
+  }
+
   @override
   Future<bool> openSettings() async {
     calls.add('openSettings');

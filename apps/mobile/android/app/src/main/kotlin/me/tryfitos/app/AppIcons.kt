@@ -12,7 +12,8 @@ import android.content.pm.PackageManager
  */
 object AppIcons {
     // Beta 4.2: finisher and fortyTwo, the running badges' icons.
-    val NAMES = listOf("standard", "white", "gold", "glow", "lime", "blaze", "finisher", "fortyTwo")
+    // Beta 4.5: bolt, a 5K under 20 minutes.
+    val NAMES = listOf("standard", "white", "gold", "glow", "lime", "blaze", "finisher", "fortyTwo", "bolt")
 
     private fun component(context: Context, name: String) =
         ComponentName(context, "me.tryfitos.app.Icon" + name.replaceFirstChar { it.uppercase() })

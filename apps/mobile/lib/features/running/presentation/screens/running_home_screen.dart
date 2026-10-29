@@ -27,6 +27,8 @@ class RunningHomeScreen extends ConsumerWidget {
     final history = ref.watch(runHistoryProvider);
     final unit = ref.watch(runSettingsProvider).unit;
     final parked = ref.watch(_parkedProvider).value ?? 0;
+    // Beta 4.5: Galaxy Watch runs come in while Running is open.
+    ref.watch(watchImportProvider);
     final t = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
@@ -340,6 +342,16 @@ class _RunRow extends StatelessWidget {
                           style: t.titleMedium,
                         ),
                       ),
+                      // Beta 4.5: from a Galaxy Watch.
+                      if (run.source == RunSource.watch) ...[
+                        const SizedBox(width: FitSpacing.xs),
+                        Icon(
+                          Icons.watch_outlined,
+                          key: ValueKey('running.run.${run.id}.watch'),
+                          size: 16,
+                          color: FitColors.ink60,
+                        ),
+                      ],
                       // Beta 4.2: this run holds a record.
                       if (run.recordKeys.isNotEmpty) ...[
                         const SizedBox(width: FitSpacing.xs),
@@ -448,6 +460,39 @@ class _RunSettingsSheet extends ConsumerWidget {
               ),
               value: s.autoPause,
               onChanged: c.setAutoPause,
+            ),
+            // Beta 4.5 (owner): runs from a Galaxy Watch, through Health
+            // Connect. Turning it on asks Health Connect for the permissions.
+            SwitchListTile(
+              key: const ValueKey('running.settings.watch'),
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Import runs from Galaxy Watch'),
+              subtitle: const Text(
+                'Runs your watch records in Samsung Health come into FITOS '
+                'through Health Connect, with heart rate and, when shared, '
+                'the route. A run already recorded on the phone is not '
+                'doubled.',
+              ),
+              value: s.watchImport,
+              onChanged: (on) async {
+                if (!on) {
+                  await c.setWatchImport(false);
+                  return;
+                }
+                final source = ref.read(watchSourceProvider);
+                final ok = await source.ready() || await source.ask();
+                await c.setWatchImport(true);
+                if (!ok && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Allow FITOS to read exercise and distance in Health '
+                        'Connect to import watch runs.',
+                      ),
+                    ),
+                  );
+                }
+              },
             ),
           ],
         ),

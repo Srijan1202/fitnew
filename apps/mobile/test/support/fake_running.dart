@@ -6,6 +6,7 @@ import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/features/running/data/location_source.dart';
 import 'package:fitos/features/running/data/run_voice.dart';
 import 'package:fitos/features/running/data/running_api.dart';
+import 'package:fitos/features/running/data/watch_import.dart';
 import 'package:fitos/features/running/domain/efforts.dart';
 import 'package:fitos/features/running/domain/gps_filter.dart';
 import 'package:fitos/features/running/domain/run.dart';
@@ -41,7 +42,7 @@ class FakeRunningApi implements RunningApi {
   /// A run's efforts (the phone's port of core's rules), ranked against
   /// the runs stored before it, as the server ranks them.
   List<Map<String, dynamic>> _efforts(Map<String, dynamic> body) {
-    if (body['kind'] != 'outdoor') return const [];
+    if (body['kind'] != 'outdoor' || body['track'] == null) return const [];
     final track = decodeTrack(
       EncodedTrack.fromJson(body['track'] as Map<String, dynamic>),
     );
@@ -67,7 +68,8 @@ class FakeRunningApi implements RunningApi {
   }
 
   Map<String, dynamic> _detail(Map<String, dynamic> body) {
-    final outdoor = body['kind'] == 'outdoor';
+    // Beta 4.5: a watch run outdoors may come without its route.
+    final outdoor = body['kind'] == 'outdoor' && body['track'] != null;
     final duration = body['durationSeconds'] as int;
     final f = outdoor
         ? summarizeTrack(
@@ -125,6 +127,11 @@ class FakeRunningApi implements RunningApi {
       ],
       'plannedRunId': _link(body),
       'efforts': _efforts(body),
+      // Beta 4.5: as the server keeps them.
+      'source': body['source'] ?? 'phone',
+      'externalId': body['externalId'],
+      'hrAvg': body['hrAvg'],
+      'hrMax': body['hrMax'],
       'recordKeys': [
         for (final e in _efforts(body))
           if (e['rank'] == 1) e['key'],
@@ -486,4 +493,34 @@ class FakeRunVoice implements RunVoice {
 
   @override
   Future<void> stop() async {}
+}
+
+/// Beta 4.5: a Galaxy Watch through Health Connect; [allowed] false by
+/// default in the screens' harness, so nothing is imported unless a test
+/// says so.
+class FakeWatch implements WatchRunSource {
+  bool allowed = true;
+  bool grantOnAsk = true;
+  List<WatchRun> found = [];
+  final asks = <bool>[];
+  final windows = <(DateTime, DateTime)>[];
+
+  @override
+  Future<bool> ready() async => allowed;
+
+  @override
+  Future<bool> ask() async {
+    asks.add(grantOnAsk);
+    allowed = grantOnAsk;
+    return grantOnAsk;
+  }
+
+  @override
+  Future<List<WatchRun>> runs({
+    required DateTime start,
+    required DateTime end,
+  }) async {
+    windows.add((start, end));
+    return found;
+  }
 }

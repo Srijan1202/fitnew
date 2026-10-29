@@ -13,6 +13,14 @@ enum RunKind {
   static RunKind parse(String s) => s == 'treadmill' ? treadmill : outdoor;
 }
 
+/// Beta 4.5: where a run was recorded.
+enum RunSource {
+  phone,
+  watch;
+
+  static RunSource parse(String? s) => s == 'watch' ? watch : phone;
+}
+
 enum RunGoalKind {
   free,
   distance,
@@ -67,6 +75,9 @@ class RunSummary {
     required this.effort,
     required this.outline,
     this.recordKeys = const [],
+    this.source = RunSource.phone,
+    this.hrAvg,
+    this.hrMax,
   });
 
   factory RunSummary.fromJson(Map<String, dynamic> j) => RunSummary(
@@ -92,6 +103,9 @@ class RunSummary {
           for (final k in (j['recordKeys'] as List?) ?? const [])
             if (EffortKey.parse(k as String?) case final key?) key,
         ],
+        source: RunSource.parse(j['source'] as String?),
+        hrAvg: (j['hrAvg'] as num?)?.toInt(),
+        hrMax: (j['hrMax'] as num?)?.toInt(),
       );
 
   final String id;
@@ -110,6 +124,11 @@ class RunSummary {
   /// Beta 4.2: the distances this run holds the record for (history's
   /// trophy); empty from an older server.
   final List<EffortKey> recordKeys;
+
+  /// Beta 4.5: the phone or a Galaxy Watch, and the watch's heart rate.
+  final RunSource source;
+  final int? hrAvg;
+  final int? hrMax;
 }
 
 /// One run in full, from the server — or, before it has the run, the
