@@ -136,7 +136,7 @@ class _WeightSection extends ConsumerWidget {
 /* ------------------------------------------------------------------ body -- */
 
 /// Tape measurements (when there are any) and the photos card.
-class _BodySection extends StatelessWidget {
+class _BodySection extends ConsumerWidget {
   const _BodySection({required this.summary, required this.photos});
 
   final ProgressSummary summary;
@@ -145,8 +145,10 @@ class _BodySection extends StatelessWidget {
   final bool photos;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
+    // Beta 4.1.1 (owner): cm or inches; the server keeps centimetres.
+    final unit = ref.watch(lengthUnitProvider);
     final present = {for (final m in summary.measurements) m.site};
     final missing =
         MeasurementSite.values.where((s) => !present.contains(s)).toList();
@@ -154,14 +156,21 @@ class _BodySection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         if (summary.measurements.isNotEmpty) ...<Widget>[
+          const _Pad(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: LengthUnitSwitch(),
+            ),
+          ),
           _StatGrid([
             for (final m in summary.measurements)
               _Stat(
                 label: m.site.label,
-                value: '${ProgressScreen.kg(m.latestCm)} cm',
+                value:
+                    '${ProgressScreen.kg(unit.fromCm(m.latestCm))} ${unit.label}',
                 caption: m.changeCm == null
                     ? 'Change shows after 7 days'
-                    : '${ProgressScreen.signed(m.changeCm!, 'cm')} over ${m.changeDays} days',
+                    : '${ProgressScreen.signed(unit.fromCm(m.changeCm!), unit.label)} over ${m.changeDays} days',
                 valueKey: ValueKey('progress.measurement.${m.site.wire}'),
                 captionKey:
                     ValueKey('progress.measurement.${m.site.wire}.change'),
@@ -613,7 +622,11 @@ class _VolumeHeatmap extends ConsumerWidget {
               spacing: FitSpacing.md,
               runSpacing: FitSpacing.xs,
               children: <Widget>[
-                for (final s in LandmarkStatus.values)
+                // Beta 4.1.1: from too little to too much, then none.
+                for (final s in [
+                  ...VolumeLegend.order,
+                  LandmarkStatus.none,
+                ])
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[

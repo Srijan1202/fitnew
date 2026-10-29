@@ -7,6 +7,7 @@ import '../../auth/presentation/widgets/auth_form_field.dart';
 import '../../health/presentation/controllers/health_providers.dart';
 import '../../profile/data/profile_repository.dart';
 import '../domain/progress.dart';
+import 'length_unit.dart';
 import 'progress_providers.dart';
 
 /// Owner D5: readings can be dated up to 30 days back, never ahead.
@@ -74,10 +75,12 @@ class _ReadingSheetState extends ConsumerState<_ReadingSheet> {
   }
 
   String? _validate(String? v) {
-    final n = double.tryParse((v ?? '').trim());
-    if (n == null) {
+    final typed = double.tryParse((v ?? '').trim().replaceAll(',', '.'));
+    if (typed == null) {
       return _weight ? 'Enter your weight.' : 'Enter the measurement.';
     }
+    // Beta 4.1.1: a measurement is checked in centimetres, whatever the unit.
+    final n = _weight ? typed : ref.read(lengthUnitProvider).toCm(typed);
     final (lo, hi) = _weight ? (30.0, 300.0) : (10.0, 250.0);
     if (n < lo || n > hi) return 'That does not look right.';
     return null;
@@ -99,7 +102,8 @@ class _ReadingSheetState extends ConsumerState<_ReadingSheet> {
 
   Future<void> _save() async {
     if (!(_form.currentState?.validate() ?? false)) return;
-    final value = double.parse(_value.text.trim());
+    final typed = double.parse(_value.text.trim().replaceAll(',', '.'));
+    final value = _weight ? typed : ref.read(lengthUnitProvider).toCm(typed);
     setState(() {
       _busy = true;
       _error = null;
@@ -156,10 +160,19 @@ class _ReadingSheetState extends ConsumerState<_ReadingSheet> {
                       ),
                   ],
                 ),
-              if (!_weight) const SizedBox(height: FitSpacing.sm),
+              if (!_weight) ...<Widget>[
+                const SizedBox(height: FitSpacing.sm),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: LengthUnitSwitch(),
+                ),
+                const SizedBox(height: FitSpacing.sm),
+              ],
               AuthFormField(
                 fieldKey: const ValueKey('progress.sheet.value'),
-                label: _weight ? 'Weight (kg)' : 'Measurement (cm)',
+                label: _weight
+                    ? 'Weight (kg)'
+                    : 'Measurement (${ref.watch(lengthUnitProvider).label})',
                 controller: _value,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -267,7 +280,8 @@ class _QuickWeightSheetState extends ConsumerState<_QuickWeightSheet> {
   String? _validateSite(String? v) {
     final text = (v ?? '').trim();
     if (text.isEmpty) return null;
-    final n = double.tryParse(text.replaceAll(',', '.'));
+    final typed = double.tryParse(text.replaceAll(',', '.'));
+    final n = typed == null ? null : ref.read(lengthUnitProvider).toCm(typed);
     if (n == null || n < 10 || n > 250) return 'That does not look right.';
     return null;
   }
@@ -298,7 +312,9 @@ class _QuickWeightSheetState extends ConsumerState<_QuickWeightSheet> {
         if (text.isEmpty) continue;
         final failure = await actions.logMeasurement(
           site,
-          double.parse(text.replaceAll(',', '.')),
+          ref
+              .read(lengthUnitProvider)
+              .toCm(double.parse(text.replaceAll(',', '.'))),
         );
         if (!mounted) return;
         if (failure != null) {
@@ -367,9 +383,16 @@ class _QuickWeightSheetState extends ConsumerState<_QuickWeightSheet> {
                   ),
                 )
               else ...<Widget>[
-                Text(
-                  'MEASUREMENTS (CM), OPTIONAL',
-                  style: textTheme.labelSmall,
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        'MEASUREMENTS (${ref.watch(lengthUnitProvider).label.toUpperCase()}), OPTIONAL',
+                        style: textTheme.labelSmall,
+                      ),
+                    ),
+                    const LengthUnitSwitch(),
+                  ],
                 ),
                 const SizedBox(height: FitSpacing.xs),
                 for (final s in MeasurementSite.values) ...<Widget>[

@@ -373,6 +373,14 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('compare.mode')));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('compare.slider')), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+
+      // Beta 4.1.1 (owner): and hidden again from the bar.
+      await tester.tap(find.byKey(const ValueKey('photos.hide')));
+      await tester.pumpAndSettle();
+      expect(find.byType(Image), findsNothing);
+      expect(find.byKey(const ValueKey('photos.show')), findsOneWidget);
     });
 
     testWidgets(
@@ -397,6 +405,17 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(Image), findsNWidgets(2));
       expect(find.byKey(const ValueKey('photos.hidden')), findsNothing);
+
+      // Beta 4.1.1 (owner): "Hide photos" hides them again, by hand.
+      final hide = find.byKey(const ValueKey('photos.hide'));
+      await tester.ensureVisible(hide);
+      await tester.tap(hide);
+      await tester.pumpAndSettle();
+      expect(find.byType(Image), findsNothing);
+      expect(find.text('2 photos · hidden'), findsOneWidget);
+      await tester.tap(show);
+      await tester.pumpAndSettle();
+      expect(find.byType(Image), findsNWidgets(2));
 
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);

@@ -381,6 +381,16 @@ void main() {
       textOf(tester, 'progress.measurement.missing'),
       'Not measured yet: chest, thigh, hip',
     );
+
+    // Beta 4.1.1 (owner): inches, shown from the same centimetres.
+    await tester.tap(key('length.unit.inch'));
+    await settle(tester);
+    expect(textOf(tester, 'progress.measurement.waist'), '33.3 in');
+    expect(
+      textOf(tester, 'progress.measurement.waist.change'),
+      '−0.6 in over 20 days',
+    );
+    expect(textOf(tester, 'progress.measurement.arm'), '14.0 in');
   });
 
   testWidgets(
@@ -682,6 +692,35 @@ void main() {
     expect(progress.writes, [
       {'site': 'hip', 'valueCm': 98.0},
     ]);
+  });
+
+  testWidgets(
+      'beta 4.1.1: a measurement typed in inches is saved in centimetres, and checked in them',
+      (tester) async {
+    await tester.pumpWidget(app());
+    await settle(tester);
+    await reveal(tester, key('progress.measurement.log'));
+    await tester.tap(key('progress.measurement.log'));
+    await settle(tester);
+    // The sheet's own switch (the section's is behind it).
+    await tester.tap(key('length.unit.inch').last);
+    await settle(tester);
+    expect(find.text('MEASUREMENT (IN)'), findsOneWidget);
+    await tester.tap(key('progress.sheet.site.waist'));
+    final field = find.descendant(
+      of: key('progress.sheet.value'),
+      matching: find.byType(EditableText),
+    );
+    // 2 in is 5 cm: too small for a waist.
+    await tester.enterText(field, '2');
+    await tester.tap(key('progress.sheet.save'));
+    await settle(tester);
+    expect(find.text('That does not look right.'), findsOneWidget);
+    await tester.enterText(field, '32.5');
+    await tester.tap(key('progress.sheet.save'));
+    await settle(tester);
+    expect(progress.writes.single['site'], 'waist');
+    expect(progress.writes.single['valueCm'], closeTo(82.55, 1e-9));
   });
 
   testWidgets(

@@ -5,11 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/config/device_time_zone.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/network/read_cache.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../../data/auth_repository_impl.dart';
 import '../../data/firebase_auth_data_source.dart';
 import '../../data/session_remote_data_source.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../../workout/presentation/controllers/workout_providers.dart';
+import 'auth_controller.dart';
 
 /// Dependency wiring. Riverpod is the only DI container (§7.1). Tests override
 /// [authRepositoryProvider] and never touch the rest.
@@ -27,7 +30,21 @@ final credentialSourceProvider = Provider<CredentialSource>((ref) {
 });
 
 final dioProvider = Provider<Dio>((ref) {
-  return buildDio(ref.watch(credentialSourceProvider));
+  final dio = buildDio(ref.watch(credentialSourceProvider));
+  // Beta 4.1.1 (owner): on a slow or no network a screen shows the phone's
+  // last good copy instead of waiting (read_cache.dart).
+  dio.httpClientAdapter = ReadCacheAdapter(
+    dio.httpClientAdapter,
+    store: DriftReadStore(() => ref.read(appDatabaseProvider)),
+    userId: () {
+      try {
+        return ref.read(sessionUserIdProvider);
+      } on Object {
+        return null; // no session yet: nothing kept, nothing served
+      }
+    },
+  );
+  return dio;
 });
 
 final sessionRemoteDataSourceProvider =

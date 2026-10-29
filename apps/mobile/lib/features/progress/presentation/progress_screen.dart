@@ -20,6 +20,7 @@ import '../../workout/domain/entities/workout.dart';
 import '../../workout/presentation/controllers/workout_providers.dart';
 import '../../workout/presentation/screens/volume_screen.dart';
 import '../domain/progress.dart';
+import 'length_unit.dart';
 import 'photos/progress_photos_providers.dart';
 import 'photos/progress_photos_screen.dart';
 import 'progress_providers.dart';

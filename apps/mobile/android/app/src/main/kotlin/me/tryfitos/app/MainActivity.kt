@@ -59,7 +59,7 @@ class MainActivity : FlutterFragmentActivity() {
                         if (name == null || name !in AppIcons.NAMES) {
                             result.error("bad-icon", "Unknown app icon: $name", null)
                         } else {
-                            AppIcons.choose(this, name)
+                            AppIcons.request(this, name)
                             result.success(null)
                         }
                     }
@@ -112,14 +112,55 @@ class MainActivity : FlutterFragmentActivity() {
                             result.success(null)
                         }
                     }
+                    // Beta 4.1.1: the share picture's map, route included.
+                    "routeSnapshot" -> {
+                        @Suppress("UNCHECKED_CAST")
+                        val args = call.arguments as? Map<String, Any?>
+                        if (args == null) {
+                            result.error("bad-route", "No arguments", null)
+                        } else {
+                            RouteSnapshot.take(this, args, result)
+                        }
+                    }
                     else -> result.notImplemented()
                 }
             }
     }
 
+    // Beta 4.1.1 (owner: "app crash on app icon change"): a chosen icon is
+    // switched once the user leaves FITOS (Home, Recents) or backs out of
+    // it, never while it is in front: Samsung's launcher closes the app when
+    // the entry it was opened from is switched off. Not on the camera, the
+    // share sheet or a settings page FITOS opened itself.
+    // Android also calls onUserLeaveHint when FITOS opens another app's
+    // screen itself; every such start passes through here first.
+    private var openingOwnIntent = false
+
+    @Deprecated("Overridden only to see FITOS's own starts; behaviour unchanged.")
+    override fun startActivityForResult(
+        intent: android.content.Intent,
+        requestCode: Int,
+        options: android.os.Bundle?,
+    ) {
+        openingOwnIntent = true
+        @Suppress("DEPRECATION")
+        super.startActivityForResult(intent, requestCode, options)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        openingOwnIntent = false
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (!openingOwnIntent) AppIcons.applyPending(this)
+    }
+
     override fun onDestroy() {
         healthConnect?.dispose()
         healthConnect = null
+        if (isFinishing) AppIcons.applyPending(this)
         super.onDestroy()
     }
 }

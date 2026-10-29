@@ -12,6 +12,7 @@ import 'package:fitos/features/running/domain/run_math.dart';
 import 'package:fitos/features/running/domain/track.dart';
 import 'package:fitos/features/running/domain/workout.dart';
 import 'package:fitos/features/running/presentation/screens/share_run_screen.dart';
+import 'package:fitos/features/running/presentation/widgets/route_snapshot.dart';
 
 /// Beta 4.0: a scripted running server. It works runs out with the app's
 /// own port of core's rules (the parity test holds them equal), so a saved
@@ -313,6 +314,29 @@ class FakeRunSharer implements RunSharer {
   Future<void> share(Uint8List bytes, String fileName, String mimeType) async =>
       shared.add((fileName, mimeType, bytes));
 }
+
+/// Beta 4.1.1: the share picture's map; [image] null is "could not make it"
+/// (offline), and the card then keeps the drawn route.
+class FakeRouteSnapshotter implements RouteSnapshotter {
+  Uint8List? image = onePixelPng;
+  final List<List<List<(double, double)>>> taken = [];
+
+  @override
+  Future<Uint8List?> take(List<List<(double, double)>> segments) async {
+    taken.add(segments);
+    return image;
+  }
+}
+
+/// A valid 1×1 PNG.
+final onePixelPng = Uint8List.fromList(const [
+  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, //
+  0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+  0x08, 0x04, 0x00, 0x00, 0x00, 0xB5, 0x1C, 0x0C, 0x02, 0x00, 0x00, 0x00,
+  0x0B, 0x49, 0x44, 0x41, 0x54, 0x78, 0xDA, 0x63, 0x64, 0x60, 0x00, 0x00,
+  0x00, 0x06, 0x00, 0x02, 0x30, 0x81, 0xD0, 0x2F, 0x00, 0x00, 0x00, 0x00,
+  0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+]);
 
 /// Beta 4.1: a planned run as the server sends it.
 Map<String, dynamic> plannedRunJson({

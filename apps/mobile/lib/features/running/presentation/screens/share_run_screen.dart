@@ -15,6 +15,8 @@ import '../../domain/run.dart';
 import '../../domain/track.dart';
 import '../../domain/units.dart';
 import '../controllers/running_providers.dart';
+import '../widgets/route_painter.dart';
+import '../widgets/route_snapshot.dart';
 import '../widgets/run_map.dart';
 
 /// Beta 4.0 (ADR-038): share a run — a picture of the route with its
@@ -53,25 +55,41 @@ class ShareRunScreen extends ConsumerStatefulWidget {
 class _ShareRunScreenState extends ConsumerState<ShareRunScreen> {
   bool _hideEnds = true;
   final _card = GlobalKey();
-  MapSnapshot? _snapshot;
-  Uint8List? _mapImage;
   bool _busy = false;
 
+  // Beta 4.1.1 (owner): the map is made as a picture with the route in it
+  // (route_snapshot.dart) as soon as the screen opens, so the card shown is
+  // the picture shared. Until then the live map; if it cannot be made
+  // (offline), FITOS's own drawn route.
+  Uint8List? _mapImage;
+  bool _drawn = false;
+  Future<void>? _preparing;
+  int _generation = 0;
+
   Track _shown(Track track) => _hideEnds ? hideEnds(track) : track;
+
+  Future<void> _prepare(List<List<(double, double)>> segments) async {
+    final generation = ++_generation;
+    final image = await ref.read(routeSnapshotterProvider).take(segments);
+    if (!mounted || generation != _generation) return;
+    setState(() {
+      _mapImage = image;
+      _drawn = image == null;
+    });
+  }
 
   Future<void> _sharePicture(RunDetail run) async {
     setState(() => _busy = true);
     try {
-      // The map is a platform view: freeze it as a picture first, so the
-      // card can be captured whole.
-      if (_snapshot != null && _mapImage == null) {
-        final image = await _snapshot!(width: 1080, height: 1080);
-        if (image != null && mounted) {
-          setState(() => _mapImage = image);
-          await WidgetsBinding.instance.endOfFrame;
-          // Let the picture decode before the capture.
-          await Future<void>.delayed(const Duration(milliseconds: 150));
-        }
+      // The map is a platform view and cannot be captured: wait for its
+      // picture (or the drawn route) before capturing the card.
+      await _preparing;
+      if (!mounted) return;
+      await WidgetsBinding.instance.endOfFrame;
+      if (_mapImage != null && mounted) {
+        // Let the picture decode before the capture.
+        await precacheImage(MemoryImage(_mapImage!), context);
+        await WidgetsBinding.instance.endOfFrame;
       }
       final boundary =
           _card.currentContext?.findRenderObject() as RenderRepaintBoundary?;
@@ -120,6 +138,9 @@ class _ShareRunScreenState extends ConsumerState<ShareRunScreen> {
     final segments = [
       for (final s in shown.segments) [for (final p in s) (p.lat, p.lon)],
     ];
+    if (_preparing == null && segments.isNotEmpty) {
+      _preparing = _prepare(segments);
+    }
     return Scaffold(
       appBar: AppBar(title: const Text('Share run')),
       body: ListView(
@@ -134,7 +155,11 @@ class _ShareRunScreenState extends ConsumerState<ShareRunScreen> {
                 run: run,
                 unit: unit,
                 map: _mapImage != null
-                    ? Image.memory(_mapImage!, fit: BoxFit.cover)
+                    ? Image.memory(
+                        _mapImage!,
+                        key: const ValueKey('share.map.picture'),
+                        fit: BoxFit.cover,
+                      )
                     : segments.isEmpty
                         ? Center(
                             child: Text(
@@ -144,12 +169,18 @@ class _ShareRunScreenState extends ConsumerState<ShareRunScreen> {
                               style: t.bodyMedium,
                             ),
                           )
-                        : RunMap(
-                            key: ValueKey('share.map.$_hideEnds'),
-                            segments: segments,
-                            interactive: false,
-                            onSnapshotReady: (s) => _snapshot = s,
-                          ),
+                        : _drawn
+                            ? ColoredBox(
+                                key: const ValueKey('share.map.drawn'),
+                                color: FitColors.paper2,
+                                child:
+                                    RouteView(segments: segments, grid: true),
+                              )
+                            : RunMap(
+                                key: ValueKey('share.map.$_hideEnds'),
+                                segments: segments,
+                                interactive: false,
+                              ),
               ),
             ),
           ),
@@ -166,7 +197,8 @@ class _ShareRunScreenState extends ConsumerState<ShareRunScreen> {
             onChanged: (v) => setState(() {
               _hideEnds = v;
               _mapImage = null;
-              _snapshot = null;
+              _drawn = false;
+              _preparing = null; // made again for the new route
             }),
           ),
           const SizedBox(height: FitSpacing.md),

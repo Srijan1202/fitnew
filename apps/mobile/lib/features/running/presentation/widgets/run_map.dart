@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:typed_data';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -38,9 +37,14 @@ final mapOnlineProvider = StreamProvider<bool>((ref) async* {
   yield* c.onConnectivityChanged.map(on);
 });
 
-/// Takes a picture of the map as it is (the share card). Null when the map
-/// is FITOS's own drawing.
-typedef MapSnapshot = Future<Uint8List?> Function({int? width, int? height});
+/// The route's colour on the map ("#rrggbb", the theme's glow); also the
+/// share picture's (route_snapshot.dart).
+String mapLineColour() {
+  final c = FitPalette.current.glow;
+  String hex(double v) =>
+      (v * 255).round().clamp(0, 255).toRadixString(16).padLeft(2, '0');
+  return '#${hex(c.r)}${hex(c.g)}${hex(c.b)}';
+}
 
 class RunMap extends ConsumerWidget {
   const RunMap({
@@ -48,7 +52,6 @@ class RunMap extends ConsumerWidget {
     this.follow = false,
     this.interactive = true,
     this.position,
-    this.onSnapshotReady,
     super.key,
   });
 
@@ -59,9 +62,6 @@ class RunMap extends ConsumerWidget {
   final bool follow;
   final bool interactive;
   final (double, double)? position;
-
-  /// Handed a snapshot function once the map has drawn the route.
-  final ValueChanged<MapSnapshot>? onSnapshotReady;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -81,7 +81,6 @@ class RunMap extends ConsumerWidget {
       follow: follow,
       interactive: interactive,
       position: position,
-      onSnapshotReady: onSnapshotReady,
       dark: FitPalette.current.brightness == Brightness.dark,
     );
   }
@@ -93,7 +92,6 @@ class _TileMap extends StatefulWidget {
     required this.follow,
     required this.interactive,
     required this.position,
-    required this.onSnapshotReady,
     required this.dark,
   });
 
@@ -101,7 +99,6 @@ class _TileMap extends StatefulWidget {
   final bool follow;
   final bool interactive;
   final (double, double)? position;
-  final ValueChanged<MapSnapshot>? onSnapshotReady;
   final bool dark;
 
   @override
@@ -117,12 +114,7 @@ class _TileMapState extends State<_TileMap> {
   static const _route = 'fitos-route';
   static const _me = 'fitos-me';
 
-  String get _lineColour {
-    final c = FitPalette.current.glow;
-    String hex(double v) =>
-        (v * 255).round().clamp(0, 255).toRadixString(16).padLeft(2, '0');
-    return '#${hex(c.r)}${hex(c.g)}${hex(c.b)}';
-  }
+  String get _lineColour => mapLineColour();
 
   Map<String, dynamic> _lines() => {
         'type': 'FeatureCollection',
@@ -195,18 +187,6 @@ class _TileMapState extends State<_TileMap> {
     _styled = true;
     _drawnPoints = _count;
     await _camera(force: true);
-    widget.onSnapshotReady?.call(_snapshot);
-  }
-
-  Future<Uint8List?> _snapshot({int? width, int? height}) async {
-    final map = _map;
-    if (map == null) return null;
-    try {
-      await map.waitUntilMapTilesAreLoaded();
-      return await map.takeSnapshot(width: width, height: height);
-    } on Object {
-      return null;
-    }
   }
 
   Future<void> _camera({bool force = false}) async {

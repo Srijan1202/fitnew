@@ -524,15 +524,22 @@ void main() {
     );
     expect(find.textContaining('W39'), findsNothing);
     expect(textOf(tester, 'volume.chest.sets').data, '2 sets');
-    // 2 sets is below MV → "Very low" in oxide, and an oxide rule.
+    // 2 sets is below MV → "Very low" in sky, and a sky rule (beta 4.1.1:
+    // too little is cool, too much warm; oxide is only "Very high").
     final status = textOf(tester, 'volume.chest.status');
     expect(status.data, 'Very low');
-    expect(status.style?.color, FitColors.oxide);
+    expect(status.style?.color, FitColors.sky);
     final row = tester
         .widget<Container>(find.byKey(const ValueKey('volume.row.chest')));
     expect(
       ((row.decoration! as BoxDecoration).border! as Border).left.color,
-      FitColors.oxide,
+      FitColors.sky,
+    );
+    expect(find.byKey(const ValueKey('volume.legend')), findsOneWidget);
+    // The five colours are all different.
+    expect(
+      VolumeLegend.order.map(VolumeWording.color).toSet(),
+      hasLength(5),
     );
     // Nothing technical on the primary screen.
     expect(find.byKey(const ValueKey('volume.chest.detail')), findsNothing);

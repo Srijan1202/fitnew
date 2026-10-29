@@ -146,6 +146,14 @@ class _ProgressPhotosCardState extends ConsumerState<ProgressPhotosCard>
                 child:
                     Text(photos.length >= 2 ? 'See all · Compare' : 'See all'),
               ),
+            // Beta 4.1.1 (owner): shown photos can be hidden again.
+            if (photos.isNotEmpty && shown)
+              TextButton.icon(
+                key: const ValueKey('photos.hide'),
+                onPressed: hide,
+                icon: const Icon(Icons.visibility_off_outlined),
+                label: const Text('Hide photos'),
+              ),
           ],
         ),
       ],
@@ -440,6 +448,13 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
               key: const ValueKey('photos.compare'),
               onPressed: () => _compare(all),
               child: const Text('Compare'),
+            ),
+          if (shown && all.isNotEmpty)
+            IconButton(
+              key: const ValueKey('photos.hide'),
+              tooltip: 'Hide photos',
+              onPressed: hide,
+              icon: const Icon(Icons.visibility_off_outlined),
             ),
         ],
       ),

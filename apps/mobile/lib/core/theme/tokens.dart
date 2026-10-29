@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 
 /// Design tokens from spec §6.2.
 ///
-/// There are exactly three semantic colours ([pine], [amber], [oxide]) and
-/// adding a fourth requires a recorded decision.
+/// There are four semantic colours ([pine], [amber], [oxide] and, since beta
+/// 4.1.1, [sky]); adding another requires a recorded decision.
 ///
 /// Phase 19 (ADR-027): the values come from the active [FitPalette]; a theme
 /// swaps the whole palette at once, so every screen keeps its meaning.
@@ -37,6 +37,11 @@ abstract final class FitColors {
   /// Fatigue / missed / destructive.
   static Color get oxide => FitPalette.current.oxide;
 
+  /// Beta 4.1.1 (owner, 2026-10-29): too little, the cool side of a range
+  /// whose warm side is [amber] and [oxide], so "very low" and "very high"
+  /// never share a colour (weekly volume).
+  static Color get sky => FitPalette.current.sky;
+
   /// Primary buttons and the selected tab (ADR-028).
   static Color get accent => FitPalette.current.accent;
 
@@ -67,6 +72,7 @@ class FitPalette {
     required this.pine,
     required this.amber,
     required this.oxide,
+    required this.sky,
     Color? accent,
     Color? onAccent,
     Color? glow,
@@ -90,6 +96,7 @@ class FitPalette {
   final Color pine;
   final Color amber;
   final Color oxide;
+  final Color sky;
   final Color accent;
   final Color onAccent;
 
@@ -126,6 +133,7 @@ class FitPalette {
     pine: Color(0xFFC6F432),
     amber: Color(0xFFF5B342),
     oxide: Color(0xFFFF6B57),
+    sky: Color(0xFF5AB4F5),
     accent: Color(0xFFC6F432),
     onAccent: Color(0xFF0A0D0B),
     glow: Color(0xFFC6F432),
@@ -148,6 +156,7 @@ class FitPalette {
     pine: Color(0xFF2F7A18),
     amber: Color(0xFFA8641B),
     oxide: Color(0xFFB3261E),
+    sky: Color(0xFF1F6FB8),
     glow: Color(0xFF5BC62A),
     brandMark: true,
     premium: false,
@@ -167,6 +176,7 @@ class FitPalette {
     pine: Color(0xFF1E6B47),
     amber: Color(0xFFA8641B),
     oxide: Color(0xFF9E2B21),
+    sky: Color(0xFF1F6FB8),
     glass: false,
     premium: false,
   );
@@ -185,6 +195,7 @@ class FitPalette {
     pine: Color(0xFF4DB383),
     amber: Color(0xFFE09A4A),
     oxide: Color(0xFFE2675A),
+    sky: Color(0xFF5AB4F5),
   );
 
   /// Premium: a green-tinted paper.
@@ -201,6 +212,7 @@ class FitPalette {
     pine: Color(0xFF1B6A45),
     amber: Color(0xFF9A5E1B),
     oxide: Color(0xFF9E2B21),
+    sky: Color(0xFF1F6FB8),
   );
 
   /// Premium: a cool blue-grey paper.
@@ -217,6 +229,7 @@ class FitPalette {
     pine: Color(0xFF1E6B57),
     amber: Color(0xFFA0621E),
     oxide: Color(0xFF9C2E28),
+    sky: Color(0xFF1F6FB8),
     glow: Color(0xFF2E7DB5),
   );
 
@@ -235,6 +248,7 @@ class FitPalette {
     pine: Color(0xFF8FD16A),
     amber: Color(0xFFF5B342),
     oxide: Color(0xFFFF6B57),
+    sky: Color(0xFF5AB4F5),
     accent: Color(0xFFFF7A2F),
     onAccent: Color(0xFF120C0A),
     glow: Color(0xFFFF7A2F),

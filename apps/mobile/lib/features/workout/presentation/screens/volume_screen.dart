@@ -109,12 +109,17 @@ class VolumeWording {
           'About as much as you can recover from. More will not help; a lighter week might.',
       };
 
-  /// Plan §6 colours: oxide below MV / at MRV, amber below MEV / above
-  /// MAV, ink in range, ink35 when nothing.
+  /// Beta 4.1.1 (owner): too little is cool and too much is warm, so the two
+  /// ends never share a colour — sky below MV, a paler sky below MEV, pine
+  /// in range, amber above MAV, oxide at MRV, ink35 when nothing. (Before,
+  /// very low and very high were both oxide, low and high both amber.)
   static Color color(LandmarkStatus s) => switch (s) {
-        LandmarkStatus.belowMv || LandmarkStatus.atMrv => FitColors.oxide,
-        LandmarkStatus.belowMev || LandmarkStatus.aboveMav => FitColors.amber,
-        LandmarkStatus.mevToMav => FitColors.ink,
+        LandmarkStatus.belowMv => FitColors.sky,
+        LandmarkStatus.belowMev =>
+          Color.lerp(FitColors.sky, FitColors.paper, 0.45)!,
+        LandmarkStatus.mevToMav => FitColors.pine,
+        LandmarkStatus.aboveMav => FitColors.amber,
+        LandmarkStatus.atMrv => FitColors.oxide,
         LandmarkStatus.none => FitColors.ink35,
       };
 
@@ -163,6 +168,48 @@ class VolumeWording {
     return monday.month == sunday.month
         ? '${monday.day}–${sunday.day} $m1'
         : '${monday.day} $m1 – ${sunday.day} $m2';
+  }
+}
+
+/// Beta 4.1.1 (owner): what each colour means, from too little to too much.
+class VolumeLegend extends StatelessWidget {
+  const VolumeLegend({super.key});
+
+  static const order = <LandmarkStatus>[
+    LandmarkStatus.belowMv,
+    LandmarkStatus.belowMev,
+    LandmarkStatus.mevToMav,
+    LandmarkStatus.aboveMav,
+    LandmarkStatus.atMrv,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final muted =
+        Theme.of(context).textTheme.bodySmall?.copyWith(color: FitColors.ink60);
+    return Wrap(
+      key: const ValueKey('volume.legend'),
+      spacing: FitSpacing.md,
+      runSpacing: FitSpacing.xs,
+      children: <Widget>[
+        for (final s in order)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: VolumeWording.color(s),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: FitSpacing.xs),
+              Text(VolumeWording.label(s), style: muted),
+            ],
+          ),
+      ],
+    );
   }
 }
 
@@ -231,6 +278,8 @@ class _VolumeBodyState extends State<_VolumeBody> {
                   style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
                 ),
               ],
+              const SizedBox(height: FitSpacing.sm),
+              const VolumeLegend(),
               const SizedBox(height: FitSpacing.md),
               DeloadPanel(deload: v.deload, mesocycleWeek: v.mesocycleWeek),
               for (final n in v.neglected)

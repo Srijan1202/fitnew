@@ -19,6 +19,7 @@ import 'package:fitos/features/running/presentation/screens/plan_setup_screen.da
 import 'package:fitos/features/running/presentation/screens/run_detail_screen.dart';
 import 'package:fitos/features/running/presentation/screens/run_finish_screen.dart';
 import 'package:fitos/features/running/presentation/screens/share_run_screen.dart';
+import 'package:fitos/features/running/presentation/widgets/route_snapshot.dart';
 import 'package:fitos/features/running/presentation/widgets/run_map.dart';
 import 'package:fitos/features/training/presentation/controllers/program_controller.dart';
 import 'package:fitos/features/training/presentation/screens/training_tab_screen.dart';
@@ -44,6 +45,7 @@ void main() {
   late FakeRunningApi api;
   late FakeLocationSource gps;
   late FakeRunSharer sharer;
+  late FakeRouteSnapshotter snapshots;
   late FakeBatteryAccess battery;
   late FakeMetaApi meta;
   late FakeRunVoice voice;
@@ -54,6 +56,7 @@ void main() {
     api = FakeRunningApi();
     gps = FakeLocationSource();
     sharer = FakeRunSharer();
+    snapshots = FakeRouteSnapshotter();
     battery = FakeBatteryAccess();
     meta = FakeMetaApi();
     voice = FakeRunVoice();
@@ -143,6 +146,7 @@ void main() {
         localTodayProvider.overrideWithValue('2026-10-27'),
         runClockProvider.overrideWithValue(() => clock),
         runSharerProvider.overrideWithValue(sharer),
+        routeSnapshotterProvider.overrideWithValue(snapshots),
         runMapModeProvider.overrideWithValue(RunMapMode.drawn),
         mapOnlineProvider.overrideWith((_) => Stream.value(true)),
       ],
@@ -578,6 +582,43 @@ void main() {
         '<trkpt'.allMatches(full).length,
         greaterThan('<trkpt'.allMatches(hidden).length),
       );
+    });
+
+    testWidgets(
+        'beta 4.1.1: the share card is the picture shared: the map is made with the route in it, again when the ends are shown',
+        (tester) async {
+      final id = await savedRun(tester);
+      await tester.tap(find.byKey(ValueKey('running.run.$id')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('run.share')));
+      await settle(tester);
+      expect(snapshots.taken, hasLength(1));
+      expect(find.byKey(const ValueKey('share.map.picture')), findsOneWidget);
+      final hiddenPoints =
+          snapshots.taken.single.fold<int>(0, (n, s) => n + s.length);
+      expect(hiddenPoints, greaterThan(1));
+
+      await shareTo(tester, 'share.hideEnds');
+      await tester.tap(find.byKey(const ValueKey('share.hideEnds')));
+      await settle(tester);
+      expect(snapshots.taken, hasLength(2));
+      final allPoints =
+          snapshots.taken.last.fold<int>(0, (n, s) => n + s.length);
+      expect(allPoints, greaterThan(hiddenPoints));
+      expect(find.byKey(const ValueKey('share.map.picture')), findsOneWidget);
+    });
+
+    testWidgets(
+        'beta 4.1.1: no map picture (offline): the card keeps FITOS’s own drawn route',
+        (tester) async {
+      snapshots.image = null;
+      final id = await savedRun(tester);
+      await tester.tap(find.byKey(ValueKey('running.run.$id')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('run.share')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('share.map.drawn')), findsOneWidget);
+      expect(find.byKey(const ValueKey('share.map.picture')), findsNothing);
     });
 
     testWidgets('edit and delete', (tester) async {

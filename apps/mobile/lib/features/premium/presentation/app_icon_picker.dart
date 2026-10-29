@@ -72,7 +72,9 @@ class AppIconPicker extends ConsumerWidget {
         ),
         const SizedBox(height: FitSpacing.sm),
         Text(
-          'Your phone may close FITOS once while it changes the icon.',
+          // Beta 4.1.1: switched when FITOS is left (MainActivity), never
+          // while it is open, so the launcher cannot close it mid-use.
+          'Your new icon appears on the home screen after you leave FITOS.',
           style: textTheme.bodySmall?.copyWith(color: FitColors.ink60),
         ),
       ],
