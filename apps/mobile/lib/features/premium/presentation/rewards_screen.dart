@@ -314,28 +314,75 @@ class _DayGrid extends StatelessWidget {
         cells.sublist(i, i + 7 > cells.length ? cells.length : i + 7),
     ];
     const names = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    // Beta 4.4 patch (owner: "dates not visible"): every day shows its date;
+    // days before the account are outlined, so the grid never looks empty.
     Widget cell(StreakDay? d) {
       final today = d?.status == StreakDayStatus.today;
+      final before = d?.status == StreakDayStatus.before;
+      final logged = d?.status == StreakDayStatus.logged;
       return Expanded(
         child: AspectRatio(
           aspectRatio: 1,
           child: Container(
             key: d == null ? null : ValueKey('streak.day.${d.date}'),
             margin: const EdgeInsets.all(2),
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               color: d == null ? Colors.transparent : _dayColour(d.status),
               borderRadius: BorderRadius.circular(6),
-              border:
-                  today ? Border.all(color: FitColors.accent, width: 2) : null,
+              border: today
+                  ? Border.all(color: FitColors.accent, width: 2)
+                  : before
+                      ? Border.all(color: FitColors.rule)
+                      : null,
             ),
+            child: d == null
+                ? null
+                : Text(
+                    '${int.parse(d.date.substring(8))}',
+                    key: ValueKey('streak.day.${d.date}.date'),
+                    style: t.labelMedium?.copyWith(
+                      color: logged
+                          ? FitColors.onAccent
+                          : before
+                              ? FitColors.ink35
+                              : FitColors.ink,
+                      fontWeight: today ? FontWeight.w700 : null,
+                    ),
+                  ),
           ),
         ),
       );
     }
 
+    String label(String d) {
+      const months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+      return '${int.parse(d.substring(8))} ${months[int.parse(d.substring(5, 7)) - 1]}';
+    }
+
     return Column(
       key: const ValueKey('streak.grid'),
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(
+          'Last 4 weeks · ${label(days.first.date)} – ${label(days.last.date)}',
+          key: const ValueKey('streak.grid.range'),
+          style: t.labelSmall,
+        ),
+        const SizedBox(height: FitSpacing.xs),
         Row(
           children: [
             for (final n in names)

@@ -588,6 +588,11 @@ void main() {
         find.byKey(const ValueKey('streak.day.2026-10-29')),
         findsOneWidget,
       );
+      // Beta 4.4 patch (owner: "dates not visible"): every day has its date,
+      // before the account too, and the grid says which weeks it shows.
+      expect(text('streak.day.2026-10-02.date'), '2');
+      expect(text('streak.day.2026-10-29.date'), '29');
+      expect(text('streak.grid.range'), 'Last 4 weeks · 2 Oct – 29 Oct');
     });
 
     testWidgets('new rewards are celebrated once on Home', (tester) async {
