@@ -71,6 +71,37 @@ export function streak(input: StreakInput): Streak {
   return { current: run, best, todayCounted, todayRest: rest(input.today) };
 }
 
+/** Beta 4.4 (owner): how many days the streak page's grid shows (4 weeks). */
+export const STREAK_GRID_DAYS = 28;
+
+export type StreakDayStatus = 'logged' | 'rest' | 'skipped' | 'missed' | 'today' | 'before';
+
+/**
+ * Beta 4.4 (owner): the last [STREAK_GRID_DAYS] days, oldest first, each as
+ * the streak sees it: logged, a planned rest day, the day used by Skip
+ * today, missed, today not logged yet (there is still time), or before the
+ * account. The same rules as [streak].
+ */
+export function streakDays(input: StreakInput, count = STREAK_GRID_DAYS): { date: string; status: StreakDayStatus }[] {
+  const out: { date: string; status: StreakDayStatus }[] = [];
+  for (let i = count - 1; i >= 0; i--) {
+    const d = addDays(input.today, -i);
+    const status: StreakDayStatus = input.activeDays.has(d)
+      ? 'logged'
+      : input.firstDay !== null && d < input.firstDay
+        ? 'before'
+        : input.restWeekdays.has(isoWeekday(d))
+          ? 'rest'
+          : input.skippedDays.has(d)
+            ? 'skipped'
+            : d === input.today
+              ? 'today'
+              : 'missed';
+    out.push({ date: d, status });
+  }
+  return out;
+}
+
 export interface WeekGoal {
   /** Workouts completed this ISO week (Monday to Sunday). */
   readonly done: number;

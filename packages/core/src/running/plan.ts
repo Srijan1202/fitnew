@@ -67,7 +67,8 @@ export interface PlanInput {
   readonly level: PlanLevel;
   /** From a recent race or the goal time; null for a beginner. */
   readonly vdot: number | null;
-  readonly daysPerWeek: 3 | 4 | 5;
+  /** Beta 4.4 (owner): 1–5 for every plan (3–5 before); the beginner 1–3. */
+  readonly daysPerWeek: 1 | 2 | 3 | 4 | 5;
   /** ISO weekdays (1 Monday … 7 Sunday), as many as `daysPerWeek`. */
   readonly weekdays: readonly number[];
   /** One of `weekdays`. */
@@ -117,7 +118,7 @@ const raceLabel: Readonly<Record<PlanGoal, string>> = { '5k': '5K', '10k': '10K'
 
 export function checkInput(i: PlanInput): void {
   if (!PLAN_GOALS.includes(i.goal)) throw new PlanError('Unknown goal.');
-  if (![3, 4, 5].includes(i.daysPerWeek)) throw new PlanError('3, 4 or 5 runs a week.');
+  if (![1, 2, 3, 4, 5].includes(i.daysPerWeek)) throw new PlanError('1 to 5 runs a week.');
   const days = new Set(i.weekdays);
   if (days.size !== i.weekdays.length || i.weekdays.length !== i.daysPerWeek || i.weekdays.some((d) => !Number.isInteger(d) || d < 1 || d > 7)) {
     throw new PlanError(`Choose ${i.daysPerWeek} different days of the week.`);
@@ -125,7 +126,7 @@ export function checkInput(i: PlanInput): void {
   if (!days.has(i.longRunWeekday)) throw new PlanError('The long-run day must be one of the running days.');
   if (i.level === 'beginner') {
     if (i.goal !== '5k') throw new PlanError('The beginner plan is the 5K.');
-    if (i.daysPerWeek !== 3) throw new PlanError('The beginner plan runs three days a week.');
+    if (i.daysPerWeek > 3) throw new PlanError('The beginner plan runs 1, 2 or 3 days a week.');
   } else if (i.vdot === null) {
     throw new PlanError('A recent race or a goal time is needed for this plan.');
   }
@@ -224,7 +225,9 @@ export function generatePlan(input: PlanInput): Plan {
   };
 
   if (input.level === 'beginner') {
-    for (let w = 1; w <= weeks; w++) days.forEach((d, s) => push(w, d, runWalk(w, s)));
+    // The week's last run/walk is the third session (week 8's time trial),
+    // however many days there are (beta 4.4: 1–3).
+    for (let w = 1; w <= weeks; w++) days.forEach((d, s) => push(w, d, runWalk(w, s === days.length - 1 ? 2 : s)));
     return { goal: input.goal, level: input.level, weeks, zones: null, predictedSeconds: null, runs };
   }
 
@@ -232,9 +235,17 @@ export function generatePlan(input: PlanInput): Plan {
   const raceM = RACE_DISTANCES_M[input.goal];
   const predicted = predictSeconds(input.vdot!, raceM);
   const others = days.filter((d) => d !== input.longRunWeekday);
+  // Beta 4.4 (owner): one run a week. For a 5K or 10K it alternates a
+  // longer easy run (odd weeks) and a faster session; for a half or a
+  // marathon it is the long run, building week by week.
+  const short = input.goal === '5k' || input.goal === '10k';
   for (let w = 1; w <= weeks; w++) {
     const raceWeek = w === weeks;
     const longKm = raceWeek ? null : LONG_RUN_KM[input.goal][w - 1]!;
+    if (input.daysPerWeek === 1 && short && !raceWeek && w % 2 === 0) {
+      push(w, input.longRunWeekday, (w / 2) % 2 === 1 ? intervals(input.goal, w, weeks, z) : tempo(input.goal, w, weeks, z));
+      continue;
+    }
     push(
       w,
       input.longRunWeekday,
@@ -250,8 +261,8 @@ export function generatePlan(input: PlanInput): Plan {
           }
         : { kind: 'long', title: `Long run ${longKm} km`, distanceM: longKm! * 1000, seconds: null, pace: z.easy, steps: null, note: NOTES.long },
     );
-    // Quality: with 4–5 days both sessions; with 3 they alternate, intervals first.
-    const quality: ('intervals' | 'tempo')[] = input.daysPerWeek === 3 ? [w % 2 === 1 ? 'intervals' : 'tempo'] : ['intervals', 'tempo'];
+    // Quality: with 4–5 days both sessions; with 2–3 they alternate, intervals first.
+    const quality: ('intervals' | 'tempo')[] = input.daysPerWeek <= 3 ? [w % 2 === 1 ? 'intervals' : 'tempo'] : ['intervals', 'tempo'];
     // The race week keeps one short sharpener and easy runs.
     const sessions = raceWeek ? quality.slice(0, 1) : quality;
     // An easy run is half the week's long run, 3 km at least (the race week: 4 km).

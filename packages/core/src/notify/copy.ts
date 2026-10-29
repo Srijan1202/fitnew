@@ -27,6 +27,11 @@ export interface Template {
   readonly needs?: readonly CopySlot[];
   /** Comeback only: the day of absence it is written for (2, 4 or 7). */
   readonly stage?: 2 | 4 | 7;
+  /**
+   * Beta 4.4 (E27): written for a running plan's day; used only then, and
+   * the gym's words are not used on such a day.
+   */
+  readonly run?: boolean;
 }
 
 const t = (
@@ -35,7 +40,7 @@ const t = (
   tone: NotifyTone,
   title: string,
   body: string,
-  extra: { needs?: readonly CopySlot[]; stage?: 2 | 4 | 7 } = {},
+  extra: { needs?: readonly CopySlot[]; stage?: 2 | 4 | 7; run?: boolean } = {},
 ): Template => ({ id, kind, tone, title, body, ...extra });
 
 const S = ['session'] as const;
@@ -53,6 +58,16 @@ export const TEMPLATES: readonly Template[] = [
   t('wr-g2', 'workout-reminder', 'gentle', 'Training today: {session}', 'About an hour to go. Some water and a light snack help.', { needs: S }),
   t('wr-g3', 'workout-reminder', 'gentle', 'Time for {session} soon', "Everything's planned. Just show up and start.", { needs: S }),
 
+  // Beta 4.4 (E27): a running plan's day ({session} is the run's title).
+  t('wr-r-c1', 'workout-reminder', 'cheeky', '{session} in an hour', 'Shoes by the door, {name}? The road is not going to run itself.', { needs: S, run: true }),
+  t('wr-r-c2', 'workout-reminder', 'cheeky', 'Your run is calling', '{session} in about an hour. It says the first kilometre is the hardest. It lies a little.', { needs: S, run: true }),
+  t('wr-r-c3', 'workout-reminder', 'cheeky', 'Laces, then legend', "{session} in an hour. Future you is already doing the post-run stretch smugly.", { needs: S, run: true }),
+  t('wr-r-c4', 'workout-reminder', 'cheeky', 'Plot twist: run day', "Not a twist, it's in the plan. {session}, one hour, {name}.", { needs: S, run: true }),
+  t('wr-r-c5', 'workout-reminder', 'cheeky', 'Pavement > scrolling', 'Bold claim. Test it: {session} starts in about an hour.', { needs: S, run: true }),
+  t('wr-r-g1', 'workout-reminder', 'gentle', '{session} in about an hour', 'Your run is ready whenever you are. Easy start, then settle in.', { needs: S, run: true }),
+  t('wr-r-g2', 'workout-reminder', 'gentle', 'Running today: {session}', 'About an hour to go. Some water now helps.', { needs: S, run: true }),
+  t('wr-r-g3', 'workout-reminder', 'gentle', 'Time to run soon', "{session} is planned. Just get out the door; the rest follows.", { needs: S, run: true }),
+
   // --------------------------------------------------- missed session --
   t('ms-c1', 'missed-session', 'cheeky', '{session} got ghosted', "Yesterday's session waited all day. It's not mad. Just… disappointed.", { needs: S }),
   t('ms-c2', 'missed-session', 'cheeky', 'So, about yesterday', "{session} didn't happen. We're not saying anything. (We're saying something.)", { needs: S }),
@@ -61,6 +76,11 @@ export const TEMPLATES: readonly Template[] = [
   t('ms-c5', 'missed-session', 'cheeky', '{session} sends its regards', "It's fine. It's totally fine. Open the plan and make it up to it.", { needs: S }),
   t('ms-g1', 'missed-session', 'gentle', "Yesterday's {session} didn't happen", 'No problem. Pick it up when you can; the plan carries on.', { needs: S }),
   t('ms-g2', 'missed-session', 'gentle', 'A fresh start today', 'Missing a day is normal. Your next session is ready.'),
+  t('ms-r-c1', 'missed-session', 'cheeky', '{session} ran off without you', "Yesterday's run waited by the door all day. Today's a fine day to catch up.", { needs: S, run: true }),
+  t('ms-r-c2', 'missed-session', 'cheeky', 'So, about that run', "{session} didn't happen. The road forgives. Quickly, if you go today.", { needs: S, run: true }),
+  t('ms-r-c3', 'missed-session', 'cheeky', 'Yesterday: 0 km', 'One missed run is a blip. Lace up and make it a plot point, {name}.', { needs: S, run: true }),
+  t('ms-r-g1', 'missed-session', 'gentle', "Yesterday's {session} didn't happen", 'No problem. Your plan carries on; the next run is ready.', { needs: S, run: true }),
+  t('ms-r-g2', 'missed-session', 'gentle', 'A fresh run today', 'Missing a run is normal. Go easy and pick the plan back up.', { run: true }),
 
   // ------------------------------------------------------ protein gap --
   t('pg-c1', 'protein-gap', 'cheeky', 'Your muscles filed a complaint', 'Re: protein. You are under three quarters of your {target} g today. Dinner can fix this.', { needs: ['target'] }),
@@ -148,6 +168,8 @@ export const BANNED = /\b(fat|fatty|chubby|skinny|belly|obese|ugly|lazy|pathetic
 export interface CopyData {
   readonly name: string | null;
   readonly session?: string | null;
+  /** Beta 4.4 (E27): the session is a running plan's run. */
+  readonly run?: boolean;
   readonly streak?: number | null;
   readonly target?: number | null;
   readonly sessions?: number | null;

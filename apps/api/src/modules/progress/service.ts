@@ -7,7 +7,7 @@
  */
 import type { VolumeResponse, WeeklyReport } from '@fitos/contracts';
 import { computeTrend } from '@fitos/core/nutrition/trend';
-import { STREAK_LOOKBACK_DAYS, isoWeekday, streak, weekGoal } from '@fitos/core/progress/streak';
+import { STREAK_LOOKBACK_DAYS, isoWeekday, streak, streakDays, weekGoal } from '@fitos/core/progress/streak';
 import { weeklyReport } from '@fitos/core/progress/weekly';
 import { isoWeekDates } from '@fitos/core/training/mesocycle';
 import {
@@ -62,21 +62,28 @@ export class ProgressService {
     // Beta 4.1: a saved run is a logged day; the plan's running days are not rest days.
     const runDays = runs.map((r) => localDateOf(r.startedAt, tz));
     const training = new Set([...(planned ?? []), ...(plan?.weekdays ?? [])]);
-    const s = streak({
+    const input = {
       today,
       activeDays: new Set([...workoutDays, ...logged, ...runDays]),
       // Without a programme (or a running plan) there are no rest days: every day asks for a log.
       restWeekdays: new Set(planned === null && plan === null ? [] : [1, 2, 3, 4, 5, 6, 7].filter((d) => !training.has(d))),
       skippedDays: new Set(context.skippedOn === null ? [] : [context.skippedOn]),
       firstDay: localDateOf(context.createdAt, tz),
-    });
+    };
+    const s = streak(input);
     // Beta 3.4 (ADR-027 amendment): every reward the best run has reached, once.
     const reached = STREAK_REWARDS.filter((r) => s.best >= r.days).map((r) => r.id);
     const newRewards = await this.repo.grantRewards(userId, reached);
     // Beta 4.1: the ring counts gym sessions and the plan's runs (skipped ones leave the week).
     const planRuns = weekRuns.filter((r) => r.status !== 'skipped');
     const doneRuns = planRuns.filter((r) => r.status === 'done').map((r) => r.date);
-    return { ...s, week: weekGoal(today, [...workoutDays, ...doneRuns], (planned?.length ?? 0) + planRuns.length), newRewards };
+    return {
+      ...s,
+      week: weekGoal(today, [...workoutDays, ...doneRuns], (planned?.length ?? 0) + planRuns.length),
+      newRewards,
+      // Beta 4.4: the streak page's last 4 weeks.
+      days: streakDays(input),
+    };
   }
 
   async summary(userId: string, window: ProgressWindow): Promise<ProgressSummary> {

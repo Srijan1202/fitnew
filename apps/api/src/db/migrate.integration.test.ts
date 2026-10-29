@@ -44,7 +44,7 @@ async function appliedCount(client: postgres.Sql): Promise<number> {
 }
 
 // Beta 4.1: the older migrations' tests roll back every later migration one
-// at a time and apply them again; with 38 of them that passed vitest's 5 s.
+// at a time and apply them again; with 39 of them that passed vitest's 5 s.
 describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
   const connectionString = url as string;
   let client: postgres.Sql;
@@ -74,7 +74,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
   const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
   const PHASE6_TABLES = ['muscle_volume_weekly', 'exercise_rejections'];
-  const TOTAL_MIGRATIONS = 38;
+  const TOTAL_MIGRATIONS = 39;
 
   it('starts from nothing', async () => {
     expect(await tableExists(client, 'users')).toBe(false);
@@ -480,6 +480,29 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await client`delete from mess_providers where id = ${prov!.id}`;
   });
 
+  it('0038: your own sessions and 1–5 runs a week (beta 4.4) — one row per user and phone id, a name of 1–60 characters, gone with the account; plans of 1 or 2 runs a week; down drops the table and the plans of 1 or 2', async () => {
+    await client`insert into users (firebase_uid) values ('mig-mine')`;
+    const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-mine'`;
+    const id = randomUUID();
+    await client`insert into running_workouts (user_id, client_id, name, steps) values (${u!.id}, ${id}, 'Hills', '[]'::jsonb)`;
+    await expect(client`insert into running_workouts (user_id, client_id, name, steps) values (${u!.id}, ${id}, 'Again', '[]'::jsonb)`).rejects.toThrow(/running_workouts_user_id_client_id_pk/);
+    await expect(client`insert into running_workouts (user_id, client_id, name, steps) values (${u!.id}, ${randomUUID()}, '', '[]'::jsonb)`).rejects.toThrow(/running_workouts_name/);
+    const plan = (days: number) => ({
+      user_id: u!.id, goal: '10k', level: 'runner', vdot: '45.0', days_per_week: days, weekdays: client.json([7]),
+      long_run_weekday: 7, start_date: '2026-11-02', weeks: 8, status: 'stopped',
+    });
+    await client`insert into running_plans ${client(plan(1))}`;
+    await expect(client`insert into running_plans ${client(plan(6))}`).rejects.toThrow(/running_plans_days/);
+
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
+    expect(await tableExists(client, 'running_workouts')).toBe(false);
+    expect((await client`select 1 from running_plans where user_id = ${u!.id}`).length).toBe(0);
+    await expect(client`insert into running_plans ${client(plan(2))}`).rejects.toThrow(/running_plans_days/);
+    await migrateUp(connectionString);
+    expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
+    await client`delete from users where id = ${u!.id}`;
+  });
+
   it('0037: best efforts and the distance firsts (beta 4.2) — one row per run and distance, gone with the run and the account; the rules version on runs; the badges allowed in user_rewards; down drops them and the badges', async () => {
     await client`insert into users (firebase_uid) values ('mig-pb')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-pb'`;
@@ -496,6 +519,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     expect((await client`select 1 from run_best_efforts where user_id = ${u!.id}`).length).toBe(0);
     expect((await client`select 1 from user_rewards where user_id = ${u!.id}`).length).toBe(1);
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await tableExists(client, 'run_best_efforts')).toBe(false);
     expect(await enumLabels(client, 'effort_key')).toEqual([]);
@@ -531,6 +555,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await client`delete from users where id = ${u!.id}`;
     expect((await client`select 1 from running_plans where user_id = ${u!.id}`).length).toBe(0);
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await tableExists(client, 'running_plans')).toBe(false);
@@ -574,6 +599,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await client`delete from users where id = ${u!.id}`;
     expect((await client`select 1 from runs where user_id = ${u!.id}`).length).toBe(0);
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
 
@@ -587,6 +613,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
 
   it('0034: CoFID foods (beta 3.7) — a new food source; down turns CoFID foods and log items into unverified estimates', async () => {
     const [f] = await client<{ id: string }[]>`insert into foods (slug, name, source, source_ref, is_verified) values ('mig-cofid-sambar', 'Mig CoFID sambar', 'cofid', 'UK CoFID 2021 · 12-467', true) returning id`;
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -604,6 +631,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await client`insert into users (firebase_uid) values ('mig-guide')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-guide'`;
     await client`insert into ai_usage (user_id, route, model, outcome) values (${u!.id}, 'guide', 'm', 'ok'), (${u!.id}, 'parse', 'm', 'ok')`;
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -631,6 +659,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     const [r] = await client<{ admin_user_id: string | null }[]>`select admin_user_id from feedback_replies where feedback_id = ${f!.id}`;
     expect(r!.admin_user_id).toBeNull();
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
 
@@ -660,6 +689,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-meals'`;
     await client`insert into notifications (user_id, kind, local_date, scheduled_for, variant, title, body)
       values (${u!.id}, 'meal-lunch', '2026-10-24', now(), 'ml-c1', 'T', 'B'), (${u!.id}, 'weekly-recap', '2026-10-25', now(), 'wr-c1', 'T', 'B')`;
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -683,6 +713,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await expect(client`insert into user_rewards (user_id, reward) values (${u!.id}, 'spark')`).rejects.toThrow(/user_rewards_user_id_reward_pk/);
     await expect(client`insert into user_rewards (user_id, reward) values (${u!.id}, 'gold-bar')`).rejects.toThrow(/user_rewards_reward/);
     await client`update users set avatar_id = 'century' where id = ${u!.id}`;
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -712,6 +743,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     }
     await client`delete from users where id = ${u!.id}`;
     expect((await client`select 1 from shared_programmes where code = 'K7Q2XM'`).length).toBe(0);
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -738,6 +770,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await expect(client`insert into mess_dish_ratings (user_id, mess_id, dish_slug, up) values (${u!.id}, ${mess!.id}, 'Not A Slug', true)`).rejects.toThrow(/mess_dish_ratings_slug_format/);
     await client`delete from users where id = ${u!.id}`;
     expect((await client`select 1 from mess_dish_ratings where mess_id = ${mess!.id}`).length).toBe(0);
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -772,6 +805,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await expect(client`insert into food_reports (food_id, mark) values (${own!.id}, 'mig-mark')`).rejects.toThrow(/food_reports_mark/);
     await client`delete from foods where id = ${own!.id}`;
     expect((await client`select 1 from food_reports where mark = 'mig-mark'`).length).toBe(0);
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -802,6 +836,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await client`insert into food_request_marks (mark, request_id) values ('m1', ${r!.id})`;
     await client`delete from food_requests where id = ${r!.id}`;
     expect((await client`select 1 from food_request_marks where mark = 'm1'`).length).toBe(0);
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -830,6 +865,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     expect(plain!.source).toBe('fitos');
     expect((await row('custom'))[0]!.source).toBe('custom');
     await expect(row('mine')).rejects.toThrow(/nutrition_targets_source/);
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -860,6 +896,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     expect(f!.priority).toBeNull();
     for (const p of ['red', 'yellow', 'green']) await client`update feedback set priority = ${p} where id = ${f!.id}`;
     await expect(client`update feedback set priority = 'blue' where id = ${f!.id}`).rejects.toThrow(/feedback_priority/);
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -902,6 +939,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     const rows = await client<{ day_of_week: number; session_name: string }[]>`
       select day_of_week, session_name from program_days where program_id = ${p!.id} order by day_of_week`;
     expect(rows.map((r) => r.session_name)).toEqual(['S7', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6']);
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -936,6 +974,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await client`update premium_requests set status = 'denied' where user_id = ${u!.id}`;
     await client`insert into premium_requests (user_id) values (${u!.id})`;
     await expect(client`insert into premium_requests (user_id, status) values (${u!.id}, 'maybe')`).rejects.toThrow(/premium_requests_status/);
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -971,6 +1010,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await expect(client`insert into feedback (user_id, category, message, app_version, status) values (${u!.id}, 'bug', 'x', '1', 'lost')`).rejects.toThrow(/feedback_status/);
     await client`delete from users where id = ${u!.id}`;
     expect((await client`select 1 from feedback where user_id = ${u!.id}`).length).toBe(0);
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -998,6 +1038,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await client`insert into users (firebase_uid) values ('mig-consent')`;
     const [u] = await client<{ id: string }[]>`select id from users where firebase_uid = 'mig-consent'`;
     await client`insert into consent_records (user_id, consent_type, granted, policy_version) values (${u!.id}, 'privacy-policy', true, 'v'), (${u!.id}, 'ai-processing', true, 'v')`;
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -1025,6 +1066,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
   });
 
   it('0019: audit_logs, feature_flags, mess_dish_overrides and the admin marks on foods/exercises — Phase 16; down drops them', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -1072,6 +1114,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
   });
 
   it('0018: notifications (one per user, kind and local date; status; cascade) and push_tokens (unique token, android) — Phase 15; down drops them', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -1124,6 +1167,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
   });
 
   it('0017: ai_usage (per user, route, model, tokens, outcome; tokens non-negative; cascade) — the §19.3 cost ledger; down drops it (Phase 14)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -1165,6 +1209,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await expect(client`insert into ai_usage (user_id, route, model, input_tokens, output_tokens, outcome) values (${u!.id}, 'parse', 'm', -1, 0, 'ok')`).rejects.toThrow(/ai_usage_tokens/);
     await expect(client.unsafe(`insert into ai_usage (user_id, route, model, outcome) values ('${u!.id}', 'photo', 'm', 'ok')`)).rejects.toThrow(/invalid input value for enum ai_route/);
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
 
@@ -1201,6 +1246,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
   });
 
   it('0016: recovery_logs (one per user and local date; optional values, at least one; ranges; cascade; hard delete) and low-readiness in today_action_kind; down rebuilds the enum (Phase 13)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -1264,6 +1310,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     );
 
     // Down with data: the table and type go; the enum is rebuilt without the value; other rows keep their kind.
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -1304,6 +1351,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
   });
 
   it('0015: body_measurements (one per user, day and site; checks; cascade), the PR window index, and calorie-adjust in today_action_kind; down rebuilds the enum (Phase 12)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -1363,6 +1411,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     );
 
     // Down with data: the table and type go; the enum is rebuilt without the value; other rows keep their kind.
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -1406,6 +1455,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
 
   it('0014: every deload activation is kept by a trigger on programs (Phase 6 code untouched); backfill; down drops it (Phase 11)', async () => {
     // Down, then a deload week already running when 0014 applies: the backfill records it.
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -1461,6 +1511,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     expect((await client`select 1 from deload_activations where program_id = ${q!.id}`).length).toBe(0);
 
     // Down removes the trigger, its function and the table; programs keeps working as in Phase 6.
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -1495,6 +1546,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
   });
 
   it('0013: TODAY recommendations and events — identity, checks, event rules, cascades; down drops them (Phase 11, ADR-017)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -1601,6 +1653,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
       `insert into recommendations (user_id, generated_for, kind, subject_key, rank, priority, basis, target, payload, engine_version, input_digest, headline, detail, content_hash)
        values ('${d!.id}', '2026-09-24', 'log-weight', '', 1, 45, 'calculated', 'progress', '{}'::jsonb, 'today-1', '${H}', 'h', 'd', '${H}')`,
     );
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -1633,6 +1686,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
   });
 
   it('0012: four Phase 9 estimates corrected with provenance, only where still wrong; down restores them (Phase 10 Amendment B)', async () => {
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -1692,6 +1746,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await expect(client`insert into mess_dish_nutrition_revisions (dish_slug, reason, previous, current) values ('curd-rice', ' ', '{}', '{}')`).rejects.toThrow(/revisions_reason/);
 
     // Down puts the recorded previous values back and drops the provenance table.
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
     expect(await rollbackLastMigration(connectionString)).toBe('0035_running');
@@ -1799,6 +1854,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Mess lunch', '[{"kind":"mess","dishSlug":"dal","name":"Dal","servings":1}]'::jsonb)`;
     await client`insert into saved_meals (user_id, client_meal_id, name, items) values (${u!.id}, gen_random_uuid(), 'Plain', '[{"kind":"quick-add","name":"X","kcal":1,"proteinG":0,"carbG":0,"fatG":0,"fibreG":null}]'::jsonb)`;
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0038_my_workouts');
     expect(await rollbackLastMigration(connectionString)).toBe('0037_best_efforts');
     expect(await rollbackLastMigration(connectionString)).toBe('0036_running_plans');
 

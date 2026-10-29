@@ -365,3 +365,36 @@ describe('notify/planner', () => {
     expect(today.map((p) => p.kind)).toEqual(['meal-dinner']);
   });
 });
+
+describe('beta 4.4 (E27): a running plan’s day has its own words', () => {
+  const runFacts = (over: Partial<PlanFacts> = {}) =>
+    facts({ programme: { 1: 'Push', 3: 'Easy 6 km' }, runWeekdays: [3], settings: onlyKinds('workout-reminder', 'missed-session'), ...over });
+
+  it('the run’s reminder uses a run line; the gym day keeps the gym’s', () => {
+    const plan = planNotifications(runFacts());
+    const wed = plan.find((p) => p.kind === 'workout-reminder' && p.localDate === '2026-10-21')!;
+    expect(wed.variant).toMatch(/^wr-r-/);
+    expect(wed.title + wed.body).toContain('Easy 6 km');
+    const nextMon = plan.find((p) => p.kind === 'workout-reminder' && p.localDate === '2026-10-26');
+    if (nextMon !== undefined) expect(nextMon.variant).not.toMatch(/^wr-r-/);
+  });
+
+  it('a missed run is told as a run; gentle too', () => {
+    const plan = planNotifications(
+      runFacts({ now: instantAt('2026-10-22', 7 * 60, TZ), settings: { ...onlyKinds('missed-session'), tone: 'gentle' } }),
+    );
+    const missed = plan.find((p) => p.kind === 'missed-session' && p.localDate === '2026-10-22')!;
+    expect(missed.variant).toMatch(/^ms-r-g/);
+  });
+
+  it('every run line is clean, and every kind and tone with run lines has some for each', () => {
+    const runLines = TEMPLATES.filter((t) => t.run);
+    expect(runLines.length).toBeGreaterThanOrEqual(13);
+    for (const t of runLines) expect(BANNED.test(t.title + ' ' + t.body)).toBe(false);
+    for (const kind of ['workout-reminder', 'missed-session'] as const) {
+      for (const tone of NOTIFY_TONES) expect(runLines.some((t) => t.kind === kind && t.tone === tone)).toBe(true);
+    }
+    // Without a run mark, no run line is chosen.
+    expect(chooseVariant('workout-reminder', 'cheeky', { name: 'A', session: 'Push' }, undefined, [], '2026-10-19', 's')!.run).toBeUndefined();
+  });
+});

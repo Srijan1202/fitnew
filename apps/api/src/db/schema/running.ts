@@ -142,7 +142,8 @@ export const runningPlans = pgTable(
   },
   (t) => [
     uniqueIndex('running_plans_one_active').on(t.userId).where(sql`${t.status} = 'active'`),
-    check('running_plans_days', sql`${t.daysPerWeek} between 3 and 5`),
+    // Beta 4.4 (owner): 1–5 runs a week (3–5 before).
+    check('running_plans_days', sql`${t.daysPerWeek} between 1 and 5`),
     check('running_plans_level', sql`(${t.level} = 'beginner') = (${t.vdot} is null)`),
   ],
 );
@@ -186,3 +187,27 @@ export const plannedRuns = pgTable(
 );
 
 export type PlannedRunRow = typeof plannedRuns.$inferSelect;
+
+/**
+ * Beta 4.4 (E28): the sessions a runner built (ADR-039 C2), kept with the
+ * account so a new phone or a reinstall has them. Addressed by the phone's
+ * id (an idempotent PUT); at most MAX_MY_WORKOUTS a user (checked by the
+ * service). Gone with the account; in the data export.
+ */
+export const runningWorkouts = pgTable(
+  'running_workouts',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    clientId: uuid('client_id').notNull(),
+    name: text('name').notNull(),
+    steps: jsonb('steps').$type<unknown[]>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.clientId] }),
+    check('running_workouts_name', sql`length(${t.name}) between 1 and 60`),
+  ],
+);

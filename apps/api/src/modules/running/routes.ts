@@ -23,11 +23,15 @@ import {
   runListSchema,
   runParamsSchema,
   runningRecordsSchema,
+  myWorkoutListSchema,
+  myWorkoutSchema,
+  putMyWorkoutRequestSchema,
 } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
 import { ProgressRepository } from '../progress/repository.js';
 import { EffortsRepository } from './efforts-repository.js';
+import { MyWorkoutsService } from './my-workouts.js';
 import { PlanRepository } from './plan-repository.js';
 import { PlanService } from './plan-service.js';
 import { RunningRepository } from './repository.js';
@@ -45,6 +49,7 @@ export async function runningRoutes(app: FastifyInstance): Promise<void> {
   const runsRepo = new RunningRepository(app.database.db);
   const plansRepo = new PlanRepository(app.database.db);
   const service = new RunningService(runsRepo, plansRepo, new EffortsRepository(app.database.db));
+  const mine = new MyWorkoutsService(app.database.db);
   const progress = new ProgressRepository(app.database.db);
   const plans = new PlanService(plansRepo, runsRepo, (userId) => progress.plannedDays(userId));
   const typed = app.withTypeProvider<ZodTypeProvider>();
@@ -201,5 +206,43 @@ export async function runningRoutes(app: FastifyInstance): Promise<void> {
     '/running/workouts',
     { schema: { summary: "FITOS's ready-made sessions, paced from the plan's zones when there is one", tags, security, response: { 200: workoutPresetsSchema, ...errors } } },
     async (request) => plans.presets(requireUserId(request.userId)),
+  );
+
+  /* ------------------------------- beta 4.4 (E28): your own sessions -- */
+
+  const workoutParams = z.object({ id: z.string().uuid() }).strict();
+
+  typed.get(
+    '/running/my-workouts',
+    { schema: { summary: 'The sessions you built, newest first (beta 4.4)', tags, security, response: { 200: myWorkoutListSchema, ...errors } } },
+    async (request) => mine.list(requireUserId(request.userId)),
+  );
+
+  typed.put(
+    '/running/my-workouts/:id',
+    {
+      schema: {
+        summary: "Keep a session you built (the phone's id; created or replaced)",
+        description: '201 when new, 200 when replaced. At most 50 a user (409 past that).',
+        tags,
+        security,
+        params: workoutParams,
+        body: putMyWorkoutRequestSchema,
+        response: { 200: myWorkoutSchema, 201: myWorkoutSchema, ...errors },
+      },
+    },
+    async (request, reply) => {
+      const { created, body } = await mine.put(requireUserId(request.userId), request.params.id, request.body);
+      return reply.code(created ? 201 : 200).send(body);
+    },
+  );
+
+  typed.delete(
+    '/running/my-workouts/:id',
+    { schema: { summary: 'Delete a session you built (fine if it is gone already)', tags, security, params: workoutParams, response: { 204: z.null(), ...errors } } },
+    async (request, reply) => {
+      await mine.remove(requireUserId(request.userId), request.params.id);
+      return reply.code(204).send(null);
+    },
   );
 }

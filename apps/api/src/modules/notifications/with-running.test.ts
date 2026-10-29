@@ -14,6 +14,7 @@ describe('withRunning', () => {
       programme: gym,
       skippedDates: ['2026-10-26'],
       completedDates: ['2026-10-26', '2026-10-27'],
+      runWeekdays: [],
     });
     expect(withRunning(null, [], [], [], []).programme).toBeNull();
   });
@@ -31,6 +32,8 @@ describe('withRunning', () => {
       [],
     );
     expect(r.programme).toEqual({ 1: 'Push', 2: 'Easy 5 km', 4: 'Legs', 7: 'Long run 10 km' });
+    // Beta 4.4 (E27): the run weekdays, for the run's words (Thursday stays the gym's).
+    expect(r.runWeekdays).toEqual([2, 7]);
     // The skipped long run is a skipped day: no reminder, no "missed".
     expect(r.skippedDates).toEqual(['2026-11-01']);
   });

@@ -54,19 +54,32 @@ export function withRunning(
   completedDates: readonly string[],
   planned: readonly { date: string; title: string; status: string }[],
   runDates: readonly string[],
-): { programme: Record<number, string> | null; skippedDates: string[]; completedDates: string[] } {
+): { programme: Record<number, string> | null; skippedDates: string[]; completedDates: string[]; runWeekdays: number[] } {
   if (planned.length === 0) {
-    return { programme: gym === null ? null : { ...gym }, skippedDates: [...skippedDates], completedDates: [...new Set([...completedDates, ...runDates])] };
+    return {
+      programme: gym === null ? null : { ...gym },
+      skippedDates: [...skippedDates],
+      completedDates: [...new Set([...completedDates, ...runDates])],
+      runWeekdays: [],
+    };
   }
   const programme: Record<number, string> = { ...(gym ?? {}) };
   const skipped = [...skippedDates];
+  // Beta 4.4 (E27): the weekdays that are the plan's runs, for the run's words.
+  const runWeekdays = new Set<number>();
   for (const p of planned) {
     const weekday = isoWeekday(p.date);
     if (gym?.[weekday] !== undefined) continue;
     programme[weekday] ??= p.title;
+    runWeekdays.add(weekday);
     if (p.status === 'skipped') skipped.push(p.date);
   }
-  return { programme, skippedDates: skipped, completedDates: [...new Set([...completedDates, ...runDates])] };
+  return {
+    programme,
+    skippedDates: skipped,
+    completedDates: [...new Set([...completedDates, ...runDates])],
+    runWeekdays: [...runWeekdays].sort((a, b) => a - b),
+  };
 }
 
 export class NotificationService {
@@ -122,7 +135,7 @@ export class NotificationService {
     const proteinTargetG = targets?.proteinG ?? null;
     const goal = proteinTargetG === null ? null : Math.ceil(proteinTargetG * PROTEIN_GAP_SHARE);
     const gym = program === null ? null : Object.fromEntries(program.days.filter((d) => !d.isRest).map((d) => [d.dayOfWeek, d.sessionName]));
-    const { programme, skippedDates, completedDates } = withRunning(
+    const { programme, skippedDates, completedDates, runWeekdays } = withRunning(
       gym,
       program === null || program.program.skippedOn === null ? [] : [program.program.skippedOn],
       sessions.filter((s) => s.completedAt !== null).map((s) => localDateOf(s.completedAt!, timeZone)),
@@ -137,6 +150,7 @@ export class NotificationService {
       name,
       settings,
       programme,
+      runWeekdays,
       skippedDates,
       sessionStarts: sessions.map((s) => s.startedAt),
       completedDates,

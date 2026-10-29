@@ -120,14 +120,15 @@ describe('training plans', () => {
   it('refuses what makes no plan', () => {
     const bad = (over: Partial<PlanInput>, word: string) => expect(() => generatePlan({ ...base, ...over } as PlanInput)).toThrow(word);
     bad({ goal: 'ultra' as never }, 'Unknown goal');
-    bad({ daysPerWeek: 6 as never, weekdays: [1, 2, 3, 4, 5, 6] }, '3, 4 or 5');
+    bad({ daysPerWeek: 6 as never, weekdays: [1, 2, 3, 4, 5, 6] }, '1 to 5 runs');
+    bad({ daysPerWeek: 0 as never, weekdays: [] }, '1 to 5 runs');
     bad({ weekdays: [2, 2, 6, 7] }, 'different days');
     bad({ weekdays: [2, 4, 6] }, 'different days');
     bad({ weekdays: [0, 4, 6, 7] }, 'different days');
     bad({ weekdays: [2, 4, 6, 7.5] }, 'different days');
     bad({ longRunWeekday: 1 }, 'long-run day');
     bad({ level: 'beginner', vdot: null }, 'beginner plan is the 5K');
-    bad({ goal: '5k', level: 'beginner', vdot: null }, 'three days');
+    bad({ goal: '5k', level: 'beginner', vdot: null }, '1, 2 or 3 days');
     bad({ vdot: null }, 'recent race or a goal time');
     expect(() => generatePlan({ ...base, vdot: null })).toThrow(PlanError);
   });

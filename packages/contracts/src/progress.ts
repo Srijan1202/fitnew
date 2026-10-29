@@ -198,6 +198,12 @@ export const streakSchema = z
     week: z.object({ done: z.number().int().min(0), planned: z.number().int().min(1) }).strict().nullable(),
     /** Beta 3.4: streak rewards earned just now by this read (shown once), by id. */
     newRewards: z.array(z.string()),
+    /** Beta 4.4: the last 28 days, oldest first, as the streak sees them (core streakDays). */
+    days: z.array(
+      z
+        .object({ date: isoDateSchema, status: z.enum(['logged', 'rest', 'skipped', 'missed', 'today', 'before']) })
+        .strict(),
+    ),
   })
   .strict();
 export type StreakSummary = z.infer<typeof streakSchema>;

@@ -294,6 +294,29 @@ export const runningRecordsSchema = z
   .strict();
 export type RunningRecords = z.infer<typeof runningRecordsSchema>;
 
+/* ------------------------------------- your own sessions (beta 4.4, E28) -- */
+
+/** The most sessions one user keeps. */
+export const MAX_MY_WORKOUTS = 50;
+
+/** A session the runner built, kept with the account (the phone's id). */
+export const myWorkoutSchema = z
+  .object({
+    id: clientIdSchema,
+    name: z.string(),
+    steps: z.array(workoutStepSchema),
+    updatedAt: z.string().datetime(),
+  })
+  .strict();
+export type MyWorkout = z.infer<typeof myWorkoutSchema>;
+
+/** GET /running/my-workouts: newest first. */
+export const myWorkoutListSchema = z.object({ workouts: z.array(myWorkoutSchema).max(MAX_MY_WORKOUTS) }).strict();
+export type MyWorkoutList = z.infer<typeof myWorkoutListSchema>;
+
+/** PUT /running/my-workouts/{id}: created or replaced (idempotent). */
+export const putMyWorkoutRequestSchema = runWorkoutSchema;
+
 /* --------------------------------------------------- beta 4.1: plans -- */
 
 export const PLAN_GOALS = ['5k', '10k', 'half', 'marathon'] as const;
@@ -315,8 +338,9 @@ export const createPlanRequestSchema = z
     race: z.object({ distance: planGoalSchema, seconds: z.number().int().min(60).max(86_400) }).strict().nullable(),
     /** Or a goal time at the plan's own distance. */
     goalSeconds: z.number().int().min(600).max(86_400).nullable(),
-    daysPerWeek: z.union([z.literal(3), z.literal(4), z.literal(5)]),
-    weekdays: z.array(weekdaySchema).min(3).max(5),
+    /** Beta 4.4 (owner): 1–5 for every plan (3–5 before). */
+    daysPerWeek: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),
+    weekdays: z.array(weekdaySchema).min(1).max(5),
     longRunWeekday: weekdaySchema,
     /** Defaults to today (the user's zone). */
     startDate: isoDateSchema.optional(),

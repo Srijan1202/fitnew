@@ -351,7 +351,10 @@ describeIfDb('/v1/progress (real Postgres)', { timeout: 60_000 }, () => {
     const streakOf = async () => {
       const r = await app.inject({ method: 'GET', url: '/v1/progress/streak', headers: auth(u.token) });
       expect(r.statusCode, r.body).toBe(200);
-      return streakSchema.parse(r.json());
+      // Beta 4.4: the last 4 weeks ride along (tested in beta-4-4); compared apart.
+      const { days, ...rest } = streakSchema.parse(r.json());
+      expect(days).toHaveLength(28);
+      return rest;
     };
     const food = (d: string) =>
       sql`insert into daily_nutrition (user_id, local_date, kcal_low, kcal_high, protein_low, protein_high, item_count) values (${u.id}, ${d}, 500, 600, 20, 25, 1)

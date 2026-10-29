@@ -60,6 +60,11 @@ export interface PlanFacts {
   /** ISO weekday (1–7) → session name, training days only; null without a programme. */
   readonly programme: Readonly<Record<number, string>> | null;
   /**
+   * Beta 4.4 (E27): the weekdays of [programme] that are a running plan's
+   * run, not a gym session: their reminders use the run's words.
+   */
+  readonly runWeekdays?: readonly number[];
+  /**
    * ADR-030: local dates the user skipped. No workout reminder on them, and no
    * "missed session" the morning after (the week has moved on by a day).
    */
@@ -324,7 +329,10 @@ export function chooseVariant(
   date: string,
   seed: string,
 ): Template | null {
-  const pool = TEMPLATES.filter((t) => t.kind === kind && t.tone === tone && t.stage === stage && fits(t, data));
+  // Beta 4.4 (E27): a run's day has its own words; the gym's are not used on it.
+  const pool = TEMPLATES.filter(
+    (t) => t.kind === kind && t.tone === tone && t.stage === stage && (t.run ?? false) === (data.run ?? false) && fits(t, data),
+  );
   if (pool.length === 0) return null;
   const recent = new Set(
     used.filter((u) => u.kind === kind && Math.abs(daysBetween(u.localDate, date)) < 7).map((u) => u.variant),
@@ -397,6 +405,7 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
       : `About an hour before you usually start training (around ${at(m)} lately).`;
 
   const skipped = new Set(facts.skippedDates);
+  const runDays = new Set(facts.runWeekdays ?? []);
   for (let i = 0; i <= HORIZON_DAYS; i++) {
     const d = addDays(today, i);
     const weekday = isoWeekday(d);
@@ -419,7 +428,7 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
       candidates.push({
         kind: 'workout-reminder',
         minute: (learned ?? DEFAULT_MINUTES.training) - 60,
-        data: { name: facts.name, session },
+        data: { name: facts.name, session, run: runDays.has(weekday) },
         screen: 'plan',
         slot: null,
         cancelOn: [{ event: 'workout-started', localDate: d, grams: null }],
@@ -433,7 +442,7 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
       candidates.push({
         kind: 'missed-session',
         minute: clamp(habits.breakfast ?? DEFAULT_MINUTES.morning, 7 * 60, 11 * 60),
-        data: { name: facts.name, session: missed },
+        data: { name: facts.name, session: missed, run: runDays.has(isoWeekday(prev)) },
         screen: 'plan',
         slot: null,
         cancelOn: [
