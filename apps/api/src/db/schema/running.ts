@@ -23,6 +23,8 @@ import { users } from './users.js';
 
 export const runKindEnum = pgEnum('run_kind', ['outdoor', 'treadmill']);
 export const runGoalKindEnum = pgEnum('run_goal_kind', ['free', 'distance', 'time', 'pace']);
+/** Beta 4.5: recorded on the phone, or on a Galaxy Watch (through Health Connect). */
+export const runSourceEnum = pgEnum('run_source', ['phone', 'watch']);
 
 export const runs = pgTable(
   'runs',
@@ -57,6 +59,14 @@ export const runs = pgTable(
     lapMarks: jsonb('lap_marks').$type<{ step: number; startT: number; endT: number }[]>(),
     /** Beta 4.2: the version of core's best-effort rules its `run_best_efforts` rows come from (0: none yet). */
     effortsVersion: smallint('efforts_version').notNull().default(0),
+    /**
+     * Beta 4.5: where it was recorded; a watch run's Health Connect record id
+     * (imported once a user), and the watch's average and max heart rate.
+     */
+    source: runSourceEnum('source').notNull().default('phone'),
+    externalId: text('external_id'),
+    hrAvg: smallint('hr_avg'),
+    hrMax: smallint('hr_max'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -67,10 +77,14 @@ export const runs = pgTable(
     check('runs_duration', sql`${t.durationSeconds} >= 0`),
     check('runs_times', sql`${t.endedAt} >= ${t.startedAt}`),
     check('runs_distance', sql`${t.distanceM} >= 0`),
+    // Beta 4.5: a watch run outdoors may come without its route.
     check(
       'runs_track_kind',
-      sql`(${t.kind} = 'outdoor') = (${t.trackPoints} is not null and ${t.trackBreaks} is not null and ${t.trackElevation} is not null)`,
+      sql`(${t.kind} = 'outdoor') = (${t.trackPoints} is not null and ${t.trackBreaks} is not null and ${t.trackElevation} is not null) or (${t.kind} = 'outdoor' and ${t.source} = 'watch' and ${t.trackPoints} is null and ${t.trackBreaks} is null and ${t.trackElevation} is null)`,
     ),
+    uniqueIndex('runs_user_external_id').on(t.userId, t.externalId),
+    check('runs_external', sql`(${t.source} = 'watch') = (${t.externalId} is not null)`),
+    check('runs_hr', sql`(${t.hrAvg} is null or ${t.hrAvg} between 25 and 250) and (${t.hrMax} is null or ${t.hrMax} between 25 and 250)`),
     check('runs_goal', sql`(${t.goalKind} = 'free') = (${t.goalValue} is null)`),
   ],
 );

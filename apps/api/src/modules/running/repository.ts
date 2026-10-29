@@ -41,6 +41,16 @@ export class RunningRepository {
     return row ?? null;
   }
 
+  /** Beta 4.5: the run imported from this Health Connect record, if any. */
+  async byExternalId(userId: string, externalId: string): Promise<RunRow | null> {
+    const [row] = await this.db
+      .select()
+      .from(runs)
+      .where(and(eq(runs.userId, userId), eq(runs.externalId, externalId)))
+      .limit(1);
+    return row ?? null;
+  }
+
   async mine(userId: string, clientRunId: string): Promise<RunRow | null> {
     const [row] = await this.db
       .select()

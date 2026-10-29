@@ -59,11 +59,27 @@ export const REWARD_AVATAR_IDS: readonly string[] = STREAK_REWARDS.filter((r) =>
  * reward: the Finisher app icon, the Road theme, the gold 42 app icon.
  */
 export const RUNNING_BADGES = [
-  { id: 'first-run', name: 'First run', unlocks: null },
-  { id: 'first-5k', name: 'First 5K', unlocks: null },
-  { id: 'first-10k', name: 'First 10K', unlocks: { kind: 'app-icon', name: 'Finisher app icon' } },
-  { id: 'first-half', name: 'First half marathon', unlocks: { kind: 'theme', name: 'Road theme' } },
-  { id: 'first-marathon', name: 'First marathon', unlocks: { kind: 'app-icon', name: 'Gold 42 app icon' } },
+  { id: 'first-run', name: 'First run', unlocks: null, since: 20 },
+  { id: 'first-5k', name: 'First 5K', unlocks: null, since: 20 },
+  { id: 'first-10k', name: 'First 10K', unlocks: { kind: 'app-icon', name: 'Finisher app icon' }, since: 20 },
+  { id: 'first-half', name: 'First half marathon', unlocks: { kind: 'theme', name: 'Road theme' }, since: 20 },
+  { id: 'first-marathon', name: 'First marathon', unlocks: { kind: 'app-icon', name: 'Gold 42 app icon' }, since: 20 },
+  // Beta 4.5 (owner 2026-10-30): speed, lifetime and consistency (core running/badges.ts).
+  { id: 'speed-5k-30', name: '5K under 30 min', unlocks: null, since: 23 },
+  { id: 'speed-5k-25', name: '5K under 25 min', unlocks: null, since: 23 },
+  { id: 'speed-5k-20', name: '5K under 20 min', unlocks: { kind: 'app-icon', name: 'Bolt app icon' }, since: 23 },
+  { id: 'speed-10k-60', name: '10K under 60 min', unlocks: null, since: 23 },
+  { id: 'speed-10k-50', name: '10K under 50 min', unlocks: null, since: 23 },
+  { id: 'speed-half-2h', name: 'Half marathon under 2 h', unlocks: null, since: 23 },
+  { id: 'speed-marathon-4h', name: 'Marathon under 4 h', unlocks: null, since: 23 },
+  { id: 'total-50k', name: '50 km run', unlocks: null, since: 23 },
+  { id: 'total-100k', name: '100 km run', unlocks: null, since: 23 },
+  { id: 'total-250k', name: '250 km run', unlocks: null, since: 23 },
+  { id: 'total-500k', name: '500 km run', unlocks: null, since: 23 },
+  { id: 'total-1000k', name: '1,000 km run', unlocks: { kind: 'theme', name: 'Mileage theme' }, since: 23 },
+  { id: 'weeks-4', name: 'Four weeks in a row', unlocks: null, since: 23 },
+  { id: 'three-in-a-week', name: 'Three runs in a week', unlocks: null, since: 23 },
+  { id: 'plan-finished', name: 'Plan finished', unlocks: null, since: 23 },
 ] as const;
 export type RunningBadgeId = (typeof RUNNING_BADGES)[number]['id'];
 export const RUNNING_BADGE_IDS = RUNNING_BADGES.map((b) => b.id) as unknown as readonly [RunningBadgeId, ...RunningBadgeId[]];

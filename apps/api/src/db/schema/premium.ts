@@ -49,7 +49,7 @@ export const userRewards = pgTable(
     // Beta 4.2: and the running distance firsts.
     check(
       'user_rewards_reward',
-      sql`${t.reward} in ('spark', 'ember-theme', 'blaze-icon', 'ember-rim', 'century', 'first-run', 'first-5k', 'first-10k', 'first-half', 'first-marathon')`,
+      sql`${t.reward} in ('spark', 'ember-theme', 'blaze-icon', 'ember-rim', 'century', 'first-run', 'first-5k', 'first-10k', 'first-half', 'first-marathon', 'speed-5k-30', 'speed-5k-25', 'speed-5k-20', 'speed-10k-60', 'speed-10k-50', 'speed-half-2h', 'speed-marathon-4h', 'total-50k', 'total-100k', 'total-250k', 'total-500k', 'total-1000k', 'weeks-4', 'three-in-a-week', 'plan-finished')`,
     ),
   ],
 );

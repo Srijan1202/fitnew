@@ -15,6 +15,14 @@ import { clientIdSchema } from './workout.js';
 
 /* ------------------------------------------------------------- vocabulary -- */
 
+/** Beta 4.5: where a run was recorded — on the phone, or a Galaxy Watch (through Health Connect). */
+export const RUN_SOURCES = ['phone', 'watch'] as const;
+export const runSourceSchema = z.enum(RUN_SOURCES);
+export type RunSource = z.infer<typeof runSourceSchema>;
+
+/** Heart rate in beats a minute, as a watch reports it. */
+export const heartRateSchema = z.number().int().min(25).max(250);
+
 /** Outdoor runs carry a GPS track; treadmill runs a typed distance. */
 export const RUN_KINDS = ['outdoor', 'treadmill'] as const;
 export const runKindSchema = z.enum(RUN_KINDS);
@@ -173,6 +181,10 @@ export const runSummarySchema = z
     outline: z.array(z.tuple([z.number(), z.number()])),
     /** Beta 4.2: the distances this run holds the record for (history's trophy). */
     recordKeys: z.array(effortKeySchema),
+    /** Beta 4.5: the phone or a Galaxy Watch, and the watch's average and max heart rate. */
+    source: runSourceSchema,
+    hrAvg: heartRateSchema.nullable(),
+    hrMax: heartRateSchema.nullable(),
   })
   .strict();
 export type RunSummary = z.infer<typeof runSummarySchema>;
@@ -224,12 +236,30 @@ export const createRunRequestSchema = z
     laps: z.array(lapMarkSchema).max(MAX_WORKOUT_STEPS).optional(),
     /** Beta 4.1: the plan's run this one did. */
     plannedRunId: z.string().uuid().optional(),
+    /**
+     * Beta 4.5: a run from a Galaxy Watch (Health Connect): its record id
+     * there (imported once), and the watch's heart rate. A watch run outdoors
+     * may come without a route, with the watch's distance instead.
+     */
+    source: runSourceSchema.optional(),
+    externalId: z.string().min(1).max(200).optional(),
+    hrAvg: heartRateSchema.optional(),
+    hrMax: heartRateSchema.optional(),
   })
   .strict()
   .superRefine((r, ctx) => {
+    const watch = r.source === 'watch';
+    if (watch !== (r.externalId !== undefined)) {
+      ctx.addIssue({ code: 'custom', path: ['externalId'], message: 'a watch run, and only a watch run, has its record id' });
+    }
+    if (!watch && (r.hrAvg !== undefined || r.hrMax !== undefined)) {
+      ctx.addIssue({ code: 'custom', path: ['hrAvg'], message: 'heart rate comes from a watch' });
+    }
     if (r.kind === 'outdoor') {
-      if (r.track === undefined) ctx.addIssue({ code: 'custom', path: ['track'], message: 'an outdoor run needs its track' });
-      if (r.distanceM !== undefined) ctx.addIssue({ code: 'custom', path: ['distanceM'], message: 'an outdoor run measures its own distance' });
+      const routeless = watch && r.track === undefined;
+      if (r.track === undefined && !watch) ctx.addIssue({ code: 'custom', path: ['track'], message: 'an outdoor run needs its track' });
+      if (routeless && r.distanceM === undefined) ctx.addIssue({ code: 'custom', path: ['distanceM'], message: 'a watch run without its route needs its distance' });
+      if (!routeless && r.distanceM !== undefined) ctx.addIssue({ code: 'custom', path: ['distanceM'], message: 'an outdoor run measures its own distance' });
     } else {
       if (r.distanceM === undefined) ctx.addIssue({ code: 'custom', path: ['distanceM'], message: 'a treadmill run needs its distance' });
       if (r.track !== undefined) ctx.addIssue({ code: 'custom', path: ['track'], message: 'a treadmill run has no track' });
@@ -290,6 +320,8 @@ export const runningRecordsSchema = z
     pending: z.number().int().min(0),
     /** Beta 4.3: the longest single run, metres (0 with none): how far each distance badge is. */
     longestM: z.number().min(0),
+    /** Beta 4.5: every run's distance added up, metres: how far each lifetime badge is. */
+    totalM: z.number().min(0),
   })
   .strict();
 export type RunningRecords = z.infer<typeof runningRecordsSchema>;

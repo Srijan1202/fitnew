@@ -274,6 +274,13 @@
       "when": 1793291627218,
       "tag": "0038_my_workouts",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1793306303292,
+      "tag": "0039_watch_runs",
+      "breakpoints": true
     }
   ]
 }

@@ -50525,6 +50525,28 @@
                   "plannedRunId": {
                     "type": "string",
                     "format": "uuid"
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "phone",
+                      "watch"
+                    ]
+                  },
+                  "externalId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "hrAvg": {
+                    "type": "integer",
+                    "minimum": 25,
+                    "maximum": 250
+                  },
+                  "hrMax": {
+                    "type": "integer",
+                    "minimum": 25,
+                    "maximum": 250
                   }
                 },
                 "required": [
@@ -50639,6 +50661,29 @@
                         ]
                       }
                     },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "phone",
+                        "watch"
+                      ]
+                    },
+                    "hrAvg": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 25,
+                      "maximum": 250
+                    },
+                    "hrMax": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 25,
+                      "maximum": 250
+                    },
                     "note": {
                       "type": [
                         "string",
@@ -51006,6 +51051,9 @@
                     "effort",
                     "outline",
                     "recordKeys",
+                    "source",
+                    "hrAvg",
+                    "hrMax",
                     "note",
                     "goal",
                     "track",
@@ -51114,6 +51162,29 @@
                         ]
                       }
                     },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "phone",
+                        "watch"
+                      ]
+                    },
+                    "hrAvg": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 25,
+                      "maximum": 250
+                    },
+                    "hrMax": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 25,
+                      "maximum": 250
+                    },
                     "note": {
                       "type": [
                         "string",
@@ -51481,6 +51552,9 @@
                     "effort",
                     "outline",
                     "recordKeys",
+                    "source",
+                    "hrAvg",
+                    "hrMax",
                     "note",
                     "goal",
                     "track",
@@ -51952,6 +52026,29 @@
                                 "marathon"
                               ]
                             }
+                          },
+                          "source": {
+                            "type": "string",
+                            "enum": [
+                              "phone",
+                              "watch"
+                            ]
+                          },
+                          "hrAvg": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 25,
+                            "maximum": 250
+                          },
+                          "hrMax": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 25,
+                            "maximum": 250
                           }
                         },
                         "required": [
@@ -51967,7 +52064,10 @@
                           "calories",
                           "effort",
                           "outline",
-                          "recordKeys"
+                          "recordKeys",
+                          "source",
+                          "hrAvg",
+                          "hrMax"
                         ],
                         "additionalProperties": false
                       }
@@ -52454,12 +52554,17 @@
                     "longestM": {
                       "type": "number",
                       "minimum": 0
+                    },
+                    "totalM": {
+                      "type": "number",
+                      "minimum": 0
                     }
                   },
                   "required": [
                     "records",
                     "pending",
-                    "longestM"
+                    "longestM",
+                    "totalM"
                   ],
                   "additionalProperties": false
                 }
@@ -52909,6 +53014,29 @@
                         ]
                       }
                     },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "phone",
+                        "watch"
+                      ]
+                    },
+                    "hrAvg": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 25,
+                      "maximum": 250
+                    },
+                    "hrMax": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 25,
+                      "maximum": 250
+                    },
                     "note": {
                       "type": [
                         "string",
@@ -53276,6 +53404,9 @@
                     "effort",
                     "outline",
                     "recordKeys",
+                    "source",
+                    "hrAvg",
+                    "hrMax",
                     "note",
                     "goal",
                     "track",
@@ -53766,6 +53897,29 @@
                         ]
                       }
                     },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "phone",
+                        "watch"
+                      ]
+                    },
+                    "hrAvg": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 25,
+                      "maximum": 250
+                    },
+                    "hrMax": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 25,
+                      "maximum": 250
+                    },
                     "note": {
                       "type": [
                         "string",
@@ -54133,6 +54287,9 @@
                     "effort",
                     "outline",
                     "recordKeys",
+                    "source",
+                    "hrAvg",
+                    "hrMax",
                     "note",
                     "goal",
                     "track",
@@ -78598,7 +78755,22 @@
                               "first-5k",
                               "first-10k",
                               "first-half",
-                              "first-marathon"
+                              "first-marathon",
+                              "speed-5k-30",
+                              "speed-5k-25",
+                              "speed-5k-20",
+                              "speed-10k-60",
+                              "speed-10k-50",
+                              "speed-half-2h",
+                              "speed-marathon-4h",
+                              "total-50k",
+                              "total-100k",
+                              "total-250k",
+                              "total-500k",
+                              "total-1000k",
+                              "weeks-4",
+                              "three-in-a-week",
+                              "plan-finished"
                             ]
                           },
                           "earnedAt": {

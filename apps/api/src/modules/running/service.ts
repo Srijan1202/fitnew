@@ -45,6 +45,9 @@ export function toSummary(row: RunRow, recordKeys: readonly EffortKey[] = []): R
     effort: row.effort,
     outline: row.outline,
     recordKeys: [...recordKeys],
+    source: row.source,
+    hrAvg: row.hrAvg,
+    hrMax: row.hrMax,
   };
 }
 
@@ -99,6 +102,11 @@ export class RunningService {
   async create(userId: string, req: CreateRunRequest): Promise<{ created: boolean; body: RunDetail }> {
     const existing = await this.repo.byClientId(req.clientRunId);
     if (existing !== null) return this.replay(userId, existing);
+    // Beta 4.5: a watch run already imported (another phone, a reinstall) is that run.
+    if (req.externalId !== undefined) {
+      const imported = await this.repo.byExternalId(userId, req.externalId);
+      if (imported !== null) return this.replay(userId, imported);
+    }
 
     const tz = await this.repo.timezoneOf(userId);
     const startedAt = new Date(req.startedAt);
@@ -154,6 +162,10 @@ export class RunningService {
       outline: summary.outline.map(([lat, lon]) => [lat, lon] as [number, number]),
       workout: req.workout === undefined ? null : { name: req.workout.name, steps: [...req.workout.steps] },
       lapMarks: req.laps === undefined ? null : [...req.laps],
+      source: req.source ?? 'phone',
+      externalId: req.externalId ?? null,
+      hrAvg: req.hrAvg ?? null,
+      hrMax: req.hrMax ?? null,
     });
     // Two uploads racing on one id: the loser reads the winner's row.
     if (row === null) return this.replay(userId, (await this.repo.byClientId(req.clientRunId))!);
@@ -219,10 +231,11 @@ export class RunningService {
       await this.efforts.replace(row.id, userId, bestEfforts(decodeTrack(trackOf(row)!)), EFFORTS_VERSION);
     }
     await this.efforts.awardBadges(userId);
-    const [top, pending, longestM] = await Promise.all([
+    const [top, pending, longestM, totalM] = await Promise.all([
       this.efforts.top3(userId),
       this.efforts.staleCount(userId, EFFORTS_VERSION),
       this.efforts.longest(userId),
+      this.efforts.total(userId),
     ]);
     return {
       records: EFFORT_KEYS.map((key) => ({
@@ -233,6 +246,7 @@ export class RunningService {
       })),
       pending,
       longestM,
+      totalM,
     };
   }
 

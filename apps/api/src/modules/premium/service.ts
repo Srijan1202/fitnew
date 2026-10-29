@@ -98,7 +98,9 @@ export class PremiumService {
     if (badges) await this.awardBadges?.(userId);
     const rows = await this.repo.rewards(userId);
     const known = (id: string): id is RewardId =>
-      STREAK_REWARDS.some((x) => x.id === id) || (badges && RUNNING_BADGES.some((x) => x.id === id));
+      STREAK_REWARDS.some((x) => x.id === id) ||
+      // Beta 4.5: each badge from the build that knows it (4.2's from 20, 4.5's from 23).
+      (badges && RUNNING_BADGES.some((x) => x.id === id && appBuild! >= x.since));
     return {
       earned: rows
         .filter((r): r is { reward: RewardId; earnedAt: Date } => known(r.reward))

@@ -7,10 +7,12 @@
  * (`runs.efforts_version`), a batch at a time when the records are read.
  */
 import { and, asc, eq, lt, sql } from 'drizzle-orm';
-import { BADGE_SLACK_M, DISTANCE_BADGES, type BestEffort, type DistanceBadgeId, type EffortKey } from '@fitos/core/running/efforts';
+import { localDateOf } from '@fitos/core/nutrition/log';
+import { consistencyBadges, lifetimeBadges, speedBadges, type MoreBadgeId } from '@fitos/core/running/badges';
+import { BADGE_SLACK_M, DISTANCE_BADGES, type BestEffort, type EffortKey } from '@fitos/core/running/efforts';
 
 import type { DatabaseHandle } from '../../db/client.js';
-import { runBestEfforts, runs, userRewards, type RunRow } from '../../db/schema.js';
+import { plannedRuns, runBestEfforts, runs, userRewards, users, type RunRow } from '../../db/schema.js';
 
 type Db = DatabaseHandle['db'];
 
@@ -136,7 +138,43 @@ export class EffortsRepository {
    * reached it, kept once (a badge stays if that run is deleted later).
    * Returns the ids new this time.
    */
-  async awardBadges(userId: string): Promise<DistanceBadgeId[]> {
+  /** Beta 4.5: every run's distance added up, metres. */
+  async total(userId: string): Promise<number> {
+    const [row] = await this.db
+      .select({ m: sql<string>`coalesce(sum(${runs.distanceM}), 0)` })
+      .from(runs)
+      .where(eq(runs.userId, userId));
+    return Number(row!.m);
+  }
+
+  /** Beta 4.5: the speed, lifetime and consistency badges the user's runs reached. */
+  private async moreBadges(userId: string): Promise<[MoreBadgeId, Date][]> {
+    const [user] = await this.db.select({ tz: users.timezone }).from(users).where(eq(users.id, userId)).limit(1);
+    const tz = user?.tz ?? 'Asia/Kolkata';
+    const [rows, efforts, finished] = await Promise.all([
+      this.db.select({ startedAt: runs.startedAt, distanceM: runs.distanceM }).from(runs).where(eq(runs.userId, userId)),
+      this.db
+        .select({ key: runBestEfforts.key, seconds: runBestEfforts.seconds, startedAt: runs.startedAt })
+        .from(runBestEfforts)
+        .innerJoin(runs, eq(runs.id, runBestEfforts.runId))
+        .where(eq(runBestEfforts.userId, userId)),
+      // A plan is finished when its race run is done (dated by that run).
+      this.db
+        .select({ at: sql<string | Date | null>`min(${runs.startedAt})` })
+        .from(plannedRuns)
+        .innerJoin(runs, eq(runs.id, plannedRuns.runId))
+        .where(and(eq(plannedRuns.userId, userId), eq(plannedRuns.kind, 'race'), eq(plannedRuns.status, 'done'))),
+    ]);
+    const badgeRuns = rows.map((r) => ({ startedAt: r.startedAt, localDate: localDateOf(r.startedAt, tz), distanceM: Number(r.distanceM) }));
+    const planAt = finished[0]?.at;
+    return [
+      ...speedBadges(efforts.map((e) => ({ key: e.key, seconds: Number(e.seconds), startedAt: e.startedAt }))),
+      ...lifetimeBadges(badgeRuns),
+      ...consistencyBadges(badgeRuns, planAt === null || planAt === undefined ? null : new Date(planAt)),
+    ];
+  }
+
+  async awardBadges(userId: string): Promise<string[]> {
     const firsts = await this.db.execute<Record<string, string | Date | null>>(sql`
       select ${sql.join(
         DISTANCE_BADGES.map(
@@ -146,16 +184,18 @@ export class EffortsRepository {
       )}
       from ${runs} where user_id = ${userId}`);
     const row = firsts[0]!;
-    const reached = DISTANCE_BADGES.flatMap((b, i) => {
+    const reached: { userId: string; reward: string; earnedAt: Date }[] = DISTANCE_BADGES.flatMap((b, i) => {
       const at = row[`b${i}`];
       return at === null || at === undefined ? [] : [{ userId, reward: b.id, earnedAt: new Date(at) }];
     });
+    // Beta 4.5: speed, lifetime and consistency (core running/badges.ts).
+    for (const [reward, earnedAt] of await this.moreBadges(userId)) reached.push({ userId, reward, earnedAt });
     if (reached.length === 0) return [];
     const inserted = await this.db
       .insert(userRewards)
       .values(reached)
       .onConflictDoNothing({ target: [userRewards.userId, userRewards.reward] })
       .returning({ reward: userRewards.reward });
-    return inserted.map((r) => r.reward as DistanceBadgeId);
+    return inserted.map((r) => r.reward);
   }
 }
