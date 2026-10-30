@@ -15,6 +15,7 @@ import {
   type PremiumStatus,
   type RewardId,
   type RewardsResponse,
+  type RewardsUnlocked,
 } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
@@ -79,7 +80,7 @@ export class PremiumService {
       throw premiumRequired('This picture');
     }
     // Beta 3.4: a streak picture only once its streak was reached.
-    if (avatarId !== null && REWARD_AVATAR_IDS.includes(avatarId) && !(await this.rewards(userId)).earned.some((r) => r.id === avatarId)) {
+    if (avatarId !== null && REWARD_AVATAR_IDS.includes(avatarId) && !(await this.unlocked(userId, avatarId))) {
       const reward = STREAK_REWARDS.find((r) => r.id === avatarId)!;
       throw new AppError('FORBIDDEN', `Reach a ${reward.days}-day streak to unlock this picture.`, [{ path: 'avatarId', issue: 'reward-locked' }]);
     }
@@ -105,7 +106,14 @@ export class PremiumService {
       earned: rows
         .filter((r): r is { reward: RewardId; earnedAt: Date } => known(r.reward))
         .map((r) => ({ id: r.reward, earnedAt: r.earnedAt.toISOString() })),
+      unlockAll: await this.repo.rewardsUnlocked(userId),
     };
+  }
+
+  /** Earned, or the admin unlocked everything for this account. */
+  private async unlocked(userId: string, rewardId: string): Promise<boolean> {
+    const r = await this.rewards(userId);
+    return r.unlockAll || r.earned.some((e) => e.id === rewardId);
   }
 
   /* -------------------------------------------------------------- admin -- */
@@ -147,6 +155,24 @@ export class PremiumService {
   async members(): Promise<{ items: AdminPremiumMember[] }> {
     const rows = await this.repo.members();
     return { items: rows.map((r) => ({ userId: r.userId, email: r.email, displayName: r.displayName, since: r.since!.toISOString(), grantedBy: r.grantedBy })) };
+  }
+
+  /**
+   * Owner 2026-10-30: every reward theme, app icon, picture and rim for this
+   * account, to test them without the streak or the run (audited). Off
+   * again, a reward picture it never earned goes back to none; the phone
+   * puts an unearned theme or icon back itself.
+   */
+  async setRewardsUnlocked(actor: string | null, userId: string, on: boolean): Promise<RewardsUnlocked> {
+    const done = await this.repo.inTransaction(async (tx) => {
+      const now = await tx.setRewardsUnlocked(userId, on);
+      if (now === null) return null;
+      if (!on) await tx.dropUnearnedRewardAvatar(userId, REWARD_AVATAR_IDS);
+      await tx.audit({ actorUserId: actor, action: on ? 'rewards.unlock-all' : 'rewards.lock', entity: 'user', entityId: userId, metadata: {} });
+      return now;
+    });
+    if (done === null) throw new AppError('NOT_FOUND', 'No such user.');
+    return { userId, rewardsUnlocked: done };
   }
 
   async revoke(actor: string | null, userId: string): Promise<void> {

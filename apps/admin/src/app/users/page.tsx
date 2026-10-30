@@ -1,9 +1,9 @@
 'use client';
 
-import type { UserSupport } from '@fitos/contracts';
+import type { RewardsUnlocked, UserSupport } from '@fitos/contracts';
 import { useState, type FormEvent } from 'react';
 
-import { Header, when } from '@/components/ui';
+import { Badge, Header, when } from '@/components/ui';
 import { api, errorText } from '@/lib/api';
 
 /**
@@ -14,6 +14,7 @@ export default function Support() {
   const [q, setQ] = useState('');
   const [user, setUser] = useState<UserSupport | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const lookup = async (e: FormEvent) => {
     e.preventDefault();
@@ -25,6 +26,22 @@ export default function Support() {
       setUser(await api<UserSupport>('GET', `/admin/users?${param}`));
     } catch (err) {
       setError(errorText(err));
+    }
+  };
+
+  // Owner 2026-10-30: unlock every reward theme, app icon, picture and rim
+  // for a tester, without the streak or the run (audited).
+  const setUnlocked = async (on: boolean) => {
+    if (user === null) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await api<RewardsUnlocked>('PUT', `/admin/users/${user.userId}/rewards-unlocked`, { on });
+      setUser({ ...user, rewardsUnlocked: r.rewardsUnlocked });
+    } catch (err) {
+      setError(errorText(err));
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -55,7 +72,26 @@ export default function Support() {
             <dt>Check-ins</dt><dd>{user.counts.checkIns} · last {user.lastActivity.checkIn ?? '—'}</dd>
             <dt>FITOS AI, 7 days</dt><dd>{user.counts.aiCalls7d} calls</dd>
             <dt>Reminders</dt><dd>{user.notifications.enabled ? `on, ${user.notifications.tone}` : 'off'}</dd>
+            <dt>Premium</dt><dd>{user.premium ? 'yes (approved)' : 'no'} · grant or revoke under Premium</dd>
           </dl>
+          <div className="switch-row">
+            <div className="grow">
+              <strong>All rewards unlocked</strong>{' '}
+              {user.rewardsUnlocked ? <Badge tone="ok">on</Badge> : <Badge tone="bad">off</Badge>}
+              <div className="muted small">
+                For testing: every streak and running theme, app icon, picture and rim can be chosen on their phone at once,
+                without the streak or the run. Badges and the streak stay what they really earned. Premium themes still
+                need Premium. Recorded in the audit log.
+              </div>
+            </div>
+            <button
+              className={`button${user.rewardsUnlocked ? '' : ' primary'}`}
+              disabled={busy}
+              onClick={() => void setUnlocked(!user.rewardsUnlocked)}
+            >
+              {user.rewardsUnlocked ? 'Lock again' : 'Unlock all'}
+            </button>
+          </div>
         </article>
       )}
     </>

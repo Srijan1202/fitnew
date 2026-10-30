@@ -23,4 +23,11 @@ class FakeRewardsApi implements RewardsApi {
   @override
   Future<Result<Map<RunBadge, DateTime>>> badges() async =>
       offline ? const Err(Offline()) : Ok({...badgesEarned});
+
+  /// Owner 2026-10-30: the admin's unlock-all switch.
+  bool unlocked = false;
+
+  @override
+  Future<Result<bool>> unlockAll() async =>
+      offline ? const Err(Offline()) : Ok(unlocked);
 }

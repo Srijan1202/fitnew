@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "rewards_unlocked" boolean DEFAULT false NOT NULL;

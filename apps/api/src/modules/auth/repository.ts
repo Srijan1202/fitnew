@@ -65,6 +65,7 @@ export class UsersRepository {
         premiumSince: users.premiumSince,
         premiumGrantedBy: users.premiumGrantedBy,
         avatarId: users.avatarId,
+        rewardsUnlocked: users.rewardsUnlocked,
         inserted: sql<boolean>`(xmax = 0)`,
       });
 

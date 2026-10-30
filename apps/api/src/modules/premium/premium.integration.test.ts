@@ -3,9 +3,11 @@
  * decision (audited), the lock on FITOS AI and on three pictures, admins
  * premium by role, revoking, and premium's higher AI limits.
  */
+import { randomUUID } from 'node:crypto';
+
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import postgres from 'postgres';
-import { premiumStatusSchema, weeklyReportSchema, type PremiumStatus } from '@fitos/contracts';
+import { premiumStatusSchema, rewardsResponseSchema, weeklyReportSchema, type PremiumStatus } from '@fitos/contracts';
 
 import { migrateUp } from '../../db/migrate.js';
 import type { FakeTokenVerifier } from '../../test/fake-token-verifier.js';
@@ -61,7 +63,7 @@ describeIfDb('/v1/premium (real Postgres)', { timeout: 60_000 }, () => {
 
   afterAll(async () => {
     await sql`delete from users where firebase_uid like 'pm-uid-%'`;
-    await sql`delete from audit_logs where action like 'premium.%'`;
+    await sql`delete from audit_logs where action like 'premium.%' or action like 'rewards.%'`;
     await app.close();
     await sql.end({ timeout: 5 });
   });
@@ -189,6 +191,30 @@ describeIfDb('/v1/premium (real Postgres)', { timeout: 60_000 }, () => {
     expect(earlier).toMatchObject({ isoWeek: report.weeks[0], complete: true });
     expect((await call(u, 'GET', '/progress/weekly?week=2020-W01')).statusCode).toBe(422);
     expect((await call(u, 'GET', '/progress/weekly?week=nonsense')).statusCode).toBe(422);
+  });
+
+  it('the admin unlock-all switch (owner 2026-10-30): only an admin sets it; the rewards say unlockAll and keep what was earned; streak pictures allowed; off again, an unearned streak picture goes back to none; audited', async () => {
+    const u = await user();
+    const rewards = async () => rewardsResponseSchema.parse((await call(u, 'GET', '/user/rewards')).json());
+    expect(await rewards()).toEqual({ earned: [], unlockAll: false });
+    expect((await call(u, 'PUT', '/user/avatar', { avatarId: 'spark' })).statusCode).toBe(403);
+    // Not for anyone else; checked against the account.
+    expect((await call(u, 'PUT', `/admin/users/${u.id}/rewards-unlocked`, { on: true })).statusCode).toBe(403);
+    expect((await call(admin, 'PUT', `/admin/users/${randomUUID()}/rewards-unlocked`, { on: true })).statusCode).toBe(404);
+
+    const on = await call(admin, 'PUT', `/admin/users/${u.id}/rewards-unlocked`, { on: true });
+    expect(on.json()).toEqual({ userId: u.id, rewardsUnlocked: true });
+    expect(await rewards()).toEqual({ earned: [], unlockAll: true });
+    expect((await call(u, 'PUT', '/user/avatar', { avatarId: 'spark' })).json()).toEqual({ avatarId: 'spark' });
+    const lookup = (await call(admin, 'GET', `/admin/users?id=${u.id}`)).json() as { rewardsUnlocked: boolean; premium: boolean };
+    expect(lookup).toMatchObject({ rewardsUnlocked: true, premium: false });
+
+    expect((await call(admin, 'PUT', `/admin/users/${u.id}/rewards-unlocked`, { on: false })).json()).toEqual({ userId: u.id, rewardsUnlocked: false });
+    expect((await rewards()).unlockAll).toBe(false);
+    const [row] = await sql<{ avatar: string | null }[]>`select avatar_id as avatar from users where id = ${u.id}`;
+    expect(row!.avatar).toBeNull();
+    const audited = await sql<{ action: string }[]>`select action from audit_logs where entity_id = ${u.id} and action like 'rewards.%' order by occurred_at`;
+    expect(audited.map((a) => a.action)).toEqual(['rewards.unlock-all', 'rewards.lock']);
   });
 
   it('premium requests are the user\'s data: deleted with the account', async () => {

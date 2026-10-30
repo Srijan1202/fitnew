@@ -32,9 +32,22 @@
 
 ## Consequences
 
-- **Dart only:** it can ship as a Shorebird patch on 1.0.0-beta.4.5+23.
+- **Dart only:** shipped as beta 4.6 (build 24, owner's choice over a patch). The amendment's app part is Dart only too, a patch on 4.6+24 once the API (0040) is deployed.
 - **Website copy:** no longer lists Paper (features, pricing, home).
 - **Tests:**
   - Running's tests scroll to the history, now below the header (`toHistory`);
   - the canvas tests read `FitCanvas`;
   - the AI tests scope "FITOS AI" to the conversation.
+
+## Amendment, 2026-10-30: the owner's check of 4.6
+
+| # | Decision |
+|---|---|
+| D6 | **Profile buttons:** "Change goal" and the targets button sit side by side at equal widths. The custom-target label is now "Edit targets"; before, "Edit my targets" wrapped under Change goal. |
+| D7 | **cm / in switch:** standard height, the app's switch corners, and a gap above the measurement tiles. The compact switch looked rounder than the rest and crowded the tiles. |
+| D8 | **Unlock all rewards, for testing (owner).** |
+| | • Server: `users.rewards_unlocked` (0040), set by an admin with `PUT /admin/users/{userId}/rewards-unlocked` and shown in the Users lookup with a switch. Both directions are audited (`rewards.unlock-all` / `rewards.lock`). |
+| | • The phone: `GET /user/rewards` adds `unlockAll`. While it is on, every streak and running theme, app icon, picture and the Ember rim can be chosen. |
+| | • What stays real: the badges, the streak and the "n of N" count show only what was earned. |
+| | • Turning it off: the phone puts an unearned theme or icon back, and the server clears an unearned reward picture. |
+| | • Premium themes still need Premium, which has its own grant. |

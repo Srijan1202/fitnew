@@ -380,6 +380,8 @@ export class AdminService {
         checkIn: facts.checkIns.last,
       },
       notifications: { enabled: settings.enabled, tone: settings.tone },
+      premium: u.premiumSince !== null,
+      rewardsUnlocked: u.rewardsUnlocked,
     };
   }
 

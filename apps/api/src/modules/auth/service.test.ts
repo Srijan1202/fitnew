@@ -32,6 +32,7 @@ function mockRepo(inserted: boolean) {
         premiumSince: null,
         premiumGrantedBy: null,
         avatarId: null,
+        rewardsUnlocked: false,
       },
     }),
   );

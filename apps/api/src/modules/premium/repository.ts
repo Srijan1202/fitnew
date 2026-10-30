@@ -2,7 +2,7 @@
  * Premium (Phase 19, ADR-027): the user's mark, their requests, and the
  * admin's decisions, each written with its audit row in one transaction.
  */
-import { and, asc, desc, eq, isNotNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
 
 import type { DatabaseHandle } from '../../db/client.js';
 import { auditLogs, premiumRequests, userRewards, users } from '../../db/schema.js';
@@ -105,6 +105,36 @@ export class PremiumRepository {
       .from(userRewards)
       .where(eq(userRewards.userId, userId))
       .orderBy(asc(userRewards.earnedAt), asc(userRewards.reward));
+  }
+
+  /** The admin's unlock-all test switch (owner 2026-10-30). */
+  async rewardsUnlocked(userId: string): Promise<boolean> {
+    const [u] = await this.db.select({ on: users.rewardsUnlocked }).from(users).where(eq(users.id, userId)).limit(1);
+    return u?.on ?? false;
+  }
+
+  /** Sets the switch; null when there is no such (live) user. */
+  async setRewardsUnlocked(userId: string, on: boolean): Promise<boolean | null> {
+    const [u] = await this.db
+      .update(users)
+      .set({ rewardsUnlocked: on })
+      .where(and(eq(users.id, userId), isNull(users.deletedAt)))
+      .returning({ on: users.rewardsUnlocked });
+    return u?.on ?? null;
+  }
+
+  /** A reward picture chosen while unlocked but never earned goes back to none. */
+  async dropUnearnedRewardAvatar(userId: string, rewardAvatars: readonly string[]): Promise<void> {
+    await this.db
+      .update(users)
+      .set({ avatarId: null })
+      .where(
+        and(
+          eq(users.id, userId),
+          sql`${users.avatarId} in (${sql.join(rewardAvatars.map((a) => sql`${a}`), sql`, `)})`,
+          sql`not exists (select 1 from ${userRewards} where ${userRewards.userId} = ${userId} and ${userRewards.reward} = ${users.avatarId})`,
+        ),
+      );
   }
 
   async setAvatar(userId: string, avatarId: string | null): Promise<void> {

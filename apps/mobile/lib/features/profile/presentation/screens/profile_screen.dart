@@ -163,7 +163,7 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       Consumer(
                         builder: (context, ref, _) => ref.watch(
-                          rewardEarnedProvider(StreakReward.emberRim),
+                          rewardUnlockedProvider(StreakReward.emberRim),
                         )
                             ? FitRow(
                                 key: const ValueKey('profile.emberRim'),
@@ -431,18 +431,24 @@ class _Targets extends StatelessWidget {
             style: textTheme.bodyMedium,
           ),
           const SizedBox(height: FitSpacing.md),
-          Wrap(
-            spacing: FitSpacing.sm,
-            runSpacing: FitSpacing.sm,
+          // Side by side at equal widths (owner 2026-10-30: "Edit my
+          // targets" wrapped under Change goal).
+          Row(
             children: <Widget>[
-              change,
-              OutlinedButton.icon(
-                key: const ValueKey('profile.setTargets'),
-                onPressed: () => context.push(Routes.targetsEditor),
-                style: _outlined,
-                icon: const Icon(Icons.tune, size: 18),
-                label:
-                    Text(targets.isCustom ? 'Edit my targets' : 'Set my own'),
+              Expanded(child: change),
+              const SizedBox(width: FitSpacing.sm),
+              Expanded(
+                child: OutlinedButton.icon(
+                  key: const ValueKey('profile.setTargets'),
+                  onPressed: () => context.push(Routes.targetsEditor),
+                  style: _outlined,
+                  icon: const Icon(Icons.tune, size: 18),
+                  label: Text(
+                    targets.isCustom ? 'Edit targets' : 'Set my own',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ),
             ],
           ),

@@ -94,10 +94,20 @@ export const rewardIdSchema = z.enum([...STREAK_REWARD_IDS, ...RUNNING_BADGE_IDS
 export type RewardId = z.infer<typeof rewardIdSchema>;
 
 export const earnedRewardSchema = z.object({ id: rewardIdSchema, earnedAt: iso }).strict();
-/** GET /user/rewards: what you earned (readable even while streaks are switched off). */
-export const rewardsResponseSchema = z.object({ earned: z.array(earnedRewardSchema) }).strict();
+/**
+ * GET /user/rewards: what you earned (readable even while streaks are
+ * switched off). `unlockAll` (owner 2026-10-30): the admin unlocked every
+ * reward theme, app icon, picture and rim for this account, for testing;
+ * `earned` stays what was really earned.
+ */
+export const rewardsResponseSchema = z.object({ earned: z.array(earnedRewardSchema), unlockAll: z.boolean() }).strict();
 export type EarnedReward = z.infer<typeof earnedRewardSchema>;
 export type RewardsResponse = z.infer<typeof rewardsResponseSchema>;
+
+/** PUT /admin/users/{userId}/rewards-unlocked: the admin's unlock-all switch (audited). */
+export const setRewardsUnlockedSchema = z.object({ on: z.boolean() }).strict();
+export const rewardsUnlockedSchema = z.object({ userId: z.string().uuid(), rewardsUnlocked: z.boolean() }).strict();
+export type RewardsUnlocked = z.infer<typeof rewardsUnlockedSchema>;
 
 export const setAvatarRequestSchema = z.object({ avatarId: avatarIdSchema.nullable() }).strict();
 export const avatarResponseSchema = z.object({ avatarId: avatarIdSchema.nullable() }).strict();

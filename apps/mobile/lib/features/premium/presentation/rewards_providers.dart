@@ -21,6 +21,10 @@ abstract class RewardsApi {
   /// Beta 4.2: the running distance firsts, with the day each was earned
   /// (the server sends them to build 20 and later).
   Future<Result<Map<RunBadge, DateTime>>> badges();
+
+  /// Owner 2026-10-30: the admin unlocked every reward theme, app icon,
+  /// picture and rim for this account, for testing (`unlockAll`).
+  Future<Result<bool>> unlockAll();
 }
 
 class DioRewardsApi implements RewardsApi {
@@ -61,6 +65,18 @@ class DioRewardsApi implements RewardsApi {
       return const Err(Unknown());
     }
   }
+
+  @override
+  Future<Result<bool>> unlockAll() async {
+    try {
+      final r = await _dio.get<Map<String, dynamic>>('/v1/user/rewards');
+      return Ok(r.data!['unlockAll'] == true);
+    } on DioException catch (e) {
+      return Err(ErrorMapper.fromDio(e));
+    } on Object {
+      return const Err(Unknown());
+    }
+  }
 }
 
 final rewardsApiProvider =
@@ -88,19 +104,53 @@ final earnedBadgesProvider = FutureProvider<Map<RunBadge, DateTime>?>(
   retry: (_, __) => null,
 );
 
-/// Every reward and badge id earned (what unlocks a theme or an icon); null
-/// until both are known, so nothing earned is taken away meanwhile.
+/// Owner 2026-10-30: whether the admin unlocked everything for testing;
+/// null while unknown (offline, loading).
+final rewardsUnlockAllProvider = FutureProvider<bool?>(
+  (ref) async {
+    requireSession(ref);
+    final r = await ref.watch(rewardsApiProvider).unlockAll();
+    return r.when(ok: (v) => v, err: (_) => null);
+  },
+  retry: (_, __) => null,
+);
+
+/// Every reward and badge id that unlocks a theme or an icon: the ones
+/// earned, or all of them when the admin unlocked everything. Null until
+/// all three are known, so nothing earned is taken away meanwhile.
 final earnedUnlocksProvider = Provider<Set<String>?>((ref) {
+  final all = ref.watch(rewardsUnlockAllProvider).value;
   final streak = ref.watch(earnedRewardsProvider).value;
   final badges = ref.watch(earnedBadgesProvider).value;
-  if (streak == null || badges == null) return null;
+  if (all == null || streak == null || badges == null) return null;
+  if (all) {
+    return {
+      for (final r in StreakReward.values) r.id,
+      for (final b in RunBadge.values) b.id,
+    };
+  }
   return {for (final r in streak) r.id, for (final b in badges.keys) b.id};
 });
 
-/// True once a reward is known to be earned.
+/// The streak rewards that can be used (pictures, the rim): the ones earned,
+/// or all of them when the admin unlocked everything; null while unknown.
+final unlockedRewardsProvider = Provider<Set<StreakReward>?>((ref) {
+  if (ref.watch(rewardsUnlockAllProvider).value ?? false) {
+    return StreakReward.values.toSet();
+  }
+  return ref.watch(earnedRewardsProvider).value;
+});
+
+/// True once a reward is known to be earned (badges and counts).
 final rewardEarnedProvider = Provider.family<bool, StreakReward>(
   (ref, reward) =>
       ref.watch(earnedRewardsProvider).value?.contains(reward) ?? false,
+);
+
+/// True once a reward can be used: earned, or unlocked by the admin.
+final rewardUnlockedProvider = Provider.family<bool, StreakReward>(
+  (ref, reward) =>
+      ref.watch(unlockedRewardsProvider)?.contains(reward) ?? false,
 );
 
 /// The Ember rim, on by default once earned; a switch in Profile turns it
@@ -137,9 +187,9 @@ class EmberRimSetting extends Notifier<bool> {
 final emberRimSettingProvider =
     NotifierProvider<EmberRimSetting, bool>(EmberRimSetting.new);
 
-/// Whether pictures wear the Ember rim: earned and switched on.
+/// Whether pictures wear the Ember rim: earned (or unlocked) and on.
 final emberRimProvider = Provider<bool>(
   (ref) =>
-      ref.watch(rewardEarnedProvider(StreakReward.emberRim)) &&
+      ref.watch(rewardUnlockedProvider(StreakReward.emberRim)) &&
       ref.watch(emberRimSettingProvider),
 );

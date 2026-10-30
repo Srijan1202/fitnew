@@ -423,6 +423,33 @@ void main() {
     });
 
     testWidgets(
+        'owner 2026-10-30: the admin unlocks every reward theme, icon, picture and rim for testing; the count stays what was earned; locked again, the phone goes back',
+        (tester) async {
+      rewards.unlocked = true;
+      await start(tester);
+      await tap(tester, 'home.profile');
+      // Nothing earned, yet the streak and running themes open.
+      await tap(tester, 'theme.ember');
+      expect(FitPalette.current.id, 'ember');
+      await tap(tester, 'theme.mileage');
+      expect(FitPalette.current.id, 'mileage');
+      expect(find.byKey(const ValueKey('profile.emberRim')), findsOneWidget);
+      expect(
+        tester
+            .widget<FitRow>(find.byKey(const ValueKey('profile.rewards')))
+            .value,
+        '0 of ${StreakReward.values.length + RunBadge.values.length}',
+      );
+
+      rewards.unlocked = false;
+      ProviderScope.containerOf(tester.element(find.byType(FitOSApp)))
+          .invalidate(rewardsUnlockAllProvider);
+      await tester.pumpAndSettle();
+      expect(FitPalette.current.id, 'fitos-dark');
+      expect(find.byKey(const ValueKey('profile.emberRim')), findsNothing);
+    });
+
+    testWidgets(
         'beta 4.2: the Road theme opens with a first half marathon, and a phone that has it but not the badge goes back to FITOS Dark',
         (tester) async {
       await start(tester);

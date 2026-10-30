@@ -15,7 +15,7 @@
  * "deactivated, can be restored" case only.
  */
 import { sql } from 'drizzle-orm';
-import { check, index, pgTable, text, timestamp, uuid, type AnyPgColumn } from 'drizzle-orm/pg-core';
+import { boolean, check, index, pgTable, text, timestamp, uuid, type AnyPgColumn } from 'drizzle-orm/pg-core';
 
 export const users = pgTable(
   'users',
@@ -35,6 +35,12 @@ export const users = pgTable(
     premiumGrantedBy: uuid('premium_granted_by').references((): AnyPgColumn => users.id, { onDelete: 'set null' }),
     /** Phase 19: one of the ten drawn profile pictures (contracts AVATARS); null = initials. */
     avatarId: text('avatar_id'),
+    /**
+     * After beta 4.6 (owner 2026-10-30): every streak and running theme, app
+     * icon, picture and rim can be chosen, for testing; set in the admin
+     * panel (audited). Badges and streaks stay what was earned.
+     */
+    rewardsUnlocked: boolean('rewards_unlocked').notNull().default(false),
   },
   (t) => [
     check('users_avatar_id', sql`${t.avatarId} is null or ${t.avatarId} in ('dumbbell', 'runner', 'yoga', 'cyclist', 'swimmer', 'boxer', 'hiker', 'crown', 'flame', 'trophy', 'spark', 'century')`),

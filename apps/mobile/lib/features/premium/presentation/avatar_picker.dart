@@ -64,7 +64,8 @@ class _AvatarPickerState extends ConsumerState<_AvatarPicker> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final premium = ref.watch(isPremiumProvider) ?? false;
-    final earned = ref.watch(earnedRewardsProvider).value ?? const {};
+    // Earned, or every one when the admin unlocked them (owner 2026-10-30).
+    final earned = ref.watch(unlockedRewardsProvider) ?? const {};
     final profile = ref.watch(profileControllerProvider).value?.profile;
     bool lockedOf(AvatarDef a) =>
         (a.premium && !premium) ||

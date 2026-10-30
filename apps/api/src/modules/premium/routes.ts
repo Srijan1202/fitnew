@@ -13,12 +13,14 @@ import {
   adminPremiumRequestListSchema,
   avatarResponseSchema,
   rewardsResponseSchema,
+  rewardsUnlockedSchema,
   decidePremiumRequestSchema,
   errorEnvelopeSchema,
   premiumRequestSchema,
   premiumStatusSchema,
   requestPremiumSchema,
   setAvatarRequestSchema,
+  setRewardsUnlockedSchema,
 } from '@fitos/contracts';
 
 import { AppError } from '../../lib/errors.js';
@@ -109,6 +111,18 @@ export async function premiumRoutes(app: FastifyInstance): Promise<void> {
     ...admin,
     schema: { summary: 'Who has premium (by approval; admins have it by role)', tags: ['admin'], security, response: { 200: adminPremiumMemberListSchema, ...errors } },
   }, async () => service.members());
+
+  typed.put('/admin/users/:userId/rewards-unlocked', {
+    ...admin,
+    schema: {
+      summary: 'Unlock every reward theme, app icon, picture and rim for this account, for testing (or lock them again; audited)',
+      tags: ['admin'],
+      security,
+      params: userParams,
+      body: setRewardsUnlockedSchema,
+      response: { 200: rewardsUnlockedSchema, ...errors },
+    },
+  }, async (request) => service.setRewardsUnlocked(request.userId, request.params.userId, request.body.on));
 
   typed.post('/admin/premium/members/:userId/revoke', {
     ...admin,

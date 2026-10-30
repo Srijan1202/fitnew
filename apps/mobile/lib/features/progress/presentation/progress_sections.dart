@@ -162,6 +162,7 @@ class _BodySection extends ConsumerWidget {
               child: LengthUnitSwitch(),
             ),
           ),
+          const SizedBox(height: FitSpacing.md),
           _StatGrid([
             for (final m in summary.measurements)
               _Stat(

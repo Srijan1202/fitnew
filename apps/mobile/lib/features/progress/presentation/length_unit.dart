@@ -81,11 +81,9 @@ class LengthUnitSwitch extends ConsumerWidget {
     final unit = ref.watch(lengthUnitProvider);
     return SegmentedButton<LengthUnit>(
       key: const ValueKey('length.unit'),
+      // The app's switch size and corners (owner 2026-10-30: the compact
+      // one looked rounder than the rest and crowded the tiles).
       showSelectedIcon: false,
-      style: const ButtonStyle(
-        visualDensity: VisualDensity.compact,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
       segments: [
         for (final u in LengthUnit.values)
           ButtonSegment(

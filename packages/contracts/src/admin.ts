@@ -265,6 +265,9 @@ export const userSupportSchema = z
       .strict(),
     lastActivity: z.object({ session: isoOrNull, foodLog: isoOrNull, weighIn: z.string().nullable(), checkIn: z.string().nullable() }).strict(),
     notifications: z.object({ enabled: z.boolean(), tone: z.string() }).strict(),
+    /** Premium by approval (admins have it by role); the unlock-all test switch. */
+    premium: z.boolean(),
+    rewardsUnlocked: z.boolean(),
   })
   .strict();
 
