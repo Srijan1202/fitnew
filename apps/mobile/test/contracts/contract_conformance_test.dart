@@ -71,7 +71,8 @@ void main() {
       isTrue,
       reason: 'run `pnpm --filter @fitos/api openapi:export` first',
     );
-    doc = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+    doc = _foldNullable(jsonDecode(file.readAsStringSync()))
+        as Map<String, dynamic>;
   });
 
   Map<String, dynamic> schemaOf(
@@ -575,9 +576,13 @@ void main() {
     test('request bodies send exactly the accepted properties', () {
       // generate: the body is optional; when sent, only the two overrides.
       final gen = schemaOf('/training/program/generate', 'post', request: true);
-      final variant = (gen['anyOf'] as List<dynamic>)
-          .cast<Map<String, dynamic>>()
-          .firstWhere((v) => v.containsKey('properties'));
+      // zod 3 wrote the optional body as anyOf [nothing, the object];
+      // zod 4 writes the object alone.
+      final variant = gen['anyOf'] is List
+          ? (gen['anyOf'] as List<dynamic>)
+              .cast<Map<String, dynamic>>()
+              .firstWhere((v) => v.containsKey('properties'))
+          : gen;
       const full = GenerateProgramRequest(
         daysPerWeek: 3,
         preferredSessionMinutes: 45,
@@ -3021,4 +3026,34 @@ void main() {
       GoalResponse(goal: personaCGoal, targets: null),
     );
   });
+}
+
+/// Beta 4.8 (zod 4): "X or null" is written `anyOf: [X, {type: null}]`;
+/// zod 3 folded the null into X's `type`; and a discriminated union is
+/// `oneOf`, where zod 3 wrote `anyOf`. Folded back here, so every check
+/// reads one shape whichever zod wrote the document.
+Object? _foldNullable(Object? node) {
+  if (node is List) return node.map(_foldNullable).toList();
+  if (node is! Map) return node;
+  final m = <String, dynamic>{
+    for (final e in node.entries) e.key as String: _foldNullable(e.value),
+  };
+  // zod 4 writes a discriminated union as oneOf; zod 3 wrote anyOf.
+  if (m['oneOf'] is List && !m.containsKey('anyOf')) {
+    m['anyOf'] = m.remove('oneOf');
+  }
+  final any = m['anyOf'];
+  if (any is List && any.length == 2) {
+    bool isNull(Object? x) => x is Map && x['type'] == 'null' && x.length == 1;
+    final rest = any.where((x) => !isNull(x)).toList();
+    if (rest.length == 1 && rest.single is Map) {
+      final other = Map<String, dynamic>.from(rest.single as Map);
+      final t = other['type'];
+      if (t != null) other['type'] = t is List ? [...t, 'null'] : [t, 'null'];
+      m
+        ..remove('anyOf')
+        ..addAll(other);
+    }
+  }
+  return m;
 }

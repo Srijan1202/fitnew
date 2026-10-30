@@ -145,7 +145,7 @@ export const EXERCISE_LIST_DEFAULT_LIMIT = 50;
 export const EXERCISE_LIST_MAX_LIMIT = 200;
 
 /** Comma-separated in the URL (`?equipment=barbell,dumbbell`), a set on the way in. */
-const csvEnumList = <T extends z.ZodEnum<[string, ...string[]]>>(item: T) =>
+const csvEnumList = <T extends z.ZodEnum>(item: T) =>
   z.preprocess(
     (v) => (typeof v === 'string' ? v.split(',').map((s) => s.trim()).filter(Boolean) : v),
     z.array(item).min(1).max(item.options.length),

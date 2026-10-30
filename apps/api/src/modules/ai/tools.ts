@@ -28,7 +28,11 @@ export interface ToolServices {
   readonly exercise: ExerciseService;
 }
 
-export interface ToolDefinition<A extends z.ZodTypeAny = z.ZodTypeAny> {
+// zod 4 infers `unknown` for a bare schema type, where zod 3 inferred `any`;
+// the tools keep zod 3's typing here (each call's args are parsed with
+// `args` before `execute` runs, so nothing unchecked reaches a service).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface ToolDefinition<A extends z.ZodType<any> = z.ZodType<any>> {
   readonly name: string;
   readonly description: string;
   readonly args: A;

@@ -50,12 +50,14 @@ export default fp(
       }
 
       // Request validation. Fastify wraps the Zod failure as FST_ERR_VALIDATION
-      // (statusCode 400) with the original issues under `validation[].params.issue`;
+      // (statusCode 400), one entry per zod issue under `validation[]`;
       // a bare ZodError only reaches here if a handler parses manually.
       if (hasZodFastifySchemaValidationErrors(error)) {
+        // fastify-type-provider-zod 7: each zod issue arrives as
+        // `{ instancePath: '/a/b', message }`; the envelope keeps `a.b`.
         const details = error.validation.map((v) => ({
-          path: v.params.issue.path.join('.'),
-          issue: v.params.issue.message,
+          path: v.instancePath.split('/').filter((p) => p !== '').join('.'),
+          issue: v.message ?? 'Invalid value.',
         }));
         void reply
           .status(HTTP_STATUS_FOR_CODE.VALIDATION_FAILED)

@@ -20,9 +20,8 @@ class _Pad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: fitGlass ? FitSpacing.md : FitSpacing.screen,
-        ),
+        // Beta 4.8: the screen margin every tab uses.
+        padding: const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
         child: child,
       );
 }
@@ -35,7 +34,8 @@ class _Card extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => FitBlock(
-        margin: const EdgeInsets.symmetric(horizontal: 12),
+        // Beta 4.8: the screen margin every tab uses (it was 12).
+        margin: const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
         padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
         child: child,
       );
@@ -61,20 +61,12 @@ class _SectionHeader extends StatelessWidget {
           const FitRule(),
           SizedBox(height: fitGlass ? FitSpacing.sm : FitSpacing.afterRule),
           Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: fitGlass ? 20 : FitSpacing.screen,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: FitSpacing.screen),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(
-                  title.toUpperCase(),
-                  style: textTheme.labelSmall?.copyWith(
-                    color: FitColors.ink,
-                    letterSpacing: 1.2,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                // Beta 4.8: the label style of every other section.
+                Text(title.toUpperCase(), style: textTheme.labelSmall),
                 if (sub != null) ...<Widget>[
                   const SizedBox(height: 2),
                   Text(

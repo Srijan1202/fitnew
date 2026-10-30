@@ -108,9 +108,10 @@ class _GoalRing extends StatelessWidget {
         key: const ValueKey('home.ring'),
         customBorder: const CircleBorder(),
         onTap: () => context.go(Routes.plan),
+        // Beta 4.8: room for "this week" inside the ring (it ran over it).
         child: SizedBox(
-          width: 64,
-          height: 64,
+          width: 72,
+          height: 72,
           child: CustomPaint(
             painter: _RingPainter(
               fraction: math.min(1, done / planned),
@@ -128,8 +129,11 @@ class _GoalRing extends StatelessWidget {
                   ),
                   Text(
                     'this week',
-                    style: textTheme.labelSmall
-                        ?.copyWith(color: FitColors.ink60, fontSize: 9),
+                    style: textTheme.labelSmall?.copyWith(
+                      color: FitColors.ink60,
+                      fontSize: 9,
+                      letterSpacing: 0,
+                    ),
                   ),
                 ],
               ),
