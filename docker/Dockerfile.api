@@ -1,6 +1,6 @@
 # Multi-stage build for Cloud Run (§25).
-# node:22-alpine matches the runtime decision in §8.1.
-FROM node:22-alpine AS base
+# node:24-alpine (beta 4.8: the active LTS; §8.1 chose Node 22, its successor).
+FROM node:24-alpine AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
