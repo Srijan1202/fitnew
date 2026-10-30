@@ -2688,7 +2688,7 @@ void main() {
           .map((m) => (m.group(1), int.parse(m.group(2)!)))
           .toList();
       expect(rows, StreakReward.values.map((r) => (r.id, r.days)).toList());
-      expect(keysOf(schemaOf('/user/rewards', 'get')), {'earned'});
+      expect(keysOf(schemaOf('/user/rewards', 'get')), {'earned', 'unlockAll'});
     });
 
     test('GET /progress/weekly: the report has the documented sections', () {
