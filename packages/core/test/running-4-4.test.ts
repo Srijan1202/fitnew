@@ -106,13 +106,15 @@ describe('the streak page’s month calendar (beta 4.8, owner)', () => {
     skippedDays: new Set<string>(),
   };
 
-  it('a planned rest day stays a rest day with only a meal; a workout or a run on it is logged', () => {
-    // 25 Oct is a Sunday (rest) with a meal only; 26 Oct a Monday with a meal.
+  it('a day kept without training is a rest day, planned or not (beta 4.9); a workout or a run is logged', () => {
+    // 25 Oct is a Sunday (planned rest) with a meal only; 26 Oct a Monday with a meal only.
     const days = streakDays({ ...base, firstDay: '2026-09-21', trainedDays: new Set(['2026-10-30']) }, 7);
     const at = (d: string) => days.find((x) => x.date === d)!.status;
     expect(at('2026-10-25')).toBe('rest');
-    expect(at('2026-10-26')).toBe('logged');
+    expect(at('2026-10-26')).toBe('rest');
     expect(at('2026-10-30')).toBe('logged');
+    // Nothing at all on a training weekday is missed.
+    expect(at('2026-10-27')).toBe('missed');
     expect(streakDays({ ...base, firstDay: null, trainedDays: new Set(['2026-10-25']) }, 7).find((x) => x.date === '2026-10-25')!.status).toBe('logged');
   });
 
@@ -120,7 +122,8 @@ describe('the streak page’s month calendar (beta 4.8, owner)', () => {
     const cal = streakCalendar({ ...base, firstDay: '2026-09-21', trainedDays: new Set() });
     expect(cal[0]).toEqual({ date: '2026-09-01', status: 'before' });
     expect(cal.find((x) => x.date === '2026-09-21')!.status).toBe('missed');
-    expect(cal.at(-1)).toEqual({ date: '2026-10-30', status: 'logged' });
+    // A meal, no training: rest (beta 4.9).
+    expect(cal.at(-1)).toEqual({ date: '2026-10-30', status: 'rest' });
     expect(cal).toHaveLength(60);
   });
 

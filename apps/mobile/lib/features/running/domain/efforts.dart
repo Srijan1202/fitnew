@@ -219,6 +219,33 @@ class RunningRecords {
 const double badgeSlackM = 5;
 
 /// Beta 4.5: what kind of badge.
+/// Beta 4.9 (owner: "why are these badges empty"): what a badge's medal
+/// reads, top line and bottom line.
+extension RunBadgeMedal on RunBadge {
+  (String, String) get medal => switch (this) {
+        RunBadge.firstRun => ('1st', 'run'),
+        RunBadge.first5k => ('5K', 'first'),
+        RunBadge.first10k => ('10K', 'first'),
+        RunBadge.firstHalf => ('Half', 'first'),
+        RunBadge.firstMarathon => ('42K', 'first'),
+        RunBadge.speed5k30 => ('5K', '30′'),
+        RunBadge.speed5k25 => ('5K', '25′'),
+        RunBadge.speed5k20 => ('5K', '20′'),
+        RunBadge.speed10k60 => ('10K', '60′'),
+        RunBadge.speed10k50 => ('10K', '50′'),
+        RunBadge.speedHalf2h => ('Half', '2h'),
+        RunBadge.speedMarathon4h => ('42K', '4h'),
+        RunBadge.total50 => ('50', 'km'),
+        RunBadge.total100 => ('100', 'km'),
+        RunBadge.total250 => ('250', 'km'),
+        RunBadge.total500 => ('500', 'km'),
+        RunBadge.total1000 => ('1000', 'km'),
+        RunBadge.weeks4 => ('4', 'weeks'),
+        RunBadge.threeInAWeek => ('3×', 'week'),
+        RunBadge.planFinished => ('Plan', 'done'),
+      };
+}
+
 enum BadgeGroup {
   distance('Distance firsts'),
   speed('Speed'),

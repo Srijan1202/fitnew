@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/tokens.dart';
 import '../domain/progress.dart';
 
-/// The one weight chart (§17, owner D12): the trend line bold, every raw
-/// reading a hairline tick in `ink35`. Ink only — no red, no green, no
-/// per-day colour (§17 rule 4). Drawn by hand like the thali plate: no
-/// chart library.
+/// The one weight chart (§17, owner D12; beta 4.9, owner): your readings as
+/// the bold line, a dot on each; the trend a thin dashed line in `ink35`.
+/// Ink only — no red, no green, no per-day colour (§17 rule 4). Drawn by
+/// hand like the thali plate: no chart library.
 class TrendChart extends StatelessWidget {
   const TrendChart({
     required this.points,
@@ -200,12 +200,13 @@ class TrendPainter extends CustomPainter {
   /// The palette it was drawn in: a theme change repaints it.
   final FitPalette palette = FitPalette.current;
 
-  /// §17 rule 1: the trend is bold; raw readings are hairlines.
-  static const double trendStroke = 2.5;
-  static const double rawStroke = 1;
-  static const double rawTick = 5;
-  static Color get trendColor => FitColors.ink;
-  static Color get rawColor => FitColors.ink35;
+  /// Beta 4.9 (owner): the line follows your actual weigh-ins (bold, a dot
+  /// on each); the trend is a thin dashed line behind it.
+  static const double readingStroke = 2.5;
+  static const double trendStroke = 1.5;
+  static const double readingDot = 3;
+  static Color get readingColor => FitColors.ink;
+  static Color get trendColor => FitColors.ink35;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -228,39 +229,53 @@ class TrendPainter extends CustomPainter {
       Offset(size.width, size.height),
       rule,
     );
-    final raw = Paint()
-      ..color = rawColor
-      ..strokeWidth = rawStroke
+    if (g.raw.isEmpty) return;
+    // The trend: thin and dashed, behind the readings.
+    final dash = Paint()
+      ..color = trendColor
+      ..strokeWidth = trendStroke
       ..style = PaintingStyle.stroke;
-    // Each raw reading is a hairline ring: visible, never louder than the trend.
-    for (final o in g.raw) {
-      canvas.drawCircle(o, rawTick / 2, raw);
+    for (var i = 1; i < g.trend.length; i++) {
+      _dashed(canvas, g.trend[i - 1], g.trend[i], dash);
     }
-    if (g.trend.length == 1) {
-      canvas.drawCircle(
-        g.trend.first,
-        trendStroke,
-        Paint()..color = trendColor,
+    // The readings: bold, joined, a dot on each; the latest a little larger.
+    if (g.raw.length > 1) {
+      final path = Path();
+      for (final (i, o) in g.raw.indexed) {
+        i == 0 ? path.moveTo(o.dx, o.dy) : path.lineTo(o.dx, o.dy);
+      }
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = readingColor
+          ..strokeWidth = readingStroke
+          ..style = PaintingStyle.stroke
+          ..strokeJoin = StrokeJoin.round
+          ..strokeCap = StrokeCap.round,
       );
-      return;
     }
-    final path = Path();
-    for (final (i, o) in g.trend.indexed) {
-      i == 0 ? path.moveTo(o.dx, o.dy) : path.lineTo(o.dx, o.dy);
+    final dot = Paint()..color = readingColor;
+    final ring = Paint()..color = FitColors.paper;
+    for (final o in g.raw) {
+      canvas
+        ..drawCircle(o, readingDot + 1.5, ring)
+        ..drawCircle(o, readingDot, dot);
     }
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = trendColor
-        ..strokeWidth = trendStroke
-        ..style = PaintingStyle.stroke
-        ..strokeJoin = StrokeJoin.round
-        ..strokeCap = StrokeCap.round,
-    );
-    // Where the trend is now.
     canvas
-      ..drawCircle(g.trend.last, 5, Paint()..color = FitColors.paper)
-      ..drawCircle(g.trend.last, 3.5, Paint()..color = trendColor);
+      ..drawCircle(g.raw.last, 6, ring)
+      ..drawCircle(g.raw.last, 4.5, dot);
+  }
+
+  /// A dashed segment: 4 px on, 4 px off.
+  static void _dashed(Canvas canvas, Offset a, Offset b, Paint paint) {
+    final d = b - a;
+    final length = d.distance;
+    if (length == 0) return;
+    final step = d / length;
+    for (var t = 0.0; t < length; t += 8) {
+      final end = t + 4 < length ? t + 4 : length;
+      canvas.drawLine(a + step * t, a + step * end, paint);
+    }
   }
 
   @override

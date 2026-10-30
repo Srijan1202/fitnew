@@ -87,13 +87,16 @@ export type StreakDayStatus = 'logged' | 'rest' | 'skipped' | 'missed' | 'today'
  * Skip today, missed, today not logged yet (there is still time), or before
  * the account. The same rules as [streak]. Beta 4.8 (owner): a planned rest
  * day stays a rest day unless you trained on it (a meal does not hide it).
+ * Beta 4.9 (owner): any day kept without training is a rest day.
  */
 export function streakDayStatus(input: StreakInput, d: string): StreakDayStatus {
   const trained = input.trainedDays ?? input.activeDays;
-  const restDay = input.restWeekdays.has(isoWeekday(d));
-  if (trained.has(d) || (input.activeDays.has(d) && !restDay)) return 'logged';
+  // Beta 4.9 (owner): "logged" is a day you trained; a day that kept the
+  // streak without training (a meal only, or a planned rest day) is rest.
+  if (trained.has(d)) return 'logged';
+  if (input.activeDays.has(d)) return 'rest';
   if (input.firstDay !== null && d < input.firstDay) return 'before';
-  if (restDay) return 'rest';
+  if (input.restWeekdays.has(isoWeekday(d))) return 'rest';
   if (input.skippedDays.has(d)) return 'skipped';
   return d === input.today ? 'today' : 'missed';
 }

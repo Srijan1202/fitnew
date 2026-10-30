@@ -850,7 +850,7 @@ void main() {
   });
 
   test(
-      'trend geometry: dates on x across the window, both series inside y; the trend bold, raw hairlines, ink only',
+      'trend geometry: dates on x across the window, both series inside y; the readings bold, the trend thin, ink only',
       () {
     const pts = [
       WeightPoint(date: '2026-08-23', rawKg: 76, trendKg: 75),
@@ -895,13 +895,14 @@ void main() {
       '2026-10-26',
     );
     expect(TrendChart.startOf(const [], '2026-10-24'), '2026-10-24');
-    expect(TrendPainter.rawStroke, 1);
+    // Beta 4.9 (owner): the readings are the bold ink line; the trend a
+    // thin grey line behind them.
     expect(
-      TrendPainter.trendStroke,
-      greaterThanOrEqualTo(TrendPainter.rawStroke * 2),
+      TrendPainter.readingStroke,
+      greaterThan(TrendPainter.trendStroke),
     );
-    expect(TrendPainter.rawColor, FitColors.ink35);
-    expect(TrendPainter.trendColor, FitColors.ink);
+    expect(TrendPainter.readingColor, FitColors.ink);
+    expect(TrendPainter.trendColor, FitColors.ink35);
     expect(
       TrendGeometry.of(
         const [],

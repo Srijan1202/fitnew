@@ -594,6 +594,12 @@ void main() {
         find.byKey(const ValueKey('reward.art.first-run.lock')),
         findsNothing,
       );
+      // Beta 4.9 (owner): a badge without a reward is a medal with its figure.
+      expect(
+        find.byKey(const ValueKey('reward.medal.first-run')),
+        findsOneWidget,
+      );
+      expect(find.text('1st'), findsWidgets);
       await tester.scrollUntilVisible(
         find.byKey(const ValueKey('rewards.first-half.status')),
         200,

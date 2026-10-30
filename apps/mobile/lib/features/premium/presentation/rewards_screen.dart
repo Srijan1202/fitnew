@@ -311,8 +311,9 @@ class _StreakHeader extends StatelessWidget {
           ],
           const SizedBox(height: FitSpacing.xs),
           Text(
-            'A day counts when you log a workout or a meal; a planned rest '
-            'day counts once a streak is going.',
+            'A day counts when you log a workout or a meal. Trained: a '
+            'workout or a run. Rest: no training, but the streak kept — a '
+            'meal, or a planned rest day once a streak is going.',
             style: t.bodySmall?.copyWith(color: FitColors.ink60),
           ),
         ],
@@ -507,8 +508,10 @@ class _Legend extends StatelessWidget {
       spacing: FitSpacing.md,
       runSpacing: FitSpacing.xs,
       children: [
-        item(StreakDayStatus.logged, 'Logged'),
-        item(StreakDayStatus.rest, 'Rest day'),
+        // Beta 4.9 (owner): blue is a day you trained; green, a day the
+        // streak kept without training.
+        item(StreakDayStatus.logged, 'Trained'),
+        item(StreakDayStatus.rest, 'Rest'),
         item(StreakDayStatus.skipped, 'Skipped'),
         item(StreakDayStatus.missed, 'Missed'),
       ],

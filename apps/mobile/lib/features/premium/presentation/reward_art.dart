@@ -92,24 +92,70 @@ class RewardArt extends StatelessWidget {
       );
     }
     final badge = RunBadge.byId(id);
+    if (badge != null) return _Medal(badge: badge, size: size);
+    return Icon(Icons.military_tech, size: size * 0.6, color: FitColors.ink60);
+  }
+}
+
+/// Beta 4.9 (owner): a running badge as a medal in its group's colour with
+/// its figure on it — "50 km", "5K 30′", "4 weeks".
+class _Medal extends StatelessWidget {
+  const _Medal({required this.badge, required this.size});
+
+  final RunBadge badge;
+  final double size;
+
+  /// Fixed hues, so a badge looks the same in every theme.
+  static Color colourOf(BadgeGroup g) => switch (g) {
+        BadgeGroup.distance => const Color(0xFFF5B342),
+        BadgeGroup.speed => const Color(0xFF5AB4F5),
+        BadgeGroup.lifetime => const Color(0xFF4ADE80),
+        BadgeGroup.consistency => const Color(0xFFA78BFA),
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final c = colourOf(badge.group);
+    final (top, bottom) = badge.medal;
+    const ink = Color(0xFF111113);
     return Container(
+      key: ValueKey('reward.medal.${badge.id}'),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: earned ? FitColors.accent : FitColors.ink35,
-          width: 2,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: <Color>[Color.lerp(c, Colors.white, 0.35)!, c],
         ),
+        border:
+            Border.all(color: Color.lerp(c, ink, 0.25)!, width: size * 0.05),
       ),
       alignment: Alignment.center,
-      child: Icon(
-        switch (badge?.group) {
-          BadgeGroup.speed => Icons.bolt,
-          BadgeGroup.lifetime => Icons.route,
-          BadgeGroup.consistency => Icons.event_repeat,
-          _ => Icons.military_tech,
-        },
-        size: size * 0.5,
-        color: earned ? FitColors.accent : FitColors.ink60,
+      padding: EdgeInsets.all(size * 0.12),
+      child: FittedBox(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(
+              top,
+              style: const TextStyle(
+                color: ink,
+                fontWeight: FontWeight.w800,
+                fontSize: 16,
+                height: 1,
+              ),
+            ),
+            Text(
+              bottom,
+              style: const TextStyle(
+                color: ink,
+                fontWeight: FontWeight.w600,
+                fontSize: 10,
+                height: 1.1,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
