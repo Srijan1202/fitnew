@@ -1,10 +1,18 @@
-// ESLint for the admin scaffold (audit 2026-10-20): `next lint` asked an
-// interactive question and stopped the root `pnpm lint`; this is the
-// non-interactive equivalent of its "Strict" choice.
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { FlatCompat } from '@eslint/eslintrc';
+// ESLint for the admin panel (audit 2026-10-20): the non-interactive
+// equivalent of `next lint`'s "Strict" choice. Beta 4.8: Next 16 ships
+// flat configs, so no compatibility layer.
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import nextTs from 'eslint-config-next/typescript';
 
-const compat = new FlatCompat({ baseDirectory: dirname(fileURLToPath(import.meta.url)) });
-
-export default [...compat.extends('next/core-web-vitals', 'next/typescript')];
+export default [
+  ...nextVitals,
+  ...nextTs,
+  {
+    rules: {
+      // New in Next 16's React rules. The panel loads each page's data in an
+      // effect (loading, data, error) and closes the phone drawer when the
+      // page changes; both are deliberate and cheap here.
+      'react-hooks/set-state-in-effect': 'off',
+    },
+  },
+];

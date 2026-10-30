@@ -508,6 +508,8 @@ export function plateReasons(macros: MacroRange, chosen: readonly MessDish[], re
 function tailReasons(chosen: readonly MessDish[], macros: MacroRange, request: PlateRequest): PlateReason[] {
   const r: PlateReason[] = [];
   const top = [...chosen].sort(byDensityThenSlug)[0];
+  // A plate always has a dish, so there is always a top one.
+  /* v8 ignore next -- @preserve */
   if (top !== undefined) r.push({ code: 'top-protein-dish', dishSlug: top.id });
   if (request.postWorkout === true && request.remainingCarb !== undefined) {
     r.push({ code: 'post-workout-carbs', target: request.remainingCarb, low: macros.carbLow, high: macros.carbHigh });
@@ -735,8 +737,9 @@ export function searchPlates(request: PlateRequest, maxResults = 3): PlateSearch
   const ranked = [...kept.get(bestTier)!.entries()]
     .map(([mask, k]) => ({ mask, ...k, key: k.key ?? keyOf(k.counts) }))
     // Plate keys are unique within a tier; 0 keeps the comparator total.
-    /* v8 ignore next -- @preserve */
+    /* v8 ignore start -- @preserve */
     .sort((a, b) => (Math.abs(b.score - a.score) > EPS ? b.score - a.score : a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+  /* v8 ignore stop -- @preserve */
   const chosen: typeof ranked = [];
   for (const plate of ranked) {
     if (chosen.length >= maxResults) break;

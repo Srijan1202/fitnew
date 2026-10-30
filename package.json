@@ -20,7 +20,7 @@
     "check:secrets": "node scripts/check-secrets.mjs"
   },
   "devDependencies": {
-    "typescript": "5.9.3"
+    "typescript": "6.0.3"
   },
   "pnpm": {
     "overrides": {

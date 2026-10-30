@@ -660,8 +660,9 @@ export function buildActions(model: UserModel): Action[] {
   return candidates(model)
     .filter((c) => !dismissed.has(`${c.kind}\u0000${c.subjectKey}`))
     // No two candidates share a priority today; the kind order keeps it total if they ever do.
-    /* v8 ignore next -- @preserve */
+    /* v8 ignore start -- @preserve */
     .sort((a, b) => b.priority - a.priority || KIND_ORDER.get(a.kind)! - KIND_ORDER.get(b.kind)!)
+    /* v8 ignore stop -- @preserve */
     .map((c, i): Action => {
       const words = wordReason(c.reason);
       const content = { ...c, ...words, engineVersion: ENGINE_VERSION };

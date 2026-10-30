@@ -261,6 +261,8 @@ export function recommendMeal(input: MealRecommendationInput): MealRecommendatio
 
   const top = plates[0];
   let shortfall: MealRecommendation['shortfall'] = null;
+  // No plates returned early above, so there is a top plate here.
+  /* v8 ignore next -- @preserve */
   if (top !== undefined) {
     const protein = gapOf(target.protein, top.macros.proteinLow, top.macros.proteinHigh, search.menuMax.proteinHigh);
     const kcal = gapOf(target.kcal, top.macros.kcalLow, top.macros.kcalHigh, search.menuMax.kcalHigh);

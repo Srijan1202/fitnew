@@ -131,7 +131,7 @@ export class RunningService {
       }
     }
     // Beta 4.1: the plan's run this one did — the one named, else the day's still-planned run.
-    let plannedId: string | null = null;
+    let plannedId: string | null;
     if (req.plannedRunId !== undefined) {
       const planned = await this.plans.mine(userId, req.plannedRunId);
       if (planned === null) throw new AppError('NOT_FOUND', 'No such planned run.', [{ path: 'plannedRunId', issue: 'not found' }]);

@@ -284,6 +284,8 @@ export function consistency(
     if (date < from || date > today) continue;
     const key = isoWeekKey(date);
     const w = byWeek.get(key);
+    // Every day from the window's start to today has its week above.
+    /* v8 ignore next -- @preserve */
     if (w !== undefined) byWeek.set(key, { ...w, completed: w.completed + 1 });
   }
   const weeks = [...byWeek.values()];

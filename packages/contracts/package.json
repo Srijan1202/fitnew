@@ -20,12 +20,13 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.5",
+    "@eslint/js": "10.0.1",
     "@fitos/config": "workspace:*",
-    "eslint": "9.39.5",
-    "typescript": "5.9.3",
+    "eslint": "10.13.0",
+    "typescript": "6.0.3",
     "typescript-eslint": "8.72.1",
-    "vitest": "2.1.9"
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

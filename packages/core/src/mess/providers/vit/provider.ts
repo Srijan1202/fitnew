@@ -114,6 +114,8 @@ export function resolveMenuDate(response: MessItResponse, targetDate: string): M
     const delta = daysBetween(date, targetDate);
     if (delta <= 0) continue; // only project forward from published data
     if (delta % cycleLengthDays !== 0) continue;
+    // Dates ascend, so each congruent date is nearer the target than the last.
+    /* v8 ignore next -- @preserve */
     if (best === null || delta < best.distance) best = { date, distance: delta };
   }
   if (best === null) return { kind: 'unavailable', date: targetDate, latestAvailable };
