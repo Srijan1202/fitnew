@@ -177,6 +177,8 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.findByName("upload") ?: signingConfigs.getByName("debug")
+            // Beta 4.9.1: keep what WorkManager makes by reflection (see the file).
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 }
