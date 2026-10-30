@@ -26,6 +26,10 @@ class FakeRunningApi implements RunningApi {
   /// Every request answers this failure while set.
   Failure? failWith;
 
+  /// While set, an upload waits for it (the phone's run page opens first,
+  /// as on a real network).
+  Completer<void>? holdUploads;
+
   /// Beta 4.1: the active plan, as the server would send it (null: none).
   Map<String, dynamic>? plan;
   final List<Map<String, dynamic>> createdPlans = [];
@@ -162,6 +166,7 @@ class FakeRunningApi implements RunningApi {
   ) async {
     final id = body['clientRunId'] as String;
     calls.add('create $id');
+    await holdUploads?.future;
     if (failWith != null) return Err(failWith!);
     return Ok(stored[id] ??= _detail(body));
   }

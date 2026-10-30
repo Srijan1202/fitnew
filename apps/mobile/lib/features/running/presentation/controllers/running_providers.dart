@@ -276,6 +276,10 @@ final runHistoryProvider = Provider<AsyncValue<RunHistory>>((ref) {
 final runDetailProvider =
     StreamProvider.family<RunDetail?, String>((ref, id) async* {
   final repo = ref.watch(runningRepositoryProvider);
+  // A run that reached the server shows the server's record: the page
+  // kept "Not synced yet" until FITOS was closed (owner 2026-10-30).
+  final sub = repo.engine.drained.listen((_) => ref.invalidateSelf());
+  ref.onDispose(sub.cancel);
   final weight =
       ref.read(profileControllerProvider).value?.profile.latestWeightKg;
   final local = await repo.local(id, weightKg: weight);

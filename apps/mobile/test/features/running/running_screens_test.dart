@@ -530,6 +530,8 @@ void main() {
     await tester.enterText(find.byKey(const ValueKey('run.name')), 'Lake loop');
     await reveal(tester, 'run.effort.4');
     await tester.tap(find.byKey(const ValueKey('run.effort.4')));
+    // The upload takes a moment, as on a phone: the run's page opens first.
+    api.holdUploads = Completer<void>();
     await reveal(tester, 'run.save');
     await tester.tap(find.byKey(const ValueKey('run.save')));
     await settle(tester);
@@ -537,11 +539,16 @@ void main() {
 
     // The run's page; the server has it once the queue drains.
     expect(find.text('Lake loop'), findsWidgets);
+    expect(find.byKey(const ValueKey('run.pending')), findsOneWidget);
+    api.holdUploads!.complete();
     await done(tester, c.read(runningRepositoryProvider).engine.drain());
     await settle(tester);
     final id = api.stored.keys.single;
     expect(api.stored[id]!['name'], 'Lake loop');
     expect(api.stored[id]!['effort'], 4);
+    // Owner 2026-10-30: once sent, the page is the server's run, not
+    // "Not synced yet" until FITOS is closed.
+    expect(find.byKey(const ValueKey('run.pending')), findsNothing);
     final sent = decodeTrack(
       EncodedTrack.fromJson(api.stored[id]!['track'] as Map<String, dynamic>),
     );
