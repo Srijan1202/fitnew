@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../shared/widgets/fit_glass.dart';
 import 'tokens.dart';
 import 'typography.dart';
 
@@ -49,7 +50,15 @@ abstract final class FitTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       fontFamily: FitTypography.family,
-      scaffoldBackgroundColor: FitColors.paper,
+      // The paper and the glow are the route's (FitCanvas, owner
+      // 2026-10-30), drawn behind the bars too.
+      scaffoldBackgroundColor: Colors.transparent,
+      pageTransitionsTheme: PageTransitionsTheme(
+        builders: <TargetPlatform, PageTransitionsBuilder>{
+          for (final e in const PageTransitionsTheme().builders.entries)
+            e.key: FitPageTransitions(e.value),
+        },
+      ),
       textTheme: textTheme,
       dividerTheme: DividerThemeData(
         color: FitColors.rule,
@@ -108,8 +117,11 @@ abstract final class FitTheme {
         selectionColor: FitColors.accent.withValues(alpha: 0.35),
         selectionHandleColor: FitColors.accent,
       ),
+      // See-through on the route's canvas, the title on the left, on every
+      // pushed page alike (owner 2026-10-30).
       appBarTheme: AppBarTheme(
-        backgroundColor: FitColors.paper,
+        backgroundColor: Colors.transparent,
+        centerTitle: false,
         foregroundColor: FitColors.ink,
         surfaceTintColor: Colors.transparent,
         elevation: 0,

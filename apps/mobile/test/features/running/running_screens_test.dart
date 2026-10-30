@@ -188,6 +188,20 @@ void main() {
   ProviderContainer container(WidgetTester tester) =>
       ProviderScope.containerOf(tester.element(find.byType(MaterialApp)));
 
+  /// Running's history sits below the header, the plan and the totals:
+  /// scrolls the page until [finder] is built.
+  Future<void> toHistory(WidgetTester tester, Finder finder) =>
+      tester.scrollUntilVisible(
+        finder,
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byKey(const ValueKey('running.list')),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+
   /// Scrolls the run report (summary or detail) until [key] is built.
   Future<void> reveal(WidgetTester tester, String key) async {
     await tester.scrollUntilVisible(
@@ -271,14 +285,19 @@ void main() {
   testWidgets('Training opens on Gym; Running is one tap away', (tester) async {
     await tester.pumpWidget(harness());
     await settle(tester);
-    final mode = tester.widget<SegmentedButton<TrainingMode>>(
-      find.byKey(const ValueKey('training.mode')),
-    );
-    expect(mode.selected, {TrainingMode.gym});
+    // The chosen half is the pill: on the left for Gym, then the right.
+    double thumbX() =>
+        tester.getCenter(find.byKey(const ValueKey('training.mode.thumb'))).dx;
+    final middle =
+        tester.getCenter(find.byKey(const ValueKey('training.mode'))).dx;
+    expect(container(tester).read(trainingModeProvider), TrainingMode.gym);
+    expect(thumbX(), lessThan(middle));
     expect(find.byKey(const ValueKey('running.start')), findsNothing);
     await tester.tap(find.byKey(const ValueKey('training.mode.running')));
     await settle(tester);
+    expect(thumbX(), greaterThan(middle));
     expect(find.byKey(const ValueKey('running.start')), findsOneWidget);
+    await toHistory(tester, find.byKey(const ValueKey('running.empty')));
     expect(find.byKey(const ValueKey('running.empty')), findsOneWidget);
     expect(find.text('0.00 km'), findsNWidgets(2));
   });
@@ -435,6 +454,7 @@ void main() {
     await settle(tester);
     expect(api.stored.values.single['source'], 'watch');
     final id = api.stored.keys.single;
+    await toHistory(tester, find.byKey(ValueKey('running.run.$id')));
     expect(find.byKey(ValueKey('running.run.$id.watch')), findsOneWidget);
     final row = find.byKey(ValueKey('running.run.$id'));
     await tester.ensureVisible(row);
@@ -748,6 +768,7 @@ void main() {
     testWidgets('shows in the history with this week, and opens',
         (tester) async {
       final id = await savedRun(tester);
+      await toHistory(tester, find.byKey(ValueKey('running.run.$id')));
       expect(find.byKey(ValueKey('running.run.$id')), findsOneWidget);
       expect(find.text('1 run · 6:40'), findsNWidgets(2));
       await openRun(tester, id);
@@ -830,6 +851,7 @@ void main() {
         'beta 4.2: a run’s best efforts with the record’s medal, and its trophy in the history',
         (tester) async {
       final id = await savedRun(tester);
+      await toHistory(tester, find.byKey(ValueKey('running.run.$id')));
       // About 1.2 km at 3 m/s: 400 m and 1 km, both records (the first run).
       expect(
         find.byKey(ValueKey('running.run.$id.record')),

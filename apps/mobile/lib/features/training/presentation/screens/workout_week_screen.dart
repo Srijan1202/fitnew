@@ -267,7 +267,6 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
         ),
       ),
       error: (e, _) => Scaffold(
-        appBar: AppBar(automaticallyImplyLeading: false),
         body: FitBackdrop(
           child: SafeArea(
             child: _Failed(
@@ -297,87 +296,97 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
             ? serverDay
             : null;
         return Scaffold(
-          // The Training tab's root: no back button (the bar and Android
-          // back handle leaving); the title carries the programme.
-          appBar: AppBar(
-            automaticallyImplyLeading: false,
-            titleSpacing: FitSpacing.screen,
-            title: _Title(program: program),
-            actions: <Widget>[
-              PopupMenuButton<String>(
-                key: const ValueKey('plan.menu'),
-                icon: Icon(Icons.more_horiz, color: FitColors.ink),
-                onSelected: (value) {
-                  switch (value) {
-                    case 'edit':
-                      context.push(Routes.planDayEdit(day.id));
-                    case 'change':
-                      context.push(Routes.planNew);
-                    case 'rename':
-                      _rename(context, program);
-                    case 'history':
-                      context.push(Routes.history);
-                    case 'volume':
-                      context.push(Routes.volume);
-                    case 'adhoc':
-                      _start(program, null);
-                    case 'skip':
-                      _skip(program, todayDay);
-                    case 'share':
-                      shareProgramme(context, ref);
-                    case 'shared':
-                      context.push(Routes.planShared);
-                  }
-                },
-                itemBuilder: (_) => [
-                  if (canSkip)
-                    const PopupMenuItem(
-                      key: ValueKey('plan.skip'),
-                      value: 'skip',
-                      child: Text('Skip today'),
-                    ),
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Text('Edit this day'),
-                  ),
-                  const PopupMenuItem(
-                    value: 'history',
-                    child: Text('History'),
-                  ),
-                  const PopupMenuItem(value: 'volume', child: Text('Volume')),
-                  const PopupMenuItem(
-                    value: 'adhoc',
-                    child: Text('Start empty session'),
-                  ),
-                  const PopupMenuItem(
-                    value: 'rename',
-                    child: Text('Rename programme'),
-                  ),
-                  const PopupMenuItem(
-                    value: 'change',
-                    child: Text('Change programme'),
-                  ),
-                  // Beta 3.3 (ADR-034), behind the admin's switch.
-                  if (shareOn) ...[
-                    const PopupMenuItem(
-                      key: ValueKey('plan.share'),
-                      value: 'share',
-                      child: Text('Share programme'),
-                    ),
-                    const PopupMenuItem(
-                      key: ValueKey('plan.useShared'),
-                      value: 'shared',
-                      child: Text('Use a shared programme'),
-                    ),
-                  ],
-                ],
-              ),
-            ],
-          ),
           body: FitBackdrop(
             child: SafeArea(
               child: Column(
                 children: <Widget>[
+                  // The tabs' header (owner 2026-10-30): the programme as the
+                  // large title, the menu on the right; no bar above it.
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      FitSpacing.screen,
+                      FitSpacing.lg,
+                      FitSpacing.sm,
+                      FitSpacing.sm,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: <Widget>[
+                        Expanded(child: _Title(program: program)),
+                        PopupMenuButton<String>(
+                          key: const ValueKey('plan.menu'),
+                          icon: Icon(Icons.more_horiz, color: FitColors.ink),
+                          onSelected: (value) {
+                            switch (value) {
+                              case 'edit':
+                                context.push(Routes.planDayEdit(day.id));
+                              case 'change':
+                                context.push(Routes.planNew);
+                              case 'rename':
+                                _rename(context, program);
+                              case 'history':
+                                context.push(Routes.history);
+                              case 'volume':
+                                context.push(Routes.volume);
+                              case 'adhoc':
+                                _start(program, null);
+                              case 'skip':
+                                _skip(program, todayDay);
+                              case 'share':
+                                shareProgramme(context, ref);
+                              case 'shared':
+                                context.push(Routes.planShared);
+                            }
+                          },
+                          itemBuilder: (_) => [
+                            if (canSkip)
+                              const PopupMenuItem(
+                                key: ValueKey('plan.skip'),
+                                value: 'skip',
+                                child: Text('Skip today'),
+                              ),
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Text('Edit this day'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'history',
+                              child: Text('History'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'volume',
+                              child: Text('Volume'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'adhoc',
+                              child: Text('Start empty session'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'rename',
+                              child: Text('Rename programme'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'change',
+                              child: Text('Change programme'),
+                            ),
+                            // Beta 3.3 (ADR-034), behind the admin's switch.
+                            if (shareOn) ...[
+                              const PopupMenuItem(
+                                key: ValueKey('plan.share'),
+                                value: 'share',
+                                child: Text('Share programme'),
+                              ),
+                              const PopupMenuItem(
+                                key: ValueKey('plan.useShared'),
+                                value: 'shared',
+                                child: Text('Use a shared programme'),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                   DaySelector(
                     days: program.days,
                     selected: selected,
@@ -575,14 +584,15 @@ class _Title extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Text(
-          program.name,
-          style: textTheme.titleMedium,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        Text(
           '${program.source.label.toUpperCase()} · WEEK ${program.mesocycleWeek}',
-          style: textTheme.labelSmall?.copyWith(color: FitColors.ink60),
+          style: textTheme.labelSmall,
+        ),
+        const SizedBox(height: FitSpacing.xs),
+        Text(
+          program.name,
+          style: textTheme.displaySmall,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );

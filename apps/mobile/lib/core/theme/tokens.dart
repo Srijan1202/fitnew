@@ -163,25 +163,6 @@ class FitPalette {
     premium: false,
   );
 
-  /// The §6.2 original: light, paper and ink. Optional since ADR-028.
-  static const paperPalette = FitPalette(
-    id: 'paper',
-    label: 'Paper',
-    brightness: Brightness.light,
-    paper: Color(0xFFEDEBE4),
-    paper2: Color(0xFFE4E1D8),
-    ink: Color(0xFF17171A),
-    ink60: Color(0xFF5E5D58),
-    ink35: Color(0xFF95938C),
-    rule: Color(0xFFC9C6BB),
-    pine: Color(0xFF1E6B47),
-    amber: Color(0xFFA8641B),
-    oxide: Color(0xFF9E2B21),
-    sky: Color(0xFF1F6FB8),
-    glass: false,
-    premium: false,
-  );
-
   /// Premium: ink becomes the canvas; the meanings keep their hues, lifted.
   static const night = FitPalette(
     id: 'night',
@@ -307,7 +288,6 @@ class FitPalette {
   static const all = <FitPalette>[
     fitosDark,
     fitosLight,
-    paperPalette,
     night,
     forest,
     ocean,
@@ -321,8 +301,11 @@ class FitPalette {
   FitPalette get freeFallback =>
       brightness == Brightness.dark ? fitosDark : fitosLight;
 
-  static FitPalette byId(String? id) =>
-      all.firstWhere((p) => p.id == id, orElse: () => fitosDark);
+  /// Paper (the §6.2 original) was dropped on 2026-10-30 (owner): a phone
+  /// that kept it opens on FITOS Light, the other light theme.
+  static FitPalette byId(String? id) => id == 'paper'
+      ? fitosLight
+      : all.firstWhere((p) => p.id == id, orElse: () => fitosDark);
 }
 
 /// 8px base grid (§6.4).

@@ -54,10 +54,7 @@ class ProfileScreen extends ConsumerWidget {
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.popOrHome()),
         title: Text('Profile', style: textTheme.titleMedium),
-        centerTitle: true,
-        backgroundColor: fitGlass ? Colors.transparent : null,
       ),
-      extendBodyBehindAppBar: fitGlass,
       body: FitBackdrop(
         child: SafeArea(
           child: async.when(

@@ -9,6 +9,7 @@ import 'package:fitos/features/onboarding/presentation/controllers/onboarding_co
 import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:fitos/features/profile/domain/entities/vocabulary.dart';
 import 'package:fitos/features/workout/presentation/controllers/workout_providers.dart';
+import 'package:fitos/shared/widgets/fit_glass.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -59,12 +60,16 @@ void main() {
     expect(find.text('Continue with Google'), findsOneWidget);
     expect(find.byType(HomeScreen), findsNothing);
 
-    final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
-    final theme = Theme.of(tester.element(find.byType(Scaffold).first));
-    expect(
-      scaffold.backgroundColor ?? theme.scaffoldBackgroundColor,
-      FitColors.paper,
+    // The page's canvas (FitCanvas): the Scaffolds above it are clear.
+    final canvas = tester.widget<ColoredBox>(
+      find
+          .descendant(
+            of: find.byType(FitCanvas).first,
+            matching: find.byType(ColoredBox),
+          )
+          .first,
     );
+    expect(canvas.color, FitColors.paper);
   });
 
   testWidgets('cold start, session persisted → straight to TODAY, no sign-in',

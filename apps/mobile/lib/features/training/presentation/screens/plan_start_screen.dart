@@ -23,17 +23,19 @@ class PlanStartScreen extends ConsumerWidget {
     return Scaffold(
       // A tab root when there is no programme yet (no back); a pushed
       // screen from "Change programme" otherwise.
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading:
-            canGoBack ? BackButton(onPressed: () => context.popOrHome()) : null,
-      ),
+      // On the tab there is no bar at all (owner 2026-10-30: an empty band
+      // sat under Gym / Running); from the menu, a back button.
+      appBar: canGoBack
+          ? AppBar(
+              leading: BackButton(onPressed: () => context.popOrHome()),
+            )
+          : null,
       body: FitBackdrop(
         child: SafeArea(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(
               FitSpacing.screen,
-              FitSpacing.sm,
+              FitSpacing.lg,
               FitSpacing.screen,
               FitSpacing.xl,
             ),

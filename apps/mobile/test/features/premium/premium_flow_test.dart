@@ -14,6 +14,7 @@ import 'package:fitos/features/premium/presentation/premium_providers.dart';
 import 'package:fitos/features/premium/presentation/rewards_providers.dart';
 import 'package:fitos/features/home/presentation/controllers/home_providers.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
+import 'package:fitos/shared/widgets/fit_glass.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -265,7 +266,7 @@ void main() {
       expect(FitPalette.current.id, 'fitos-dark');
     });
 
-    testWidgets('free: FITOS Light and Paper are open to everyone',
+    testWidgets('free: FITOS Light is open to everyone; Paper is gone',
         (tester) async {
       await start(tester);
       await tap(tester, 'home.profile');
@@ -280,13 +281,15 @@ void main() {
         changeGoal.style?.foregroundColor?.resolve(<WidgetState>{}),
         FitPalette.fitosLight.ink,
       );
-      await tap(tester, 'theme.paper');
-      expect(FitPalette.current.id, 'paper');
       // The type follows the palette (it once kept the first palette's ink).
       expect(
         Theme.of(tester.element(find.text('THEME'))).textTheme.bodyLarge?.color,
-        FitPalette.paperPalette.ink,
+        FitPalette.fitosLight.ink,
       );
+      // Owner 2026-10-30: Paper is no longer offered; a phone that kept it
+      // opens on FITOS Light.
+      expect(find.byKey(const ValueKey('theme.paper')), findsNothing);
+      expect(FitPalette.byId('paper').id, 'fitos-light');
     });
 
     testWidgets(
@@ -297,11 +300,16 @@ void main() {
       await tap(tester, 'home.profile');
       await tap(tester, 'theme.night');
       expect(FitPalette.current.id, 'night');
-      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).last);
-      final bg = scaffold.backgroundColor ??
-          Theme.of(tester.element(find.byType(Scaffold).last))
-              .scaffoldBackgroundColor;
-      expect(bg, FitPalette.night.paper);
+      // The page's canvas (FitCanvas): the Scaffolds above it are clear.
+      final canvas = tester.widget<ColoredBox>(
+        find
+            .descendant(
+              of: find.byType(FitCanvas).last,
+              matching: find.byType(ColoredBox),
+            )
+            .first,
+      );
+      expect(canvas.color, FitPalette.night.paper);
       // Night's type is Night's ink, and the tab bar is Night's canvas — the
       // two that left dark-on-dark and light-on-light before.
       final ctx = tester.element(find.byType(Scaffold).last);

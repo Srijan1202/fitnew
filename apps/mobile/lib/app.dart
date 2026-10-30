@@ -8,6 +8,7 @@ import 'core/routing/router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'core/theme/tokens.dart';
+import 'shared/widgets/fit_glass.dart';
 import 'features/premium/presentation/app_icon_controller.dart';
 import 'features/premium/presentation/premium_providers.dart';
 import 'features/nutrition/presentation/controllers/food_log_providers.dart';
@@ -102,32 +103,38 @@ class FitOSApp extends ConsumerWidget {
               data: mediaQuery.copyWith(
                 textScaler: mediaQuery.textScaler.clamp(maxScaleFactor: 2.0),
               ),
-              child: updateRequired
-                  ? const UpdateRequiredScreen()
-                  : Stack(
-                      children: <Widget>[
-                        Positioned.fill(
-                          child: child ?? const SizedBox.shrink(),
-                        ),
-                        // Beta 3.5: a newer beta, asked over any screen at
-                        // every open — never in the middle of a workout.
-                        UpdatePromptHost(
-                          navigatorContext: () =>
-                              router.routerDelegate.navigatorKey.currentContext,
-                          suppressed: () => router
-                              .routerDelegate.currentConfiguration.uri.path
-                              .startsWith('/plan/session'),
-                        ),
-                        // Beta 3.6: a camera photo Android kept for us.
-                        LostPhotoHost(
-                          navigatorContext: () =>
-                              router.routerDelegate.navigatorKey.currentContext,
-                          suppressed: () => router
-                              .routerDelegate.currentConfiguration.uri.path
-                              .startsWith('/plan/session'),
-                        ),
-                      ],
-                    ),
+              // The paper and the glow, once under every page and its bar
+              // (owner 2026-10-30); the Scaffolds above are clear. The
+              // router's pages have no transition, so only the top one
+              // paints over it.
+              child: FitCanvas(
+                child: updateRequired
+                    ? const UpdateRequiredScreen()
+                    : Stack(
+                        children: <Widget>[
+                          Positioned.fill(
+                            child: child ?? const SizedBox.shrink(),
+                          ),
+                          // Beta 3.5: a newer beta, asked over any screen at
+                          // every open — never in the middle of a workout.
+                          UpdatePromptHost(
+                            navigatorContext: () => router
+                                .routerDelegate.navigatorKey.currentContext,
+                            suppressed: () => router
+                                .routerDelegate.currentConfiguration.uri.path
+                                .startsWith('/plan/session'),
+                          ),
+                          // Beta 3.6: a camera photo Android kept for us.
+                          LostPhotoHost(
+                            navigatorContext: () => router
+                                .routerDelegate.navigatorKey.currentContext,
+                            suppressed: () => router
+                                .routerDelegate.currentConfiguration.uri.path
+                                .startsWith('/plan/session'),
+                          ),
+                        ],
+                      ),
+              ),
             );
           },
         ),

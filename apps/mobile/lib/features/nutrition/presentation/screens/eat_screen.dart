@@ -61,7 +61,7 @@ class EatScreen extends ConsumerWidget {
               key: const ValueKey('eat.list'),
               padding: EdgeInsets.fromLTRB(
                 fitGlass ? FitSpacing.md : FitSpacing.screen,
-                FitSpacing.md,
+                FitSpacing.lg,
                 fitGlass ? FitSpacing.md : FitSpacing.screen,
                 // Room for the floating bar.
                 fitGlass ? 112 : FitSpacing.xl,
@@ -235,17 +235,24 @@ class _Header extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     final notifier = ref.read(eatDateProvider.notifier);
+    // The tabs' header (owner 2026-10-30): the tab's name as the small
+    // label, the day as the large title, ‹ › beside it; tap the title to
+    // come back to today.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Row(
           children: <Widget>[
-            Text('EAT', style: textTheme.labelSmall),
+            Text('NUTRITION', style: textTheme.labelSmall),
             const Spacer(),
             // Flexible: at 200 % text the label ellipsises instead of overflowing.
             Flexible(
               child: TextButton.icon(
                 key: const ValueKey('eat.library'),
+                // Flush with the content's right edge.
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.only(left: FitSpacing.sm),
+                ),
                 onPressed: () => context.push(Routes.foodLibrary),
                 icon: const Icon(Icons.menu_book_outlined, size: 18),
                 label: const Text(
@@ -257,44 +264,39 @@ class _Header extends ConsumerWidget {
             ),
           ],
         ),
-        // ‹  Today · Thu 24 Sep  ›  — compact; tap the date to come back to today.
         Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
+            Expanded(
+              child: InkWell(
+                onTap: date == today ? null : notifier.toToday,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      EatFormat.dayLabel(date, today),
+                      key: const ValueKey('eat.date'),
+                      style: textTheme.displaySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      date == today
+                          ? EatFormat.shortDate(date)
+                          : 'Tap to go back to today',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: FitColors.ink60,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             IconButton(
               key: const ValueKey('eat.prev'),
               tooltip: 'Previous day',
               onPressed: notifier.previous,
               icon: const Icon(Icons.chevron_left),
-            ),
-            Expanded(
-              child: InkWell(
-                onTap: date == today ? null : notifier.toToday,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 44),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        EatFormat.dayLabel(date, today),
-                        key: const ValueKey('eat.date'),
-                        style: textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      Text(
-                        date == today
-                            ? EatFormat.shortDate(date)
-                            : 'Tap to go back to today',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: FitColors.ink60,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ),
             IconButton(
               key: const ValueKey('eat.next'),
@@ -304,6 +306,7 @@ class _Header extends ConsumerWidget {
             ),
           ],
         ),
+        const SizedBox(height: FitSpacing.sm),
         const FitRule(),
       ],
     );

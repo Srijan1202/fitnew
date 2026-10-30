@@ -214,18 +214,24 @@ class FitRule extends StatelessWidget {
       : Divider(color: FitColors.rule, height: 1);
 }
 
-/// The canvas behind a glass screen: two soft pools of the glow colour, so
-/// the translucent blocks have something to show through. Nothing on Paper.
-class FitBackdrop extends StatelessWidget {
-  const FitBackdrop({required this.child, super.key});
+/// The canvas behind every page (owner 2026-10-30): the palette's paper and,
+/// on glass, two soft pools of the glow colour, so the translucent blocks
+/// have something to show through. The app draws it once under the
+/// navigator (app.dart), behind the top bar too, so a pushed page's
+/// see-through bar sits on the same glow as its content instead of a solid
+/// band; a route pushed with its own transition gets one of its own
+/// ([FitPageTransitions]).
+class FitCanvas extends StatelessWidget {
+  const FitCanvas({required this.child, super.key});
 
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    if (!fitGlass) return child;
     final p = FitPalette.current;
     final dark = p.brightness == Brightness.dark;
+    // The same tree on every palette (a flat one gets clear pools): the
+    // navigator under it must not be rebuilt when the theme changes.
     Widget pool(Alignment at, double radius, double alpha) => Positioned.fill(
           child: IgnorePointer(
             child: DecoratedBox(
@@ -234,7 +240,7 @@ class FitBackdrop extends StatelessWidget {
                   center: at,
                   radius: radius,
                   colors: <Color>[
-                    p.glow.withValues(alpha: alpha),
+                    p.glow.withValues(alpha: p.glass ? alpha : 0),
                     p.glow.withValues(alpha: 0),
                   ],
                 ),
@@ -242,14 +248,52 @@ class FitBackdrop extends StatelessWidget {
             ),
           ),
         );
-    return Stack(
-      children: <Widget>[
-        pool(const Alignment(1.1, -1.05), 1.1, dark ? 0.16 : 0.20),
-        pool(const Alignment(-1.2, 0.35), 0.9, dark ? 0.07 : 0.10),
-        child,
-      ],
+    return ColoredBox(
+      color: FitColors.paper,
+      child: Stack(
+        children: <Widget>[
+          pool(const Alignment(1.1, -1.05), 1.1, dark ? 0.16 : 0.20),
+          pool(const Alignment(-1.2, 0.35), 0.9, dark ? 0.07 : 0.10),
+          Positioned.fill(child: child),
+        ],
+      ),
     );
   }
+}
+
+/// Puts each route on a [FitCanvas], then runs the platform's own
+/// transition; the Scaffolds and bars above it are see-through.
+class FitPageTransitions extends PageTransitionsBuilder {
+  const FitPageTransitions(this.inner);
+
+  final PageTransitionsBuilder inner;
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) =>
+      inner.buildTransitions(
+        route,
+        context,
+        animation,
+        secondaryAnimation,
+        FitCanvas(child: child),
+      );
+}
+
+/// A screen's body on the canvas. The glow is now the route's
+/// ([FitCanvas]); this stays as the marker the screens were built with.
+class FitBackdrop extends StatelessWidget {
+  const FitBackdrop({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => child;
 }
 
 /// iOS-style grouped list: an eyebrow, then rows in one block with inset

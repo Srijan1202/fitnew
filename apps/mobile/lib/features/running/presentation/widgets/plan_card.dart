@@ -43,7 +43,8 @@ class PlanCard extends ConsumerWidget {
               style: t.bodyLarge,
             ),
             const SizedBox(height: FitSpacing.sm),
-            OutlinedButton(
+            // The card's one action, solid like Check in on Progress.
+            FilledButton(
               key: const ValueKey('running.plan.new'),
               onPressed: () => context.push(Routes.runPlanNew),
               child: const Text('Choose a plan'),

@@ -81,6 +81,7 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
                 const SizedBox(height: FitSpacing.md),
                 SegmentedButton<bool>(
                   key: const ValueKey('steps.range'),
+                  showSelectedIcon: false,
                   segments: const <ButtonSegment<bool>>[
                     ButtonSegment(value: false, label: Text('Week')),
                     ButtonSegment(value: true, label: Text('4 weeks')),

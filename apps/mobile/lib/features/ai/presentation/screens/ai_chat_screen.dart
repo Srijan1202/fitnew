@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
-import '../../../../shared/widgets/fitos_wordmark.dart';
 import '../../../training/presentation/controllers/program_controller.dart';
 import '../../../workout/presentation/controllers/workout_providers.dart';
 import '../../domain/entities/ai.dart';
@@ -176,27 +175,50 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     final locked = ref.watch(isPremiumProvider) == false;
     final configured = !locked && (s == null || (s.enabled && s.configured));
 
+    final t = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        titleSpacing: FitSpacing.screen,
-        title: const FitosWordmark(size: 20, withName: false),
-        actions: <Widget>[
-          if (chat.turns.isNotEmpty)
-            TextButton(
-              key: const ValueKey('ai.clear'),
-              onPressed: chat.sending
-                  ? null
-                  : () => ref.read(aiChatProvider.notifier).clear(),
-              child: const Text('New chat'),
-            ),
-        ],
-      ),
       body: FitBackdrop(
         child: SafeArea(
           bottom: false,
           child: Column(
             children: <Widget>[
+              // The tabs' header (owner 2026-10-30), in place of a bar that
+              // held only the F mark.
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  FitSpacing.screen,
+                  FitSpacing.lg,
+                  FitSpacing.sm,
+                  FitSpacing.sm,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: <Widget>[
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text('AI', style: t.labelSmall),
+                          const SizedBox(height: FitSpacing.xs),
+                          Text(
+                            'FITOS AI',
+                            key: const ValueKey('ai.title'),
+                            style: t.displaySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (chat.turns.isNotEmpty)
+                      TextButton(
+                        key: const ValueKey('ai.clear'),
+                        onPressed: chat.sending
+                            ? null
+                            : () => ref.read(aiChatProvider.notifier).clear(),
+                        child: const Text('New chat'),
+                      ),
+                  ],
+                ),
+              ),
               Expanded(
                 child: locked
                     ? const SingleChildScrollView(
@@ -358,16 +380,15 @@ class _Empty extends StatelessWidget {
       key: const ValueKey('ai.empty'),
       padding: const EdgeInsets.fromLTRB(
         FitSpacing.screen,
-        FitSpacing.lg,
+        FitSpacing.sm,
         FitSpacing.screen,
         FitSpacing.lg,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Text('FITOS AI', style: textTheme.labelSmall),
-          const SizedBox(height: FitSpacing.xs),
-          Text('Ask about your training.', style: textTheme.displayMedium),
+          // The tab's header names FITOS AI above this.
+          Text('Ask about your training.', style: textTheme.headlineSmall),
           const SizedBox(height: FitSpacing.sm),
           Text(
             'It answers from your own FITOS data — your plan, your logged sessions, your progression, your targets. It cannot see food you have not logged, or the health data that stays on your phone.',

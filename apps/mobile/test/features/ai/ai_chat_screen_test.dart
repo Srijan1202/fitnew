@@ -139,7 +139,14 @@ void main() {
     expect(ai.requests.single.history, isEmpty);
     expect(find.byKey(const ValueKey('ai.conversation')), findsOneWidget);
     expect(find.text('YOU'), findsOneWidget);
-    expect(find.text('FITOS AI'), findsOneWidget);
+    // The answer's own label (the tab's header says FITOS AI too).
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('ai.conversation')),
+        matching: find.text('FITOS AI'),
+      ),
+      findsOneWidget,
+    );
     expect(
       tester
           .widget<SelectableText>(find.byKey(const ValueKey('ai.turn.1')))
@@ -274,7 +281,14 @@ void main() {
       reason: 'the unanswered turn is not history',
     );
     expect(find.byKey(const ValueKey('ai.error')), findsNothing);
-    expect(find.text('FITOS AI'), findsOneWidget);
+    // The answer's own label (the tab's header says FITOS AI too).
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('ai.conversation')),
+        matching: find.text('FITOS AI'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('rate limited, offline and expired session read as FITOS lines',

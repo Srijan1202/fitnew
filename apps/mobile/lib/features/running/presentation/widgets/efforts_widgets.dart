@@ -142,12 +142,19 @@ class RecordsCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final key in EffortKey.values)
+          for (final (i, key) in EffortKey.values.indexed) ...[
+            // Hairlines between the rows, as in the app's grouped lists.
+            if (i > 0)
+              Divider(
+                height: 1,
+                color: FitColors.rule.withValues(alpha: fitGlass ? 0.6 : 1),
+              ),
             _RecordRow(
               effortKey: key,
               best: records.best[key] ?? const [],
               unit: unit,
             ),
+          ],
           if (records.pending > 0)
             Padding(
               padding: const EdgeInsets.only(top: FitSpacing.xs),
@@ -195,23 +202,29 @@ class _RecordRow extends StatelessWidget {
     return InkWell(
       key: ValueKey('records.${effortKey.wire}'),
       onTap: record == null ? null : () => _openBest(context),
+      // The distance and its day on the left, the time on the right edge
+      // (owner 2026-10-30: the times floated mid-row without a day).
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(
           children: [
-            Expanded(child: Text(effortKey.label, style: t.bodyLarge)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(effortKey.label, style: t.bodyLarge),
+                  if (day != null)
+                    Text(
+                      day,
+                      style: t.bodySmall?.copyWith(color: FitColors.ink60),
+                    ),
+                ],
+              ),
+            ),
             Text(
               record == null ? '—' : effortTime(record.seconds),
               key: ValueKey('records.${effortKey.wire}.time'),
               style: t.titleMedium,
-            ),
-            SizedBox(
-              width: 96,
-              child: Text(
-                day ?? '',
-                textAlign: TextAlign.end,
-                style: t.bodyMedium,
-              ),
             ),
           ],
         ),

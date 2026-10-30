@@ -31,19 +31,6 @@ class RunningHomeScreen extends ConsumerWidget {
     ref.watch(watchImportProvider);
     final t = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        titleSpacing: FitSpacing.screen,
-        title: Text('Running', style: t.titleMedium),
-        actions: [
-          IconButton(
-            key: const ValueKey('running.settings'),
-            tooltip: 'Running settings',
-            icon: Icon(Icons.tune, color: FitColors.ink),
-            onPressed: () => _settings(context),
-          ),
-        ],
-      ),
       body: FitBackdrop(
         child: RefreshIndicator(
           onRefresh: () async {
@@ -58,11 +45,41 @@ class RunningHomeScreen extends ConsumerWidget {
             // its height arrives as bottom padding, kept clear here.
             padding: EdgeInsets.fromLTRB(
               FitSpacing.screen,
-              FitSpacing.sm,
+              FitSpacing.lg,
               FitSpacing.screen,
               FitSpacing.xl + MediaQuery.paddingOf(context).bottom,
             ),
             children: [
+              // The tabs' header (owner 2026-10-30): a small capital label,
+              // a large title, the page's action on the right.
+              Padding(
+                padding: const EdgeInsets.only(bottom: FitSpacing.md),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('RUNNING', style: t.labelSmall),
+                          const SizedBox(height: FitSpacing.xs),
+                          Text(
+                            'Your runs',
+                            key: const ValueKey('running.title'),
+                            style: t.displaySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      key: const ValueKey('running.settings'),
+                      tooltip: 'Running settings',
+                      icon: Icon(Icons.tune, color: FitColors.ink),
+                      onPressed: () => _settings(context),
+                    ),
+                  ],
+                ),
+              ),
               if (live != null)
                 _CurrentRun(run: live, unit: unit)
               else
@@ -159,10 +176,8 @@ class RunningHomeScreen extends ConsumerWidget {
           ),
         ),
       const SizedBox(height: FitSpacing.lg),
-      Padding(
-        padding: EdgeInsets.only(left: fitGlass ? FitSpacing.sm : 0),
-        child: Text('HISTORY', style: t.labelSmall),
-      ),
+      // Flush with the blocks, like the other section labels.
+      Text('HISTORY', style: t.labelSmall),
       const SizedBox(height: FitSpacing.sm),
       if (runs.isEmpty)
         FitBlock(
@@ -410,6 +425,8 @@ class _RunSettingsSheet extends ConsumerWidget {
             const SizedBox(height: FitSpacing.sm),
             SegmentedButton<DistanceUnit>(
               key: const ValueKey('running.settings.unit'),
+              // No tick, like the app's other switches.
+              showSelectedIcon: false,
               segments: const [
                 ButtonSegment(
                   value: DistanceUnit.km,
