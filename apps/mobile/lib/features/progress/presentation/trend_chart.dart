@@ -99,9 +99,25 @@ class TrendChart extends StatelessWidget {
             Row(
               key: const ValueKey('progress.chart.dates'),
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // Each date gives way at large text rather than overflow.
               children: <Widget>[
-                Text(_date(start), style: axis),
-                Text(_date(to), style: axis),
+                Flexible(
+                  child: Text(
+                    _date(start),
+                    style: axis,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Flexible(
+                  child: Text(
+                    _date(to),
+                    style: axis,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                  ),
+                ),
               ],
             ),
           ],
