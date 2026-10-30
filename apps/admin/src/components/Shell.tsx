@@ -2,27 +2,81 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 
 import { errorText } from '@/lib/api';
 import { AuthProvider, useAuth } from '@/lib/auth';
 
-const NAV = [
-  { href: '/', label: 'Overview' },
-  { href: '/mess', label: 'Mess corrections' },
-  { href: '/mess-ratings', label: 'Mess ratings' },
-  { href: '/foods', label: 'Foods' },
-  { href: '/missing-foods', label: 'Missing foods' },
-  { href: '/community-foods', label: 'Community foods' },
-  { href: '/exercises', label: 'Exercises' },
-  { href: '/premium', label: 'Premium' },
-  { href: '/feedback', label: 'Feedback' },
-  { href: '/flags', label: 'App features' },
-  { href: '/announce', label: 'Announce update' },
-  { href: '/users', label: 'Support' },
-  { href: '/admins', label: 'Admins' },
-  { href: '/audit', label: 'Audit log' },
+/** Owner 2026-10-30: the pages in four short groups instead of one long list. */
+const NAV: { group: string | null; items: { href: string; label: string }[] }[] = [
+  { group: null, items: [{ href: '/', label: 'Overview' }] },
+  {
+    group: 'People',
+    items: [
+      { href: '/feedback', label: 'Feedback' },
+      { href: '/users', label: 'Support' },
+      { href: '/premium', label: 'Premium' },
+    ],
+  },
+  {
+    group: 'Food & training',
+    items: [
+      { href: '/mess', label: 'Mess corrections' },
+      { href: '/mess-ratings', label: 'Mess ratings' },
+      { href: '/foods', label: 'Foods' },
+      { href: '/missing-foods', label: 'Missing foods' },
+      { href: '/community-foods', label: 'Community foods' },
+      { href: '/exercises', label: 'Exercises' },
+    ],
+  },
+  {
+    group: 'App',
+    items: [
+      { href: '/flags', label: 'App features' },
+      { href: '/announce', label: 'Announce update' },
+      { href: '/admins', label: 'Admins' },
+      { href: '/audit', label: 'Audit log' },
+    ],
+  },
 ];
+
+const isActive = (href: string, path: string) => (href === '/' ? path === '/' : path.startsWith(href));
+
+function Brand() {
+  return (
+    <Link href="/" className="brand">
+      {/* eslint-disable-next-line @next/next/no-img-element -- a static export: no image optimiser */}
+      <img src="/icon.png" alt="" />
+      <b>FITOS <span>Admin</span></b>
+    </Link>
+  );
+}
+
+/**
+ * Phones: each table row is shown as a card, so every cell names its column
+ * (the `data-label` the CSS prints) from the table's header — set here once
+ * for every page instead of in each table.
+ */
+function useTableLabels(path: string) {
+  useEffect(() => {
+    const label = () => {
+      for (const table of document.querySelectorAll('main table')) {
+        const heads = [...table.querySelectorAll('thead th')].map((th) => th.textContent?.trim() ?? '');
+        for (const row of table.querySelectorAll('tbody tr')) {
+          [...row.children].forEach((cell, i) => {
+            const name = heads[i];
+            if (name !== undefined && name !== '' && cell.getAttribute('data-label') !== name) cell.setAttribute('data-label', name);
+          });
+        }
+      }
+    };
+    label();
+    const seen = new MutationObserver(label);
+    const main = document.querySelector('main');
+    if (main !== null) seen.observe(main, { childList: true, subtree: true });
+    return () => seen.disconnect();
+  }, [path]);
+}
 
 function SignIn() {
   const { signInGoogle, signInEmail } = useAuth();
@@ -40,9 +94,10 @@ function SignIn() {
   };
   return (
     <main className="narrow">
-      <p className="eyebrow">FITOS</p>
-      <h1>Admin</h1>
-      <p className="lede">Sign in with the account you use in the app. Only administrators get in; the server checks on every request.</p>
+      <div className="card">
+      <Brand />
+      <h1 style={{ marginTop: 24 }}>Sign in</h1>
+      <p className="lede">With the account you use in the app. Only administrators get in.</p>
       <button
         className="button primary wide"
         onClick={() => signInGoogle().catch((err: unknown) => setError(errorText(err)))}
@@ -64,13 +119,13 @@ function SignIn() {
         </button>
       </form>
       {error !== null && <p className="error">{error}</p>}
+      </div>
     </main>
   );
 }
 
 function Gate({ children }: { children: ReactNode }) {
   const { state, signOutNow, recheck } = useAuth();
-  const path = usePathname();
   switch (state.kind) {
     case 'loading':
       return <main className="narrow"><p className="muted">Loading…</p></main>;
@@ -106,24 +161,53 @@ function Gate({ children }: { children: ReactNode }) {
         </main>
       );
     case 'admin':
-      return (
-        <div className="shell">
-          <nav className="nav">
-            <p className="eyebrow">FITOS admin</p>
-            {NAV.map((n) => (
-              <Link key={n.href} href={n.href} className={(n.href === '/' ? path === '/' : path.startsWith(n.href)) ? 'active' : ''}>
+      return <Admin email={state.email} onSignOut={() => void signOutNow()}>{children}</Admin>;
+  }
+}
+
+/** The signed-in panel: a sidebar on a PC; a top bar and a drawer on a phone. */
+function Admin({ email, onSignOut, children }: { email: string | null; onSignOut: () => void; children: ReactNode }) {
+  const path = usePathname();
+  const [open, setOpen] = useState(false);
+  useTableLabels(path);
+  // A new page closes the drawer; so does Escape.
+  useEffect(() => setOpen(false), [path]);
+  useEffect(() => {
+    if (!open) return;
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, [open]);
+  const current = NAV.flatMap((g) => g.items).find((n) => isActive(n.href, path))?.label ?? 'FITOS Admin';
+
+  return (
+    <div className="shell">
+      <header className="topbar">
+        <button className="icon-button" aria-label="Open the menu" aria-expanded={open} onClick={() => setOpen(true)}>☰</button>
+        <span className="title">{current}</span>
+        <Brand />
+      </header>
+      <div className={`scrim${open ? ' open' : ''}`} onClick={() => setOpen(false)} aria-hidden="true" />
+      <nav className={`side${open ? ' open' : ''}`} aria-label="Pages">
+        <Brand />
+        {NAV.map((g) => (
+          <div key={g.group ?? 'top'} className="nav-group">
+            {g.group !== null && <p className="eyebrow">{g.group}</p>}
+            {g.items.map((n) => (
+              <Link key={n.href} href={n.href} className={isActive(n.href, path) ? 'active' : ''} aria-current={isActive(n.href, path) ? 'page' : undefined}>
                 {n.label}
               </Link>
             ))}
-            <div className="nav-foot">
-              <p className="muted small">{state.email}</p>
-              <button className="button small" onClick={() => void signOutNow()}>Sign out</button>
-            </div>
-          </nav>
-          <main className="content">{children}</main>
+          </div>
+        ))}
+        <div className="side-foot">
+          <p className="muted small" title={email ?? undefined}>{email}</p>
+          <button className="button small" onClick={onSignOut}>Sign out</button>
         </div>
-      );
-  }
+      </nav>
+      <main className="content">{children}</main>
+    </div>
+  );
 }
 
 export function Shell({ children }: { children: ReactNode }) {

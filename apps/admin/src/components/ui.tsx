@@ -27,12 +27,22 @@ export function useGet<T>(path: string | null): { data: T | null; error: string 
   return { data, error, loading, reload };
 }
 
+/**
+ * A page's title. Its longer explanation folds into "About this page"
+ * (owner 2026-10-30: the panel read as cluttered with every page opening
+ * on a paragraph).
+ */
 export function Header({ eyebrow, title, children }: { eyebrow: string; title: string; children?: ReactNode }) {
   return (
     <header className="page-head">
       <p className="eyebrow">{eyebrow}</p>
       <h1>{title}</h1>
-      {children !== undefined && <div className="lede">{children}</div>}
+      {children !== undefined && (
+        <details className="about">
+          <summary>About this page</summary>
+          <div>{children}</div>
+        </details>
+      )}
     </header>
   );
 }
