@@ -1,5 +1,6 @@
 import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/core/errors/failure.dart';
+import 'package:fitos/core/routing/app_shell.dart';
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/core/theme/tokens.dart';
@@ -171,24 +172,46 @@ void main() {
     );
   }
 
-  Widget app() {
-    final router = GoRouter(
-      initialLocation: Routes.progress,
-      routes: [
-        GoRoute(
-          path: Routes.progress,
-          builder: (_, __) => const ProgressScreen(),
-        ),
-        GoRoute(
-          path: Routes.volume,
-          builder: (_, __) => const Scaffold(body: Text('VOLUME')),
-        ),
-        GoRoute(
-          path: Routes.healthData,
-          builder: (_, __) => const Scaffold(body: Text('HEALTH')),
-        ),
-      ],
-    );
+  /// [shell]: Progress inside the app's own tab shell, its bar floating
+  /// over the tab (beta 4.8: Log weight's Save hid behind it).
+  Widget app({bool shell = false}) {
+    final router = shell
+        ? GoRouter(
+            initialLocation: Routes.progress,
+            routes: [
+              StatefulShellRoute.indexedStack(
+                builder: (_, __, navigationShell) =>
+                    AppShell(navigationShell: navigationShell),
+                branches: [
+                  StatefulShellBranch(
+                    routes: [
+                      GoRoute(
+                        path: Routes.progress,
+                        builder: (_, __) => const ProgressScreen(),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          )
+        : GoRouter(
+            initialLocation: Routes.progress,
+            routes: [
+              GoRoute(
+                path: Routes.progress,
+                builder: (_, __) => const ProgressScreen(),
+              ),
+              GoRoute(
+                path: Routes.volume,
+                builder: (_, __) => const Scaffold(body: Text('VOLUME')),
+              ),
+              GoRoute(
+                path: Routes.healthData,
+                builder: (_, __) => const Scaffold(body: Text('HEALTH')),
+              ),
+            ],
+          );
     final auth = FakeAuthRepository()
       ..restoreResult = AuthState.signedIn(testProfile);
     return ProviderScope(
@@ -267,6 +290,32 @@ void main() {
       await reveal(tester, find.text(label));
     }
     expect(key('progress.start'), findsNothing);
+  });
+
+  testWidgets(
+      'beta 4.8 (owner): inside the tabs, Log weight’s Save is above the bottom bar and saves',
+      (tester) async {
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(app(shell: true));
+    await settle(tester);
+    await reveal(tester, key('progress.weight.log'));
+    await tester.tap(key('progress.weight.log'));
+    await settle(tester);
+    await tester.enterText(
+      find.descendant(
+        of: key('progress.sheet.value'),
+        matching: find.byType(EditableText),
+      ),
+      '72.4',
+    );
+    // A tap that would land on the bar instead fails the test.
+    WidgetController.hitTestWarningShouldBeFatal = true;
+    addTearDown(() => WidgetController.hitTestWarningShouldBeFatal = false);
+    await tester.tap(key('progress.sheet.save'));
+    await settle(tester);
+    expect(progress.writes, isNotEmpty);
   });
 
   testWidgets('before 10 days of readings there is no weekly rate — it says so',
@@ -820,8 +869,32 @@ void main() {
     expect(g.raw[0].dy, lessThan(g.raw[1].dy));
     expect(g.minKg, lessThan(74));
     expect(g.maxKg, greaterThan(76));
-    // Beta 3.9: whole kilograms an even number apart — 73 · 75 · 77.
-    expect([g.minKg, g.maxKg], [73, 77]);
+    // Beta 3.9: whole steps an even number apart. Beta 4.8 (owner: "the
+    // graph became so small"): half-kilogram steps under 3 kg of readings —
+    // 73.5 · 75 · 76.5, not 73 · 75 · 77.
+    expect([g.minKg, g.maxKg], [73.5, 76.5]);
+    expect(g.step, 0.5);
+    // A wider range keeps whole kilograms.
+    final wide = TrendGeometry.of(
+      [
+        const WeightPoint(date: '2026-08-23', rawKg: 80, trendKg: 79),
+        const WeightPoint(date: '2026-09-21', rawKg: 74, trendKg: 75),
+      ],
+      '2026-08-23',
+      '2026-09-21',
+      const Size(290, 160),
+    );
+    expect(wide.step, 1);
+    expect([wide.minKg, wide.maxKg], [73, 81]);
+    // The x axis starts at the first reading inside the window.
+    expect(
+      TrendChart.startOf(
+        [const WeightPoint(date: '2026-10-26', rawKg: 61.4, trendKg: 61.2)],
+        '2026-10-24',
+      ),
+      '2026-10-26',
+    );
+    expect(TrendChart.startOf(const [], '2026-10-24'), '2026-10-24');
     expect(TrendPainter.rawStroke, 1);
     expect(
       TrendPainter.trendStroke,

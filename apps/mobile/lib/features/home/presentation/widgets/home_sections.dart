@@ -280,10 +280,12 @@ class _Block extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
+          // Beta 4.8: two lines, so "Target 2,276 kcal · 106 g protein"
+          // and "Health Connect is not installed" read whole.
           Text(
             line,
             style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         ],

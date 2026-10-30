@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/routing/navigation.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../../premium/presentation/reward_art.dart';
 import '../../../premium/presentation/rewards_providers.dart';
 import '../../domain/efforts.dart';
 
@@ -86,25 +87,14 @@ class _BadgeTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     final earned = earnedOn != null;
-    final colour = earned ? FitColors.accent : FitColors.ink35;
     return FitBlock(
       key: ValueKey('badge.${badge.id}'),
       padding: const EdgeInsets.all(FitSpacing.md),
       child: Row(
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: colour, width: 2),
-            ),
-            alignment: Alignment.center,
-            child: Icon(
-              earned ? Icons.military_tech : Icons.lock_outline,
-              color: colour,
-            ),
-          ),
+          // Beta 4.8 (owner): what the badge is, or unlocks, with a lock
+          // on top until earned.
+          RewardArt(id: badge.id, earned: earned),
           const SizedBox(width: FitSpacing.md),
           Expanded(
             child: Column(

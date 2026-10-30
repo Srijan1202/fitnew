@@ -37,6 +37,7 @@ class Streak {
     required this.weekPlanned,
     this.newRewards = const [],
     this.days = const [],
+    this.calendar = const [],
   });
 
   factory Streak.fromJson(Map<String, dynamic> j) {
@@ -53,15 +54,19 @@ class Streak {
         for (final id in (j['newRewards'] as List<dynamic>? ?? const []))
           id as String,
       ],
-      days: [
-        for (final d in (j['days'] as List<dynamic>? ?? const []))
+      days: _daysOf(j['days']),
+      // Beta 4.8; absent from an older server.
+      calendar: _daysOf(j['calendar']),
+    );
+  }
+
+  static List<StreakDay> _daysOf(Object? list) => [
+        for (final d in (list as List<dynamic>? ?? const []))
           StreakDay(
             (d as Map<String, dynamic>)['date'] as String,
             StreakDayStatus.parse(d['status'] as String?),
           ),
-      ],
-    );
-  }
+      ];
 
   /// Counted days in the run that is still going.
   final int current;
@@ -83,6 +88,11 @@ class Streak {
 
   /// Beta 4.4: the last 28 days, oldest first; empty from an older server.
   final List<StreakDay> days;
+
+  /// Beta 4.8 (owner): the month calendar — every day from the first of the
+  /// joining month (a year at most) to today, oldest first; empty from an
+  /// older server.
+  final List<StreakDay> calendar;
 }
 
 abstract class StreakApi {

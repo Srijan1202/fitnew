@@ -14,6 +14,8 @@ import 'rewards_providers.dart';
 /// three premium ones show a lock for free users and open the premium sheet.
 Future<void> showAvatarPicker(BuildContext context) =>
     showModalBottomSheet<void>(
+      // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       showDragHandle: true,

@@ -33,6 +33,8 @@ Future<bool> openMessDish(
   final row = dish.nutrition;
   if (row == null || !loggable) {
     await showModalBottomSheet<void>(
+      // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: FitColors.paper,
@@ -183,6 +185,8 @@ Future<void> showCorrectionSheet(
   required MessDish dish,
 }) async {
   final sent = await showModalBottomSheet<bool>(
+    // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     backgroundColor: FitColors.paper,
@@ -402,6 +406,8 @@ Future<MessChoice?> showMessPicker(
   String title = 'Choose your mess',
 }) {
   return showModalBottomSheet<MessChoice>(
+    // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     backgroundColor: FitColors.paper,

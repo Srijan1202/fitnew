@@ -352,8 +352,10 @@ describeIfDb('/v1/progress (real Postgres)', { timeout: 60_000 }, () => {
       const r = await app.inject({ method: 'GET', url: '/v1/progress/streak', headers: auth(u.token) });
       expect(r.statusCode, r.body).toBe(200);
       // Beta 4.4: the last 4 weeks ride along (tested in beta-4-4); compared apart.
-      const { days, ...rest } = streakSchema.parse(r.json());
+      // Beta 4.8: and the month calendar (tested there too).
+      const { days, calendar, ...rest } = streakSchema.parse(r.json());
       expect(days).toHaveLength(28);
+      expect(calendar.at(-1)!.date).toBe(days.at(-1)!.date);
       return rest;
     };
     const food = (d: string) =>

@@ -25,6 +25,8 @@ String _hours(double h) =>
 /// today's opened with its saved answers. Returns true when saved.
 Future<bool> showCheckInSheet(BuildContext context, {RecoveryLog? log}) async =>
     await showModalBottomSheet<bool>(
+      // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       showDragHandle: true,

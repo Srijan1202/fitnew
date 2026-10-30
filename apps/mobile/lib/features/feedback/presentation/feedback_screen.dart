@@ -99,6 +99,8 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
 
   Future<void> _addPictures() async {
     final camera = await showModalBottomSheet<bool>(
+      // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+      useRootNavigator: true,
       context: context,
       showDragHandle: true,
       builder: (ctx) => SafeArea(

@@ -325,12 +325,8 @@ class FitGroup extends StatelessWidget {
       children: <Widget>[
         if (label != null)
           Padding(
-            padding: EdgeInsets.fromLTRB(
-              fitGlass ? FitSpacing.sm : 0,
-              0,
-              0,
-              FitSpacing.sm,
-            ),
+            // Beta 4.8: flush with the block, like every section label.
+            padding: const EdgeInsets.only(bottom: FitSpacing.sm),
             child: Text(
               label!.toUpperCase(),
               style: Theme.of(context).textTheme.labelSmall,
@@ -606,7 +602,8 @@ class FitSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.only(left: FitSpacing.sm, bottom: 6),
+          // Beta 4.8: flush with the block, like every section label.
+          padding: const EdgeInsets.only(bottom: 6),
           child: eyebrow,
         ),
         FitBlock(

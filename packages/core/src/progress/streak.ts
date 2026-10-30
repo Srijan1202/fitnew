@@ -31,6 +31,12 @@ export interface StreakInput {
   readonly skippedDays: ReadonlySet<string>;
   /** The first day to look at (the account's first day); null looks back the full window. */
   readonly firstDay: string | null;
+  /**
+   * Beta 4.8 (owner): days with a workout or a run. On a planned rest day
+   * only these show as logged; a meal alone leaves it a rest day. Absent,
+   * every active day counts as trained. The streak's count is unchanged.
+   */
+  readonly trainedDays?: ReadonlySet<string>;
 }
 
 export interface Streak {
@@ -77,27 +83,45 @@ export const STREAK_GRID_DAYS = 28;
 export type StreakDayStatus = 'logged' | 'rest' | 'skipped' | 'missed' | 'today' | 'before';
 
 /**
- * Beta 4.4 (owner): the last [STREAK_GRID_DAYS] days, oldest first, each as
- * the streak sees it: logged, a planned rest day, the day used by Skip
- * today, missed, today not logged yet (there is still time), or before the
- * account. The same rules as [streak].
+ * How the streak sees one day: logged, a planned rest day, the day used by
+ * Skip today, missed, today not logged yet (there is still time), or before
+ * the account. The same rules as [streak]. Beta 4.8 (owner): a planned rest
+ * day stays a rest day unless you trained on it (a meal does not hide it).
  */
+export function streakDayStatus(input: StreakInput, d: string): StreakDayStatus {
+  const trained = input.trainedDays ?? input.activeDays;
+  const restDay = input.restWeekdays.has(isoWeekday(d));
+  if (trained.has(d) || (input.activeDays.has(d) && !restDay)) return 'logged';
+  if (input.firstDay !== null && d < input.firstDay) return 'before';
+  if (restDay) return 'rest';
+  if (input.skippedDays.has(d)) return 'skipped';
+  return d === input.today ? 'today' : 'missed';
+}
+
+/** Beta 4.4 (owner): the last [count] days, oldest first. */
 export function streakDays(input: StreakInput, count = STREAK_GRID_DAYS): { date: string; status: StreakDayStatus }[] {
   const out: { date: string; status: StreakDayStatus }[] = [];
   for (let i = count - 1; i >= 0; i--) {
     const d = addDays(input.today, -i);
-    const status: StreakDayStatus = input.activeDays.has(d)
-      ? 'logged'
-      : input.firstDay !== null && d < input.firstDay
-        ? 'before'
-        : input.restWeekdays.has(isoWeekday(d))
-          ? 'rest'
-          : input.skippedDays.has(d)
-            ? 'skipped'
-            : d === input.today
-              ? 'today'
-              : 'missed';
-    out.push({ date: d, status });
+    out.push({ date: d, status: streakDayStatus(input, d) });
+  }
+  return out;
+}
+
+/** Beta 4.8 (owner): how far back the month calendar goes (a year). */
+export const STREAK_CALENDAR_DAYS = 366;
+
+/**
+ * Beta 4.8 (owner): the streak page's month calendar — every day from the
+ * first of the month the account began (at most [STREAK_CALENDAR_DAYS]
+ * back, from that month's first day) to today, oldest first.
+ */
+export function streakCalendar(input: StreakInput): { date: string; status: StreakDayStatus }[] {
+  const yearAgo = addDays(input.today, -STREAK_CALENDAR_DAYS);
+  const first = input.firstDay !== null && input.firstDay > yearAgo ? input.firstDay : yearAgo;
+  const out: { date: string; status: StreakDayStatus }[] = [];
+  for (let d = `${first.slice(0, 7)}-01`; d <= input.today; d = addDays(d, 1)) {
+    out.push({ date: d, status: streakDayStatus(input, d) });
   }
   return out;
 }

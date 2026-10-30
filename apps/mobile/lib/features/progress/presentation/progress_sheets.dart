@@ -28,6 +28,8 @@ String saveFailureText(Failure f) => f is Offline
 /// Log a weight (Progress). Returns true when saved.
 Future<bool> showWeightSheet(BuildContext context) async =>
     await showModalBottomSheet<bool>(
+      // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
@@ -41,6 +43,8 @@ Future<bool> showMeasurementSheet(
   MeasurementSite initial = MeasurementSite.waist,
 }) async =>
     await showModalBottomSheet<bool>(
+      // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
@@ -231,6 +235,8 @@ class _ReadingSheetState extends ConsumerState<_ReadingSheet> {
 /// true when the weight was saved.
 Future<bool> showQuickWeightSheet(BuildContext context) async =>
     await showModalBottomSheet<bool>(
+      // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       showDragHandle: true,

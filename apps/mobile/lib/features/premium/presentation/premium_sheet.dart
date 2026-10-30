@@ -12,6 +12,8 @@ import '../../../shared/widgets/fit_glass.dart';
 /// AI tab, by every premium entry point, and from Profile → Premium.
 Future<void> showPremiumSheet(BuildContext context, {String? feature}) =>
     showModalBottomSheet<void>(
+      // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       showDragHandle: true,

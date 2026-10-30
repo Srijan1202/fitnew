@@ -7,6 +7,8 @@ import '../../../core/theme/tokens.dart';
 Future<bool?> showAiConsentSheet(BuildContext context) {
   final textTheme = Theme.of(context).textTheme;
   return showModalBottomSheet<bool>(
+    // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     showDragHandle: true,

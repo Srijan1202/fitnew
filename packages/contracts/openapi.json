@@ -48305,6 +48305,35 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "calendar": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "date": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "logged",
+                              "rest",
+                              "skipped",
+                              "missed",
+                              "today",
+                              "before"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "date",
+                          "status"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 400
                     }
                   },
                   "required": [
@@ -48314,7 +48343,8 @@
                     "todayRest",
                     "week",
                     "newRewards",
-                    "days"
+                    "days",
+                    "calendar"
                   ],
                   "additionalProperties": false
                 }

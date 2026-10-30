@@ -24,6 +24,8 @@ Future<WhyChoice?> showTodayWhySheet(
   final kind = action.kind!;
   final facts = TodayWords.facts(action.reason);
   return showModalBottomSheet<WhyChoice>(
+    // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     showDragHandle: true,

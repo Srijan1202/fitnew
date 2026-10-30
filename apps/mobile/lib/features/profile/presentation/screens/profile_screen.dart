@@ -465,13 +465,9 @@ class _Eyebrow extends StatelessWidget {
   final String label;
 
   @override
+  // Beta 4.8: flush with the blocks, like every section label.
   Widget build(BuildContext context) => Padding(
-        padding: EdgeInsets.fromLTRB(
-          fitGlass ? FitSpacing.sm : 0,
-          0,
-          0,
-          FitSpacing.sm,
-        ),
+        padding: const EdgeInsets.only(bottom: FitSpacing.sm),
         child: Text(
           label.toUpperCase(),
           style: Theme.of(context).textTheme.labelSmall,

@@ -147,6 +147,9 @@ abstract final class FitTheme {
               : FitColors.ink.withValues(alpha: 0.12),
           selectedForegroundColor:
               FitPalette.current.glass ? FitColors.onAccent : FitColors.ink,
+          // Beta 4.8: the options not chosen in plain ink, like every other
+          // switch (Material drew them in the accent: 1W / 1M / 3M).
+          foregroundColor: FitColors.ink,
         ),
       ),
       bottomSheetTheme: BottomSheetThemeData(

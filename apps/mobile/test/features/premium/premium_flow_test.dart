@@ -577,9 +577,23 @@ void main() {
         status('ember-theme'),
         'Unlocks at a 14-day streak: 4 more days than your best',
       );
+      // Beta 4.8 (owner): a reward shows what it unlocks, with a lock on top
+      // until earned — here the Ember theme's colours.
+      expect(
+        find.byKey(const ValueKey('reward.art.ember-theme')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('reward.art.ember-theme.lock')),
+        findsOneWidget,
+      );
       // Beta 4.3: one page for every reward — the running badges, and what
       // Premium includes.
       expect(status('first-run'), startsWith('Earned'));
+      expect(
+        find.byKey(const ValueKey('reward.art.first-run.lock')),
+        findsNothing,
+      );
       await tester.scrollUntilVisible(
         find.byKey(const ValueKey('rewards.first-half.status')),
         200,
@@ -616,56 +630,72 @@ void main() {
     });
 
     testWidgets(
-        'beta 4.4: the streak card opens Streak & rewards: the streak, the best, this week and the last 4 weeks',
+        'beta 4.8 (owner): the streak card opens Streak & rewards: the streak, the best, this week, and the month calendar with every day of the month, back to the joining month',
         (tester) async {
+      // Joined 21 September; today is 29 October.
+      final calendar = [
+        for (var d = DateTime.utc(2026, 9);
+            !d.isAfter(DateTime.utc(2026, 10, 29));
+            d = d.add(const Duration(days: 1)))
+          StreakDay(
+            d.toIso8601String().substring(0, 10),
+            d.isBefore(DateTime.utc(2026, 9, 21))
+                ? StreakDayStatus.before
+                : d.weekday == DateTime.sunday
+                    ? StreakDayStatus.rest
+                    : d.day == 14
+                        ? StreakDayStatus.missed
+                        : StreakDayStatus.logged,
+          ),
+      ];
       streak.next = Streak(
         current: 5,
         best: 12,
         todayCounted: true,
         weekDone: 2,
         weekPlanned: 4,
-        days: [
-          for (var i = 0; i < 28; i++)
-            StreakDay(
-              DateTime.utc(2026, 10, 2)
-                  .add(Duration(days: i))
-                  .toIso8601String()
-                  .substring(0, 10),
-              i < 3
-                  ? StreakDayStatus.before
-                  : i == 27
-                      ? StreakDayStatus.logged
-                      : i % 7 == 6
-                          ? StreakDayStatus.rest
-                          : i % 5 == 0
-                              ? StreakDayStatus.missed
-                              : StreakDayStatus.logged,
-            ),
-        ],
+        calendar: calendar,
       );
       await start(tester);
       await tap(tester, 'home.streak');
       expect(find.text('Streak & rewards'), findsOneWidget);
       String text(String key) =>
           tester.widget<Text>(find.byKey(ValueKey(key))).data!;
+      BoxDecoration box(String date) => tester
+          .widget<Container>(find.byKey(ValueKey('streak.day.$date')))
+          .decoration! as BoxDecoration;
       expect(text('streak.current'), '5-day streak');
       expect(text('streak.best'), 'Best: 12 days');
       expect(text('streak.week'), '2/4');
-      expect(find.byKey(const ValueKey('streak.grid')), findsOneWidget);
-      // 2 October 2026 is a Friday: four blanks, then 28 days in 5 rows.
+      // This month, every day of it: the 30th and 31st still to come.
+      expect(text('streak.grid.range'), 'October 2026');
+      expect(text('streak.day.2026-10-01.date'), '1');
+      expect(text('streak.day.2026-10-31.date'), '31');
+      expect(box('2026-10-31').color, Colors.transparent);
+      // A Sunday rest day is green (the rest colour), not the logged one.
+      expect(box('2026-10-25').color, isNot(FitColors.accent));
+      expect(box('2026-10-26').color, FitColors.accent);
+      // Missed is an outline, never a fill.
+      expect(box('2026-10-14').color, Colors.transparent);
+      expect(box('2026-10-14').border, isNotNull);
+      // The month before, back to the joining month; no further.
+      await tap(tester, 'streak.month.prev');
+      expect(text('streak.grid.range'), 'September 2026');
+      expect(text('streak.day.2026-09-01.date'), '1');
       expect(
-        find.byKey(const ValueKey('streak.day.2026-10-02')),
-        findsOneWidget,
+        tester
+            .widget<IconButton>(find.byKey(const ValueKey('streak.month.prev')))
+            .onPressed,
+        isNull,
       );
+      await tap(tester, 'streak.month.next');
+      expect(text('streak.grid.range'), 'October 2026');
       expect(
-        find.byKey(const ValueKey('streak.day.2026-10-29')),
-        findsOneWidget,
+        tester
+            .widget<IconButton>(find.byKey(const ValueKey('streak.month.next')))
+            .onPressed,
+        isNull,
       );
-      // Beta 4.4 patch (owner: "dates not visible"): every day has its date,
-      // before the account too, and the grid says which weeks it shows.
-      expect(text('streak.day.2026-10-02.date'), '2');
-      expect(text('streak.day.2026-10-29.date'), '29');
-      expect(text('streak.grid.range'), 'Last 4 weeks · 2 Oct – 29 Oct');
     });
 
     testWidgets('new rewards are celebrated once on Home', (tester) async {

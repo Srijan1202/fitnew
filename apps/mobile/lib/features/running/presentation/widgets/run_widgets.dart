@@ -309,10 +309,8 @@ class RunSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: EdgeInsets.only(
-                left: fitGlass ? FitSpacing.sm : 0,
-                bottom: FitSpacing.sm,
-              ),
+              // Beta 4.8: flush with the blocks, like every section label.
+              padding: const EdgeInsets.only(bottom: FitSpacing.sm),
               child: Text(
                 label.toUpperCase(),
                 style: Theme.of(context).textTheme.labelSmall,

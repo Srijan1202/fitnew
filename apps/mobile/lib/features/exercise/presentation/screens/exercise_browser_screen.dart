@@ -69,6 +69,8 @@ class _ExerciseBrowserScreenState extends ConsumerState<ExerciseBrowserScreen> {
   /// the list behind it refreshes as toggles change, so "Done" is just close.
   Future<void> _openSheet(String title, Widget Function(BuildContext) body) {
     return showModalBottomSheet<void>(
+      // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+      useRootNavigator: true,
       context: context,
       backgroundColor: FitColors.paper,
       isScrollControlled: true,

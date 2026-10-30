@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
+import '../../../../shared/widgets/fit_glass.dart';
 import '../../../home/presentation/controllers/home_providers.dart';
 import '../../../nutrition/domain/entities/food_log.dart';
 import '../../../nutrition/presentation/widgets/eat_widgets.dart';
@@ -274,13 +275,23 @@ class TodaysMessStrip extends ConsumerWidget {
     final line = meal == null
         ? 'No menu for today'
         : '${slot.label} · ${meal.dishes.where((d) => !d.isAmbient).length} dishes';
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        _strip(context, menu, line, qualifier, state.fromCache),
-        // Phase 10: straight to today's suggestion.
-        const SuggestedPlateLink(),
-      ],
+    // Beta 4.8: one block, like the meals below it (it sat on the canvas).
+    return FitBlock(
+      key: const ValueKey('eat.mess.block'),
+      padding: const EdgeInsets.fromLTRB(
+        FitSpacing.md,
+        FitSpacing.xs,
+        FitSpacing.md,
+        FitSpacing.xs,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          _strip(context, menu, line, qualifier, state.fromCache),
+          // Phase 10: straight to today's suggestion.
+          const SuggestedPlateLink(),
+        ],
+      ),
     );
   }
 

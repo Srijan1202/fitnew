@@ -29,6 +29,8 @@ class RecommendationSheet extends ConsumerWidget {
     VoidCallback? onApply,
   }) =>
       showModalBottomSheet<void>(
+        // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+        useRootNavigator: true,
         context: context,
         backgroundColor: FitColors.paper,
         isScrollControlled: true,

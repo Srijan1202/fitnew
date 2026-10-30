@@ -148,5 +148,10 @@ describeIfDb('beta 4.4 (real Postgres)', { timeout: 90_000 }, () => {
     expect(last.status === 'today' || last.status === 'rest').toBe(true);
     // A new account: the days before it are "before".
     expect(s.days[0]!.status).toBe('before');
+    // Beta 4.8 (owner): the month calendar, from the first of this month
+    // (the joining month) to today.
+    expect(s.calendar[0]!.date.slice(8)).toBe('01');
+    expect(s.calendar.at(-1)!.date).toBe(last.date);
+    expect(s.calendar).toHaveLength(Number(last.date.slice(8)));
   });
 });

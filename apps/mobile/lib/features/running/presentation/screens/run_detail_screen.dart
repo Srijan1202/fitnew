@@ -18,6 +18,8 @@ class RunDetailScreen extends ConsumerWidget {
 
   Future<void> _edit(BuildContext context, WidgetRef ref, RunDetail run) async {
     final changed = await showModalBottomSheet<bool>(
+      // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       useSafeArea: true,

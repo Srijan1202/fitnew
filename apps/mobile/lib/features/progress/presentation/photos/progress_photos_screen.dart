@@ -169,6 +169,8 @@ class _ProgressPhotosCardState extends ConsumerState<ProgressPhotosCard>
 /// provider container, never on that screen: the photo is not dropped.
 Future<void> addProgressPhoto(BuildContext context, WidgetRef ref) async {
   final camera = await showModalBottomSheet<bool>(
+    // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+    useRootNavigator: true,
     context: context,
     showDragHandle: true,
     builder: (ctx) => SafeArea(
@@ -659,6 +661,8 @@ class _ComparePhotosScreenState extends State<ComparePhotosScreen> {
 
   Future<void> _pick(bool before) async {
     final chosen = await showModalBottomSheet<ProgressPhoto>(
+      // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+      useRootNavigator: true,
       context: context,
       showDragHandle: true,
       builder: (ctx) => SafeArea(

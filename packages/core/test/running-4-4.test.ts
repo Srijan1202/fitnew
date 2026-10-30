@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { STREAK_GRID_DAYS, streakDays } from '../src/progress/streak.js';
+import { STREAK_CALENDAR_DAYS, STREAK_GRID_DAYS, streakCalendar, streakDays } from '../src/progress/streak.js';
 import { PLAN_GOALS, PLAN_WEEKS, generatePlan, type PlanInput } from '../src/running/plan.js';
 
 const runner = (over: Partial<PlanInput>): PlanInput => ({
@@ -95,5 +95,39 @@ describe('the streak page’s 4 weeks (beta 4.4)', () => {
     // No first day: nothing is "before".
     expect(streakDays({ today: '2026-10-29', activeDays: new Set(['2026-10-29']), restWeekdays: new Set(), skippedDays: new Set(), firstDay: null }, 2))
       .toEqual([{ date: '2026-10-28', status: 'missed' }, { date: '2026-10-29', status: 'logged' }]);
+  });
+});
+
+describe('the streak page’s month calendar (beta 4.8, owner)', () => {
+  const base = {
+    today: '2026-10-30',
+    activeDays: new Set(['2026-10-25', '2026-10-26', '2026-10-30']),
+    restWeekdays: new Set([7]),
+    skippedDays: new Set<string>(),
+  };
+
+  it('a planned rest day stays a rest day with only a meal; a workout or a run on it is logged', () => {
+    // 25 Oct is a Sunday (rest) with a meal only; 26 Oct a Monday with a meal.
+    const days = streakDays({ ...base, firstDay: '2026-09-21', trainedDays: new Set(['2026-10-30']) }, 7);
+    const at = (d: string) => days.find((x) => x.date === d)!.status;
+    expect(at('2026-10-25')).toBe('rest');
+    expect(at('2026-10-26')).toBe('logged');
+    expect(at('2026-10-30')).toBe('logged');
+    expect(streakDays({ ...base, firstDay: null, trainedDays: new Set(['2026-10-25']) }, 7).find((x) => x.date === '2026-10-25')!.status).toBe('logged');
+  });
+
+  it('every day from the first of the joining month to today, oldest first', () => {
+    const cal = streakCalendar({ ...base, firstDay: '2026-09-21', trainedDays: new Set() });
+    expect(cal[0]).toEqual({ date: '2026-09-01', status: 'before' });
+    expect(cal.find((x) => x.date === '2026-09-21')!.status).toBe('missed');
+    expect(cal.at(-1)).toEqual({ date: '2026-10-30', status: 'logged' });
+    expect(cal).toHaveLength(60);
+  });
+
+  it('at most a year back (from that month’s first day); no first day looks back the year too', () => {
+    const old = streakCalendar({ ...base, firstDay: '2024-01-15' });
+    expect(old[0]!.date).toBe('2025-10-01');
+    expect(old.length).toBeLessThanOrEqual(STREAK_CALENDAR_DAYS + 31);
+    expect(streakCalendar({ ...base, firstDay: null })[0]!.date).toBe('2025-10-01');
   });
 });

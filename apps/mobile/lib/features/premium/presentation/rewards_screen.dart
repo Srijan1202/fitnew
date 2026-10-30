@@ -14,6 +14,7 @@ import '../domain/avatars.dart';
 import '../domain/streak_rewards.dart';
 import 'premium_providers.dart';
 import 'premium_sheet.dart';
+import 'reward_art.dart';
 import 'rewards_providers.dart';
 
 /// Beta 4.3 (owner 2026-10-29): every reward in one place — what it is, and
@@ -80,15 +81,16 @@ class RewardsScreen extends ConsumerWidget {
               ),
             _Section(
               title: 'STREAK',
-              note: best == null
-                  ? 'A day counts when you log a workout or a meal.'
-                  : 'Your best streak: $best ${best == 1 ? 'day' : 'days'}. '
-                      'A day counts when you log a workout or a meal.',
+              // The header above says how a day counts (beta 4.8: once).
+              note: streakNow != null
+                  ? null
+                  : 'A day counts when you log a workout or a meal.',
               children: [
                 for (final r in StreakReward.values)
                   _RewardTile(
                     key: ValueKey('rewards.${r.id}'),
                     icon: Icons.local_fire_department,
+                    artId: r.id,
                     title: r.label,
                     earned: streak?.contains(r) ?? false,
                     status: _streakStatus(r, streak, best),
@@ -117,6 +119,7 @@ class RewardsScreen extends ConsumerWidget {
                       _RewardTile(
                         key: ValueKey('rewards.${b.id}'),
                         icon: Icons.military_tech,
+                        artId: b.id,
                         title: b.unlocks == null
                             ? b.label
                             : '${b.label} · ${_capital(b.unlocks!)}',
@@ -299,9 +302,10 @@ class _StreakHeader extends StatelessWidget {
                 ),
             ],
           ),
-          if (s.days.isNotEmpty) ...[
+          if (s.calendar.isNotEmpty || s.days.isNotEmpty) ...[
             const SizedBox(height: FitSpacing.md),
-            _DayGrid(days: s.days),
+            // Beta 4.8 (owner): the month calendar; an older server's 4 weeks.
+            _MonthCalendar(days: s.calendar.isNotEmpty ? s.calendar : s.days),
             const SizedBox(height: FitSpacing.sm),
             const _Legend(),
           ],
@@ -321,113 +325,157 @@ Color _dayColour(StreakDayStatus s) => switch (s) {
       StreakDayStatus.logged => FitColors.accent,
       StreakDayStatus.rest => FitColors.pine.withValues(alpha: 0.45),
       StreakDayStatus.skipped => FitColors.ink35.withValues(alpha: 0.5),
-      StreakDayStatus.missed => FitColors.rule,
+      // Beta 4.8: an outline, so missed and skipped never look alike.
+      StreakDayStatus.missed => Colors.transparent,
       StreakDayStatus.today => Colors.transparent,
       StreakDayStatus.before => Colors.transparent,
     };
 
-class _DayGrid extends StatelessWidget {
-  const _DayGrid({required this.days});
+/// The edge a day draws: today in the accent, missed and before-the-account
+/// outlined; none for the filled ones.
+Border? _dayEdge(StreakDayStatus? s) => switch (s) {
+      StreakDayStatus.today => Border.all(color: FitColors.accent, width: 2),
+      StreakDayStatus.missed => Border.all(color: FitColors.ink35),
+      StreakDayStatus.before => Border.all(color: FitColors.rule),
+      _ => null,
+    };
 
+/// Beta 4.8 (owner): the streak as a month calendar — every day of the month
+/// (Monday first), the days to come left blank; ‹ › and a swipe go back to
+/// the month the account began. Opens on this month.
+class _MonthCalendar extends StatefulWidget {
+  const _MonthCalendar({required this.days});
+
+  /// Oldest first, ending today.
   final List<StreakDay> days;
 
-  static int _weekday(String d) => DateTime.parse(d).weekday;
+  @override
+  State<_MonthCalendar> createState() => _MonthCalendarState();
+}
+
+class _MonthCalendarState extends State<_MonthCalendar> {
+  int? _shown;
+
+  /// The months the days cover, oldest first, as yyyy-mm.
+  List<String> get _months => <String>{
+        for (final d in widget.days) d.date.substring(0, 7),
+      }.toList();
+
+  void _go(int to, int count) {
+    if (to < 0 || to >= count) return;
+    setState(() => _shown = to);
+  }
 
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
-    // Monday first: blanks before the first day, so columns are weekdays.
-    final cells = <StreakDay?>[
-      for (var i = 1; i < _weekday(days.first.date); i++) null,
-      ...days,
+    final months = _months;
+    final shown = (_shown ?? months.length - 1).clamp(0, months.length - 1);
+    final month = months[shown];
+    final year = int.parse(month.substring(0, 4));
+    final m = int.parse(month.substring(5, 7));
+    final first = DateTime(year, m);
+    final length = DateTime(year, m + 1, 0).day;
+    final today = widget.days.last.date;
+    final status = {for (final d in widget.days) d.date: d.status};
+    String dateOf(int day) => '$month-${day.toString().padLeft(2, '0')}';
+    final cells = <String?>[
+      for (var i = 1; i < first.weekday; i++) null,
+      for (var day = 1; day <= length; day++) dateOf(day),
     ];
-    final rows = <List<StreakDay?>>[
+    final rows = <List<String?>>[
       for (var i = 0; i < cells.length; i += 7)
         cells.sublist(i, i + 7 > cells.length ? cells.length : i + 7),
     ];
     const names = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    // Beta 4.4 patch (owner: "dates not visible"): every day shows its date;
-    // days before the account are outlined, so the grid never looks empty.
-    Widget cell(StreakDay? d) {
-      final today = d?.status == StreakDayStatus.today;
-      final before = d?.status == StreakDayStatus.before;
-      final logged = d?.status == StreakDayStatus.logged;
+
+    Widget cell(String? date) {
+      if (date == null) return const Expanded(child: SizedBox.shrink());
+      final future = date.compareTo(today) > 0;
+      // A day of this month before the calendar starts is before the account.
+      final s = future ? null : (status[date] ?? StreakDayStatus.before);
+      final logged = s == StreakDayStatus.logged;
       return Expanded(
         child: AspectRatio(
           aspectRatio: 1,
           child: Container(
-            key: d == null ? null : ValueKey('streak.day.${d.date}'),
+            key: ValueKey('streak.day.$date'),
             margin: const EdgeInsets.all(2),
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: d == null ? Colors.transparent : _dayColour(d.status),
+              color: s == null ? Colors.transparent : _dayColour(s),
               borderRadius: BorderRadius.circular(6),
-              border: today
-                  ? Border.all(color: FitColors.accent, width: 2)
-                  : before
-                      ? Border.all(color: FitColors.rule)
-                      : null,
+              border: _dayEdge(s),
             ),
-            child: d == null
-                ? null
-                : Text(
-                    '${int.parse(d.date.substring(8))}',
-                    key: ValueKey('streak.day.${d.date}.date'),
-                    style: t.labelMedium?.copyWith(
-                      color: logged
-                          ? FitColors.onAccent
-                          : before
-                              ? FitColors.ink35
-                              : FitColors.ink,
-                      fontWeight: today ? FontWeight.w700 : null,
-                    ),
-                  ),
+            child: Text(
+              '${int.parse(date.substring(8))}',
+              key: ValueKey('streak.day.$date.date'),
+              style: t.labelMedium?.copyWith(
+                color: logged
+                    ? FitColors.onAccent
+                    : s == null || s == StreakDayStatus.before
+                        ? FitColors.ink35
+                        : FitColors.ink,
+                fontWeight: s == StreakDayStatus.today ? FontWeight.w700 : null,
+              ),
+            ),
           ),
         ),
       );
     }
 
-    String label(String d) {
-      const months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-      ];
-      return '${int.parse(d.substring(8))} ${months[int.parse(d.substring(5, 7)) - 1]}';
-    }
-
-    return Column(
+    return GestureDetector(
       key: const ValueKey('streak.grid'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Last 4 weeks · ${label(days.first.date)} – ${label(days.last.date)}',
-          key: const ValueKey('streak.grid.range'),
-          style: t.labelSmall,
-        ),
-        const SizedBox(height: FitSpacing.xs),
-        Row(
-          children: [
-            for (final n in names)
-              Expanded(child: Center(child: Text(n, style: t.labelSmall))),
-          ],
-        ),
-        for (final r in rows)
+      // A swipe: right for the month before, left for the one after.
+      onHorizontalDragEnd: (e) {
+        final v = e.primaryVelocity ?? 0;
+        if (v > 200) _go(shown - 1, months.length);
+        if (v < -200) _go(shown + 1, months.length);
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
           Row(
             children: [
-              for (var i = 0; i < 7; i++) cell(i < r.length ? r[i] : null),
+              IconButton(
+                key: const ValueKey('streak.month.prev'),
+                tooltip: 'Month before',
+                onPressed:
+                    shown > 0 ? () => _go(shown - 1, months.length) : null,
+                icon: const Icon(Icons.chevron_left),
+              ),
+              Expanded(
+                child: Text(
+                  MaterialLocalizations.of(context).formatMonthYear(first),
+                  key: const ValueKey('streak.grid.range'),
+                  textAlign: TextAlign.center,
+                  style: t.titleMedium,
+                ),
+              ),
+              IconButton(
+                key: const ValueKey('streak.month.next'),
+                tooltip: 'Month after',
+                onPressed: shown < months.length - 1
+                    ? () => _go(shown + 1, months.length)
+                    : null,
+                icon: const Icon(Icons.chevron_right),
+              ),
             ],
           ),
-      ],
+          Row(
+            children: [
+              for (final n in names)
+                Expanded(child: Center(child: Text(n, style: t.labelSmall))),
+            ],
+          ),
+          for (final r in rows)
+            Row(
+              children: [
+                for (var i = 0; i < 7; i++) cell(i < r.length ? r[i] : null),
+              ],
+            ),
+        ],
+      ),
     );
   }
 }
@@ -448,6 +496,7 @@ class _Legend extends StatelessWidget {
               decoration: BoxDecoration(
                 color: _dayColour(s),
                 borderRadius: BorderRadius.circular(3),
+                border: _dayEdge(s),
               ),
             ),
             const SizedBox(width: FitSpacing.xs),
@@ -494,12 +543,12 @@ class _RunProgress {
 class _Section extends StatelessWidget {
   const _Section({
     required this.title,
-    required this.note,
+    this.note,
     required this.children,
   });
 
   final String title;
-  final String note;
+  final String? note;
   final List<Widget> children;
 
   @override
@@ -512,7 +561,8 @@ class _Section extends StatelessWidget {
         children: [
           Text(title, style: t.labelSmall),
           const SizedBox(height: FitSpacing.xs),
-          Text(note, style: t.bodyMedium?.copyWith(color: FitColors.ink60)),
+          if (note case final n?)
+            Text(n, style: t.bodyMedium?.copyWith(color: FitColors.ink60)),
           const SizedBox(height: FitSpacing.sm),
           ...children,
         ],
@@ -528,10 +578,15 @@ class _RewardTile extends StatelessWidget {
     required this.earned,
     required this.status,
     this.progress,
+    this.artId,
     super.key,
   });
 
   final IconData icon;
+
+  /// Beta 4.8 (owner): a streak reward's or badge's id — the tile then shows
+  /// what it unlocks ([RewardArt]) instead of [icon].
+  final String? artId;
   final String title;
   final bool earned;
   final String status;
@@ -550,7 +605,10 @@ class _RewardTile extends StatelessWidget {
         padding: const EdgeInsets.all(FitSpacing.md),
         child: Row(
           children: [
-            Icon(earned ? icon : Icons.lock_outline, color: colour),
+            if (artId case final id?)
+              RewardArt(id: id, earned: earned, size: 44)
+            else
+              Icon(earned ? icon : Icons.lock_outline, color: colour),
             const SizedBox(width: FitSpacing.md),
             Expanded(
               child: Column(

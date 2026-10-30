@@ -34,6 +34,8 @@ Future<PortionChoice?> showPortionSheet(
   Widget? footer,
 }) {
   return showModalBottomSheet<PortionChoice>(
+    // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     backgroundColor: FitColors.paper,

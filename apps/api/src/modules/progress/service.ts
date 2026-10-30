@@ -7,7 +7,7 @@
  */
 import type { VolumeResponse, WeeklyReport } from '@fitos/contracts';
 import { computeTrend } from '@fitos/core/nutrition/trend';
-import { STREAK_LOOKBACK_DAYS, isoWeekday, streak, streakDays, weekGoal } from '@fitos/core/progress/streak';
+import { STREAK_LOOKBACK_DAYS, isoWeekday, streak, streakCalendar, streakDays, weekGoal } from '@fitos/core/progress/streak';
 import { weeklyReport } from '@fitos/core/progress/weekly';
 import { isoWeekDates } from '@fitos/core/training/mesocycle';
 import {
@@ -69,6 +69,8 @@ export class ProgressService {
       restWeekdays: new Set(planned === null && plan === null ? [] : [1, 2, 3, 4, 5, 6, 7].filter((d) => !training.has(d))),
       skippedDays: new Set(context.skippedOn === null ? [] : [context.skippedOn]),
       firstDay: localDateOf(context.createdAt, tz),
+      // Beta 4.8 (owner): a rest day shows as one unless you trained on it.
+      trainedDays: new Set([...workoutDays, ...runDays]),
     };
     const s = streak(input);
     // Beta 3.4 (ADR-027 amendment): every reward the best run has reached, once.
@@ -81,8 +83,10 @@ export class ProgressService {
       ...s,
       week: weekGoal(today, [...workoutDays, ...doneRuns], (planned?.length ?? 0) + planRuns.length),
       newRewards,
-      // Beta 4.4: the streak page's last 4 weeks.
+      // Beta 4.4: the streak page's last 4 weeks (4.4–4.7 read it).
       days: streakDays(input),
+      // Beta 4.8 (owner): the month calendar, from the joining month.
+      calendar: streakCalendar(input),
     };
   }
 

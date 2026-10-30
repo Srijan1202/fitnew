@@ -188,6 +188,10 @@ export type WeeklyReport = z.infer<typeof weeklyReportSchema>;
  * 3.8: a planned rest day counts by itself inside a run) — and the weekly
  * goal ring, null without a programme.
  */
+const streakDaySchema = z
+  .object({ date: isoDateSchema, status: z.enum(['logged', 'rest', 'skipped', 'missed', 'today', 'before']) })
+  .strict();
+
 export const streakSchema = z
   .object({
     current: z.number().int().min(0),
@@ -199,11 +203,9 @@ export const streakSchema = z
     /** Beta 3.4: streak rewards earned just now by this read (shown once), by id. */
     newRewards: z.array(z.string()),
     /** Beta 4.4: the last 28 days, oldest first, as the streak sees them (core streakDays). */
-    days: z.array(
-      z
-        .object({ date: isoDateSchema, status: z.enum(['logged', 'rest', 'skipped', 'missed', 'today', 'before']) })
-        .strict(),
-    ),
+    days: z.array(streakDaySchema),
+    /** Beta 4.8 (owner): the month calendar, from the first of the joining month (a year at most) to today (core streakCalendar). */
+    calendar: z.array(streakDaySchema).max(400),
   })
   .strict();
 export type StreakSummary = z.infer<typeof streakSchema>;

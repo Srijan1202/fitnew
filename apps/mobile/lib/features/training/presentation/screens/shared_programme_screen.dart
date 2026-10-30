@@ -239,6 +239,8 @@ Future<void> shareProgramme(BuildContext context, WidgetRef ref) async {
     return;
   }
   await showModalBottomSheet<void>(
+    // Above the floating tab bar (beta 4.8, owner: Save hid behind it).
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     backgroundColor: FitColors.paper,
