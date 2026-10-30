@@ -53094,7 +53094,8 @@
                           "free",
                           "distance",
                           "time",
-                          "pace"
+                          "pace",
+                          "race"
                         ]
                       },
                       "value": {
@@ -53107,6 +53108,18 @@
                           {
                             "type": "null"
                           }
+                        ]
+                      },
+                      "targetSeconds": {
+                        "type": "integer",
+                        "minimum": 120,
+                        "maximum": 86400
+                      },
+                      "split": {
+                        "type": "string",
+                        "enum": [
+                          "even",
+                          "negative"
                         ]
                       }
                     },
@@ -53357,6 +53370,16 @@
                     "type": "integer",
                     "minimum": 25,
                     "maximum": 250
+                  },
+                  "cadenceAvg": {
+                    "type": "integer",
+                    "minimum": 60,
+                    "maximum": 250
+                  },
+                  "cadenceMax": {
+                    "type": "integer",
+                    "minimum": 60,
+                    "maximum": 250
                   }
                 },
                 "required": [
@@ -53518,6 +53541,30 @@
                         }
                       ]
                     },
+                    "cadenceAvg": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 60,
+                          "maximum": 250
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "cadenceMax": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 60,
+                          "maximum": 250
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "note": {
                       "type": [
                         "string",
@@ -53533,7 +53580,8 @@
                             "free",
                             "distance",
                             "time",
-                            "pace"
+                            "pace",
+                            "race"
                           ]
                         },
                         "value": {
@@ -53546,6 +53594,18 @@
                             {
                               "type": "null"
                             }
+                          ]
+                        },
+                        "targetSeconds": {
+                          "type": "integer",
+                          "minimum": 120,
+                          "maximum": 86400
+                        },
+                        "split": {
+                          "type": "string",
+                          "enum": [
+                            "even",
+                            "negative"
                           ]
                         }
                       },
@@ -53933,6 +53993,8 @@
                     "source",
                     "hrAvg",
                     "hrMax",
+                    "cadenceAvg",
+                    "cadenceMax",
                     "note",
                     "goal",
                     "track",
@@ -54088,6 +54150,30 @@
                         }
                       ]
                     },
+                    "cadenceAvg": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 60,
+                          "maximum": 250
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "cadenceMax": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 60,
+                          "maximum": 250
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "note": {
                       "type": [
                         "string",
@@ -54103,7 +54189,8 @@
                             "free",
                             "distance",
                             "time",
-                            "pace"
+                            "pace",
+                            "race"
                           ]
                         },
                         "value": {
@@ -54116,6 +54203,18 @@
                             {
                               "type": "null"
                             }
+                          ]
+                        },
+                        "targetSeconds": {
+                          "type": "integer",
+                          "minimum": 120,
+                          "maximum": 86400
+                        },
+                        "split": {
+                          "type": "string",
+                          "enum": [
+                            "even",
+                            "negative"
                           ]
                         }
                       },
@@ -54503,6 +54602,8 @@
                     "source",
                     "hrAvg",
                     "hrMax",
+                    "cadenceAvg",
+                    "cadenceMax",
                     "note",
                     "goal",
                     "track",
@@ -55022,6 +55123,30 @@
                                 "type": "null"
                               }
                             ]
+                          },
+                          "cadenceAvg": {
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "minimum": 60,
+                                "maximum": 250
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "cadenceMax": {
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "minimum": 60,
+                                "maximum": 250
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
                           }
                         },
                         "required": [
@@ -55040,7 +55165,9 @@
                           "recordKeys",
                           "source",
                           "hrAvg",
-                          "hrMax"
+                          "hrMax",
+                          "cadenceAvg",
+                          "cadenceMax"
                         ],
                         "additionalProperties": false
                       }
@@ -56047,6 +56174,30 @@
                         }
                       ]
                     },
+                    "cadenceAvg": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 60,
+                          "maximum": 250
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "cadenceMax": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 60,
+                          "maximum": 250
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "note": {
                       "type": [
                         "string",
@@ -56062,7 +56213,8 @@
                             "free",
                             "distance",
                             "time",
-                            "pace"
+                            "pace",
+                            "race"
                           ]
                         },
                         "value": {
@@ -56075,6 +56227,18 @@
                             {
                               "type": "null"
                             }
+                          ]
+                        },
+                        "targetSeconds": {
+                          "type": "integer",
+                          "minimum": 120,
+                          "maximum": 86400
+                        },
+                        "split": {
+                          "type": "string",
+                          "enum": [
+                            "even",
+                            "negative"
                           ]
                         }
                       },
@@ -56462,6 +56626,8 @@
                     "source",
                     "hrAvg",
                     "hrMax",
+                    "cadenceAvg",
+                    "cadenceMax",
                     "note",
                     "goal",
                     "track",
@@ -57008,6 +57174,30 @@
                         }
                       ]
                     },
+                    "cadenceAvg": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 60,
+                          "maximum": 250
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "cadenceMax": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 60,
+                          "maximum": 250
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "note": {
                       "type": [
                         "string",
@@ -57023,7 +57213,8 @@
                             "free",
                             "distance",
                             "time",
-                            "pace"
+                            "pace",
+                            "race"
                           ]
                         },
                         "value": {
@@ -57036,6 +57227,18 @@
                             {
                               "type": "null"
                             }
+                          ]
+                        },
+                        "targetSeconds": {
+                          "type": "integer",
+                          "minimum": 120,
+                          "maximum": 86400
+                        },
+                        "split": {
+                          "type": "string",
+                          "enum": [
+                            "even",
+                            "negative"
                           ]
                         }
                       },
@@ -57423,6 +57626,8 @@
                     "source",
                     "hrAvg",
                     "hrMax",
+                    "cadenceAvg",
+                    "cadenceMax",
                     "note",
                     "goal",
                     "track",

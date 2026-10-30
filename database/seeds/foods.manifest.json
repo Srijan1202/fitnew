@@ -118,20 +118,20 @@
   },
   "seed": {
     "file": "database/seeds/foods.json",
-    "sha256": "b333102232469059c258b8d555d0d157d68980dbf4b3a95840a67369e7f70ac6"
+    "sha256": "b234c41573419e68cd13683dae1675bc97d0db783f255c26ab183595eb1ae57e"
   },
   "counts": {
-    "total": 1839,
+    "total": 1864,
     "usda": 326,
     "estimatedCarried": 76,
     "estimatedComposite": 265,
-    "nutritionRows": 2385,
-    "aliases": 2098,
+    "nutritionRows": 2410,
+    "aliases": 2099,
     "usdaPicksDropped": 0,
     "ifct": 539,
     "ifctSkipped": 3,
-    "indb": 630,
-    "indbSkipped": 384,
+    "indb": 655,
+    "indbSkipped": 359,
     "indbFried": 45,
     "cofidNew": 3,
     "cofidReplaced": 10,
@@ -147,7 +147,7 @@
     "fibre": "null (unknown) when the source does not report it — never 0; a composite is unknown if any ingredient is",
     "carriedConfidence": "carried-over core estimates keep their numbers unchanged; a core confidence of high is seeded as medium (a FITOS estimate is never high)",
     "ifct": "IFCT 2017 per 100 g; kcal = kJ / 4.184 (IFCT's 0 kJ for its oils and ghee is computed with IFCT's own factors 17/37/17/8 kJ per g); each value +- the SD IFCT reports, kept within 3-10 %, rounded outward; left out: a missing value, and energy more than 25 % from 4/4/9 of its macros; verified, high confidence; used by the owner's decision of 2026-10-25 without NIN's written permission (ADR-036)",
-    "indb": "INDB 2024 per piece / bowl as INDB serves it (its per 100 g is of the raw ingredients, so unused); +-10 %; a deep-fried recipe has the pan taken out and keeps the fat CoFID measured in fried food of its kind, +-15 % (beta 3.9; samosa, vada, cutlet and other kinds CoFID cannot check within +-15 % are left out); left out: whole dishes, portions outside 5-900 kcal, energy more than 25 % from 4/4/9 of its macros, and a recipe FITOS already has (by name or alias); never verified (ADR-036)",
+    "indb": "INDB 2024 per piece / bowl as INDB serves it (its per 100 g is of the raw ingredients, so unused); +-10 %; a deep-fried recipe has the pan taken out and keeps the fat CoFID measured in fried food of its kind, +-15 % (beta 3.9; samosa, vada, cutlet and other kinds CoFID cannot check within +-15 % are left out); a whole cake of 600 kcal or more is served as 1/8, a pie 1/6, a dish 1/4, a smaller one whole (beta 4.9); left out: a whole jar, box, tin or bottle, portions outside 5-900 kcal, energy more than 25 % from 4/4/9 of its macros, and a recipe FITOS already has (by name or alias); never verified (ADR-036)",
     "cofid": "UK CoFID 2021 (gov.uk, Open Government Licence v3.0) measured as eaten: plain foods +-3 %, dishes +-8 %; a replaced FITOS composite keeps its slug, name, aliases and serving (ADR-036); the fried dishes listed as oil references only calibrate the fried INDB recipes and are never foods (beta 3.9)",
     "names": "a measured food never repeats a name: an IFCT name FITOS already uses gets \"(IFCT)\", an INDB recipe FITOS already has is skipped; an alias that is another food's name is dropped"
   },
@@ -14847,6 +14847,11 @@
       "fried": null
     },
     {
+      "slug": "apple-banana-pie",
+      "code": "BFP529",
+      "fried": null
+    },
+    {
       "slug": "apple-cake",
       "code": "ASC418",
       "fried": null
@@ -15337,6 +15342,11 @@
       "fried": null
     },
     {
+      "slug": "chicken-and-cheese-souffle",
+      "code": "OSR095",
+      "fried": null
+    },
+    {
       "slug": "chicken-and-corn-open-sandwich",
       "code": "BFP473",
       "fried": null
@@ -15582,6 +15592,16 @@
       "fried": null
     },
     {
+      "slug": "coffee-pear-alaska",
+      "code": "BFP355",
+      "fried": null
+    },
+    {
+      "slug": "cold-chocolate-souffle",
+      "code": "BFP370",
+      "fried": null
+    },
+    {
       "slug": "cold-cucumber-cream-soup",
       "code": "BFP088",
       "fried": null
@@ -15592,8 +15612,28 @@
       "fried": null
     },
     {
+      "slug": "cold-lemon-souffle",
+      "code": "BFP366",
+      "fried": null
+    },
+    {
+      "slug": "cold-orange-souffle",
+      "code": "BFP367",
+      "fried": null
+    },
+    {
+      "slug": "cold-pineapple-souffle",
+      "code": "BFP368",
+      "fried": null
+    },
+    {
       "slug": "cold-tomato-soup",
       "code": "BFP089",
+      "fried": null
+    },
+    {
+      "slug": "cold-vanilla-souffle",
+      "code": "BFP369",
       "fried": null
     },
     {
@@ -15614,6 +15654,11 @@
     {
       "slug": "cornflakes-with-milk",
       "code": "ASC051",
+      "fried": null
+    },
+    {
+      "slug": "cottage-cheese-pie",
+      "code": "ASC401",
       "fried": null
     },
     {
@@ -15649,6 +15694,11 @@
     {
       "slug": "creamy-chicken",
       "code": "BFP217",
+      "fried": null
+    },
+    {
+      "slug": "creamy-chocolate-mousse",
+      "code": "BFP365",
       "fried": null
     },
     {
@@ -15862,13 +15912,28 @@
       "fried": "fried fish"
     },
     {
+      "slug": "fish-in-coconut-milk",
+      "code": "BFP229",
+      "fried": null
+    },
+    {
       "slug": "fish-orly",
       "code": "OSR063",
       "fried": "fried fish"
     },
     {
+      "slug": "fish-pie",
+      "code": "BFP232",
+      "fried": null
+    },
+    {
       "slug": "fish-sandwich",
       "code": "OSR029",
+      "fried": null
+    },
+    {
+      "slug": "fish-souffle",
+      "code": "BFP234",
       "fried": null
     },
     {
@@ -15884,6 +15949,11 @@
     {
       "slug": "french-omelette",
       "code": "BFP054",
+      "fried": null
+    },
+    {
+      "slug": "fricassee-of-mushroom",
+      "code": "BFP292",
       "fried": null
     },
     {
@@ -16044,6 +16114,11 @@
     {
       "slug": "guava-raita",
       "code": "BFP328",
+      "fried": null
+    },
+    {
+      "slug": "gujarati-handvo",
+      "code": "OSR146",
       "fried": null
     },
     {
@@ -16292,6 +16367,16 @@
       "fried": null
     },
     {
+      "slug": "lasagne-with-meat-sauce",
+      "code": "BFP161",
+      "fried": null
+    },
+    {
+      "slug": "lasagne-with-vegetables",
+      "code": "BFP162",
+      "fried": null
+    },
+    {
       "slug": "lem-o-gin",
       "code": "ASC009",
       "fried": null
@@ -16309,6 +16394,11 @@
     {
       "slug": "lemon-chicken",
       "code": "OSR067",
+      "fried": null
+    },
+    {
+      "slug": "lemon-chiffon-pie",
+      "code": "BFP531",
       "fried": null
     },
     {
@@ -16437,6 +16527,11 @@
       "fried": null
     },
     {
+      "slug": "masala-souffle",
+      "code": "OSR094",
+      "fried": null
+    },
+    {
       "slug": "mayonnaise-vegetable-dip",
       "code": "BFP453",
       "fried": null
@@ -16504,6 +16599,11 @@
     {
       "slug": "minced-meat-patties",
       "code": "ASC411",
+      "fried": null
+    },
+    {
+      "slug": "minced-meat-pie",
+      "code": "ASC402",
       "fried": null
     },
     {
@@ -16674,6 +16774,11 @@
     {
       "slug": "orange-cake",
       "code": "ASC421",
+      "fried": null
+    },
+    {
+      "slug": "orange-chiffon-pie",
+      "code": "BFP532",
       "fried": null
     },
     {
@@ -17432,6 +17537,11 @@
       "fried": null
     },
     {
+      "slug": "spinach-and-paneer-souffle",
+      "code": "OSR093",
+      "fried": null
+    },
+    {
       "slug": "spinach-and-potato",
       "code": "BFP257",
       "fried": null
@@ -17762,6 +17872,11 @@
       "fried": null
     },
     {
+      "slug": "tutti-frutti-cake",
+      "code": "OSR127",
+      "fried": null
+    },
+    {
       "slug": "urad-sabut-special",
       "code": "BFP179",
       "fried": null
@@ -17769,6 +17884,11 @@
     {
       "slug": "urad-special-dehusked",
       "code": "BFP171",
+      "fried": null
+    },
+    {
+      "slug": "vanilla-ice-cream-with-apples-in-hot-cherry-sauce",
+      "code": "BFP359",
       "fried": null
     },
     {
@@ -17789,6 +17909,11 @@
     {
       "slug": "veg-paneer-stew",
       "code": "BFP091",
+      "fried": null
+    },
+    {
+      "slug": "vegetable-and-cheese-pie",
+      "code": "BFP294",
       "fried": null
     },
     {
@@ -18704,16 +18829,6 @@
       "reason": "INDB gives no per-serving values"
     },
     {
-      "code": "ASC401",
-      "name": "Cottage cheese pie",
-      "reason": "a whole pie, not a portion"
-    },
-    {
-      "code": "ASC402",
-      "name": "Minced meat pie",
-      "reason": "a whole pie, not a portion"
-    },
-    {
       "code": "ASC406",
       "name": "Choux pastry",
       "reason": "INDB gives no per-serving values"
@@ -19144,16 +19259,6 @@
       "reason": "energy 365 kcal but its macros give 611"
     },
     {
-      "code": "BFP161",
-      "name": "Lasagne with meat sauce",
-      "reason": "a whole dish, not a portion"
-    },
-    {
-      "code": "BFP162",
-      "name": "Lasagne with vegetables",
-      "reason": "a whole dish, not a portion"
-    },
-    {
       "code": "BFP163",
       "name": "Green chilli sauce",
       "reason": "INDB gives no per-serving values"
@@ -19209,24 +19314,9 @@
       "reason": "FITOS already has \"chicken korma\""
     },
     {
-      "code": "BFP229",
-      "name": "Fish in coconut milk (Nariyal ke doodh ke saath machli)",
-      "reason": "a whole dish, not a portion"
-    },
-    {
       "code": "BFP230",
       "name": "Prawn curry (with coconut) (Jhinga curry)",
       "reason": "FITOS already has \"prawn curry\""
-    },
-    {
-      "code": "BFP232",
-      "name": "Fish pie",
-      "reason": "a whole pie, not a portion"
-    },
-    {
-      "code": "BFP234",
-      "name": "Fish souffle",
-      "reason": "a whole dish, not a portion"
     },
     {
       "code": "BFP240",
@@ -19274,16 +19364,6 @@
       "reason": "deep-fried: INDB counts the whole pan of oil, and CoFID checks no rule for this kind"
     },
     {
-      "code": "BFP292",
-      "name": "Fricassee of Mushroom",
-      "reason": "a whole dish, not a portion"
-    },
-    {
-      "code": "BFP294",
-      "name": "Vegetable and cheese pie",
-      "reason": "a whole dish, not a portion"
-    },
-    {
       "code": "BFP308",
       "name": "Frozen frosty fruit salad (Phalon ka salaad)",
       "reason": "FITOS already has \"phalon ka salaad\""
@@ -19309,49 +19389,9 @@
       "reason": "FITOS already has \"caramel custard\""
     },
     {
-      "code": "BFP355",
-      "name": "Coffee pear alaska",
-      "reason": "a whole dish, not a portion"
-    },
-    {
-      "code": "BFP359",
-      "name": "Vanilla ice cream with apples in hot cherry sauce",
-      "reason": "a whole dish, not a portion"
-    },
-    {
       "code": "BFP360",
       "name": "Hot cherry sauce",
       "reason": "INDB gives no per-serving values"
-    },
-    {
-      "code": "BFP365",
-      "name": "Creamy chocolate mousse",
-      "reason": "a whole dish, not a portion"
-    },
-    {
-      "code": "BFP366",
-      "name": "Cold lemon souffle",
-      "reason": "a whole souffle dish, not a portion"
-    },
-    {
-      "code": "BFP367",
-      "name": "Cold orange souffle",
-      "reason": "a whole souffle dish, not a portion"
-    },
-    {
-      "code": "BFP368",
-      "name": "Cold pineapple souffle",
-      "reason": "a whole souffle dish, not a portion"
-    },
-    {
-      "code": "BFP369",
-      "name": "Cold vanilla souffle",
-      "reason": "a whole souffle dish, not a portion"
-    },
-    {
-      "code": "BFP370",
-      "name": "Cold chocolate souffle",
-      "reason": "a whole souffle dish, not a portion"
     },
     {
       "code": "BFP386",
@@ -19457,21 +19497,6 @@
       "code": "BFP523",
       "name": "Orange cream flan",
       "reason": "1133 kcal a flan is not plausible"
-    },
-    {
-      "code": "BFP529",
-      "name": "Apple banana pie",
-      "reason": "a whole pie, not a portion"
-    },
-    {
-      "code": "BFP531",
-      "name": "Lemon chiffon pie",
-      "reason": "a whole pie, not a portion"
-    },
-    {
-      "code": "BFP532",
-      "name": "Orange chiffon pie",
-      "reason": "a whole pie, not a portion"
     },
     {
       "code": "BFP539",
@@ -19739,21 +19764,6 @@
       "reason": "FITOS already has \"onion raita\""
     },
     {
-      "code": "OSR093",
-      "name": "Spinach and paneer souffle",
-      "reason": "a whole souffle dish, not a portion"
-    },
-    {
-      "code": "OSR094",
-      "name": "Masala souffle",
-      "reason": "a whole souffle dish, not a portion"
-    },
-    {
-      "code": "OSR095",
-      "name": "Chicken and cheese souffle",
-      "reason": "a whole souffle dish, not a portion"
-    },
-    {
       "code": "OSR096",
       "name": "Tamarind chutney (Chintapandu pachadi/Puli chutney)",
       "reason": "4 kcal a ml is not plausible"
@@ -19839,11 +19849,6 @@
       "reason": "FITOS already has \"suji\""
     },
     {
-      "code": "OSR127",
-      "name": "Tutti frutti cake",
-      "reason": "a whole cake, not a portion"
-    },
-    {
       "code": "OSR130",
       "name": "Bottle gourd soup (Ghiya/Lauki soup)",
       "reason": "FITOS already has \"ghiya\""
@@ -19867,11 +19872,6 @@
       "code": "OSR144",
       "name": "Panchmel dal",
       "reason": "FITOS already has \"panchmel dal\""
-    },
-    {
-      "code": "OSR146",
-      "name": "Gujarati handvo",
-      "reason": "a whole cake, not a portion"
     },
     {
       "code": "OSR147",

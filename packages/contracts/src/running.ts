@@ -22,14 +22,20 @@ export type RunSource = z.infer<typeof runSourceSchema>;
 
 /** Heart rate in beats a minute, as a watch reports it. */
 export const heartRateSchema = z.number().int().min(25).max(250);
+/** Beta 4.9: a watch run's cadence, steps per minute. */
+export const cadenceSchema = z.number().int().min(60).max(250);
 
 /** Outdoor runs carry a GPS track; treadmill runs a typed distance. */
 export const RUN_KINDS = ['outdoor', 'treadmill'] as const;
 export const runKindSchema = z.enum(RUN_KINDS);
 export type RunKind = z.infer<typeof runKindSchema>;
 
-/** What the runner set out to do. `value`: metres, seconds, or seconds per km. */
-export const RUN_GOAL_KINDS = ['free', 'distance', 'time', 'pace'] as const;
+/**
+ * What the runner set out to do. `value`: metres, seconds, or seconds per km.
+ * Beta 4.9 (owner): a race — `value` its distance in metres, with the target
+ * time and the split plan.
+ */
+export const RUN_GOAL_KINDS = ['free', 'distance', 'time', 'pace', 'race'] as const;
 export const runGoalKindSchema = z.enum(RUN_GOAL_KINDS);
 export type RunGoalKind = z.infer<typeof runGoalKindSchema>;
 
@@ -38,7 +44,14 @@ export const RUN_GOAL_LIMITS = {
   distance: { min: 100, max: 1_000_000 },
   time: { min: 60, max: 86_400 },
   pace: { min: 120, max: 1200 },
+  race: { min: 1000, max: 100_000 },
 } as const;
+
+/** Beta 4.9: a race's split plan; negative runs the first half 2 % slower and the second 2 % faster. */
+export const RACE_SPLITS = ['even', 'negative'] as const;
+export const raceSplitSchema = z.enum(RACE_SPLITS);
+/** A race's target time: 2 minutes to 24 hours. */
+export const RACE_TARGET_LIMITS = { min: 120, max: 86_400 } as const;
 
 /** A run lasts at most 48 hours. */
 export const RUN_MAX_SECONDS = 172_800;
@@ -50,9 +63,19 @@ export const RUN_NAME_MAX = 60;
 export const RUN_NOTE_MAX = 500;
 
 export const runGoalSchema = z
-  .object({ kind: runGoalKindSchema, value: z.number().int().nullable() })
+  .object({
+    kind: runGoalKindSchema,
+    value: z.number().int().nullable(),
+    /** Beta 4.9: a race only. */
+    targetSeconds: z.number().int().min(RACE_TARGET_LIMITS.min).max(RACE_TARGET_LIMITS.max).optional(),
+    split: raceSplitSchema.optional(),
+  })
   .strict()
   .superRefine((g, ctx) => {
+    const race = g.kind === 'race';
+    if (race !== (g.targetSeconds !== undefined && g.split !== undefined)) {
+      ctx.addIssue({ code: 'custom', path: ['targetSeconds'], message: 'a race, and only a race, has its target time and split' });
+    }
     if (g.kind === 'free') {
       if (g.value !== null) ctx.addIssue({ code: 'custom', path: ['value'], message: 'a free run has no goal value' });
       return;
@@ -185,6 +208,9 @@ export const runSummarySchema = z
     source: runSourceSchema,
     hrAvg: heartRateSchema.nullable(),
     hrMax: heartRateSchema.nullable(),
+    /** Beta 4.9: a watch run's average and max cadence (steps per minute). */
+    cadenceAvg: cadenceSchema.nullable(),
+    cadenceMax: cadenceSchema.nullable(),
   })
   .strict();
 export type RunSummary = z.infer<typeof runSummarySchema>;
@@ -245,6 +271,8 @@ export const createRunRequestSchema = z
     externalId: z.string().min(1).max(200).optional(),
     hrAvg: heartRateSchema.optional(),
     hrMax: heartRateSchema.optional(),
+    cadenceAvg: cadenceSchema.optional(),
+    cadenceMax: cadenceSchema.optional(),
   })
   .strict()
   .superRefine((r, ctx) => {
@@ -254,6 +282,9 @@ export const createRunRequestSchema = z
     }
     if (!watch && (r.hrAvg !== undefined || r.hrMax !== undefined)) {
       ctx.addIssue({ code: 'custom', path: ['hrAvg'], message: 'heart rate comes from a watch' });
+    }
+    if (!watch && (r.cadenceAvg !== undefined || r.cadenceMax !== undefined)) {
+      ctx.addIssue({ code: 'custom', path: ['cadenceAvg'], message: 'cadence comes from a watch' });
     }
     if (r.kind === 'outdoor') {
       const routeless = watch && r.track === undefined;

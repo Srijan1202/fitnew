@@ -6,7 +6,7 @@
 - **Badges:** a medal with its number.
 - **Features:** all four.
 
-**Status:** awaiting the owner's "go".
+**Status:** built 2026-10-30 after the owner's "go" (ADR-049); release awaits the owner.
 **Shape:**
 - the API (one migration);
 - an APK 1.0.0-beta.4.9 (build 27), because of a new permission and background work;

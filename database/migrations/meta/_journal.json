@@ -288,6 +288,13 @@
       "when": 1793345276642,
       "tag": "0040_rewards_unlocked",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793368549064,
+      "tag": "0041_race_and_cadence",
+      "breakpoints": true
     }
   ]
 }

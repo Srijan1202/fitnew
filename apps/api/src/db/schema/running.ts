@@ -22,7 +22,7 @@ import { boolean, check, date, index, integer, jsonb, numeric, pgEnum, pgTable, 
 import { users } from './users.js';
 
 export const runKindEnum = pgEnum('run_kind', ['outdoor', 'treadmill']);
-export const runGoalKindEnum = pgEnum('run_goal_kind', ['free', 'distance', 'time', 'pace']);
+export const runGoalKindEnum = pgEnum('run_goal_kind', ['free', 'distance', 'time', 'pace', 'race']);
 /** Beta 4.5: recorded on the phone, or on a Galaxy Watch (through Health Connect). */
 export const runSourceEnum = pgEnum('run_source', ['phone', 'watch']);
 
@@ -45,6 +45,9 @@ export const runs = pgTable(
     durationSeconds: integer('duration_seconds').notNull(),
     goalKind: runGoalKindEnum('goal_kind').notNull(),
     goalValue: integer('goal_value'),
+    /** Beta 4.9: a race's target time and split plan ('even' | 'negative'). */
+    goalTargetSeconds: integer('goal_target_seconds'),
+    goalSplit: text('goal_split'),
     /** The encoded points (v1); null indoors. */
     trackPoints: text('track_points'),
     trackBreaks: jsonb('track_breaks').$type<number[]>(),
@@ -67,6 +70,9 @@ export const runs = pgTable(
     externalId: text('external_id'),
     hrAvg: smallint('hr_avg'),
     hrMax: smallint('hr_max'),
+    /** Beta 4.9: a watch run's average and max cadence, steps per minute. */
+    cadenceAvg: smallint('cadence_avg'),
+    cadenceMax: smallint('cadence_max'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -86,6 +92,13 @@ export const runs = pgTable(
     check('runs_external', sql`(${t.source} = 'watch') = (${t.externalId} is not null)`),
     check('runs_hr', sql`(${t.hrAvg} is null or ${t.hrAvg} between 25 and 250) and (${t.hrMax} is null or ${t.hrMax} between 25 and 250)`),
     check('runs_goal', sql`(${t.goalKind} = 'free') = (${t.goalValue} is null)`),
+    check(
+      'runs_race',
+      // As text: the enum value is added in the same migration (Postgres
+      // refuses a new enum value inside the transaction that adds it).
+      sql`(${t.goalKind}::text = 'race') = (${t.goalTargetSeconds} is not null and ${t.goalSplit} is not null) and (${t.goalSplit} is null or ${t.goalSplit} in ('even', 'negative'))`,
+    ),
+    check('runs_cadence', sql`(${t.cadenceAvg} is null or ${t.cadenceAvg} between 60 and 250) and (${t.cadenceMax} is null or ${t.cadenceMax} between 60 and 250)`),
   ],
 );
 

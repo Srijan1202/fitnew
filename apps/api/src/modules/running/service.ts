@@ -48,6 +48,8 @@ export function toSummary(row: RunRow, recordKeys: readonly EffortKey[] = []): R
     source: row.source,
     hrAvg: row.hrAvg,
     hrMax: row.hrMax,
+    cadenceAvg: row.cadenceAvg,
+    cadenceMax: row.cadenceMax,
   };
 }
 
@@ -56,7 +58,12 @@ export function toDetail(row: RunRow, plannedRunId: string | null = null, effort
   // Splits, the chart and the laps are computed on read, from the kept track.
   const decoded = track === null ? null : decodeTrack(track);
   const computed = decoded === null ? null : summarizeTrack(decoded, row.durationSeconds, null);
-  const goal: RunGoal = row.goalKind === 'free' ? { kind: 'free', value: null } : { kind: row.goalKind, value: row.goalValue };
+  const goal: RunGoal =
+    row.goalKind === 'free'
+      ? { kind: 'free', value: null }
+      : row.goalKind === 'race'
+        ? { kind: 'race', value: row.goalValue, targetSeconds: row.goalTargetSeconds!, split: row.goalSplit as 'even' | 'negative' }
+        : { kind: row.goalKind, value: row.goalValue };
   return {
     ...toSummary(row, efforts.filter((e) => e.rank === 1).map((e) => e.key)),
     note: row.note,
@@ -152,6 +159,8 @@ export class RunningService {
       durationSeconds: req.durationSeconds,
       goalKind: req.goal.kind,
       goalValue: req.goal.value,
+      goalTargetSeconds: req.goal.targetSeconds ?? null,
+      goalSplit: req.goal.split ?? null,
       trackPoints: req.track?.points ?? null,
       trackBreaks: req.track === undefined ? null : [...req.track.breaks],
       trackElevation: req.track?.elevation ?? null,
@@ -166,6 +175,8 @@ export class RunningService {
       externalId: req.externalId ?? null,
       hrAvg: req.hrAvg ?? null,
       hrMax: req.hrMax ?? null,
+      cadenceAvg: req.cadenceAvg ?? null,
+      cadenceMax: req.cadenceMax ?? null,
     });
     // Two uploads racing on one id: the loser reads the winner's row.
     if (row === null) return this.replay(userId, (await this.repo.byClientId(req.clientRunId))!);

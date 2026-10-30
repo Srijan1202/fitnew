@@ -31,6 +31,20 @@ export const INDB_FRIED_SPREAD = 0.15;
 export const INDB_PIECE_KCAL = { min: 5, max: 900 } as const;
 /** INDB units that are a whole dish, not something one person eats. */
 export const INDB_WHOLE_UNITS = new Set(['cake', 'pie', 'jar', 'box', 'souffle dish', 'dish', 'chicken', 'loaf', 'tin', 'bottle', 'tray', 'pan']);
+/**
+ * Beta 4.9 (ADR-049): a whole dish one person eats a share of is served as
+ * that share — a slice of cake an eighth, of pie a sixth, a portion of a
+ * dish (lasagne, souffle) a quarter. A jar, box, tin or bottle (pickles,
+ * chutneys) stays out: its serving is a spoonful nobody can weigh from it.
+ */
+export const INDB_WHOLE_PORTIONS: ReadonlyMap<string, { readonly share: number; readonly label: string }> = new Map([
+  ['cake', { share: 8, label: 'slice (1/8 cake)' }],
+  ['pie', { share: 6, label: 'slice (1/6 pie)' }],
+  ['dish', { share: 4, label: 'portion (1/4 dish)' }],
+  ['souffle dish', { share: 4, label: 'portion (1/4 dish)' }],
+]);
+/** A whole of less energy than this is one person's, served whole (beta 4.9). */
+export const INDB_WHOLE_ONE_KCAL = 600;
 export const COFID_SPREAD = { food: 0.03, dish: 0.08 } as const;
 /** How far energy and 4/4/9 from the macros may differ (share of the energy; at least 10 kcal). */
 export const ENERGY_AGREEMENT = 0.25;
@@ -192,7 +206,15 @@ export function indbNutrition(r: IndbRecipe): SourceResult {
     u = withAbsorbedOil(u, r.deepFry.panOilGrams, kind.share);
     spread = INDB_FRIED_SPREAD;
   }
-  if (INDB_WHOLE_UNITS.has(u.unit.toLowerCase())) return { skip: `a whole ${u.unit}, not a portion` };
+  const portion = INDB_WHOLE_PORTIONS.get(u.unit.toLowerCase());
+  // Under INDB_WHOLE_ONE_KCAL the whole is one person's (a single fish pie,
+  // a souffle made four at a time): served whole, as INDB gives it.
+  if (portion !== undefined && u.kcal >= INDB_WHOLE_ONE_KCAL) {
+    const of = (v: number) => v / portion.share;
+    u = { ...u, unit: portion.label, kcal: of(u.kcal), protein: of(u.protein), carb: of(u.carb), fat: of(u.fat), fibre: u.fibre === null ? null : of(u.fibre) };
+  } else if (portion === undefined && INDB_WHOLE_UNITS.has(u.unit.toLowerCase())) {
+    return { skip: `a whole ${u.unit}, not a portion` };
+  }
   if (u.kcal < INDB_PIECE_KCAL.min || u.kcal > INDB_PIECE_KCAL.max) return { skip: `${Math.round(u.kcal)} kcal a ${u.unit} is not plausible` };
   const disagreement = energyDisagreement(u.kcal, u.protein, u.carb, u.fat);
   if (disagreement !== null) return { skip: disagreement };

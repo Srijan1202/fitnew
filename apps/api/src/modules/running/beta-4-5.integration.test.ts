@@ -139,6 +139,29 @@ describeIfDb('beta 4.5 (real Postgres)', { timeout: 90_000 }, () => {
     });
   });
 
+  describe('beta 4.9: cadence and race runs (owner)', () => {
+    it('a watch run carries its cadence; a phone run cannot; out-of-range cadence is refused', async () => {
+      const u = await user();
+      const run = runDetailSchema.parse((await call(u, 'POST', '/running/runs', watchRun(daysAgo(4), { cadenceAvg: 168, cadenceMax: 182 }))).json());
+      expect(run).toMatchObject({ cadenceAvg: 168, cadenceMax: 182 });
+      const bad = async (over: Partial<CreateRunRequest>) => (await call(u, 'POST', '/running/runs', watchRun(daysAgo(5), over))).statusCode;
+      expect(await bad({ cadenceAvg: 300 })).toBe(422);
+      expect(await bad({ source: 'phone', externalId: undefined, hrAvg: undefined, hrMax: undefined, cadenceAvg: 170 })).toBe(422);
+    });
+
+    it('a race run keeps its distance, target time and split; only a race has them', async () => {
+      const u = await user();
+      const race = { kind: 'race' as const, value: 5000, targetSeconds: 1500, split: 'negative' as const };
+      const run = runDetailSchema.parse((await call(u, 'POST', '/running/runs', watchRun(daysAgo(6), { goal: race }))).json());
+      expect(run.goal).toEqual(race);
+      const bad = async (goal: unknown) => (await call(u, 'POST', '/running/runs', watchRun(daysAgo(7), { goal: goal as never }))).statusCode;
+      expect(await bad({ kind: 'race', value: 5000 })).toBe(422);
+      expect(await bad({ kind: 'distance', value: 5000, targetSeconds: 1500, split: 'even' })).toBe(422);
+      expect(await bad({ ...race, split: 'fast' })).toBe(422);
+      expect(await bad({ ...race, value: 500 })).toBe(422);
+    });
+  });
+
   describe('more badges', () => {
     it('lifetime and consistency from past runs; the total on records; only for build 23+', async () => {
       const u = await user();
