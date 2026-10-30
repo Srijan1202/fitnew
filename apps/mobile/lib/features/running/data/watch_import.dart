@@ -18,7 +18,8 @@ import 'running_api.dart';
 ///  - Not doubled: a watch run that overlaps a run the phone recorded by
 ///    more than half its time is left out.
 ///  - What it has: distance (the route's, or the watch's own), time less
-///    pauses, the average and max heart rate, and the route when shared.
+///    pauses, the average and max heart rate, the cadence (beta 4.9), and
+///    the route when shared.
 
 /// One run from Health Connect, as the channel answers it.
 class WatchRun {
@@ -31,6 +32,8 @@ class WatchRun {
     this.distanceM,
     this.hrAvg,
     this.hrMax,
+    this.cadenceAvg,
+    this.cadenceMax,
     this.route,
   });
 
@@ -52,6 +55,8 @@ class WatchRun {
       distanceM: (m['distanceM'] as num?)?.toDouble(),
       hrAvg: (m['hrAvg'] as num?)?.toDouble(),
       hrMax: (m['hrMax'] as num?)?.toDouble(),
+      cadenceAvg: (m['cadenceAvg'] as num?)?.toDouble(),
+      cadenceMax: (m['cadenceMax'] as num?)?.toDouble(),
       route: route is List
           ? [
               for (final p in route)
@@ -75,6 +80,10 @@ class WatchRun {
   final double? distanceM;
   final double? hrAvg;
   final double? hrMax;
+
+  /// Beta 4.9: steps a minute (the max only from the watch's samples).
+  final double? cadenceAvg;
+  final double? cadenceMax;
 
   /// (UTC ms, lat, lon, elevation) per point; null when not shared.
   final List<(int, double, double, double?)>? route;
@@ -102,6 +111,20 @@ class WatchRun {
     return points.length < 2 ? null : Track([points]);
   }
 
+  /// Beta 4.9: the distance as FITOS shows it — the route's outdoors, else
+  /// the watch's own.
+  double get metres {
+    final t = treadmill ? null : track;
+    if (t == null) return distanceM ?? 0;
+    var m = 0.0;
+    for (final seg in t.segments) {
+      for (var i = 1; i < seg.length; i++) {
+        m += distanceBetween(seg[i - 1], seg[i]);
+      }
+    }
+    return m;
+  }
+
   /// Seconds this run shares with [startedAt]–[endedAt].
   int overlapSeconds(DateTime startedAt, DateTime endedAt) {
     final a = start.isAfter(startedAt) ? start : startedAt;
@@ -119,6 +142,9 @@ abstract class WatchRunSource {
   /// Asks Health Connect for the watch permissions; true when granted.
   Future<bool> ask();
 
+  /// Beta 4.9: whether Health Connect lets FITOS read in the background.
+  Future<bool> background();
+
   Future<List<WatchRun>> runs({required DateTime start, required DateTime end});
 }
 
@@ -128,7 +154,15 @@ class HealthConnectWatchSource implements WatchRunSource {
   final HealthConnectChannel _channel;
 
   static const needed = ['exercise', 'distance'];
-  static const wanted = ['exercise', 'distance', 'heartRate', 'exerciseRoutes'];
+  static const wanted = [
+    'exercise',
+    'distance',
+    'heartRate',
+    'exerciseRoutes',
+    // Beta 4.9: the cadence, and imports while FITOS is closed.
+    'steps',
+    'background',
+  ];
 
   @override
   Future<bool> ready() async {
@@ -153,6 +187,16 @@ class HealthConnectWatchSource implements WatchRunSource {
   }
 
   @override
+  Future<bool> background() async {
+    try {
+      if (await _channel.sdkStatus() != 'available') return false;
+      return (await _channel.grantedPermissions()).contains('background');
+    } on Object {
+      return false;
+    }
+  }
+
+  @override
   Future<List<WatchRun>> runs({
     required DateTime start,
     required DateTime end,
@@ -168,9 +212,16 @@ class HealthConnectWatchSource implements WatchRunSource {
 /// What one import did: how many runs came in; [offline] when the server
 /// could not be reached (what is left comes in next time).
 class WatchImportResult {
-  const WatchImportResult(this.imported, {this.offline = false});
+  const WatchImportResult(
+    this.imported, {
+    this.offline = false,
+    this.added = const [],
+  });
   final int imported;
   final bool offline;
+
+  /// Beta 4.9: the runs that came in (the background import's notification).
+  final List<WatchRun> added;
 }
 
 class WatchImporter {
@@ -211,6 +262,7 @@ class WatchImporter {
         : after.subtract(overlap);
     final done = {...prefs.getStringList(_doneKey) ?? const <String>[]};
     var imported = 0;
+    final added = <WatchRun>[];
     final List<WatchRun> found;
     try {
       found = await source.runs(start: from, end: now);
@@ -238,14 +290,15 @@ class WatchImporter {
         case Ok():
           done.add(w.id);
           imported++;
+          added.add(w);
         case Err():
           // Offline, or the server said no: tried again next time.
           await _save(prefs, done, null);
-          return WatchImportResult(imported, offline: true);
+          return WatchImportResult(imported, offline: true, added: added);
       }
     }
     await _save(prefs, done, now);
-    return WatchImportResult(imported);
+    return WatchImportResult(imported, added: added);
   }
 
   Future<void> _save(
@@ -280,6 +333,20 @@ class WatchImporter {
     final local = w.start.toLocal();
     final hrAvg = bpm(w.hrAvg);
     final hrMax = bpm(w.hrMax);
+    // Beta 4.9: the cadence, 60–250 steps a minute (as the server takes it);
+    // a max below the average is the watch's error and left out.
+    int? spm(double? v) {
+      if (v == null) return null;
+      final c = v.round();
+      return c >= 60 && c <= 250 ? c : null;
+    }
+
+    final cadenceAvg = spm(w.cadenceAvg);
+    final rawMax = spm(w.cadenceMax);
+    final cadenceMax =
+        rawMax != null && (cadenceAvg == null || rawMax >= cadenceAvg)
+            ? rawMax
+            : null;
     return {
       'clientRunId': clientIdFor(w.id),
       'kind': w.treadmill ? 'treadmill' : 'outdoor',
@@ -295,6 +362,8 @@ class WatchImporter {
       'externalId': w.id,
       if (hrAvg != null) 'hrAvg': hrAvg,
       if (hrMax != null) 'hrMax': hrMax,
+      if (cadenceAvg != null) 'cadenceAvg': cadenceAvg,
+      if (cadenceMax != null) 'cadenceMax': cadenceMax,
     };
   }
 }

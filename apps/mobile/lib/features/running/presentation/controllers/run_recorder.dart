@@ -15,6 +15,7 @@ import '../../data/run_store.dart';
 import '../../domain/coach.dart';
 import '../../domain/gps_filter.dart';
 import '../../domain/live_stats.dart';
+import '../../domain/race.dart';
 import '../../domain/run.dart';
 import '../../domain/track.dart';
 import '../../domain/units.dart';
@@ -213,6 +214,8 @@ class RunRecorder extends Notifier<LiveRun?> {
         status: RunStatus.recording.name,
         goalKind: goal.kind.name,
         goalValue: Value(goal.value),
+        goalTargetSeconds: Value(goal.targetSeconds),
+        goalSplit: Value(goal.split?.name),
         startedAt: now.toUtc().toIso8601String(),
         resumedAt: Value(now.toUtc().toIso8601String()),
         updatedAt: now.toUtc().toIso8601String(),
@@ -322,11 +325,16 @@ class RunRecorder extends Notifier<LiveRun?> {
             run.track.splitSeconds.isEmpty ? null : run.track.splitSeconds.last,
         goalKind: run.goal.kind.name,
         goalValue: run.goal.value,
+        // Beta 4.9: where a race stands against its plan.
+        raceDeltaSec:
+            RacePlan.of(run.goal)?.deltaAt(distance, run.activeSeconds),
         target: targetPace(
           step: r?.current,
           planned: r == null ? _plannedPace : null,
           goalKind: run.goal.kind.name,
           goalValue: run.goal.value,
+          race: RacePlan.of(run.goal),
+          distanceM: distance,
         ),
       ),
     )) {
@@ -686,7 +694,12 @@ class RunRecorder extends Notifier<LiveRun?> {
     state = LiveRun(
       id: row.clientRunId,
       kind: kind,
-      goal: RunGoal(RunGoalKind.parse(row.goalKind), row.goalValue),
+      goal: RunGoal.stored(
+        row.goalKind,
+        row.goalValue,
+        row.goalTargetSeconds,
+        row.goalSplit,
+      ),
       status: status,
       startedAt: startedAt,
       activeSeconds: _activeMs ~/ 1000,

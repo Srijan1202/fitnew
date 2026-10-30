@@ -136,6 +136,9 @@ class FakeRunningApi implements RunningApi {
       'externalId': body['externalId'],
       'hrAvg': body['hrAvg'],
       'hrMax': body['hrMax'],
+      // Beta 4.9.
+      'cadenceAvg': body['cadenceAvg'],
+      'cadenceMax': body['cadenceMax'],
       'recordKeys': [
         for (final e in _efforts(body))
           if (e['rank'] == 1) e['key'],
@@ -506,6 +509,7 @@ class FakeRunVoice implements RunVoice {
 class FakeWatch implements WatchRunSource {
   bool allowed = true;
   bool grantOnAsk = true;
+  bool inBackground = false;
   List<WatchRun> found = [];
   final asks = <bool>[];
   final windows = <(DateTime, DateTime)>[];
@@ -519,6 +523,9 @@ class FakeWatch implements WatchRunSource {
     allowed = grantOnAsk;
     return grantOnAsk;
   }
+
+  @override
+  Future<bool> background() async => inBackground;
 
   @override
   Future<List<WatchRun>> runs({

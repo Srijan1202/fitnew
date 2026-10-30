@@ -69,6 +69,11 @@ class MainActivity : FlutterFragmentActivity() {
                         val power = getSystemService(POWER_SERVICE) as android.os.PowerManager
                         result.success(power.isIgnoringBatteryOptimizations(packageName))
                     }
+                    // Beta 4.9: the 6-hourly Galaxy Watch import (WatchImportWorker).
+                    "scheduleWatchImport" -> {
+                        WatchImportWorker.schedule(applicationContext, call.arguments == true)
+                        result.success(null)
+                    }
                     "openBatterySettings" -> {
                         // The app's own page: Battery → Unrestricted is one tap there.
                         val intent = android.content.Intent(

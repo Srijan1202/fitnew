@@ -1,3 +1,4 @@
+import 'race.dart';
 import 'track.dart';
 import 'units.dart';
 import 'workout.dart';
@@ -42,6 +43,7 @@ class CoachInput {
     required this.goalKind,
     required this.goalValue,
     required this.target,
+    this.raceDeltaSec,
   });
 
   final int activeSeconds;
@@ -58,6 +60,9 @@ class CoachInput {
 
   /// The pace to hold now (seconds per km): the step's, the plan's, or the goal's.
   final PaceRange? target;
+
+  /// Beta 4.9: a race's seconds behind its plan (negative: ahead).
+  final int? raceDeltaSec;
 }
 
 const int paceToleranceSec = 10;
@@ -144,13 +149,24 @@ class Coach {
     if (i.avgPaceSecPerKm != null) {
       parts.add('Average ${spokenPace(i.avgPaceSecPerKm! * _perUnit)}.');
     }
+    // Beta 4.9 (owner): a race says where it stands against the plan.
+    final d = i.raceDeltaSec;
+    if (whole && d != null) {
+      parts.add(
+        d.abs() <= 2
+            ? 'On plan.'
+            : d > 0
+                ? '${_plural(d, 'second')} behind plan.'
+                : '${_plural(-d, 'second')} ahead of plan.',
+      );
+    }
     out.add(parts.join(' '));
   }
 
   void _goal(CoachInput i, List<String> out) {
     final g = i.goalValue;
     if (g == null || g <= 0) return;
-    if (i.goalKind == 'distance') {
+    if (i.goalKind == 'distance' || i.goalKind == 'race') {
       if (!_reachedSaid && i.distanceM >= g) {
         _reachedSaid = _halfwaySaid = _lastStretchSaid = true;
         out.add(
@@ -278,9 +294,16 @@ PaceRange? targetPace({
   PaceRange? planned,
   required String goalKind,
   required int? goalValue,
+  RacePlan? race,
+  double distanceM = 0,
 }) {
   if (step != null) return step.kind == StepKind.work ? step.pace : null;
   if (planned != null) return planned;
+  // Beta 4.9: a race holds the plan's pace for where the runner is.
+  if (race != null) {
+    final p = race.paceAt(distanceM).round();
+    return PaceRange(p - 5, p + 5);
+  }
   if (goalKind == 'pace' && goalValue != null) {
     return PaceRange(goalValue - 5, goalValue + 5);
   }

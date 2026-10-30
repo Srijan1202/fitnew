@@ -38,7 +38,7 @@ abstract class HealthConnectChannel {
   /// Beta 4.5: runs another app recorded (a Galaxy Watch through Samsung
   /// Health) overlapping the range: `id`, `start`/`end` (UTC ms),
   /// `treadmill`, `pausedSeconds`, and with their permissions `distanceM`,
-  /// `hrAvg`, `hrMax` and `route` (`[[ms, lat, lon, ele?], …]`).
+  /// `hrAvg`, `hrMax`, `cadenceAvg`, `cadenceMax` (beta 4.9) and `route` (`[[ms, lat, lon, ele?], …]`).
   Future<List<Map<String, Object?>>> runningSessions({
     required DateTime start,
     required DateTime end,

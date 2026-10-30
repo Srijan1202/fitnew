@@ -575,6 +575,48 @@ void main() {
     expect(sent.segments.single.length, greaterThan(100));
   });
 
+  testWidgets(
+      'race mode (beta 4.9): a 5K with its target and split, then the live race panel',
+      (tester) async {
+    await openRunning(tester);
+    await tester.tap(find.byKey(const ValueKey('running.start')));
+    await settle(tester);
+    await tester.ensureVisible(find.byKey(const ValueKey('run.goal.race')));
+    await tester.tap(find.byKey(const ValueKey('run.goal.race')));
+    await settle(tester);
+    // 5K in 30:00 by default: 6:00 a km.
+    expect(find.text('Even: 6:00 /km the whole way.'), findsOneWidget);
+    await tester.ensureVisible(find.text('Negative'));
+    await tester.tap(find.text('Negative'));
+    await settle(tester);
+    expect(
+      find.text(
+        'Negative: 6:07 /km for the first half, 5:53 /km for the second.',
+      ),
+      findsOneWidget,
+    );
+    // 25:00: the plan follows the time typed.
+    await tester.enterText(find.byKey(const ValueKey('run.goal.race.m')), '25');
+    await settle(tester);
+    expect(find.textContaining('Negative: 5:06 /km'), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const ValueKey('run.start')));
+    await tester.tap(find.byKey(const ValueKey('run.start')));
+    await settle(tester);
+
+    final c = container(tester);
+    expect(
+      c.read(runRecorderProvider)!.goal,
+      const RunGoal.race(5000, 1500, RaceSplit.negative),
+    );
+    expect(find.byKey(const ValueKey('run.race.pace')), findsOneWidget);
+    expect(find.text('5:06 /km'), findsOneWidget);
+    expect(find.text('Target 25:00'), findsOneWidget);
+    // About 400 m at 3 m/s (5:33 a km): the plan has 122 s there, so behind.
+    await run(tester, 135);
+    expect(find.textContaining(' behind'), findsOneWidget);
+    expect(find.textContaining('Finish ~'), findsOneWidget);
+  });
+
   testWidgets('location refused: FITOS says why and starts nothing',
       (tester) async {
     gps.access = LocationAccess.deniedForever;

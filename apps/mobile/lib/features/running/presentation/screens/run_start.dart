@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../data/location_source.dart';
+import '../../domain/race.dart';
 import '../../domain/run.dart';
 import '../../domain/units.dart';
 import '../../domain/workout.dart';
@@ -156,13 +158,23 @@ Future<void> startPlannedRun(
   }
   await _askBatteryOnce(context, ref);
   if (!context.mounted) return;
+  // Beta 4.9 (owner): the plan's race is run in race mode — its distance at
+  // its race pace, even splits.
+  final raceTarget = planned.kind == 'race' && planned.distanceM != null
+      ? planned.seconds ??
+          (planned.pace == null
+              ? null
+              : (planned.distanceM! / 1000 * planned.pace!.middle).round())
+      : null;
   final goal = planned.structured
       ? const RunGoal.free()
-      : planned.distanceM != null
-          ? RunGoal(RunGoalKind.distance, planned.distanceM!.round())
-          : planned.seconds != null
-              ? RunGoal(RunGoalKind.time, planned.seconds)
-              : const RunGoal.free();
+      : raceTarget != null
+          ? RunGoal.race(planned.distanceM!.round(), raceTarget, RaceSplit.even)
+          : planned.distanceM != null
+              ? RunGoal(RunGoalKind.distance, planned.distanceM!.round())
+              : planned.seconds != null
+                  ? RunGoal(RunGoalKind.time, planned.seconds)
+                  : const RunGoal.free();
   await recorder.start(kind: RunKind.outdoor, goal: goal, planned: planned);
   if (context.mounted) await context.push(Routes.runLive);
 }
@@ -223,6 +235,48 @@ class _RunSetupSheetState extends ConsumerState<RunSetupSheet> {
   static const _distances = [1.0, 3.0, 5.0, 10.0, 21.1, 42.2];
   static const _times = [10, 20, 30, 45, 60, 90];
 
+  /// Beta 4.9 (owner): race mode — the distance, a target time, the split.
+  static const _races = {
+    5000: '5K',
+    10000: '10K',
+    21097: 'Half',
+    42195: 'Marathon',
+  };
+  static const _raceDefaults = {
+    5000: 1800,
+    10000: 3900,
+    21097: 8100,
+    42195: 17100,
+  };
+  int _raceM = 5000;
+  RaceSplit _split = RaceSplit.even;
+  final _raceH = TextEditingController(text: '0');
+  final _raceMin = TextEditingController(text: '30');
+  final _raceS = TextEditingController(text: '0');
+
+  int get _raceSeconds {
+    final s = (int.tryParse(_raceH.text) ?? 0) * 3600 +
+        (int.tryParse(_raceMin.text) ?? 0) * 60 +
+        (int.tryParse(_raceS.text) ?? 0);
+    return s >= 120 ? s : _raceDefaults[_raceM]!;
+  }
+
+  void _pickRace(int metres) {
+    final t = _raceDefaults[metres]!;
+    _raceM = metres;
+    _raceH.text = '${t ~/ 3600}';
+    _raceMin.text = '${(t % 3600) ~/ 60}';
+    _raceS.text = '${t % 60}';
+  }
+
+  @override
+  void dispose() {
+    _raceH.dispose();
+    _raceMin.dispose();
+    _raceS.dispose();
+    super.dispose();
+  }
+
   RunGoal _goalValue(DistanceUnit unit) => switch (_goal) {
         RunGoalKind.free => const RunGoal.free(),
         RunGoalKind.distance =>
@@ -231,6 +285,7 @@ class _RunSetupSheetState extends ConsumerState<RunSetupSheet> {
         // Kept per km on the wire.
         RunGoalKind.pace =>
           RunGoal(_goal, (_paceSeconds * 1000 / unit.metres).round()),
+        RunGoalKind.race => RunGoal.race(_raceM, _raceSeconds, _split),
       };
 
   /// The chosen session: a ready-made one, or (`mine:<i>`) one of yours.
@@ -264,6 +319,79 @@ class _RunSetupSheetState extends ConsumerState<RunSetupSheet> {
     if (w == null || !mounted) return;
     final i = await ref.read(myWorkoutsProvider.notifier).add(w);
     if (mounted) setState(() => _presetId = 'mine:$i');
+  }
+
+  /// Beta 4.9: the race's distance, target time and split, with its pacing.
+  List<Widget> _raceSetup(BuildContext context, DistanceUnit unit) {
+    final t = Theme.of(context).textTheme;
+    Widget box(TextEditingController c, String label, String key) => Expanded(
+          child: TextField(
+            key: ValueKey(key),
+            controller: c,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(2),
+            ],
+            textAlign: TextAlign.center,
+            decoration: InputDecoration(labelText: label, hintText: '0'),
+            onChanged: (_) => setState(() {}),
+          ),
+        );
+    final plan = RacePlan(
+      distanceM: _raceM.toDouble(),
+      targetSeconds: _raceSeconds,
+      split: _split,
+    );
+    String pace(double secPerKm) =>
+        '${formatPace(secPerKm, unit)} ${unit.paceLabel}';
+    return [
+      Wrap(
+        spacing: FitSpacing.sm,
+        runSpacing: FitSpacing.sm,
+        children: [
+          for (final e in _races.entries)
+            ChoiceChip(
+              key: ValueKey('run.goal.race.${e.key}'),
+              label: Text(e.value),
+              selected: _raceM == e.key,
+              onSelected: (_) => setState(() => _pickRace(e.key)),
+            ),
+        ],
+      ),
+      const SizedBox(height: FitSpacing.md),
+      Text('TARGET TIME', style: t.labelSmall),
+      const SizedBox(height: FitSpacing.xs),
+      Row(
+        children: [
+          box(_raceH, 'Hours', 'run.goal.race.h'),
+          const SizedBox(width: FitSpacing.sm),
+          box(_raceMin, 'Min', 'run.goal.race.m'),
+          const SizedBox(width: FitSpacing.sm),
+          box(_raceS, 'Sec', 'run.goal.race.s'),
+        ],
+      ),
+      const SizedBox(height: FitSpacing.md),
+      SegmentedButton<RaceSplit>(
+        key: const ValueKey('run.goal.race.split'),
+        showSelectedIcon: false,
+        segments: const [
+          ButtonSegment(value: RaceSplit.even, label: Text('Even')),
+          ButtonSegment(value: RaceSplit.negative, label: Text('Negative')),
+        ],
+        selected: {_split},
+        onSelectionChanged: (s) => setState(() => _split = s.single),
+      ),
+      const SizedBox(height: FitSpacing.sm),
+      Text(
+        _split == RaceSplit.even
+            ? 'Even: ${pace(plan.evenPace)} the whole way.'
+            : 'Negative: ${pace(plan.paceAt(0))} for the first half, '
+                '${pace(plan.paceAt(plan.distanceM))} for the second.',
+        key: const ValueKey('run.goal.race.plan'),
+        style: t.bodyMedium,
+      ),
+    ];
   }
 
   RunChoice _choice(DistanceUnit unit) => switch (_type) {
@@ -524,6 +652,7 @@ class _RunSetupSheetState extends ConsumerState<RunSetupSheet> {
                       RunGoalKind.distance => 'Distance',
                       RunGoalKind.time => 'Time',
                       RunGoalKind.pace => 'Pace',
+                      RunGoalKind.race => 'Race',
                     },
                     g,
                     _goal,
@@ -567,6 +696,7 @@ class _RunSetupSheetState extends ConsumerState<RunSetupSheet> {
                     ),
                 ],
               ),
+            if (_goal == RunGoalKind.race) ..._raceSetup(context, unit),
             if (_goal == RunGoalKind.pace)
               Row(
                 children: [

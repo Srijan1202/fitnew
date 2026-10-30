@@ -4287,6 +4287,18 @@ class $LocalRunsTable extends LocalRuns
   late final GeneratedColumn<int> goalValue = GeneratedColumn<int>(
       'goal_value', aliasedName, true,
       type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _goalTargetSecondsMeta =
+      const VerificationMeta('goalTargetSeconds');
+  @override
+  late final GeneratedColumn<int> goalTargetSeconds = GeneratedColumn<int>(
+      'goal_target_seconds', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _goalSplitMeta =
+      const VerificationMeta('goalSplit');
+  @override
+  late final GeneratedColumn<String> goalSplit = GeneratedColumn<String>(
+      'goal_split', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _startedAtMeta =
       const VerificationMeta('startedAt');
   @override
@@ -4373,6 +4385,8 @@ class $LocalRunsTable extends LocalRuns
         status,
         goalKind,
         goalValue,
+        goalTargetSeconds,
+        goalSplit,
         startedAt,
         endedAt,
         activeMs,
@@ -4426,6 +4440,16 @@ class $LocalRunsTable extends LocalRuns
     if (data.containsKey('goal_value')) {
       context.handle(_goalValueMeta,
           goalValue.isAcceptableOrUnknown(data['goal_value']!, _goalValueMeta));
+    }
+    if (data.containsKey('goal_target_seconds')) {
+      context.handle(
+          _goalTargetSecondsMeta,
+          goalTargetSeconds.isAcceptableOrUnknown(
+              data['goal_target_seconds']!, _goalTargetSecondsMeta));
+    }
+    if (data.containsKey('goal_split')) {
+      context.handle(_goalSplitMeta,
+          goalSplit.isAcceptableOrUnknown(data['goal_split']!, _goalSplitMeta));
     }
     if (data.containsKey('started_at')) {
       context.handle(_startedAtMeta,
@@ -4508,6 +4532,10 @@ class $LocalRunsTable extends LocalRuns
           .read(DriftSqlType.string, data['${effectivePrefix}goal_kind'])!,
       goalValue: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}goal_value']),
+      goalTargetSeconds: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}goal_target_seconds']),
+      goalSplit: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}goal_split']),
       startedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}started_at'])!,
       endedAt: attachedDatabase.typeMapping
@@ -4553,6 +4581,10 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
   final String status;
   final String goalKind;
   final int? goalValue;
+
+  /// Beta 4.9: a race's target time and split (`even` | `negative`).
+  final int? goalTargetSeconds;
+  final String? goalSplit;
   final String startedAt;
   final String? endedAt;
   final int activeMs;
@@ -4577,6 +4609,8 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
       required this.status,
       required this.goalKind,
       this.goalValue,
+      this.goalTargetSeconds,
+      this.goalSplit,
       required this.startedAt,
       this.endedAt,
       required this.activeMs,
@@ -4599,6 +4633,12 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
     map['goal_kind'] = Variable<String>(goalKind);
     if (!nullToAbsent || goalValue != null) {
       map['goal_value'] = Variable<int>(goalValue);
+    }
+    if (!nullToAbsent || goalTargetSeconds != null) {
+      map['goal_target_seconds'] = Variable<int>(goalTargetSeconds);
+    }
+    if (!nullToAbsent || goalSplit != null) {
+      map['goal_split'] = Variable<String>(goalSplit);
     }
     map['started_at'] = Variable<String>(startedAt);
     if (!nullToAbsent || endedAt != null) {
@@ -4643,6 +4683,12 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
       goalValue: goalValue == null && nullToAbsent
           ? const Value.absent()
           : Value(goalValue),
+      goalTargetSeconds: goalTargetSeconds == null && nullToAbsent
+          ? const Value.absent()
+          : Value(goalTargetSeconds),
+      goalSplit: goalSplit == null && nullToAbsent
+          ? const Value.absent()
+          : Value(goalSplit),
       startedAt: Value(startedAt),
       endedAt: endedAt == null && nullToAbsent
           ? const Value.absent()
@@ -4681,6 +4727,8 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
       status: serializer.fromJson<String>(json['status']),
       goalKind: serializer.fromJson<String>(json['goalKind']),
       goalValue: serializer.fromJson<int?>(json['goalValue']),
+      goalTargetSeconds: serializer.fromJson<int?>(json['goalTargetSeconds']),
+      goalSplit: serializer.fromJson<String?>(json['goalSplit']),
       startedAt: serializer.fromJson<String>(json['startedAt']),
       endedAt: serializer.fromJson<String?>(json['endedAt']),
       activeMs: serializer.fromJson<int>(json['activeMs']),
@@ -4706,6 +4754,8 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
       'status': serializer.toJson<String>(status),
       'goalKind': serializer.toJson<String>(goalKind),
       'goalValue': serializer.toJson<int?>(goalValue),
+      'goalTargetSeconds': serializer.toJson<int?>(goalTargetSeconds),
+      'goalSplit': serializer.toJson<String?>(goalSplit),
       'startedAt': serializer.toJson<String>(startedAt),
       'endedAt': serializer.toJson<String?>(endedAt),
       'activeMs': serializer.toJson<int>(activeMs),
@@ -4728,6 +4778,8 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
           String? status,
           String? goalKind,
           Value<int?> goalValue = const Value.absent(),
+          Value<int?> goalTargetSeconds = const Value.absent(),
+          Value<String?> goalSplit = const Value.absent(),
           String? startedAt,
           Value<String?> endedAt = const Value.absent(),
           int? activeMs,
@@ -4747,6 +4799,10 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
         status: status ?? this.status,
         goalKind: goalKind ?? this.goalKind,
         goalValue: goalValue.present ? goalValue.value : this.goalValue,
+        goalTargetSeconds: goalTargetSeconds.present
+            ? goalTargetSeconds.value
+            : this.goalTargetSeconds,
+        goalSplit: goalSplit.present ? goalSplit.value : this.goalSplit,
         startedAt: startedAt ?? this.startedAt,
         endedAt: endedAt.present ? endedAt.value : this.endedAt,
         activeMs: activeMs ?? this.activeMs,
@@ -4772,6 +4828,10 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
       status: data.status.present ? data.status.value : this.status,
       goalKind: data.goalKind.present ? data.goalKind.value : this.goalKind,
       goalValue: data.goalValue.present ? data.goalValue.value : this.goalValue,
+      goalTargetSeconds: data.goalTargetSeconds.present
+          ? data.goalTargetSeconds.value
+          : this.goalTargetSeconds,
+      goalSplit: data.goalSplit.present ? data.goalSplit.value : this.goalSplit,
       startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
       endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
       activeMs: data.activeMs.present ? data.activeMs.value : this.activeMs,
@@ -4801,6 +4861,8 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
           ..write('status: $status, ')
           ..write('goalKind: $goalKind, ')
           ..write('goalValue: $goalValue, ')
+          ..write('goalTargetSeconds: $goalTargetSeconds, ')
+          ..write('goalSplit: $goalSplit, ')
           ..write('startedAt: $startedAt, ')
           ..write('endedAt: $endedAt, ')
           ..write('activeMs: $activeMs, ')
@@ -4825,6 +4887,8 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
       status,
       goalKind,
       goalValue,
+      goalTargetSeconds,
+      goalSplit,
       startedAt,
       endedAt,
       activeMs,
@@ -4847,6 +4911,8 @@ class LocalRun extends DataClass implements Insertable<LocalRun> {
           other.status == this.status &&
           other.goalKind == this.goalKind &&
           other.goalValue == this.goalValue &&
+          other.goalTargetSeconds == this.goalTargetSeconds &&
+          other.goalSplit == this.goalSplit &&
           other.startedAt == this.startedAt &&
           other.endedAt == this.endedAt &&
           other.activeMs == this.activeMs &&
@@ -4868,6 +4934,8 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
   final Value<String> status;
   final Value<String> goalKind;
   final Value<int?> goalValue;
+  final Value<int?> goalTargetSeconds;
+  final Value<String?> goalSplit;
   final Value<String> startedAt;
   final Value<String?> endedAt;
   final Value<int> activeMs;
@@ -4888,6 +4956,8 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
     this.status = const Value.absent(),
     this.goalKind = const Value.absent(),
     this.goalValue = const Value.absent(),
+    this.goalTargetSeconds = const Value.absent(),
+    this.goalSplit = const Value.absent(),
     this.startedAt = const Value.absent(),
     this.endedAt = const Value.absent(),
     this.activeMs = const Value.absent(),
@@ -4909,6 +4979,8 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
     required String status,
     required String goalKind,
     this.goalValue = const Value.absent(),
+    this.goalTargetSeconds = const Value.absent(),
+    this.goalSplit = const Value.absent(),
     required String startedAt,
     this.endedAt = const Value.absent(),
     this.activeMs = const Value.absent(),
@@ -4935,6 +5007,8 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
     Expression<String>? status,
     Expression<String>? goalKind,
     Expression<int>? goalValue,
+    Expression<int>? goalTargetSeconds,
+    Expression<String>? goalSplit,
     Expression<String>? startedAt,
     Expression<String>? endedAt,
     Expression<int>? activeMs,
@@ -4956,6 +5030,8 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
       if (status != null) 'status': status,
       if (goalKind != null) 'goal_kind': goalKind,
       if (goalValue != null) 'goal_value': goalValue,
+      if (goalTargetSeconds != null) 'goal_target_seconds': goalTargetSeconds,
+      if (goalSplit != null) 'goal_split': goalSplit,
       if (startedAt != null) 'started_at': startedAt,
       if (endedAt != null) 'ended_at': endedAt,
       if (activeMs != null) 'active_ms': activeMs,
@@ -4980,6 +5056,8 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
       Value<String>? status,
       Value<String>? goalKind,
       Value<int?>? goalValue,
+      Value<int?>? goalTargetSeconds,
+      Value<String?>? goalSplit,
       Value<String>? startedAt,
       Value<String?>? endedAt,
       Value<int>? activeMs,
@@ -5000,6 +5078,8 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
       status: status ?? this.status,
       goalKind: goalKind ?? this.goalKind,
       goalValue: goalValue ?? this.goalValue,
+      goalTargetSeconds: goalTargetSeconds ?? this.goalTargetSeconds,
+      goalSplit: goalSplit ?? this.goalSplit,
       startedAt: startedAt ?? this.startedAt,
       endedAt: endedAt ?? this.endedAt,
       activeMs: activeMs ?? this.activeMs,
@@ -5034,6 +5114,12 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
     }
     if (goalValue.present) {
       map['goal_value'] = Variable<int>(goalValue.value);
+    }
+    if (goalTargetSeconds.present) {
+      map['goal_target_seconds'] = Variable<int>(goalTargetSeconds.value);
+    }
+    if (goalSplit.present) {
+      map['goal_split'] = Variable<String>(goalSplit.value);
     }
     if (startedAt.present) {
       map['started_at'] = Variable<String>(startedAt.value);
@@ -5088,6 +5174,8 @@ class LocalRunsCompanion extends UpdateCompanion<LocalRun> {
           ..write('status: $status, ')
           ..write('goalKind: $goalKind, ')
           ..write('goalValue: $goalValue, ')
+          ..write('goalTargetSeconds: $goalTargetSeconds, ')
+          ..write('goalSplit: $goalSplit, ')
           ..write('startedAt: $startedAt, ')
           ..write('endedAt: $endedAt, ')
           ..write('activeMs: $activeMs, ')
@@ -8117,6 +8205,8 @@ typedef $$LocalRunsTableCreateCompanionBuilder = LocalRunsCompanion Function({
   required String status,
   required String goalKind,
   Value<int?> goalValue,
+  Value<int?> goalTargetSeconds,
+  Value<String?> goalSplit,
   required String startedAt,
   Value<String?> endedAt,
   Value<int> activeMs,
@@ -8138,6 +8228,8 @@ typedef $$LocalRunsTableUpdateCompanionBuilder = LocalRunsCompanion Function({
   Value<String> status,
   Value<String> goalKind,
   Value<int?> goalValue,
+  Value<int?> goalTargetSeconds,
+  Value<String?> goalSplit,
   Value<String> startedAt,
   Value<String?> endedAt,
   Value<int> activeMs,
@@ -8177,6 +8269,13 @@ class $$LocalRunsTableFilterComposer
 
   ColumnFilters<int> get goalValue => $composableBuilder(
       column: $table.goalValue, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get goalTargetSeconds => $composableBuilder(
+      column: $table.goalTargetSeconds,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get goalSplit => $composableBuilder(
+      column: $table.goalSplit, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get startedAt => $composableBuilder(
       column: $table.startedAt, builder: (column) => ColumnFilters(column));
@@ -8243,6 +8342,13 @@ class $$LocalRunsTableOrderingComposer
   ColumnOrderings<int> get goalValue => $composableBuilder(
       column: $table.goalValue, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get goalTargetSeconds => $composableBuilder(
+      column: $table.goalTargetSeconds,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get goalSplit => $composableBuilder(
+      column: $table.goalSplit, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get startedAt => $composableBuilder(
       column: $table.startedAt, builder: (column) => ColumnOrderings(column));
 
@@ -8308,6 +8414,12 @@ class $$LocalRunsTableAnnotationComposer
 
   GeneratedColumn<int> get goalValue =>
       $composableBuilder(column: $table.goalValue, builder: (column) => column);
+
+  GeneratedColumn<int> get goalTargetSeconds => $composableBuilder(
+      column: $table.goalTargetSeconds, builder: (column) => column);
+
+  GeneratedColumn<String> get goalSplit =>
+      $composableBuilder(column: $table.goalSplit, builder: (column) => column);
 
   GeneratedColumn<String> get startedAt =>
       $composableBuilder(column: $table.startedAt, builder: (column) => column);
@@ -8377,6 +8489,8 @@ class $$LocalRunsTableTableManager extends RootTableManager<
             Value<String> status = const Value.absent(),
             Value<String> goalKind = const Value.absent(),
             Value<int?> goalValue = const Value.absent(),
+            Value<int?> goalTargetSeconds = const Value.absent(),
+            Value<String?> goalSplit = const Value.absent(),
             Value<String> startedAt = const Value.absent(),
             Value<String?> endedAt = const Value.absent(),
             Value<int> activeMs = const Value.absent(),
@@ -8398,6 +8512,8 @@ class $$LocalRunsTableTableManager extends RootTableManager<
             status: status,
             goalKind: goalKind,
             goalValue: goalValue,
+            goalTargetSeconds: goalTargetSeconds,
+            goalSplit: goalSplit,
             startedAt: startedAt,
             endedAt: endedAt,
             activeMs: activeMs,
@@ -8419,6 +8535,8 @@ class $$LocalRunsTableTableManager extends RootTableManager<
             required String status,
             required String goalKind,
             Value<int?> goalValue = const Value.absent(),
+            Value<int?> goalTargetSeconds = const Value.absent(),
+            Value<String?> goalSplit = const Value.absent(),
             required String startedAt,
             Value<String?> endedAt = const Value.absent(),
             Value<int> activeMs = const Value.absent(),
@@ -8440,6 +8558,8 @@ class $$LocalRunsTableTableManager extends RootTableManager<
             status: status,
             goalKind: goalKind,
             goalValue: goalValue,
+            goalTargetSeconds: goalTargetSeconds,
+            goalSplit: goalSplit,
             startedAt: startedAt,
             endedAt: endedAt,
             activeMs: activeMs,

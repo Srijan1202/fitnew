@@ -197,6 +197,8 @@ dependencies {
     // channel — the stable client per developer.android.com (8 Oct 2025).
     implementation("androidx.health.connect:connect-client:1.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    // Beta 4.9: the 6-hourly Galaxy Watch import (WatchImportWorker.kt).
+    implementation("androidx.work:work-runtime-ktx:2.10.1")
     // Beta 4.1.1: the share picture's snapshot (RouteSnapshot.kt) uses
     // MapLibre directly. The same artifact and version as maplibre_gl 0.27.1
     // brings in (its android/build.gradle); keep the two in step.

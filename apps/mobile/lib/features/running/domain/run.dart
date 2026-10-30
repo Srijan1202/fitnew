@@ -25,36 +25,86 @@ enum RunGoalKind {
   free,
   distance,
   time,
-  pace;
+  pace,
+
+  /// Beta 4.9 (owner): a race — its distance, target time and split plan.
+  race;
 
   static RunGoalKind parse(String s) =>
       RunGoalKind.values.firstWhere((k) => k.name == s, orElse: () => free);
 }
 
-/// What the runner set out to do. `value`: metres, seconds, or seconds per km.
+/// Beta 4.9: a race's split plan; negative runs the first half 2 % slower and
+/// the second 2 % faster than the even pace.
+enum RaceSplit {
+  even,
+  negative;
+
+  static RaceSplit parse(String? s) =>
+      values.firstWhere((v) => v.name == s, orElse: () => even);
+}
+
+/// What the runner set out to do. `value`: metres, seconds, or seconds per km;
+/// a race's distance in metres with its [targetSeconds] and [split].
 class RunGoal {
-  const RunGoal(this.kind, [this.value]);
+  const RunGoal(this.kind, [this.value, this.targetSeconds, this.split]);
 
   const RunGoal.free()
       : kind = RunGoalKind.free,
-        value = null;
+        value = null,
+        targetSeconds = null,
+        split = null;
+
+  /// Beta 4.9 (owner): a race over [metres] in [seconds].
+  const RunGoal.race(int metres, int seconds, RaceSplit this.split)
+      : kind = RunGoalKind.race,
+        value = metres,
+        targetSeconds = seconds;
+
+  /// From the phone's stored columns (beta 4.9: a race's target and split).
+  factory RunGoal.stored(
+    String kind,
+    int? value,
+    int? targetSeconds,
+    String? split,
+  ) {
+    final k = RunGoalKind.parse(kind);
+    return k == RunGoalKind.race
+        ? RunGoal(k, value, targetSeconds, RaceSplit.parse(split))
+        : RunGoal(k, value);
+  }
 
   factory RunGoal.fromJson(Map<String, dynamic> j) => RunGoal(
         RunGoalKind.parse(j['kind'] as String),
         (j['value'] as num?)?.toInt(),
+        (j['targetSeconds'] as num?)?.toInt(),
+        j['split'] == null ? null : RaceSplit.parse(j['split'] as String),
       );
 
   final RunGoalKind kind;
   final int? value;
+  final int? targetSeconds;
+  final RaceSplit? split;
 
-  Map<String, dynamic> toJson() => {'kind': kind.name, 'value': value};
+  Map<String, dynamic> toJson() => {
+        'kind': kind.name,
+        'value': value,
+        if (kind == RunGoalKind.race) ...{
+          'targetSeconds': targetSeconds,
+          'split': (split ?? RaceSplit.even).name,
+        },
+      };
 
   @override
   bool operator ==(Object other) =>
-      other is RunGoal && other.kind == kind && other.value == value;
+      other is RunGoal &&
+      other.kind == kind &&
+      other.value == value &&
+      other.targetSeconds == targetSeconds &&
+      other.split == split;
 
   @override
-  int get hashCode => Object.hash(kind, value);
+  int get hashCode => Object.hash(kind, value, targetSeconds, split);
 }
 
 double? _d(Object? v) => (v as num?)?.toDouble();
@@ -78,6 +128,8 @@ class RunSummary {
     this.source = RunSource.phone,
     this.hrAvg,
     this.hrMax,
+    this.cadenceAvg,
+    this.cadenceMax,
   });
 
   factory RunSummary.fromJson(Map<String, dynamic> j) => RunSummary(
@@ -106,6 +158,8 @@ class RunSummary {
         source: RunSource.parse(j['source'] as String?),
         hrAvg: (j['hrAvg'] as num?)?.toInt(),
         hrMax: (j['hrMax'] as num?)?.toInt(),
+        cadenceAvg: (j['cadenceAvg'] as num?)?.toInt(),
+        cadenceMax: (j['cadenceMax'] as num?)?.toInt(),
       );
 
   final String id;
@@ -129,6 +183,10 @@ class RunSummary {
   final RunSource source;
   final int? hrAvg;
   final int? hrMax;
+
+  /// Beta 4.9: a watch run's average and max cadence, steps per minute.
+  final int? cadenceAvg;
+  final int? cadenceMax;
 }
 
 /// One run in full, from the server — or, before it has the run, the

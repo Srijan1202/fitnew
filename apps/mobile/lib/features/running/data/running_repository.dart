@@ -157,7 +157,12 @@ class RunningRepository {
         outline: f.outline,
       ),
       note: r.note,
-      goal: RunGoal(RunGoalKind.parse(r.goalKind), r.goalValue),
+      goal: RunGoal.stored(
+        r.goalKind,
+        r.goalValue,
+        r.goalTargetSeconds,
+        r.goalSplit,
+      ),
       track: track,
       splitsKm: f.splitsKm,
       splitsMi: f.splitsMi,
@@ -220,7 +225,12 @@ class RunningRepository {
       'startedAt': row.startedAt,
       'endedAt': row.endedAt ?? _now().toUtc().toIso8601String(),
       'durationSeconds': duration,
-      'goal': {'kind': row.goalKind, 'value': row.goalValue},
+      'goal': RunGoal.stored(
+        row.goalKind,
+        row.goalValue,
+        row.goalTargetSeconds,
+        row.goalSplit,
+      ).toJson(),
       if (note != null && note.isNotEmpty) 'note': note,
       if (effort != null) 'effort': effort,
       if (kind == RunKind.outdoor)

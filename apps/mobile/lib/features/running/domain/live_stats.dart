@@ -102,7 +102,7 @@ double? goalProgress({
 }) {
   if (goalValue == null || goalValue <= 0) return null;
   return switch (goalKind) {
-    'distance' => math.min(1, distanceM / goalValue),
+    'distance' || 'race' => math.min(1, distanceM / goalValue),
     'time' => math.min(1, activeSeconds / goalValue),
     _ => null,
   };

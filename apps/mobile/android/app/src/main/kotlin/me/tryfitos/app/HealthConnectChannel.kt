@@ -1,10 +1,12 @@
 package me.tryfitos.app
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.aggregate.AggregateMetric
+import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BasalMetabolicRateRecord
 import androidx.health.connect.client.records.BodyFatRecord
@@ -15,6 +17,7 @@ import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.StepsCadenceRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.WeightRecord
@@ -40,7 +43,8 @@ import kotlinx.coroutines.withContext
  * logged: values cross the channel and nowhere else.
  */
 class HealthConnectChannel(
-    private val activity: Activity,
+    /** The activity, or (beta 4.9) the app when the watch import runs closed. */
+    private val context: Context,
     /**
      * Registered by the activity before it is CREATED (Gate 6 fix). Null only
      * in a host that cannot register one; the request then fails as a
@@ -66,6 +70,8 @@ class HealthConnectChannel(
             // Beta 4.5: Galaxy Watch runs — heart rate during them, and their route.
             "heartRate" to "android.permission.health.READ_HEART_RATE",
             "exerciseRoutes" to "android.permission.health.READ_EXERCISE_ROUTES",
+            // Beta 4.9: watch runs imported with FITOS closed.
+            "background" to "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND",
         )
     }
 
@@ -92,15 +98,15 @@ class HealthConnectChannel(
 
     /* ----------------------------------------------------- availability -- */
 
-    private fun sdkStatus(): String = when (HealthConnectClient.getSdkStatus(activity)) {
+    private fun sdkStatus(): String = when (HealthConnectClient.getSdkStatus(context)) {
         HealthConnectClient.SDK_AVAILABLE -> "available"
         HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> "updateRequired"
         else -> "unavailable"
     }
 
     private fun client(): HealthConnectClient? =
-        if (HealthConnectClient.getSdkStatus(activity) == HealthConnectClient.SDK_AVAILABLE) {
-            HealthConnectClient.getOrCreate(activity)
+        if (HealthConnectClient.getSdkStatus(context) == HealthConnectClient.SDK_AVAILABLE) {
+            HealthConnectClient.getOrCreate(context)
         } else {
             null
         }
@@ -190,7 +196,9 @@ class HealthConnectChannel(
     }
 
     private fun openSettings(): Boolean = try {
-        activity.startActivity(Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS))
+        val intent = Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS)
+        if (context !is Activity) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
         true
     } catch (e: Exception) {
         false
@@ -294,19 +302,26 @@ class HealthConnectChannel(
      * whether on a treadmill, the seconds paused, and — each only with its
      * permission — the distance and heart rate of that app's own records in
      * the run's time, and the route when that app shared one. Read only.
+     *
+     * Beta 4.9: and its cadence (steps a minute) — the watch's cadence
+     * samples when it wrote them, else its steps over the moving minutes
+     * (no max then). Only with the steps permission; a failed read leaves
+     * the cadence out, never the run.
      */
     private suspend fun runningSessions(call: MethodCall): List<Map<String, Any?>> {
         val c = client() ?: throw IllegalStateException("unavailable")
         val granted = c.permissionController.getGrantedPermissions()
         val distanceOk = READ_PERMISSIONS["distance"] in granted
         val heartOk = READ_PERMISSIONS["heartRate"] in granted
+        val cadenceOk = HealthPermission.getReadPermission(StepsCadenceRecord::class) in granted
+        val stepsOk = READ_PERMISSIONS["steps"] in granted
         val filter = range(call)
         return withContext(Dispatchers.IO) {
             c.readRecords(ReadRecordsRequest(ExerciseSessionRecord::class, filter)).records
                 .filter {
                     (it.exerciseType == ExerciseSessionRecord.EXERCISE_TYPE_RUNNING ||
                         it.exerciseType == ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL) &&
-                        it.metadata.dataOrigin.packageName != activity.packageName
+                        it.metadata.dataOrigin.packageName != context.packageName
                 }
                 .map { s ->
                     val origin = setOf(s.metadata.dataOrigin)
@@ -320,6 +335,26 @@ class HealthConnectChannel(
                     val paused = s.segments
                         .filter { it.segmentType == ExerciseSegment.EXERCISE_SEGMENT_TYPE_PAUSE }
                         .sumOf { java.time.Duration.between(it.startTime, it.endTime).seconds }
+                    val moving = java.time.Duration.between(s.startTime, s.endTime).seconds - paused
+                    var cadenceAvg: Long? = null
+                    var cadenceMax: Long? = null
+                    try {
+                        val rates = if (!cadenceOk) emptyList() else c.readRecords(
+                            ReadRecordsRequest(StepsCadenceRecord::class, window, origin),
+                        ).records.flatMap { r -> r.samples.map { it.rate } }
+                        if (rates.isNotEmpty()) {
+                            cadenceAvg = Math.round(rates.average())
+                            cadenceMax = Math.round(rates.max())
+                        } else if (stepsOk && moving >= 60) {
+                            val steps = c.aggregate(
+                                AggregateRequest(setOf(StepsRecord.COUNT_TOTAL), window, origin),
+                            )[StepsRecord.COUNT_TOTAL]
+                            if (steps != null && steps > 0) cadenceAvg = Math.round(steps * 60.0 / moving)
+                        }
+                    } catch (e: Exception) {
+                        cadenceAvg = null
+                        cadenceMax = null
+                    }
                     val route = when (val r = s.exerciseRouteResult) {
                         is ExerciseRouteResult.Data -> r.exerciseRoute.route.map {
                             listOf(it.time.toEpochMilli(), it.latitude, it.longitude, it.altitude?.inMeters)
@@ -337,6 +372,8 @@ class HealthConnectChannel(
                         "distanceM" to distance,
                         "hrAvg" to heart?.get(HeartRateRecord.BPM_AVG),
                         "hrMax" to heart?.get(HeartRateRecord.BPM_MAX),
+                        "cadenceAvg" to cadenceAvg,
+                        "cadenceMax" to cadenceMax,
                         "route" to route,
                     )
                 }

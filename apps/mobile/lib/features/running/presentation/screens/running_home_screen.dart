@@ -497,7 +497,11 @@ class _RunSettingsSheet extends ConsumerWidget {
                   return;
                 }
                 final source = ref.read(watchSourceProvider);
-                final ok = await source.ready() || await source.ask();
+                // Beta 4.9: asked again for what is new (steps for the
+                // cadence, background reads); Health Connect shows only
+                // what is not granted yet.
+                final ok = await source.ask() || await source.ready();
+                ref.invalidate(watchBackgroundProvider);
                 await c.setWatchImport(true);
                 if (!ok && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -511,6 +515,19 @@ class _RunSettingsSheet extends ConsumerWidget {
                 }
               },
             ),
+            // Beta 4.9: whether runs also come in with FITOS closed.
+            if (s.watchImport)
+              Text(
+                switch (ref.watch(watchBackgroundProvider).value) {
+                  true => 'New watch runs come in every few hours, even '
+                      'with FITOS closed.',
+                  _ => 'Watch runs come in when you open Running. To get '
+                      'them with FITOS closed, turn this off and on and '
+                      'allow background access in Health Connect.',
+                },
+                key: const ValueKey('running.settings.watchBackground'),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
           ],
         ),
       ),

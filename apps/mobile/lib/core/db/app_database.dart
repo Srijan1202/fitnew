@@ -204,6 +204,10 @@ class LocalRuns extends Table {
   TextColumn get status => text()();
   TextColumn get goalKind => text()();
   IntColumn get goalValue => integer().nullable()();
+
+  /// Beta 4.9: a race's target time and split (`even` | `negative`).
+  IntColumn get goalTargetSeconds => integer().nullable()();
+  TextColumn get goalSplit => text().nullable()();
   TextColumn get startedAt => text()();
   TextColumn get endedAt => text().nullable()();
   IntColumn get activeMs => integer().withDefault(const Constant(0))();
@@ -303,10 +307,11 @@ class AppDatabase extends _$AppDatabase {
   /// 1 — Phase 5 (workout, sync queue, cache). 2 — Phase 8 (food logs and
   /// their own queue). 3 — Phase 11 (TODAY events: queue and ledger).
   /// 4 — beta 4.0 (runs, their points and their queue). 5 — beta 4.1 (a
-  /// run's workout, laps and planned run). An upgrade only ADDS: a phone that
-  /// still holds an unsent workout, food log or run keeps it.
+  /// run's workout, laps and planned run). 6 — beta 4.9 (a race's target and
+  /// split). An upgrade only ADDS: a phone that still holds an unsent
+  /// workout, food log or run keeps it.
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -324,11 +329,17 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(localRuns);
             await m.createTable(localRunPoints);
             await m.createTable(runSyncQueue);
-          } else if (from < 5) {
-            // A 4.0 table gains the three columns (a fresh one has them).
-            await m.addColumn(localRuns, localRuns.workoutJson);
-            await m.addColumn(localRuns, localRuns.lapsJson);
-            await m.addColumn(localRuns, localRuns.plannedRunId);
+          } else {
+            if (from < 5) {
+              // A 4.0 table gains the three columns (a fresh one has them).
+              await m.addColumn(localRuns, localRuns.workoutJson);
+              await m.addColumn(localRuns, localRuns.lapsJson);
+              await m.addColumn(localRuns, localRuns.plannedRunId);
+            }
+            if (from < 6) {
+              await m.addColumn(localRuns, localRuns.goalTargetSeconds);
+              await m.addColumn(localRuns, localRuns.goalSplit);
+            }
           }
         },
       );

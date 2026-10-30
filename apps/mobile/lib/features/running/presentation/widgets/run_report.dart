@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../domain/race.dart';
 import '../../domain/run.dart';
 import '../../domain/units.dart';
 import '../../domain/workout.dart';
 import '../../domain/replay.dart';
 import 'efforts_widgets.dart';
+import 'race_result.dart';
 import 'route_painter.dart';
 import 'run_map.dart';
 import 'run_widgets.dart';
@@ -187,6 +189,12 @@ class RunReport extends StatelessWidget {
             ],
           ),
         ),
+        // Beta 4.9: a race's result against its plan.
+        if (RacePlan.of(run.goal) case final plan?)
+          Padding(
+            padding: const EdgeInsets.only(top: FitSpacing.sm),
+            child: RaceResult(run: run, plan: plan),
+          ),
         // Beta 4.5: the watch's heart rate.
         if (s.hrAvg != null || s.hrMax != null)
           Padding(
@@ -210,6 +218,35 @@ class RunReport extends StatelessWidget {
                       value: s.hrMax?.toString() ?? '–',
                       label: 'Max bpm',
                       valueKey: const ValueKey('run.report.hrMax'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        // Beta 4.9: the watch's cadence.
+        if (s.cadenceAvg != null)
+          Padding(
+            padding: const EdgeInsets.only(top: FitSpacing.sm),
+            child: FitBlock(
+              key: const ValueKey('run.report.cadence'),
+              padding: const EdgeInsets.all(FitSpacing.md),
+              child: Row(
+                children: [
+                  Icon(Icons.directions_run, color: FitPalette.current.glow),
+                  const SizedBox(width: FitSpacing.sm),
+                  Expanded(
+                    child: RunStat(
+                      value: '${s.cadenceAvg}',
+                      label: 'Avg spm',
+                      valueKey: const ValueKey('run.report.cadenceAvg'),
+                    ),
+                  ),
+                  Expanded(
+                    child: RunStat(
+                      value: s.cadenceMax?.toString() ?? '–',
+                      label: 'Max spm',
+                      valueKey: const ValueKey('run.report.cadenceMax'),
                     ),
                   ),
                 ],

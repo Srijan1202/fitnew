@@ -11,6 +11,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/fitos_wordmark.dart';
 import '../../domain/gpx.dart';
+import '../../domain/race.dart';
 import '../../domain/run.dart';
 import '../../domain/track.dart';
 import '../../domain/units.dart';
@@ -290,6 +291,15 @@ class _Card extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: t.titleMedium?.copyWith(color: Colors.white),
                   ),
+                  // Beta 4.9: a race shows its finish against the target.
+                  if (RacePlan.of(run.goal) case final plan?)
+                    if (plan.finishFrom(run.splitsKm) case final finish?)
+                      Text(
+                        '${raceName(plan.distanceM)} · '
+                        '${raceVerdict(finish, plan.targetSeconds)}',
+                        key: const ValueKey('share.race'),
+                        style: t.labelLarge?.copyWith(color: on),
+                      ),
                   const SizedBox(height: 8),
                   Row(
                     children: [

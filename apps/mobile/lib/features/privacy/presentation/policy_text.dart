@@ -3,7 +3,7 @@
 /// two stay in step and that the version is the server's CURRENT_POLICY_VERSION.
 library;
 
-const kPolicyVersion = '2026-10-30.1';
+const kPolicyVersion = '2026-10-30.2';
 
 const kPolicySections = <(String, String)>[
   (
@@ -51,9 +51,12 @@ const kPolicySections = <(String, String)>[
         'to any AI. One exception, only if you switch it on: runs your Galaxy '
         'Watch records (through Samsung Health and Health Connect) come into '
         'FITOS as runs, with their time, distance, route when shared, and '
-        'average and maximum heart rate. They are kept with your account like '
-        'a run recorded in FITOS: in Download my data, and deleted with your '
-        'account. They are never sent to any AI.',
+        'average and maximum heart rate and cadence. While that switch is on '
+        'and you allow background access in Health Connect, FITOS also checks '
+        'for new watch runs every few hours with the app closed; it reads only '
+        'runs. They are kept with your account like a run recorded in FITOS: '
+        'in Download my data, and deleted with your account. They are never '
+        'sent to any AI.',
   ),
   (
     'Why',

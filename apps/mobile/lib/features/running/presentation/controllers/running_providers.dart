@@ -18,6 +18,7 @@ import '../../data/run_voice.dart';
 import '../../data/run_sync_engine.dart';
 import '../../data/running_api.dart';
 import '../../data/running_repository.dart';
+import '../../data/watch_background.dart';
 import '../../data/watch_import.dart';
 import '../../../health/data/health_connect_channel.dart';
 import '../../domain/efforts.dart';
@@ -341,18 +342,45 @@ final watchSourceProvider = Provider<WatchRunSource>(
   (_) => const HealthConnectWatchSource(MethodChannelHealthConnect()),
 );
 
+/// Beta 4.9: whether Health Connect lets FITOS import in the background.
+final watchBackgroundProvider = FutureProvider.autoDispose<bool>(
+  (ref) => ref.watch(watchSourceProvider).background(),
+);
+
 /// Each time Running opens (and the switch is on): the watch runs not in
 /// FITOS yet come in, and the history and records follow.
 final watchImportProvider =
     FutureProvider.autoDispose<WatchImportResult?>((ref) async {
   final userId = ref.watch(sessionUserIdProvider);
-  if (userId == null || !ref.watch(runSettingsProvider).watchImport) {
+  final on = ref.watch(runSettingsProvider).watchImport;
+  // Beta 4.9: the 6-hourly import follows the switch and Health Connect's
+  // background permission, and runs as this user.
+  final source = ref.read(watchSourceProvider);
+  String? firebaseUid;
+  try {
+    firebaseUid = ref.read(credentialSourceProvider).currentUid;
+  } on Object {
+    // No Firebase (a test, a build without it): no background import.
+  }
+  unawaited(
+    () async {
+      final background = on && userId != null && await source.background();
+      if (background) {
+        await WatchBackground.remember(
+          userId: userId,
+          firebaseUid: firebaseUid,
+        );
+      }
+      await WatchBackground.schedule(on: background);
+    }(),
+  );
+  if (userId == null || !on) {
     return null;
   }
   final (list, _) = await ref.read(runListProvider.future);
   final unsynced = ref.read(unsyncedRunsProvider).value ?? const [];
   final result = await WatchImporter(
-    source: ref.read(watchSourceProvider),
+    source: source,
     api: ref.read(runningApiProvider),
     userId: userId,
   ).run([...unsynced, ...?list?.runs]);

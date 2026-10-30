@@ -9,6 +9,7 @@ import 'core/config/env.dart';
 import 'core/config/firebase_options.dart';
 import 'core/diagnostics/crash_reporting.dart';
 import 'core/theme/theme_controller.dart';
+import 'features/running/data/watch_background.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,3 +40,8 @@ Future<void> main() async {
     ),
   );
 }
+
+/// Beta 4.9: the native WatchImportWorker starts this without a screen —
+/// one Galaxy Watch import (watch_background.dart).
+@pragma('vm:entry-point')
+Future<void> watchImportMain() => watchImportInBackground();

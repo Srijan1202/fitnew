@@ -454,7 +454,14 @@ void main() {
             updatedAt: '2026-10-27T01:30:00.000Z',
           ),
         );
-    for (final c in ['workout_json', 'laps_json', 'planned_run_id']) {
+    for (final c in [
+      'workout_json',
+      'laps_json',
+      'planned_run_id',
+      // Beta 4.9's too: a 4.0 table had neither.
+      'goal_target_seconds',
+      'goal_split',
+    ]) {
       await old.customStatement('ALTER TABLE local_runs DROP COLUMN $c');
     }
     await old.customStatement('PRAGMA user_version = 4');
@@ -468,6 +475,54 @@ void main() {
     await (now.update(now.localRuns))
         .write(const LocalRunsCompanion(plannedRunId: Value('p1')));
     expect((await now.select(now.localRuns).get()).single.plannedRunId, 'p1');
+  });
+
+  test(
+      'a phone on beta 4.1–4.8 (schema 5) upgrades: a run row gains the race target and split, and an unsent run stays',
+      () async {
+    final dir = Directory.systemTemp.createTempSync('fitos-runs6');
+    final file = File('${dir.path}/fitos.sqlite');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final old = AppDatabase(NativeDatabase(file));
+    await old.into(old.localRuns).insert(
+          LocalRunsCompanion.insert(
+            clientRunId: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
+            kind: 'outdoor',
+            status: 'saved',
+            goalKind: 'distance',
+            goalValue: const Value(5000),
+            startedAt: '2026-10-29T01:00:00.000Z',
+            updatedAt: '2026-10-29T01:30:00.000Z',
+          ),
+        );
+    for (final c in ['goal_target_seconds', 'goal_split']) {
+      await old.customStatement('ALTER TABLE local_runs DROP COLUMN $c');
+    }
+    await old.customStatement('PRAGMA user_version = 5');
+    await old.close();
+
+    final now = AppDatabase(NativeDatabase(file));
+    addTearDown(now.close);
+    final row = (await now.select(now.localRuns).get()).single;
+    expect(row.goalValue, 5000);
+    expect(row.goalTargetSeconds, isNull);
+    await (now.update(now.localRuns)).write(
+      const LocalRunsCompanion(
+        goalKind: Value('race'),
+        goalTargetSeconds: Value(1500),
+        goalSplit: Value('negative'),
+      ),
+    );
+    final race = (await now.select(now.localRuns).get()).single;
+    expect(
+      RunGoal.stored(
+        race.goalKind,
+        race.goalValue,
+        race.goalTargetSeconds,
+        race.goalSplit,
+      ),
+      const RunGoal.race(5000, 1500, RaceSplit.negative),
+    );
   });
 
   group('beta 4.1: sessions, plans and the coach', () {

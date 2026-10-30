@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../domain/race.dart';
 import '../../domain/run.dart';
 import '../../domain/units.dart';
 import '../../domain/workout.dart';
@@ -498,6 +499,10 @@ class _GoalLine extends StatelessWidget {
         }
       case RunGoalKind.free:
         return const SizedBox.shrink();
+      case RunGoalKind.race:
+        final plan = RacePlan.of(g);
+        if (plan == null) return const SizedBox.shrink();
+        return _RacePanel(run: run, plan: plan, unit: unit);
     }
     return Padding(
       key: const ValueKey('run.goal'),
@@ -706,6 +711,88 @@ class _SessionCard extends StatelessWidget {
                   ),
                 ],
               ),
+      ),
+    );
+  }
+}
+
+/// Beta 4.9 (owner): race mode — this km's pace to hold, big; how far ahead
+/// or behind the plan; the finish the pace so far gives.
+class _RacePanel extends StatelessWidget {
+  const _RacePanel({required this.run, required this.plan, required this.unit});
+
+  final LiveRun run;
+  final RacePlan plan;
+  final DistanceUnit unit;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final d = run.distanceM;
+    final delta = plan.deltaAt(d, run.activeSeconds);
+    final projected = plan.projectedFinish(d, run.activeSeconds);
+    final (deltaText, deltaColour) = d < 50
+        ? ('Go', FitColors.ink)
+        : delta.abs() <= 2
+            ? ('On plan', FitColors.pine)
+            : delta > 0
+                ? ('${raceGap(delta)} behind', FitColors.oxide)
+                : ('${raceGap(delta)} ahead', FitColors.pine);
+    return Padding(
+      key: const ValueKey('run.goal'),
+      padding: const EdgeInsets.fromLTRB(
+        FitSpacing.screen,
+        FitSpacing.sm,
+        FitSpacing.screen,
+        0,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('HOLD', style: t.labelSmall),
+                    Text(
+                      '${formatPace(plan.paceAt(d), unit)} ${unit.paceLabel}',
+                      key: const ValueKey('run.race.pace'),
+                      style: t.headlineSmall?.copyWith(color: FitColors.ink),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    deltaText,
+                    key: const ValueKey('run.race.delta'),
+                    style: t.titleMedium?.copyWith(color: deltaColour),
+                  ),
+                  Text(
+                    projected == null
+                        ? 'Target ${formatDuration(plan.targetSeconds)}'
+                        : 'Finish ~${formatDuration(projected)}',
+                    key: const ValueKey('run.race.finish'),
+                    style: t.bodySmall,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          LinearProgressIndicator(
+            value: run.progress,
+            color: FitPalette.current.glow,
+            backgroundColor: FitColors.ink.withValues(alpha: 0.1),
+            minHeight: 6,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ],
       ),
     );
   }
