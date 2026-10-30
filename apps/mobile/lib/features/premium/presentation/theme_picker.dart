@@ -11,9 +11,11 @@ import '../../running/domain/efforts.dart';
 import '../domain/streak_rewards.dart';
 import 'rewards_providers.dart';
 
-/// Phase 19 (ADR-027, ADR-028): Profile → Theme. FITOS Dark (the default),
-/// FITOS Light and Paper for everyone; Night, Forest and Ocean for premium
-/// (a lock, then the premium sheet, for a free user).
+/// Phase 19 (ADR-027, ADR-028), owner 2026-10-30: Profile → Theme.
+/// Automatic first (Dark or Light with the phone, the default), then Dark,
+/// Light, Cobalt and the green FITOS Dark and Light for everyone; Night,
+/// Forest and Ocean for premium (a lock, then the premium sheet, for a free
+/// user); the reward themes once earned.
 class ThemePicker extends ConsumerWidget {
   const ThemePicker({super.key});
 
@@ -21,6 +23,7 @@ class ThemePicker extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     final current = ref.watch(themeControllerProvider);
+    final automatic = ref.watch(themeFollowsDeviceProvider);
     final premium = ref.watch(isPremiumProvider) ?? false;
     // Beta 4.2: a streak reward's id or a running badge's (the Road theme).
     final earned = ref.watch(earnedUnlocksProvider) ?? const <String>{};
@@ -36,11 +39,21 @@ class ThemePicker extends ConsumerWidget {
           spacing: FitSpacing.md,
           runSpacing: FitSpacing.sm,
           children: <Widget>[
+            _Swatch(
+              key: const ValueKey('theme.auto'),
+              palette: FitPalette.dark,
+              half: FitPalette.light,
+              label: 'Automatic',
+              selected: automatic,
+              locked: false,
+              onTap: () =>
+                  ref.read(themeControllerProvider.notifier).followDevice(),
+            ),
             for (final p in FitPalette.all)
               _Swatch(
                 key: ValueKey('theme.${p.id}'),
                 palette: p,
-                selected: current.id == p.id,
+                selected: !automatic && current.id == p.id,
                 locked: (p.premium && !premium) || streakLocked(p),
                 streakLock: p.reward != null,
                 onTap: () async {
@@ -77,8 +90,16 @@ class _Swatch extends StatelessWidget {
     required this.locked,
     required this.onTap,
     this.streakLock = false,
+    this.half,
+    this.label,
     super.key,
   });
+
+  /// Automatic: the right half shows this palette (Light beside Dark).
+  final FitPalette? half;
+
+  /// In place of the palette's name.
+  final String? label;
 
   /// Beta 3.4: locked by a streak (🔥), not by premium.
   final bool streakLock;
@@ -95,7 +116,7 @@ class _Swatch extends StatelessWidget {
       selected: selected,
       label: locked
           ? '${palette.label} theme, ${streakLock ? 'streak reward' : 'premium'}'
-          : '${palette.label} theme',
+          : '${label ?? palette.label} theme',
       child: InkWell(
         onTap: onTap,
         child: Column(
@@ -119,6 +140,14 @@ class _Swatch extends StatelessWidget {
               ),
               child: Stack(
                 children: <Widget>[
+                  if (half case final h?)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 26,
+                      child: ColoredBox(color: h.paper),
+                    ),
                   Positioned(
                     left: 8,
                     top: 10,
@@ -164,7 +193,7 @@ class _Swatch extends StatelessWidget {
               ),
             ),
             const SizedBox(height: FitSpacing.xs),
-            Text(palette.label, style: textTheme.labelSmall),
+            Text(label ?? palette.label, style: textTheme.labelSmall),
           ],
         ),
       ),

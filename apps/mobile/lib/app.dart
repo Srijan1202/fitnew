@@ -50,9 +50,9 @@ class FitOSApp extends ConsumerWidget {
     // "Update FITOS". Unknown (offline) never blocks.
     final updateRequired = ref.watch(updateRequiredProvider);
     // Phase 19 (ADR-027): the palette every token reads; a change rebuilds
-    // the whole tree in place. A premium palette falls back to the brand
-    // theme of its brightness as soon as the app knows the user is not
-    // premium (ADR-028).
+    // the whole tree in place. A premium palette goes back to Automatic
+    // (Dark or Light with the phone, owner 2026-10-30) as soon as the app
+    // knows the user is not premium.
     final palette = ref.watch(themeControllerProvider);
     FitPalette.current = palette;
     ref.listen(themeControllerProvider, (previous, next) {
@@ -63,9 +63,7 @@ class FitOSApp extends ConsumerWidget {
     });
     ref.listen(isPremiumProvider, (_, premium) {
       if (premium == false && FitPalette.current.premium) {
-        ref
-            .read(themeControllerProvider.notifier)
-            .choose(FitPalette.current.freeFallback);
+        ref.read(themeControllerProvider.notifier).followDevice();
       }
       // Beta 3.2: and a premium app icon goes back to Standard.
       if (premium == false) {
@@ -79,9 +77,7 @@ class FitOSApp extends ConsumerWidget {
       if (earned == null) return;
       final reward = FitPalette.current.reward;
       if (reward != null && !earned.contains(reward)) {
-        ref
-            .read(themeControllerProvider.notifier)
-            .choose(FitPalette.current.freeFallback);
+        ref.read(themeControllerProvider.notifier).followDevice();
       }
       ref.read(appIconControllerProvider.notifier).keepEarned(earned);
     });

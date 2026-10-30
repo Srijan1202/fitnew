@@ -116,8 +116,72 @@ class FitPalette {
   final String? reward;
 
   /// The palette every screen reads now. Set by the theme controller before
-  /// the app rebuilds; FITOS Dark unless the user chose another.
-  static FitPalette current = fitosDark;
+  /// the app rebuilds: Dark or Light with the phone's mode unless the user
+  /// chose another (owner 2026-10-30).
+  static FitPalette current = dark;
+
+  /// True while no theme was chosen: Dark or Light follows the phone.
+  static bool followsDevice = true;
+
+  /// Owner 2026-10-30: the main themes, neutral — near-black with white
+  /// actions, near-white with black actions. Each is the default in its
+  /// mode; the meanings (good, warning, bad) keep their colours.
+  static const dark = FitPalette(
+    id: 'dark',
+    label: 'Dark',
+    brightness: Brightness.dark,
+    paper: Color(0xFF0B0B0C),
+    paper2: Color(0xFF17171A),
+    ink: Color(0xFFF4F4F5),
+    ink60: Color(0xFFA1A1AA),
+    ink35: Color(0xFF71717A),
+    rule: Color(0xFF27272A),
+    pine: Color(0xFF4ADE80),
+    amber: Color(0xFFF5B342),
+    oxide: Color(0xFFFF6B57),
+    sky: Color(0xFF5AB4F5),
+    glow: Color(0xFF8A8A93),
+    premium: false,
+  );
+
+  static const light = FitPalette(
+    id: 'light',
+    label: 'Light',
+    brightness: Brightness.light,
+    paper: Color(0xFFFAFAFA),
+    paper2: Color(0xFFEEEEF0),
+    ink: Color(0xFF111113),
+    ink60: Color(0xFF52525B),
+    ink35: Color(0xFF8A8A93),
+    rule: Color(0xFFDDDDE1),
+    pine: Color(0xFF1F8A4C),
+    amber: Color(0xFFA8641B),
+    oxide: Color(0xFFB3261E),
+    sky: Color(0xFF1F6FB8),
+    glow: Color(0xFFA1A1AA),
+    premium: false,
+  );
+
+  /// Owner 2026-10-30, free: true black with cobalt blue actions.
+  static const cobalt = FitPalette(
+    id: 'cobalt',
+    label: 'Cobalt',
+    brightness: Brightness.dark,
+    paper: Color(0xFF000000),
+    paper2: Color(0xFF0E1116),
+    ink: Color(0xFFF2F5FA),
+    ink60: Color(0xFFA9B3C1),
+    ink35: Color(0xFF6B7685),
+    rule: Color(0xFF1E2530),
+    pine: Color(0xFF4ADE80),
+    amber: Color(0xFFF5B342),
+    oxide: Color(0xFFFF6B57),
+    sky: Color(0xFF7DB7FF),
+    accent: Color(0xFF2E6BF0),
+    onAccent: Color(0xFFFFFFFF),
+    glow: Color(0xFF2E6BF0),
+    premium: false,
+  );
 
   /// ADR-028, the default: the brand kit's primary logo — carbon, white type,
   /// lime actions.
@@ -286,6 +350,9 @@ class FitPalette {
   );
 
   static const all = <FitPalette>[
+    dark,
+    light,
+    cobalt,
     fitosDark,
     fitosLight,
     night,
@@ -296,16 +363,17 @@ class FitPalette {
     mileage,
   ];
 
-  /// Where a theme the user may no longer have falls back to: the brand
-  /// theme of the same brightness.
-  FitPalette get freeFallback =>
-      brightness == Brightness.dark ? fitosDark : fitosLight;
+  /// The main theme for a mode: Dark or Light.
+  static FitPalette forMode(Brightness mode) =>
+      mode == Brightness.dark ? dark : light;
 
-  /// Paper (the §6.2 original) was dropped on 2026-10-30 (owner): a phone
-  /// that kept it opens on FITOS Light, the other light theme.
-  static FitPalette byId(String? id) => id == 'paper'
-      ? fitosLight
-      : all.firstWhere((p) => p.id == id, orElse: () => fitosDark);
+  /// A theme by id; an unknown one (Paper, dropped on 2026-10-30) is null.
+  static FitPalette? byId(String? id) {
+    for (final p in all) {
+      if (p.id == id) return p;
+    }
+    return null;
+  }
 }
 
 /// 8px base grid (§6.4).
