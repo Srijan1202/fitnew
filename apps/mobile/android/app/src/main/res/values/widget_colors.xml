@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Beta 5.0: the home-screen widgets follow the phone's light or dark mode
+     (values-night); trained blue, rest green as on Streak & rewards. -->
+<resources>
+    <color name="widget_bg">#F7F7F8</color>
+    <color name="widget_ink">#111317</color>
+    <color name="widget_ink60">#6B6F76</color>
+    <color name="widget_rule">#DDDFE3</color>
+    <color name="widget_button">#E9EAED</color>
+    <color name="widget_accent">#3B82F6</color>
+    <color name="widget_rest">#4ADE80</color>
+    <color name="widget_over">#F59E0B</color>
+</resources>

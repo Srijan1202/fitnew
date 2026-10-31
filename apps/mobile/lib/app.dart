@@ -9,6 +9,7 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'core/theme/tokens.dart';
 import 'shared/widgets/fit_glass.dart';
+import 'features/home_widgets/presentation/home_widgets_coordinator.dart';
 import 'features/premium/presentation/app_icon_controller.dart';
 import 'features/premium/presentation/premium_providers.dart';
 import 'features/nutrition/presentation/controllers/food_log_providers.dart';
@@ -46,6 +47,8 @@ class FitOSApp extends ConsumerWidget {
     ref.watch(updateCheckCoordinatorProvider);
     // Beta 3.3 (ADR-033): the admin's feature switches, re-read on return.
     ref.watch(configRefreshCoordinatorProvider);
+    // Beta 5.0: the home-screen widgets' snapshot and taps.
+    ref.watch(homeWidgetsCoordinatorProvider);
     // Phase 19 (E1): a build below the server's minimum shows only
     // "Update FITOS". Unknown (offline) never blocks.
     final updateRequired = ref.watch(updateRequiredProvider);

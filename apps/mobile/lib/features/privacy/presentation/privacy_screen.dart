@@ -188,6 +188,23 @@ class _PrivacyScreenState extends ConsumerState<PrivacyScreen> {
                 ],
               ),
               const SizedBox(height: FitSpacing.lg),
+              // Beta 5.0: what a home-screen widget shows, and to whom.
+              FitSection(
+                label: 'HOME-SCREEN WIDGETS',
+                children: <Widget>[
+                  const SizedBox(height: FitSpacing.sm),
+                  Text(
+                    'A FITOS widget you add shows your food left, today\'s '
+                    'training or your streak on the home screen, to anyone '
+                    'who sees your phone. It reads only what is already on '
+                    'this phone and sends nothing. Remove the widget to hide '
+                    'it; signing out empties it.',
+                    key: const ValueKey('privacy.widgets'),
+                    style: textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+              const SizedBox(height: FitSpacing.lg),
               FitSection(
                 label: 'YOUR DATA',
                 children: <Widget>[

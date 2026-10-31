@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Beta 5.0: quick actions -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_actions_description"
+    android:initialLayout="@layout/widget_actions"
+    android:minWidth="250dp"
+    android:minHeight="60dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="1"
+    android:previewLayout="@layout/widget_actions"
+    android:resizeMode="horizontal"
+    android:updatePeriodMillis="3600000"
+    android:widgetCategory="home_screen" />

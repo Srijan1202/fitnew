@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_food_label">FITOS · Food left</string>
+    <string name="widget_food_description">Calories and protein left today</string>
+    <string name="widget_training_label">FITOS · Today\'s training</string>
+    <string name="widget_training_description">Today\'s workout or run, or a rest day</string>
+    <string name="widget_streak_label">FITOS · Streak</string>
+    <string name="widget_streak_description">Your streak and this week\'s days</string>
+    <string name="widget_actions_label">FITOS · Quick actions</string>
+    <string name="widget_actions_description">Log food, start a workout or run, log your weight</string>
+</resources>

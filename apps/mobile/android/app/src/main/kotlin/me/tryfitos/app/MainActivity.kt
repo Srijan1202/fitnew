@@ -24,6 +24,20 @@ import io.flutter.plugin.common.MethodChannel
  */
 class MainActivity : FlutterFragmentActivity() {
     private var healthConnect: HealthConnectChannel? = null
+    private var widgetChannel: MethodChannel? = null
+    private var widgetLaunch: String? = null
+
+    private fun widgetLink(intent: android.content.Intent?): String? {
+        val data = intent?.data ?: return null
+        return if (data.scheme == "fitos" && data.host == "widget") data.toString() else null
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        val link = widgetLink(intent) ?: return
+        val channel = widgetChannel
+        if (channel == null) widgetLaunch = link else channel.invokeMethod("open", link)
+    }
 
     /**
      * Registered as a field, i.e. before the activity is CREATED, which is
@@ -41,6 +55,20 @@ class MainActivity : FlutterFragmentActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         // Phase 6.5: the Health Connect read channel (owner D1).
+        // Beta 5.0: a home-screen widget's tap (fitos://widget/<target>): the
+        // one FITOS opened from is taken once; later ones are sent as they come.
+        widgetLaunch = widgetLink(intent)
+        widgetChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fitos/widget")
+            .apply {
+                setMethodCallHandler { call, result ->
+                    if (call.method == "takeLaunch") {
+                        result.success(widgetLaunch)
+                        widgetLaunch = null
+                    } else {
+                        result.notImplemented()
+                    }
+                }
+            }
         val channel = HealthConnectChannel(this, healthPermissionLauncher)
         healthConnect = channel
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, HealthConnectChannel.NAME)
@@ -68,6 +96,11 @@ class MainActivity : FlutterFragmentActivity() {
                     "batteryUnrestricted" -> {
                         val power = getSystemService(POWER_SERVICE) as android.os.PowerManager
                         result.success(power.isIgnoringBatteryOptimizations(packageName))
+                    }
+                    // Beta 5.0: the home-screen widgets redraw from the new snapshot.
+                    "updateWidgets" -> {
+                        HomeWidgets.updateAll(applicationContext)
+                        result.success(null)
                     }
                     // Beta 4.9: the 6-hourly Galaxy Watch import (WatchImportWorker).
                     "scheduleWatchImport" -> {
