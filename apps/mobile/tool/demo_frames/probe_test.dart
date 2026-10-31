@@ -11,7 +11,8 @@ void main() {
       print(slug);
       for (var t = 0.0; t < d.period; t += d.period / 16) {
         final f = d.at(t);
-        print('  t=${t.toStringAsFixed(2)} knee=(${f[Joint.knee].dx.toStringAsFixed(2)}, '
+        print(
+            '  t=${t.toStringAsFixed(2)} knee=(${f[Joint.knee].dx.toStringAsFixed(2)}, '
             '${f[Joint.knee].dy.toStringAsFixed(2)}) hand=(${f[Joint.hand].dx.toStringAsFixed(2)}, '
             '${f[Joint.hand].dy.toStringAsFixed(2)}) hip=(${f[Joint.hip].dx.toStringAsFixed(2)}, '
             '${f[Joint.hip].dy.toStringAsFixed(2)})');
