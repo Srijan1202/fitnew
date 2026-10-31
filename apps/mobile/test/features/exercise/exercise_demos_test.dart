@@ -24,9 +24,13 @@ void main() {
       (e as Map<String, dynamic>)['slug'] as String: e,
   };
 
-  test('30 lifts, every one in the library; every variant points at a demo',
-      () {
-    expect(exerciseDemos, hasLength(30));
+  test(
+      'beta 5.2: every lift in the library has a demo or is a variant of one; '
+      'every variant points at a demo', () {
+    expect(exerciseDemos, hasLength(160));
+    for (final slug in library.keys) {
+      expect(demoFor(slug), isNotNull, reason: slug);
+    }
     for (final slug in exerciseDemos.keys) {
       expect(library.containsKey(slug), isTrue, reason: slug);
     }
@@ -38,7 +42,7 @@ void main() {
       expect(demoFor(slug)!.note, note);
     }
     expect(demoFor('barbell-back-squat')!.note, isNull);
-    expect(demoFor('sissy-squat'), isNull);
+    expect(demoFor('no-such-lift'), isNull);
   });
 
   test('every key moment shows one of its lift\'s cues, in order, all used',
@@ -65,7 +69,7 @@ void main() {
         final f = demo.solve(pose);
         expect(f.lowest, greaterThan(-0.02), reason: '$slug at $t');
         final bones = [
-          (Joint.shoulder, Joint.elbow, Body.upperArm),
+          (Joint.shoulder, Joint.elbow, Body.upperArm * pose.upperScale.abs()),
           // A foreshortened forearm (a front-view curl) is drawn shorter.
           (Joint.elbow, Joint.hand, Body.forearm * pose.foreScale.abs()),
           (Joint.knee, Joint.ankle, Body.shin),
@@ -284,7 +288,7 @@ void main() {
     await tester.pump();
     await tester.pump();
     expect(
-      find.text('30 lifts and 12 variants. Each plays three times; tap it '
+      find.text('160 lifts and 12 variants. Each plays three times; tap it '
           'to play again.'),
       findsOneWidget,
     );
@@ -323,7 +327,7 @@ void main() {
     expect(c.read(approvedDemoProvider('chin-up'))?.note, 'Palms facing you.');
     expect(c.read(approvedDemoProvider('close-grip-lat-pulldown')), isNull);
     expect(demoSlugFor('chin-up'), 'pull-up');
-    expect(demoSlugFor('sissy-squat'), isNull);
+    expect(demoSlugFor('no-such-lift'), isNull);
   });
 
   group('goldens', () {

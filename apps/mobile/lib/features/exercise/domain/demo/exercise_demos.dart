@@ -1,13 +1,19 @@
 import 'dart:ui' show Offset;
 
 import 'demo_rig.dart';
+import 'exercise_demos_more.dart';
 
-/// Beta 5.0 (owner): the 30 lifts with a demo, keyed by the exercise's slug.
+/// Beta 5.0 (owner): the first 30 lifts with a demo, keyed by the exercise's
+/// slug.
 /// Each is a few key moments; [Pose.cue] is the index of the written
 /// instruction (exercises.json) that moment shows.
 ///
 /// Standing lifts keep the near ankle at (0, ankle height); facing right.
-const Map<String, Demo> exerciseDemos = {
+/// Beta 5.2 (owner): every lift in the library — these 30, then the rest
+/// (exercise_demos_more.dart). The app shows one only once approved.
+final Map<String, Demo> exerciseDemos = {..._firstDemos, ...moreDemos};
+
+const Map<String, Demo> _firstDemos = {
   /* ------------------------------------------------------------ squat -- */
   'barbell-back-squat': Demo(
     gear: [Plate(at: Joint.upperBack)],
@@ -750,17 +756,23 @@ const Map<String, Demo> exerciseDemos = {
   ),
 
   /* ------------------------------------------------------------- chest -- */
-  // Beta 5.0.1 (owner): elbows stay out and soft, hugging a barrel.
+  // Beta 5.2 (owner): seen from the front the arms stay long and soft and
+  // swing toward you — they look shorter, then cross the chest — instead
+  // of folding at the elbow.
   'cable-fly': Demo(
     view: DemoView.front,
-    elbowToward: Offset(0.6, -1),
     gear: [Cable(Offset(0.85, 1.5), handle: true, mirrored: true)],
     frames: [
-      Pose(hands: Offset(0.72, 1.4), cue: 0, seconds: 0.2, hold: 0.3),
-      Pose(hands: Offset(0.42, 1.34), seconds: 0.6),
-      Pose(hands: Offset(0.1, 1.28), cue: 1, seconds: 0.6, hold: 0.4),
-      Pose(hands: Offset(0.42, 1.34), cue: 2, seconds: 0.9),
-      Pose(hands: Offset(0.72, 1.4), seconds: 0.9),
+      Pose(arm: Limb(93, 100), cue: 0, seconds: 0.3, hold: 0.3),
+      Pose(
+        arm: Limb(93, 100),
+        upperScale: -0.28,
+        foreScale: -0.32,
+        cue: 1,
+        seconds: 1.2,
+        hold: 0.4,
+      ),
+      Pose(arm: Limb(93, 100), cue: 2, seconds: 1.8),
     ],
   ),
 

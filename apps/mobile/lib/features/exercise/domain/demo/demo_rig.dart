@@ -84,6 +84,11 @@ enum Joint {
   elbowFar,
   handFar,
 
+  /// Front view: the left shoulder and hip (beta 5.2: the two sides can
+  /// differ).
+  shoulderFar,
+  hipFar,
+
   /// Where a bar sits on the upper back (back squat).
   upperBack,
 
@@ -129,6 +134,9 @@ class Pose {
     this.hold = 0,
     this.cue,
     this.foreScale = 1,
+    this.upperScale = 1,
+    this.thighScale = 1,
+    this.handsFar,
   });
 
   final double trunk;
@@ -165,6 +173,18 @@ class Pose {
   /// the front: the hand comes up in front of the arm). Beta 5.1.
   final double foreScale;
 
+  /// Front view: the upper arm's length as seen, signed (as [foreScale]) —
+  /// a fly's arms swinging toward you and across (beta 5.2).
+  final double upperScale;
+
+  /// Front view: the thigh's length as seen (a squat's thighs come toward
+  /// you), signed. Beta 5.2.
+  final double thighScale;
+
+  /// Front view: the left hand's own target (else it mirrors [hands]) — a
+  /// woodchopper's hands together. Beta 5.2.
+  final Offset? handsFar;
+
   Pose lerp(Pose b, double t) => Pose(
         trunk: _lerpAngle(trunk, b.trunk, t),
         head: _lerpAngle(head, b.head, t),
@@ -189,6 +209,11 @@ class Pose {
             : _lerpO(hands!, b.hands!, t),
         handsFrom: handsFrom,
         foreScale: _lerp(foreScale, b.foreScale, t),
+        upperScale: _lerp(upperScale, b.upperScale, t),
+        thighScale: _lerp(thighScale, b.thighScale, t),
+        handsFar: handsFar == null || b.handsFar == null
+            ? null
+            : _lerpO(handsFar!, b.handsFar!, t),
         anchorAt: anchorAt == null || b.anchorAt == null
             ? null
             : _lerpO(anchorAt!, b.anchorAt!, t),
@@ -328,6 +353,52 @@ class Block extends Gear {
   final double height;
 }
 
+/// A fixed line: a machine's frame, a rack, a wall, a box's edge. Beta 5.2.
+class Line extends Gear {
+  const Line(this.a, this.b, {this.width = 0.04});
+  final Offset a;
+  final Offset b;
+  final double width;
+}
+
+/// A band, chain or cable between two points, each a joint or a fixed place;
+/// front view, [mirrored] adds the left side's. Beta 5.2.
+class Link extends Gear {
+  const Link({
+    this.from,
+    this.fromJoint,
+    this.to,
+    this.toJoint = Joint.hand,
+    this.mirrored = false,
+    this.band = false,
+  });
+  final Offset? from;
+  final Joint? fromJoint;
+  final Offset? to;
+  final Joint? toJoint;
+  final bool mirrored;
+
+  /// A band: drawn thicker.
+  final bool band;
+}
+
+/// A kettlebell in each hand ([nearOnly]: the near hand; [single]: one held
+/// in both). Beta 5.2.
+class Kettlebell extends Gear {
+  const Kettlebell({this.nearOnly = false, this.single = false});
+  final bool nearOnly;
+  final bool single;
+  @override
+  bool get front => true;
+}
+
+/// A machine's handles (or a rope's ends) in the hands. Beta 5.2.
+class Handles extends Gear {
+  const Handles();
+  @override
+  bool get front => true;
+}
+
 /// A lift's demo.
 class Demo {
   const Demo({
@@ -341,6 +412,8 @@ class Demo {
     this.holdOnly = false,
     this.seated = false,
     this.bentKnees = false,
+    this.seatHeight = 0.53,
+    this.tilt = 0,
   });
 
   final List<Pose> frames;
@@ -363,6 +436,13 @@ class Demo {
   /// Front view: knees bent and apart, for a hinge seen from the front
   /// (rear delt fly).
   final bool bentKnees;
+
+  /// Front view, seated: the hips' height (a bench, or the floor).
+  final double seatHeight;
+
+  /// The whole figure turned clockwise by this many degrees, then set on the
+  /// floor (a side plank: the front view lying on its side). Beta 5.2.
+  final double tilt;
 
   /// One loop, seconds: each move and hold, and back to the start.
   double get period =>
@@ -407,7 +487,24 @@ class Demo {
   Figure at(double t) => solve(poseAt(t));
 
   /// The figure in [pose].
-  Figure solve(Pose pose) => view == DemoView.side ? _side(pose) : _front(pose);
+  Figure solve(Pose pose) {
+    final f = view == DemoView.side ? _side(pose) : _front(pose);
+    if (tilt == 0) return f;
+    final r = tilt * math.pi / 180;
+    final c = math.cos(r), s = math.sin(r);
+    final turned = {
+      for (final e in f.joints.entries)
+        e.key: Offset(
+          e.value.dx * c + e.value.dy * s,
+          -e.value.dx * s + e.value.dy * c,
+        ),
+    };
+    final low = turned.values.map((o) => o.dy).reduce(math.min);
+    return Figure(f.view, {
+      for (final e in turned.entries)
+        e.key: e.value + Offset(0, Body.ankleHeight / 2 - low),
+    });
+  }
 
   /* ------------------------------------------------------------ side -- */
 
@@ -448,8 +545,8 @@ class Demo {
         Joint.elbow,
         Joint.hand,
         p.arm,
-        Body.upperArm,
-        Body.forearm,
+        Body.upperArm * p.upperScale,
+        Body.forearm * p.foreScale,
       );
       _limb(
         j,
@@ -457,8 +554,8 @@ class Demo {
         Joint.elbowFar,
         Joint.handFar,
         p.armFar ?? p.arm,
-        Body.upperArm,
-        Body.forearm,
+        Body.upperArm * p.upperScale,
+        Body.forearm * p.foreScale,
       );
     }
 
@@ -598,28 +695,88 @@ class Demo {
   /// hand's target (the left mirrors).
   Figure _front(Pose p) {
     final j = <Joint, Offset>{};
-    final torso = Body.torso * math.cos(p.trunk * math.pi / 180).abs();
-    final hipY = seated ? 0.53 : Body.ankleHeight + Body.thigh + Body.shin;
-    j[Joint.hip] = Offset(0, hipY);
-    j[Joint.shoulder] = Offset(Body.shoulderHalf, hipY + torso);
+    final lean = math.cos(p.trunk * math.pi / 180).abs();
+    final torso = Body.torso * lean;
+    const standing = Body.ankleHeight + Body.thigh + Body.shin;
+    final explicitHip = anchor == Joint.hip;
+    final hip = explicitHip
+        ? (p.anchorAt ?? anchorAt)
+        : Offset(0, seated ? seatHeight : standing);
+    final cx = hip.dx;
+    Offset m(Offset o) => Offset(2 * cx - o.dx, o.dy);
+    Offset mDir(double deg) {
+      final d = dirOf(deg);
+      return Offset(-d.dx, d.dy);
+    }
+
+    j[Joint.hip] = hip + const Offset(Body.hipHalf, 0);
+    j[Joint.hipFar] = hip - const Offset(Body.hipHalf, 0);
+    j[Joint.shoulder] = hip + Offset(Body.shoulderHalf, torso);
+    j[Joint.shoulderFar] = hip + Offset(-Body.shoulderHalf, torso);
     // Leaning toward you, the head drops in front of the shoulders (bent
     // well over, below their line: beta 5.0.1).
-    final lean = math.cos(p.trunk * math.pi / 180).abs();
     j[Joint.head] = Offset(
-      0,
-      hipY + torso + (Body.neck + Body.head) * (lean * 1.4 - 0.4),
+      cx,
+      hip.dy + torso + (Body.neck + Body.head) * (lean * 1.4 - 0.4),
     );
-    final kneeX = seated
-        ? Body.hipHalf + 0.04
-        : bentKnees
-            ? Body.hipHalf + 0.05
-            : Body.hipHalf;
-    j[Joint.knee] = Offset(
-      kneeX,
-      seated ? Body.ankleHeight + Body.shin : hipY - Body.thigh,
-    );
-    j[Joint.ankle] = Offset(kneeX, Body.ankleHeight);
-    j[Joint.toe] = Offset(kneeX + 0.03, 0.01);
+
+    // Legs: to the feet's targets, by angle, or (seated, default) hanging.
+    final byAngle =
+        p.leg != const Limb(180, 180) || p.legFar != null || p.thighScale != 1;
+    if (p.feet != null) {
+      final out = Offset(kneeToward.dx.abs(), kneeToward.dy);
+      _reach(
+        j,
+        Joint.hip,
+        Joint.knee,
+        Joint.ankle,
+        p.feet!,
+        Body.thigh,
+        Body.shin,
+        out,
+      );
+      _reach(
+        j,
+        Joint.hipFar,
+        Joint.kneeFar,
+        Joint.ankleFar,
+        p.feetFar ?? m(p.feet!),
+        Body.thigh,
+        Body.shin,
+        Offset(-out.dx, out.dy),
+      );
+    } else if (byAngle) {
+      final far = p.legFar ?? p.leg;
+      j[Joint.knee] =
+          j[Joint.hip]! + dirOf(p.leg.upper) * Body.thigh * p.thighScale;
+      j[Joint.ankle] = j[Joint.knee]! + dirOf(p.leg.lower) * Body.shin;
+      j[Joint.kneeFar] =
+          j[Joint.hipFar]! + mDir(far.upper) * Body.thigh * p.thighScale;
+      j[Joint.ankleFar] = j[Joint.kneeFar]! + mDir(far.lower) * Body.shin;
+    } else {
+      final kneeX = seated
+          ? Body.hipHalf + 0.04
+          : bentKnees
+              ? Body.hipHalf + 0.05
+              : Body.hipHalf;
+      j[Joint.knee] = Offset(
+        cx + kneeX,
+        seated ? Body.ankleHeight + Body.shin : hip.dy - Body.thigh,
+      );
+      j[Joint.ankle] = Offset(cx + kneeX, Body.ankleHeight);
+      j[Joint.kneeFar] = m(j[Joint.knee]!);
+      j[Joint.ankleFar] = m(j[Joint.ankle]!);
+    }
+    j[Joint.toe] = j[Joint.ankle]! + const Offset(0.03, -0.06);
+    j[Joint.toeFar] = j[Joint.ankleFar]! + const Offset(-0.03, -0.06);
+
+    // Standing on the lower foot, unless the hips are placed.
+    if (!explicitHip && !seated) {
+      final low = math.min(j[Joint.ankle]!.dy, j[Joint.ankleFar]!.dy);
+      _shift(j, Offset(0, Body.ankleHeight - low));
+    }
+
+    // Arms: each to its target, or by angle (the left mirrors unless given).
     if (p.hands != null) {
       _reach(
         j,
@@ -631,6 +788,16 @@ class Demo {
         Body.forearm,
         elbowToward,
       );
+      _reach(
+        j,
+        Joint.shoulderFar,
+        Joint.elbowFar,
+        Joint.handFar,
+        p.handsFar ?? m(p.hands!),
+        Body.upperArm,
+        Body.forearm,
+        Offset(-elbowToward.dx, elbowToward.dy),
+      );
     } else {
       // Mirror the side convention: 90 is out to the right.
       _limb(
@@ -639,16 +806,15 @@ class Demo {
         Joint.elbow,
         Joint.hand,
         p.arm,
-        Body.upperArm,
+        Body.upperArm * p.upperScale,
         Body.forearm * p.foreScale,
       );
+      final far = p.armFar ?? p.arm;
+      j[Joint.elbowFar] = j[Joint.shoulderFar]! +
+          mDir(far.upper) * Body.upperArm * p.upperScale;
+      j[Joint.handFar] =
+          j[Joint.elbowFar]! + mDir(far.lower) * Body.forearm * p.foreScale;
     }
-    Offset m(Offset o) => Offset(-o.dx, o.dy);
-    j[Joint.kneeFar] = m(j[Joint.knee]!);
-    j[Joint.ankleFar] = m(j[Joint.ankle]!);
-    j[Joint.toeFar] = m(j[Joint.toe]!);
-    j[Joint.elbowFar] = m(j[Joint.elbow]!);
-    j[Joint.handFar] = m(j[Joint.hand]!);
     return Figure(DemoView.front, j);
   }
 }
