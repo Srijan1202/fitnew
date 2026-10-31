@@ -12,6 +12,7 @@ import '../../features/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/auth/presentation/screens/splash_gate_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_browser_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_detail_screen.dart';
+import '../../features/exercise/presentation/screens/exercise_demos_screen.dart';
 import '../../features/mess/presentation/mess_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
 import '../../features/progress/presentation/weekly_report_screen.dart';
@@ -100,6 +101,9 @@ abstract final class Routes {
 
   /// Same browser, returning the tapped exercise to the caller.
   static const String exercisePicker = '/exercises/pick';
+
+  /// Beta 5.1 (owner): every exercise demo on one page.
+  static const String exerciseDemos = '/exercises/demos';
 
   // Shell tabs, in bar order.
   static const String today = '/';
@@ -269,6 +273,11 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
             name: 'exercise-picker',
             builder: (context, state) =>
                 const ExerciseBrowserScreen(pickMode: true),
+          ),
+          GoRoute(
+            path: 'demos',
+            name: 'exercise-demos',
+            builder: (context, state) => const ExerciseDemosScreen(),
           ),
           GoRoute(
             path: ':id',
@@ -564,6 +573,11 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refresh,
     redirect: (context, state) =>
         authRedirect(ref.read(authControllerProvider), state.matchedLocation),
+    // Beta 5.1 (owner): an address FITOS has no page for — a home-screen
+    // widget's fitos:// link that Android handed to Flutter — opens Home,
+    // never an error page (the widget's own screen opens through
+    // MainActivity's fitos/widget channel).
+    onException: (_, __, router) => router.go(Routes.today),
     routes: buildRoutes(rootNavigatorKey),
   );
   void track() {

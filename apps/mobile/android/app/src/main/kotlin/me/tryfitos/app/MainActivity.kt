@@ -32,6 +32,15 @@ class MainActivity : FlutterFragmentActivity() {
         return if (data.scheme == "fitos" && data.host == "widget") data.toString() else null
     }
 
+    /**
+     * Beta 5.1 (owner): never hand a link to Flutter's router. The manifest's
+     * flutter_deeplinking_enabled=false is read from the component that
+     * started the activity, which is the app-icon alias (AppIcons), not
+     * MainActivity, so a widget tap still reached the router ("Page Not
+     * Found"). The widgets' links go through fitos/widget instead.
+     */
+    override fun shouldHandleDeeplinking(): Boolean = false
+
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
         val link = widgetLink(intent) ?: return
