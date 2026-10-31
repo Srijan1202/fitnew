@@ -1,6 +1,231 @@
 {
  "demos": [
   {
+   "slug": "arnold-press",
+   "name": "Arnold Press",
+   "pattern": "vertical-push",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Start seated with dumbbells in front of your shoulders, palms facing you.",
+    "Rotate your palms outward as you press overhead.",
+    "Reverse the motion on the way down."
+   ],
+   "seconds": 3.8,
+   "variants": []
+  },
+  {
+   "slug": "back-extension",
+   "name": "Back Extension",
+   "pattern": "hinge",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Set the pad just below your hip bones on the extension bench, feet locked in.",
+    "Hinge down with a flat back until you feel a hamstring stretch.",
+    "Rise until your body is straight; do not hyperextend past neutral."
+   ],
+   "seconds": 4.9,
+   "variants": []
+  },
+  {
+   "slug": "band-chest-press",
+   "name": "Band Chest Press",
+   "pattern": "horizontal-push",
+   "equipment": [
+    "resistance-band"
+   ],
+   "cues": [
+    "Anchor the band behind you at chest height and hold a handle in each hand.",
+    "Step forward to tension the band, then press both hands forward until straight.",
+    "Return under control. Step further forward to progress."
+   ],
+   "seconds": 4.8,
+   "variants": []
+  },
+  {
+   "slug": "band-curl",
+   "name": "Band Curl",
+   "pattern": "elbow-flexion",
+   "equipment": [
+    "resistance-band"
+   ],
+   "cues": [
+    "Stand on the band and hold the handles, palms up.",
+    "Curl to your shoulders with elbows still.",
+    "Lower slowly against the band."
+   ],
+   "seconds": 3.2,
+   "variants": []
+  },
+  {
+   "slug": "band-face-pull",
+   "name": "Band Face Pull",
+   "pattern": "horizontal-pull",
+   "equipment": [
+    "resistance-band"
+   ],
+   "cues": [
+    "Anchor the band at face height and grip with palms in.",
+    "Pull toward your face, elbows high and wide.",
+    "Squeeze your shoulder blades, then return under control."
+   ],
+   "seconds": 2.4,
+   "variants": []
+  },
+  {
+   "slug": "band-fly",
+   "name": "Band Chest Fly",
+   "pattern": "chest-isolation",
+   "equipment": [
+    "resistance-band"
+   ],
+   "cues": [
+    "Anchor the band behind you at chest height, one handle in each hand.",
+    "Bring your hands together in front of your chest in an arc.",
+    "Return slowly under tension."
+   ],
+   "seconds": 4.0,
+   "variants": []
+  },
+  {
+   "slug": "band-good-morning",
+   "name": "Band Good Morning",
+   "pattern": "hinge",
+   "equipment": [
+    "resistance-band"
+   ],
+   "cues": [
+    "Stand on the band and loop the other end behind your neck across your upper back.",
+    "Hinge forward with a flat back, then drive your hips through to stand.",
+    "Keep the tension on the band by standing fully tall at the top."
+   ],
+   "seconds": 5.2,
+   "variants": []
+  },
+  {
+   "slug": "band-lat-pulldown",
+   "name": "Band Lat Pulldown",
+   "pattern": "vertical-pull",
+   "equipment": [
+    "resistance-band"
+   ],
+   "cues": [
+    "Anchor the band high and kneel or sit facing it.",
+    "Pull the handles down to your shoulders, elbows driving to your sides.",
+    "Return slowly overhead."
+   ],
+   "seconds": 3.5,
+   "variants": []
+  },
+  {
+   "slug": "band-lateral-walk",
+   "name": "Band Lateral Walk",
+   "pattern": "leg-isolation",
+   "equipment": [
+    "resistance-band"
+   ],
+   "cues": [
+    "Loop a band just above your knees and sit into a quarter squat.",
+    "Step sideways, keeping tension on the band and your knees pushed out.",
+    "Take the same number of steps back the other way."
+   ],
+   "seconds": 4.2,
+   "variants": []
+  },
+  {
+   "slug": "band-pallof-press",
+   "name": "Band Pallof Press",
+   "pattern": "core",
+   "equipment": [
+    "resistance-band"
+   ],
+   "cues": [
+    "Anchor the band at chest height and stand side-on holding it at your chest.",
+    "Press straight out and hold against the rotation.",
+    "Return and repeat; switch sides."
+   ],
+   "seconds": 3.4,
+   "variants": []
+  },
+  {
+   "slug": "band-pull-apart",
+   "name": "Band Pull-Apart",
+   "pattern": "shoulder-isolation",
+   "equipment": [
+    "resistance-band"
+   ],
+   "cues": [
+    "Hold the band in front of you at shoulder height, arms straight.",
+    "Pull the band apart until it touches your chest, squeezing your shoulder blades.",
+    "Return slowly."
+   ],
+   "seconds": 3.4,
+   "variants": []
+  },
+  {
+   "slug": "band-pushdown",
+   "name": "Band Triceps Pushdown",
+   "pattern": "elbow-extension",
+   "equipment": [
+    "resistance-band"
+   ],
+   "cues": [
+    "Anchor the band high and hold the ends with elbows at your sides.",
+    "Push down to straight arms.",
+    "Return slowly, keeping the elbows still."
+   ],
+   "seconds": 3.4,
+   "variants": []
+  },
+  {
+   "slug": "band-row",
+   "name": "Band Row",
+   "pattern": "horizontal-pull",
+   "equipment": [
+    "resistance-band"
+   ],
+   "cues": [
+    "Anchor the band in front of you at chest height, or loop it around your feet while seated.",
+    "Row the handles to your ribs, elbows close to your sides.",
+    "Return slowly, letting your shoulder blades spread."
+   ],
+   "seconds": 3.5,
+   "variants": []
+  },
+  {
+   "slug": "band-shoulder-press",
+   "name": "Band Shoulder Press",
+   "pattern": "vertical-push",
+   "equipment": [
+    "resistance-band"
+   ],
+   "cues": [
+    "Stand on the band and bring the handles to your shoulders.",
+    "Press straight overhead until your arms are straight.",
+    "Lower slowly back to shoulder height."
+   ],
+   "seconds": 3.6,
+   "variants": []
+  },
+  {
+   "slug": "band-squat",
+   "name": "Resistance Band Squat",
+   "pattern": "squat",
+   "equipment": [
+    "resistance-band"
+   ],
+   "cues": [
+    "Stand on the band with both feet and bring the handles or loop up to your shoulders.",
+    "Squat down under control; the band gets lighter at the bottom and heavier at the top.",
+    "Stand tall against the band. Shorten the band or double it to progress."
+   ],
+   "seconds": 4.7,
+   "variants": []
+  },
+  {
    "slug": "barbell-back-squat",
    "name": "Barbell Back Squat",
    "pattern": "squat",
@@ -32,6 +257,66 @@
    "variants": []
   },
   {
+   "slug": "barbell-curl",
+   "name": "Barbell Curl",
+   "pattern": "elbow-flexion",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Stand holding the bar with an underhand grip at shoulder-width.",
+    "Curl the bar to your shoulders without swinging; elbows stay at your sides.",
+    "Lower under control to straight arms."
+   ],
+   "seconds": 3.2,
+   "variants": []
+  },
+  {
+   "slug": "barbell-front-squat",
+   "name": "Barbell Front Squat",
+   "pattern": "squat",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Rack the bar on the front of your shoulders with elbows high and fingertips under the bar.",
+    "Keep your elbows up and torso vertical as you sit straight down between your feet.",
+    "Go as deep as you can hold your torso upright, then stand up driving the elbows up."
+   ],
+   "seconds": 3.7,
+   "variants": []
+  },
+  {
+   "slug": "barbell-lunge",
+   "name": "Barbell Lunge",
+   "pattern": "lunge",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Bar on your upper back, step forward into a lunge.",
+    "Lower until the rear knee is just off the floor.",
+    "Push back to the start and alternate legs. Keep the bar steady and your torso upright."
+   ],
+   "seconds": 5.1,
+   "variants": []
+  },
+  {
+   "slug": "barbell-preacher-curl",
+   "name": "Barbell Preacher Curl",
+   "pattern": "elbow-flexion",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Sit at a preacher bench with your upper arms flat on the pad.",
+    "Curl the bar up until your forearms are nearly vertical.",
+    "Lower slowly, stopping just short of locking out."
+   ],
+   "seconds": 3.4,
+   "variants": []
+  },
+  {
    "slug": "barbell-row",
    "name": "Barbell Row",
    "pattern": "horizontal-pull",
@@ -44,6 +329,126 @@
     "Lower under control without letting your torso rise."
    ],
    "seconds": 3.2,
+   "variants": []
+  },
+  {
+   "slug": "belt-squat",
+   "name": "Belt Squat",
+   "pattern": "squat",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Attach the belt around your hips and stand on the platform, feet shoulder-width.",
+    "Squat down with your chest up until your thighs are about parallel.",
+    "Stand back up by driving through your whole foot."
+   ],
+   "seconds": 4.7,
+   "variants": []
+  },
+  {
+   "slug": "bench-dip",
+   "name": "Bench Dip",
+   "pattern": "elbow-extension",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Sit on the edge of a bench, hands beside your hips, then slide your hips off.",
+    "Lower by bending the elbows to about 90 degrees; keep them pointing back.",
+    "Press back up. Straighten your legs to progress."
+   ],
+   "seconds": 3.6,
+   "variants": []
+  },
+  {
+   "slug": "bicycle-crunch",
+   "name": "Bicycle Crunch",
+   "pattern": "core",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Lie on your back, hands beside your head, legs raised.",
+    "Bring one knee in while rotating the opposite elbow toward it.",
+    "Alternate sides in a slow, controlled rhythm."
+   ],
+   "seconds": 3.9,
+   "variants": []
+  },
+  {
+   "slug": "bird-dog",
+   "name": "Bird Dog",
+   "pattern": "core",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Start on all fours with a flat back.",
+    "Extend one arm and the opposite leg until they are level with your torso.",
+    "Hold briefly, return, and alternate. Keep your hips level."
+   ],
+   "seconds": 6.7,
+   "variants": []
+  },
+  {
+   "slug": "bodyweight-lunge",
+   "name": "Bodyweight Lunge",
+   "pattern": "lunge",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Step forward and lower until both knees are at about 90 degrees.",
+    "Keep your torso upright and the front knee over the foot.",
+    "Push back to standing and alternate legs."
+   ],
+   "seconds": 5.2,
+   "variants": []
+  },
+  {
+   "slug": "bodyweight-squat",
+   "name": "Bodyweight Squat",
+   "pattern": "squat",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Feet shoulder-width apart, arms out in front for balance.",
+    "Sit your hips down and back until your thighs are parallel or lower.",
+    "Stand up fully, squeezing your glutes at the top. Add a pause or tempo to progress."
+   ],
+   "seconds": 4.7,
+   "variants": []
+  },
+  {
+   "slug": "bodyweight-step-up",
+   "name": "Bodyweight Step-Up",
+   "pattern": "lunge",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Place one foot fully on a step or bench.",
+    "Stand up on it using only the top leg, then lower slowly.",
+    "Raise the step height to progress."
+   ],
+   "seconds": 4.4,
+   "variants": []
+  },
+  {
+   "slug": "box-squat",
+   "name": "Box Squat",
+   "pattern": "squat",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Set a box or bench at a height that puts your thighs at parallel when seated.",
+    "Squat back onto the box, sit fully but stay braced, then stand without rocking.",
+    "Useful for learning depth and building starting strength out of the hole."
+   ],
+   "seconds": 5.3,
    "variants": []
   },
   {
@@ -68,6 +473,36 @@
    ]
   },
   {
+   "slug": "cable-crunch",
+   "name": "Cable Crunch",
+   "pattern": "core",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Kneel facing a high pulley holding a rope beside your head.",
+    "Crunch down, bringing your elbows toward your knees by rounding your spine.",
+    "Return slowly, keeping your hips still."
+   ],
+   "seconds": 3.6,
+   "variants": []
+  },
+  {
+   "slug": "cable-curl",
+   "name": "Cable Curl",
+   "pattern": "elbow-flexion",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Attach a straight bar to a low pulley and stand close.",
+    "Curl the bar to your shoulders, elbows fixed at your sides.",
+    "Lower under constant tension."
+   ],
+   "seconds": 3.2,
+   "variants": []
+  },
+  {
    "slug": "cable-fly",
    "name": "Cable Fly",
    "pattern": "chest-isolation",
@@ -79,7 +514,203 @@
     "Bring your hands together in front of your chest in an arc.",
     "Return slowly until you feel a stretch."
    ],
-   "seconds": 3.9,
+   "seconds": 4.0,
+   "variants": []
+  },
+  {
+   "slug": "cable-hammer-curl",
+   "name": "Cable Hammer Curl",
+   "pattern": "elbow-flexion",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Attach a rope to a low pulley and hold it with your palms facing each other.",
+    "Curl the rope up, elbows by your sides.",
+    "Lower slowly to straight arms."
+   ],
+   "seconds": 3.2,
+   "variants": []
+  },
+  {
+   "slug": "cable-hip-abduction",
+   "name": "Cable Hip Abduction",
+   "pattern": "leg-isolation",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Attach an ankle strap to a low pulley and stand side-on with the far leg strapped.",
+    "Lift the leg out to the side against the cable.",
+    "Return slowly. Switch legs after all reps."
+   ],
+   "seconds": 3.7,
+   "variants": []
+  },
+  {
+   "slug": "cable-kickback",
+   "name": "Cable Glute Kickback",
+   "pattern": "leg-isolation",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Strap one ankle to a low pulley and face the machine, hands on the frame.",
+    "Kick the leg straight back, squeezing the glute, without arching your back.",
+    "Return slowly. Switch legs after all reps."
+   ],
+   "seconds": 3.7,
+   "variants": []
+  },
+  {
+   "slug": "cable-lateral-raise",
+   "name": "Cable Lateral Raise",
+   "pattern": "shoulder-isolation",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Stand side-on to a low pulley with the handle in the far hand.",
+    "Raise the arm out to the side to shoulder height.",
+    "Lower under constant tension. Switch sides after all reps."
+   ],
+   "seconds": 3.3,
+   "variants": []
+  },
+  {
+   "slug": "cable-overhead-triceps-extension",
+   "name": "Cable Overhead Triceps Extension",
+   "pattern": "elbow-extension",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Face away from a low pulley holding a rope overhead.",
+    "Lower the rope behind your head, elbows pointing up.",
+    "Extend to straight arms."
+   ],
+   "seconds": 3.8,
+   "variants": []
+  },
+  {
+   "slug": "cable-pull-through",
+   "name": "Cable Pull-Through",
+   "pattern": "hinge",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Face away from a low pulley with the rope between your legs.",
+    "Hinge at the hips, letting the rope travel back, keeping your back flat.",
+    "Drive the hips forward to stand tall and squeeze your glutes."
+   ],
+   "seconds": 4.6,
+   "variants": []
+  },
+  {
+   "slug": "cable-rear-delt-fly",
+   "name": "Cable Rear Delt Fly",
+   "pattern": "shoulder-isolation",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Stand side-on to a high pulley and grip the handle with the far hand.",
+    "Pull the handle across and out to the side with a straight arm.",
+    "Return slowly. Switch sides after all reps."
+   ],
+   "seconds": 3.6,
+   "variants": []
+  },
+  {
+   "slug": "cable-woodchopper",
+   "name": "Cable Woodchopper",
+   "pattern": "core",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Set a cable high, stand side-on and hold the handle with both hands.",
+    "Rotate your torso to pull the handle down and across your body, arms long.",
+    "Return slowly, finish the set, then switch to the other side."
+   ],
+   "seconds": 3.6,
+   "variants": []
+  },
+  {
+   "slug": "cable-y-raise",
+   "name": "Cable Y-Raise",
+   "pattern": "shoulder-isolation",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Set two low pulleys and hold the opposite handles with your arms crossed in front.",
+    "Raise your arms up and out into a Y shape, thumbs up, to just above shoulder height.",
+    "Lower slowly back to the start."
+   ],
+   "seconds": 4.0,
+   "variants": []
+  },
+  {
+   "slug": "chest-dip",
+   "name": "Chest Dip",
+   "pattern": "horizontal-push",
+   "equipment": [
+    "bodyweight",
+    "pull-up-bar"
+   ],
+   "cues": [
+    "Support yourself on parallel bars with straight arms.",
+    "Lean your chest slightly forward and lower until your shoulders are just below your elbows.",
+    "Press back up to straight arms. Stop higher if your shoulders complain."
+   ],
+   "seconds": 3.6,
+   "variants": []
+  },
+  {
+   "slug": "chest-supported-dumbbell-row",
+   "name": "Chest-Supported Dumbbell Row",
+   "pattern": "horizontal-pull",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Lie face down on an incline bench with a dumbbell in each hand.",
+    "Row both dumbbells up, squeezing your shoulder blades together.",
+    "Lower slowly. The bench removes any lower-back strain."
+   ],
+   "seconds": 4.8,
+   "variants": []
+  },
+  {
+   "slug": "close-grip-bench-press",
+   "name": "Close-Grip Bench Press",
+   "pattern": "horizontal-push",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Grip the bar at about shoulder-width, no narrower.",
+    "Lower to your lower chest with elbows tucked close to your sides.",
+    "Press up, finishing with your arms straight over your shoulders."
+   ],
+   "seconds": 3.7,
+   "variants": []
+  },
+  {
+   "slug": "concentration-curl",
+   "name": "Concentration Curl",
+   "pattern": "elbow-flexion",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Sit with your elbow braced against the inside of your thigh.",
+    "Curl the dumbbell up to your shoulder.",
+    "Lower slowly. Do all reps on one arm before switching."
+   ],
+   "seconds": 3.8,
    "variants": []
   },
   {
@@ -96,6 +727,111 @@
     "Lower by pushing your hips back first, then bending the knees once the bar passes them."
    ],
    "seconds": 5.2,
+   "variants": []
+  },
+  {
+   "slug": "crunch",
+   "name": "Crunch",
+   "pattern": "core",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Lie on your back with knees bent and hands beside your head.",
+    "Curl your shoulders off the floor, keeping your lower back down.",
+    "Lower slowly. Do not pull on your neck."
+   ],
+   "seconds": 3.9,
+   "variants": []
+  },
+  {
+   "slug": "curtsy-lunge",
+   "name": "Curtsy Lunge",
+   "pattern": "lunge",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Hold dumbbells and step one leg back and across behind the other.",
+    "Lower until the front thigh is near parallel, hips facing forward.",
+    "Drive back up through the front foot."
+   ],
+   "seconds": 5.1,
+   "variants": []
+  },
+  {
+   "slug": "dead-bug",
+   "name": "Dead Bug",
+   "pattern": "core",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Lie on your back with arms up and knees bent over your hips, lower back pressed into the floor.",
+    "Lower one arm overhead and the opposite leg toward the floor.",
+    "Return and alternate. The lower back never leaves the floor."
+   ],
+   "seconds": 6.5,
+   "variants": []
+  },
+  {
+   "slug": "decline-barbell-bench-press",
+   "name": "Decline Barbell Bench Press",
+   "pattern": "horizontal-push",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Lock your legs into the decline bench and set your shoulder blades.",
+    "Lower the bar to your lower chest under control.",
+    "Press back up; have a spotter for the unrack and rerack."
+   ],
+   "seconds": 3.7,
+   "variants": []
+  },
+  {
+   "slug": "decline-dumbbell-bench-press",
+   "name": "Decline Dumbbell Bench Press",
+   "pattern": "horizontal-push",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Lie on a decline bench with your feet secured and the dumbbells over your lower chest.",
+    "Lower them to the sides of your lower chest with control.",
+    "Press back up until your arms are straight."
+   ],
+   "seconds": 3.7,
+   "variants": []
+  },
+  {
+   "slug": "decline-push-up",
+   "name": "Decline Push-Up",
+   "pattern": "horizontal-push",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Feet on a bench, hands on the floor, body straight.",
+    "Lower your chest to the floor keeping your hips in line.",
+    "Press back to the start. Emphasises the upper chest and shoulders."
+   ],
+   "seconds": 4.1,
+   "variants": []
+  },
+  {
+   "slug": "diamond-push-up",
+   "name": "Diamond Push-Up",
+   "pattern": "horizontal-push",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Place your hands together under your chest so thumbs and index fingers form a diamond.",
+    "Lower your chest to your hands, elbows staying close to your sides.",
+    "Press back up fully."
+   ],
+   "seconds": 4.1,
    "variants": []
   },
   {
@@ -135,6 +871,36 @@
    ]
   },
   {
+   "slug": "dumbbell-fly",
+   "name": "Dumbbell Fly",
+   "pattern": "chest-isolation",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Lie on a bench with dumbbells over your chest, palms facing, elbows slightly bent.",
+    "Open your arms in a wide arc until you feel a chest stretch.",
+    "Bring the dumbbells back together over your chest."
+   ],
+   "seconds": 3.8,
+   "variants": []
+  },
+  {
+   "slug": "dumbbell-hip-thrust",
+   "name": "Dumbbell Hip Thrust",
+   "pattern": "hinge",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Upper back on a bench, one dumbbell resting across your hips.",
+    "Drive your hips up until they are level with your knees and shoulders.",
+    "Pause at the top, then lower until your hips nearly touch the floor."
+   ],
+   "seconds": 3.7,
+   "variants": []
+  },
+  {
    "slug": "dumbbell-lateral-raise",
    "name": "Dumbbell Lateral Raise",
    "pattern": "shoulder-isolation",
@@ -156,6 +922,21 @@
    ]
   },
   {
+   "slug": "dumbbell-pullover",
+   "name": "Dumbbell Pullover",
+   "pattern": "vertical-pull",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Lie across or along a bench holding one dumbbell over your chest with both hands.",
+    "With a slight bend in the elbows, lower it behind your head until you feel a stretch under your arms.",
+    "Pull it back over your chest using your lats, keeping your ribs down."
+   ],
+   "seconds": 4.2,
+   "variants": []
+  },
+  {
    "slug": "dumbbell-row",
    "name": "Single-Arm Dumbbell Row",
    "pattern": "horizontal-pull",
@@ -168,6 +949,126 @@
     "Lower to a full stretch. Finish all reps before switching sides."
    ],
    "seconds": 4.8,
+   "variants": []
+  },
+  {
+   "slug": "dumbbell-skull-crusher",
+   "name": "Dumbbell Skull Crusher",
+   "pattern": "elbow-extension",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Lie back with a dumbbell in each hand over your chest, palms facing.",
+    "Lower them beside your head by bending the elbows.",
+    "Extend back up, elbows pointing at the ceiling."
+   ],
+   "seconds": 3.6,
+   "variants": []
+  },
+  {
+   "slug": "dumbbell-squat",
+   "name": "Dumbbell Squat",
+   "pattern": "squat",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Stand with a dumbbell in each hand at your sides, feet shoulder-width apart.",
+    "Squat down keeping your chest tall and the dumbbells close to your legs.",
+    "Stand back up without letting your knees cave inward."
+   ],
+   "seconds": 4.8,
+   "variants": []
+  },
+  {
+   "slug": "face-pull",
+   "name": "Cable Face Pull",
+   "pattern": "horizontal-pull",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Set a rope at face height and grip it with palms facing in.",
+    "Pull toward your face, flaring your elbows and pulling the rope apart.",
+    "Finish with your hands beside your ears, then return slowly."
+   ],
+   "seconds": 2.4,
+   "variants": []
+  },
+  {
+   "slug": "farmers-carry",
+   "name": "Dumbbell Farmer's Carry",
+   "pattern": "carry",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Pick up a heavy dumbbell in each hand with a flat back.",
+    "Walk tall with your shoulders back and ribs down.",
+    "Walk for distance or time, then set the weights down with a flat back."
+   ],
+   "seconds": 6.7,
+   "variants": []
+  },
+  {
+   "slug": "floor-press",
+   "name": "Dumbbell Floor Press",
+   "pattern": "horizontal-push",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Lie on the floor with knees bent, dumbbells pressed up over your chest.",
+    "Lower until your upper arms touch the floor, pause briefly.",
+    "Press back up. The floor limits range, making this shoulder-friendly."
+   ],
+   "seconds": 3.7,
+   "variants": []
+  },
+  {
+   "slug": "front-raise",
+   "name": "Dumbbell Front Raise",
+   "pattern": "shoulder-isolation",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Hold dumbbells in front of your thighs.",
+    "Raise them straight in front to shoulder height.",
+    "Lower under control without swinging."
+   ],
+   "seconds": 3.3,
+   "variants": []
+  },
+  {
+   "slug": "glute-bridge",
+   "name": "Glute Bridge",
+   "pattern": "hinge",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Lie on your back, knees bent, feet flat and hip-width.",
+    "Push through your heels to lift your hips until your body is straight from shoulders to knees.",
+    "Squeeze your glutes at the top for a second, then lower slowly."
+   ],
+   "seconds": 3.9,
+   "variants": []
+  },
+  {
+   "slug": "glute-kickback-machine",
+   "name": "Glute Kickback Machine",
+   "pattern": "leg-isolation",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Set the machine so the pad sits on the back of one foot or thigh.",
+    "Push one leg back and up by squeezing your glute, without arching your lower back.",
+    "Return slowly, finish the set, then switch to the other leg."
+   ],
+   "seconds": 3.8,
    "variants": []
   },
   {
@@ -192,6 +1093,36 @@
    ]
   },
   {
+   "slug": "good-morning",
+   "name": "Good Morning",
+   "pattern": "hinge",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Bar on your upper back, knees soft, feet hip-width.",
+    "Hinge forward at the hips with a flat back until you feel a hamstring stretch.",
+    "Return by driving the hips forward. Start light; this loads the lower back."
+   ],
+   "seconds": 5.3,
+   "variants": []
+  },
+  {
+   "slug": "hack-squat",
+   "name": "Hack Squat",
+   "pattern": "squat",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Set your shoulders under the pads with your feet mid-platform, shoulder-width apart.",
+    "Lower under control until your thighs are around parallel.",
+    "Drive up through the whole foot; do not let your heels lift."
+   ],
+   "seconds": 4.6,
+   "variants": []
+  },
+  {
    "slug": "hammer-curl",
    "name": "Hammer Curl",
    "pattern": "elbow-flexion",
@@ -204,6 +1135,21 @@
     "Lower under control."
    ],
    "seconds": 3.2,
+   "variants": []
+  },
+  {
+   "slug": "handstand-push-up",
+   "name": "Handstand Push-Up",
+   "pattern": "vertical-push",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Kick up into a handstand against a wall, hands shoulder-width.",
+    "Lower until your head lightly touches the floor.",
+    "Press back to full lockout. Stack pads under your head to shorten the range."
+   ],
+   "seconds": 3.9,
    "variants": []
   },
   {
@@ -228,6 +1174,36 @@
    ]
   },
   {
+   "slug": "high-to-low-cable-fly",
+   "name": "High-to-Low Cable Fly",
+   "pattern": "chest-isolation",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Set both pulleys high and stand a step forward with a handle in each hand.",
+    "Sweep your hands down and together in front of your hips.",
+    "Return slowly until you feel a stretch. Emphasises the lower chest."
+   ],
+   "seconds": 4.0,
+   "variants": []
+  },
+  {
+   "slug": "hip-abduction-machine",
+   "name": "Hip Abduction Machine",
+   "pattern": "leg-isolation",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Sit with the pads against the outside of your knees.",
+    "Push your knees apart as far as you can.",
+    "Return slowly to the start."
+   ],
+   "seconds": 4.2,
+   "variants": []
+  },
+  {
    "slug": "hip-thrust",
    "name": "Barbell Hip Thrust",
    "pattern": "hinge",
@@ -240,6 +1216,216 @@
     "Squeeze hard at the top with a neutral chin, then lower under control."
    ],
    "seconds": 3.7,
+   "variants": []
+  },
+  {
+   "slug": "incline-barbell-bench-press",
+   "name": "Incline Barbell Bench Press",
+   "pattern": "horizontal-push",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Set the bench to 30 degrees and lie back with your shoulder blades set.",
+    "Lower the bar to your upper chest, elbows tucked slightly.",
+    "Press straight up over the shoulders."
+   ],
+   "seconds": 3.7,
+   "variants": []
+  },
+  {
+   "slug": "incline-dumbbell-bench-press",
+   "name": "Incline Dumbbell Bench Press",
+   "pattern": "horizontal-push",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Set the bench to 30 degrees and start with dumbbells at your upper chest.",
+    "Press up and together, then lower under control to a full stretch.",
+    "Keep your shoulder blades pinned to the bench."
+   ],
+   "seconds": 4.8,
+   "variants": []
+  },
+  {
+   "slug": "incline-dumbbell-curl",
+   "name": "Incline Dumbbell Curl",
+   "pattern": "elbow-flexion",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Sit back on a 45-degree bench with your arms hanging straight down.",
+    "Curl the dumbbells up without letting your elbows drift forward.",
+    "Lower to a full stretch at the bottom."
+   ],
+   "seconds": 3.8,
+   "variants": []
+  },
+  {
+   "slug": "incline-dumbbell-fly",
+   "name": "Incline Dumbbell Fly",
+   "pattern": "chest-isolation",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Set the bench to 30 degrees and hold dumbbells over your upper chest.",
+    "Lower in a wide arc with a slight elbow bend.",
+    "Squeeze back to the top."
+   ],
+   "seconds": 3.8,
+   "variants": []
+  },
+  {
+   "slug": "incline-push-up",
+   "name": "Incline Push-Up",
+   "pattern": "horizontal-push",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Place your hands on a bench or wall, body straight.",
+    "Lower your chest to the surface, then press back up.",
+    "The lower the surface, the harder it gets."
+   ],
+   "seconds": 4.1,
+   "variants": []
+  },
+  {
+   "slug": "inverted-row",
+   "name": "Inverted Row",
+   "pattern": "horizontal-pull",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Set a barbell in a rack at about hip height and hang beneath it, body straight, heels on the floor.",
+    "Pull your chest to the bar, squeezing your shoulder blades.",
+    "Lower slowly. Lower the bar or raise your feet to progress."
+   ],
+   "seconds": 5.0,
+   "variants": []
+  },
+  {
+   "slug": "jump-squat",
+   "name": "Jump Squat",
+   "pattern": "squat",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Squat to about parallel, then jump as high as you can.",
+    "Land softly on the balls of your feet and sink straight into the next rep.",
+    "Stop the set when your landings get loud or your knees start to cave."
+   ],
+   "seconds": 2.3,
+   "variants": []
+  },
+  {
+   "slug": "kettlebell-deadlift",
+   "name": "Kettlebell Deadlift",
+   "pattern": "hinge",
+   "equipment": [
+    "kettlebell"
+   ],
+   "cues": [
+    "Stand over the bell with feet hip-width and hinge down to grip the handle.",
+    "Flat back, chest up, then stand by pushing the floor away.",
+    "Lower it under control by pushing your hips back."
+   ],
+   "seconds": 4.2,
+   "variants": []
+  },
+  {
+   "slug": "kettlebell-farmers-carry",
+   "name": "Kettlebell Farmer's Carry",
+   "pattern": "carry",
+   "equipment": [
+    "kettlebell"
+   ],
+   "cues": [
+    "Deadlift a kettlebell in each hand.",
+    "Walk tall, shoulders packed, without leaning.",
+    "Set them down under control."
+   ],
+   "seconds": 6.7,
+   "variants": []
+  },
+  {
+   "slug": "kettlebell-press",
+   "name": "Kettlebell Press",
+   "pattern": "vertical-push",
+   "equipment": [
+    "kettlebell"
+   ],
+   "cues": [
+    "Clean the bell to the rack position at your shoulder, forearm vertical.",
+    "Press it straight overhead, rotating the palm to face forward at the top.",
+    "Lower back to the rack. Complete the reps, then switch sides."
+   ],
+   "seconds": 3.5,
+   "variants": []
+  },
+  {
+   "slug": "kettlebell-row",
+   "name": "Kettlebell Row",
+   "pattern": "horizontal-pull",
+   "equipment": [
+    "kettlebell"
+   ],
+   "cues": [
+    "Hinge with a flat back, one hand braced on your thigh or a bench.",
+    "Row the bell to your hip, elbow close to your body.",
+    "Lower to a full stretch. Switch sides after all reps."
+   ],
+   "seconds": 4.8,
+   "variants": []
+  },
+  {
+   "slug": "kettlebell-swing",
+   "name": "Kettlebell Swing",
+   "pattern": "hinge",
+   "equipment": [
+    "kettlebell"
+   ],
+   "cues": [
+    "Start with the bell a step in front of you, hinge and hike it back between your legs.",
+    "Snap your hips forward to float the bell to chest height; your arms only guide it.",
+    "Let it fall, hinge again as it passes your thighs, and repeat. Never squat the swing."
+   ],
+   "seconds": 2.1,
+   "variants": []
+  },
+  {
+   "slug": "landmine-press",
+   "name": "Landmine Press",
+   "pattern": "vertical-push",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Anchor one end of a barbell in a corner or landmine and hold the other end at your shoulder.",
+    "Press up and forward along the arc of the bar until your arm is straight.",
+    "Lower under control, then switch arms. The angle makes this shoulder-friendly."
+   ],
+   "seconds": 3.5,
+   "variants": []
+  },
+  {
+   "slug": "landmine-row",
+   "name": "Landmine Row",
+   "pattern": "horizontal-pull",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Straddle a bar anchored in a landmine and hold it near the loaded end.",
+    "Hinge forward with a flat back and pull the bar to your chest.",
+    "Lower it under control."
+   ],
+   "seconds": 3.5,
    "variants": []
   },
   {
@@ -262,6 +1448,21 @@
      "note": "A close, palms-in handle."
     }
    ]
+  },
+  {
+   "slug": "lateral-lunge",
+   "name": "Lateral Lunge",
+   "pattern": "lunge",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Hold one dumbbell at your chest and step wide to one side.",
+    "Sit back into that hip, keeping the other leg straight and both feet flat.",
+    "Push back to standing and repeat on the other side."
+   ],
+   "seconds": 5.3,
+   "variants": []
   },
   {
    "slug": "leg-extension",
@@ -294,6 +1495,216 @@
    "variants": []
   },
   {
+   "slug": "leg-press-calf-raise",
+   "name": "Leg Press Calf Raise",
+   "pattern": "calf-raise",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Sit in the leg press with the balls of your feet on the bottom edge of the platform.",
+    "Keep your knees almost straight and push the platform away with your toes.",
+    "Lower slowly into a deep stretch."
+   ],
+   "seconds": 4.1,
+   "variants": []
+  },
+  {
+   "slug": "low-to-high-cable-fly",
+   "name": "Low-to-High Cable Fly",
+   "pattern": "chest-isolation",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Set both pulleys low and hold a handle in each hand.",
+    "Sweep your hands up and together to eye level.",
+    "Lower slowly. Emphasises the upper chest."
+   ],
+   "seconds": 4.0,
+   "variants": []
+  },
+  {
+   "slug": "lying-leg-curl",
+   "name": "Lying Leg Curl",
+   "pattern": "leg-isolation",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Lie face down with the pad just above your heels.",
+    "Curl your heels toward your glutes.",
+    "Lower slowly without lifting your hips."
+   ],
+   "seconds": 4.2,
+   "variants": []
+  },
+  {
+   "slug": "lying-leg-raise",
+   "name": "Lying Leg Raise",
+   "pattern": "core",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Lie on your back with your hands under your hips.",
+    "Keep your legs straight and raise them until they point up.",
+    "Lower slowly without letting your lower back arch off the floor."
+   ],
+   "seconds": 4.8,
+   "variants": []
+  },
+  {
+   "slug": "machine-chest-press",
+   "name": "Machine Chest Press",
+   "pattern": "horizontal-push",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Adjust the seat so the handles are level with your mid-chest.",
+    "Press the handles forward until your arms are nearly straight.",
+    "Return slowly until you feel a stretch across your chest."
+   ],
+   "seconds": 4.8,
+   "variants": []
+  },
+  {
+   "slug": "machine-crunch",
+   "name": "Machine Crunch",
+   "pattern": "core",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Sit with the pads against your chest or hold the handles.",
+    "Crunch forward, rounding your upper back.",
+    "Return slowly to the start."
+   ],
+   "seconds": 3.6,
+   "variants": []
+  },
+  {
+   "slug": "machine-lateral-raise",
+   "name": "Machine Lateral Raise",
+   "pattern": "shoulder-isolation",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Sit with the pads against the outside of your upper arms.",
+    "Raise your arms out to shoulder height.",
+    "Lower slowly."
+   ],
+   "seconds": 3.3,
+   "variants": []
+  },
+  {
+   "slug": "machine-preacher-curl",
+   "name": "Machine Preacher Curl",
+   "pattern": "elbow-flexion",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Set the seat so your armpits rest on top of the pad.",
+    "Curl the handles up to full contraction.",
+    "Lower slowly until your arms are almost straight."
+   ],
+   "seconds": 3.4,
+   "variants": []
+  },
+  {
+   "slug": "machine-row",
+   "name": "Machine Row",
+   "pattern": "horizontal-pull",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Set the chest pad so the handles are level with your lower chest.",
+    "Pull the handles back, squeezing your shoulder blades together.",
+    "Return until your arms are straight and your lats are stretched."
+   ],
+   "seconds": 3.5,
+   "variants": []
+  },
+  {
+   "slug": "machine-shoulder-press",
+   "name": "Machine Shoulder Press",
+   "pattern": "vertical-push",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Set the seat so the handles start at shoulder height.",
+    "Press overhead until your arms are nearly straight.",
+    "Lower slowly back to the start."
+   ],
+   "seconds": 3.6,
+   "variants": []
+  },
+  {
+   "slug": "machine-triceps-extension",
+   "name": "Machine Triceps Extension",
+   "pattern": "elbow-extension",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Set the seat so your upper arms rest on the pad.",
+    "Extend the handles until your arms are straight.",
+    "Return slowly to the start."
+   ],
+   "seconds": 3.4,
+   "variants": []
+  },
+  {
+   "slug": "mountain-climber",
+   "name": "Mountain Climber",
+   "pattern": "core",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Start in a push-up position with your hands under your shoulders.",
+    "Drive one knee toward your chest, then switch legs quickly.",
+    "Keep your hips low and your back flat."
+   ],
+   "seconds": 2.0,
+   "variants": []
+  },
+  {
+   "slug": "nordic-hamstring-curl",
+   "name": "Nordic Hamstring Curl",
+   "pattern": "leg-isolation",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Kneel with your ankles anchored under something solid or held by a partner.",
+    "Lower your body forward as slowly as possible, hips straight.",
+    "Catch yourself with your hands and push back up to help the return."
+   ],
+   "seconds": 5.5,
+   "variants": []
+  },
+  {
+   "slug": "overhead-carry",
+   "name": "Kettlebell Overhead Carry",
+   "pattern": "carry",
+   "equipment": [
+    "kettlebell"
+   ],
+   "cues": [
+    "Press a kettlebell overhead and lock the arm out, biceps by your ear.",
+    "Walk with ribs down and the bell steady overhead.",
+    "Switch sides after the distance."
+   ],
+   "seconds": 4.8,
+   "variants": []
+  },
+  {
    "slug": "overhead-press",
    "name": "Barbell Overhead Press",
    "pattern": "vertical-push",
@@ -321,6 +1732,81 @@
     "Press back to straight arms; keep your elbows pointing forward."
    ],
    "seconds": 3.8,
+   "variants": []
+  },
+  {
+   "slug": "pallof-press",
+   "name": "Cable Pallof Press",
+   "pattern": "core",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Stand side-on to a cable at chest height, holding the handle at your chest with both hands.",
+    "Press your hands straight out in front and resist the pull to rotate.",
+    "Return to your chest. Switch sides after all reps."
+   ],
+   "seconds": 3.4,
+   "variants": []
+  },
+  {
+   "slug": "pec-deck",
+   "name": "Pec Deck",
+   "pattern": "chest-isolation",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Sit with your back flat and your forearms or hands on the pads.",
+    "Bring the pads together in front of your chest.",
+    "Return slowly to a comfortable stretch."
+   ],
+   "seconds": 3.6,
+   "variants": []
+  },
+  {
+   "slug": "pendlay-row",
+   "name": "Pendlay Row",
+   "pattern": "horizontal-pull",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Set up with your torso parallel to the floor and the bar on the ground.",
+    "Pull explosively to your lower chest, then return the bar fully to the floor.",
+    "Every rep starts dead from the floor."
+   ],
+   "seconds": 2.5,
+   "variants": []
+  },
+  {
+   "slug": "pike-push-up",
+   "name": "Pike Push-Up",
+   "pattern": "vertical-push",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "From a push-up position, walk your feet in so your hips are high and your body forms an inverted V.",
+    "Bend your elbows to lower the top of your head toward the floor.",
+    "Press back up. Raise your feet on a bench to progress."
+   ],
+   "seconds": 4.1,
+   "variants": []
+  },
+  {
+   "slug": "pistol-squat",
+   "name": "Pistol Squat",
+   "pattern": "squat",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Stand on one leg with the other leg held straight out in front.",
+    "Squat all the way down on the standing leg, arms forward for balance.",
+    "Stand up without touching the free foot down. Hold a support to regress."
+   ],
+   "seconds": 5.1,
    "variants": []
   },
   {
@@ -370,6 +1856,21 @@
    ]
   },
   {
+   "slug": "push-press",
+   "name": "Push Press",
+   "pattern": "vertical-push",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Hold the bar at your collarbones as for an overhead press.",
+    "Dip a few inches by bending your knees, then drive up explosively and press the bar overhead.",
+    "Lock out overhead, then lower to the shoulders and reset."
+   ],
+   "seconds": 2.9,
+   "variants": []
+  },
+  {
    "slug": "push-up",
    "name": "Push-Up",
    "pattern": "horizontal-push",
@@ -385,6 +1886,21 @@
    "variants": []
   },
   {
+   "slug": "rack-pull",
+   "name": "Rack Pull",
+   "pattern": "hinge",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Set the bar on pins or blocks just below your knees.",
+    "Grip it, brace, and keep your back flat.",
+    "Stand tall by driving your hips forward, then lower the bar back to the pins."
+   ],
+   "seconds": 3.6,
+   "variants": []
+  },
+  {
    "slug": "rear-delt-fly",
    "name": "Dumbbell Rear Delt Fly",
    "pattern": "shoulder-isolation",
@@ -397,6 +1913,66 @@
     "Lower under control."
    ],
    "seconds": 3.3,
+   "variants": []
+  },
+  {
+   "slug": "reverse-crunch",
+   "name": "Reverse Crunch",
+   "pattern": "core",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Lie on your back with knees bent over your hips.",
+    "Curl your pelvis up, lifting your hips off the floor.",
+    "Lower slowly without arching your back."
+   ],
+   "seconds": 4.0,
+   "variants": []
+  },
+  {
+   "slug": "reverse-curl",
+   "name": "Reverse Curl",
+   "pattern": "elbow-flexion",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Hold a bar with an overhand grip, hands shoulder-width apart.",
+    "Curl it up keeping your wrists straight and elbows by your sides.",
+    "Lower slowly. Use less weight than a normal curl."
+   ],
+   "seconds": 3.4,
+   "variants": []
+  },
+  {
+   "slug": "reverse-lunge",
+   "name": "Reverse Lunge",
+   "pattern": "lunge",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Hold dumbbells at your sides and step one foot back.",
+    "Lower until the back knee is just off the floor, keeping the front knee over the foot.",
+    "Push through the front foot to return. Easier on the knees than a forward lunge."
+   ],
+   "seconds": 5.1,
+   "variants": []
+  },
+  {
+   "slug": "reverse-pec-deck",
+   "name": "Reverse Pec Deck",
+   "pattern": "shoulder-isolation",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Sit facing the pad with the handles in front of you.",
+    "Pull your arms out and back, squeezing your rear shoulders.",
+    "Return slowly."
+   ],
+   "seconds": 3.6,
    "variants": []
   },
   {
@@ -421,6 +1997,21 @@
    ]
   },
   {
+   "slug": "russian-twist",
+   "name": "Russian Twist",
+   "pattern": "core",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Sit with your knees bent and lean back slightly with a straight back.",
+    "Rotate your shoulders to one side, then to the other, under control.",
+    "Keep your feet down to make it easier, or lift them to make it harder."
+   ],
+   "seconds": 3.9,
+   "variants": []
+  },
+  {
    "slug": "seated-cable-row",
    "name": "Seated Cable Row",
    "pattern": "horizontal-pull",
@@ -433,6 +2024,21 @@
     "Let your arms straighten fully without rounding your back."
    ],
    "seconds": 3.5,
+   "variants": []
+  },
+  {
+   "slug": "seated-calf-raise",
+   "name": "Seated Calf Raise",
+   "pattern": "calf-raise",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Sit with the pad on your thighs and the balls of your feet on the platform.",
+    "Raise your heels as high as possible.",
+    "Lower slowly into a stretch."
+   ],
+   "seconds": 4.1,
    "variants": []
   },
   {
@@ -466,6 +2072,186 @@
    "variants": []
   },
   {
+   "slug": "side-plank",
+   "name": "Side Plank",
+   "pattern": "core",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Lie on your side with your elbow under your shoulder and feet stacked.",
+    "Lift your hips so your body is a straight line.",
+    "Hold, then switch sides."
+   ],
+   "seconds": 4.3,
+   "variants": []
+  },
+  {
+   "slug": "single-leg-calf-raise",
+   "name": "Single-Leg Calf Raise",
+   "pattern": "calf-raise",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Stand on one foot on a step, holding a support for balance.",
+    "Rise onto your toes, pause, then lower below the step.",
+    "Finish all reps before switching legs."
+   ],
+   "seconds": 4.7,
+   "variants": []
+  },
+  {
+   "slug": "single-leg-glute-bridge",
+   "name": "Single-Leg Glute Bridge",
+   "pattern": "hinge",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Lie on your back with one foot flat and the other leg held up.",
+    "Drive the planted heel down to lift your hips, keeping them level.",
+    "Lower slowly and complete all reps before switching legs."
+   ],
+   "seconds": 4.5,
+   "variants": []
+  },
+  {
+   "slug": "single-leg-romanian-deadlift",
+   "name": "Single-Leg Romanian Deadlift",
+   "pattern": "hinge",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Hold a dumbbell in the hand opposite your standing leg.",
+    "Hinge forward, letting the free leg travel back, until your torso is near parallel.",
+    "Return to standing by driving the standing hip forward. Keep your hips square."
+   ],
+   "seconds": 4.5,
+   "variants": []
+  },
+  {
+   "slug": "sissy-squat",
+   "name": "Sissy Squat",
+   "pattern": "leg-isolation",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Stand holding a support, rise onto the balls of your feet.",
+    "Lean back and bend your knees, keeping your hips straight, until your knees are near the floor.",
+    "Pull yourself back up with your quads."
+   ],
+   "seconds": 4.7,
+   "variants": []
+  },
+  {
+   "slug": "skull-crusher",
+   "name": "Barbell Skull Crusher",
+   "pattern": "elbow-extension",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Lie on a bench holding the bar over your chest, hands shoulder-width.",
+    "Bend only your elbows to lower the bar to just above your forehead.",
+    "Extend back to the start without moving your upper arms."
+   ],
+   "seconds": 3.6,
+   "variants": []
+  },
+  {
+   "slug": "smith-machine-bench-press",
+   "name": "Smith Machine Bench Press",
+   "pattern": "horizontal-push",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Position the bench so the bar lowers to your lower chest.",
+    "Unhook and lower the bar under control to your chest.",
+    "Press up and re-hook at the end."
+   ],
+   "seconds": 3.7,
+   "variants": []
+  },
+  {
+   "slug": "smith-machine-calf-raise",
+   "name": "Smith Machine Calf Raise",
+   "pattern": "calf-raise",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Set a block under the bar and stand on it with the balls of your feet, bar on your upper back.",
+    "Rise onto your toes as high as possible.",
+    "Lower into a full stretch under control."
+   ],
+   "seconds": 4.1,
+   "variants": []
+  },
+  {
+   "slug": "smith-machine-incline-press",
+   "name": "Smith Machine Incline Press",
+   "pattern": "horizontal-push",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Set a bench at 30 to 45 degrees under the bar so it lines up with your upper chest.",
+    "Unhook the bar and lower it to your upper chest with elbows slightly tucked.",
+    "Press up until your arms are straight, then re-hook the bar."
+   ],
+   "seconds": 3.7,
+   "variants": []
+  },
+  {
+   "slug": "smith-machine-lunge",
+   "name": "Smith Machine Lunge",
+   "pattern": "lunge",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Stand in a split stance under the bar, front foot well ahead.",
+    "Lower until your back knee nearly touches the floor, front knee over your foot.",
+    "Drive up through your front foot; finish the set on one leg, then switch legs."
+   ],
+   "seconds": 4.2,
+   "variants": []
+  },
+  {
+   "slug": "smith-machine-squat",
+   "name": "Smith Machine Squat",
+   "pattern": "squat",
+   "equipment": [
+    "machine"
+   ],
+   "cues": [
+    "Set the bar on your upper back and place your feet slightly ahead of the bar.",
+    "Unhook, then squat down keeping your torso upright against the fixed bar path.",
+    "Press up and re-hook at the end of the set."
+   ],
+   "seconds": 5.0,
+   "variants": []
+  },
+  {
+   "slug": "split-squat",
+   "name": "Split Squat",
+   "pattern": "lunge",
+   "equipment": [
+    "bodyweight"
+   ],
+   "cues": [
+    "Take a long stride stance and stay there for the set.",
+    "Lower straight down until the rear knee is just off the floor.",
+    "Push up through the front foot. Finish all reps, then switch legs. Hold a wall for balance if needed."
+   ],
+   "seconds": 4.2,
+   "variants": []
+  },
+  {
    "slug": "standing-calf-raise",
    "name": "Standing Calf Raise",
    "pattern": "calf-raise",
@@ -487,6 +2273,156 @@
    ]
   },
   {
+   "slug": "standing-dumbbell-shoulder-press",
+   "name": "Standing Dumbbell Shoulder Press",
+   "pattern": "vertical-push",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Stand with a dumbbell at each shoulder and your trunk braced.",
+    "Press overhead without leaning back; ribs down.",
+    "Lower under control to shoulder height."
+   ],
+   "seconds": 3.6,
+   "variants": []
+  },
+  {
+   "slug": "step-up",
+   "name": "Dumbbell Step-Up",
+   "pattern": "lunge",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Hold dumbbells and place one whole foot on a knee-high box.",
+    "Drive through that foot to stand on the box without pushing off the floor.",
+    "Step down under control. Finish the reps on one side before switching."
+   ],
+   "seconds": 4.4,
+   "variants": []
+  },
+  {
+   "slug": "stiff-leg-deadlift",
+   "name": "Stiff-Leg Deadlift",
+   "pattern": "hinge",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Stand with the bar at your hips and knees nearly straight.",
+    "Hinge down with a flat back as far as your hamstrings allow.",
+    "Return by driving the hips forward. Range of motion is set by flexibility, not the floor."
+   ],
+   "seconds": 5.5,
+   "variants": []
+  },
+  {
+   "slug": "straight-arm-pulldown",
+   "name": "Straight-Arm Pulldown",
+   "pattern": "vertical-pull",
+   "equipment": [
+    "cable"
+   ],
+   "cues": [
+    "Stand facing a high pulley with a straight bar, arms nearly straight.",
+    "Pull the bar down in an arc to your thighs, keeping your arms straight.",
+    "Return slowly until your arms are overhead."
+   ],
+   "seconds": 3.5,
+   "variants": []
+  },
+  {
+   "slug": "suitcase-carry",
+   "name": "Suitcase Carry",
+   "pattern": "carry",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Hold one heavy dumbbell at your side.",
+    "Walk tall without leaning toward or away from the weight.",
+    "Switch hands and repeat the same distance."
+   ],
+   "seconds": 4.1,
+   "variants": []
+  },
+  {
+   "slug": "sumo-deadlift",
+   "name": "Sumo Deadlift",
+   "pattern": "hinge",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Take a wide stance with toes out and grip the bar inside your legs.",
+    "Push your knees out, chest up, and drive the floor apart as you stand.",
+    "Lock out by squeezing your glutes; keep the bar close on the way down."
+   ],
+   "seconds": 3.6,
+   "variants": []
+  },
+  {
+   "slug": "sumo-squat",
+   "name": "Sumo Squat",
+   "pattern": "squat",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Stand wide with toes turned out, holding one dumbbell hanging between your legs.",
+    "Squat straight down, pushing your knees out over your toes.",
+    "Drive up and squeeze your glutes; keep the dumbbell close to your body."
+   ],
+   "seconds": 4.7,
+   "variants": []
+  },
+  {
+   "slug": "t-bar-row",
+   "name": "T-Bar Row",
+   "pattern": "horizontal-pull",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Straddle a landmine bar with a V-handle under it, hinge to about 45 degrees.",
+    "Row the handle to your chest with a flat back.",
+    "Lower under control without letting your hips rise."
+   ],
+   "seconds": 3.5,
+   "variants": []
+  },
+  {
+   "slug": "trap-bar-deadlift",
+   "name": "Trap Bar Deadlift",
+   "pattern": "hinge",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Stand inside the trap bar with your feet hip-width apart.",
+    "Hinge and bend your knees to grip the handles, chest up and back flat.",
+    "Stand up by pushing the floor away, then lower the bar the same way."
+   ],
+   "seconds": 4.2,
+   "variants": []
+  },
+  {
+   "slug": "triceps-kickback",
+   "name": "Dumbbell Triceps Kickback",
+   "pattern": "elbow-extension",
+   "equipment": [
+    "dumbbell"
+   ],
+   "cues": [
+    "Hinge forward with your upper arm parallel to the floor and elbow bent.",
+    "Extend your arm straight back, squeezing the triceps.",
+    "Return without dropping the elbow. Complete the reps, then switch arms."
+   ],
+   "seconds": 3.1,
+   "variants": []
+  },
+  {
    "slug": "triceps-pushdown",
    "name": "Cable Triceps Pushdown",
    "pattern": "elbow-extension",
@@ -506,6 +2442,21 @@
      "note": "A rope: spread its ends at the bottom."
     }
    ]
+  },
+  {
+   "slug": "upright-row",
+   "name": "Upright Row",
+   "pattern": "shoulder-isolation",
+   "equipment": [
+    "barbell"
+   ],
+   "cues": [
+    "Hold a bar in front of your thighs with hands a little wider than shoulder-width.",
+    "Pull it up along your body, leading with the elbows, to about chest height.",
+    "Lower slowly. Stop lower if your shoulders pinch."
+   ],
+   "seconds": 3.6,
+   "variants": []
   },
   {
    "slug": "walking-lunge",
