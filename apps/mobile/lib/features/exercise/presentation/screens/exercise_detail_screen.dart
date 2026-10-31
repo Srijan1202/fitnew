@@ -9,10 +9,10 @@ import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/hairline_section.dart';
 import '../../../auth/presentation/widgets/auth_form_field.dart';
 import '../../domain/entities/exercise.dart';
-import '../../domain/demo/exercise_demos.dart';
 import '../controllers/exercise_providers.dart';
 import '../widgets/exercise_demo_view.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../data/demo_approvals_api.dart';
 
 /// One exercise: what it trains, what you need, how to do it, what to do
 /// instead. Instructions are shown as the library has them — never
@@ -110,15 +110,26 @@ class _Detail extends StatelessWidget {
                   '${d.contraindications.map((b) => b.label.toLowerCase()).join(', ')} is bothering you',
               emphasis: true,
             ),
-          // Beta 5.0 (owner): the lift drawn, its key moments tied to the cues.
-          if (demoFor(d.slug) case final m?) ...<Widget>[
-            const SizedBox(height: FitSpacing.lg),
-            FitBlock(
-              key: const ValueKey('exercise.demo'),
-              padding: const EdgeInsets.all(FitSpacing.md),
-              child: ExerciseDemoView(demo: m.demo, name: d.name, note: m.note),
-            ),
-          ],
+          // Beta 5.0 (owner): the lift drawn, its key moments tied to the
+          // cues; beta 5.2: only once an admin approved it.
+          Consumer(
+            builder: (context, ref, _) {
+              final m = ref.watch(approvedDemoProvider(d.slug));
+              if (m == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(top: FitSpacing.lg),
+                child: FitBlock(
+                  key: const ValueKey('exercise.demo'),
+                  padding: const EdgeInsets.all(FitSpacing.md),
+                  child: ExerciseDemoView(
+                    demo: m.demo,
+                    name: d.name,
+                    note: m.note,
+                  ),
+                ),
+              );
+            },
+          ),
           const SizedBox(height: FitSpacing.lg),
           HairlineSection(
             label: 'How to do it',

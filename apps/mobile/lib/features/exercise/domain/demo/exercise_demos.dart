@@ -956,6 +956,11 @@ const Map<String, (String, String)> demoVariants = {
 };
 
 /// The demo for an exercise, with the note when it is a variant's.
+/// The demo an exercise uses: its own, or its variant's (beta 5.2: what
+/// an admin approves).
+String? demoSlugFor(String slug) =>
+    exerciseDemos.containsKey(slug) ? slug : demoVariants[slug]?.$1;
+
 ({Demo demo, String? note})? demoFor(String slug) {
   final own = exerciseDemos[slug];
   if (own != null) return (demo: own, note: null);

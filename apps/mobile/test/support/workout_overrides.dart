@@ -1,4 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:fitos/features/exercise/data/demo_approvals_api.dart';
 import 'package:fitos/core/config/app_config.dart';
 import 'package:fitos/core/db/app_database.dart';
 import 'package:fitos/features/feedback/presentation/feedback_screen.dart';
@@ -28,6 +29,7 @@ import 'fake_progress_api.dart';
 import 'fake_recovery_api.dart';
 import 'fake_today_api.dart';
 import 'fake_workout_api.dart';
+import 'fake_demo_approvals_api.dart';
 import 'fake_streak_api.dart';
 import 'package:fitos/features/home/presentation/controllers/home_providers.dart';
 import 'fake_rewards_api.dart';
@@ -109,6 +111,8 @@ List<Override> workoutOverrides(
     weeklyReportApiProvider.overrideWithValue(weekly ?? FakeWeeklyReportApi()),
     // Beta 3.3: no streak card unless a test says.
     streakApiProvider.overrideWithValue(streak ?? FakeStreakApi()),
+    // Beta 5.2: every demo approved.
+    demoApprovalsApiProvider.overrideWithValue(FakeDemoApprovalsApi()),
     // Beta 3.4: nothing earned unless a test says.
     rewardsApiProvider.overrideWithValue(rewards ?? FakeRewardsApi()),
     // Beta 4.0: runs go to a scripted server; GPS only when a test sends it.

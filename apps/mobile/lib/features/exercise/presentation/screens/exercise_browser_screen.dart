@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/failure.dart';
-import '../../domain/demo/exercise_demos.dart';
 import '../../../../core/routing/navigation.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
@@ -16,6 +15,7 @@ import '../../domain/entities/exercise.dart';
 import '../controllers/exercise_providers.dart';
 import '../widgets/filter_button.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../data/demo_approvals_api.dart';
 
 /// Exercise library and — in [pickMode] — the picker the programme editors
 /// open. Built for choosing quickly: a search field, three filter buttons
@@ -442,18 +442,23 @@ class ExerciseRow extends StatelessWidget {
                     color: FitColors.ink60,
                   ),
                 ),
-              // Beta 5.0: this lift has a demo.
-              if (demoFor(item.slug) != null)
-                Padding(
-                  padding: const EdgeInsets.only(right: FitSpacing.xs),
-                  child: Icon(
-                    Icons.play_circle_outline,
-                    key: ValueKey('exercise.${item.slug}.demo'),
-                    size: 18,
-                    semanticLabel: 'Has a demo',
-                    color: FitColors.ink60,
-                  ),
-                ),
+              // Beta 5.0: this lift has a demo (beta 5.2: an approved one).
+              Consumer(
+                builder: (context, ref, _) =>
+                    ref.watch(approvedDemoProvider(item.slug)) == null
+                        ? const SizedBox.shrink()
+                        : Padding(
+                            padding:
+                                const EdgeInsets.only(right: FitSpacing.xs),
+                            child: Icon(
+                              Icons.play_circle_outline,
+                              key: ValueKey('exercise.${item.slug}.demo'),
+                              size: 18,
+                              semanticLabel: 'Has a demo',
+                              color: FitColors.ink60,
+                            ),
+                          ),
+              ),
               Icon(
                 pickMode ? Icons.arrow_forward : Icons.chevron_right,
                 size: 20,

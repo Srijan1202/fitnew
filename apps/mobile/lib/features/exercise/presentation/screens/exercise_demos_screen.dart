@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/routing/navigation.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../data/demo_approvals_api.dart';
 import '../../domain/demo/exercise_demos.dart';
 import '../widgets/exercise_demo_view.dart';
 
-/// Beta 5.1 (owner): every exercise demo on one page, to check them all —
-/// the 30 lifts, then the variants that share one with the line that says
-/// what differs. Each plays as on its exercise's page.
-class ExerciseDemosScreen extends StatelessWidget {
+/// Beta 5.1 (owner): every exercise demo on one page — the lifts, then the
+/// variants that share one with the line that says what differs. Each plays
+/// as on its exercise's page. Beta 5.2: approved demos only (the owner
+/// reviews the rest in the admin panel).
+class ExerciseDemosScreen extends ConsumerWidget {
   const ExerciseDemosScreen({super.key});
 
   /// "barbell-back-squat" → "Barbell back squat".
@@ -19,10 +22,12 @@ class ExerciseDemosScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final t = Theme.of(context).textTheme;
-    final lifts = exerciseDemos.keys.toList()..sort();
-    final variants = demoVariants.keys.toList()..sort();
+    final approved = ref.watch(approvedDemosProvider).value ?? const {};
+    bool shown(String slug) => approved.contains(demoSlugFor(slug));
+    final lifts = exerciseDemos.keys.where(shown).toList()..sort();
+    final variants = demoVariants.keys.where(shown).toList()..sort();
     Widget tile(String slug) {
       final m = demoFor(slug)!;
       return FitBlock(

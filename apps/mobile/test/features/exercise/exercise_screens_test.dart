@@ -2,6 +2,8 @@ import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/core/theme/tokens.dart';
+import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:fitos/features/exercise/data/demo_approvals_api.dart';
 import 'package:fitos/features/exercise/domain/entities/exercise.dart';
 import 'package:fitos/features/exercise/presentation/controllers/exercise_providers.dart';
 import 'package:fitos/features/exercise/presentation/screens/exercise_browser_screen.dart';
@@ -12,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../support/fake_demo_approvals_api.dart';
 import '../../support/fake_exercise_repository.dart';
 
 /// Browser and detail against a scripted server. Asserts §31 Phase 3's UI:
@@ -44,7 +47,11 @@ void main() {
       ],
     );
     return ProviderScope(
-      overrides: [exerciseRepositoryProvider.overrideWithValue(repo)],
+      overrides: [
+        exerciseRepositoryProvider.overrideWithValue(repo),
+        demoApprovalsApiProvider.overrideWithValue(FakeDemoApprovalsApi()),
+        sessionUserIdProvider.overrideWithValue('u1'),
+      ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
     );
   }
@@ -357,7 +364,11 @@ void main() {
       );
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [exerciseRepositoryProvider.overrideWithValue(repo)],
+          overrides: [
+            exerciseRepositoryProvider.overrideWithValue(repo),
+            demoApprovalsApiProvider.overrideWithValue(FakeDemoApprovalsApi()),
+            sessionUserIdProvider.overrideWithValue('u1'),
+          ],
           child:
               MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
         ),

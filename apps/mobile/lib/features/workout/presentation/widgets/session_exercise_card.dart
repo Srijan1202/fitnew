@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/tokens.dart';
-import '../../../exercise/domain/demo/exercise_demos.dart';
 import '../../../exercise/presentation/widgets/exercise_demo_sheet.dart';
 import '../../../training/domain/entities/program.dart';
 import '../../../training/presentation/widgets/set_row.dart';
 import '../../domain/entities/workout.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../../exercise/data/demo_approvals_api.dart';
 
 /// One exercise in the session in progress. Collapsed: number, name,
 /// "done / planned sets". Expanded: every set as a row — logged sets in
@@ -171,28 +172,35 @@ class SessionExerciseCard extends StatelessWidget {
                           Flexible(
                             child: Text(x.name, style: textTheme.titleLarge),
                           ),
-                          // Beta 5.0 (owner): how to do it, without leaving.
-                          if (demoFor(x.slug) != null)
-                            IconButton(
-                              key: ValueKey('$key.how'),
-                              tooltip: 'How to do it',
-                              onPressed: () => showExerciseDemoSheet(
-                                context,
-                                exerciseId: x.exerciseId,
-                                slug: x.slug,
-                                name: x.name,
-                              ),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints.tightFor(
-                                width: 32,
-                                height: 28,
-                              ),
-                              iconSize: 20,
-                              icon: Icon(
-                                Icons.play_circle_outline,
-                                color: FitColors.ink60,
-                              ),
-                            ),
+                          // Beta 5.0 (owner): how to do it, without leaving
+                          // (beta 5.2: once its demo is approved).
+                          Consumer(
+                            builder: (context, ref, _) => ref.watch(
+                                      approvedDemoProvider(x.slug),
+                                    ) ==
+                                    null
+                                ? const SizedBox.shrink()
+                                : IconButton(
+                                    key: ValueKey('$key.how'),
+                                    tooltip: 'How to do it',
+                                    onPressed: () => showExerciseDemoSheet(
+                                      context,
+                                      exerciseId: x.exerciseId,
+                                      slug: x.slug,
+                                      name: x.name,
+                                    ),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints.tightFor(
+                                      width: 32,
+                                      height: 28,
+                                    ),
+                                    iconSize: 20,
+                                    icon: Icon(
+                                      Icons.play_circle_outline,
+                                      color: FitColors.ink60,
+                                    ),
+                                  ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: FitSpacing.xs),

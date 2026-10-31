@@ -6,8 +6,13 @@ import 'package:fitos/features/exercise/domain/demo/demo_rig.dart';
 import 'package:fitos/features/exercise/domain/demo/exercise_demos.dart';
 import 'package:fitos/features/exercise/presentation/screens/exercise_demos_screen.dart';
 import 'package:fitos/features/exercise/presentation/widgets/exercise_demo_view.dart';
+import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:fitos/features/exercise/data/demo_approvals_api.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../support/fake_demo_approvals_api.dart';
 
 /// Beta 5.0 (owner): the exercise demos — each a believable lift, tied to
 /// the library's own cues, and drawn the same every time (goldens).
@@ -267,7 +272,16 @@ void main() {
 
   testWidgets('beta 5.1: the demos page shows every lift, then the variants',
       (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: ExerciseDemosScreen()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          demoApprovalsApiProvider.overrideWithValue(FakeDemoApprovalsApi()),
+          sessionUserIdProvider.overrideWithValue('u1'),
+        ],
+        child: const MaterialApp(home: ExerciseDemosScreen()),
+      ),
+    );
+    await tester.pump();
     await tester.pump();
     expect(
       find.text('30 lifts and 12 variants. Each plays three times; tap it '
@@ -290,6 +304,26 @@ void main() {
       ExerciseDemosScreen.nameOf('barbell-back-squat'),
       'Barbell back squat',
     );
+  });
+
+  test('beta 5.2: only approved demos show; a variant follows its demo',
+      () async {
+    final c = ProviderContainer(
+      overrides: [
+        demoApprovalsApiProvider.overrideWithValue(
+          FakeDemoApprovalsApi({'barbell-back-squat', 'pull-up'}),
+        ),
+        sessionUserIdProvider.overrideWithValue('u1'),
+      ],
+    );
+    addTearDown(c.dispose);
+    await c.read(approvedDemosProvider.future);
+    expect(c.read(approvedDemoProvider('barbell-back-squat')), isNotNull);
+    expect(c.read(approvedDemoProvider('cable-fly')), isNull);
+    expect(c.read(approvedDemoProvider('chin-up'))?.note, 'Palms facing you.');
+    expect(c.read(approvedDemoProvider('close-grip-lat-pulldown')), isNull);
+    expect(demoSlugFor('chin-up'), 'pull-up');
+    expect(demoSlugFor('sissy-squat'), isNull);
   });
 
   group('goldens', () {
