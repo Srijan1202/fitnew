@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Beta 5.0.1: the widget picker's preview, with sample figures. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:orientation="vertical"
+    android:padding="14dp">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="STREAK"
+        android:textColor="@color/widget_ink60"
+            android:textSize="11sp"
+            android:letterSpacing="0.08"
+            android:textStyle="bold" />
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔥"
+            android:textSize="22sp" />
+        <TextView
+            android:id="@+id/streak_value"
+
+        android:text="9"
+        android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:textColor="@color/widget_ink"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/streak_unit"
+
+        android:text="days"
+        android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:textColor="@color/widget_ink60"
+            android:textSize="14sp" />
+    </LinearLayout>
+    <ImageView
+        android:id="@+id/streak_week"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:contentDescription="This week's days"
+        android:src="@drawable/widget_week_preview"
+        android:scaleType="fitStart" />
+    <TextView
+        android:id="@+id/streak_hint"
+
+        android:text="Today counts"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:maxLines="1"
+        android:textColor="@color/widget_ink60"
+        android:textSize="12sp" />
+</LinearLayout>

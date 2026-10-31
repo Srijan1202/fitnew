@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Beta 5.0.1: the Food left preview's ring. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="ring" android:innerRadiusRatio="2.6" android:thicknessRatio="9" android:useLevel="false">
+            <solid android:color="@color/widget_rule" />
+        </shape>
+    </item>
+    <item>
+        <rotate android:fromDegrees="-90" android:toDegrees="-90">
+            <shape android:shape="ring" android:innerRadiusRatio="2.6" android:thicknessRatio="9" android:useLevel="true">
+                <solid android:color="@color/widget_accent" />
+            </shape>
+        </rotate>
+    </item>
+</layer-list>

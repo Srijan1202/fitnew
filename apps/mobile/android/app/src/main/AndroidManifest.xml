@@ -131,6 +131,13 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- Beta 5.0.1: fitos:// links (the home-screen widgets) are routed
+                 by the app (MainActivity -> fitos/widget), never handed to the
+                 router, which has no such page ("Page Not Found"). FITOS uses
+                 no other deep links. -->
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="false" />
         </activity>
         <!-- Beta 3.2 (ADR-027 amendment): the app icon. MainActivity is no
              longer the launcher entry: exactly one of these aliases is, Standard

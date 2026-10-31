@@ -7,7 +7,7 @@
     android:minHeight="110dp"
     android:targetCellWidth="2"
     android:targetCellHeight="2"
-    android:previewLayout="@layout/widget_food"
+    android:previewLayout="@layout/widget_food_preview"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="3600000"
     android:widgetCategory="home_screen" />

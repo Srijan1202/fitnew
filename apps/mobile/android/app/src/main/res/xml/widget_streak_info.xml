@@ -7,7 +7,7 @@
     android:minHeight="110dp"
     android:targetCellWidth="3"
     android:targetCellHeight="2"
-    android:previewLayout="@layout/widget_streak"
+    android:previewLayout="@layout/widget_streak_preview"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="3600000"
     android:widgetCategory="home_screen" />

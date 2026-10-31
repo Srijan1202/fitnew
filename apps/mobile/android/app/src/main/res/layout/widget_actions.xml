@@ -18,7 +18,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="\uD83C\uDF7D\uFE0F"
+            android:text="🍽️"
             android:textSize="20sp" />
         <TextView
             android:layout_width="wrap_content"
@@ -40,7 +40,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="\uD83C\uDFCB\uFE0F"
+            android:text="🏋️"
             android:textSize="20sp" />
         <TextView
             android:layout_width="wrap_content"
@@ -62,7 +62,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="\uD83C\uDFC3"
+            android:text="🏃"
             android:textSize="20sp" />
         <TextView
             android:layout_width="wrap_content"
@@ -84,7 +84,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="\u2696\uFE0F"
+            android:text="⚖️"
             android:textSize="20sp" />
         <TextView
             android:layout_width="wrap_content"
