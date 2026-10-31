@@ -8,6 +8,7 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 import {
   errorEnvelopeSchema,
+  exerciseDemoApprovalsSchema,
   exerciseDetailSchema,
   exerciseIdParamsSchema,
   exerciseListQuerySchema,
@@ -34,6 +35,20 @@ export async function exerciseRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request) => service.list(request.query),
+  );
+
+  // Beta 5.2 (owner): which exercise demos the app may show.
+  typed.get(
+    '/exercises/demo-approvals',
+    {
+      schema: {
+        summary: 'The exercise demos an admin approved; the app shows only these',
+        tags: ['exercise'],
+        security: [{ bearerAuth: [] }],
+        response: { 200: exerciseDemoApprovalsSchema, ...errors },
+      },
+    },
+    async () => service.demoApprovals(),
   );
 
   typed.get(

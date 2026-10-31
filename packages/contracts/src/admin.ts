@@ -208,6 +208,13 @@ export const featureFlagSchema = z
 export const featureFlagListSchema = z.object({ items: z.array(featureFlagSchema) }).strict();
 export const putFlagRequestSchema = z.object({ enabled: z.boolean(), description: z.string().trim().max(300).optional() }).strict();
 export const flagParamsSchema = z.object({ key: flagKeySchema }).strict();
+/** Beta 5.2 (owner): an exercise demo's approval; the app shows a demo only once approved. */
+export const adminDemoApprovalSchema = z.object({ slug: slugSchema, approved: z.boolean(), updatedAt: iso }).strict();
+export const adminDemoApprovalListSchema = z.object({ items: z.array(adminDemoApprovalSchema) }).strict();
+export const putDemoApprovalRequestSchema = z.object({ approved: z.boolean() }).strict();
+export const demoSlugParamsSchema = z.object({ slug: slugSchema }).strict();
+export type AdminDemoApproval = z.infer<typeof adminDemoApprovalSchema>;
+
 /** Beta 3.5: "a new version is out" as a push, once per build. */
 export const adminUpdatePushStatusSchema = z
   .object({

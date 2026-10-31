@@ -17,6 +17,8 @@ import {
   adminExerciseSchema,
   adminFoodListSchema,
   adminFoodQuerySchema,
+  adminDemoApprovalListSchema,
+  adminDemoApprovalSchema,
   adminFoodSchema,
   adminMeSchema,
   adminOverviewQuerySchema,
@@ -26,6 +28,7 @@ import {
   correctionGroupSchema,
   correctionQueueQuerySchema,
   correctionQueueSchema,
+  demoSlugParamsSchema,
   dishDietRequestSchema,
   editDishEstimateRequestSchema,
   editExerciseRequestSchema,
@@ -38,6 +41,7 @@ import {
   flagParamsSchema,
   grantAdminRequestSchema,
   metaConfigSchema,
+  putDemoApprovalRequestSchema,
   putFlagRequestSchema,
   reviewCorrectionRequestSchema,
   userLookupQuerySchema,
@@ -189,6 +193,18 @@ export async function adminRoutes(app: FastifyInstance, opts: { minimumAppBuild:
     app.features.invalidate();
     return flag;
   });
+
+  /* ------------------------------------------------------- demo approvals -- */
+
+  typed.get('/admin/exercise-demos', {
+    ...admin,
+    schema: { summary: 'Exercise demos decided on (beta 5.2); one not listed waits for approval', tags, security, response: { 200: adminDemoApprovalListSchema, ...errors } },
+  }, async () => ({ items: await service.demoApprovals() }));
+
+  typed.put('/admin/exercise-demos/:slug', {
+    ...admin,
+    schema: { summary: 'Approve or withdraw an exercise demo; the app shows only approved ones. Audited.', tags, security, params: demoSlugParamsSchema, body: putDemoApprovalRequestSchema, response: { 200: adminDemoApprovalSchema, ...errors } },
+  }, async (request) => service.putDemoApproval(request.userId, request.params.slug, request.body.approved));
 
   /* ------------------------------------------------------------ support -- */
 

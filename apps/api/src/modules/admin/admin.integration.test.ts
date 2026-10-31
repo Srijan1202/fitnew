@@ -134,6 +134,8 @@ describeIfDb('/v1/admin (real Postgres)', { timeout: 60_000 }, () => {
       ['POST', '/admin/exercises', {}],
       ['GET', '/admin/flags'],
       ['PUT', '/admin/flags/new-home', { enabled: true }],
+      ['GET', '/admin/exercise-demos'],
+      ['PUT', '/admin/exercise-demos/cable-fly', { approved: true }],
       ['GET', '/admin/users?email=a@b.co'],
       ['GET', '/admin/audit'],
     ];
@@ -344,6 +346,35 @@ describeIfDb('/v1/admin (real Postgres)', { timeout: 60_000 }, () => {
     await sql`delete from feature_flags where key = 'streaks'`;
     app.features.invalidate();
     expect((await audits('flag.set')).map((a) => a.metadata['enabled'])).toEqual([false, true, false, true]);
+  });
+
+  /* ------------------------------------------------------- demo approvals -- */
+
+  it('beta 5.2: the 29 checked demos start approved; an admin approves or withdraws one (audited); the app reads only approved ones', async () => {
+    const plain = await user();
+    const approved = async () => ((await call(plain, 'GET', '/exercises/demo-approvals')).json() as { approved: string[] }).approved;
+    const start = await approved();
+    expect(start).toHaveLength(29);
+    expect(start).toContain('barbell-back-squat');
+    expect(start).not.toContain('cable-fly');
+    expect((await call(null, 'GET', '/exercises/demo-approvals')).statusCode).toBe(401);
+
+    const put = await call(admin, 'PUT', '/admin/exercise-demos/cable-fly', { approved: true });
+    expect(put.json()).toMatchObject({ slug: 'cable-fly', approved: true });
+    expect(await approved()).toContain('cable-fly');
+    await call(admin, 'PUT', '/admin/exercise-demos/barbell-back-squat', { approved: false });
+    expect(await approved()).not.toContain('barbell-back-squat');
+    expect((await call(admin, 'PUT', '/admin/exercise-demos/Bad Slug', { approved: true })).statusCode).toBeGreaterThanOrEqual(400);
+
+    const list = (await call(admin, 'GET', '/admin/exercise-demos')).json() as { items: { slug: string; approved: boolean }[] };
+    expect(list.items.find((i) => i.slug === 'barbell-back-squat')).toMatchObject({ approved: false });
+    expect(list.items.find((i) => i.slug === 'cable-fly')).toMatchObject({ approved: true });
+    expect((await audits('demo.approve')).map((a) => a.entity_id)).toEqual(['cable-fly']);
+    expect((await audits('demo.unapprove')).map((a) => a.entity_id)).toEqual(['barbell-back-squat']);
+
+    // Back as seeded, for the other tests.
+    await sql`update exercise_demo_approvals set approved = true where demo_slug = 'barbell-back-squat'`;
+    await sql`delete from exercise_demo_approvals where demo_slug = 'cable-fly'`;
   });
 
   /* -------------------------------------------------------------- support -- */

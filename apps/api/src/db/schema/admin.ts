@@ -58,5 +58,22 @@ export const messDishOverrides = pgTable(
   ],
 );
 
+/**
+ * Beta 5.2 (owner): an exercise demo shows in the app only once an admin has
+ * approved it. One row per demo the owner has decided on, keyed by the
+ * demo's slug (a variant shows when its demo is approved).
+ */
+export const exerciseDemoApprovals = pgTable(
+  'exercise_demo_approvals',
+  {
+    demoSlug: text('demo_slug').primaryKey(),
+    approved: boolean('approved').notNull(),
+    updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [check('exercise_demo_approvals_slug', sql`${t.demoSlug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`)],
+);
+
 export type AuditLogRow = typeof auditLogs.$inferSelect;
 export type FeatureFlagRow = typeof featureFlags.$inferSelect;
+export type ExerciseDemoApprovalRow = typeof exerciseDemoApprovals.$inferSelect;

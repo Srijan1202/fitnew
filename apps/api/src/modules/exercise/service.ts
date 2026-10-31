@@ -55,6 +55,11 @@ export function detailFrom(rows: ExerciseDetailRows): ExerciseDetail {
 export class ExerciseService {
   constructor(private readonly repo: ExerciseRepository) {}
 
+  /** Beta 5.2 (owner): the app shows a demo only once an admin approved it. */
+  async demoApprovals(): Promise<{ approved: string[] }> {
+    return { approved: await this.repo.approvedDemos() };
+  }
+
   async list(query: ExerciseListQuery): Promise<ExerciseListResponse> {
     const { items, total } = await this.repo.list(query);
     return { items: items.map(summaryFrom), total, limit: query.limit, offset: query.offset };

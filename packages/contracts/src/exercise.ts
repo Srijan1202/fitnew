@@ -213,3 +213,7 @@ export const exerciseSeedSchema = z
 export type ExerciseSeed = z.infer<typeof exerciseSeedSchema>;
 
 export const exerciseSeedFileSchema = z.array(exerciseSeedSchema).min(120);
+
+/** Beta 5.2 (owner): the exercise demos an admin approved; the app shows only these. */
+export const exerciseDemoApprovalsSchema = z.object({ approved: z.array(slugSchema) }).strict();
+export type ExerciseDemoApprovals = z.infer<typeof exerciseDemoApprovalsSchema>;

@@ -9,6 +9,7 @@ import type { Equipment, MovementPattern, MuscleGroup } from '@fitos/contracts';
 import type { DatabaseHandle } from '../../db/client.js';
 import {
   exerciseAlternatives,
+  exerciseDemoApprovals,
   exerciseContraindications,
   exerciseMuscles,
   exercises,
@@ -54,6 +55,16 @@ const primaryMusclesSql = sql<MuscleGroup[]>`coalesce((
 
 export class ExerciseRepository {
   constructor(private readonly db: Db) {}
+
+  /** Beta 5.2: the demos an admin approved. */
+  async approvedDemos(): Promise<string[]> {
+    const rows = await this.db
+      .select({ slug: exerciseDemoApprovals.demoSlug })
+      .from(exerciseDemoApprovals)
+      .where(eq(exerciseDemoApprovals.approved, true))
+      .orderBy(asc(exerciseDemoApprovals.demoSlug));
+    return rows.map((r) => r.slug);
+  }
 
   private whereFor(f: ExerciseFilter): SQL | undefined {
     // Phase 16: a retired exercise leaves the library (its detail still opens, for history).

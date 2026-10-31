@@ -342,6 +342,23 @@ export class AdminService {
     };
   }
 
+  /* ------------------------------------------------------- demo approvals -- */
+
+  /** Beta 5.2 (owner): the demos decided on; a demo not listed waits for approval. */
+  async demoApprovals() {
+    const rows = await this.repo.demoApprovals();
+    return rows.map((r) => ({ slug: r.demoSlug, approved: r.approved, updatedAt: r.updatedAt.toISOString() }));
+  }
+
+  async putDemoApproval(actor: string | null, slug: string, approved: boolean) {
+    const row = await this.repo.inTransaction(async (tx) => {
+      const r = await tx.putDemoApproval(slug, approved, actor);
+      await tx.audit({ actorUserId: actor, action: approved ? 'demo.approve' : 'demo.unapprove', entity: 'exercise_demo', entityId: slug, metadata: { approved } });
+      return r;
+    });
+    return { slug: row.demoSlug, approved: row.approved, updatedAt: row.updatedAt.toISOString() };
+  }
+
   /* ------------------------------------------------------------ support -- */
 
   async lookupUser(actor: string | null, q: { email?: string | undefined; id?: string | undefined }): Promise<UserSupport> {

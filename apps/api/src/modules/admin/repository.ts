@@ -12,6 +12,7 @@ import {
   exerciseContraindications,
   exerciseMuscles,
   exercises,
+  exerciseDemoApprovals,
   featureFlags,
   foodAliases,
   foodLogs,
@@ -305,6 +306,23 @@ export class AdminRepository {
 
   async flags() {
     return this.db.select().from(featureFlags).orderBy(asc(featureFlags.key));
+  }
+
+  /** Beta 5.2: every demo the owner has decided on. */
+  async demoApprovals() {
+    return this.db.select().from(exerciseDemoApprovals).orderBy(asc(exerciseDemoApprovals.demoSlug));
+  }
+
+  async putDemoApproval(slug: string, approved: boolean, actor: string | null) {
+    const [row] = await this.db
+      .insert(exerciseDemoApprovals)
+      .values({ demoSlug: slug, approved, updatedBy: actor })
+      .onConflictDoUpdate({
+        target: exerciseDemoApprovals.demoSlug,
+        set: { approved, updatedBy: actor, updatedAt: sql`now()` },
+      })
+      .returning();
+    return row!;
   }
 
   async putFlag(key: string, enabled: boolean, description: string | undefined, actor: string | null) {
