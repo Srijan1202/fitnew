@@ -245,6 +245,13 @@ class ProfileScreen extends ConsumerWidget {
                   FitGroup(
                     label: 'About',
                     children: <Widget>[
+                      // Beta 5.1 (owner): every exercise demo on one page.
+                      FitRow(
+                        key: const ValueKey('profile.demos'),
+                        icon: Icons.play_circle_outline,
+                        title: 'Exercise demos',
+                        onTap: () => context.push(Routes.exerciseDemos),
+                      ),
                       FitRow(
                         key: const ValueKey('profile.foodSources'),
                         icon: Icons.menu_book_outlined,

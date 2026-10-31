@@ -331,9 +331,10 @@ class DemoPainter extends CustomPainter {
               ? [f[Joint.hand]]
               : [f[Joint.handFar], f[Joint.hand]];
       for (final h in hands) {
-        if (g.single || (g.neutral && f.view == DemoView.side)) {
+        if (g.single || g.neutral) {
           final Offset n;
-          if (g.single) {
+          // Upright: one held in both hands, or palms in seen from the front.
+          if (g.single || f.view == DemoView.front) {
             n = const Offset(0, 1);
           } else {
             final d = f[Joint.hand] - f[Joint.elbow];

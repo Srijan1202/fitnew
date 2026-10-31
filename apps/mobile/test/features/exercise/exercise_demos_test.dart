@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:fitos/core/theme/tokens.dart';
 import 'package:fitos/features/exercise/domain/demo/demo_rig.dart';
 import 'package:fitos/features/exercise/domain/demo/exercise_demos.dart';
+import 'package:fitos/features/exercise/presentation/screens/exercise_demos_screen.dart';
 import 'package:fitos/features/exercise/presentation/widgets/exercise_demo_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,9 +19,9 @@ void main() {
       (e as Map<String, dynamic>)['slug'] as String: e,
   };
 
-  test('29 lifts, every one in the library; every variant points at a demo',
+  test('30 lifts, every one in the library; every variant points at a demo',
       () {
-    expect(exerciseDemos, hasLength(29));
+    expect(exerciseDemos, hasLength(30));
     for (final slug in exerciseDemos.keys) {
       expect(library.containsKey(slug), isTrue, reason: slug);
     }
@@ -60,7 +61,8 @@ void main() {
         expect(f.lowest, greaterThan(-0.02), reason: '$slug at $t');
         final bones = [
           (Joint.shoulder, Joint.elbow, Body.upperArm),
-          (Joint.elbow, Joint.hand, Body.forearm),
+          // A foreshortened forearm (a front-view curl) is drawn shorter.
+          (Joint.elbow, Joint.hand, Body.forearm * pose.foreScale.abs()),
           (Joint.knee, Joint.ankle, Body.shin),
         ];
         if (demo.view == DemoView.side) {
@@ -261,6 +263,33 @@ void main() {
       expect(find.text('HOLD'), findsOneWidget);
       expect(find.byKey(const ValueKey('demo.slow')), findsNothing);
     });
+  });
+
+  testWidgets('beta 5.1: the demos page shows every lift, then the variants',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: ExerciseDemosScreen()));
+    await tester.pump();
+    expect(
+      find.text('30 lifts and 12 variants. Each plays three times; tap it '
+          'to play again.'),
+      findsOneWidget,
+    );
+    // In the page's order: the lifts A–Z, then the variants A–Z.
+    for (final slug in [
+      ...(exerciseDemos.keys.toList()..sort()),
+      ...(demoVariants.keys.toList()..sort()),
+    ]) {
+      await tester.scrollUntilVisible(
+        find.byKey(ValueKey('demos.$slug')),
+        400,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.byKey(ValueKey('demos.$slug')), findsOneWidget);
+    }
+    expect(
+      ExerciseDemosScreen.nameOf('barbell-back-squat'),
+      'Barbell back squat',
+    );
   });
 
   group('goldens', () {

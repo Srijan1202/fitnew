@@ -690,6 +690,23 @@ const Map<String, Demo> exerciseDemos = {
       Pose(arm: Limb(177, 100), cue: 2, seconds: 0.9),
     ],
   ),
+  // Beta 5.1 (owner): from the front, so the palms-in grip shows — the
+  // dumbbells stay upright at your sides as they come up.
+  'hammer-curl': Demo(
+    view: DemoView.front,
+    gear: [Dumbbells(neutral: true)],
+    frames: [
+      Pose(arm: Limb(168, 180), cue: 0, seconds: 0.8, hold: 0.2),
+      Pose(
+        arm: Limb(168, 180),
+        foreScale: -0.55,
+        cue: 1,
+        seconds: 1,
+        hold: 0.3,
+      ),
+      Pose(arm: Limb(168, 180), foreScale: 0.3, cue: 2, seconds: 0.9),
+    ],
+  ),
   'triceps-pushdown': Demo(
     gear: [Cable(Offset(0.32, 2.15), handle: true)],
     frames: [
@@ -936,8 +953,6 @@ const Map<String, (String, String)> demoVariants = {
     'Bend your knees as they come up: easier.'
   ),
   'ez-bar-curl': ('dumbbell-curl', 'An EZ bar in both hands.'),
-  // Beta 5.0.1 (owner): it moves exactly like the curl.
-  'hammer-curl': ('dumbbell-curl', 'Palms facing each other the whole way.'),
 };
 
 /// The demo for an exercise, with the note when it is a variant's.

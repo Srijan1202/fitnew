@@ -128,6 +128,7 @@ class Pose {
     this.seconds = 1,
     this.hold = 0,
     this.cue,
+    this.foreScale = 1,
   });
 
   final double trunk;
@@ -159,6 +160,11 @@ class Pose {
   /// The instruction this moment shows (its index), if any.
   final int? cue;
 
+  /// Front view: the forearm's length as seen, signed — 1 hanging as drawn,
+  /// 0 pointing at you, negative pointing the other way (a curl seen from
+  /// the front: the hand comes up in front of the arm). Beta 5.1.
+  final double foreScale;
+
   Pose lerp(Pose b, double t) => Pose(
         trunk: _lerpAngle(trunk, b.trunk, t),
         head: _lerpAngle(head, b.head, t),
@@ -182,6 +188,7 @@ class Pose {
             ? null
             : _lerpO(hands!, b.hands!, t),
         handsFrom: handsFrom,
+        foreScale: _lerp(foreScale, b.foreScale, t),
         anchorAt: anchorAt == null || b.anchorAt == null
             ? null
             : _lerpO(anchorAt!, b.anchorAt!, t),
@@ -633,7 +640,7 @@ class Demo {
         Joint.hand,
         p.arm,
         Body.upperArm,
-        Body.forearm,
+        Body.forearm * p.foreScale,
       );
     }
     Offset m(Offset o) => Offset(-o.dx, o.dy);

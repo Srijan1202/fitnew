@@ -190,6 +190,14 @@ class _ExerciseBrowserScreenState extends ConsumerState<ExerciseBrowserScreen> {
         ),
         centerTitle: false,
         actions: <Widget>[
+          // Beta 5.1 (owner): every demo on one page.
+          if (!widget.pickMode)
+            IconButton(
+              key: const ValueKey('exercises.demos'),
+              tooltip: 'Exercise demos',
+              onPressed: () => context.push(Routes.exerciseDemos),
+              icon: const Icon(Icons.play_circle_outline),
+            ),
           if (filters.hasFilters)
             TextButton(
               key: const ValueKey('filters.clear'),
