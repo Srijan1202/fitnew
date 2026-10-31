@@ -27,6 +27,7 @@ const NAV: { group: string | null; items: { href: string; label: string }[] }[] 
       { href: '/missing-foods', label: 'Missing foods' },
       { href: '/community-foods', label: 'Community foods' },
       { href: '/exercises', label: 'Exercises' },
+      { href: '/exercise-demos', label: 'Exercise demos' },
     ],
   },
   {
