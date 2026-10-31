@@ -18,9 +18,9 @@ void main() {
       (e as Map<String, dynamic>)['slug'] as String: e,
   };
 
-  test('30 lifts, every one in the library; every variant points at a demo',
+  test('29 lifts, every one in the library; every variant points at a demo',
       () {
-    expect(exerciseDemos, hasLength(30));
+    expect(exerciseDemos, hasLength(29));
     for (final slug in exerciseDemos.keys) {
       expect(library.containsKey(slug), isTrue, reason: slug);
     }
@@ -120,7 +120,9 @@ void main() {
     }
     expect(drift('barbell-back-squat', Joint.upperBack), lessThan(0.08));
     expect(drift('conventional-deadlift', Joint.hand), lessThan(0.01));
-    expect(drift('overhead-press', Joint.hand), lessThan(0.1));
+    // Beta 5.0.1: the bar goes forward around the face, then back over
+    // mid-foot.
+    expect(drift('overhead-press', Joint.hand), lessThan(0.15));
   });
 
   test('the loop: key moments in time order, the pose at a key moment is it',
@@ -292,6 +294,7 @@ void main() {
                             dim: p.ink35,
                             accent: p.accent,
                             rule: p.rule,
+                            paper: p.paper,
                           ),
                         ),
                       ),

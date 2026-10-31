@@ -118,6 +118,8 @@ const Map<String, Demo> exerciseDemos = {
   ),
 
   /* ------------------------------------------------------------ hinge -- */
+  // Beta 5.0.1 (owner): the knees go back as the bar passes them, so the bar
+  // never goes through the legs; the bar stays over mid-foot.
   'conventional-deadlift': Demo(
     anchor: Joint.hand,
     gear: [Plate()],
@@ -126,30 +128,74 @@ const Map<String, Demo> exerciseDemos = {
         trunk: 52,
         arm: Limb(180, 180),
         feet: Offset(0, Body.ankleHeight),
-        anchorAt: Offset(0.06, 0.225),
+        anchorAt: Offset(0.08, 0.225),
         cue: 0,
-        seconds: 1,
+        seconds: 0.4,
         hold: 0.4,
+      ),
+      Pose(
+        trunk: 54,
+        arm: Limb(180, 180),
+        feet: Offset(0, Body.ankleHeight),
+        anchorAt: Offset(0.08, 0.36),
+        cue: 1,
+        seconds: 0.5,
+      ),
+      Pose(
+        trunk: 52,
+        arm: Limb(180, 180),
+        feet: Offset(0, Body.ankleHeight),
+        anchorAt: Offset(0.08, 0.48),
+        seconds: 0.4,
+      ),
+      Pose(
+        trunk: 40,
+        arm: Limb(180, 180),
+        feet: Offset(0, Body.ankleHeight),
+        anchorAt: Offset(0.08, 0.62),
+        seconds: 0.4,
       ),
       Pose(
         trunk: 2,
         arm: Limb(180, 180),
         feet: Offset(0, Body.ankleHeight),
-        anchorAt: Offset(0.06, 0.86),
+        anchorAt: Offset(0.08, 0.86),
         cue: 2,
-        seconds: 1.6,
+        seconds: 0.6,
         hold: 0.5,
       ),
       Pose(
-        trunk: 45,
+        trunk: 40,
         arm: Limb(180, 180),
         feet: Offset(0, Body.ankleHeight),
-        anchorAt: Offset(0.06, 0.52),
+        anchorAt: Offset(0.08, 0.62),
         cue: 3,
-        seconds: 1,
+        seconds: 0.8,
+      ),
+      Pose(
+        trunk: 52,
+        arm: Limb(180, 180),
+        feet: Offset(0, Body.ankleHeight),
+        anchorAt: Offset(0.08, 0.48),
+        seconds: 0.4,
+      ),
+      Pose(
+        trunk: 54,
+        arm: Limb(180, 180),
+        feet: Offset(0, Body.ankleHeight),
+        anchorAt: Offset(0.08, 0.36),
+        seconds: 0.4,
+      ),
+      Pose(
+        trunk: 52,
+        arm: Limb(180, 180),
+        feet: Offset(0, Body.ankleHeight),
+        anchorAt: Offset(0.08, 0.225),
+        seconds: 0.4,
       ),
     ],
   ),
+  // Beta 5.0.1 (owner): down and back up by the same path.
   'romanian-deadlift': Demo(
     anchor: Joint.hand,
     gear: [Plate()],
@@ -160,7 +206,7 @@ const Map<String, Demo> exerciseDemos = {
         feet: Offset(0, Body.ankleHeight),
         anchorAt: Offset(0.06, 0.85),
         cue: 0,
-        seconds: 1.2,
+        seconds: 0.3,
         hold: 0.3,
       ),
       Pose(
@@ -169,6 +215,7 @@ const Map<String, Demo> exerciseDemos = {
         feet: Offset(0, Body.ankleHeight),
         anchorAt: Offset(0.06, 0.66),
         cue: 1,
+        seconds: 1,
       ),
       Pose(
         trunk: 65,
@@ -176,7 +223,22 @@ const Map<String, Demo> exerciseDemos = {
         feet: Offset(0, Body.ankleHeight),
         anchorAt: Offset(0.06, 0.45),
         cue: 2,
+        seconds: 1,
         hold: 0.3,
+      ),
+      Pose(
+        trunk: 35,
+        arm: Limb(180, 180),
+        feet: Offset(0, Body.ankleHeight),
+        anchorAt: Offset(0.06, 0.66),
+        seconds: 0.8,
+      ),
+      Pose(
+        trunk: 2,
+        arm: Limb(180, 180),
+        feet: Offset(0, Body.ankleHeight),
+        anchorAt: Offset(0.06, 0.85),
+        seconds: 0.8,
       ),
     ],
   ),
@@ -294,6 +356,8 @@ const Map<String, Demo> exerciseDemos = {
   ),
 
   /* -------------------------------------------------- horizontal push -- */
+  // Beta 5.0.1 (owner): the bar travels in an arc — over the shoulders at
+  // the top, the lower chest at the bottom.
   'barbell-bench-press': Demo(
     anchor: Joint.hip,
     anchorAt: Offset(0.25, 0.53),
@@ -303,25 +367,37 @@ const Map<String, Demo> exerciseDemos = {
       Pose(
         trunk: -90,
         feet: Offset(0.8, Body.ankleHeight),
-        hands: Offset(-0.2, 1.1),
+        hands: Offset(-0.25, 1.1),
         cue: 0,
-        seconds: 1,
+        seconds: 0.5,
         hold: 0.3,
       ),
       Pose(
         trunk: -90,
         feet: Offset(0.8, Body.ankleHeight),
-        hands: Offset(-0.12, 0.7),
+        hands: Offset(-0.18, 0.95),
+        seconds: 0.9,
+      ),
+      Pose(
+        trunk: -90,
+        feet: Offset(0.8, Body.ankleHeight),
+        hands: Offset(-0.06, 0.7),
         cue: 1,
-        seconds: 1.8,
+        seconds: 0.9,
         hold: 0.3,
       ),
       Pose(
         trunk: -90,
         feet: Offset(0.8, Body.ankleHeight),
-        hands: Offset(-0.2, 1.1),
+        hands: Offset(-0.15, 0.92),
         cue: 2,
-        seconds: 1,
+        seconds: 0.5,
+      ),
+      Pose(
+        trunk: -90,
+        feet: Offset(0.8, Body.ankleHeight),
+        hands: Offset(-0.25, 1.1),
+        seconds: 0.5,
       ),
     ],
   ),
@@ -391,19 +467,31 @@ const Map<String, Demo> exerciseDemos = {
   ),
 
   /* ---------------------------------------------------- vertical push -- */
+  // Beta 5.0.1 (owner): the bar goes around the face — the head moves back
+  // as it passes, then through once it is overhead.
   'overhead-press': Demo(
-    gear: [Plate()],
+    gear: [Plate(radius: 0.2)],
     elbowToward: Offset(1, -1),
     frames: [
       Pose(
-        head: -12,
-        hands: Offset(0.1, 1.38),
+        head: -10,
+        hands: Offset(0.16, 1.4),
         cue: 0,
-        seconds: 1.6,
+        seconds: 0.4,
         hold: 0.3,
       ),
-      Pose(head: -15, hands: Offset(0.05, 1.62), cue: 1, seconds: 0.6),
-      Pose(hands: Offset(0.02, 1.97), cue: 2, seconds: 0.6, hold: 0.4),
+      Pose(
+        trunk: -3,
+        head: -28,
+        hands: Offset(0.17, 1.62),
+        cue: 1,
+        seconds: 0.5,
+      ),
+      Pose(head: -8, hands: Offset(0.08, 1.84), seconds: 0.4),
+      Pose(hands: Offset(0.03, 1.97), cue: 2, seconds: 0.4, hold: 0.4),
+      Pose(head: -8, hands: Offset(0.08, 1.84), seconds: 0.5),
+      Pose(trunk: -3, head: -28, hands: Offset(0.17, 1.62), seconds: 0.5),
+      Pose(head: -10, hands: Offset(0.16, 1.4), seconds: 0.5),
     ],
   ),
   'seated-dumbbell-shoulder-press': Demo(
@@ -575,53 +663,27 @@ const Map<String, Demo> exerciseDemos = {
       Pose(arm: Limb(4, 2), leg: Limb(185, 205), cue: 2, seconds: 1.8),
     ],
   ),
+  // Beta 5.0.1 (owner): from the front, so the wide grip and the bar
+  // coming down to the chest both show.
   'lat-pulldown': Demo(
-    anchor: Joint.hip,
-    anchorAt: Offset(0, 0.54),
-    elbowToward: Offset(-0.3, -1),
+    view: DemoView.front,
+    seated: true,
+    elbowToward: Offset(1, -0.6),
     gear: [
-      Bench(from: -0.25, to: 0.2, height: 0.46),
-      Pad(Joint.knee, from: Joint.hip, side: 0.1, along: -0.06),
-      Cable(Offset(0, 2.2), handle: true),
+      Bench(from: -0.26, to: 0.26, height: 0.47),
+      Cable(Offset(0, 2.1)),
+      Bar(),
     ],
     frames: [
-      Pose(
-        trunk: -8,
-        leg: Limb(95, 180),
-        hands: Offset(0, 1.58),
-        cue: 0,
-        seconds: 1.8,
-        hold: 0.3,
-      ),
-      Pose(
-        trunk: -12,
-        leg: Limb(95, 180),
-        hands: Offset(0.04, 1.0),
-        cue: 1,
-        seconds: 1,
-        hold: 0.3,
-      ),
-      Pose(
-        trunk: -8,
-        leg: Limb(95, 180),
-        hands: Offset(0, 1.58),
-        cue: 2,
-        seconds: 1.8,
-      ),
+      Pose(hands: Offset(0.42, 1.55), cue: 0, seconds: 1.8, hold: 0.3),
+      Pose(hands: Offset(0.36, 1.02), cue: 1, seconds: 1, hold: 0.3),
+      Pose(hands: Offset(0.42, 1.55), cue: 2, seconds: 1.8),
     ],
   ),
 
   /* -------------------------------------------------------------- arms -- */
   'dumbbell-curl': Demo(
     gear: [Dumbbells()],
-    frames: [
-      Pose(arm: Limb(178, 178), cue: 0, seconds: 0.8, hold: 0.2),
-      Pose(arm: Limb(175, 15), cue: 1, seconds: 1, hold: 0.3),
-      Pose(arm: Limb(177, 100), cue: 2, seconds: 0.9),
-    ],
-  ),
-  'hammer-curl': Demo(
-    gear: [Dumbbells(neutral: true)],
     frames: [
       Pose(arm: Limb(178, 178), cue: 0, seconds: 0.8, hold: 0.2),
       Pose(arm: Limb(175, 15), cue: 1, seconds: 1, hold: 0.3),
@@ -636,12 +698,14 @@ const Map<String, Demo> exerciseDemos = {
       Pose(trunk: 8, arm: Limb(176, 75), cue: 2, seconds: 1.6),
     ],
   ),
+  // Beta 5.0.1 (owner): the dumbbell drops behind the head (drawn behind
+  // the body), the elbows stay up.
   'overhead-triceps-extension': Demo(
-    gear: [Dumbbells(single: true)],
+    gear: [Dumbbells(single: true, behind: true)],
     frames: [
-      Pose(arm: Limb(5, 3), cue: 0, seconds: 1, hold: 0.3),
-      Pose(arm: Limb(8, 200), cue: 1, seconds: 1.6, hold: 0.2),
-      Pose(arm: Limb(5, 3), cue: 2, seconds: 1),
+      Pose(arm: Limb(8, 4), cue: 0, seconds: 0.4, hold: 0.3),
+      Pose(arm: Limb(12, 235), cue: 1, seconds: 1.6, hold: 0.2),
+      Pose(arm: Limb(8, 4), cue: 2, seconds: 1, hold: 0.3),
     ],
   ),
 
@@ -655,24 +719,31 @@ const Map<String, Demo> exerciseDemos = {
       Pose(arm: Limb(130, 135), cue: 2, seconds: 0.9),
     ],
   ),
+  // Beta 5.0.1 (owner): from the front, bent well over — the head drops
+  // between the shoulders and the knees bend.
   'rear-delt-fly': Demo(
     view: DemoView.front,
+    bentKnees: true,
     gear: [Dumbbells()],
     frames: [
-      Pose(trunk: 70, arm: Limb(180, 180), cue: 0, seconds: 0.9, hold: 0.2),
-      Pose(trunk: 70, arm: Limb(95, 100), cue: 1, seconds: 1, hold: 0.3),
-      Pose(trunk: 70, arm: Limb(140, 145), cue: 2, seconds: 0.9),
+      Pose(trunk: 75, arm: Limb(180, 180), cue: 0, seconds: 0.9, hold: 0.2),
+      Pose(trunk: 75, arm: Limb(95, 100), cue: 1, seconds: 1, hold: 0.3),
+      Pose(trunk: 75, arm: Limb(140, 145), cue: 2, seconds: 0.9),
     ],
   ),
 
   /* ------------------------------------------------------------- chest -- */
+  // Beta 5.0.1 (owner): elbows stay out and soft, hugging a barrel.
   'cable-fly': Demo(
     view: DemoView.front,
-    gear: [Cable(Offset(0.85, 1.55), handle: true, mirrored: true)],
+    elbowToward: Offset(0.6, -1),
+    gear: [Cable(Offset(0.85, 1.5), handle: true, mirrored: true)],
     frames: [
-      Pose(hands: Offset(0.72, 1.42), cue: 0, seconds: 0.2, hold: 0.3),
-      Pose(hands: Offset(0.06, 1.24), cue: 1, seconds: 1.2, hold: 0.3),
-      Pose(hands: Offset(0.72, 1.42), cue: 2, seconds: 1.8),
+      Pose(hands: Offset(0.72, 1.4), cue: 0, seconds: 0.2, hold: 0.3),
+      Pose(hands: Offset(0.42, 1.34), seconds: 0.6),
+      Pose(hands: Offset(0.1, 1.28), cue: 1, seconds: 0.6, hold: 0.4),
+      Pose(hands: Offset(0.42, 1.34), cue: 2, seconds: 0.9),
+      Pose(hands: Offset(0.72, 1.4), seconds: 0.9),
     ],
   ),
 
@@ -865,6 +936,8 @@ const Map<String, (String, String)> demoVariants = {
     'Bend your knees as they come up: easier.'
   ),
   'ez-bar-curl': ('dumbbell-curl', 'An EZ bar in both hands.'),
+  // Beta 5.0.1 (owner): it moves exactly like the curl.
+  'hammer-curl': ('dumbbell-curl', 'Palms facing each other the whole way.'),
 };
 
 /// The demo for an exercise, with the note when it is a variant's.

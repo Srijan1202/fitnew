@@ -142,6 +142,7 @@ class _ExerciseDemoViewState extends State<ExerciseDemoView>
                   dim: p.ink35,
                   accent: p.accent,
                   rule: p.rule,
+                  paper: p.paper,
                 ),
               ),
             ),
@@ -260,7 +261,7 @@ Rect demoBounds(Demo demo) {
         break;
     }
   }
-  const m = 0.08;
+  const m = 0.05;
   return Rect.fromLTRB(minX - m, maxY + m, maxX + m, minY - m);
 }
 
@@ -275,6 +276,7 @@ class DemoPainter extends CustomPainter {
     required this.dim,
     required this.accent,
     required this.rule,
+    required this.paper,
   });
 
   final Demo demo;
@@ -284,6 +286,10 @@ class DemoPainter extends CustomPainter {
   final Color dim;
   final Color accent;
   final Color rule;
+
+  /// The background: each body part is outlined in it, so an arm in front
+  /// of the body (a curl, a pulldown) stays visible (beta 5.0.1).
+  final Color paper;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -303,7 +309,49 @@ class DemoPainter extends CustomPainter {
     Paint fill(Color col) => Paint()..color = col;
     void bone(Offset a, Offset b, Color col, double w) =>
         canvas.drawLine(c(a), c(b), stroke(col, w));
+    // A body part: outlined in the background first.
+    void part(Offset a, Offset b, Color col, double w) {
+      canvas.drawLine(c(a), c(b), stroke(paper, w + 0.035));
+      canvas.drawLine(c(a), c(b), stroke(col, w));
+    }
+
+    void head(Offset at) {
+      canvas.drawCircle(c(at), (Body.head + 0.0175) * s, fill(paper));
+      canvas.drawCircle(c(at), Body.head * s, fill(ink));
+    }
+
     Offset mirror(Offset o) => Offset(-o.dx, o.dy);
+
+    // Dumbbells: end-on (palms forward), or showing their length (palms in,
+    // or one held upright in both hands).
+    void dumbbells(Dumbbells g) {
+      final hands = f.view == DemoView.front
+          ? [f[Joint.hand], mirror(f[Joint.hand])]
+          : g.single || g.nearOnly
+              ? [f[Joint.hand]]
+              : [f[Joint.handFar], f[Joint.hand]];
+      for (final h in hands) {
+        if (g.single || (g.neutral && f.view == DemoView.side)) {
+          final Offset n;
+          if (g.single) {
+            n = const Offset(0, 1);
+          } else {
+            final d = f[Joint.hand] - f[Joint.elbow];
+            final u = d / d.distance;
+            n = Offset(-u.dy, u.dx);
+          }
+          bone(h - n * 0.1, h + n * 0.1, dim, 0.035);
+          for (final e in [h - n * 0.1, h + n * 0.1]) {
+            canvas.drawCircle(c(e), 0.055 * s, fill(dim));
+            canvas.drawCircle(c(e), 0.055 * s, stroke(ink, 0.008));
+          }
+        } else {
+          final r = 0.075 * s;
+          canvas.drawCircle(c(h), r, fill(dim));
+          canvas.drawCircle(c(h), r, stroke(ink, 0.008));
+        }
+      }
+    }
 
     // The floor.
     bone(
@@ -346,6 +394,8 @@ class DemoPainter extends CustomPainter {
             Rect.fromPoints(c(Offset(from, height)), c(Offset(to, 0))),
             fill(rule),
           );
+        case Dumbbells():
+          dumbbells(g);
         case PullBar(:final at):
           bone(
             at + const Offset(-0.12, 0.15),
@@ -365,9 +415,13 @@ class DemoPainter extends CustomPainter {
             );
             canvas.drawCircle(c(pul), 0.04 * s, fill(dim));
             canvas.drawLine(c(pul), c(hand), stroke(dim, 0.008));
-            if (handle) canvas.drawCircle(c(hand), 0.03 * s, fill(accent));
+            if (handle) canvas.drawCircle(c(hand), 0.03 * s, fill(dim));
           }
-          cable(pulley, f[Joint.hand]);
+          final bar = demo.gear.any((g) => g is Bar);
+          cable(
+            pulley,
+            bar ? Offset(0, f[Joint.hand].dy) : f[Joint.hand],
+          );
           if (mirrored) cable(mirror(pulley), f[Joint.handFar]);
         case Platform(:final angle, :final rail, :final length):
           if (rail != null) bone(rail.$1, rail.$2, rule, 0.025);
@@ -386,19 +440,19 @@ class DemoPainter extends CustomPainter {
 
     if (f.view == DemoView.side) {
       // Far limbs, dimmer and behind.
-      bone(f[Joint.hip], f[Joint.kneeFar], dim, 0.11);
-      bone(f[Joint.kneeFar], f[Joint.ankleFar], dim, 0.09);
-      bone(f[Joint.ankleFar], f[Joint.toeFar], dim, 0.06);
-      bone(f[Joint.shoulder], f[Joint.elbowFar], dim, 0.085);
-      bone(f[Joint.elbowFar], f[Joint.handFar], dim, 0.075);
-      // The body.
-      bone(f[Joint.hip], f[Joint.shoulder], ink, 0.17);
-      canvas.drawCircle(c(f[Joint.head]), Body.head * s, fill(ink));
-      bone(f[Joint.hip], f[Joint.knee], ink, 0.11);
-      bone(f[Joint.knee], f[Joint.ankle], ink, 0.09);
-      bone(f[Joint.ankle], f[Joint.toe], ink, 0.06);
-      bone(f[Joint.shoulder], f[Joint.elbow], ink, 0.085);
-      bone(f[Joint.elbow], f[Joint.hand], ink, 0.075);
+      part(f[Joint.hip], f[Joint.kneeFar], dim, 0.11);
+      part(f[Joint.kneeFar], f[Joint.ankleFar], dim, 0.09);
+      part(f[Joint.ankleFar], f[Joint.toeFar], dim, 0.06);
+      part(f[Joint.shoulder], f[Joint.elbowFar], dim, 0.085);
+      part(f[Joint.elbowFar], f[Joint.handFar], dim, 0.075);
+      // The body, then the near leg and arm over it, each outlined.
+      part(f[Joint.hip], f[Joint.shoulder], ink, 0.17);
+      head(f[Joint.head]);
+      part(f[Joint.hip], f[Joint.knee], ink, 0.11);
+      part(f[Joint.knee], f[Joint.ankle], ink, 0.09);
+      part(f[Joint.ankle], f[Joint.toe], ink, 0.06);
+      part(f[Joint.shoulder], f[Joint.elbow], ink, 0.085);
+      part(f[Joint.elbow], f[Joint.hand], ink, 0.075);
     } else {
       final sh = f[Joint.shoulder];
       final hip = f[Joint.hip];
@@ -416,15 +470,15 @@ class DemoPainter extends CustomPainter {
           ..strokeJoin = StrokeJoin.round,
       );
       canvas.drawPath(torso, stroke(ink, 0.06));
-      canvas.drawCircle(c(f[Joint.head]), Body.head * s, fill(ink));
+      head(f[Joint.head]);
       for (final side in [false, true]) {
         Offset at(Joint j) => side ? mirror(f[j]) : f[j];
         final hipJ = Offset((side ? -1 : 1) * Body.hipHalf, hip.dy);
-        bone(hipJ, at(Joint.knee), ink, 0.11);
-        bone(at(Joint.knee), at(Joint.ankle), ink, 0.09);
-        bone(at(Joint.ankle), at(Joint.toe), ink, 0.06);
-        bone(at(Joint.shoulder), at(Joint.elbow), ink, 0.085);
-        bone(at(Joint.elbow), at(Joint.hand), ink, 0.075);
+        part(hipJ, at(Joint.knee), ink, 0.11);
+        part(at(Joint.knee), at(Joint.ankle), ink, 0.09);
+        part(at(Joint.ankle), at(Joint.toe), ink, 0.06);
+        part(at(Joint.shoulder), at(Joint.elbow), ink, 0.085);
+        part(at(Joint.elbow), at(Joint.hand), ink, 0.075);
       }
     }
 
@@ -436,30 +490,23 @@ class DemoPainter extends CustomPainter {
           canvas.drawCircle(
             c(f[at]),
             radius * s,
-            fill(dim.withValues(alpha: 0.55)),
+            fill(dim.withValues(alpha: 0.35)),
           );
           canvas.drawCircle(c(f[at]), radius * s, stroke(dim, 0.02));
           canvas.drawCircle(c(f[at]), 0.035 * s, fill(dim));
-        case Dumbbells(:final single, :final nearOnly, :final neutral):
-          final hands = f.view == DemoView.front
-              ? [f[Joint.hand], mirror(f[Joint.hand])]
-              : single || nearOnly
-                  ? [f[Joint.hand]]
-                  : [f[Joint.handFar], f[Joint.hand]];
-          for (final h in hands) {
-            if (neutral && f.view == DemoView.side) {
-              final d = f[Joint.hand] - f[Joint.elbow];
-              final u = d / d.distance;
-              final n = Offset(-u.dy, u.dx);
-              bone(h - n * 0.11, h + n * 0.11, dim, 0.07);
-            } else {
-              final r = (single ? 0.09 : 0.075) * s;
-              canvas.drawCircle(c(h), r, fill(dim));
-              canvas.drawCircle(c(h), r, stroke(ink, 0.008));
-            }
-          }
+        case Dumbbells():
+          dumbbells(g);
         case Pad(:final radius):
           canvas.drawCircle(c(g.centre(f)), radius * s, fill(dim));
+        case Bar():
+          final l = mirror(f[Joint.hand]);
+          final r = f[Joint.hand];
+          bone(
+            l - const Offset(0.12, 0),
+            r + const Offset(0.12, 0),
+            dim,
+            0.035,
+          );
         default:
           break;
       }
@@ -470,6 +517,7 @@ class DemoPainter extends CustomPainter {
   bool shouldRepaint(DemoPainter old) =>
       old.figure != figure ||
       old.ink != ink ||
+      old.paper != paper ||
       old.accent != accent ||
       old.bounds != bounds;
 }

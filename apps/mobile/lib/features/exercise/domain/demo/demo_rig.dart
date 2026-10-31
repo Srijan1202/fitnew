@@ -38,6 +38,14 @@ Offset dirOf(double deg) {
 double angleOf(Offset v) => math.atan2(v.dx, v.dy) * 180 / math.pi;
 
 double _lerp(double a, double b, double t) => a + (b - a) * t;
+
+/// An angle from [a] toward [b] the short way round (beta 5.0.1: a row's arm
+/// going from 180 to -70 swung up over the back the long way).
+double _lerpAngle(double a, double b, double t) {
+  final d = ((b - a) % 360 + 540) % 360 - 180;
+  return a + d * t;
+}
+
 Offset _lerpO(Offset a, Offset b, double t) =>
     Offset(_lerp(a.dx, b.dx, t), _lerp(a.dy, b.dy, t));
 
@@ -50,7 +58,7 @@ class Limb {
   final double lower;
 
   Limb lerp(Limb o, double t) =>
-      Limb(_lerp(upper, o.upper, t), _lerp(lower, o.lower, t));
+      Limb(_lerpAngle(upper, o.upper, t), _lerpAngle(lower, o.lower, t));
 
   @override
   bool operator ==(Object other) =>
@@ -152,16 +160,16 @@ class Pose {
   final int? cue;
 
   Pose lerp(Pose b, double t) => Pose(
-        trunk: _lerp(trunk, b.trunk, t),
-        head: _lerp(head, b.head, t),
+        trunk: _lerpAngle(trunk, b.trunk, t),
+        head: _lerpAngle(head, b.head, t),
         leg: leg.lerp(b.leg, t),
         legFar: legFar == null && b.legFar == null
             ? null
             : (legFar ?? leg).lerp(b.legFar ?? b.leg, t),
-        foot: _lerp(foot, b.foot, t),
+        foot: _lerpAngle(foot, b.foot, t),
         footFar: footFar == null && b.footFar == null
             ? null
-            : _lerp(footFar ?? foot, b.footFar ?? b.foot, t),
+            : _lerpAngle(footFar ?? foot, b.footFar ?? b.foot, t),
         arm: arm.lerp(b.arm, t),
         armFar: armFar == null && b.armFar == null
             ? null
@@ -199,6 +207,13 @@ class Plate extends Gear {
   bool get front => true;
 }
 
+/// A straight bar held in both hands, seen from the front (lat pulldown).
+class Bar extends Gear {
+  const Bar();
+  @override
+  bool get front => true;
+}
+
 /// A dumbbell in each hand (or one held in both, [single]; or the near
 /// hand only, [nearOnly]). Palms forward it is seen end-on; [neutral]
 /// (palms in) shows its length, square to the forearm.
@@ -207,12 +222,20 @@ class Dumbbells extends Gear {
     this.single = false,
     this.nearOnly = false,
     this.neutral = false,
+    this.behind = false,
   });
+
+  /// One dumbbell held upright in both hands (goblet squat, overhead
+  /// extension).
   final bool single;
   final bool nearOnly;
   final bool neutral;
+
+  /// Drawn behind the body (an overhead extension's dumbbell behind the
+  /// head).
+  final bool behind;
   @override
-  bool get front => true;
+  bool get front => !behind;
 }
 
 /// A flat bench: its top from [from] to [to] at [height]; a back pad from
@@ -309,6 +332,8 @@ class Demo {
     this.kneeToward = const Offset(1, 0),
     this.elbowToward = const Offset(0, -1),
     this.holdOnly = false,
+    this.seated = false,
+    this.bentKnees = false,
   });
 
   final List<Pose> frames;
@@ -323,6 +348,14 @@ class Demo {
 
   /// A hold (plank): one position, no reps.
   final bool holdOnly;
+
+  /// Front view, seated (lat pulldown): the thighs come toward you, so they
+  /// look short; the shins hang to the floor.
+  final bool seated;
+
+  /// Front view: knees bent and apart, for a hinge seen from the front
+  /// (rear delt fly).
+  final bool bentKnees;
 
   /// One loop, seconds: each move and hold, and back to the start.
   double get period =>
@@ -559,19 +592,27 @@ class Demo {
   Figure _front(Pose p) {
     final j = <Joint, Offset>{};
     final torso = Body.torso * math.cos(p.trunk * math.pi / 180).abs();
-    const hipY = Body.ankleHeight + Body.thigh + Body.shin;
-    j[Joint.hip] = const Offset(0, hipY);
+    final hipY = seated ? 0.53 : Body.ankleHeight + Body.thigh + Body.shin;
+    j[Joint.hip] = Offset(0, hipY);
     j[Joint.shoulder] = Offset(Body.shoulderHalf, hipY + torso);
-    // Leaning toward you, the head drops in front of the shoulders.
+    // Leaning toward you, the head drops in front of the shoulders (bent
+    // well over, below their line: beta 5.0.1).
+    final lean = math.cos(p.trunk * math.pi / 180).abs();
     j[Joint.head] = Offset(
       0,
-      hipY +
-          torso +
-          (Body.neck + Body.head) * math.cos(p.trunk * math.pi / 180).abs(),
+      hipY + torso + (Body.neck + Body.head) * (lean * 1.4 - 0.4),
     );
-    j[Joint.knee] = const Offset(Body.hipHalf, hipY - Body.thigh);
-    j[Joint.ankle] = const Offset(Body.hipHalf, Body.ankleHeight);
-    j[Joint.toe] = const Offset(Body.hipHalf + 0.03, 0.01);
+    final kneeX = seated
+        ? Body.hipHalf + 0.04
+        : bentKnees
+            ? Body.hipHalf + 0.05
+            : Body.hipHalf;
+    j[Joint.knee] = Offset(
+      kneeX,
+      seated ? Body.ankleHeight + Body.shin : hipY - Body.thigh,
+    );
+    j[Joint.ankle] = Offset(kneeX, Body.ankleHeight);
+    j[Joint.toe] = Offset(kneeX + 0.03, 0.01);
     if (p.hands != null) {
       _reach(
         j,
