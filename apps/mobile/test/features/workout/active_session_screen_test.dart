@@ -135,6 +135,21 @@ void main() {
   Text textOf(WidgetTester tester, String key) =>
       tester.widget<Text>(find.byKey(ValueKey(key)));
 
+  testWidgets('beta 5.0: How shows the lift demo in a sheet, without leaving',
+      (tester) async {
+    final s = await pumpSession(tester);
+    final k = squatKey(s);
+    await tester.tap(find.byKey(ValueKey('$k.how')));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('demo.sheet')), findsOneWidget);
+    expect(find.byKey(const ValueKey('demo.canvas')), findsOneWidget);
+    // Back to the session, where it was.
+    await tester.tapAt(const Offset(20, 20));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('demo.sheet')), findsNothing);
+    expect(find.text('Barbell Back Squat'), findsOneWidget);
+  });
+
   testWidgets(
       'opens on the first exercise, pre-filled from the plan and last time, with "Last time" shown',
       (tester) async {

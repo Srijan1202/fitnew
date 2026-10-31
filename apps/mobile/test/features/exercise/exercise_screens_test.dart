@@ -241,7 +241,8 @@ void main() {
     expect(tester.widget<Text>(skip).style?.color, FitColors.amber);
     // Steps verbatim and numbered.
     expect(find.text('Set the bar across your upper back.'), findsOneWidget);
-    expect(find.text('3'), findsOneWidget);
+    // Step 3, and the demo's key moment for it (beta 5.0).
+    expect(find.text('3'), findsNWidgets(2));
     // Alternatives with their reason and equipment.
     expect(find.text('Goblet Squat'), findsOneWidget);
     expect(find.text('Different equipment · Dumbbells'), findsOneWidget);

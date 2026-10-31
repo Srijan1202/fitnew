@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/failure.dart';
+import '../../domain/demo/exercise_demos.dart';
 import '../../../../core/routing/navigation.dart';
 import '../../../../core/routing/router.dart';
 import '../../../../core/theme/tokens.dart';
@@ -430,6 +431,18 @@ class ExerciseRow extends StatelessWidget {
                   icon: Icon(
                     Icons.info_outline,
                     size: 20,
+                    color: FitColors.ink60,
+                  ),
+                ),
+              // Beta 5.0: this lift has a demo.
+              if (demoFor(item.slug) != null)
+                Padding(
+                  padding: const EdgeInsets.only(right: FitSpacing.xs),
+                  child: Icon(
+                    Icons.play_circle_outline,
+                    key: ValueKey('exercise.${item.slug}.demo'),
+                    size: 18,
+                    semanticLabel: 'Has a demo',
                     color: FitColors.ink60,
                   ),
                 ),

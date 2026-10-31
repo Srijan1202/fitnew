@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/tokens.dart';
+import '../../../exercise/domain/demo/exercise_demos.dart';
+import '../../../exercise/presentation/widgets/exercise_demo_sheet.dart';
 import '../../../training/domain/entities/program.dart';
 import '../../../training/presentation/widgets/set_row.dart';
 import '../../domain/entities/workout.dart';
@@ -164,7 +166,35 @@ class SessionExerciseCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(x.name, style: textTheme.titleLarge),
+                      Row(
+                        children: <Widget>[
+                          Flexible(
+                            child: Text(x.name, style: textTheme.titleLarge),
+                          ),
+                          // Beta 5.0 (owner): how to do it, without leaving.
+                          if (demoFor(x.slug) != null)
+                            IconButton(
+                              key: ValueKey('$key.how'),
+                              tooltip: 'How to do it',
+                              onPressed: () => showExerciseDemoSheet(
+                                context,
+                                exerciseId: x.exerciseId,
+                                slug: x.slug,
+                                name: x.name,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints.tightFor(
+                                width: 32,
+                                height: 28,
+                              ),
+                              iconSize: 20,
+                              icon: Icon(
+                                Icons.play_circle_outline,
+                                color: FitColors.ink60,
+                              ),
+                            ),
+                        ],
+                      ),
                       const SizedBox(height: FitSpacing.xs),
                       Text(
                         [
