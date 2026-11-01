@@ -35,8 +35,14 @@ export async function api<T>(method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
     const e = (json as { error?: { code?: string; message?: string } } | null)?.error;
     throw new ApiError(res.status, e?.code ?? 'UNKNOWN', e?.message ?? `The API answered ${res.status}.`);
   }
+  // Beta 5.3: every change that went through says so (a toast), and the
+  // sidebar's waiting counts are read again.
+  if (method !== 'GET' && typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(SAVED_EVENT));
   return json as T;
 }
+
+/** Fired after a change the API accepted (the shell shows "Saved"). */
+export const SAVED_EVENT = 'fitos:saved';
 
 /** Beta 3.6: a file the API serves (a feedback picture), with the same sign-in. */
 export async function apiBlob(path: string): Promise<Blob> {

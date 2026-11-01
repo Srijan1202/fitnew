@@ -4,52 +4,154 @@ import type { AdminOverview } from '@fitos/contracts';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { Badge, Header, Status, pct, useGet, when } from '@/components/ui';
+import { Icon, type IconName } from '@/components/icons';
+import { Badge, Bars, Empty, Header, Status, pct, useGet, when } from '@/components/ui';
 
 const STATE_TONE = { ok: 'ok', stale: 'warn', failing: 'bad', never: 'muted' } as const;
 
-/** §20: provider health (per-endpoint staleness) and the acceptance-rate dashboards. */
+/** One number on the dashboard; a link when it leads somewhere to act. */
+function Stat({ label, value, detail, icon, href }: { label: string; value: string | number; detail: string; icon: IconName; href?: string }) {
+  const body = (
+    <>
+      <span className="tile-icon">
+        <Icon name={icon} size={17} />
+      </span>
+      <p className="eyebrow">{label}</p>
+      <p className="big">{value}</p>
+      <p className="muted small">{detail}</p>
+    </>
+  );
+  return href === undefined ? (
+    <div className="tile">{body}</div>
+  ) : (
+    <Link href={href} className="tile link">
+      {body}
+    </Link>
+  );
+}
+
+/** §20, beta 5.3: the dashboard — the numbers first, then how people respond, then the menu mirror's health. */
 export default function Overview() {
   const [days, setDays] = useState(30);
   const { data, error, loading, reload } = useGet<AdminOverview>(`/admin/overview?days=${days}`);
+  const healthy = data?.endpoints.filter((e) => e.state === 'ok').length ?? 0;
 
   return (
     <>
-      <Header eyebrow="Overview" title="How FITOS is doing">
-        Mess menu mirror health, the correction queue, and how people respond to TODAY and to reminders.
+      <Header
+        eyebrow="Overview"
+        title="How FITOS is doing"
+        actions={
+          <>
+            <div className="segmented" role="group" aria-label="Period">
+              {[7, 30, 90].map((d) => (
+                <button key={d} className={d === days ? 'active' : ''} onClick={() => setDays(d)}>
+                  {d} days
+                </button>
+              ))}
+            </div>
+            <button className="icon-button" aria-label="Refresh" title="Refresh" onClick={reload}>
+              <Icon name="refresh" />
+            </button>
+          </>
+        }
+      >
+        People, the correction queue, how people respond to TODAY suggestions and to reminders, and the mess menu mirror&apos;s health.
       </Header>
-      <div className="row">
-        {[7, 30, 90].map((d) => (
-          <button key={d} className={`button small ${d === days ? 'primary' : ''}`} onClick={() => setDays(d)}>
-            Last {d} days
-          </button>
-        ))}
-        <button className="button small" onClick={reload}>Refresh</button>
-      </div>
       <Status error={error} loading={loading && data === null} />
       {data !== null && (
         <>
           <section className="tiles">
-            <div className="tile">
-              <p className="eyebrow">Users</p>
-              <p className="big">{data.users.total}</p>
-              <p className="muted small">{data.users.active7d} active in the last 7 days</p>
-            </div>
-            <Link href="/mess" className="tile link">
-              <p className="eyebrow">Corrections waiting</p>
-              <p className="big">{data.pendingCorrections}</p>
-              <p className="muted small">Review the queue →</p>
-            </Link>
-            <div className="tile">
-              <p className="eyebrow">Menu endpoints</p>
-              <p className="big">
-                {data.endpoints.filter((e) => e.state === 'ok').length}/{data.endpoints.length}
-              </p>
-              <p className="muted small">healthy right now</p>
-            </div>
+            <Stat label="People" value={data.users.total} detail={`${data.users.active7d} active in the last 7 days`} icon="users" href="/users" />
+            <Stat
+              label="Active this week"
+              value={data.users.total === 0 ? '—' : `${Math.round((data.users.active7d / data.users.total) * 100)}%`}
+              detail="of everyone signed up"
+              icon="activity"
+            />
+            <Stat label="Corrections waiting" value={data.pendingCorrections} detail="Review the queue →" icon="mess" href="/mess" />
+            <Stat
+              label="Menu endpoints"
+              value={`${healthy}/${data.endpoints.length}`}
+              detail={healthy === data.endpoints.length ? 'all healthy' : 'need a look'}
+              icon="activity"
+            />
           </section>
 
-          <h2>Menu mirror — per endpoint</h2>
+          <div className="panels">
+            <section className="card">
+              <div className="panel-head">
+                <h3>TODAY suggestions accepted</h3>
+                <span className="muted small">last {data.days} days</span>
+              </div>
+              {data.recommendations.length === 0 ? (
+                <Empty title="No TODAY events yet">Nothing was shown in this period.</Empty>
+              ) : (
+                <>
+                  <Bars rows={data.recommendations.map((r) => ({ label: r.kind, value: r.acceptRate }))} max={100} format={(v) => `${v}%`} />
+                  <p className="muted small" style={{ marginBottom: 0 }}>
+                    {data.recommendations.reduce((s, r) => s + r.shown, 0)} shown ·{' '}
+                    {data.recommendations.reduce((s, r) => s + r.accepted, 0)} accepted ·{' '}
+                    {data.recommendations.reduce((s, r) => s + r.dismissed, 0)} dismissed
+                  </p>
+                </>
+              )}
+            </section>
+            <section className="card">
+              <div className="panel-head">
+                <h3>Reminders opened</h3>
+                <span className="muted small">last {data.days} days</span>
+              </div>
+              {data.notifications.length === 0 ? (
+                <Empty title="No reminders sent">Nothing went out in this period.</Empty>
+              ) : (
+                <>
+                  <Bars rows={data.notifications.map((r) => ({ label: r.kind, value: r.openRate }))} max={100} format={(v) => `${v}%`} />
+                  <p className="muted small" style={{ marginBottom: 0 }}>
+                    {data.notifications.reduce((s, r) => s + r.sent, 0)} sent · {data.notifications.reduce((s, r) => s + r.opened, 0)} opened ·{' '}
+                    {data.notifications.reduce((s, r) => s + r.cancelled, 0)} cancelled (done first)
+                  </p>
+                </>
+              )}
+            </section>
+          </div>
+
+          <details className="card" style={{ marginTop: 14 }}>
+            <summary style={{ cursor: 'pointer', fontWeight: 600 }}>The numbers behind the charts</summary>
+            {data.recommendations.length > 0 && (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Kind</th><th>Shown</th><th>Opened</th><th>Accepted</th><th>Dismissed</th><th>Completed</th><th>Accept rate</th><th>Dismiss rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.recommendations.map((r) => (
+                    <tr key={r.kind}>
+                      <td>{r.kind}</td><td>{r.shown}</td><td>{r.opened}</td><td>{r.accepted}</td><td>{r.dismissed}</td><td>{r.completed}</td>
+                      <td><b>{pct(r.acceptRate)}</b></td><td>{pct(r.dismissRate)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {data.notifications.length > 0 && (
+              <table>
+                <thead>
+                  <tr><th>Kind</th><th>Sent</th><th>Opened</th><th>Cancelled (done first)</th><th>Open rate</th></tr>
+                </thead>
+                <tbody>
+                  {data.notifications.map((r) => (
+                    <tr key={r.kind}>
+                      <td>{r.kind}</td><td>{r.sent}</td><td>{r.opened}</td><td>{r.cancelled}</td><td><b>{pct(r.openRate)}</b></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </details>
+
+          <h2>Menu mirror</h2>
           <table>
             <thead>
               <tr>
@@ -70,45 +172,7 @@ export default function Overview() {
               ))}
             </tbody>
           </table>
-          <p className="muted small">Stale: no successful fetch for over 26 hours. Failing: 3 or more failures in a row.</p>
-
-          <h2>TODAY suggestions — last {data.days} days</h2>
-          {data.recommendations.length === 0 ? (
-            <p className="muted">No TODAY events in this window.</p>
-          ) : (
-            <table>
-              <thead>
-                <tr><th>Kind</th><th>Shown</th><th>Opened</th><th>Accepted</th><th>Dismissed</th><th>Completed</th><th>Accept rate</th><th>Dismiss rate</th></tr>
-              </thead>
-              <tbody>
-                {data.recommendations.map((r) => (
-                  <tr key={r.kind}>
-                    <td>{r.kind}</td><td>{r.shown}</td><td>{r.opened}</td><td>{r.accepted}</td><td>{r.dismissed}</td><td>{r.completed}</td>
-                    <td><b>{pct(r.acceptRate)}</b></td><td>{pct(r.dismissRate)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-
-          <h2>Reminders — last {data.days} days</h2>
-          {data.notifications.length === 0 ? (
-            <p className="muted">No reminders sent in this window.</p>
-          ) : (
-            <table>
-              <thead>
-                <tr><th>Kind</th><th>Sent</th><th>Opened</th><th>Cancelled (done first)</th><th>Open rate</th></tr>
-              </thead>
-              <tbody>
-                {data.notifications.map((r) => (
-                  <tr key={r.kind}>
-                    <td>{r.kind}</td><td>{r.sent}</td><td>{r.opened}</td><td>{r.cancelled}</td><td><b>{pct(r.openRate)}</b></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          <p className="muted small">Generated {when(data.generatedAt)}.</p>
+          <p className="muted small">Stale: no successful fetch for over 26 hours. Failing: 3 or more failures in a row. Generated {when(data.generatedAt)}.</p>
         </>
       )}
     </>

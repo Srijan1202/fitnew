@@ -1,9 +1,10 @@
 'use client';
 
 import type { RewardsUnlocked, UserSupport } from '@fitos/contracts';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 
-import { Badge, Header, when } from '@/components/ui';
+import { Icon } from '@/components/icons';
+import { Badge, Empty, Header, SearchBox, useQueryParam, when } from '@/components/ui';
 import { api, errorText } from '@/lib/api';
 
 /**
@@ -16,11 +17,10 @@ export default function Support() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const lookup = async (e: FormEvent) => {
-    e.preventDefault();
+  const find = async (v: string) => {
+    if (v === '') return;
     setError(null);
     setUser(null);
-    const v = q.trim();
     const param = /^[0-9a-f-]{36}$/i.test(v) ? `id=${v}` : `email=${encodeURIComponent(v)}`;
     try {
       setUser(await api<UserSupport>('GET', `/admin/users?${param}`));
@@ -28,6 +28,18 @@ export default function Support() {
       setError(errorText(err));
     }
   };
+  const lookup = (e?: FormEvent) => {
+    e?.preventDefault();
+    void find(q.trim());
+  };
+
+  // Beta 5.3: opened from Search (Ctrl+K) with the email or id already in.
+  const start = useQueryParam('q');
+  useEffect(() => {
+    if (start === '') return;
+    setQ(start);
+    void find(start.trim());
+  }, [start]);
 
   // Owner 2026-10-30: unlock every reward theme, app icon, picture and rim
   // for a tester, without the streak or the run (audited).
@@ -51,11 +63,18 @@ export default function Support() {
         By email or user id. Shows what helps answer a support question — never food log contents, weights or photos.
         Each lookup is recorded in the audit log.
       </Header>
-      <form className="row" onSubmit={lookup}>
-        <input className="grow" placeholder="student@vit.ac.in or a user id" value={q} onChange={(e) => setQ(e.target.value)} required />
-        <button className="button primary" type="submit">Look up</button>
-      </form>
+      <div className="toolbar">
+        <SearchBox value={q} onChange={setQ} onSubmit={() => lookup()} placeholder="Email (student@vit.ac.in) or a user id" autoFocus />
+        <button className="button primary" onClick={() => lookup()} disabled={q.trim() === ''}>
+          <Icon name="search" size={16} /> Look up
+        </button>
+      </div>
       {error !== null && <p className="error">{error}</p>}
+      {user === null && error === null && (
+        <Empty icon="support" title="Find someone to help">
+          Type their email or user id. Tip: Ctrl+K works from any page.
+        </Empty>
+      )}
       {user !== null && (
         <article className="card">
           <h3>{user.displayName ?? 'No name yet'}</h3>
