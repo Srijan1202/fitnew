@@ -88,11 +88,11 @@ void main() {
   });
 
   test(
-      'Standard and White are free; Gold, Glow and Lime are premium; Blaze is a 30-day streak reward; Finisher and 42 are running badges (beta 4.2)',
+      'Standard, Classic (beta 5.3) and White are free; Gold, Glow and Lime are premium; Blaze is a 30-day streak reward; Finisher and 42 are running badges (beta 4.2)',
       () {
     expect(
       AppIcon.values.where((i) => !i.premium && i.unlockId == null),
-      [AppIcon.standard, AppIcon.white],
+      [AppIcon.standard, AppIcon.classic, AppIcon.white],
     );
     expect(AppIcon.finisher.badge, RunBadge.first10k);
     expect(AppIcon.fortyTwo.badge, RunBadge.firstMarathon);

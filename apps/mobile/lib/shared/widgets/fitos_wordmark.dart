@@ -5,8 +5,9 @@ import '../../core/theme/tokens.dart';
 /// The FITOS logo (ADR-028, brand/README.md): the F of two italic blades
 /// beside the FITOS capitals, both the brand kit's own geometry
 /// (brand/build_kit.py) drawn as paths, so it is crisp at any size and
-/// needs no asset or font. The brand themes draw the mark in the lime
-/// gradient; the others in ink, like the kit's minimal logo.
+/// needs no asset or font. A theme with a mark gradient draws it (lime on
+/// the green themes, cobalt and violet since beta 5.3); the others in ink,
+/// like the kit's minimal logo.
 class FitosWordmark extends StatelessWidget {
   const FitosWordmark({this.size = 40, this.withName = true, super.key});
 
@@ -29,7 +30,7 @@ class FitosWordmark extends StatelessWidget {
           CustomPaint(
             size: Size(size * FitosMarkPainter.aspect, size),
             painter: FitosMarkPainter(
-              gradient: palette.brandMark,
+              gradient: palette.mark,
               ink: FitColors.ink,
             ),
           ),
@@ -50,7 +51,8 @@ class FitosWordmark extends StatelessWidget {
 class FitosMarkPainter extends CustomPainter {
   FitosMarkPainter({required this.gradient, required this.ink});
 
-  final bool gradient;
+  /// Top right to bottom left; null: the mark in [ink].
+  final List<Color>? gradient;
   final Color ink;
 
   static const double _x0 = 16;
@@ -94,13 +96,13 @@ class FitosMarkPainter extends CustomPainter {
       ..scale(s)
       ..translate(-_x0, -_y0);
     final paint = Paint()..isAntiAlias = true;
-    if (gradient) {
-      // The kit's gradient: electric lime top right to green bottom left.
-      paint.shader = const LinearGradient(
-        begin: Alignment(0.7, -0.9),
-        end: Alignment(-0.7, 0.9),
-        colors: <Color>[FitBrand.limeHi, FitBrand.lime, FitBrand.green],
-        stops: <double>[0, 0.45, 1],
+    if (gradient case final colors?) {
+      // The kit's gradient, light top right to deep bottom left.
+      paint.shader = LinearGradient(
+        begin: const Alignment(0.7, -0.9),
+        end: const Alignment(-0.7, 0.9),
+        colors: colors,
+        stops: const <double>[0, 0.45, 1],
       ).createShader(const Rect.fromLTWH(_x0, _y0, _w, _h));
     } else {
       paint.color = ink;

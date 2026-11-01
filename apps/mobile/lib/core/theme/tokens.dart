@@ -55,6 +55,20 @@ abstract final class FitBrand {
   static const Color lime = Color(0xFFC6F432);
   static const Color green = Color(0xFF5BC62A);
   static const Color carbon = Color(0xFF0A0D0B);
+
+  /// Beta 5.3 (owner): the cobalt mark, light top right to deep bottom left.
+  static const Color cobaltHi = Color(0xFF6FA2FF);
+  static const Color cobalt = Color(0xFF2E6BF0);
+  static const Color cobaltDeep = Color(0xFF1A49B8);
+
+  /// The mark's gradients, top right to bottom left.
+  static const List<Color> limeMark = <Color>[limeHi, lime, green];
+  static const List<Color> cobaltMark = <Color>[cobaltHi, cobalt, cobaltDeep];
+  static const List<Color> violetMark = <Color>[
+    Color(0xFFC4A5FF),
+    Color(0xFF8B5CF6),
+    Color(0xFF5B21B6),
+  ];
 }
 
 /// Phase 19 (ADR-027): one complete set of the tokens.
@@ -76,7 +90,7 @@ class FitPalette {
     Color? accent,
     Color? onAccent,
     Color? glow,
-    this.brandMark = false,
+    this.mark,
     this.glass = true,
     this.premium = true,
     this.reward,
@@ -100,8 +114,9 @@ class FitPalette {
   final Color accent;
   final Color onAccent;
 
-  /// The logo's mark in the lime gradient (the brand themes), not in ink.
-  final bool brandMark;
+  /// The logo's mark in this gradient, top right to bottom left (lime on the
+  /// green FITOS themes, cobalt and violet since beta 5.3); null: in ink.
+  final List<Color>? mark;
 
   /// ADR-029: rounded, translucent blocks with a soft coloured shadow. Every
   /// palette but Paper, which keeps the flat §6 look exactly.
@@ -116,16 +131,17 @@ class FitPalette {
   final String? reward;
 
   /// The palette every screen reads now. Set by the theme controller before
-  /// the app rebuilds: Dark or Light with the phone's mode unless the user
-  /// chose another (owner 2026-10-30).
-  static FitPalette current = dark;
+  /// the app rebuilds: Cobalt or Cobalt Light with the phone's mode unless the
+  /// user chose another (owner 2026-11-01, beta 5.3).
+  static FitPalette current = cobalt;
 
-  /// True while no theme was chosen: Dark or Light follows the phone.
+  /// True while no theme was chosen: Cobalt or Cobalt Light follows the
+  /// phone.
   static bool followsDevice = true;
 
-  /// Owner 2026-10-30: the main themes, neutral — near-black with white
-  /// actions, near-white with black actions. Each is the default in its
-  /// mode; the meanings (good, warning, bad) keep their colours.
+  /// Owner 2026-10-30: neutral themes — near-black with white actions,
+  /// near-white with black actions; the meanings (good, warning, bad) keep
+  /// their colours. The defaults until beta 5.3, choices since.
   static const dark = FitPalette(
     id: 'dark',
     label: 'Dark',
@@ -162,7 +178,8 @@ class FitPalette {
     premium: false,
   );
 
-  /// Owner 2026-10-30, free: true black with cobalt blue actions.
+  /// Owner 2026-10-30, free: true black with cobalt blue actions. Beta 5.3
+  /// (owner): the default in the phone's dark mode.
   static const cobalt = FitPalette(
     id: 'cobalt',
     label: 'Cobalt',
@@ -180,11 +197,79 @@ class FitPalette {
     accent: Color(0xFF2E6BF0),
     onAccent: Color(0xFFFFFFFF),
     glow: Color(0xFF2E6BF0),
+    mark: FitBrand.cobaltMark,
     premium: false,
   );
 
-  /// ADR-028, the default: the brand kit's primary logo — carbon, white type,
-  /// lime actions.
+  /// Beta 5.3 (owner): Cobalt's light side, the default in the phone's light
+  /// mode — a cool near-white paper, deep navy ink, the same cobalt actions;
+  /// the meanings darkened enough to read on light.
+  static const cobaltLight = FitPalette(
+    id: 'cobalt-light',
+    label: 'Cobalt Light',
+    brightness: Brightness.light,
+    paper: Color(0xFFF6F8FC),
+    paper2: Color(0xFFE8EDF5),
+    ink: Color(0xFF0B1220),
+    ink60: Color(0xFF475467),
+    ink35: Color(0xFF7A8699),
+    rule: Color(0xFFD5DCE8),
+    pine: Color(0xFF1F8A4C),
+    amber: Color(0xFFA8641B),
+    oxide: Color(0xFFB3261E),
+    sky: Color(0xFF1F6FB8),
+    accent: Color(0xFF2E6BF0),
+    onAccent: Color(0xFFFFFFFF),
+    glow: Color(0xFF2E6BF0),
+    mark: FitBrand.cobaltMark,
+    premium: false,
+  );
+
+  /// Beta 5.3 (owner), premium: true black with violet actions and glow.
+  static const violet = FitPalette(
+    id: 'violet',
+    label: 'Violet',
+    brightness: Brightness.dark,
+    paper: Color(0xFF000000),
+    paper2: Color(0xFF110D18),
+    ink: Color(0xFFF5F2FA),
+    ink60: Color(0xFFB2A8C2),
+    ink35: Color(0xFF766C86),
+    rule: Color(0xFF241D30),
+    pine: Color(0xFF4ADE80),
+    amber: Color(0xFFF5B342),
+    oxide: Color(0xFFFF6B57),
+    sky: Color(0xFF7DB7FF),
+    accent: Color(0xFF7C3AED),
+    onAccent: Color(0xFFFFFFFF),
+    glow: Color(0xFF8B5CF6),
+    mark: FitBrand.violetMark,
+  );
+
+  /// Beta 5.3 (owner), premium: a soft near-white with deep plum ink and
+  /// violet actions.
+  static const violetLight = FitPalette(
+    id: 'violet-light',
+    label: 'Violet Light',
+    brightness: Brightness.light,
+    paper: Color(0xFFFAF8FF),
+    paper2: Color(0xFFEEE9F8),
+    ink: Color(0xFF170F26),
+    ink60: Color(0xFF55496B),
+    ink35: Color(0xFF8A7FA0),
+    rule: Color(0xFFDDD5EC),
+    pine: Color(0xFF1F8A4C),
+    amber: Color(0xFFA8641B),
+    oxide: Color(0xFFB3261E),
+    sky: Color(0xFF1F6FB8),
+    accent: Color(0xFF7C3AED),
+    onAccent: Color(0xFFFFFFFF),
+    glow: Color(0xFF7C3AED),
+    mark: FitBrand.violetMark,
+  );
+
+  /// ADR-028: the brand kit's primary logo — carbon, white type, lime
+  /// actions.
   static const fitosDark = FitPalette(
     id: 'fitos-dark',
     label: 'FITOS Dark',
@@ -202,7 +287,7 @@ class FitPalette {
     accent: Color(0xFFC6F432),
     onAccent: Color(0xFF0A0D0B),
     glow: Color(0xFFC6F432),
-    brandMark: true,
+    mark: FitBrand.limeMark,
     premium: false,
   );
 
@@ -223,7 +308,7 @@ class FitPalette {
     oxide: Color(0xFFB3261E),
     sky: Color(0xFF1F6FB8),
     glow: Color(0xFF5BC62A),
-    brandMark: true,
+    mark: FitBrand.limeMark,
     premium: false,
   );
 
@@ -350,11 +435,14 @@ class FitPalette {
   );
 
   static const all = <FitPalette>[
+    cobalt,
+    cobaltLight,
     dark,
     light,
-    cobalt,
     fitosDark,
     fitosLight,
+    violet,
+    violetLight,
     night,
     forest,
     ocean,
@@ -363,9 +451,9 @@ class FitPalette {
     mileage,
   ];
 
-  /// The main theme for a mode: Dark or Light.
+  /// The main theme for a mode: Cobalt or Cobalt Light (beta 5.3).
   static FitPalette forMode(Brightness mode) =>
-      mode == Brightness.dark ? dark : light;
+      mode == Brightness.dark ? cobalt : cobaltLight;
 
   /// A theme by id; an unknown one (Paper, dropped on 2026-10-30) is null.
   static FitPalette? byId(String? id) {

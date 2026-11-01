@@ -5,15 +5,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'tokens.dart';
 
 /// Phase 19 (ADR-027, ADR-028), owner 2026-10-30: the chosen palette, kept
-/// on this phone (a trivial flag, §7.1). With none chosen, Dark or Light
-/// follows the phone's mode (Automatic). Cobalt and the green FITOS themes
-/// are for everyone; the others are premium or rewards — losing one goes
-/// back to Automatic.
-const kThemePreference = 'theme.v2';
+/// on this phone (a trivial flag, §7.1). With none chosen, Cobalt or Cobalt
+/// Light follows the phone's mode (Automatic, beta 5.3). Cobalt, the neutral
+/// and the green FITOS themes are for everyone; the others are premium or
+/// rewards — losing one goes back to Automatic.
+const kThemePreference = 'theme.v3';
 
-/// Before 2026-10-30. Read never again: everyone moved to the main themes
-/// once (owner), so it is only removed.
-const kOldThemePreference = 'theme_id';
+/// Earlier choices, read never again: everyone moved to the new default once
+/// (owner, 2026-10-30 and again for beta 5.3), so they are only removed.
+const kOldThemePreferences = ['theme_id', 'theme.v2'];
 
 /// The phone's mode now (main() starts the binding before reading it).
 Brightness get deviceMode =>
@@ -23,7 +23,9 @@ Brightness get deviceMode =>
 Future<void> loadSavedPalette() async {
   try {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(kOldThemePreference);
+    for (final old in kOldThemePreferences) {
+      await prefs.remove(old);
+    }
     final chosen = FitPalette.byId(prefs.getString(kThemePreference));
     FitPalette.followsDevice = chosen == null;
     FitPalette.current = chosen ?? FitPalette.forMode(deviceMode);
@@ -64,7 +66,7 @@ class ThemeController extends Notifier<FitPalette> with WidgetsBindingObserver {
     }
   }
 
-  /// Automatic: Dark or Light with the phone's mode.
+  /// Automatic: Cobalt or Cobalt Light with the phone's mode.
   Future<void> followDevice() async {
     FitPalette.followsDevice = true;
     final p = FitPalette.forMode(deviceMode);

@@ -12,10 +12,11 @@ import '../domain/streak_rewards.dart';
 import 'rewards_providers.dart';
 
 /// Phase 19 (ADR-027, ADR-028), owner 2026-10-30: Profile → Theme.
-/// Automatic first (Dark or Light with the phone, the default), then Dark,
-/// Light, Cobalt and the green FITOS Dark and Light for everyone; Night,
-/// Forest and Ocean for premium (a lock, then the premium sheet, for a free
-/// user); the reward themes once earned.
+/// Automatic first (Cobalt or Cobalt Light with the phone, the default since
+/// beta 5.3), then Cobalt, Cobalt Light, Dark, Light and the green FITOS Dark
+/// and Light for everyone; Violet, Violet Light, Night, Forest and Ocean for
+/// premium (a lock, then the premium sheet, for a free user); the reward
+/// themes once earned.
 class ThemePicker extends ConsumerWidget {
   const ThemePicker({super.key});
 
@@ -41,8 +42,8 @@ class ThemePicker extends ConsumerWidget {
           children: <Widget>[
             _Swatch(
               key: const ValueKey('theme.auto'),
-              palette: FitPalette.dark,
-              half: FitPalette.light,
+              palette: FitPalette.cobalt,
+              half: FitPalette.cobaltLight,
               label: 'Automatic',
               selected: automatic,
               locked: false,
@@ -95,7 +96,8 @@ class _Swatch extends StatelessWidget {
     super.key,
   });
 
-  /// Automatic: the right half shows this palette (Light beside Dark).
+  /// Automatic: the right half shows this palette (Cobalt Light beside
+  /// Cobalt).
   final FitPalette? half;
 
   /// In place of the palette's name.

@@ -2,12 +2,16 @@ import '../../running/domain/efforts.dart';
 import 'streak_rewards.dart';
 
 /// Beta 3.2 (ADR-027 amendment): the launcher icons FITOS offers. Standard
-/// and White for everyone; Gold, Glow and Lime for premium; Blaze for a
+/// (cobalt since beta 5.3), Classic (the lime one before it) and White for
+/// everyone; Gold, Glow and Lime for premium; Blaze for a
 /// 30-day streak; Finisher and 42 for running badges (beta 4.2). Each name is an
 /// activity-alias `.Icon<Name>` in AndroidManifest.xml and a preview in
 /// assets/brand/app_icons/ (both made by tool/app_icons.py).
 enum AppIcon {
   standard('Standard', premium: false),
+
+  /// Beta 5.3 (owner): the lime F on carbon, Standard until then.
+  classic('Classic', premium: false),
   white('White', premium: false),
   gold('Gold'),
   glow('Glow'),

@@ -58,7 +58,7 @@ void main() {
     db = AppDatabase.inMemory();
     premium = FakePremiumApi();
     weekly = FakeWeeklyReportApi();
-    FitPalette.current = FitPalette.dark;
+    FitPalette.current = FitPalette.cobalt;
     FitPalette.followsDevice = true;
     ai = null;
     icons = null;
@@ -67,7 +67,7 @@ void main() {
     streak = FakeStreakApi();
   });
   tearDown(() async {
-    FitPalette.current = FitPalette.dark;
+    FitPalette.current = FitPalette.cobalt;
     FitPalette.followsDevice = true;
     auth.dispose();
     await db.close();
@@ -103,6 +103,11 @@ void main() {
   }
 
   Future<void> tap(WidgetTester tester, String key) async {
+    // Beta 5.3: the theme and icon pickers sit in Appearance, closed at first.
+    final picker = key.startsWith('theme.') || key.startsWith('appIcon.');
+    if (picker && find.byKey(ValueKey(key)).evaluate().isEmpty) {
+      await tap(tester, 'profile.appearance');
+    }
     final f = find.byKey(ValueKey(key));
     await tester.ensureVisible(f);
     await tester.pumpAndSettle();
@@ -262,45 +267,81 @@ void main() {
 
   group('colour themes', () {
     testWidgets(
-        'owner 2026-10-30: Automatic is the default — Dark in dark mode, Light in light mode, following a switch of the phone; choosing a theme pins it; Cobalt is free',
+        'beta 5.3: Automatic is the default — Cobalt in dark mode, Cobalt Light in light mode, following a switch of the phone; choosing a theme pins it; Dark is free',
         (tester) async {
       tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
       addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
       await start(tester);
       await tap(tester, 'home.profile');
       await tap(tester, 'theme.auto');
-      expect(FitPalette.current.id, 'dark');
+      expect(FitPalette.current.id, 'cobalt');
       tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
       await tester.pumpAndSettle();
-      expect(FitPalette.current.id, 'light');
+      expect(FitPalette.current.id, 'cobalt-light');
 
-      await tap(tester, 'theme.cobalt');
+      await tap(tester, 'theme.dark');
       expect(find.byKey(const ValueKey('premium.sheet')), findsNothing);
-      expect(FitPalette.current.id, 'cobalt');
+      expect(FitPalette.current.id, 'dark');
       // Pinned: the phone's mode no longer moves it.
-      tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+      tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
       await tester.pumpAndSettle();
-      expect(FitPalette.current.id, 'cobalt');
+      expect(FitPalette.current.id, 'dark');
       expect(
         (await SharedPreferences.getInstance()).getString(kThemePreference),
-        'cobalt',
+        'dark',
       );
 
+      tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
       await tap(tester, 'theme.auto');
-      expect(FitPalette.current.id, 'dark');
+      expect(FitPalette.current.id, 'cobalt');
       expect(
         (await SharedPreferences.getInstance()).getString(kThemePreference),
         isNull,
       );
     });
 
-    testWidgets('free: Night is locked and opens Premium; FITOS Dark stays',
+    testWidgets('free: Night is locked and opens Premium; Cobalt stays',
         (tester) async {
       await start(tester);
       await tap(tester, 'home.profile');
       await tap(tester, 'theme.night');
       expect(find.byKey(const ValueKey('premium.sheet')), findsOneWidget);
-      expect(FitPalette.current.id, 'dark');
+      expect(FitPalette.current.id, 'cobalt');
+    });
+
+    testWidgets(
+        'beta 5.3: Violet and Violet Light are premium; Cobalt Light is free',
+        (tester) async {
+      await start(tester);
+      await tap(tester, 'home.profile');
+      await tap(tester, 'theme.violet');
+      expect(find.byKey(const ValueKey('premium.sheet')), findsOneWidget);
+      expect(FitPalette.current.id, 'cobalt');
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
+      await tap(tester, 'theme.cobalt-light');
+      expect(FitPalette.current.id, 'cobalt-light');
+      expect(FitPalette.violet.premium, isTrue);
+      expect(FitPalette.violetLight.premium, isTrue);
+      expect(FitPalette.cobaltLight.premium, isFalse);
+    });
+
+    testWidgets(
+        'beta 5.3: Appearance opens closed, says the theme, and opens on a tap',
+        (tester) async {
+      icons = FakeAppIconSwitcher();
+      await start(tester);
+      await tap(tester, 'home.profile');
+      expect(find.byKey(const ValueKey('profile.theme')), findsNothing);
+      expect(find.byKey(const ValueKey('profile.appIcon')), findsNothing);
+      expect(find.text('Automatic · Standard icon'), findsOneWidget);
+      await tap(tester, 'profile.appearance');
+      expect(find.byKey(const ValueKey('profile.theme')), findsOneWidget);
+      expect(find.byKey(const ValueKey('profile.appIcon')), findsOneWidget);
+      await tap(tester, 'theme.dark');
+      expect(find.text('Dark · Standard icon'), findsOneWidget);
+      await tap(tester, 'profile.appearance');
+      expect(find.byKey(const ValueKey('profile.theme')), findsNothing);
     });
 
     testWidgets('free: FITOS Light is open to everyone; Paper is gone',
@@ -371,8 +412,8 @@ void main() {
           ProviderScope.containerOf(tester.element(find.byType(FitOSApp)));
       container.invalidate(premiumStatusProvider);
       await tester.pumpAndSettle();
-      // Back to Automatic: Light with the test's light mode.
-      expect(FitPalette.current.id, 'light');
+      // Back to Automatic: Cobalt Light with the test's light mode.
+      expect(FitPalette.current.id, 'cobalt-light');
     });
   });
 
@@ -381,6 +422,7 @@ void main() {
         (tester) async {
       await start(tester);
       await tap(tester, 'home.profile');
+      await tap(tester, 'profile.appearance');
       expect(find.byKey(const ValueKey('profile.theme')), findsOneWidget);
       expect(find.byKey(const ValueKey('profile.appIcon')), findsNothing);
     });
@@ -390,6 +432,7 @@ void main() {
       icons = FakeAppIconSwitcher();
       await start(tester);
       await tap(tester, 'home.profile');
+      await tap(tester, 'profile.appearance');
       expect(find.text('APP ICON'), findsOneWidget);
       await tap(tester, 'appIcon.gold');
       expect(find.byKey(const ValueKey('premium.sheet')), findsOneWidget);
@@ -450,7 +493,7 @@ void main() {
       await tap(tester, 'home.profile');
       await tap(tester, 'theme.ember');
       expect(find.text(StreakReward.emberTheme.howToEarn), findsOneWidget);
-      expect(FitPalette.current.id, 'dark');
+      expect(FitPalette.current.id, 'cobalt');
 
       rewards.rewards = {StreakReward.emberTheme};
       ProviderScope.containerOf(tester.element(find.byType(FitOSApp)))
@@ -483,7 +526,7 @@ void main() {
       ProviderScope.containerOf(tester.element(find.byType(FitOSApp)))
           .invalidate(rewardsUnlockAllProvider);
       await tester.pumpAndSettle();
-      expect(FitPalette.current.id, 'light');
+      expect(FitPalette.current.id, 'cobalt-light');
       expect(find.byKey(const ValueKey('profile.emberRim')), findsNothing);
     });
 
@@ -497,7 +540,7 @@ void main() {
         find.text(RunBadge.firstHalf.unlockHowTo!),
         findsOneWidget,
       );
-      expect(FitPalette.current.id, 'dark');
+      expect(FitPalette.current.id, 'cobalt');
 
       rewards.badgesEarned = {
         RunBadge.firstHalf: DateTime.utc(2026, 10, 20),
@@ -513,7 +556,7 @@ void main() {
       ProviderScope.containerOf(tester.element(find.byType(FitOSApp)))
           .invalidate(earnedBadgesProvider);
       await tester.pumpAndSettle();
-      expect(FitPalette.current.id, 'light');
+      expect(FitPalette.current.id, 'cobalt-light');
     });
 
     testWidgets(

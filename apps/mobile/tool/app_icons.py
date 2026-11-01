@@ -3,7 +3,8 @@
 Five icons from the brand kit's own designs (brand/kit_assets.py), the F
 sized exactly as the standard launcher icon (tool/brand.py):
 
-    standard  lime F on carbon        free (the launcher icon itself)
+    standard  cobalt F on black       free (the launcher icon itself, beta 5.3)
+    classic   lime F on carbon        free (the launcher icon until beta 5.3)
     white     ink F on white          free
     gold      gold F on carbon        Premium (the premium rim's gold)
     glow      lime F with its glow    Premium (the kit's bold-2-glow)
@@ -64,7 +65,8 @@ def lime_bg(gid: str) -> str:
 
 # name: (background fill, F fill, extra defs, glow behind the F)
 ICONS = {
-    'standard': (C['carbon'], 'url(#g)', kit.defs_gradient('g'), False),
+    'standard': (C['black'], 'url(#cb)', kit.defs_cobalt('cb'), False),
+    'classic': (C['carbon'], 'url(#g)', kit.defs_gradient('g'), False),
     'white': (C['white'], C['ink'], '', False),
     'gold': (C['carbon'], 'url(#gold)', gold_gradient('gold'), False),
     'glow': (C['graphite'], 'url(#g)', kit.defs_gradient('g'), True),

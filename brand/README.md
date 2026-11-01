@@ -36,6 +36,20 @@ Every asset is in `fitos-kit/` twice: as vector in `svg/` and as image in `png/`
 
 Brand gradient: `#E4FF52 → #C6F432 → #5BC62A`, from the top right to the bottom left.
 
+### Cobalt (beta 5.3)
+
+Since beta 5.3 the app's default look, icon and logo are cobalt (owner, 2026-11-01). The lime kit above stays: the green FITOS themes and the Classic app icon use it.
+
+| Name | Hex | Use |
+| --- | --- | --- |
+| Cobalt Light | `#6FA2FF` | Top of the cobalt gradient |
+| Cobalt | `#2E6BF0` | The app's actions, the middle of the gradient |
+| Deep Cobalt | `#1A49B8` | Bottom of the gradient |
+| True black | `#000000` | The cobalt app icon's background, Cobalt's canvas |
+| Navy | `#0B1220` | Text on Cobalt Light (`#F6F8FC`) |
+
+Cobalt gradient: `#6FA2FF → #2E6BF0 → #1A49B8`, same direction as the lime one. The files are `logomark-cobalt`, `app-icon-cobalt`, `favicon-cobalt-{16,32,48,180,512}` (and `png/favicon-cobalt.ico`), `logo-horizontal-cobalt` and `logo-horizontal-cobalt-on-light`.
+
 ## Type
 
 - **Wordmark:** custom geometric capitals, drawn as paths. It needs no font.

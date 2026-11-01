@@ -106,27 +106,7 @@ class ProfileScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: FitSpacing.lg),
-                  FitGroup(
-                    label: 'Appearance',
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: fitGlass ? 14 : 0,
-                          vertical: fitGlass ? 14 : FitSpacing.sm,
-                        ),
-                        child: const ThemePicker(),
-                      ),
-                      // Beta 3.2: hidden where the icon cannot change.
-                      if (ref.watch(appIconControllerProvider).value != null)
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: fitGlass ? 14 : 0,
-                            vertical: fitGlass ? 14 : FitSpacing.sm,
-                          ),
-                          child: const AppIconPicker(),
-                        ),
-                    ],
-                  ),
+                  const _Appearance(),
                   const SizedBox(height: FitSpacing.lg),
                   FitGroup(
                     label: 'App',
@@ -683,6 +663,61 @@ class _PhoneTimeZoneState extends ConsumerState<_PhoneTimeZone> {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// Beta 5.3 (owner): Appearance folds away and opens closed each time
+/// Profile opens. The closed row says the theme and the app icon; a tap
+/// shows the theme and icon pickers.
+class _Appearance extends ConsumerStatefulWidget {
+  const _Appearance();
+
+  @override
+  ConsumerState<_Appearance> createState() => _AppearanceState();
+}
+
+class _AppearanceState extends ConsumerState<_Appearance> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = ref.watch(themeControllerProvider);
+    final automatic = ref.watch(themeFollowsDeviceProvider);
+    // Beta 3.2: the icon picker is hidden where the icon cannot change.
+    final icon = ref.watch(appIconControllerProvider).value;
+    final theme = automatic ? 'Automatic' : palette.label;
+    final pad = EdgeInsets.symmetric(
+      horizontal: fitGlass ? 14 : 0,
+      vertical: fitGlass ? 14 : FitSpacing.sm,
+    );
+    return FitGroup(
+      label: 'Appearance',
+      children: <Widget>[
+        FitRow(
+          key: const ValueKey('profile.appearance'),
+          icon: Icons.palette_outlined,
+          title: 'Theme and app icon',
+          value: icon == null ? theme : '$theme · ${icon.label} icon',
+          onTap: () => setState(() => _open = !_open),
+          trailing: Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: AnimatedRotation(
+              turns: _open ? 0.25 : 0,
+              duration: const Duration(milliseconds: 180),
+              child: Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: FitColors.ink35,
+              ),
+            ),
+          ),
+        ),
+        if (_open) ...<Widget>[
+          Padding(padding: pad, child: const ThemePicker()),
+          if (icon != null) Padding(padding: pad, child: const AppIconPicker()),
+        ],
+      ],
     );
   }
 }

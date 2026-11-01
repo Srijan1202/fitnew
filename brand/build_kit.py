@@ -37,6 +37,12 @@ C = {
     'paper': '#F5F6F3',       # Paper: light background
     'white': '#FFFFFF',
     'ink': '#0B0B0C',         # Ink: the minimal logo, text on light
+    # Beta 5.3 (owner): the cobalt mark, the app's default since then.
+    'cobalt_hi': '#6FA2FF',   # Cobalt Light: the top of the cobalt gradient
+    'cobalt': '#2E6BF0',      # Cobalt: actions in the app
+    'cobalt_deep': '#1A49B8', # Deep Cobalt: the bottom of the gradient
+    'black': '#000000',       # True black: the cobalt icon's background
+    'navy': '#0B1220',        # Navy: text on Cobalt Light
 }
 
 FONT = "Bahnschrift, 'Barlow', 'Segoe UI', Arial, sans-serif"
@@ -50,6 +56,17 @@ def defs_gradient(gid: str) -> str:
         f'<stop offset="0" stop-color="{C["lime_hi"]}"/>'
         f'<stop offset="0.45" stop-color="{C["lime"]}"/>'
         f'<stop offset="1" stop-color="{C["green"]}"/>'
+        '</linearGradient>'
+    )
+
+
+def defs_cobalt(gid: str) -> str:
+    """Beta 5.3: the cobalt gradient of the mark (light top-right, deep bottom-left)."""
+    return (
+        f'<linearGradient id="{gid}" x1="0.85" y1="0.05" x2="0.15" y2="0.95">'
+        f'<stop offset="0" stop-color="{C["cobalt_hi"]}"/>'
+        f'<stop offset="0.45" stop-color="{C["cobalt"]}"/>'
+        f'<stop offset="1" stop-color="{C["cobalt_deep"]}"/>'
         '</linearGradient>'
     )
 
@@ -211,7 +228,7 @@ if __name__ == '__main__':
         print(name)
     if '--svg-only' not in sys.argv and not only:
         from PIL import Image
-        for kind in ('bold', 'minimal'):
+        for kind in ('bold', 'minimal', 'cobalt'):
             imgs = [Image.open(PNG / f'favicon-{kind}-{px}.png') for px in (16, 32, 48)]
             imgs[2].save(OUT / 'png' / f'favicon-{kind}.ico', sizes=[(16, 16), (32, 32), (48, 48)], append_images=imgs[:2])
-        print('favicon-bold.ico, favicon-minimal.ico')
+        print('favicon-bold.ico, favicon-minimal.ico, favicon-cobalt.ico')

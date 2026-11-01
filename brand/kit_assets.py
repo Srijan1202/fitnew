@@ -1,5 +1,5 @@
 """Every asset of the FITOS brand kit, built from build_kit's geometry."""
-from build_kit import (C, FONT, TAGLINE, WORD_W, asset, defs_gradient, mark, svg, tagline, wordmark)
+from build_kit import (C, FONT, TAGLINE, WORD_W, asset, defs_cobalt, defs_gradient, mark, svg, tagline, wordmark)
 
 # The F's visible extent inside its 100-unit box (it leans right): used to centre it.
 MARK_X0, MARK_X1 = 16, 98
@@ -346,6 +346,39 @@ def slide() -> str:
 asset('template-social-post', 1080, 1080, social_post())
 asset('template-story', 1080, 1920, story())
 asset('template-slide', 1920, 1080, slide())
+
+
+# ------------------------------------------------------------- cobalt (5.3) --
+# Beta 5.3 (owner): the same mark in the cobalt gradient — the app's default
+# icon, and the website's and admin panel's logo. The lime kit stays as is.
+def cobalt_svg(w: int, h: int, body: str) -> str:
+    return svg(w, h, body, defs_cobalt('cb'))
+
+
+asset('logomark-cobalt', 512, 512, cobalt_svg(512, 512, mark_centered('url(#cb)', 256, 36, 440)))
+
+
+def cobalt_icon(size: int = 1024) -> str:
+    r, inset = size * 0.225, size * 0.2
+    return cobalt_svg(size, size, f'<rect width="{size}" height="{size}" rx="{r}" fill="{C["black"]}"/>'
+                      + mark_centered('url(#cb)', size / 2, inset, size - 2 * inset))
+
+
+asset('app-icon-cobalt', 1024, 1024, cobalt_icon())
+
+for px in (16, 32, 48, 180, 512):
+    inset = px * 0.12
+    asset(f'favicon-cobalt-{px}', px, px, cobalt_svg(px, px, f'<rect width="{px}" height="{px}" rx="{px * 0.18}" fill="{C["black"]}"/>'
+                                                     + mark_centered('url(#cb)', px / 2, inset, px - 2 * inset)))
+
+
+def cobalt_horizontal(fill_word: str, tag_fill: str) -> str:
+    return cobalt_svg(1200, 300, mark('url(#cb)', 40, 40, 220) + wordmark(fill_word, 300, 92, 64)
+                      + tagline(tag_fill, 304, 210, 22, 'start', 0.5))
+
+
+asset('logo-horizontal-cobalt', 1200, 300, cobalt_horizontal(C['white'], C['mist']))
+asset('logo-horizontal-cobalt-on-light', 1200, 300, cobalt_horizontal(C['navy'], '#475467'))
 
 
 # ------------------------------------------------------------------ overview --
