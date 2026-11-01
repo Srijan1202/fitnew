@@ -68,10 +68,15 @@ export const exerciseDemoApprovals = pgTable(
   {
     demoSlug: text('demo_slug').primaryKey(),
     approved: boolean('approved').notNull(),
+    /** After beta 5.2 (owner): why a demo was rejected, so it can be redrawn. Only on a rejected demo. */
+    note: text('note'),
     updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [check('exercise_demo_approvals_slug', sql`${t.demoSlug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`)],
+  (t) => [
+    check('exercise_demo_approvals_slug', sql`${t.demoSlug} ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`),
+    check('exercise_demo_approvals_note', sql`${t.note} is null or (not ${t.approved} and char_length(${t.note}) between 1 and 1000)`),
+  ],
 );
 
 export type AuditLogRow = typeof auditLogs.$inferSelect;

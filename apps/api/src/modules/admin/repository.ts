@@ -313,13 +313,13 @@ export class AdminRepository {
     return this.db.select().from(exerciseDemoApprovals).orderBy(asc(exerciseDemoApprovals.demoSlug));
   }
 
-  async putDemoApproval(slug: string, approved: boolean, actor: string | null) {
+  async putDemoApproval(slug: string, approved: boolean, note: string | null, actor: string | null) {
     const [row] = await this.db
       .insert(exerciseDemoApprovals)
-      .values({ demoSlug: slug, approved, updatedBy: actor })
+      .values({ demoSlug: slug, approved, note, updatedBy: actor })
       .onConflictDoUpdate({
         target: exerciseDemoApprovals.demoSlug,
-        set: { approved, updatedBy: actor, updatedAt: sql`now()` },
+        set: { approved, note, updatedBy: actor, updatedAt: sql`now()` },
       })
       .returning();
     return row!;

@@ -203,8 +203,8 @@ export async function adminRoutes(app: FastifyInstance, opts: { minimumAppBuild:
 
   typed.put('/admin/exercise-demos/:slug', {
     ...admin,
-    schema: { summary: 'Approve or withdraw an exercise demo; the app shows only approved ones. Audited.', tags, security, params: demoSlugParamsSchema, body: putDemoApprovalRequestSchema, response: { 200: adminDemoApprovalSchema, ...errors } },
-  }, async (request) => service.putDemoApproval(request.userId, request.params.slug, request.body.approved));
+    schema: { summary: 'Approve or reject an exercise demo (a rejection can carry a note on what to fix); the app shows only approved ones. Audited.', tags, security, params: demoSlugParamsSchema, body: putDemoApprovalRequestSchema, response: { 200: adminDemoApprovalSchema, ...errors } },
+  }, async (request) => service.putDemoApproval(request.userId, request.params.slug, request.body.approved, request.body.note));
 
   /* ------------------------------------------------------------ support -- */
 

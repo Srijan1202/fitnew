@@ -208,10 +208,18 @@ export const featureFlagSchema = z
 export const featureFlagListSchema = z.object({ items: z.array(featureFlagSchema) }).strict();
 export const putFlagRequestSchema = z.object({ enabled: z.boolean(), description: z.string().trim().max(300).optional() }).strict();
 export const flagParamsSchema = z.object({ key: flagKeySchema }).strict();
-/** Beta 5.2 (owner): an exercise demo's approval; the app shows a demo only once approved. */
-export const adminDemoApprovalSchema = z.object({ slug: slugSchema, approved: z.boolean(), updatedAt: iso }).strict();
+/**
+ * Beta 5.2 (owner): an exercise demo's approval; the app shows a demo only once approved.
+ * After 5.2 (owner): a rejected demo carries the admin's note on what to fix.
+ */
+export const adminDemoApprovalSchema = z
+  .object({ slug: slugSchema, approved: z.boolean(), note: z.string().nullable(), updatedAt: iso })
+  .strict();
 export const adminDemoApprovalListSchema = z.object({ items: z.array(adminDemoApprovalSchema) }).strict();
-export const putDemoApprovalRequestSchema = z.object({ approved: z.boolean() }).strict();
+/** `note` is kept only when rejecting (`approved: false`); approving clears it. */
+export const putDemoApprovalRequestSchema = z
+  .object({ approved: z.boolean(), note: z.string().trim().min(1).max(1000).optional() })
+  .strict();
 export const demoSlugParamsSchema = z.object({ slug: slugSchema }).strict();
 export type AdminDemoApproval = z.infer<typeof adminDemoApprovalSchema>;
 

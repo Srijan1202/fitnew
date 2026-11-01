@@ -347,16 +347,28 @@ export class AdminService {
   /** Beta 5.2 (owner): the demos decided on; a demo not listed waits for approval. */
   async demoApprovals() {
     const rows = await this.repo.demoApprovals();
-    return rows.map((r) => ({ slug: r.demoSlug, approved: r.approved, updatedAt: r.updatedAt.toISOString() }));
+    return rows.map((r) => this.demoApproval(r));
   }
 
-  async putDemoApproval(actor: string | null, slug: string, approved: boolean) {
+  /** After 5.2 (owner): rejecting can carry a note on what to fix; approving clears it. */
+  async putDemoApproval(actor: string | null, slug: string, approved: boolean, note?: string) {
+    const kept = approved ? null : (note ?? null);
     const row = await this.repo.inTransaction(async (tx) => {
-      const r = await tx.putDemoApproval(slug, approved, actor);
-      await tx.audit({ actorUserId: actor, action: approved ? 'demo.approve' : 'demo.unapprove', entity: 'exercise_demo', entityId: slug, metadata: { approved } });
+      const r = await tx.putDemoApproval(slug, approved, kept, actor);
+      await tx.audit({
+        actorUserId: actor,
+        action: approved ? 'demo.approve' : 'demo.unapprove',
+        entity: 'exercise_demo',
+        entityId: slug,
+        metadata: kept === null ? { approved } : { approved, note: kept },
+      });
       return r;
     });
-    return { slug: row.demoSlug, approved: row.approved, updatedAt: row.updatedAt.toISOString() };
+    return this.demoApproval(row);
+  }
+
+  private demoApproval(r: { demoSlug: string; approved: boolean; note: string | null; updatedAt: Date }) {
+    return { slug: r.demoSlug, approved: r.approved, note: r.note, updatedAt: r.updatedAt.toISOString() };
   }
 
   /* ------------------------------------------------------------ support -- */

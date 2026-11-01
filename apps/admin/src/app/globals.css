@@ -299,3 +299,5 @@ tr.p-green td:first-child { box-shadow: inset 4px 0 #4ccf7a; padding-left: 14px;
 .demo-stage { background: #0b0c0e; aspect-ratio: 9 / 10; max-width: 100%; display: grid; place-items: center; }
 .demo-stage img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .demo-cues { margin: 0; padding-left: 18px; }
+.demo-note { margin: 0; padding: 8px 12px; border-left: 4px solid var(--oxide); border-radius: 8px; background: var(--surface-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+.demo-reject { display: flex; flex-direction: column; gap: 8px; }

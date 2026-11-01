@@ -1,0 +1,2 @@
+ALTER TABLE "exercise_demo_approvals" ADD COLUMN "note" text;--> statement-breakpoint
+ALTER TABLE "exercise_demo_approvals" ADD CONSTRAINT "exercise_demo_approvals_note" CHECK ("exercise_demo_approvals"."note" is null or (not "exercise_demo_approvals"."approved" and char_length("exercise_demo_approvals"."note") between 1 and 1000));

@@ -377,6 +377,26 @@ describeIfDb('/v1/admin (real Postgres)', { timeout: 60_000 }, () => {
     await sql`delete from exercise_demo_approvals where demo_slug = 'cable-fly'`;
   });
 
+  it('after beta 5.2: a rejection keeps its note (audited) and the app never sees it; approving clears the note', async () => {
+    const reject = await call(admin, 'PUT', '/admin/exercise-demos/curtsy-lunge', { approved: false, note: '  The back leg looks crossed in front.  ' });
+    expect(reject.json()).toMatchObject({ slug: 'curtsy-lunge', approved: false, note: 'The back leg looks crossed in front.' });
+    const list = (await call(admin, 'GET', '/admin/exercise-demos')).json() as { items: { slug: string; note: string | null }[] };
+    expect(list.items.find((i) => i.slug === 'curtsy-lunge')!.note).toBe('The back leg looks crossed in front.');
+    expect(list.items.find((i) => i.slug === 'barbell-back-squat')!.note).toBeNull();
+    const plain = await user();
+    expect(((await call(plain, 'GET', '/exercises/demo-approvals')).json() as { approved: string[] }).approved).not.toContain('curtsy-lunge');
+    expect((await audits('demo.unapprove')).at(-1)!.metadata).toEqual({ approved: false, note: 'The back leg looks crossed in front.' });
+
+    expect((await call(admin, 'PUT', '/admin/exercise-demos/curtsy-lunge', { approved: false, note: '   ' })).statusCode).toBe(422);
+    expect((await call(admin, 'PUT', '/admin/exercise-demos/curtsy-lunge', { approved: false, note: 'x'.repeat(1001) })).statusCode).toBe(422);
+
+    // Approving after a fix clears the note; a note sent with an approval is dropped.
+    expect((await call(admin, 'PUT', '/admin/exercise-demos/curtsy-lunge', { approved: true, note: 'fixed' })).json()).toMatchObject({ approved: true, note: null });
+    await expect(sql`update exercise_demo_approvals set note = 'x' where demo_slug = 'curtsy-lunge'`).rejects.toThrow(/exercise_demo_approvals_note/);
+
+    await sql`delete from exercise_demo_approvals where demo_slug = 'curtsy-lunge'`;
+  });
+
   /* -------------------------------------------------------------- support -- */
 
   it('support lookup: counts and dates only (no food log contents), audited — found or not', async () => {

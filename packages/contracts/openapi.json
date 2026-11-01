@@ -74153,6 +74153,12 @@
                           "approved": {
                             "type": "boolean"
                           },
+                          "note": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
                           "updatedAt": {
                             "type": "string",
                             "format": "date-time",
@@ -74162,6 +74168,7 @@
                         "required": [
                           "slug",
                           "approved",
+                          "note",
                           "updatedAt"
                         ],
                         "additionalProperties": false
@@ -74506,7 +74513,7 @@
     },
     "/admin/exercise-demos/{slug}": {
       "put": {
-        "summary": "Approve or withdraw an exercise demo; the app shows only approved ones. Audited.",
+        "summary": "Approve or reject an exercise demo (a rejection can carry a note on what to fix); the app shows only approved ones. Audited.",
         "tags": [
           "admin"
         ],
@@ -74519,6 +74526,11 @@
                 "properties": {
                   "approved": {
                     "type": "boolean"
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
                   }
                 },
                 "required": [
@@ -74564,6 +74576,12 @@
                     "approved": {
                       "type": "boolean"
                     },
+                    "note": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
                     "updatedAt": {
                       "type": "string",
                       "format": "date-time",
@@ -74573,6 +74591,7 @@
                   "required": [
                     "slug",
                     "approved",
+                    "note",
                     "updatedAt"
                   ],
                   "additionalProperties": false
