@@ -107,7 +107,7 @@ const kPremiumPerks = <(String, String)>[
   ),
   (
     'Themes and app icons',
-    'Night, Forest and Ocean themes, and the Gold, Glow and Lime app icons.'
+    'Violet, Violet Light, Night, Forest and Ocean themes, and the Gold, Glow and Lime app icons.'
   ),
   (
     'Premium pictures',

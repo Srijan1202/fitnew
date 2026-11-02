@@ -334,12 +334,12 @@ void main() {
       await tap(tester, 'home.profile');
       expect(find.byKey(const ValueKey('profile.theme')), findsNothing);
       expect(find.byKey(const ValueKey('profile.appIcon')), findsNothing);
-      expect(find.text('Automatic · Standard icon'), findsOneWidget);
+      expect(find.text('Automatic · Standard'), findsOneWidget);
       await tap(tester, 'profile.appearance');
       expect(find.byKey(const ValueKey('profile.theme')), findsOneWidget);
       expect(find.byKey(const ValueKey('profile.appIcon')), findsOneWidget);
       await tap(tester, 'theme.dark');
-      expect(find.text('Dark · Standard icon'), findsOneWidget);
+      expect(find.text('Dark · Standard'), findsOneWidget);
       await tap(tester, 'profile.appearance');
       expect(find.byKey(const ValueKey('profile.theme')), findsNothing);
     });

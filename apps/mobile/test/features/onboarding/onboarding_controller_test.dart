@@ -6,12 +6,14 @@ import 'package:fitos/features/auth/presentation/controllers/auth_controller.dar
 import 'package:fitos/features/auth/presentation/controllers/auth_providers.dart';
 import 'package:fitos/features/onboarding/domain/entities/onboarding.dart';
 import 'package:fitos/features/onboarding/presentation/controllers/onboarding_controller.dart';
+import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:fitos/features/profile/domain/entities/vocabulary.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/fake_auth_repository.dart';
 import '../../support/fake_onboarding_repository.dart';
+import '../../support/fake_profile_repository.dart';
 
 /// The controller is a thin pipe: the server's state in, the server's state
 /// out. These tests pin that it never invents a stage of its own.
@@ -122,6 +124,31 @@ void main() {
 
     final state = container.read(onboardingControllerProvider).requireValue;
     expect(state.profile.onboardingStage, 'complete');
+  });
+
+  test(
+      'beta 5.3.1: completing reads the profile again, so Home and Nutrition show the new targets at once',
+      () async {
+    final profiles = FakeProfileRepository();
+    container = ProviderContainer(
+      overrides: [
+        authRepositoryProvider.overrideWithValue(auth),
+        onboardingRepositoryProvider.overrideWithValue(repo),
+        profileRepositoryProvider.overrideWithValue(profiles),
+        sessionUserIdProvider.overrideWithValue(newUserProfile.id),
+      ],
+    );
+    container.listen(onboardingControllerProvider, (_, __) {});
+    container.listen(authControllerProvider, (_, __) {});
+    container.listen(profileControllerProvider, (_, __) {});
+    await settled();
+    await container.read(authControllerProvider.future);
+    await container.read(profileControllerProvider.future);
+    final before = profiles.calls.where((c) => c == 'getGoal').length;
+
+    await notifier().complete();
+    await container.read(profileControllerProvider.future);
+    expect(profiles.calls.where((c) => c == 'getGoal').length, before + 1);
   });
 
   test('a failed complete does not touch the session', () async {

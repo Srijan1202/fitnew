@@ -4,6 +4,7 @@ import '../../../../core/errors/failure.dart';
 import '../../../../core/errors/result.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../auth/presentation/controllers/auth_providers.dart';
+import '../../../profile/data/profile_repository.dart';
 import '../../data/onboarding_repository_impl.dart';
 import '../../domain/entities/onboarding.dart';
 import '../../domain/repositories/onboarding_repository.dart';
@@ -50,6 +51,9 @@ class OnboardingController extends AsyncNotifier<OnboardingState> {
     final result = await _repo.complete();
     if (result is Ok<OnboardingCompleteResponse>) {
       await ref.read(authControllerProvider.notifier).markOnboardingComplete();
+      // Beta 5.3.1: Home and Nutrition read the targets from the profile,
+      // loaded before setup worked them out — read it again.
+      ref.invalidate(profileControllerProvider);
       final current = state.value;
       if (current != null) {
         state = AsyncData(current.copyWith(profile: result.value.profile));

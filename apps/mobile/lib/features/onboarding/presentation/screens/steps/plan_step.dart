@@ -127,8 +127,9 @@ class _PlanBody extends StatelessWidget {
         HairlineSection(
           label: 'Your first week',
           child: Text(
-            'Your training programme is generated in a later release. '
-            'Until then FitOS tracks your nutrition targets; workouts arrive with the programme builder.',
+            'Next, pick how you train under Training: FITOS can generate a '
+            'programme from your answers, or you can choose a proven split or '
+            'build your own.',
             style: textTheme.bodyMedium,
           ),
         ),

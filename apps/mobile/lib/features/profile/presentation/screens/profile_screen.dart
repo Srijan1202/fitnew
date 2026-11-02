@@ -698,7 +698,7 @@ class _AppearanceState extends ConsumerState<_Appearance> {
           key: const ValueKey('profile.appearance'),
           icon: Icons.palette_outlined,
           title: 'Theme and app icon',
-          value: icon == null ? theme : '$theme · ${icon.label} icon',
+          value: icon == null ? theme : '$theme · ${icon.label}',
           onTap: () => setState(() => _open = !_open),
           trailing: Padding(
             padding: const EdgeInsets.only(left: 4),

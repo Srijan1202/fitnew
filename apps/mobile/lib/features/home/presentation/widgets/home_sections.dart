@@ -375,17 +375,18 @@ class TodayMetrics extends StatelessWidget {
 
     final kcalEaten = span(n.kcalLow, n.kcal, group: true);
     final proteinEaten = span(n.proteinLow, n.proteinG);
+    // Beta 5.3.1: "about 1,436 / 2,877 kcal" did not fit the tile — the
+    // number alone ("≈" for an estimate, as Active calories), the target
+    // on the line under it.
     final foodValue = !n.logged
         ? 'Not logged yet'
-        : t == null
-            ? '$kcalEaten kcal'
-            : '$kcalEaten / ${HomeSections.group(t.kcal)} kcal';
+        : '${kcalEaten.replaceFirst('about ', '≈ ')} kcal';
     final foodLine = t == null
         ? (n.logged
             ? '$proteinEaten g protein · no targets yet'
             : 'No targets yet')
         : n.logged
-            ? '$proteinEaten / ${t.proteinG} g protein'
+            ? 'of ${HomeSections.group(t.kcal)} kcal · $proteinEaten / ${t.proteinG} g protein'
             : 'Target ${HomeSections.group(t.kcal)} kcal · ${t.proteinG} g protein';
 
     // Workout.

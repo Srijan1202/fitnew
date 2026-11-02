@@ -762,8 +762,11 @@ void main() {
         tester,
         (d) => logOf(d, kcal: [1210, 1480], protein: [60, 75]),
       );
-      expect(textOf(tester, 'home.food').data, 'about 1,345 / 2,276 kcal');
-      expect(find.text('about 68 / 106 g protein'), findsOneWidget);
+      expect(textOf(tester, 'home.food').data, '≈ 1,345 kcal');
+      expect(
+        find.text('of 2,276 kcal · about 68 / 106 g protein'),
+        findsOneWidget,
+      );
     });
 
     testWidgets(
