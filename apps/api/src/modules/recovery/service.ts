@@ -64,6 +64,17 @@ export class RecoveryService {
   }
 
   /**
+   * Beta 5.4: the check-ins of the last [days] local days, oldest first —
+   * FITOS AI's view of how the week has felt.
+   */
+  async recent(userId: string, days = 7): Promise<{ today: string; logs: RecoveryLog[] }> {
+    const tz = await this.logs.timezoneOf(userId);
+    const today = localDateOf(this.now(), tz);
+    const rows = await this.repo.checkIns(userId, addDays(today, -(days - 1)), today);
+    return { today, logs: rows.map(toWire) };
+  }
+
+  /**
    * The local date a check-in belongs to: the given one, or today. A real
    * calendar date, never ahead, at most 7 days back (readiness looks no
    * further — owner D2).

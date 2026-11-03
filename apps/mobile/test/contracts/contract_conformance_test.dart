@@ -1347,7 +1347,8 @@ void main() {
       // Excludes name what the server never sees.
       expect(
         enumOf(properties(status)['excludes'] as Map<String, dynamic>),
-        ['health-connect', 'food-log'],
+        // Beta 5.4: today's food is shared; earlier days never are.
+        ['health-connect', 'food-log', 'food-log-history'],
       );
     });
   });

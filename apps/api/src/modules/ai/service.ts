@@ -15,7 +15,8 @@ import { MAX_TOOL_ROUNDS, PROPOSE_PROGRAM, type ToolRegistry } from './tools.js'
 import type { AiBudget } from './usage.js';
 
 /** What the assistant never sees (owner B4; Phase 8 not built). */
-export const AI_EXCLUDES: AiStatusResponse['excludes'] = ['health-connect', 'food-log'];
+/** Beta 5.4: today's food log is shared; earlier days never are. */
+export const AI_EXCLUDES: AiStatusResponse['excludes'] = ['health-connect', 'food-log-history'];
 
 /** Bounds on what a request carries: the recent exchange only. */
 export const CHAT_HISTORY_TURNS = 12;
@@ -36,7 +37,8 @@ export const OFF_TOPIC_REPLY =
  * `tool` means FITOS is looking something up, so any text shown so far is
  * cleared. The final answer still comes whole and is the one kept.
  */
-export type AiStreamEvent = { readonly type: 'text'; readonly text: string } | { readonly type: 'tool' };
+/** Beta 5.4: `retry` — the model was busy and FITOS is asking again. */
+export type AiStreamEvent = { readonly type: 'text'; readonly text: string } | { readonly type: 'tool' } | { readonly type: 'retry' };
 
 /**
  * Nothing is shown before this many characters: an off-topic answer is the
@@ -102,7 +104,7 @@ export class AiService {
           onEvent,
         );
         // §19.3: every model call's tokens are logged, one row per round.
-        await this.deps.budget?.record(userId, 'chat', this.provider.model, response.usage, 'ok');
+        await this.deps.budget?.record(userId, 'chat', response.model ?? this.provider.model, response.usage, 'ok');
 
         if (response.toolCalls.length === 0 || round === MAX_TOOL_ROUNDS) {
           if (AiService.isOffTopic(response.text)) {
@@ -139,7 +141,8 @@ export class AiService {
   }
 
   /** One model call; streamed when the caller listens and the provider can. */
-  private ask(request: AiRequest, onEvent: ((event: AiStreamEvent) => void) | undefined): Promise<AiResponse> {
+  private ask(request0: AiRequest, onEvent: ((event: AiStreamEvent) => void) | undefined): Promise<AiResponse> {
+    const request = onEvent === undefined ? request0 : { ...request0, onRetry: () => onEvent({ type: 'retry' }) };
     if (onEvent === undefined || this.provider.generateStream === undefined) return this.provider.generate(request);
     return this.provider.generateStream(request, (soFar) => {
       const shown = AiService.streamable(soFar);
@@ -177,7 +180,10 @@ export class AiService {
       'Rules:',
       '1. The FITOS CONTEXT below and the tool results are the only source of truth about this user. Use their real numbers.',
       '2. Never invent user information. If something is not in the context or a tool result, say you do not have it.',
-      '3. The user\'s food log is NOT shared with you. You know the targets only. Never state or estimate what the user ate; if asked, say the Nutrition tab shows what they logged.',
+      '3. You see TODAY\'s food log only (nutrition.today: what was eaten against the targets, what is left, and the dishes logged today). Other days are not shared: never state or guess what the user ate on another day; say the Nutrition tab shows it. A number given as a range includes FITOS estimates: say "about". Never judge, shame or moralise about food; be practical. If nutrition.today is null, you know the targets only.',
+      '3a. readiness.today is FITOS\'s own score from today\'s check-in, with its advice; use that advice when the user asks how hard to train, and mention the check-in when there is none today. readiness.lastDays are the week\'s check-ins (1–5 scales; soreness and stress: higher is worse).',
+      '3b. weight is the trend (smoothed), not a single reading; daily ups and downs are water and food. When reliable is false, say the trend needs more readings.',
+      '3c. mess is where the user eats and today\'s menu. For "what should I eat", suggest dishes from mess.meals for the right meal and say how they fit what is left today; when menu is "inferred", say it is the usual menu for this day, as the mess has not published today\'s; when "none", say there is no menu today. The app\'s "Ask FITOS AI what to eat" in Nutrition builds exact plates.',
       '4. Health Connect data (steps, sleep, resting heart rate, calories, phone body measurements) is not sent to you. If asked, say the Home screen shows it on their phone and that you cannot see it.',
       '5. Explain recommendations with the reason FITOS gave (the `reason` fields). Do not override the training constraints, progression, deload, volume or nutrition computed by FITOS; you may explain them and suggest what the user could change in the app.',
       '6. You never change the user\'s data. When a change is warranted, tell them where to do it in FITOS (Training tab, Profile, the deload offer).',

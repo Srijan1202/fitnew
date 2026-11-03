@@ -26,6 +26,16 @@ export interface GeminiProviderOptions {
   readonly fetchImpl?: typeof fetch;
   /** The pause before the one retry on a 5xx (tests pass 0). */
   readonly retryDelayMs?: number;
+  /**
+   * Beta 5.4: the pauses before each retry on a 5xx ("busy"); defaults to
+   * about 1 s then 3 s. Overrides [retryDelayMs] when given.
+   */
+  readonly retryDelaysMs?: readonly number[];
+  /**
+   * Beta 5.4: a lighter model asked once when the main one is still busy
+   * after its retries, or answers "quota" (429). Unset: no backup.
+   */
+  readonly fallbackModel?: string;
 }
 
 /* --------------------------------------------------------- wire shapes -- */
@@ -62,7 +72,8 @@ export class GeminiProvider implements AiProvider {
   private readonly maxOutputTokens: number;
   private readonly baseUrl: string;
   private readonly fetchImpl: typeof fetch;
-  private readonly retryDelayMs: number;
+  private readonly retryDelaysMs: readonly number[];
+  readonly fallbackModel: string | null;
 
   constructor(opts: GeminiProviderOptions) {
     if (opts.apiKey.trim().length === 0) throw new Error('GeminiProvider needs an API key');
@@ -73,16 +84,19 @@ export class GeminiProvider implements AiProvider {
     this.maxOutputTokens = opts.maxOutputTokens;
     this.baseUrl = opts.baseUrl ?? 'https://generativelanguage.googleapis.com/v1beta';
     this.fetchImpl = opts.fetchImpl ?? fetch;
-    this.retryDelayMs = opts.retryDelayMs ?? 1000;
+    this.retryDelaysMs = opts.retryDelaysMs ?? (opts.retryDelayMs === undefined ? [1000, 3000] : [opts.retryDelayMs, opts.retryDelayMs]);
+    const fallback = opts.fallbackModel?.trim() ?? '';
+    this.fallbackModel = fallback === '' || fallback === opts.model ? null : fallback;
   }
 
   /**
-   * Phase 14: one retry, after a short pause, when the model host answers
-   * 5xx ("overloaded" — common on the free tier, seen in the live smoke).
-   * Never for 429 (the quota), a bad key, a timeout or a malformed answer.
+   * Phase 14, beta 5.4: when the model host answers 5xx ("busy" — common on
+   * the free tier) it is asked again after about 1 s and 3 s; if it is
+   * still busy, or answers 429 (the quota), the backup model is asked once.
+   * Never retried: a bad key, a timeout or a malformed answer.
    */
   async generate(request: AiRequest): Promise<AiResponse> {
-    return this.withRetry(() => this.once(request));
+    return this.withRetry(request, (r) => this.once(r));
   }
 
   /**
@@ -91,17 +105,31 @@ export class GeminiProvider implements AiProvider {
    * and the one 5xx retry happens before any text, as a 5xx is a status.
    */
   async generateStream(request: AiRequest, onText: AiTextSink): Promise<AiResponse> {
-    return this.withRetry(() => this.streamOnce(request, onText));
+    return this.withRetry(request, (r) => this.streamOnce(r, onText));
   }
 
-  private async withRetry(call: () => Promise<AiResponse>): Promise<AiResponse> {
-    try {
-      return await call();
-    } catch (e) {
-      if (!(e instanceof AiProviderError) || e.kind !== 'unavailable' || e.status === undefined || e.status < 500) throw e;
-      await new Promise((r) => setTimeout(r, this.retryDelayMs));
-      return call();
+  private async withRetry(request: AiRequest, call: (r: AiRequest) => Promise<AiResponse>): Promise<AiResponse> {
+    const busy = (e: unknown): boolean => e instanceof AiProviderError && e.kind === 'unavailable' && e.status !== undefined && e.status >= 500;
+    const quota = (e: unknown): boolean => e instanceof AiProviderError && e.kind === 'rate_limited';
+    const main = request.model ?? this.model;
+    let last: unknown;
+    for (let attempt = 0; attempt <= this.retryDelaysMs.length; attempt++) {
+      try {
+        const out = await call(request);
+        return { ...out, model: main };
+      } catch (e) {
+        last = e;
+        if (quota(e) || !busy(e) || attempt === this.retryDelaysMs.length) break;
+        request.onRetry?.();
+        await new Promise((r) => setTimeout(r, this.retryDelaysMs[attempt]));
+      }
     }
+    if (this.fallbackModel !== null && main !== this.fallbackModel && (busy(last) || quota(last))) {
+      request.onRetry?.();
+      const out = await call({ ...request, model: this.fallbackModel });
+      return { ...out, model: this.fallbackModel };
+    }
+    throw last;
   }
 
   private async post(request: AiRequest, method: string, signal: AbortSignal): Promise<Response> {

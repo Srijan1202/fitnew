@@ -1,6 +1,6 @@
 # FITOS privacy policy
 
-**Version** 2026-10-30.2 · applies to the closed beta
+**Version** 2026-11-03 · applies to the closed beta
 
 This is the text the app shows in Profile → Privacy & data (`apps/mobile/lib/features/privacy/presentation/policy_text.dart`); a test keeps the two in step. MASTER-SPEC §23 · ADR-023 · ADR-026 (beta: AWS hosting, crash reports, feedback).
 
@@ -22,7 +22,7 @@ To run the app (required): your plan, your targets, your logs and the suggestion
 
 ## FITOS AI
 
-Only if you allow it. FITOS AI answers with Google's Gemini, so what you ask is sent to Google: for chat, your message and the FITOS data it needs; for describing a meal, only your words; for "What should I eat?", the meal, the foods you have and the mess menu, what is left of today's calories and protein, and what you feel like; for "Explain simply", that one suggestion. While FITOS uses Google's free tier, Google may use what is sent to improve its products; this will change before a public release. You can withdraw this any time in Privacy & data.
+Only if you allow it. FITOS AI answers with Google's Gemini, so what you ask is sent to Google: for chat, your message and the FITOS data it needs: your plan and recent workouts, today's check-in and readiness, your weight trend, your mess and its menu, and what you logged to eat today (the totals and the dishes, never earlier days); for describing a meal, only your words; for "What should I eat?", the meal, the foods you have and the mess menu, what is left of today's calories and protein, and what you feel like; for "Explain simply", that one suggestion. While FITOS uses Google's free tier, Google may use what is sent to improve its products; this will change before a public release. You can withdraw this any time in Privacy & data.
 
 ## Crash reports
 

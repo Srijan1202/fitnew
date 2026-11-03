@@ -37,7 +37,9 @@ Future<bool?> showAiConsentSheet(BuildContext context) {
             const SizedBox(height: FitSpacing.sm),
             for (final line in const [
               'Chat: your message and the FITOS data it needs — your profile, '
-                  'goal, programme, today and recent workouts.',
+                  'goal, programme, today and recent workouts, today\'s '
+                  'check-in, your weight trend, your mess and its menu, and '
+                  'what you logged to eat today (never earlier days).',
               'Describe your meal: only the words you type.',
               'Explain simply: that one suggestion and its numbers.',
             ])

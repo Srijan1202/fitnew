@@ -121,6 +121,9 @@ class DioAiApi implements AiApi {
               yield AiStreamText(json['text'] as String);
             case 'tool':
               yield const AiStreamTool();
+            // Beta 5.4: the model was busy; the server is asking again.
+            case 'retry':
+              yield const AiStreamRetry();
             case 'done':
               yield AiStreamDone(AiChatResponse.fromJson(json));
               return;

@@ -87234,7 +87234,8 @@
                         "type": "string",
                         "enum": [
                           "health-connect",
-                          "food-log"
+                          "food-log",
+                          "food-log-history"
                         ]
                       }
                     }
@@ -87955,7 +87956,7 @@
         "tags": [
           "ai"
         ],
-        "description": "The same chat as POST /ai/chat, answered as text/event-stream. `event: text` carries the answer so far (plain text, all of it each time); `event: tool` means FITOS is looking something up, so the text so far is cleared; `event: done` carries the final AiChatResponse, which is the answer to keep; `event: error` carries the §10 envelope when it fails after the stream began. A failure before it began is an ordinary error response.",
+        "description": "The same chat as POST /ai/chat, answered as text/event-stream. `event: text` carries the answer so far (plain text, all of it each time); `event: tool` means FITOS is looking something up, so the text so far is cleared; `event: retry` (beta 5.4) means the model was busy and FITOS is asking again; `event: done` carries the final AiChatResponse, which is the answer to keep; `event: error` carries the §10 envelope when it fails after the stream began. A failure before it began is an ordinary error response.",
         "requestBody": {
           "required": true,
           "content": {

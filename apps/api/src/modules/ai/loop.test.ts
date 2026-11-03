@@ -80,7 +80,23 @@ function fakeContext(): FitosAiContext {
     },
     recentSessions: [],
     volume: null,
-    nutrition: { targets: null, foodLogShared: false, note: 'The food log is not shared with the assistant.' },
+    nutrition: {
+      targets: null,
+      foodLogShared: 'today-only',
+      today: {
+        date: '2026-09-22',
+        eaten: { kcal: '1241–1436', proteinG: '36–45', carbG: '224–242', fatG: '27–38' },
+        left: { kcal: '1441–1636', proteinG: '61–70' },
+        mealsLogged: ['dinner'],
+        items: [{ meal: 'dinner', food: 'Masala Uthappam', portion: '3 × 1 piece', kcal: '600', proteinG: '16' }],
+        moreItems: 0,
+        includesEstimates: true,
+      },
+      note: "Today's food log is shared.",
+    },
+    readiness: { checkedInToday: true, today: { score: 90, band: 'ready', advice: 'Train as planned.' }, lastDays: [] },
+    weight: { trendKg: 72, weeklyChangeKg: null, change30DaysKg: null, daysOfData: 1, reliable: false },
+    mess: { hostel: "Men's Hostel", mess: 'Non-Vegetarian', menuDate: '2026-09-22', menu: 'inferred', meals: [{ meal: 'dinner', dishes: ['Dhal', 'White Rice'] }] },
     health: { availableToServer: false, note: 'Health Connect data stays on the phone.' },
   };
 }
@@ -125,11 +141,11 @@ describe('ToolRegistry (allowlist)', () => {
     expect(calls).toEqual([`progression:user-1:${BENCH}`, 'getProfile:user-1']);
   });
 
-  it('nutrition targets say the food log is not shared (Phase 8, owner J17)', async () => {
+  it("beta 5.4: the nutrition tool shares today's log only (owner, reversing J17 for today)", async () => {
     const out = await new ToolRegistry(stubServices([])).execute('user-1', 'get_nutrition_targets', {});
-    expect(out).toMatchObject({ foodLogShared: false });
-    expect(JSON.stringify(out)).toMatch(/not shared with FITOS AI/);
-    expect(JSON.stringify(out)).not.toMatch(/not available/);
+    expect(out).toMatchObject({ foodLogShared: 'today-only' });
+    // No food service wired here: it says so instead of guessing.
+    expect(JSON.stringify(out)).toMatch(/not available/);
   });
 });
 
@@ -150,10 +166,13 @@ describe('AiService.chat (tool loop)', () => {
     expect(r).toEqual({ text: 'Pull is ready: 4 movements.', actions: [{ type: 'open-workout', label: "Open today's workout" }], toolsUsed: [], model: 'fake-1' });
     const req = provider.requests[0]!;
     expect(req.system).toContain('You are FITOS AI');
-    expect(req.system).toContain('food log is NOT shared with you');
+    expect(req.system).toContain("You see TODAY's food log only");
+    expect(req.system).toContain('Never judge, shame or moralise about food');
     expect(req.system).toContain('Health Connect data');
     expect(req.system).toContain('"displayName":"Srijan"');
-    expect(req.system).toContain('"foodLogShared":false');
+    expect(req.system).toContain('"foodLogShared":"today-only"');
+    expect(req.system).toContain('"food":"Masala Uthappam"');
+    expect(req.system).toContain('"menu":"inferred"');
     expect(req.system).not.toContain('not logged in this version');
     expect(req.system).toContain('"availableToServer":false');
     expect(req.messages).toEqual([{ role: 'user', content: 'What should I train today?' }]);

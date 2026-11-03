@@ -1410,7 +1410,7 @@ Each phase: **Prerequisites → Tasks → Files → DB → APIs → UI → Tests
 
 ---
 
-### PHASE 5 — Workout logging
+### — Workout logging
 
 **Prereq:** 4. **This is the retention-critical phase.**
 **Tasks:** session lifecycle; set logging with idempotency keys; drift local schema + offline queue; optimistic UI; rest timer; supersets and drop sets.

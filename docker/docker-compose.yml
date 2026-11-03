@@ -53,6 +53,7 @@ services:
       # (gitignored) only; it never reaches the image, a client or a log.
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.6-flash}
+      GEMINI_FALLBACK_MODEL: ${GEMINI_FALLBACK_MODEL:-}
       AI_TIMEOUT_MS: ${AI_TIMEOUT_MS:-25000}
       AI_MAX_OUTPUT_TOKENS: ${AI_MAX_OUTPUT_TOKENS:-2048}
       # Phase 14 (ADR-020): the kill switch, a model per purpose (unset → the

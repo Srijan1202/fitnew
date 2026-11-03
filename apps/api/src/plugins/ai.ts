@@ -47,6 +47,8 @@ export function providerFromEnv(env: Env): AiProvider {
     model: env.GEMINI_MODEL,
     timeoutMs: env.AI_TIMEOUT_MS,
     maxOutputTokens: env.AI_MAX_OUTPUT_TOKENS,
+    // Beta 5.4: the backup when the main model stays busy or is over quota.
+    ...(env.GEMINI_FALLBACK_MODEL !== undefined && { fallbackModel: env.GEMINI_FALLBACK_MODEL }),
   });
 }
 

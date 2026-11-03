@@ -61,7 +61,7 @@ describe('GeminiProvider', () => {
       calls,
     );
     const r = await p.generate(request);
-    expect(r).toEqual({ text: 'Pull day. Four movements.', toolCalls: [], finishReason: 'stop', usage: { inputTokens: 120, outputTokens: 18 } });
+    expect(r).toEqual({ text: 'Pull day. Four movements.', toolCalls: [], finishReason: 'stop', usage: { inputTokens: 120, outputTokens: 18 }, model: 'gemini-3.6-flash' });
     expect(calls).toHaveLength(1);
     const { url, init } = calls[0]!;
     expect(url).toBe('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent');
@@ -120,8 +120,8 @@ describe('GeminiProvider', () => {
     expect((err as AiProviderError).message).not.toContain(KEY);
   });
 
-  it('Phase 14: a 5xx is retried once (free-tier "overloaded", seen live); 429, 4xx and a good answer are not', async () => {
-    for (const [status, calls] of [[503, 2], [500, 2], [429, 1], [401, 1]] as const) {
+  it('Phase 14, beta 5.4: a 5xx is retried twice (free-tier "busy", seen live); 429, 4xx and a good answer are not', async () => {
+    for (const [status, calls] of [[503, 3], [500, 3], [429, 1], [401, 1]] as const) {
       const seen: { url: string; init: RequestInit }[] = [];
       await gemini(status, {}, seen).generate(request).catch(() => undefined);
       expect(seen, `HTTP ${status}`).toHaveLength(calls);
@@ -142,6 +142,43 @@ describe('GeminiProvider', () => {
     });
     expect((await flaky.generate(request)).text).toBe('Back.');
     expect(n).toBe(2);
+  });
+
+  it('beta 5.4: still busy after the retries, or over quota → the backup model, once; it says so and records which model answered', async () => {
+    const answer = { candidates: [{ content: { parts: [{ text: 'From the backup.' }] }, finishReason: 'STOP' }] };
+    for (const first of [503, 429]) {
+      const urls: string[] = [];
+      let retries = 0;
+      const p = new GeminiProvider({
+        apiKey: KEY,
+        model: 'gemini-3.6-flash',
+        fallbackModel: 'gemini-lite',
+        timeoutMs: 1000,
+        maxOutputTokens: 256,
+        retryDelaysMs: [0, 0],
+        fetchImpl: (async (url: string | URL | Request) => {
+          urls.push(String(url));
+          const backup = String(url).includes('gemini-lite');
+          return new Response(JSON.stringify(backup ? answer : {}), { status: backup ? 200 : first });
+        }) as typeof fetch,
+      });
+      const out = await p.generate({ ...request, onRetry: () => (retries += 1) });
+      expect(out.text, `HTTP ${first}`).toBe('From the backup.');
+      expect(out.model).toBe('gemini-lite');
+      // 503: three tries on the main model, then the backup; 429: straight to the backup.
+      expect(urls.filter((u) => u.includes('gemini-3.6-flash'))).toHaveLength(first === 503 ? 3 : 1);
+      expect(urls.filter((u) => u.includes('gemini-lite'))).toHaveLength(1);
+      expect(retries).toBe(first === 503 ? 3 : 1);
+    }
+    // A bad key never goes to the backup; no backup set → the error stands.
+    const bad: string[] = [];
+    await expect(
+      new GeminiProvider({ apiKey: KEY, model: 'gemini-3.6-flash', fallbackModel: 'gemini-lite', timeoutMs: 1000, maxOutputTokens: 256, retryDelaysMs: [0, 0], fetchImpl: scriptedFetch(401, {}, bad as never) }).generate(request),
+    ).rejects.toMatchObject({ kind: 'not_configured' });
+    await expect(gemini(429, {}).generate(request)).rejects.toMatchObject({ kind: 'rate_limited' });
+    // A good first answer reports the main model.
+    const ok = await gemini(200, answer).generate(request);
+    expect(ok.model).toBe('gemini-3.6-flash');
   });
 
   it('a hung upstream → timeout after AI_TIMEOUT_MS', async () => {
@@ -212,7 +249,7 @@ describe('GeminiProvider', () => {
       const seen: string[] = [];
       const r = await streaming(sse([one.slice(0, 7), one.slice(7) + two.slice(0, 20), two.slice(20)])).generateStream(request, (t) => seen.push(t));
       expect(seen).toEqual(['Pull ', 'Pull day.']);
-      expect(r).toEqual({ text: 'Pull day.', toolCalls: [], finishReason: 'stop', usage: { inputTokens: 9, outputTokens: 3 } });
+      expect(r).toEqual({ text: 'Pull day.', toolCalls: [], finishReason: 'stop', usage: { inputTokens: 9, outputTokens: 3 }, model: 'gemini-3.6-flash' });
       expect(sseCalls[0]!.url).toBe('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?alt=sse');
       expect(sseCalls[0]!.url).not.toContain(KEY);
       expect((sseCalls[0]!.init.headers as Record<string, string>)['x-goog-api-key']).toBe(KEY);
@@ -226,14 +263,14 @@ describe('GeminiProvider', () => {
       expect(r).toMatchObject({ finishReason: 'tool', toolCalls: [{ name: 'get_today', args: {}, signature: 's' }] });
     });
 
-    it('a block, nothing at all, bad JSON, a 5xx (retried once), a 429, a stall and a dropped connection are the usual failures', async () => {
+    it('a block, nothing at all, bad JSON, a 5xx (retried twice), a 429, a stall and a dropped connection are the usual failures', async () => {
       const kind = async (p: GeminiProvider) => ((await p.generateStream(request, () => undefined).catch((e: unknown) => e)) as AiProviderError).kind;
       expect(await kind(streaming(sse([data({ promptFeedback: { blockReason: 'SAFETY' } })])))).toBe('blocked');
       expect(await kind(streaming(sse([])))).toBe('empty');
       expect(await kind(streaming(sse(['data: {nope\n\n'])))).toBe('malformed');
       sseCalls = [];
       expect(await kind(streaming(sse([], 503)))).toBe('unavailable');
-      expect(sseCalls).toHaveLength(2);
+      expect(sseCalls).toHaveLength(3);
       expect(await kind(streaming(sse([], 429)))).toBe('rate_limited');
       const noBody = (async () => new Response(null, { status: 200 })) as typeof fetch;
       expect(await kind(streaming(noBody))).toBe('malformed');
@@ -268,7 +305,7 @@ describe('GeminiProvider', () => {
 describe('AiService', () => {
   it('status: configured provider vs none; the excludes are stated', () => {
     expect(new AiService(new FakeAiProvider()).status()).toEqual({ enabled: true, configured: true, provider: 'fake', model: 'fake-1', excludes: AI_EXCLUDES });
-    expect(new AiService(new NotConfiguredAiProvider()).status()).toEqual({ enabled: true, configured: false, provider: 'none', model: null, excludes: ['health-connect', 'food-log'] });
+    expect(new AiService(new NotConfiguredAiProvider()).status()).toEqual({ enabled: true, configured: false, provider: 'none', model: null, excludes: ['health-connect', 'food-log-history'] });
   });
 
   it.each([
@@ -373,7 +410,7 @@ describe('GET /v1/ai/status', () => {
       });
       const r = await app.inject({ method: 'GET', url: '/v1/ai/status', headers: { authorization: 'Bearer t', 'x-forwarded-for': '203.0.113.8' } });
       expect(r.statusCode).toBe(200);
-      expect(r.json()).toMatchObject({ ...expected, excludes: ['health-connect', 'food-log'] });
+      expect(r.json()).toMatchObject({ ...expected, excludes: ['health-connect', 'food-log-history'] });
       await app.close();
     }
   });

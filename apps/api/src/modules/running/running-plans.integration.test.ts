@@ -105,6 +105,16 @@ describeIfDb('/v1/running plans (beta 4.1, real Postgres)', { timeout: 120_000 }
     ...over,
   });
 
+  /**
+   * A start `ms` ago, kept inside today in TZ: just after midnight an hour ago
+   * is yesterday, and the run would not do today's planned run. Order is kept
+   * (a longer ago is still earlier).
+   */
+  const earlierToday = (ms: number) => {
+    const midnight = new Date(`${today()}T00:00:00+05:30`).getTime();
+    return new Date(Math.max(Date.now() - ms, midnight + 1000 + (7_200_000 - ms) / 120));
+  };
+
   function outdoorRun(startedAt: Date, over: Partial<CreateRunRequest> = {}): CreateRunRequest {
     const f = fixture('easy-loop');
     return {
@@ -176,7 +186,7 @@ describeIfDb('/v1/running plans (beta 4.1, real Postgres)', { timeout: 120_000 }
 
     // Today's run is done by a run today; then it can be neither skipped nor moved.
     const todays = plan.runs.find((r) => r.date === today())!;
-    const run = runDetailSchema.parse((await call(u, 'POST', '/running/runs', outdoorRun(new Date(Date.now() - 3_600_000)))).json());
+    const run = runDetailSchema.parse((await call(u, 'POST', '/running/runs', outdoorRun(earlierToday(3_600_000)))).json());
     expect(run.plannedRunId).toBe(todays.id);
     expect((await call(u, 'PATCH', `/running/planned/${todays.id}`, { action: 'skip' })).statusCode).toBe(409);
   });
@@ -185,8 +195,8 @@ describeIfDb('/v1/running plans (beta 4.1, real Postgres)', { timeout: 120_000 }
     const u = await user();
     const plan = (await call(u, 'POST', '/running/plans', tenK())).json<RunningPlan>();
     const todays = plan.runs.find((r) => r.date === today())!;
-    const first = runDetailSchema.parse((await call(u, 'POST', '/running/runs', outdoorRun(new Date(Date.now() - 7_200_000)))).json());
-    const second = runDetailSchema.parse((await call(u, 'POST', '/running/runs', outdoorRun(new Date(Date.now() - 3_600_000)))).json());
+    const first = runDetailSchema.parse((await call(u, 'POST', '/running/runs', outdoorRun(earlierToday(7_200_000)))).json());
+    const second = runDetailSchema.parse((await call(u, 'POST', '/running/runs', outdoorRun(earlierToday(3_600_000)))).json());
     expect(first.plannedRunId).toBe(todays.id);
     expect(second.plannedRunId).toBeNull();
     expect(runDetailSchema.parse((await call(u, 'GET', `/running/runs/${first.id}`)).json()).plannedRunId).toBe(todays.id);
@@ -210,7 +220,7 @@ describeIfDb('/v1/running plans (beta 4.1, real Postgres)', { timeout: 120_000 }
       { kind: 'warmup', distanceM: null, seconds: 300, pace: null, effort: 'easy', rep: null },
       { kind: 'work', distanceM: 1000, seconds: null, pace: { fast: 280, slow: 290 }, effort: 'hard', rep: { index: 1, of: 1 } },
     ] as const;
-    const req = outdoorRun(new Date(Date.now() - 3_600_000), {
+    const req = outdoorRun(earlierToday(3_600_000), {
       workout: { name: 'Test reps', steps: [...steps] },
       laps: [
         { step: 0, startT: 0, endT: 300 },
@@ -260,7 +270,7 @@ describeIfDb('/v1/running plans (beta 4.1, real Postgres)', { timeout: 120_000 }
     expect((await ev('shown')).statusCode).toBe(201);
     expect((await ev('accepted')).statusCode).toBe(201);
     expect((await ev('completed')).statusCode).toBe(422);
-    await call(u, 'POST', '/running/runs', outdoorRun(new Date(Date.now() - 3_600_000)));
+    await call(u, 'POST', '/running/runs', outdoorRun(earlierToday(3_600_000)));
     expect((await ev('completed')).statusCode).toBe(201);
     const after = todayActionsResponseSchema.parse((await call(u, 'GET', '/today')).json());
     expect(after.actions.some((a) => a.kind === 'start-run')).toBe(false);
@@ -312,7 +322,7 @@ describeIfDb('/v1/running plans (beta 4.1, real Postgres)', { timeout: 120_000 }
     const before = streakSchema.parse((await call(u, 'GET', '/progress/streak')).json());
     expect(before.todayCounted).toBe(false);
     expect(before.week).toEqual({ done: 0, planned: thisWeek.length });
-    await call(u, 'POST', '/running/runs', outdoorRun(new Date(Date.now() - 600_000)));
+    await call(u, 'POST', '/running/runs', outdoorRun(earlierToday(600_000)));
     const after = streakSchema.parse((await call(u, 'GET', '/progress/streak')).json());
     expect(after.todayCounted).toBe(true);
     expect(after.week).toEqual({ done: 1, planned: thisWeek.length });

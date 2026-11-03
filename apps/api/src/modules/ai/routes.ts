@@ -40,10 +40,17 @@ import { TrainingService } from '../training/service.js';
 import { UserRepository } from '../user/repository.js';
 import { messServiceFor } from '../mess/routes.js';
 import { ReadinessAssembler } from '../recovery/readiness.js';
+import { RecoveryRepository } from '../recovery/repository.js';
+import { RecoveryService } from '../recovery/service.js';
+import { ProgressRepository } from '../progress/repository.js';
+import { ProgressService } from '../progress/service.js';
+import { PlanRepository } from '../running/plan-repository.js';
+import { FoodLogService } from '../nutrition/log-service.js';
+import { localDateOf } from '@fitos/core/nutrition/log';
 import { UserService } from '../user/service.js';
 import { WorkoutRepository } from '../workout/repository.js';
 import { WorkoutService } from '../workout/service.js';
-import { UserContextAssembler } from './context-assembler.js';
+import { UserContextAssembler, messContextOf } from './context-assembler.js';
 import { ExplainService } from './explain.js';
 import { FoodGuideService } from './guide.js';
 import { FoodParseService } from './parse.js';
@@ -81,11 +88,26 @@ export const AI_CHAT_RATE_LIMIT = {
 
 export async function aiRoutes(app: FastifyInstance): Promise<void> {
   const db = app.database.db;
+  const messes = messServiceFor(db);
+  const menus = new MessRecommendService(messes, new UserRepository(db), new FoodLogRepository(db), new RecommendRepository(db));
+  const foodLogs = new FoodLogRepository(db);
   const services = {
-    user: new UserService(new UserRepository(db), async (ref) => (await messServiceFor(db).messForRef(ref)) !== null),
+    user: new UserService(new UserRepository(db), async (ref) => (await messes.messForRef(ref)) !== null),
     training: new TrainingService(new TrainingRepository(db)),
     workout: new WorkoutService(new WorkoutRepository(db), new TrainingRepository(db), ReadinessAssembler.forDb(db)),
     exercise: new ExerciseService(new ExerciseRepository(db)),
+    // Beta 5.4 (owner): today's food, readiness, the weight trend and the mess.
+    food: new FoodLogService(foodLogs, new FoodRepository(db), undefined, messes),
+    recovery: new RecoveryService(new RecoveryRepository(db), ReadinessAssembler.forDb(db), foodLogs),
+    progress: new ProgressService(new ProgressRepository(db), foodLogs, new PlanRepository(db)),
+    mess: {
+      today: async (userId: string) => {
+        const row = await messes.configuredMessRow(userId);
+        if (row === null) return null;
+        const date = localDateOf(new Date(), await foodLogs.timezoneOf(userId));
+        return messContextOf(row, date, await menus.storedMenu(row, date));
+      },
+    },
   };
   const consents = new PrivacyRepository(db);
   const premium = new PremiumService(new PremiumRepository(db));
@@ -108,7 +130,6 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
   );
   const parser = new FoodParseService(app.ai, new FoodService(new FoodRepository(db)), budget, app.aiConfig, app.log);
   const explainer = new ExplainService(app.ai, new TodayRepository(db), budget, app.aiConfig, app.log);
-  const messes = messServiceFor(db);
   const guide = new FoodGuideService(
     app.ai,
     {
@@ -116,7 +137,7 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
       users: new UserRepository(db),
       logs: new FoodLogRepository(db),
       mess: messes,
-      menus: new MessRecommendService(messes, new UserRepository(db), new FoodLogRepository(db), new RecommendRepository(db)),
+      menus,
     },
     budget,
     app.aiConfig,
@@ -166,7 +187,7 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
         description:
           'The same chat as POST /ai/chat, answered as text/event-stream. `event: text` carries the answer so far ' +
           '(plain text, all of it each time); `event: tool` means FITOS is looking something up, so the text so far is ' +
-          'cleared; `event: done` carries the final AiChatResponse, which is the answer to keep; `event: error` carries ' +
+          'cleared; `event: retry` (beta 5.4) means the model was busy and FITOS is asking again; `event: done` carries the final AiChatResponse, which is the answer to keep; `event: error` carries ' +
           'the §10 envelope when it fails after the stream began. A failure before it began is an ordinary error response.',
         tags: ['ai'],
         security: [{ bearerAuth: [] }],

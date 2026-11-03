@@ -215,6 +215,28 @@ void main() {
   });
 
   testWidgets(
+      'beta 5.4: while the model is busy the line says FITOS AI is trying again, then the answer',
+      (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    final gate = Completer<void>();
+    ai
+      ..streamRetry = true
+      ..streamGate = gate;
+    await type(tester, 'How hard should I train today?');
+    await tester.tap(find.byKey(const ValueKey('ai.send')));
+    await tester.pump();
+    await tester.pump();
+    expect(
+      textOf(tester, 'ai.thinking').data,
+      'FITOS AI is busy — trying again…',
+    );
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('ai.thinking')), findsNothing);
+  });
+
+  testWidgets(
       'beta 3.8: the answer appears as it is written, then the final one is kept with its actions',
       (tester) async {
     await tester.pumpWidget(app());

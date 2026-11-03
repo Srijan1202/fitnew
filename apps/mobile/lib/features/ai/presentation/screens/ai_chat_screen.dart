@@ -22,9 +22,12 @@ import '../../../../shared/widgets/fit_glass.dart';
 class AiChatScreen extends ConsumerStatefulWidget {
   const AiChatScreen({super.key});
 
-  /// Only prompts the assistant can answer (the food log is not shared with it).
+  /// Only prompts the assistant can answer. Beta 5.4: it sees today's food,
+  /// readiness, weight trend and mess menu too.
   static const starterPrompts = <String>[
     'What should I do today?',
+    'What should I eat tonight?',
+    'How much protein is left today?',
     "Explain today's workout",
     'How am I progressing?',
     'Why is my volume high?',
@@ -546,7 +549,10 @@ class _Conversation extends StatelessWidget {
                 ),
                 const SizedBox(width: FitSpacing.sm),
                 Text(
-                  'Thinking…',
+                  // Beta 5.4: the model was busy; FITOS is asking again.
+                  state.retrying
+                      ? 'FITOS AI is busy — trying again…'
+                      : 'Thinking…',
                   key: const ValueKey('ai.thinking'),
                   style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
                 ),

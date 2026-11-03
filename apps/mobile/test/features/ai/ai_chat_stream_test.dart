@@ -81,6 +81,18 @@ void main() {
     expect(server.paths, ['/v1/ai/chat/stream']);
   });
 
+  test('beta 5.4: a retry event (the model was busy) is read as such',
+      () async {
+    server.answers['/v1/ai/chat/stream'] = (
+      200,
+      [event('retry', {'type': 'retry'}) + event('done', done)],
+      sse,
+    );
+    final events = await api.chatStream(request).toList();
+    expect(events.first, isA<AiStreamRetry>());
+    expect(events.last, isA<AiStreamDone>());
+  });
+
   test(
       'a refusal before the stream began reads the envelope; an error event too',
       () async {

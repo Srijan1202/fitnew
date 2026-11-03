@@ -102,7 +102,7 @@ describeIfDb('/v1/ai (real Postgres, scripted model)', () => {
     expect((await app.inject({ method: 'GET', url: '/v1/ai/status', headers: { 'x-forwarded-for': '203.0.116.250' } })).statusCode).toBe(401);
   });
 
-  it('the context is the real user: name, goal targets, programme, today, the completed session with its sets; food and Health Connect stated as absent', async () => {
+  it("the context is the real user: name, goal targets, programme, today, the completed session with its sets; beta 5.4: today's food, readiness, weight and mess; Health Connect stated as absent", async () => {
     const { token, program, session } = await withProgramAndSession('Persona');
     ai.script = [{ text: 'Answer.', toolCalls: [], finishReason: 'stop' }];
     const r = await chat(token, 'What is my programme?');
@@ -119,7 +119,12 @@ describeIfDb('/v1/ai (real Postgres, scripted model)', () => {
     expect(ctx['recentSessions']).toHaveLength(1);
     expect(ctx['recentSessions'][0]).toMatchObject({ sessionId: session.id, name: session.name, workingSets: session.exercises[0]!.targets.length });
     expect(ctx['recentSessions'][0]['exercises'][0]['sets'][0]).toBe('50kg×12@1');
-    expect(ctx['nutrition']).toMatchObject({ foodLogShared: false });
+    // Beta 5.4 (owner): today's food log is shared (nothing logged yet), the
+    // readiness and weight parts are there, and no mess is set for this user.
+    expect(ctx['nutrition']).toMatchObject({ foodLogShared: 'today-only', today: { mealsLogged: [], items: [], moreItems: 0 } });
+    expect(ctx['readiness']).toMatchObject({ checkedInToday: false, lastDays: [] });
+    expect(ctx['weight']).toMatchObject({ daysOfData: expect.any(Number) });
+    expect(ctx['mess']).toBeNull();
     expect(ctx['health']).toMatchObject({ availableToServer: false });
     // Nothing that only the phone knows: no health *values*, only the
     // statement that they are unavailable. And nothing internal.
@@ -139,6 +144,32 @@ describeIfDb('/v1/ai (real Postgres, scripted model)', () => {
     expect(ctx['programme']).toBeNull();
     expect(ctx['recentSessions']).toEqual([]);
     expect(ctx['today']).toMatchObject({ status: 'no-programme' });
+  });
+
+  it("beta 5.4: today's logged food and today's check-in reach the context; another user's never do", async () => {
+    const token = await onboarded('Eater');
+    const other = await onboarded('Other');
+    const log = (t: string, name: string) =>
+      app.inject({
+        method: 'POST',
+        url: '/v1/nutrition/logs',
+        headers: auth(t),
+        payload: { clientLogId: randomUUID(), mealSlot: 'lunch', entryMethod: 'quick-add', quickAdd: { name, kcal: 260, proteinG: 4, carbG: 28, fatG: 15 } },
+      });
+    expect((await log(token, 'Canteen samosa')).statusCode).toBe(201);
+    expect((await log(other, 'Secret biryani')).statusCode).toBe(201);
+    const checkIn = await app.inject({ method: 'POST', url: '/v1/recovery/log', headers: auth(token), payload: { sleepHours: 7.5, energy: 4 } });
+    expect(checkIn.statusCode, checkIn.body).toBeLessThan(300);
+
+    ai.script = [{ text: 'Answer.', toolCalls: [], finishReason: 'stop' }];
+    expect((await chat(token, 'How much protein is left today?')).statusCode).toBe(200);
+    const system = ai.requests.at(-1)!.system;
+    const ctx = contextOf(system);
+    expect(ctx['nutrition']['today']).toMatchObject({ mealsLogged: ['lunch'], eaten: { kcal: '260', proteinG: '4' } });
+    expect(ctx['nutrition']['today']['items']).toEqual([{ meal: 'lunch', food: 'Canteen samosa', portion: expect.any(String), kcal: '260', proteinG: '4' }]);
+    expect(ctx['readiness']).toMatchObject({ checkedInToday: true });
+    expect(ctx['readiness']['lastDays']).toHaveLength(1);
+    expect(system).not.toContain('Secret biryani');
   });
 
   it('tools run against the authenticated user only: user B never sees user A through the loop', async () => {
@@ -271,7 +302,7 @@ describeIfDb('/v1/ai (real Postgres, scripted model)', () => {
   it('status is configured with the fake', async () => {
     const token = await onboarded('Golf');
     const r = await app.inject({ method: 'GET', url: '/v1/ai/status', headers: auth(token) });
-    expect(r.json()).toEqual({ enabled: true, configured: true, provider: 'fake', model: 'fake-1', excludes: ['health-connect', 'food-log'] });
+    expect(r.json()).toEqual({ enabled: true, configured: true, provider: 'fake', model: 'fake-1', excludes: ['health-connect', 'food-log-history'] });
   });
 
   it('Gate 5: a proposal is built for the real user by the deterministic generator, stored nowhere, and applied only through the ordinary route with the same request', async () => {

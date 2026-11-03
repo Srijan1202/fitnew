@@ -131,6 +131,8 @@ abstract class AiChatResponse with _$AiChatResponse {
 /// Beta 3.8: what a streamed answer (`POST /v1/ai/chat/stream`) says while
 /// it is written. [AiStreamText] is the answer so far, whole each time;
 /// [AiStreamTool] means FITOS is looking something up (clear what is shown);
+/// [AiStreamRetry] (beta 5.4) means the model was busy and FITOS is asking
+/// again;
 /// the stream ends with [AiStreamDone], the answer to keep, or [AiStreamFailed].
 sealed class AiStreamEvent {
   const AiStreamEvent();
@@ -143,6 +145,10 @@ final class AiStreamText extends AiStreamEvent {
 
 final class AiStreamTool extends AiStreamEvent {
   const AiStreamTool();
+}
+
+final class AiStreamRetry extends AiStreamEvent {
+  const AiStreamRetry();
 }
 
 final class AiStreamDone extends AiStreamEvent {

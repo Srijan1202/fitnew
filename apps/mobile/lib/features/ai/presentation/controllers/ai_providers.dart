@@ -59,10 +59,15 @@ class AiChatState {
     this.sending = false,
     this.partial,
     this.failure,
+    this.retrying = false,
   });
 
   final List<AiTurn> turns;
   final bool sending;
+
+  /// Beta 5.4: the model was busy and FITOS is asking again (shown instead of
+  /// "Thinking…"); dropped with the next event, like [partial].
+  final bool retrying;
 
   /// Beta 3.8: FITOS AI's answer while it is being written; null before the
   /// first words, while it looks something up, and once it is a turn.
@@ -71,19 +76,21 @@ class AiChatState {
   /// The last send's failure, shown under the exchange with Retry.
   final Failure? failure;
 
-  /// Every copy drops [partial] unless it is given again.
+  /// Every copy drops [partial] and [retrying] unless they are given again.
   AiChatState copyWith({
     List<AiTurn>? turns,
     bool? sending,
     String? partial,
     Failure? failure,
     bool clearFailure = false,
+    bool retrying = false,
   }) =>
       AiChatState(
         turns: turns ?? this.turns,
         sending: sending ?? this.sending,
         partial: partial,
         failure: clearFailure ? null : (failure ?? this.failure),
+        retrying: retrying,
       );
 }
 
@@ -120,6 +127,8 @@ class AiChatController extends Notifier<AiChatState> {
           state = state.copyWith(partial: text);
         case AiStreamTool():
           state = state.copyWith();
+        case AiStreamRetry():
+          state = state.copyWith(retrying: true);
         case AiStreamDone(:final answer):
           state = state.copyWith(
             turns: [

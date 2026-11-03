@@ -6,13 +6,20 @@
  * small: today's session, the programme's shape, the last three completed
  * sessions summarised, the current week's volume, targets. Every part is
  * optional and says so when absent. Health Connect data is not here and
- * cannot be: it never reaches the server (owner B4). The food log (Phase 8)
- * is not here either — it is deliberately not shared with the assistant
- * (owner J17); the context says so, so the model never invents either.
+ * cannot be: it never reaches the server (owner B4).
+ *
+ * Beta 5.4 (owner, reversing J17 for today only): today's food log — the
+ * totals against the targets and the dishes logged today, never another
+ * day — plus today's readiness and the week's check-ins, the weight trend,
+ * and the user's mess with today's menu. Each part is bounded too.
  */
 import type {
+  NutritionDay,
+  ProgressSummary,
   Program,
   ProgressionRecommendation,
+  RecoveryLog,
+  RecoveryToday,
   SessionListItem,
   TodayResponse,
   UserProfileDetail,
@@ -28,6 +35,10 @@ import type { WorkoutService } from '../workout/service.js';
 /** Bounds: what keeps a request small and the answer specific. */
 export const CONTEXT_RECENT_SESSIONS = 3;
 export const CONTEXT_SETS_PER_EXERCISE = 6;
+/** Beta 5.4: today's logged dishes, the check-in days, a meal's dishes. */
+export const CONTEXT_FOOD_ITEMS = 25;
+export const CONTEXT_CHECKIN_DAYS = 7;
+export const CONTEXT_MESS_DISHES = 15;
 
 export interface NutritionTargetsSummary {
   readonly kcal: number;
@@ -104,20 +115,78 @@ export interface FitosAiContext {
   } | null;
   readonly nutrition: {
     readonly targets: NutritionTargetsSummary | null;
-    readonly foodLogShared: false;
+    /** Beta 5.4: today's log is shared; other days never are. */
+    readonly foodLogShared: 'today-only';
+    readonly today: TodayFood | null;
     readonly note: string;
   };
+  /** Beta 5.4: today's readiness (FITOS's own score) and the week's check-ins. */
+  readonly readiness: {
+    readonly checkedInToday: boolean;
+    readonly today: { readonly score: number; readonly band: string; readonly advice: string } | null;
+    readonly lastDays: readonly {
+      readonly date: string;
+      readonly sleepHours: number | null;
+      readonly sleepQuality: number | null;
+      readonly soreness: number | null;
+      readonly energy: number | null;
+      readonly stress: number | null;
+    }[];
+  } | null;
+  /** Beta 5.4: the weight trend over the last 30 days, not every reading. */
+  readonly weight: {
+    readonly trendKg: number | null;
+    readonly weeklyChangeKg: number | null;
+    readonly change30DaysKg: number | null;
+    readonly daysOfData: number;
+    readonly reliable: boolean;
+  } | null;
+  /** Beta 5.4: where the user eats, and today's menu. */
+  readonly mess: MessContext | null;
   readonly health: {
     readonly availableToServer: false;
     readonly note: string;
   };
 }
 
+/** Beta 5.4: today's food as FITOS AI sees it. A range means estimates. */
+export interface TodayFood {
+  readonly date: string;
+  readonly eaten: { readonly kcal: string; readonly proteinG: string; readonly carbG: string; readonly fatG: string };
+  readonly left: { readonly kcal: string; readonly proteinG: string } | null;
+  readonly mealsLogged: readonly string[];
+  readonly items: readonly { readonly meal: string; readonly food: string; readonly portion: string; readonly kcal: string; readonly proteinG: string }[];
+  readonly moreItems: number;
+  readonly includesEstimates: boolean;
+}
+
+/** Beta 5.4: the user's mess and today's menu (dish names per meal). */
+export interface MessContext {
+  readonly hostel: string;
+  readonly mess: string;
+  readonly menuDate: string;
+  /** published: the mess's own menu; inferred: the usual menu for this day of the cycle; none: no menu. */
+  readonly menu: 'published' | 'inferred' | 'none';
+  readonly meals: readonly { readonly meal: string; readonly dishes: readonly string[] }[];
+}
+
 export interface ContextServices {
   readonly user: UserService;
   readonly training: TrainingService;
   readonly workout: WorkoutService;
+  /** Beta 5.4: each optional, so a part is simply absent where not wired. */
+  readonly food?: { today(userId: string): Promise<NutritionDay> };
+  readonly recovery?: { today(userId: string): Promise<RecoveryToday>; recent(userId: string, days?: number): Promise<{ today: string; logs: RecoveryLog[] }> };
+  readonly progress?: { summary(userId: string, window: '30d'): Promise<ProgressSummary> };
+  readonly mess?: { today(userId: string): Promise<MessContext | null> };
 }
+
+/** "1436" or "1241–1436": a range where the log holds estimates. */
+const range = (low: number, high: number): string => {
+  const lo = Math.round(low);
+  const hi = Math.round(high);
+  return lo === hi ? `${hi}` : `${lo}–${hi}`;
+};
 
 const fmtSet = (s: { weightKg: number | null; reps: number; rir: number | null }): string =>
   `${s.weightKg === null ? 'bw' : `${s.weightKg}kg`}×${s.reps}${s.rir === null ? '' : `@${s.rir}`}`;
@@ -126,13 +195,19 @@ export class UserContextAssembler {
   constructor(private readonly services: ContextServices, private readonly now: () => Date = () => new Date()) {}
 
   async assemble(userId: string): Promise<FitosAiContext> {
-    const [profile, goal, today, programme, volume, history] = await Promise.all([
-      this.services.user.getProfile(userId),
-      this.services.user.getGoal(userId),
-      this.services.workout.today(userId).catch(() => null),
-      this.services.training.getProgram(userId).catch(swallowNotFound),
-      this.services.workout.volume(userId).catch(() => null),
-      this.services.workout.list(userId, { limit: 10, status: 'completed' }).catch(() => null),
+    const s = this.services;
+    const [profile, goal, today, programme, volume, history, food, recoveryToday, recoveryDays, progress, mess] = await Promise.all([
+      s.user.getProfile(userId),
+      s.user.getGoal(userId),
+      s.workout.today(userId).catch(() => null),
+      s.training.getProgram(userId).catch(swallowNotFound),
+      s.workout.volume(userId).catch(() => null),
+      s.workout.list(userId, { limit: 10, status: 'completed' }).catch(() => null),
+      s.food === undefined ? null : s.food.today(userId).catch(() => null),
+      s.recovery === undefined ? null : s.recovery.today(userId).catch(() => null),
+      s.recovery === undefined ? null : s.recovery.recent(userId, CONTEXT_CHECKIN_DAYS).catch(() => null),
+      s.progress === undefined ? null : s.progress.summary(userId, '30d').catch(() => null),
+      s.mess === undefined ? null : s.mess.today(userId).catch(() => null),
     ]);
     const recent = history === null ? [] : await this.recentSessions(userId, history.items);
     const targets =
@@ -150,9 +225,16 @@ export class UserContextAssembler {
       volume: volume === null ? null : UserContextAssembler.volumeOf(volume),
       nutrition: {
         targets,
-        foodLogShared: false,
-        note: 'The user can log food in FITOS (the Nutrition tab), but the food log is not shared with the assistant; what they ate is unknown to you. Only the targets are known.',
+        foodLogShared: 'today-only',
+        today: food === null ? null : UserContextAssembler.foodOf(food),
+        note:
+          food === null
+            ? "Today's food log could not be read; you know the targets only."
+            : "Today's food log is shared: totals against the targets and the dishes logged today. Other days are not shared; the Nutrition tab shows them. A number given as a range includes FITOS estimates.",
       },
+      readiness: recoveryToday === null && recoveryDays === null ? null : UserContextAssembler.readinessOf(recoveryToday, recoveryDays?.logs ?? []),
+      weight: progress === null ? null : UserContextAssembler.weightOf(progress),
+      mess,
       health: {
         availableToServer: false,
         note: 'Health Connect data (steps, sleep, resting heart rate, calories, body measurements from the phone) stays on the phone and is not sent to this server or to the assistant. The Home screen shows it.',
@@ -161,6 +243,59 @@ export class UserContextAssembler {
   }
 
   /* --------------------------------------------------------- projections -- */
+
+  /** Beta 5.4: today's food, bounded; the numbers are the server's own. */
+  static foodOf(d: NutritionDay): TodayFood {
+    const t = d.totals;
+    const items = d.logs.flatMap((log) =>
+      log.items.map((i) => ({
+        meal: log.mealSlot,
+        food: i.foodName,
+        portion: i.servingLabel === null ? `${i.servings}` : `${i.servings} × ${i.servingLabel}`,
+        kcal: range(i.kcalLow, i.kcalHigh),
+        proteinG: range(i.proteinLow, i.proteinHigh),
+      })),
+    );
+    const r = d.remaining;
+    return {
+      date: d.date,
+      eaten: { kcal: range(t.kcalLow, t.kcalHigh), proteinG: range(t.proteinLow, t.proteinHigh), carbG: range(t.carbLow, t.carbHigh), fatG: range(t.fatLow, t.fatHigh) },
+      left: r === null ? null : { kcal: range(r.kcal.low, r.kcal.high), proteinG: range(r.protein.low, r.protein.high) },
+      mealsLogged: [...new Set(d.logs.map((l) => l.mealSlot))],
+      items: items.slice(0, CONTEXT_FOOD_ITEMS),
+      moreItems: Math.max(0, items.length - CONTEXT_FOOD_ITEMS),
+      includesEstimates: t.kcalLow !== t.kcalHigh || t.proteinLow !== t.proteinHigh,
+    };
+  }
+
+  /** Beta 5.4: today's readiness and the last days' check-ins, oldest first. */
+  static readinessOf(today: RecoveryToday | null, logs: readonly RecoveryLog[]): NonNullable<FitosAiContext['readiness']> {
+    const r = today?.readiness ?? null;
+    return {
+      checkedInToday: today?.log !== null && today?.log !== undefined,
+      today: r === null ? null : { score: r.score, band: r.band, advice: r.advice },
+      lastDays: logs.slice(-CONTEXT_CHECKIN_DAYS).map((l) => ({
+        date: l.date,
+        sleepHours: l.sleepHours,
+        sleepQuality: l.sleepQuality,
+        soreness: l.soreness,
+        energy: l.energy,
+        stress: l.stress,
+      })),
+    };
+  }
+
+  /** Beta 5.4: the trend, never the raw readings. */
+  static weightOf(p: ProgressSummary): NonNullable<FitosAiContext['weight']> {
+    const w = p.weight;
+    return {
+      trendKg: w.currentTrendKg,
+      weeklyChangeKg: w.weeklyChangeKg,
+      change30DaysKg: w.windowChangeKg,
+      daysOfData: w.daysOfData,
+      reliable: w.isReliable,
+    };
+  }
 
   static profileOf(p: UserProfileDetail, now: Date): FitosAiContext['profile'] {
     let age: number | null = null;
@@ -263,6 +398,23 @@ export class UserContextAssembler {
     }
     return out;
   }
+}
+
+/** Beta 5.4: the user's mess and today's menu, dish names only, bounded. */
+export function messContextOf(
+  row: { readonly hostelLabel: string; readonly messLabel: string },
+  date: string,
+  day: { readonly resolution: { readonly kind: string }; readonly meals: readonly { readonly slot: string; readonly dishes: readonly { readonly name: string }[] }[] },
+): MessContext {
+  const kind = day.resolution.kind;
+  const menu = kind === 'exact' ? 'published' : kind === 'cycle-inferred' ? 'inferred' : 'none';
+  return {
+    hostel: row.hostelLabel,
+    mess: row.messLabel,
+    menuDate: date,
+    menu,
+    meals: menu === 'none' ? [] : day.meals.map((m) => ({ meal: m.slot, dishes: m.dishes.slice(0, CONTEXT_MESS_DISHES).map((d) => d.name) })),
+  };
 }
 
 function swallowNotFound(e: unknown): null {

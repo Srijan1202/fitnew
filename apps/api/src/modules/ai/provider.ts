@@ -49,6 +49,11 @@ export interface AiRequest {
   readonly jsonMode?: boolean;
   /** Phase 14: this call's model (MODEL_FOOD_PARSE / MODEL_EXPLAIN); the provider's own otherwise. */
   readonly model?: string;
+  /**
+   * Beta 5.4: called before each retry or a switch to the backup model, so
+   * a streamed chat can say "trying again" (nothing is shown otherwise).
+   */
+  readonly onRetry?: () => void;
 }
 
 export interface AiToolCall {
@@ -69,6 +74,8 @@ export interface AiResponse {
   readonly toolCalls: readonly AiToolCall[];
   readonly finishReason: 'stop' | 'length' | 'tool' | 'safety' | 'other';
   readonly usage?: { readonly inputTokens: number; readonly outputTokens: number };
+  /** Beta 5.4: the model that answered (the backup when the main one was busy). */
+  readonly model?: string;
 }
 
 /** Beta 3.8: the answer's text as it is written — all of it so far, each time. */

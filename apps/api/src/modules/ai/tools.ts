@@ -6,6 +6,7 @@
  * read ("unknown tool" / "invalid arguments"), never an execution. Every
  * tool is read-only; nothing here writes.
  */
+import type { NutritionDay } from '@fitos/contracts';
 import { z } from 'zod';
 
 import { MUSCLE_GROUPS } from '@fitos/core/training/generator';
@@ -26,6 +27,8 @@ export interface ToolServices {
   readonly training: TrainingService;
   readonly workout: WorkoutService;
   readonly exercise: ExerciseService;
+  /** Beta 5.4: today's food log (optional where not wired). */
+  readonly food?: { today(userId: string): Promise<NutritionDay> };
 }
 
 // zod 4 infers `unknown` for a bare schema type, where zod 3 inferred `any`;
@@ -68,12 +71,18 @@ export const TOOLS: readonly ToolDefinition[] = [
   },
   {
     name: 'get_nutrition_targets',
-    description: "The user's nutrition targets. The food log is not shared with the assistant: the tool says so.",
+    description: "The user's nutrition targets and today's food log (totals and dishes logged today). Other days are not shared.",
     args: noArgs,
     parameters: noParams,
     execute: async (userId, _a, s) => {
       const g = await s.user.getGoal(userId);
-      return { targets: g.targets, foodLogShared: false, intakeToday: 'not shared with FITOS AI — the Nutrition tab shows what was logged' };
+      // Beta 5.4 (owner): today's log is shared with FITOS AI; other days are not.
+      const day = s.food === undefined ? null : await s.food.today(userId).catch(() => null);
+      return {
+        targets: g.targets,
+        foodLogShared: 'today-only',
+        intakeToday: day === null ? 'not available — the Nutrition tab shows what was logged' : UserContextAssembler.foodOf(day),
+      };
     },
   },
   {

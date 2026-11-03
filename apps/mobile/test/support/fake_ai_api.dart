@@ -72,11 +72,19 @@ class FakeAiApi implements AiApi {
   List<String> streamTexts = const [];
   Completer<void>? streamGate;
 
+  /// Beta 5.4: the server says the model was busy before anything else.
+  bool streamRetry = false;
+
   /// Counted like [chat]: a send is a chat whichever way it is answered.
   @override
   Stream<AiStreamEvent> chatStream(AiChatRequest request) async* {
     calls.add('chat');
     requests.add(request);
+    if (streamRetry) {
+      yield const AiStreamRetry();
+      final gate = streamGate;
+      if (gate != null && streamTexts.isEmpty) await gate.future;
+    }
     for (final t in streamTexts) {
       yield AiStreamText(t);
     }

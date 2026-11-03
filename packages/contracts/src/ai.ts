@@ -25,9 +25,11 @@ export const aiStatusResponseSchema = z.object({
   model: z.string().nullable(),
   /**
    * What the assistant will not see, stated so the client can explain it
-   * to the user. Phase 6.6: Health Connect data stays on the phone.
+   * to the user. Phase 6.6: Health Connect data stays on the phone. Beta
+   * 5.4: today's food log is shared, earlier days are not
+   * (`food-log-history`); `food-log` is kept for older servers.
    */
-  excludes: z.array(z.enum(['health-connect', 'food-log'])),
+  excludes: z.array(z.enum(['health-connect', 'food-log', 'food-log-history'])),
 });
 export type AiStatusResponse = z.infer<typeof aiStatusResponseSchema>;
 
