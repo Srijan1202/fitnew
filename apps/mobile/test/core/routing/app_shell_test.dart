@@ -128,7 +128,9 @@ void main() {
       expect(bar(), findsNothing, reason: 'deeper screens hide the bar');
       await tester.tap(find.byKey(const ValueKey('generate.go')));
       await tester.pumpAndSettle();
-      expect(find.text('Barbell Back Squat'), findsOneWidget);
+      // The plan opens on today's weekday, so check the screen, not one
+      // day's exercises (it failed on a Tuesday, 2026-11-03).
+      expect(find.byType(WorkoutWeekScreen), findsOneWidget);
       expect(bar(), findsOneWidget);
 
       expect(await androidBack(tester), isTrue);

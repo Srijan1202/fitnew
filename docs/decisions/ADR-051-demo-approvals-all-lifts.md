@@ -1,6 +1,6 @@
 # ADR-051 — Beta 5.2: a demo for every lift, shown only once an admin approves it
 
-**Status:** PROPOSED. Owner, 2026-10-31: "Cable fly still not right rest are correct. Now make demo for all the rest. Make a section on admin website where i can approve each demo and after my approval only it will show on app", then: the 29 checked demos start approved, every new demo ships at once, preview and approval happen in the admin site, and the version is 5.2. Becomes ACCEPTED with the owner's check.
+**Status:** ACCEPTED 2026-11-03 (owner's check on the phone and in the panel). The owner approves the new demos in the panel as time allows. Proposed as: Owner, 2026-10-31: "Cable fly still not right rest are correct. Now make demo for all the rest. Make a section on admin website where i can approve each demo and after my approval only it will show on app", then: the 29 checked demos start approved, every new demo ships at once, preview and approval happen in the admin site, and the version is 5.2. Becomes ACCEPTED with the owner's check.
 **Date:** 2026-10-31
 **Phase:** 19 (beta 5.2)
 **Builds on:** ADR-050 (the rig, the 30 demos, the checks).

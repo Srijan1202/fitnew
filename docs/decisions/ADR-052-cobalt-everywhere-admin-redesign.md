@@ -1,6 +1,6 @@
 # ADR-052 — Beta 5.3: Cobalt by default everywhere, premium Violet themes, and a redesigned admin panel
 
-**Status:** PROPOSED. Owner, 2026-11-01: the request and answers in `docs/phase-plans/beta-5.3-plan.md`, then "ok go this is 5.3 update". Becomes ACCEPTED with the owner's check on the phone and in the panel.
+**Status:** ACCEPTED 2026-11-03 (owner's check on the phone, patch 1 included, and in the panel). Proposed as: Owner, 2026-11-01: the request and answers in `docs/phase-plans/beta-5.3-plan.md`, then "ok go this is 5.3 update". Becomes ACCEPTED with the owner's check on the phone and in the panel.
 **Date:** 2026-11-01
 **Phase:** 19 (beta 5.3)
 **Affects:** ADR-047 (the main themes), ADR-028 (the brand), ADR-046 (the panel stayed FITOS Dark).

@@ -1,6 +1,6 @@
 # ADR-050 — Beta 5.0: exercise demos drawn by FITOS, and home-screen widgets
 
-**Status:** PROPOSED. Owner, 2026-10-31: "Exercise demo animations for the ~30 most-used lifts" and "make some widgets for the app", the answers below, then "go" on `docs/phase-plans/beta-5.0-plan.md`. Becomes ACCEPTED with the owner's check on the phone.
+**Status:** ACCEPTED 2026-11-03 (owner's check on the phone: demos and widgets). Proposed as: Owner, 2026-10-31: "Exercise demo animations for the ~30 most-used lifts" and "make some widgets for the app", the answers below, then "go" on `docs/phase-plans/beta-5.0-plan.md`. Becomes ACCEPTED with the owner's check on the phone.
 **Date:** 2026-10-31
 **Phase:** 19 (beta 5.0)
 
