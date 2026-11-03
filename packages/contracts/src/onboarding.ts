@@ -58,7 +58,7 @@ export const OPTIONAL_CONSENT_TYPES = ['ai-processing'] as const satisfies reado
  * records which version was agreed to (§23), so a policy change can be
  * re-consented rather than assumed.
  */
-export const CURRENT_POLICY_VERSION = '2026-11-03';
+export const CURRENT_POLICY_VERSION = '2026-11-04';
 
 export const consentGrantSchema = z
   .object({

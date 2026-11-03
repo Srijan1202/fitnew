@@ -3,7 +3,7 @@
 /// two stay in step and that the version is the server's CURRENT_POLICY_VERSION.
 library;
 
-const kPolicyVersion = '2026-11-03';
+const kPolicyVersion = '2026-11-04';
 
 const kPolicySections = <(String, String)>[
   (
@@ -73,7 +73,9 @@ const kPolicySections = <(String, String)>[
         'it needs: your plan and recent workouts, today\'s check-in and '
         'readiness, your weight trend, your mess and its menu, and what you '
         'logged to eat today (the totals and the dishes, never earlier days); '
-        'for describing a meal, only your words; for "What should I '
+        'for describing a meal, only your words; for a meal photo, the '
+        'photo and, if you have a mess, the dish names on its menu for that '
+        'meal (FITOS never keeps the photo); for "What should I '
         'eat?", the meal, the foods you have and the mess menu, what is left '
         'of today\'s calories and protein, and what you feel like; for "Explain '
         'simply", that one suggestion. While FITOS uses Google\'s free tier, '

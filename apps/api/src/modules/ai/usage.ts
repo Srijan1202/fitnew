@@ -97,6 +97,12 @@ export class AiBudget {
         { path: 'ai', issue: `hourly limit (${route})` },
       ]);
     }
+    // Beta 5.5: photos also have a cap per day.
+    if (route === 'photo' && (await this.repo.callsSince(userId, route, new Date(now - 24 * HOUR_MS))) >= this.config.photosPerDay) {
+      throw new AppError('RATE_LIMITED', `You have sent ${this.config.photosPerDay} meal photos today. Describe your meal still works.`, [
+        { path: 'ai', issue: 'daily photo limit' },
+      ]);
+    }
     if (tokens >= this.config.dailyTokens * this.config.premiumMultiplier) {
       throw new AppError('RATE_LIMITED', "Today's FITOS AI allowance is used up. It resets over the next day.", [
         { path: 'ai', issue: 'daily token budget' },

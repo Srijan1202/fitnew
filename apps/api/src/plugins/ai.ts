@@ -20,7 +20,9 @@ export interface AiConfig {
   /** Per-purpose models; null = the provider's own. */
   readonly models: { readonly parse: string | null; readonly explain: string | null; readonly guide: string | null };
   /** Calls per user per hour, by purpose. */
-  readonly perHour: { readonly chat: number; readonly parse: number; readonly explain: number; readonly guide: number };
+  readonly perHour: { readonly chat: number; readonly parse: number; readonly explain: number; readonly guide: number; readonly photo: number };
+  /** Beta 5.5: photos a user may send in 24 hours (not multiplied for premium). */
+  readonly photosPerDay: number;
   /** Tokens a user may spend in 24 hours, across every purpose. */
   readonly dailyTokens: number;
   /** Phase 19 (ADR-027): premium users' limits are the ones above times this. */
@@ -61,7 +63,9 @@ export function aiConfigFromEnv(env: Env | undefined): AiConfig {
       parse: env?.AI_PARSE_PER_HOUR ?? 20,
       explain: env?.AI_EXPLAIN_PER_HOUR ?? 20,
       guide: env?.AI_GUIDE_PER_HOUR ?? 10,
+      photo: env?.AI_PHOTO_PER_HOUR ?? 10,
     },
+    photosPerDay: env?.AI_PHOTO_PER_DAY ?? 20,
     dailyTokens: env?.AI_DAILY_TOKEN_BUDGET ?? 200_000,
     premiumMultiplier: env?.AI_PREMIUM_LIMIT_MULTIPLIER ?? 2,
   };

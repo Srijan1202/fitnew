@@ -30,6 +30,8 @@ export function testEnv(overrides: Partial<Env> = {}): Env {
     AI_EXPLAIN_PER_HOUR: 20,
     AI_GUIDE_PER_HOUR: 10,
     AI_CHAT_PER_HOUR: 60,
+    AI_PHOTO_PER_HOUR: 10,
+    AI_PHOTO_PER_DAY: 20,
     AI_DAILY_TOKEN_BUDGET: 200_000,
     ...overrides,
   };

@@ -13,9 +13,18 @@
 
 export type AiRole = 'user' | 'assistant';
 
+/** Beta 5.5: a photo sent with a user message (a meal to read). Never stored. */
+export interface AiImage {
+  readonly mimeType: string;
+  /** Base64, no data: prefix. */
+  readonly data: string;
+}
+
 export interface AiMessage {
   readonly role: AiRole;
   readonly content: string;
+  /** Beta 5.5: photos with this (user) message. */
+  readonly images?: readonly AiImage[];
   /** An assistant turn that asked for tools; the results follow as `toolResults`. */
   readonly toolCalls?: readonly AiToolCall[];
 }

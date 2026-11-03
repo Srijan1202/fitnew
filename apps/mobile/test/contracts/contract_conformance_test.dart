@@ -2962,6 +2962,33 @@ void main() {
       expect(barEstimate.toJson().keys.toSet(), keysOf(prop(item, 'estimate')));
     });
 
+    test('beta 5.5: the photo request and response; a mess dish line', () {
+      expect(
+        keysOf(schemaOf('/nutrition/parse-photo', 'post', request: true)),
+        {'image', 'mimeType', 'slot', 'date'},
+      );
+      final response = schemaOf('/nutrition/parse-photo', 'post');
+      final answer = photoDraft();
+      expect(answer.toJson().keys.toSet(), keysOf(response));
+      final item =
+          itemsOf(prop(prop(prop(response, 'draft'), 'data'), 'items'));
+      for (final i in answer.draft.items) {
+        expect(i.toJson().keys.toSet(), keysOf(item));
+      }
+      final dish = prop(item, 'messDish');
+      expect(phulkaDish.toJson().keys.toSet(), keysOf(dish));
+      final perServing = prop(dish, 'perServing');
+      expect(phulkaDish.perServing.keys.toSet(), keysOf(perServing));
+      expect(phulkaDish.snapshot.keys.toSet(), keysOf(prop(dish, 'snapshot')));
+      Map<String, dynamic> wire(Object? v) =>
+          jsonDecode(jsonEncode(v)) as Map<String, dynamic>;
+      for (final a in [photoDraft(), photoDraft(messCode: null)]) {
+        final back = ParseFoodPhotoResponse.fromJson(wire(a.toJson()));
+        expect(back.toJson(), wire(a.toJson()));
+      }
+      expect(photoDraft().draft.items.first.loggable, isTrue);
+    });
+
     test('explain request and response; the source vocabulary', () {
       expect(
         keysOf(schemaOf('/ai/explain', 'post', request: true)),

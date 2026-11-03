@@ -5,6 +5,9 @@ import {
   aiStatusResponseSchema,
   explainRequestSchema,
   explainResponseSchema,
+  PHOTO_MAX_BASE64,
+  parseFoodPhotoRequestSchema,
+  parseFoodPhotoResponseSchema,
   parseFoodRequestSchema,
   parseFoodResponseSchema,
 } from './ai.js';
@@ -71,6 +74,33 @@ describe('Phase 14 drafts (§19.2)', () => {
     expect(parseFoodResponseSchema.safeParse({ draft: { ...draft, requiresConfirmation: false }, model: 'm' }).success).toBe(false);
     expect(parseFoodResponseSchema.safeParse({ draft: { ...draft, source: 'database' }, model: 'm' }).success).toBe(false);
     expect(parseFoodResponseSchema.safeParse({ draft: { ...draft, data: { items: [], loggedId: 'x' } }, model: 'm' }).success).toBe(false);
+  });
+
+  it('beta 5.5: a photo request is the photo (base64, a known type, ≤ 1.5 MB), the meal and optionally the day', () => {
+    const ok = { image: 'AAAAAAAAAAAAAAAAAAAA', mimeType: 'image/jpeg', slot: 'lunch' };
+    expect(parseFoodPhotoRequestSchema.safeParse(ok).success).toBe(true);
+    expect(parseFoodPhotoRequestSchema.safeParse({ ...ok, date: '2026-11-04' }).success).toBe(true);
+    for (const bad of [
+      { ...ok, image: 'data:image/jpeg;base64,AAAA' },
+      { ...ok, image: 'A'.repeat(PHOTO_MAX_BASE64 + 4) },
+      { ...ok, mimeType: 'image/gif' },
+      { ...ok, slot: 'brunch' },
+      { ...ok, text: 'dal' },
+    ]) {
+      expect(parseFoodPhotoRequestSchema.safeParse(bad).success, JSON.stringify(bad).slice(0, 80)).toBe(false);
+    }
+  });
+
+  it('beta 5.5: a mess dish line, and the menu it is logged against', () => {
+    const macros = { kcalLow: 100, kcalHigh: 120, proteinLow: 3, proteinHigh: 4, carbLow: 20, carbHigh: 22, fatLow: 1, fatHigh: 2 };
+    const messDish = { dishSlug: 'white-rice', name: 'White Rice', servingLabel: '1 plate', servings: 1.5, perServing: macros, snapshot: macros };
+    const line = { phrase: 'rice', quantity: 1.5, unit: 'serving', confidence: 'medium', match: null, messDish, estimate: null, problem: null };
+    const photo = { draft: { ...draft, data: { items: [line] } }, mess: { code: 'mens-veg', menuDate: '2026-11-04' }, model: 'm' };
+    expect(parseFoodPhotoResponseSchema.safeParse(photo).success).toBe(true);
+    expect(parseFoodPhotoResponseSchema.safeParse({ ...photo, mess: null }).success).toBe(true);
+    expect(parseFoodPhotoResponseSchema.safeParse({ ...photo, draft: { ...draft, data: { items: [{ ...line, messDish: { ...messDish, servings: 11 } }] } } }).success).toBe(false);
+    // A text draft without the field reads it as no mess dish.
+    expect(parseFoodResponseSchema.parse({ draft, model: 'm' }).draft.data.items[0]!.messDish).toBeNull();
   });
 
   it('explain: an action id in; AI words, or the engine words when they were discarded', () => {

@@ -44,6 +44,8 @@ interface GeminiPart {
   readonly text?: string;
   readonly functionCall?: { readonly name: string; readonly args?: Record<string, unknown>; readonly id?: string };
   readonly functionResponse?: { readonly name: string; readonly response: Record<string, unknown>; readonly id?: string };
+  /** Beta 5.5: a photo. */
+  readonly inlineData?: { readonly mimeType: string; readonly data: string };
   /** Gemini 3: must be echoed back with the function call on the next turn. */
   readonly thoughtSignature?: string;
 }
@@ -233,6 +235,8 @@ export class GeminiProvider implements AiProvider {
     const contents: GeminiContent[] = request.messages.map((m) => ({
       role: m.role === 'assistant' ? 'model' : 'user',
       parts: [
+        // Beta 5.5: the photo first, then the words about it (Gemini's advice for one image).
+        ...(m.images ?? []).map((i) => ({ inlineData: { mimeType: i.mimeType, data: i.data } })),
         ...(m.content.length > 0 ? [{ text: m.content }] : []),
         ...(m.toolCalls ?? []).map((c) => ({
           functionCall: { name: c.name, args: c.args, ...(c.id !== undefined ? { id: c.id } : {}) },

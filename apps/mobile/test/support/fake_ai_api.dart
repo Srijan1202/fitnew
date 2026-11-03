@@ -104,6 +104,26 @@ class FakeAiApi implements AiApi {
     return d == null ? const Err(Unknown()) : Ok(d);
   }
 
+  /// Beta 5.5: the next photo answer (or failure), and each photo's request.
+  ParseFoodPhotoResponse? nextPhoto;
+  Failure? photoFailure;
+  final List<({int bytes, String slot, String date})> photos = [];
+
+  @override
+  Future<Result<ParseFoodPhotoResponse>> parseFoodPhoto({
+    required List<int> bytes,
+    required String mimeType,
+    required String slot,
+    required String date,
+  }) async {
+    calls.add('photo');
+    photos.add((bytes: bytes.length, slot: slot, date: date));
+    final f = photoFailure;
+    if (f != null) return Err(f);
+    final d = nextPhoto;
+    return d == null ? const Err(Unknown()) : Ok(d);
+  }
+
   @override
   Future<Result<ExplainResponse>> explain(String actionId) async {
     calls.add('explain');

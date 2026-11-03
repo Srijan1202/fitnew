@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:fitos/core/config/app_config.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fitos/features/ai/domain/entities/ai_draft.dart';
@@ -11,6 +14,7 @@ import 'package:fitos/features/auth/presentation/controllers/auth_controller.dar
 import 'package:fitos/features/health/presentation/controllers/health_providers.dart';
 import 'package:fitos/features/home/presentation/controllers/home_providers.dart';
 import 'package:fitos/features/mess/presentation/mess_providers.dart';
+import 'package:fitos/features/nutrition/data/meal_photo_source.dart';
 import 'package:fitos/features/nutrition/domain/entities/food.dart';
 import 'package:fitos/features/nutrition/domain/entities/food_log.dart';
 import 'package:fitos/features/nutrition/domain/portion_preview.dart';
@@ -87,14 +91,36 @@ FoodLogItem Function(LogFoodItemRequest) serverSnapshot(Food food) => (req) {
       );
     };
 
+/// Beta 5.5: the camera and the gallery, scripted; records which was asked.
+class _Photos implements MealPhotoSource {
+  Uint8List? next;
+  final calls = <String>[];
+
+  @override
+  Future<Uint8List?> pick({
+    required bool camera,
+    required NavigatorState navigator,
+  }) async {
+    calls.add(camera ? 'camera' : 'gallery');
+    return next;
+  }
+}
+
+/// A real 1×1 PNG, so the preview decodes.
+final _png = base64Decode(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+);
+
 void main() {
   late AppDatabase db;
   late FakeFoodLogApi api;
   late FakeFoodRepository foods;
   late FakeAiApi ai;
   late FakePrivacyApi privacy;
+  late _Photos photos;
 
   setUp(() {
+    photos = _Photos()..next = _png;
     ai = FakeAiApi.off();
     privacy = FakePrivacyApi();
     db = AppDatabase.inMemory();
@@ -139,6 +165,7 @@ void main() {
         // Phase 14: FITOS AI off unless a test switches it on.
         privacyApiProvider.overrideWithValue(privacy),
         aiApiProvider.overrideWithValue(ai),
+        mealPhotoSourceProvider.overrideWithValue(photos),
         messApiProvider.overrideWithValue(FakeMessApi(mine: null)),
         foodRepositoryProvider.overrideWithValue(foods),
         connectivityStreamProvider.overrideWithValue(
@@ -910,6 +937,170 @@ void main() {
   /// Beta 3.6 (owner, F15): "What should I eat?" — FITOS AI suggests a
   /// plate from what you have; the numbers are the database's; Log this
   /// logs exactly that plate through the queue.
+  /// Beta 5.5 (owner): "Snap a meal" — a photo of the plate read into the
+  /// same draft; a dish on the mess menu at the mess table's numbers; only
+  /// Add logs; the photo is never kept.
+  group('snap a meal (FITOS AI)', () {
+    setUp(() {
+      ai = FakeAiApi()..nextPhoto = photoDraft();
+      api.messSnapshot['phulka'] = (req) => FoodLogItem(
+            id: 'i-phulka',
+            position: 0,
+            foodId: null,
+            messDishSlug: 'phulka',
+            foodName: 'Phulka',
+            foodSource: FoodSource.estimated,
+            basis: NutritionBasis.perServing,
+            servingLabel: '1 piece',
+            servingGrams: 40,
+            servings: req.servings!,
+            grams: null,
+            kcalLow: 85 * req.servings!,
+            kcalHigh: 120 * req.servings!,
+            proteinLow: 2.5 * req.servings!,
+            proteinHigh: 3.6 * req.servings!,
+            carbLow: 16 * req.servings!,
+            carbHigh: 22 * req.servings!,
+            fatLow: 0.8 * req.servings!,
+            fatHigh: 3 * req.servings!,
+            fibreLow: null,
+            fibreHigh: null,
+            confidence: NutritionConfidence.medium,
+          );
+    });
+
+    Future<void> openPhoto(WidgetTester tester) async {
+      await tester.tap(find.byKey(const ValueKey('eat.log')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('log.photo')));
+      await settle(tester);
+    }
+
+    testWidgets(
+        'the camera opens first; the photo is read for this meal and day; a mess dish, a FITOS food and an estimate, each labelled; nothing logged before Add',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await openPhoto(tester);
+      expect(photos.calls, ['camera']);
+      final sent = ai.photos.single;
+      expect(sent, (bytes: _png.length, slot: 'lunch', date: today));
+      expect(find.byKey(const ValueKey('photo.preview')), findsOneWidget);
+      expect(find.byKey(const ValueKey('photo.privacy')), findsOneWidget);
+      expect(find.text('SNAP A MEAL'), findsOneWidget);
+
+      expect(textOf(tester, 'describe.item.0.name').data, 'Phulka');
+      expect(textOf(tester, 'describe.item.0.tag').data, 'MESS');
+      expect(textOf(tester, 'describe.item.0.portion').data, '2 × 1 piece');
+      expect(find.text('FITOS AI saw “two phulka”'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('describe.item.0.unsure')),
+        findsOneWidget,
+      );
+      expect(textOf(tester, 'describe.item.1.tag').data, 'FITOS');
+      expect(textOf(tester, 'describe.item.2.tag').data, 'ESTIMATE');
+      expect(find.text('Add 3 to Lunch'), findsOneWidget);
+      expect(api.logs, isEmpty);
+    });
+
+    testWidgets(
+        'adjust and confirm: one more phulka → ONE mess log for that menu (servings, no numbers), the dal as a search log, the bar as a quick add',
+        (tester) async {
+      tall(tester);
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await openPhoto(tester);
+      await tester.tap(find.byKey(const ValueKey('describe.item.0.more')));
+      await tester.pump();
+      expect(textOf(tester, 'describe.item.0.portion').data, '2.5 × 1 piece');
+      await tester.tap(find.byKey(const ValueKey('describe.add')));
+      await settle(tester);
+
+      expect(find.byType(EatScreen), findsOneWidget);
+      final logs = api.logs.values.toList();
+      expect(logs, hasLength(3));
+      final mess = logs.singleWhere((l) => l.entryMethod == EntryMethod.mess);
+      expect(mess.messCode, 'mens-veg');
+      expect(mess.items.single.messDishSlug, 'phulka');
+      expect(mess.items.single.servings, 2.5);
+      expect(mess.mealSlot, MealSlot.lunch);
+      final search =
+          logs.singleWhere((l) => l.entryMethod == EntryMethod.search);
+      expect(search.items.single.foodId, dalTadka.id);
+      final quick =
+          logs.singleWhere((l) => l.entryMethod == EntryMethod.quickAdd);
+      expect(quick.items.single.foodName, 'Zqxv crunch bar');
+    });
+
+    testWidgets(
+        'closing the camera before a photo closes Snap a meal; a photo FITOS cannot read says so; the gallery works too',
+        (tester) async {
+      tall(tester);
+      photos.next = null;
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await openPhoto(tester);
+      expect(photos.calls, ['camera']);
+      expect(find.text('SNAP A MEAL'), findsNothing);
+      expect(find.byKey(const ValueKey('log.photo')), findsOneWidget);
+      expect(ai.photos, isEmpty);
+
+      // A GIF: not sent.
+      photos.next = Uint8List.fromList('GIF89a....'.codeUnits);
+      await tester.tap(find.byKey(const ValueKey('log.photo')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('photo.note')), findsOneWidget);
+      expect(ai.photos, isEmpty);
+
+      photos.next = _png;
+      await tester.tap(find.byKey(const ValueKey('photo.gallery')));
+      await settle(tester);
+      expect(photos.calls.last, 'gallery');
+      expect(ai.photos, hasLength(1));
+      expect(find.byKey(const ValueKey('photo.note')), findsNothing);
+      expect(textOf(tester, 'describe.item.0.name').data, 'Phulka');
+    });
+
+    testWidgets(
+        'no food in the photo: says so; Describe it instead opens Describe your meal',
+        (tester) async {
+      tall(tester);
+      ai.nextPhoto = const ParseFoodPhotoResponse(
+        model: 'fake-1',
+        draft: FoodDraft(items: [], confidence: AiConfidence.low),
+      );
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await openPhoto(tester);
+      expect(
+        find.textContaining("Couldn't see any food in that photo"),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const ValueKey('photo.describe')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('describe.input')), findsOneWidget);
+      expect(find.text('DESCRIBE YOUR MEAL'), findsOneWidget);
+    });
+
+    testWidgets(
+        'without FITOS AI consent the sheet asks first; Not now opens no camera and closes Snap a meal',
+        (tester) async {
+      tall(tester);
+      privacy.aiGranted = false;
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await openPhoto(tester);
+      expect(find.byKey(const ValueKey('aiConsent.sheet')), findsOneWidget);
+      expect(find.textContaining('Snap a meal: the photo'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('aiConsent.notNow')));
+      await settle(tester);
+      expect(photos.calls, isEmpty);
+      expect(ai.photos, isEmpty);
+      expect(find.text('SNAP A MEAL'), findsNothing);
+    });
+  });
+
   group('the food guide (FITOS AI)', () {
     FoodGuideResponse answer() => const FoodGuideResponse(
           slot: MealSlot.lunch,

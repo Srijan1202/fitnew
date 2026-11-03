@@ -113,6 +113,10 @@ const envSchema = z.object({
   // Beta 3.6: "What should I eat?" — each one is a bigger prompt than a parse.
   AI_GUIDE_PER_HOUR: z.coerce.number().int().min(1).default(10),
   AI_CHAT_PER_HOUR: z.coerce.number().int().min(1).default(60),
+  // Beta 5.5: a meal read from a photo — a photo costs more than words, so its
+  // own hourly limit and a cap per day (the cap is not multiplied for premium).
+  AI_PHOTO_PER_HOUR: z.coerce.number().int().min(1).default(10),
+  AI_PHOTO_PER_DAY: z.coerce.number().int().min(1).default(20),
   AI_DAILY_TOKEN_BUDGET: z.coerce.number().int().min(1000).default(200_000),
   // Phase 19 (ADR-027): FITOS AI is premium; premium users get the limits
   // above times this (2 = double). Change it like any server setting.

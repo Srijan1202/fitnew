@@ -23,6 +23,15 @@ abstract class AiApi {
   /// logged by this call.
   Future<Result<ParseFoodResponse>> parseFood(String text);
 
+  /// Beta 5.5: a meal photo (JPEG, PNG or WebP bytes) → a draft to confirm, read against
+  /// the mess menu for [slot] on [date]. Nothing is logged or kept.
+  Future<Result<ParseFoodPhotoResponse>> parseFoodPhoto({
+    required List<int> bytes,
+    required String mimeType,
+    required String slot,
+    required String date,
+  });
+
   /// Phase 14: a TODAY action's reason in plainer words, or the engine's own.
   Future<Result<ExplainResponse>> explain(String actionId);
 
@@ -170,6 +179,31 @@ class DioAiApi implements AiApi {
           options: Options(receiveTimeout: const Duration(seconds: 30)),
         ),
         ParseFoodResponse.fromJson,
+      );
+
+  @override
+  Future<Result<ParseFoodPhotoResponse>> parseFoodPhoto({
+    required List<int> bytes,
+    required String mimeType,
+    required String slot,
+    required String date,
+  }) =>
+      _guard(
+        () => _dio.post<Map<String, dynamic>>(
+          '/v1/nutrition/parse-photo',
+          data: {
+            'image': base64Encode(bytes),
+            'mimeType': mimeType,
+            'slot': slot,
+            'date': date,
+          },
+          // A photo takes the model longer than words; the server may retry.
+          options: Options(
+            sendTimeout: const Duration(seconds: 30),
+            receiveTimeout: const Duration(seconds: 60),
+          ),
+        ),
+        ParseFoodPhotoResponse.fromJson,
       );
 
   @override

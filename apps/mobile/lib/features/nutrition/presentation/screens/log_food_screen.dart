@@ -178,10 +178,30 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
                       // Phase 14: a meal in words, read by FITOS AI into a
                       // draft the user checks. Only while AI is on and set up.
                       if (aiOn) ...<Widget>[
-                        _DescribeEntry(
+                        _AiEntry(
+                          entryKey: const ValueKey('log.describe'),
+                          icon: Icons.auto_awesome_outlined,
+                          title: 'Describe your meal',
+                          subtitle:
+                              'Type what you ate; you check it before it is logged.',
                           onTap: () async {
                             FocusScope.of(context).unfocus();
                             if (await showDescribeMeal(context, _target)) {
+                              _done();
+                            }
+                          },
+                        ),
+                        const SizedBox(height: FitSpacing.sm),
+                        // Beta 5.5 (owner): the same from a photo of the plate.
+                        _AiEntry(
+                          entryKey: const ValueKey('log.photo'),
+                          icon: Icons.photo_camera_outlined,
+                          title: 'Snap a meal',
+                          subtitle:
+                              'Take a photo of your plate; you check it before it is logged.',
+                          onTap: () async {
+                            FocusScope.of(context).unfocus();
+                            if (await showPhotoMeal(context, _target)) {
                               _done();
                             }
                           },
@@ -225,17 +245,27 @@ class _LogFoodScreenState extends ConsumerState<LogFoodScreen> {
   }
 }
 
-/// Phase 14: the way into "Describe your meal".
-class _DescribeEntry extends StatelessWidget {
-  const _DescribeEntry({required this.onTap});
+/// Phase 14: the way into "Describe your meal"; beta 5.5, "Snap a meal".
+class _AiEntry extends StatelessWidget {
+  const _AiEntry({
+    required this.entryKey,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
 
+  final Key entryKey;
+  final IconData icon;
+  final String title;
+  final String subtitle;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return InkWell(
-      key: const ValueKey('log.describe'),
+      key: entryKey,
       onTap: onTap,
       customBorder: fitGlass
           ? const RoundedRectangleBorder(
@@ -251,15 +281,15 @@ class _DescribeEntry extends StatelessWidget {
           padding: const EdgeInsets.all(FitSpacing.md),
           child: Row(
             children: <Widget>[
-              Icon(Icons.auto_awesome_outlined, color: FitColors.ink),
+              Icon(icon, color: FitColors.ink),
               const SizedBox(width: FitSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text('Describe your meal', style: textTheme.titleMedium),
+                    Text(title, style: textTheme.titleMedium),
                     Text(
-                      'Type what you ate; you check it before it is logged.',
+                      subtitle,
                       style: textTheme.bodyMedium
                           ?.copyWith(color: FitColors.ink60),
                     ),

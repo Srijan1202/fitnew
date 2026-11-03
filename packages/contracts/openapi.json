@@ -88563,6 +88563,142 @@
                                       }
                                     ]
                                   },
+                                  "messDish": {
+                                    "default": null,
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "dishSlug": {
+                                            "type": "string",
+                                            "maxLength": 120,
+                                            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                                          },
+                                          "name": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "servingLabel": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "servings": {
+                                            "type": "number",
+                                            "minimum": 0.25,
+                                            "maximum": 10
+                                          },
+                                          "perServing": {
+                                            "type": "object",
+                                            "properties": {
+                                              "kcalLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "kcalHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "proteinLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "proteinHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "carbLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "carbHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "fatLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "fatHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              }
+                                            },
+                                            "required": [
+                                              "kcalLow",
+                                              "kcalHigh",
+                                              "proteinLow",
+                                              "proteinHigh",
+                                              "carbLow",
+                                              "carbHigh",
+                                              "fatLow",
+                                              "fatHigh"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          "snapshot": {
+                                            "type": "object",
+                                            "properties": {
+                                              "kcalLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "kcalHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "proteinLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "proteinHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "carbLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "carbHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "fatLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "fatHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              }
+                                            },
+                                            "required": [
+                                              "kcalLow",
+                                              "kcalHigh",
+                                              "proteinLow",
+                                              "proteinHigh",
+                                              "carbLow",
+                                              "carbHigh",
+                                              "fatLow",
+                                              "fatHigh"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "required": [
+                                          "dishSlug",
+                                          "name",
+                                          "servingLabel",
+                                          "servings",
+                                          "perServing",
+                                          "snapshot"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
                                   "estimate": {
                                     "anyOf": [
                                       {
@@ -88634,6 +88770,7 @@
                                   "unit",
                                   "confidence",
                                   "match",
+                                  "messDish",
                                   "estimate",
                                   "problem"
                                 ],
@@ -88681,6 +88818,872 @@
                   },
                   "required": [
                     "draft",
+                    "model"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nutrition/parse-photo": {
+      "post": {
+        "summary": "A meal photo → a draft of foods and portions to confirm (beta 5.5; nothing is stored, not even the photo)",
+        "tags": [
+          "nutrition",
+          "ai"
+        ],
+        "description": "The photo goes to the model with the dish names and serving sizes of your mess menu for that meal, when you have a mess; nothing else. A dish picked from the menu is a messDish line at the mess table's numbers (log it as a mess log for `mess`); any other food is matched to the FITOS food database as in /nutrition/parse, or is the model's estimate within §19.2's bounds. requiresConfirmation is always true. The photo is held for this request only. 422 when it is not the image type it claims or is over 1.5 MB; 429 over the hourly or daily photo limit.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "minLength": 16,
+                    "maxLength": 2000000,
+                    "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+                  },
+                  "mimeType": {
+                    "type": "string",
+                    "enum": [
+                      "image/jpeg",
+                      "image/png",
+                      "image/webp"
+                    ]
+                  },
+                  "slot": {
+                    "type": "string",
+                    "enum": [
+                      "breakfast",
+                      "lunch",
+                      "snacks",
+                      "dinner"
+                    ]
+                  },
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "image",
+                  "mimeType",
+                  "slot"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "draft": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "items": {
+                              "maxItems": 12,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "phrase": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 120
+                                  },
+                                  "quantity": {
+                                    "type": "number",
+                                    "exclusiveMinimum": 0
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 30
+                                  },
+                                  "confidence": {
+                                    "type": "string",
+                                    "enum": [
+                                      "high",
+                                      "medium",
+                                      "low"
+                                    ]
+                                  },
+                                  "match": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "foodId": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                          },
+                                          "name": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "matchKind": {
+                                            "type": "string",
+                                            "enum": [
+                                              "exact",
+                                              "alias",
+                                              "prefix",
+                                              "fuzzy"
+                                            ]
+                                          },
+                                          "basis": {
+                                            "type": "string",
+                                            "enum": [
+                                              "per_100g",
+                                              "per_serving"
+                                            ]
+                                          },
+                                          "servingLabel": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 60
+                                          },
+                                          "servings": {
+                                            "type": "number",
+                                            "minimum": 0.1,
+                                            "maximum": 20
+                                          },
+                                          "row": {
+                                            "type": "object",
+                                            "properties": {
+                                              "basis": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "per_100g",
+                                                  "per_serving"
+                                                ]
+                                              },
+                                              "servingLabel": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 60
+                                              },
+                                              "servingGrams": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "number",
+                                                    "exclusiveMinimum": 0,
+                                                    "maximum": 5000
+                                                  },
+                                                  {
+                                                    "type": "null"
+                                                  }
+                                                ]
+                                              },
+                                              "kcalLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "kcalHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "proteinLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "proteinHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "carbLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "carbHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "fatLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "fatHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "fibreLow": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "number",
+                                                    "minimum": 0
+                                                  },
+                                                  {
+                                                    "type": "null"
+                                                  }
+                                                ]
+                                              },
+                                              "fibreHigh": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "number",
+                                                    "minimum": 0
+                                                  },
+                                                  {
+                                                    "type": "null"
+                                                  }
+                                                ]
+                                              },
+                                              "confidence": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "high",
+                                                  "medium",
+                                                  "low"
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "basis",
+                                              "servingLabel",
+                                              "servingGrams",
+                                              "kcalLow",
+                                              "kcalHigh",
+                                              "proteinLow",
+                                              "proteinHigh",
+                                              "carbLow",
+                                              "carbHigh",
+                                              "fatLow",
+                                              "fatHigh",
+                                              "fibreLow",
+                                              "fibreHigh",
+                                              "confidence"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          "snapshot": {
+                                            "type": "object",
+                                            "properties": {
+                                              "kcalLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "kcalHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "proteinLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "proteinHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "carbLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "carbHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "fatLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "fatHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              }
+                                            },
+                                            "required": [
+                                              "kcalLow",
+                                              "kcalHigh",
+                                              "proteinLow",
+                                              "proteinHigh",
+                                              "carbLow",
+                                              "carbHigh",
+                                              "fatLow",
+                                              "fatHigh"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "required": [
+                                          "foodId",
+                                          "name",
+                                          "matchKind",
+                                          "basis",
+                                          "servingLabel",
+                                          "servings",
+                                          "row",
+                                          "snapshot"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "messDish": {
+                                    "default": null,
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "dishSlug": {
+                                            "type": "string",
+                                            "maxLength": 120,
+                                            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                                          },
+                                          "name": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "servingLabel": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "servings": {
+                                            "type": "number",
+                                            "minimum": 0.25,
+                                            "maximum": 10
+                                          },
+                                          "perServing": {
+                                            "type": "object",
+                                            "properties": {
+                                              "kcalLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "kcalHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "proteinLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "proteinHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "carbLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "carbHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "fatLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "fatHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              }
+                                            },
+                                            "required": [
+                                              "kcalLow",
+                                              "kcalHigh",
+                                              "proteinLow",
+                                              "proteinHigh",
+                                              "carbLow",
+                                              "carbHigh",
+                                              "fatLow",
+                                              "fatHigh"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          "snapshot": {
+                                            "type": "object",
+                                            "properties": {
+                                              "kcalLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "kcalHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "proteinLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "proteinHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "carbLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "carbHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "fatLow": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              },
+                                              "fatHigh": {
+                                                "type": "number",
+                                                "minimum": 0
+                                              }
+                                            },
+                                            "required": [
+                                              "kcalLow",
+                                              "kcalHigh",
+                                              "proteinLow",
+                                              "proteinHigh",
+                                              "carbLow",
+                                              "carbHigh",
+                                              "fatLow",
+                                              "fatHigh"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "required": [
+                                          "dishSlug",
+                                          "name",
+                                          "servingLabel",
+                                          "servings",
+                                          "perServing",
+                                          "snapshot"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "estimate": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "name": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 60
+                                          },
+                                          "grams": {
+                                            "anyOf": [
+                                              {
+                                                "type": "number",
+                                                "exclusiveMinimum": 0
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "kcal": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "proteinG": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "carbG": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "fatG": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          }
+                                        },
+                                        "required": [
+                                          "name",
+                                          "grams",
+                                          "kcal",
+                                          "proteinG",
+                                          "carbG",
+                                          "fatG"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "problem": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "phrase",
+                                  "quantity",
+                                  "unit",
+                                  "confidence",
+                                  "match",
+                                  "messDish",
+                                  "estimate",
+                                  "problem"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "items"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "confidence": {
+                          "type": "string",
+                          "enum": [
+                            "high",
+                            "medium",
+                            "low"
+                          ]
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "ai-draft"
+                          ]
+                        },
+                        "requiresConfirmation": {
+                          "type": "boolean",
+                          "enum": [
+                            true
+                          ]
+                        }
+                      },
+                      "required": [
+                        "data",
+                        "confidence",
+                        "source",
+                        "requiresConfirmation"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "mess": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "maxLength": 40,
+                              "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                            },
+                            "menuDate": {
+                              "type": "string",
+                              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "menuDate"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "model": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "draft",
+                    "mess",
                     "model"
                   ],
                   "additionalProperties": false

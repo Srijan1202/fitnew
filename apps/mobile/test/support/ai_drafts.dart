@@ -82,6 +82,70 @@ const barEstimate = DraftEstimate(
   fatG: 7,
 );
 
+/// Beta 5.5: a mess dish seen in a photo — Phulka at 2 servings, the mess
+/// table's numbers per serving and at 2.
+const phulkaDish = DraftMessDish(
+  dishSlug: 'phulka',
+  name: 'Phulka',
+  servingLabel: '1 piece',
+  servings: 2,
+  perServing: {
+    'kcalLow': 85,
+    'kcalHigh': 120,
+    'proteinLow': 2.5,
+    'proteinHigh': 3.6,
+    'carbLow': 16,
+    'carbHigh': 22,
+    'fatLow': 0.8,
+    'fatHigh': 3,
+  },
+  snapshot: {
+    'kcalLow': 170,
+    'kcalHigh': 240,
+    'proteinLow': 5,
+    'proteinHigh': 7.2,
+    'carbLow': 32,
+    'carbHigh': 44,
+    'fatLow': 1.6,
+    'fatHigh': 6,
+  },
+);
+
+/// Beta 5.5: the answer to a meal photo — a mess dish on the menu, a FITOS
+/// food and an estimate, against today's lunch menu of mens-veg.
+ParseFoodPhotoResponse photoDraft({String? messCode = 'mens-veg'}) =>
+    ParseFoodPhotoResponse(
+      model: 'fake-1',
+      messCode: messCode,
+      menuDate: messCode == null ? null : '2026-09-24',
+      draft: FoodDraft(
+        confidence: AiConfidence.medium,
+        items: [
+          const DraftItem(
+            phrase: 'two phulka',
+            quantity: 2,
+            unit: 'serving',
+            confidence: AiConfidence.medium,
+            messDish: phulkaDish,
+          ),
+          DraftItem(
+            phrase: 'a katori of dal',
+            quantity: 1,
+            unit: 'katori',
+            confidence: AiConfidence.medium,
+            match: dalMatch,
+          ),
+          const DraftItem(
+            phrase: 'a zqxv bar',
+            quantity: 1,
+            unit: 'piece',
+            confidence: AiConfidence.low,
+            estimate: barEstimate,
+          ),
+        ],
+      ),
+    );
+
 ParseFoodResponse mealDraft() => ParseFoodResponse(
       model: 'fake-1',
       draft: FoodDraft(

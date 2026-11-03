@@ -11,6 +11,9 @@
  *
  * Beta 3.6 (F15): POST /nutrition/guide, "What should I eat?" from what the
  * person has and the mess menu, behind the `food-guide` switch.
+ *
+ * Beta 5.5 (owner): POST /nutrition/parse-photo, a meal from a photo, read
+ * against the person's mess menu for that meal; the photo is never stored.
  */
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
@@ -24,6 +27,9 @@ import {
   explainResponseSchema,
   foodGuideRequestSchema,
   foodGuideResponseSchema,
+  PHOTO_MAX_BASE64,
+  parseFoodPhotoRequestSchema,
+  parseFoodPhotoResponseSchema,
   parseFoodRequestSchema,
   parseFoodResponseSchema,
 } from '@fitos/contracts';
@@ -53,7 +59,7 @@ import { WorkoutService } from '../workout/service.js';
 import { UserContextAssembler, messContextOf } from './context-assembler.js';
 import { ExplainService } from './explain.js';
 import { FoodGuideService } from './guide.js';
-import { FoodParseService } from './parse.js';
+import { FoodParseService, type PhotoMenuSource } from './parse.js';
 import { FoodLogRepository } from '../nutrition/log-repository.js';
 import { MessRecommendService } from '../mess/recommend-service.js';
 import { RecommendRepository } from '../mess/recommend-repository.js';
@@ -128,7 +134,23 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
     },
     app.aiConfig.enabled,
   );
-  const parser = new FoodParseService(app.ai, new FoodService(new FoodRepository(db)), budget, app.aiConfig, app.log);
+  /** Beta 5.5: the person's mess menu for a photo's meal, published or inferred; dishes with the mess table's numbers. */
+  const photoMenus: PhotoMenuSource = {
+    menuFor: async (userId, slot, date) => {
+      const row = await messes.configuredMessRow(userId);
+      if (row === null) return null;
+      const menuDate = date ?? localDateOf(new Date(), await foodLogs.timezoneOf(userId));
+      const day = await menus.storedMenu(row, menuDate);
+      if (day.resolution.kind !== 'exact' && day.resolution.kind !== 'cycle-inferred') return null;
+      const dishes = (day.meals.find((m) => m.slot === slot)?.dishes ?? []).flatMap((d) =>
+        d.nutrition === null
+          ? []
+          : [{ slug: d.id, name: d.name, servingLabel: d.nutrition.servingLabel, servingGrams: d.nutrition.servingGrams, macros: d.nutrition.macros }],
+      );
+      return { code: row.code, menuDate, dishes };
+    },
+  };
+  const parser = new FoodParseService(app.ai, new FoodService(new FoodRepository(db)), budget, app.aiConfig, app.log, photoMenus);
   const explainer = new ExplainService(app.ai, new TodayRepository(db), budget, app.aiConfig, app.log);
   const guide = new FoodGuideService(
     app.ai,
@@ -253,6 +275,29 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request) => parser.parse(requireUserId(request.userId), request.body.text, await premiumOf(request)),
+  );
+
+  typed.post(
+    '/nutrition/parse-photo',
+    {
+      config: { rateLimit: AI_CHAT_RATE_LIMIT },
+      // The photo is base64 in JSON: up to 1.5 MB of image, plus the rest of the body.
+      bodyLimit: PHOTO_MAX_BASE64 + 4096,
+      schema: {
+        summary: 'A meal photo → a draft of foods and portions to confirm (beta 5.5; nothing is stored, not even the photo)',
+        description:
+          'The photo goes to the model with the dish names and serving sizes of your mess menu for that meal, when you ' +
+          'have a mess; nothing else. A dish picked from the menu is a messDish line at the mess table\'s numbers (log it ' +
+          'as a mess log for `mess`); any other food is matched to the FITOS food database as in /nutrition/parse, or is ' +
+          'the model\'s estimate within §19.2\'s bounds. requiresConfirmation is always true. The photo is held for this ' +
+          'request only. 422 when it is not the image type it claims or is over 1.5 MB; 429 over the hourly or daily photo limit.',
+        tags: ['nutrition', 'ai'],
+        security: [{ bearerAuth: [] }],
+        body: parseFoodPhotoRequestSchema,
+        response: { 200: parseFoodPhotoResponseSchema, ...errors },
+      },
+    },
+    async (request) => parser.parsePhoto(requireUserId(request.userId), request.body, await premiumOf(request)),
   );
 
   typed.post(

@@ -41,6 +41,8 @@ Future<bool?> showAiConsentSheet(BuildContext context) {
                   'check-in, your weight trend, your mess and its menu, and '
                   'what you logged to eat today (never earlier days).',
               'Describe your meal: only the words you type.',
+              'Snap a meal: the photo, and your mess menu\'s dish names for '
+                  'that meal. FITOS never keeps the photo.',
               'Explain simply: that one suggestion and its numbers.',
             ])
               Padding(

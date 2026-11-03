@@ -90,6 +90,14 @@ describe('GeminiProvider', () => {
     expect(body.generationConfig).toEqual({ maxOutputTokens: 64, temperature: 0.3, responseMimeType: 'application/json' });
   });
 
+  it('beta 5.5: a photo goes as an inline-data part before the words about it', async () => {
+    const calls: { url: string; init: RequestInit }[] = [];
+    const p = gemini(200, { candidates: [{ content: { parts: [{ text: '{"items":[]}' }] }, finishReason: 'STOP' }] }, calls);
+    await p.generate({ system: 's', messages: [{ role: 'user', content: 'A photo of a lunch.', images: [{ mimeType: 'image/jpeg', data: 'AAAA' }] }] });
+    const body = JSON.parse(calls[0]!.init.body as string) as { contents: unknown[] };
+    expect(body.contents).toEqual([{ role: 'user', parts: [{ inlineData: { mimeType: 'image/jpeg', data: 'AAAA' } }, { text: 'A photo of a lunch.' }] }]);
+  });
+
   it('carries the call id and thought signature back on the next turn (Gemini 3 requirement)', async () => {
     const calls: { url: string; init: RequestInit }[] = [];
     const p = gemini(200, { candidates: [{ content: { parts: [{ functionCall: { name: 'get_today', args: {}, id: 'call_1' }, thoughtSignature: 'sig-abc' }] } }] }, calls);

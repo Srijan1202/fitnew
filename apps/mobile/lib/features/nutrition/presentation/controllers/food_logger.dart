@@ -268,13 +268,53 @@ class FoodLogger {
   /// servings of it — no numbers; the server snapshots them); each estimate
   /// goes as its own quick add, named, with the numbers the user saw. All
   /// through the ordinary queue, so it works offline like any other log.
+  ///
+  /// Beta 5.5: a meal photo's mess dishes go as ONE mess log for the menu
+  /// the answer named, as servings of each dish (the server snapshots them).
   Future<void> logDraft({
     required List<
             ({String foodId, String name, FoodNutrition row, double servings})>
         foods,
     required List<QuickAdd> estimates,
     required LogTarget target,
+    List<
+            ({
+              String dishSlug,
+              String name,
+              String servingLabel,
+              double servings,
+              PreviewNutrition preview
+            })>
+        messDishes = const [],
+    String? messCode,
+    String? menuDate,
   }) async {
+    if (messDishes.isNotEmpty && messCode != null && menuDate != null) {
+      await _repo.log(
+        CreateLogRequest.mess(
+          clientLogId: _uuid.v4(),
+          loggedAt: loggedAtFor(target),
+          mealSlot: target.slot,
+          mess: messCode,
+          menuDate: menuDate,
+          messItems: [
+            for (final d in messDishes)
+              LogMessDishRequest(dishSlug: d.dishSlug, servings: d.servings),
+          ],
+        ),
+        localDate: target.date,
+        preview: PendingPreview(
+          items: [
+            for (final d in messDishes)
+              PendingItem(
+                name: d.name,
+                portion: '${FoodFormat.number(d.servings)} × ${d.servingLabel}',
+                preview: d.preview,
+              ),
+          ],
+        ),
+      );
+    }
     if (foods.isNotEmpty) {
       await _repo.log(
         CreateLogRequest.search(

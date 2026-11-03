@@ -147,6 +147,26 @@ export const draftEstimateSchema = z
   })
   .strict();
 
+/**
+ * Beta 5.5: a dish on the person's mess menu, seen in a meal photo. The
+ * numbers are the mess table's (ADR-014/015), never the model's; the log
+ * sends the dish and its servings as a mess log for that menu.
+ */
+export const DRAFT_MESS_SERVINGS_MAX = 10;
+export const draftMessDishSchema = z
+  .object({
+    dishSlug: dishSlugSchema,
+    name: z.string().min(1),
+    servingLabel: z.string().min(1),
+    /** In quarters, 0.25–10. */
+    servings: z.number().min(0.25).max(DRAFT_MESS_SERVINGS_MAX),
+    /** One serving, so the phone can preview a changed amount (display only). */
+    perServing: z.object(macroRange).strict(),
+    /** The dish at `servings`, rounded as a log item would be. */
+    snapshot: z.object(macroRange).strict(),
+  })
+  .strict();
+
 export const draftItemSchema = z
   .object({
     /** What the model read from the text, e.g. "2 rotis". */
@@ -154,8 +174,9 @@ export const draftItemSchema = z
     quantity: z.number().positive(),
     unit: z.string().min(1).max(30),
     confidence: aiConfidenceSchema,
-    /** Exactly one of `match`, `estimate`, or a `problem` saying why there is neither. */
+    /** Exactly one of `match`, `messDish` (beta 5.5, photos only), `estimate`, or a `problem` saying why there is none. */
     match: draftMatchSchema.nullable(),
+    messDish: draftMessDishSchema.nullable().default(null),
     estimate: draftEstimateSchema.nullable(),
     problem: z.string().min(1).nullable(),
   })
@@ -173,6 +194,39 @@ export const foodDraftSchema = z
 
 export const parseFoodResponseSchema = z.object({ draft: foodDraftSchema, model: z.string() }).strict();
 export type ParseFoodResponse = z.infer<typeof parseFoodResponseSchema>;
+
+/**
+ * Beta 5.5: POST /nutrition/parse-photo — a meal from a photo. The photo
+ * goes to the model with the dish names of the person's mess menu for that
+ * meal, if they have a mess; it is never stored. At most 1.5 MB (the phone
+ * sends a 720p–1280 px JPEG, well under).
+ */
+export const PHOTO_MAX_BYTES = 1_500_000;
+/** Base64 of PHOTO_MAX_BYTES. */
+export const PHOTO_MAX_BASE64 = Math.ceil(PHOTO_MAX_BYTES / 3) * 4;
+export const PHOTO_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+export const parseFoodPhotoRequestSchema = z
+  .object({
+    /** The photo, base64 (no data: prefix). */
+    image: z.string().min(16).max(PHOTO_MAX_BASE64).regex(/^[A-Za-z0-9+/]+={0,2}$/, 'base64'),
+    mimeType: z.enum(PHOTO_MIME_TYPES),
+    /** The meal being logged: its mess menu is the hint. */
+    slot: mealSlotSchema,
+    /** The day being logged (yyyy-mm-dd); today in your zone when absent. */
+    date: isoDateSchema.optional(),
+  })
+  .strict();
+export type ParseFoodPhotoRequest = z.infer<typeof parseFoodPhotoRequestSchema>;
+
+export const parseFoodPhotoResponseSchema = z
+  .object({
+    draft: foodDraftSchema,
+    /** The mess menu used as the hint, when there was one: where a `messDish` line is logged. */
+    mess: z.object({ code: messCodeSchema, menuDate: isoDateSchema }).strict().nullable(),
+    model: z.string(),
+  })
+  .strict();
+export type ParseFoodPhotoResponse = z.infer<typeof parseFoodPhotoResponseSchema>;
 
 /** POST /ai/explain — a TODAY action's reason in plainer words, or the engine's own. */
 export const explainRequestSchema = z.object({ actionId: z.string().uuid() }).strict();

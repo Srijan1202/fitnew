@@ -387,7 +387,8 @@ describeIfDb('/v1/ai (real Postgres, scripted model)', () => {
     expect(refused.json().error.code).toBe('RATE_LIMITED');
     // Same IP, different user: untouched by alice's allowance.
     expect((await send(bob)).statusCode).toBe(200);
-  });
+    // Beta 5.4's fuller context makes 22 chats slower than the default 5 s.
+  }, 20_000);
 
   describe('beta 3.8: POST /ai/chat/stream', () => {
     const stream = (token: string | null, message: string) =>

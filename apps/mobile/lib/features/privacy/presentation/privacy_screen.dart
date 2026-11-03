@@ -158,8 +158,8 @@ class _PrivacyScreenState extends ConsumerState<PrivacyScreen> {
                     contentPadding: EdgeInsets.zero,
                     title: Text('Allow FITOS AI', style: textTheme.titleMedium),
                     subtitle: const Text(
-                      "Chat, Describe your meal and Explain simply send what you ask to Google's Gemini. "
-                      "Chat also sends today's food log, never earlier days. "
+                      "Chat, Describe your meal, Snap a meal and Explain simply send what you ask to Google's Gemini. "
+                      "Chat also sends today's food log, never earlier days; a meal photo is never kept. "
                       'Off: those features ask before they are used.',
                     ),
                     value: c?.granted(ConsentType.aiProcessing) ?? false,

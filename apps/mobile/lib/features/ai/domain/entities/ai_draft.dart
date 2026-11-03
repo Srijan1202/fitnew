@@ -1,8 +1,8 @@
 import '../../../nutrition/domain/entities/food.dart';
 
 /// Wire shapes of `@fitos/contracts` ai.ts, Phase 14 (ADR-020): the meal
-/// draft from POST /nutrition/parse and the reworded reason from
-/// POST /ai/explain. Hand-written (ADR-004); the conformance test keeps
+/// draft from POST /nutrition/parse (and, beta 5.5, POST
+/// /nutrition/parse-photo) and the reworded reason from POST /ai/explain. Hand-written (ADR-004); the conformance test keeps
 /// them in step with the server.
 ///
 /// §19.2: a draft is never a log. Nothing here is stored until the user
@@ -112,7 +112,59 @@ class DraftEstimate {
       };
 }
 
-/// One food from the description: a [match], an [estimate], or a [problem].
+Map<String, double> _macros(Object? v) => Map<String, double>.from(
+      (v! as Map<String, dynamic>).map((k, v) => MapEntry(k, _d(v))),
+    );
+
+/// Beta 5.5: a dish on the person's mess menu, seen in a meal photo. The
+/// numbers are the mess table's; the log sends the dish and its servings as
+/// a mess log for the menu the answer names.
+class DraftMessDish {
+  const DraftMessDish({
+    required this.dishSlug,
+    required this.name,
+    required this.servingLabel,
+    required this.servings,
+    required this.perServing,
+    required this.snapshot,
+  });
+
+  factory DraftMessDish.fromJson(Map<String, dynamic> json) => DraftMessDish(
+        dishSlug: json['dishSlug'] as String,
+        name: json['name'] as String,
+        servingLabel: json['servingLabel'] as String,
+        servings: _d(json['servings']),
+        perServing: _macros(json['perServing']),
+        snapshot: _macros(json['snapshot']),
+      );
+
+  /// Quarters, 0.25–10.
+  static const servingsMin = 0.25;
+  static const servingsMax = 10.0;
+
+  final String dishSlug;
+  final String name;
+  final String servingLabel;
+  final double servings;
+
+  /// One serving (kcalLow … fatHigh), for previewing a changed amount.
+  final Map<String, double> perServing;
+
+  /// The server's rounding at [servings].
+  final Map<String, double> snapshot;
+
+  Map<String, dynamic> toJson() => {
+        'dishSlug': dishSlug,
+        'name': name,
+        'servingLabel': servingLabel,
+        'servings': servings,
+        'perServing': perServing,
+        'snapshot': snapshot,
+      };
+}
+
+/// One food from the description: a [match], a [messDish] (beta 5.5,
+/// photos), an [estimate], or a [problem].
 class DraftItem {
   const DraftItem({
     required this.phrase,
@@ -120,6 +172,7 @@ class DraftItem {
     required this.unit,
     required this.confidence,
     this.match,
+    this.messDish,
     this.estimate,
     this.problem,
   });
@@ -132,6 +185,9 @@ class DraftItem {
         match: json['match'] == null
             ? null
             : DraftMatch.fromJson(json['match'] as Map<String, dynamic>),
+        messDish: json['messDish'] == null
+            ? null
+            : DraftMessDish.fromJson(json['messDish'] as Map<String, dynamic>),
         estimate: json['estimate'] == null
             ? null
             : DraftEstimate.fromJson(json['estimate'] as Map<String, dynamic>),
@@ -143,11 +199,12 @@ class DraftItem {
   final String unit;
   final AiConfidence confidence;
   final DraftMatch? match;
+  final DraftMessDish? messDish;
   final DraftEstimate? estimate;
   final String? problem;
 
-  /// Something the user can log (a match or an estimate).
-  bool get loggable => match != null || estimate != null;
+  /// Something the user can log (a match, a mess dish or an estimate).
+  bool get loggable => match != null || messDish != null || estimate != null;
 
   Map<String, dynamic> toJson() => {
         'phrase': phrase,
@@ -155,6 +212,7 @@ class DraftItem {
         'unit': unit,
         'confidence': confidence.wire,
         'match': match?.toJson(),
+        'messDish': messDish?.toJson(),
         'estimate': estimate?.toJson(),
         'problem': problem,
       };
@@ -209,6 +267,39 @@ class ParseFoodResponse {
   final String model;
 
   Map<String, dynamic> toJson() => {'draft': draft.toJson(), 'model': model};
+}
+
+/// Beta 5.5: the answer to a meal photo; [messCode] and [menuDate] name the
+/// menu a [DraftMessDish] is logged against (null when there was none).
+class ParseFoodPhotoResponse {
+  const ParseFoodPhotoResponse({
+    required this.draft,
+    required this.model,
+    this.messCode,
+    this.menuDate,
+  });
+
+  factory ParseFoodPhotoResponse.fromJson(Map<String, dynamic> json) {
+    final mess = json['mess'] as Map<String, dynamic>?;
+    return ParseFoodPhotoResponse(
+      draft: FoodDraft.fromJson(json['draft'] as Map<String, dynamic>),
+      model: json['model'] as String,
+      messCode: mess?['code'] as String?,
+      menuDate: mess?['menuDate'] as String?,
+    );
+  }
+
+  final FoodDraft draft;
+  final String model;
+  final String? messCode;
+  final String? menuDate;
+
+  Map<String, dynamic> toJson() => {
+        'draft': draft.toJson(),
+        'mess':
+            messCode == null ? null : {'code': messCode, 'menuDate': menuDate},
+        'model': model,
+      };
 }
 
 /// Where the explanation's words came from.
