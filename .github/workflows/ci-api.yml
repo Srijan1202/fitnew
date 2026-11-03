@@ -188,6 +188,13 @@ jobs:
           registry="$(aws sts get-caller-identity --query Account --output text).dkr.ecr.ap-south-1.amazonaws.com"
           aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin "$registry"
           image="$registry/fitos-api:${{ github.sha }}"
+          # The same commit pushed to two branches (phase-19, then main) runs
+          # this twice; tags are immutable, so the second run keeps the first
+          # image instead of failing (2026-11-03).
+          if aws ecr describe-images --region ap-south-1 --repository-name fitos-api --image-ids imageTag="${{ github.sha }}" >/dev/null 2>&1; then
+            echo "already in ECR: $image"
+            exit 0
+          fi
           docker tag fitos-api:ci "$image"
           docker push "$image"
           echo "pushed $image"
