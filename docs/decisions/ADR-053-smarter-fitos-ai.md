@@ -1,6 +1,6 @@
 # ADR-053 — Beta 5.4: FITOS AI sees today's food, readiness, weight trend and the mess; busy answers retry, then a lighter model
 
-**Status:** PROPOSED. Owner, 2026-11-03: "Smarter FITOS AI", the answers in `docs/phase-plans/beta-5.4-plan.md`, then "go". Becomes ACCEPTED with the owner's check on the phone.
+**Status:** ACCEPTED 2026-11-04 (owner's check on the phone: "working"). Proposed as: Owner, 2026-11-03: "Smarter FITOS AI", the answers in `docs/phase-plans/beta-5.4-plan.md`, then "go".
 **Date:** 2026-11-03
 **Phase:** 19 (beta 5.4)
 **Affects:** Phase 8 J17 (the food log not shared with the assistant), ADR-010 and ADR-020 (FITOS AI), the privacy policy.
