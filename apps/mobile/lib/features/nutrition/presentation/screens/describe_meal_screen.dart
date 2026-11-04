@@ -549,7 +549,9 @@ class _DescribeMealScreenState extends ConsumerState<DescribeMealScreen> {
                 builder: (_) => DescribeMealScreen(target: widget.target),
               ),
             ),
-            icon: const Icon(Icons.edit_note),
+            // An icon the 5.3 release's font already has: a patch cannot
+            // carry font changes.
+            icon: const Icon(Icons.auto_awesome_outlined),
             label: const Text('Describe it instead'),
           ),
         ),
