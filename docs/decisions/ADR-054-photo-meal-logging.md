@@ -1,6 +1,6 @@
 # ADR-054 — Beta 5.5: log a meal from a photo ("Snap a meal")
 
-**Status:** PROPOSED. Owner, 2026-11-04: "can we implement food login by image", the answers in `docs/phase-plans/beta-5.5-plan.md`, then "continue". Becomes ACCEPTED with the owner's check on the phone.
+**Status:** ACCEPTED 2026-11-04, the owner's phone check: "done everthing working". Asked for 2026-11-04: "can we implement food login by image", the answers in `docs/phase-plans/beta-5.5-plan.md`, then "continue".
 **Date:** 2026-11-04
 **Phase:** 19 (beta 5.5)
 **Affects:** ADR-020 (Describe your meal), ADR-014/015 (the mess table's numbers), ADR-023 (AI consent), ADR-027 (FITOS AI is premium), the privacy policy.
@@ -23,5 +23,6 @@
 ## Release
 
 - **API:** migration 0044, the route, images in the provider. Deploy before the app patch, so the server and the phone agree on the policy version.
-- **App:** a Shorebird patch to 1.0.0-beta.5.3 (build 33). It is Dart only, because the camera and the gallery picker are already in the APK.
+- **App:** a Shorebird patch to 1.0.0-beta.5.3 (build 33). It is Dart only, because the camera and the gallery picker are already in the APK. Every icon must already be in the release's tree-shaken icon font, since a patch cannot carry an asset change (36940f1 swapped `edit_note` for `auto_awesome_outlined`).
+- **Released 2026-11-04:** API 7a88cd9 (0044), 5.3 patch 3 at 36940f1, website.
 - **Website:** the policy page and a short post.
