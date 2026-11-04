@@ -6,6 +6,7 @@ import 'package:fitos/core/theme/tokens.dart';
 import 'package:fitos/features/exercise/domain/demo/exercise_demos.dart';
 import 'package:fitos/features/exercise/presentation/widgets/exercise_demo_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const fps = 20;
@@ -13,6 +14,13 @@ const width = 360.0;
 const height = 400.0;
 
 void main() {
+  // Beta 5.6: the demos' labels (a floor press's 45°) in the app's font.
+  setUpAll(() async {
+    final barlow = FontLoader('Barlow')
+      ..addFont(rootBundle.load('assets/fonts/Barlow-Bold.ttf'));
+    await barlow.load();
+  });
+
   for (final MapEntry(key: slug, value: demo) in exerciseDemos.entries) {
     testWidgets(slug, (tester) async {
       final bounds = demoBounds(demo);

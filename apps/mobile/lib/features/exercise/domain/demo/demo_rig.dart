@@ -137,6 +137,8 @@ class Pose {
     this.upperScale = 1,
     this.thighScale = 1,
     this.handsFar,
+    this.thighScaleFar,
+    this.twist = 0,
   });
 
   final double trunk;
@@ -185,6 +187,14 @@ class Pose {
   /// woodchopper's hands together. Beta 5.2.
   final Offset? handsFar;
 
+  /// Front view: the left thigh's own length as seen (else [thighScale]) —
+  /// one knee coming toward you in a step. Beta 5.6.
+  final double? thighScaleFar;
+
+  /// Front view: the shoulders turned this many degrees (they look
+  /// narrower) — a Russian twist. Beta 5.6.
+  final double twist;
+
   Pose lerp(Pose b, double t) => Pose(
         trunk: _lerpAngle(trunk, b.trunk, t),
         head: _lerpAngle(head, b.head, t),
@@ -214,6 +224,14 @@ class Pose {
         handsFar: handsFar == null || b.handsFar == null
             ? null
             : _lerpO(handsFar!, b.handsFar!, t),
+        thighScaleFar: thighScaleFar == null && b.thighScaleFar == null
+            ? null
+            : _lerp(
+                thighScaleFar ?? thighScale,
+                b.thighScaleFar ?? b.thighScale,
+                t,
+              ),
+        twist: _lerp(twist, b.twist, t),
         anchorAt: anchorAt == null || b.anchorAt == null
             ? null
             : _lerpO(anchorAt!, b.anchorAt!, t),
@@ -255,6 +273,7 @@ class Dumbbells extends Gear {
     this.nearOnly = false,
     this.neutral = false,
     this.behind = false,
+    this.across = false,
   });
 
   /// One dumbbell held upright in both hands (goblet squat, overhead
@@ -266,6 +285,10 @@ class Dumbbells extends Gear {
   /// Drawn behind the body (an overhead extension's dumbbell behind the
   /// head).
   final bool behind;
+
+  /// Front view: palms toward you or away, so the dumbbell's length shows
+  /// across (an Arnold press). Beta 5.6.
+  final bool across;
   @override
   bool get front => !behind;
 }
@@ -339,10 +362,20 @@ class Pad extends Gear {
 /// A platform the feet push (leg press) or stand on: a plate through the
 /// sole, square to [angle]; with [rail], its track.
 class Platform extends Gear {
-  const Platform({required this.angle, this.rail, this.length = 0.5});
+  const Platform({
+    required this.angle,
+    this.rail,
+    this.length = 0.5,
+    this.atToe = false,
+  });
   final double angle;
   final (Offset, Offset)? rail;
   final double length;
+
+  /// Under the ball of the foot instead of the sole's middle, so the plate
+  /// keeps its angle and slides as the ankle works (a leg press calf raise,
+  /// beta 5.6).
+  final bool atToe;
 }
 
 /// A block on the floor from [from] to [to], [height] tall (calf raise).
@@ -371,6 +404,8 @@ class Link extends Gear {
     this.toJoint = Joint.hand,
     this.mirrored = false,
     this.band = false,
+    this.plate,
+    this.over = false,
   });
   final Offset? from;
   final Joint? fromJoint;
@@ -380,6 +415,100 @@ class Link extends Gear {
 
   /// A band: drawn thicker.
   final bool band;
+
+  /// A plate seen edge-on across the link, this far (metres) from its [to]
+  /// end (a landmine's loaded sleeve). Beta 5.6.
+  final double? plate;
+
+  /// Drawn over the figure: a band held in front of the body (a pull-apart,
+  /// a Pallof press). Beta 5.6.
+  final bool over;
+  @override
+  bool get front => over;
+}
+
+/// A machine's lever arm: a rod from its pivot (a fixed place) to the joint
+/// that moves it, with a handle or pad there; front view, [mirrored] adds
+/// the left side's. Beta 5.6 (owner: "machine bar not visible").
+class Lever extends Gear {
+  const Lever(
+    this.pivot, {
+    this.to = Joint.hand,
+    this.mirrored = false,
+    this.handle = true,
+    this.over = false,
+  });
+  final Offset pivot;
+  final Joint to;
+  final bool mirrored;
+  final bool handle;
+
+  /// Drawn over the figure (a lever on the near side).
+  final bool over;
+  @override
+  bool get front => over;
+}
+
+/// A long pad along the bone [from]–[to], [side] off it (positive: left of
+/// the bone's direction, as [Pad]) and [past] beyond each end: a hack
+/// squat's back pad, riding with the back. Beta 5.6.
+class Sled extends Gear {
+  const Sled({
+    required this.from,
+    required this.to,
+    this.side = 0,
+    this.past = 0.05,
+    this.width = 0.09,
+  });
+  final Joint from;
+  final Joint to;
+  final double side;
+  final double past;
+  final double width;
+
+  /// The pad's two ends on [f].
+  (Offset, Offset) ends(Figure f) {
+    final d = f[to] - f[from];
+    final u = d / d.distance;
+    final n = Offset(-u.dy, u.dx) * side;
+    return (f[from] - u * past + n, f[to] + u * past + n);
+  }
+}
+
+/// A plate hanging on a chain from the hips (a belt squat): [length] from
+/// the hips to the plate's centre. Beta 5.6.
+class Hang extends Gear {
+  const Hang({this.length = 0.7, this.radius = 0.18});
+  final double length;
+  final double radius;
+
+  /// Where the plate's centre is on [f].
+  Offset centre(Figure f) {
+    final hips = f.view == DemoView.front
+        ? (f[Joint.hip] + f[Joint.hipFar]) / 2
+        : f[Joint.hip];
+    return hips - Offset(0, length);
+  }
+}
+
+/// An angle drawn at joint [at], from the direction [from] (degrees, the
+/// body's line) to the bone toward [to], with its [label] (a floor press's
+/// elbows at 45° from the body). Beta 5.6.
+class AngleMark extends Gear {
+  const AngleMark({
+    required this.at,
+    required this.from,
+    required this.to,
+    required this.label,
+    this.radius = 0.22,
+  });
+  final Joint at;
+  final double from;
+  final Joint to;
+  final String label;
+  final double radius;
+  @override
+  bool get front => true;
 }
 
 /// A kettlebell in each hand ([nearOnly]: the near hand; [single]: one held
@@ -414,6 +543,7 @@ class Demo {
     this.bentKnees = false,
     this.seatHeight = 0.53,
     this.tilt = 0,
+    this.floor = true,
   });
 
   final List<Pose> frames;
@@ -443,6 +573,10 @@ class Demo {
   /// The whole figure turned clockwise by this many degrees, then set on the
   /// floor (a side plank: the front view lying on its side). Beta 5.2.
   final double tilt;
+
+  /// The floor line; off for a view from above (a fly seen from the top,
+  /// beta 5.6).
+  final bool floor;
 
   /// One loop, seconds: each move and hold, and back to the start.
   double get period =>
@@ -711,8 +845,10 @@ class Demo {
 
     j[Joint.hip] = hip + const Offset(Body.hipHalf, 0);
     j[Joint.hipFar] = hip - const Offset(Body.hipHalf, 0);
-    j[Joint.shoulder] = hip + Offset(Body.shoulderHalf, torso);
-    j[Joint.shoulderFar] = hip + Offset(-Body.shoulderHalf, torso);
+    final shoulderHalf =
+        Body.shoulderHalf * math.cos(p.twist * math.pi / 180).abs();
+    j[Joint.shoulder] = hip + Offset(shoulderHalf, torso);
+    j[Joint.shoulderFar] = hip + Offset(-shoulderHalf, torso);
     // Leaning toward you, the head drops in front of the shoulders (bent
     // well over, below their line: beta 5.0.1).
     j[Joint.head] = Offset(
@@ -721,17 +857,22 @@ class Demo {
     );
 
     // Legs: to the feet's targets, by angle, or (seated, default) hanging.
-    final byAngle =
-        p.leg != const Limb(180, 180) || p.legFar != null || p.thighScale != 1;
+    final byAngle = p.leg != const Limb(180, 180) ||
+        p.legFar != null ||
+        p.thighScale != 1 ||
+        p.thighScaleFar != null;
     if (p.feet != null) {
       final out = Offset(kneeToward.dx.abs(), kneeToward.dy);
+      // Beta 5.6: feet planted, the thighs coming toward you as the hips
+      // sink (a squat from the front without the feet sliding).
+      final thigh = Body.thigh * p.thighScale;
       _reach(
         j,
         Joint.hip,
         Joint.knee,
         Joint.ankle,
         p.feet!,
-        Body.thigh,
+        thigh,
         Body.shin,
         out,
       );
@@ -741,7 +882,7 @@ class Demo {
         Joint.kneeFar,
         Joint.ankleFar,
         p.feetFar ?? m(p.feet!),
-        Body.thigh,
+        thigh,
         Body.shin,
         Offset(-out.dx, out.dy),
       );
@@ -750,8 +891,8 @@ class Demo {
       j[Joint.knee] =
           j[Joint.hip]! + dirOf(p.leg.upper) * Body.thigh * p.thighScale;
       j[Joint.ankle] = j[Joint.knee]! + dirOf(p.leg.lower) * Body.shin;
-      j[Joint.kneeFar] =
-          j[Joint.hipFar]! + mDir(far.upper) * Body.thigh * p.thighScale;
+      j[Joint.kneeFar] = j[Joint.hipFar]! +
+          mDir(far.upper) * Body.thigh * (p.thighScaleFar ?? p.thighScale);
       j[Joint.ankleFar] = j[Joint.kneeFar]! + mDir(far.lower) * Body.shin;
     } else {
       final kneeX = seated

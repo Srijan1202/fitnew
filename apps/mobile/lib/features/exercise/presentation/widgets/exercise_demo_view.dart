@@ -221,7 +221,11 @@ Rect demoBounds(Demo demo) {
     final f = demo.at(t);
     for (final e in f.joints.entries) {
       add(e.value, e.key == Joint.head ? Body.head : 0.06);
-      if (demo.view == DemoView.front) add(Offset(-e.value.dx, e.value.dy));
+      // Beta 5.6 (owner: the side plank sat in a corner): a turned figure
+      // is framed as it is, not mirrored.
+      if (demo.view == DemoView.front && demo.tilt == 0) {
+        add(Offset(-e.value.dx, e.value.dy));
+      }
     }
     for (final g in demo.gear) {
       switch (g) {
@@ -234,6 +238,8 @@ Rect demoBounds(Demo demo) {
           add(f[Joint.hand] - const Offset(0, 0.085), 0.09);
           add(f[Joint.handFar] - const Offset(0, 0.085), 0.09);
         case Pad():
+          add(g.centre(f), g.radius);
+        case Hang():
           add(g.centre(f), g.radius);
         default:
           break;
@@ -261,6 +267,9 @@ Rect demoBounds(Demo demo) {
       case Cable(:final pulley, :final mirrored):
         add(pulley, 0.12);
         if (mirrored) add(Offset(-pulley.dx, pulley.dy), 0.12);
+      case Lever(:final pivot, :final mirrored):
+        add(pivot, 0.06);
+        if (mirrored) add(Offset(-pivot.dx, pivot.dy), 0.06);
       case Block(:final from, :final to, :final height):
         add(Offset(from, height));
         add(Offset(to, 0));
@@ -347,10 +356,14 @@ class DemoPainter extends CustomPainter {
               ? [f[Joint.hand]]
               : [f[Joint.handFar], f[Joint.hand]];
       for (final h in hands) {
-        if (g.single || g.neutral) {
+        final across = g.across && f.view == DemoView.front;
+        if (g.single || g.neutral || across) {
           final Offset n;
-          // Upright: one held in both hands, or palms in seen from the front.
-          if (g.single || f.view == DemoView.front) {
+          // Beta 5.6: palms toward you or away, seen from the front.
+          if (across) {
+            n = const Offset(1, 0);
+            // Upright: one held in both hands, or palms in seen from the front.
+          } else if (g.single || f.view == DemoView.front) {
             n = const Offset(0, 1);
           } else {
             final d = f[Joint.hand] - f[Joint.elbow];
@@ -378,6 +391,12 @@ class DemoPainter extends CustomPainter {
       if (a == null || b == null) return;
       final w = g.band ? 0.022 : 0.01;
       canvas.drawLine(c(a), c(b), stroke(dim, w));
+      if (g.plate case final at?) {
+        final u = (a - b) / (a - b).distance;
+        final p = b + u * at;
+        final n = Offset(-u.dy, u.dx);
+        bone(p - n * 0.2, p + n * 0.2, dim, 0.05);
+      }
       if (g.mirrored) {
         final cx = (f[Joint.hip].dx + f[Joint.hipFar].dx) / 2;
         Offset mx(Offset o) => Offset(2 * cx - o.dx, o.dy);
@@ -395,13 +414,79 @@ class DemoPainter extends CustomPainter {
       }
     }
 
+    // Beta 5.6: a machine's lever, from its pivot to the joint moving it.
+    void lever(Lever g) {
+      void one(Offset pivot, Offset end) {
+        bone(pivot, end, dim, 0.04);
+        canvas.drawCircle(c(pivot), 0.045 * s, fill(dim));
+        canvas.drawCircle(c(pivot), 0.018 * s, fill(rule));
+        if (g.handle) canvas.drawCircle(c(end), 0.04 * s, fill(dim));
+      }
+
+      one(g.pivot, f[g.to]);
+      if (g.mirrored) {
+        final cx = (f[Joint.hip].dx + f[Joint.hipFar].dx) / 2;
+        final far = switch (g.to) {
+          Joint.hand => Joint.handFar,
+          Joint.elbow => Joint.elbowFar,
+          Joint.knee => Joint.kneeFar,
+          Joint.ankle => Joint.ankleFar,
+          _ => g.to,
+        };
+        one(Offset(2 * cx - g.pivot.dx, g.pivot.dy), f[far]);
+      }
+    }
+
+    // Beta 5.6: an angle at a joint, labelled.
+    void angleMark(AngleMark g) {
+      final at = c(f[g.at]);
+      final along = dirOf(g.from);
+      final u = Offset(along.dx, -along.dy);
+      final v = c(f[g.to]) - at;
+      final start = math.atan2(u.dy, u.dx);
+      var sweep = math.atan2(v.dy, v.dx) - start;
+      while (sweep > math.pi) {
+        sweep -= 2 * math.pi;
+      }
+      while (sweep <= -math.pi) {
+        sweep += 2 * math.pi;
+      }
+      final r = g.radius * s;
+      canvas.drawArc(
+        Rect.fromCircle(center: at, radius: r),
+        start,
+        sweep,
+        false,
+        stroke(accent, 0.02),
+      );
+      final mid = start + sweep / 2;
+      final text = TextPainter(
+        text: TextSpan(
+          text: g.label,
+          style: TextStyle(
+            color: accent,
+            fontFamily: 'Barlow',
+            fontWeight: FontWeight.w700,
+            fontSize: 0.11 * s,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final centre = at + Offset(math.cos(mid), math.sin(mid)) * (r + 0.1 * s);
+      text
+        ..paint(canvas, centre - Offset(text.width / 2, text.height / 2))
+        ..dispose();
+    }
+
     // The floor.
-    bone(
-      Offset(bounds.left + 0.02, 0),
-      Offset(bounds.right - 0.02, 0),
-      rule,
-      0.012,
-    );
+    if (demo.floor) {
+      bone(
+        Offset(bounds.left + 0.02, 0),
+        Offset(bounds.right - 0.02, 0),
+        rule,
+        0.012,
+      );
+    }
 
     // Gear behind the figure.
     for (final g in demo.gear.where((g) => !g.front)) {
@@ -442,6 +527,24 @@ class DemoPainter extends CustomPainter {
           bone(a, b, rule, width);
         case Link():
           link(g);
+        case Lever():
+          lever(g);
+        case Sled(:final width):
+          final (a, b) = g.ends(f);
+          bone(a, b, dim, width);
+        case Hang(:final radius):
+          final hips = f.view == DemoView.front
+              ? (f[Joint.hip] + f[Joint.hipFar]) / 2
+              : f[Joint.hip];
+          final at = g.centre(f);
+          bone(hips, at, dim, 0.012);
+          canvas.drawCircle(
+            c(at),
+            radius * s,
+            fill(dim.withValues(alpha: 0.6)),
+          );
+          canvas.drawCircle(c(at), radius * s, stroke(dim, 0.02));
+          canvas.drawCircle(c(at), 0.035 * s, fill(rule));
         case PullBar(:final at):
           bone(
             at + const Offset(-0.12, 0.15),
@@ -471,7 +574,9 @@ class DemoPainter extends CustomPainter {
           if (mirrored) cable(mirror(pulley), f[Joint.handFar]);
         case Platform(:final angle, :final rail, :final length):
           if (rail != null) bone(rail.$1, rail.$2, rule, 0.025);
-          final mid = (f[Joint.ankle] + f[Joint.toe]) / 2 + dirOf(angle) * 0.04;
+          final mid =
+              (g.atToe ? f[Joint.toe] : (f[Joint.ankle] + f[Joint.toe]) / 2) +
+                  dirOf(angle) * (g.atToe ? 0.025 : 0.04);
           final along = dirOf(angle - 90);
           bone(
             mid - along * (length / 2),
@@ -583,6 +688,12 @@ class DemoPainter extends CustomPainter {
               : [f[Joint.hand]]) {
             canvas.drawCircle(c(h), 0.035 * s, fill(dim));
           }
+        case Lever():
+          lever(g);
+        case Link():
+          link(g);
+        case AngleMark():
+          angleMark(g);
         case Bar():
           final l = f[Joint.handFar];
           final r = f[Joint.hand];

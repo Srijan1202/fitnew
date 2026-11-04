@@ -10,15 +10,19 @@ import 'package:flutter/material.dart';
 /// own JPEG at the high preset (720p on Android), so it is already within
 /// the 1600 px FITOS keeps, and is saved in the app's cache.
 ///
-/// Returns the JPEG's path, or null when the person closed it.
+/// Returns the JPEG's path, or null when the person closed it. With
+/// [gallery], a Gallery button beside the shutter returns the path of a photo
+/// chosen there instead (beta 5.6, owner: Snap a meal from the gallery
+/// without taking a photo first).
 Future<String?> takePhotoInApp(
   NavigatorState navigator, {
   bool front = false,
+  Future<String?> Function()? gallery,
 }) =>
     navigator.push<String>(
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (_) => InAppCameraScreen(front: front),
+        builder: (_) => InAppCameraScreen(front: front, gallery: gallery),
       ),
     );
 
@@ -29,12 +33,17 @@ class InAppCameraScreen extends StatefulWidget {
   const InAppCameraScreen({
     this.front = false,
     this.cameras = availableCameras,
+    this.gallery,
     super.key,
   });
 
   /// Start on the front camera (a selfie in the mirror needs the back one).
   final bool front;
   final CameraList cameras;
+
+  /// A photo from the gallery instead: its path, or null when none was
+  /// chosen (the camera stays open).
+  final Future<String?> Function()? gallery;
 
   @override
   State<InAppCameraScreen> createState() => _InAppCameraScreenState();
@@ -151,6 +160,11 @@ class _InAppCameraScreenState extends State<InAppCameraScreen>
     }
   }
 
+  Future<void> _fromGallery() async {
+    final path = await widget.gallery!();
+    if (path != null && mounted) Navigator.of(context).pop(path);
+  }
+
   void _retake() {
     final path = _taken;
     setState(() => _taken = null);
@@ -226,7 +240,16 @@ class _InAppCameraScreenState extends State<InAppCameraScreen>
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        const SizedBox(width: 48),
+                        if (widget.gallery == null)
+                          const SizedBox(width: 48)
+                        else
+                          IconButton(
+                            key: const ValueKey('camera.gallery'),
+                            tooltip: 'Choose from gallery',
+                            color: Colors.white,
+                            icon: const Icon(Icons.photo_library_outlined),
+                            onPressed: _busy ? null : _fromGallery,
+                          ),
                         Semantics(
                           button: true,
                           label: 'Take photo',

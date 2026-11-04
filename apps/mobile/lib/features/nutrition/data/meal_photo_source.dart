@@ -31,16 +31,19 @@ class DeviceMealPhotoSource implements MealPhotoSource {
     required bool camera,
     required NavigatorState navigator,
   }) async {
-    final path = camera
-        ? await takePhotoInApp(navigator)
-        : (await ImagePicker().pickImage(
-            source: ImageSource.gallery,
-            maxWidth: _side,
-            maxHeight: _side,
-            imageQuality: _quality,
-            requestFullMetadata: false,
-          ))
+    Future<String?> gallery() async => (await ImagePicker().pickImage(
+          source: ImageSource.gallery,
+          maxWidth: _side,
+          maxHeight: _side,
+          imageQuality: _quality,
+          requestFullMetadata: false,
+        ))
             ?.path;
+    // Beta 5.6 (owner): the camera has a Gallery button of its own, so a
+    // gallery photo needs no camera photo (and no reading) first.
+    final path = camera
+        ? await takePhotoInApp(navigator, gallery: gallery)
+        : await gallery();
     if (path == null) return null;
     final file = File(path);
     try {

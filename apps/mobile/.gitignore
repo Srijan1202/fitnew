@@ -49,3 +49,5 @@ app.*.map.json
 
 # Beta 5.0.1: demo frames for the review page (tool/demo_frames).
 tool/demo_frames/out/
+tool/demo_frames/sheets/
+tool/demo_frames/sheet_slugs.txt

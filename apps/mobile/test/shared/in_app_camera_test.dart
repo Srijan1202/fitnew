@@ -63,4 +63,52 @@ void main() {
       'The camera could not start. Close this and try again.',
     );
   });
+
+  testWidgets(
+      'beta 5.6: with a gallery, a Gallery button returns its photo; '
+      'none chosen keeps the camera open', (tester) async {
+    String? result = 'unset';
+    final answers = <String?>[null, '/cache/plate.jpg'];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () async {
+              result = await Navigator.of(context).push<String>(
+                MaterialPageRoute(
+                  builder: (_) => InAppCameraScreen(
+                    cameras: () async => const <CameraDescription>[],
+                    gallery: () async => answers.removeAt(0),
+                  ),
+                ),
+              );
+            },
+            child: const Text('open'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('camera.gallery')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('camera.screen')), findsOneWidget);
+    expect(result, 'unset');
+    await tester.tap(find.byKey(const ValueKey('camera.gallery')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('camera.screen')), findsNothing);
+    expect(result, '/cache/plate.jpg');
+  });
+
+  testWidgets('without a gallery there is no Gallery button', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: InAppCameraScreen(
+          cameras: () async => const <CameraDescription>[],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('camera.gallery')), findsNothing);
+  });
 }
