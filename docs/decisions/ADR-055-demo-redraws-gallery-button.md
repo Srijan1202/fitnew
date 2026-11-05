@@ -1,6 +1,6 @@
 # ADR-055 — Beta 5.6: 62 demos redrawn from the owner's notes; Gallery inside the Snap a meal camera
 
-**Status:** PROPOSED. Owner, 2026-11-04: "next 5.6 is correcting the demos exercises i just checked", the 62 notes from the admin panel, "check and correct all then add them to waiting i will check again and approve", and the Snap a meal note below. Becomes ACCEPTED when the owner has re-checked the demos in the panel and checked the camera on the phone.
+**Status:** ACCEPTED 2026-11-05: the owner approved every demo after three rounds (5.6, 5.6.1, 5.6.2): "done all approved". Proposed as: Owner, 2026-11-04: "next 5.6 is correcting the demos exercises i just checked", the 62 notes from the admin panel, "check and correct all then add them to waiting i will check again and approve", and the Snap a meal note below. Becomes ACCEPTED when the owner has re-checked the demos in the panel and checked the camera on the phone.
 **Date:** 2026-11-04
 **Phase:** 19 (beta 5.6)
 **Builds on:** ADR-050 (the rig), ADR-051 (approvals), ADR-054 (Snap a meal).
@@ -61,5 +61,5 @@ Owner, 2026-11-05: 12 of the 19 approved; 7 rejected with new notes.
 - **Admin:** the new previews. The owner runs `admin.ps1`.
 - **App:** a Shorebird patch to 1.0.0-beta.5.3 (build 33). It is Dart only, and every icon is already in the release's font. 5.6.1 is a further patch on the same release.
 - **5.6.1:** migration 0046 (`deploy.ps1`), the 19 previews (`admin.ps1`), the patch. Released 2026-11-05: API ec430d1, 5.3 patch 5.
-- **5.6.2:** migration 0047, the 7 previews, the patch.
+- **5.6.2:** migration 0047, the 7 previews, the patch. Released 2026-11-05 at b31263d.
 - **Then:** the owner re-checks the 62 in Admin → Content → Exercise demos. The app shows each one once it is approved.
