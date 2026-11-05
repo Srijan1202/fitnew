@@ -1234,37 +1234,61 @@ const Map<String, Demo> _lunges = {
     ],
   ),
   'curtsy-lunge': Demo(
-    // Beta 5.6.1 (owner: "hind leg should be at 90 degree"): from the
-    // side, where both knees show their 90°: the back leg steps behind
-    // (and across, as the cue says), its thigh drops straight down and its
-    // shin lies back level with the floor; the front thigh comes level.
+    // Beta 5.6.1 (owner: "give front view", and before that "hind leg
+    // should be at 90 degree"): from the front, the back leg steps behind
+    // and across; its thigh drops almost straight down to the knee by the
+    // floor and its shin points back and out (short, seen from the front)
+    // — the 90° bend. The back leg is drawn behind the body.
+    view: DemoView.front,
+    anchor: Joint.hip,
+    farLegBehind: true,
     gear: [Dumbbells()],
     frames: [
-      Pose(seconds: 0.6, hold: 0.3),
       Pose(
-        leg: Limb(168, 188),
-        legFar: Limb(198, 215),
-        footFar: 150,
+        feet: Offset(0.11, Body.ankleHeight),
+        feetFar: Offset(-0.11, Body.ankleHeight),
+        anchorAt: Offset(0, 0.93),
+        seconds: 0.6,
+        hold: 0.3,
+      ),
+      Pose(
+        feet: Offset(0.11, Body.ankleHeight),
+        feetFar: Offset(0.28, 0.1),
+        thighScale: 0.8,
+        thighScaleFar: 1,
+        shinScaleFar: 0.85,
+        anchorAt: Offset(0.03, 0.82),
         cue: 0,
         seconds: 0.8,
       ),
       Pose(
-        trunk: 5,
-        leg: Limb(103, 180),
-        legFar: Limb(180, -88),
-        footFar: 165,
+        trunk: 10,
+        feet: Offset(0.11, Body.ankleHeight),
+        feetFar: Offset(0.3, 0.07),
+        thighScale: 0.2,
+        thighScaleFar: 1,
+        shinScaleFar: 0.6,
+        anchorAt: Offset(0.06, 0.56),
         cue: 1,
         seconds: 1.6,
         hold: 0.3,
       ),
       Pose(
-        leg: Limb(168, 188),
-        legFar: Limb(198, 215),
-        footFar: 150,
+        feet: Offset(0.11, Body.ankleHeight),
+        feetFar: Offset(0.28, 0.1),
+        thighScale: 0.8,
+        thighScaleFar: 1,
+        shinScaleFar: 0.85,
+        anchorAt: Offset(0.03, 0.82),
         cue: 2,
         seconds: 1,
       ),
-      Pose(seconds: 0.6),
+      Pose(
+        feet: Offset(0.11, Body.ankleHeight),
+        feetFar: Offset(-0.11, Body.ankleHeight),
+        anchorAt: Offset(0, 0.93),
+        seconds: 0.6,
+      ),
     ],
   ),
   'split-squat': Demo(
@@ -2206,38 +2230,36 @@ const Map<String, Demo> _horizontalPull = {
     ],
   ),
   'machine-row': Demo(
-    // Beta 5.6.1 (owner: "design the machine better"): the chest pad on
-    // its post, the weight stack in front with its beam; the handles hang
-    // on levers from the beam, clear of the face, and swing back to the
-    // lower chest.
+    // Beta 5.6.1 (owner: "use machine which is connected to bottom and
+    // elbow should go back"): the handles on levers rising from a pivot at
+    // the foot of the machine; the pull swings them down and back to the
+    // waist, the elbows driving well behind the body.
     anchor: Joint.hip,
     anchorAt: Offset(0, 0.53),
-    elbowToward: Offset(-1, 0),
+    elbowToward: Offset(-1, -0.5),
     gear: [
-      WeightStack(0.98, height: 1.85),
-      Line(Offset(-0.3, 0.025), Offset(1.12, 0.025), width: 0.05),
+      WeightStack(1.02, height: 1.3),
+      Line(Offset(-0.3, 0.025), Offset(1.17, 0.025), width: 0.05),
       Line(Offset(0, 0.02), Offset(0, 0.44), width: 0.05),
       Line(Offset(0.33, 0.02), Offset(0.16, 0.9), width: 0.045),
-      Line(Offset(0.86, 1.85), Offset(0.5, 1.85), width: 0.05),
-      Line(Offset(0.55, 1.85), Offset(0.55, 1.75), width: 0.04),
+      Line(Offset(0.75, 0.02), Offset(0.75, 0.15), width: 0.07),
       Line(Offset(-0.24, 0.475), Offset(0.22, 0.475), width: 0.08, pad: true),
       Line(Offset(0.155, 0.86), Offset(0.155, 1.18), width: 0.09, pad: true),
-      Lever(Offset(0.55, 1.75)),
+      Lever(Offset(0.75, 0.15)),
       Handles(),
     ],
     frames: [
       Pose(
         trunk: 2,
         leg: Limb(92, 180),
-        hands: Offset(0.52, 0.86),
+        hands: Offset(0.5, 1.07),
         cue: 0,
         seconds: 0.5,
         hold: 0.3,
       ),
       Pose(
-        trunk: 0,
         leg: Limb(92, 180),
-        hands: Offset(0.18, 0.94),
+        hands: Offset(0.1, 0.843),
         cue: 1,
         seconds: 1.2,
         hold: 0.4,
@@ -2245,7 +2267,7 @@ const Map<String, Demo> _horizontalPull = {
       Pose(
         trunk: 2,
         leg: Limb(92, 180),
-        hands: Offset(0.52, 0.86),
+        hands: Offset(0.5, 1.07),
         cue: 2,
         seconds: 2.2,
       ),
@@ -2493,10 +2515,9 @@ const Map<String, Demo> _horizontalPull = {
 
 const Map<String, Demo> _verticalPull = {
   'band-lat-pulldown': Demo(
-    // Beta 5.6.1 (owner: "weird hand movement"): the elbows drive down to
-    // the sides (the upper arm comes toward you, so it looks short halfway)
-    // while the forearms stay upright under the band; the hands end by the
-    // shoulders.
+    // Beta 5.6.1 (owner: "do it in one movement"): one smooth pull from
+    // overhead to the shoulders, no stop halfway; the elbows sweep down to
+    // the sides with the forearms upright.
     anchor: Joint.knee,
     anchorAt: Offset(0, 0.06),
     gear: [
@@ -2511,35 +2532,26 @@ const Map<String, Demo> _verticalPull = {
         foot: -100,
         arm: Limb(18, 18),
         cue: 0,
-        seconds: 1,
+        seconds: 0.3,
         hold: 0.3,
-      ),
-      Pose(
-        trunk: -7,
-        leg: Limb(180, -90),
-        foot: -100,
-        arm: Limb(100, 14),
-        upperScale: 0.35,
-        seconds: 0.6,
       ),
       Pose(
         trunk: -10,
         leg: Limb(180, -90),
         foot: -100,
-        arm: Limb(192, 16),
+        arm: Limb(195, 16),
         upperScale: 0.85,
         cue: 1,
-        seconds: 0.6,
+        seconds: 1.2,
         hold: 0.3,
       ),
       Pose(
-        trunk: -7,
+        trunk: -3,
         leg: Limb(180, -90),
         foot: -100,
-        arm: Limb(100, 14),
-        upperScale: 0.35,
+        arm: Limb(18, 18),
         cue: 2,
-        seconds: 1,
+        seconds: 2,
       ),
     ],
   ),
@@ -2572,9 +2584,9 @@ const Map<String, Demo> _verticalPull = {
     ],
   ),
   'dumbbell-pullover': Demo(
-    // Beta 5.6.1 (owner: "hand going too much in front, it should stop
-    // when in front of head"): the dumbbell goes back over the face and
-    // stops just past the top of the head, the arms angled up.
+    // Beta 5.6.1 (owner: "the movement should be from head level to behind
+    // the head"): the dumbbell starts over the face, not the chest, and
+    // goes back behind the head until the arms are in line with the body.
     anchor: Joint.hip,
     anchorAt: _flatHip,
     kneeToward: Offset(0, 1),
@@ -2583,15 +2595,16 @@ const Map<String, Demo> _verticalPull = {
       Pose(
         trunk: -90,
         feet: _flatFeet,
-        arm: Limb(8, 15),
+        arm: Limb(-22, -16),
         cue: 0,
         seconds: 0.5,
         hold: 0.3,
       ),
       Pose(
         trunk: -90,
+        head: -10,
         feet: _flatFeet,
-        arm: Limb(-62, -56),
+        arm: Limb(-92, -88),
         cue: 1,
         seconds: 2.2,
         hold: 0.3,
@@ -2599,7 +2612,7 @@ const Map<String, Demo> _verticalPull = {
       Pose(
         trunk: -90,
         feet: _flatFeet,
-        arm: Limb(8, 15),
+        arm: Limb(-22, -16),
         cue: 2,
         seconds: 1.4,
         hold: 0.3,
@@ -4304,11 +4317,10 @@ const Map<String, Demo> _core = {
     ],
   ),
   'machine-crunch': Demo(
-    // Beta 5.6.1 (owner: "design the machine better"): the weight stack
-    // behind the seat and back pad; the machine's arm turns on an axle
-    // beside the hip and runs up the side of the body to the handles at
-    // the shoulders, a pad on the chest; the crunch pulls it down and
-    // forward.
+    // Beta 5.6.1 (owner: "the machine circle should be at the chest"): the
+    // pad sits on the chest, the hands on its handles; the machine's arm
+    // turns on an axle beside the hip and carries the pad down and forward
+    // with the crunch. The weight stack behind the seat and back pad.
     anchor: Joint.hip,
     anchorAt: Offset(0, 0.53),
     gear: [
@@ -4319,8 +4331,8 @@ const Map<String, Demo> _core = {
       Line(Offset(-0.45, 0.02), Offset(-0.45, 1.6), width: 0.05),
       Line(Offset(-0.24, 0.475), Offset(0.22, 0.475), width: 0.08, pad: true),
       Line(Offset(-0.134, 0.6), Offset(-0.19, 1.2), width: 0.09, pad: true),
-      Lever(Offset(0, 0.53), to: Joint.hand, over: true),
-      Pad(Joint.chest, from: Joint.hip, side: -0.07),
+      Lever(Offset(0, 0.53), to: Joint.chest, over: true, handle: false),
+      Pad(Joint.chest, from: Joint.hip, side: 0.01),
     ],
     frames: [
       Pose(
@@ -4353,10 +4365,10 @@ const Map<String, Demo> _core = {
   ),
   // From the front: sat back on the floor, the hands swing side to side.
   'russian-twist': Demo(
-    // Beta 5.6.1 (owner: "weird hand movement"): the hands hold the weight
-    // together in front of the chest, elbows bent and under the shoulders
-    // (the arms point toward you, so they look short); they swing from
-    // side to side at that height as the shoulders turn.
+    // Beta 5.6.1 (owner: "the second hand is going weird"): the arms turn
+    // with the shoulders as one piece, drawn as seen — the hands together
+    // in front of the chest, the elbows bent below them; turning right,
+    // the right elbow swings out and the left one comes to the middle.
     view: DemoView.front,
     seated: true,
     seatHeight: 0.14,
@@ -4366,10 +4378,10 @@ const Map<String, Demo> _core = {
         trunk: 20,
         leg: Limb(35, 213),
         thighScale: 0.8,
-        upperScale: 0.75,
-        foreScale: 0.6,
         hands: Offset(0.03, 0.42),
         handsFar: Offset(-0.03, 0.42),
+        elbows: Offset(0.19, 0.38),
+        elbowsFar: Offset(-0.19, 0.38),
         cue: 0,
         seconds: 0.8,
         hold: 0.3,
@@ -4378,11 +4390,11 @@ const Map<String, Demo> _core = {
         trunk: 20,
         leg: Limb(35, 213),
         thighScale: 0.8,
-        upperScale: 0.75,
-        foreScale: 0.6,
         twist: 50,
-        hands: Offset(0.25, 0.4),
-        handsFar: Offset(0.2, 0.41),
+        hands: Offset(0.25, 0.42),
+        handsFar: Offset(0.21, 0.42),
+        elbows: Offset(0.237, 0.38),
+        elbowsFar: Offset(-0.007, 0.38),
         cue: 1,
         seconds: 1.1,
         hold: 0.2,
@@ -4391,11 +4403,11 @@ const Map<String, Demo> _core = {
         trunk: 20,
         leg: Limb(35, 213),
         thighScale: 0.8,
-        upperScale: 0.75,
-        foreScale: 0.6,
         twist: -50,
-        hands: Offset(-0.2, 0.41),
-        handsFar: Offset(-0.25, 0.4),
+        hands: Offset(-0.21, 0.42),
+        handsFar: Offset(-0.25, 0.42),
+        elbows: Offset(0.007, 0.38),
+        elbowsFar: Offset(-0.237, 0.38),
         cue: 2,
         seconds: 1.6,
         hold: 0.2,
@@ -4404,10 +4416,10 @@ const Map<String, Demo> _core = {
         trunk: 20,
         leg: Limb(35, 213),
         thighScale: 0.8,
-        upperScale: 0.75,
-        foreScale: 0.6,
         hands: Offset(0.03, 0.42),
         handsFar: Offset(-0.03, 0.42),
+        elbows: Offset(0.19, 0.38),
+        elbowsFar: Offset(-0.19, 0.38),
         seconds: 1,
       ),
     ],
@@ -4446,9 +4458,9 @@ const Map<String, Demo> _core = {
   ),
   // From the front: hands together, from the high pulley down and across.
   'cable-woodchopper': Demo(
-    // Beta 5.6.1 (owner: "weird hand movement"): the arms stay long and
-    // straight; the hands, together, travel from high by the pulley down
-    // across the body (coming toward you halfway, so the arms look short)
+    // Beta 5.6.1 (owner: "going too much up"): the chop starts with the
+    // hands by the head, not above it; the arms stay long and straight
+    // (coming toward you halfway, so they look short) down across the body
     // to low by the other hip, the shoulders turning with them.
     view: DemoView.front,
     gear: [Cable(Offset(0.85, 2.1), handle: true)],
@@ -4456,8 +4468,8 @@ const Map<String, Demo> _core = {
       Pose(
         twist: 70,
         straightArms: true,
-        hands: Offset(0.36, 1.8),
-        handsFar: Offset(0.32, 1.82),
+        hands: Offset(0.4, 1.58),
+        handsFar: Offset(0.36, 1.6),
         cue: 0,
         seconds: 1,
         hold: 0.3,

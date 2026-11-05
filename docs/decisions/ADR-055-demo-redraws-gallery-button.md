@@ -40,10 +40,26 @@ Owner, 2026-11-05: 43 of the 62 approved; 19 rejected again with new notes.
 | E7 | **Back to Waiting:** migration **0046** clears the rejection of each of the 19 only, as 0045 did. |
 | E8 | **A text label is excluded from the goldens.** Beta 5.6's floor press golden failed on CI: the test font rasterizes differently on Linux than on Windows, where the goldens are made. The painter's `labels` is turned off in the golden test, and a separate test checks that the 45° label is painted. |
 
+## Beta 5.6.2: the third round
+
+Owner, 2026-11-05: 12 of the 19 approved; 7 rejected with new notes.
+
+| # | Decision |
+|---|---|
+| F1 | **Band lat pulldown:** "do it in one movement". One smooth pull with no stop halfway. |
+| F2 | **Cable woodchopper:** "going too much up". The chop starts with the hands by the head. |
+| F3 | **Curtsy lunge:** "give front view". Back to the front view, now with the back knee bent to 90°: the thigh drops almost straight to a knee by the floor, and the shin points back and out (`Pose.shinScaleFar`). The back leg is drawn behind the body (`Demo.farLegBehind`). |
+| F4 | **Dumbbell pullover:** "from head level to behind the head". It starts over the face, not the chest, and goes back until the arms are in line with the body. |
+| F5 | **Machine crunch:** "the machine circle should be at the chest". The pad sits on the chest, and the machine arm runs from the hip axle to it. |
+| F6 | **Machine row:** "connected to bottom; elbow should go back". The levers rise from a pivot at the foot of the machine and swing down and back to the waist, with the elbows well behind the body. |
+| F7 | **Russian twist:** "the second hand is going weird". The arms turn with the shoulders as one piece, drawn where the turn puts them: the far elbow comes to the middle and the hands stay together (`Pose.elbows`). |
+| F8 | **Back to Waiting:** migration **0047** clears only the rejections of these 7. |
+
 ## Release
 
 - **API:** migration 0045. The owner runs `deploy.ps1`.
 - **Admin:** the new previews. The owner runs `admin.ps1`.
 - **App:** a Shorebird patch to 1.0.0-beta.5.3 (build 33). It is Dart only, and every icon is already in the release's font. 5.6.1 is a further patch on the same release.
-- **5.6.1:** migration 0046 (`deploy.ps1`), the 19 previews (`admin.ps1`), the patch.
+- **5.6.1:** migration 0046 (`deploy.ps1`), the 19 previews (`admin.ps1`), the patch. Released 2026-11-05: API ec430d1, 5.3 patch 5.
+- **5.6.2:** migration 0047, the 7 previews, the patch.
 - **Then:** the owner re-checks the 62 in Admin → Content → Exercise demos. The app shows each one once it is approved.

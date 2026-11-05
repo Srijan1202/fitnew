@@ -672,6 +672,12 @@ class DemoPainter extends CustomPainter {
       part(f[Joint.shoulder], f[Joint.elbow], ink, 0.085);
       part(f[Joint.elbow], f[Joint.hand], ink, 0.075);
     } else {
+      // Beta 5.6.1: a leg crossing behind the body.
+      if (demo.farLegBehind) {
+        part(f[Joint.hipFar], f[Joint.kneeFar], ink, 0.11);
+        part(f[Joint.kneeFar], f[Joint.ankleFar], ink, 0.09);
+        part(f[Joint.ankleFar], f[Joint.toeFar], ink, 0.06);
+      }
       // Beta 5.2: each side from its own joints (the two can differ).
       final shR = f[Joint.shoulder];
       final shL = f[Joint.shoulderFar];
@@ -712,9 +718,11 @@ class DemoPainter extends CustomPainter {
           Joint.handFar,
         ),
       ]) {
-        part(f[hip], f[knee], ink, 0.11);
-        part(f[knee], f[ankle], ink, 0.09);
-        part(f[ankle], f[toe], ink, 0.06);
+        if (!demo.farLegBehind || hip == Joint.hip) {
+          part(f[hip], f[knee], ink, 0.11);
+          part(f[knee], f[ankle], ink, 0.09);
+          part(f[ankle], f[toe], ink, 0.06);
+        }
         part(f[shoulder], f[elbow], ink, 0.085);
         part(f[elbow], f[hand], ink, 0.075);
       }

@@ -142,6 +142,9 @@ class Pose {
     this.turn = 0,
     this.straightArms = false,
     this.tilt,
+    this.shinScaleFar,
+    this.elbows,
+    this.elbowsFar,
   });
 
   final double trunk;
@@ -212,6 +215,17 @@ class Pose {
   /// floor, then lifted, the elbow and feet staying down). Beta 5.6.1.
   final double? tilt;
 
+  /// Front view: the left shin's length as seen (a curtsy lunge's back shin
+  /// pointing away behind the knee). Beta 5.6.1.
+  final double? shinScaleFar;
+
+  /// Front view, with [hands]: where the right elbow is seen (the left
+  /// mirrors unless [elbowsFar]); the arms are drawn as seen, each part
+  /// its own length — a Russian twist's arms turning with the shoulders.
+  /// Beta 5.6.1.
+  final Offset? elbows;
+  final Offset? elbowsFar;
+
   Pose lerp(Pose b, double t) => Pose(
         trunk: _lerpAngle(trunk, b.trunk, t),
         head: _lerpAngle(head, b.head, t),
@@ -251,6 +265,15 @@ class Pose {
         twist: _lerp(twist, b.twist, t),
         turn: _lerp(turn, b.turn, t),
         straightArms: straightArms,
+        shinScaleFar: shinScaleFar == null && b.shinScaleFar == null
+            ? null
+            : _lerp(shinScaleFar ?? 1, b.shinScaleFar ?? 1, t),
+        elbows: elbows == null || b.elbows == null
+            ? null
+            : _lerpO(elbows!, b.elbows!, t),
+        elbowsFar: elbowsFar == null || b.elbowsFar == null
+            ? null
+            : _lerpO(elbowsFar!, b.elbowsFar!, t),
         tilt: tilt == null || b.tilt == null
             ? tilt ?? b.tilt
             : _lerp(tilt!, b.tilt!, t),
@@ -617,6 +640,7 @@ class Demo {
     this.seatHeight = 0.53,
     this.tilt = 0,
     this.floor = true,
+    this.farLegBehind = false,
   });
 
   final List<Pose> frames;
@@ -650,6 +674,10 @@ class Demo {
   /// The floor line; off for a view from above (a fly seen from the top,
   /// beta 5.6).
   final bool floor;
+
+  /// Front view: the left leg is drawn behind the body (a curtsy lunge's
+  /// back leg crossing behind the front one). Beta 5.6.1.
+  final bool farLegBehind;
 
   /// One loop, seconds: each move and hold, and back to the start.
   double get period =>
@@ -960,8 +988,8 @@ class Demo {
         Joint.kneeFar,
         Joint.ankleFar,
         p.feetFar ?? m(p.feet!),
-        thigh,
-        Body.shin,
+        Body.thigh * (p.thighScaleFar ?? p.thighScale),
+        Body.shin * (p.shinScaleFar ?? 1),
         Offset(-out.dx, out.dy),
       );
     } else if (byAngle) {
@@ -996,7 +1024,12 @@ class Demo {
     }
 
     // Arms: each to its target, or by angle (the left mirrors unless given).
-    if (p.hands != null && p.straightArms) {
+    if (p.hands != null && p.elbows != null) {
+      j[Joint.elbow] = p.elbows!;
+      j[Joint.hand] = p.hands!;
+      j[Joint.elbowFar] = p.elbowsFar ?? m(p.elbows!);
+      j[Joint.handFar] = p.handsFar ?? m(p.hands!);
+    } else if (p.hands != null && p.straightArms) {
       // Beta 5.6.1: straight, pointing toward you (shorter as seen).
       void straight(Joint root, Joint mid, Joint end, Offset target) {
         final d = target - j[root]!;

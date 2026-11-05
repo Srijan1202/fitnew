@@ -70,8 +70,9 @@ void main() {
         expect(f.lowest, greaterThan(-0.02), reason: '$slug at $t');
         final bones = [
           // Beta 5.6.1: straight arms pointing toward you are drawn shorter
-          // by how far they reach.
-          if (!pose.straightArms) ...[
+          // by how far they reach; arms placed by their elbows are drawn as
+          // seen.
+          if (!pose.straightArms && pose.elbows == null) ...[
             (
               Joint.shoulder,
               Joint.elbow,
