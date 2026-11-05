@@ -73,5 +73,5 @@ Owner, 2026-11-06: "the gallery is showing in background but the camera opens an
 - **App:** a Shorebird patch to 1.0.0-beta.5.3 (build 33). It is Dart only, and every icon is already in the release's font. 5.6.1 is a further patch on the same release.
 - **5.6.1:** migration 0046 (`deploy.ps1`), the 19 previews (`admin.ps1`), the patch. Released 2026-11-05: API ec430d1, 5.3 patch 5.
 - **5.6.2:** migration 0047, the 7 previews, the patch. Released 2026-11-05 at b31263d.
-- **5.6.3:** app only. A Shorebird patch on the same release; no migration or previews. Checked on the S24.
+- **5.6.3:** app only. A Shorebird patch on the same release, with no migration or previews. Released 2026-11-06 from a3479d0 as 5.3 patch 7. The owner checks it on the S24.
 - **Then:** the owner re-checks the 62 in Admin → Content → Exercise demos. The app shows each one once it is approved.
