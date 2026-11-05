@@ -29,10 +29,21 @@ Future<String?> takePhotoInApp(
 /// Where the cameras come from, behind a seam for tests.
 typedef CameraList = Future<List<CameraDescription>> Function();
 
+/// The controller for one camera, behind a seam for tests (beta 5.6.3).
+typedef CameraControllerFor = CameraController Function(CameraDescription);
+
+CameraController _jpegController(CameraDescription camera) => CameraController(
+      camera,
+      ResolutionPreset.high,
+      enableAudio: false,
+      imageFormatGroup: ImageFormatGroup.jpeg,
+    );
+
 class InAppCameraScreen extends StatefulWidget {
   const InAppCameraScreen({
     this.front = false,
     this.cameras = availableCameras,
+    this.controllerFor = _jpegController,
     this.gallery,
     super.key,
   });
@@ -40,6 +51,7 @@ class InAppCameraScreen extends StatefulWidget {
   /// Start on the front camera (a selfie in the mirror needs the back one).
   final bool front;
   final CameraList cameras;
+  final CameraControllerFor controllerFor;
 
   /// A photo from the gallery instead: its path, or null when none was
   /// chosen (the camera stays open).
@@ -121,12 +133,7 @@ class _InAppCameraScreenState extends State<InAppCameraScreen>
     final CameraController c;
     try {
       await old?.dispose();
-      c = CameraController(
-        _all[index],
-        ResolutionPreset.high,
-        enableAudio: false,
-        imageFormatGroup: ImageFormatGroup.jpeg,
-      );
+      c = widget.controllerFor(_all[index]);
       try {
         await c.initialize();
       } on CameraException catch (e) {

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:camera_platform_interface/camera_platform_interface.dart';
+import 'package:camera/camera.dart';
 import 'package:fitos/shared/widgets/in_app_camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -104,7 +104,7 @@ void main() {
 
   group('beta 5.6.3: with a camera', () {
     late _FakeCamera camera;
-    setUp(() => CameraPlatform.instance = camera = _FakeCamera());
+    setUp(() => camera = _FakeCamera());
 
     Future<Future<String?> Function()> openWith(
       WidgetTester tester, {
@@ -120,6 +120,7 @@ void main() {
                   MaterialPageRoute(
                     builder: (_) => InAppCameraScreen(
                       cameras: () async => const [_back],
+                      controllerFor: camera.controller,
                       gallery: gallery,
                     ),
                   ),
@@ -214,54 +215,37 @@ const _back = CameraDescription(
 
 /// The phone's camera: counts what was opened and let go; [hold] keeps a
 /// start waiting, as the permission dialog does.
-class _FakeCamera extends CameraPlatform {
+class _FakeCamera {
   int created = 0;
   int disposed = 0;
   Future<void>? hold;
-  final _started = StreamController<CameraInitializedEvent>.broadcast();
-  final _errors = StreamController<CameraErrorEvent>.broadcast();
+
+  CameraController controller(CameraDescription camera) =>
+      _FakeController(camera, this);
+}
+
+class _FakeController extends CameraController {
+  _FakeController(CameraDescription camera, this.phone)
+      : super(camera, ResolutionPreset.high);
+
+  final _FakeCamera phone;
 
   @override
-  Future<int> createCameraWithSettings(
-    CameraDescription cameraDescription,
-    MediaSettings mediaSettings,
-  ) async =>
-      ++created;
-
-  @override
-  Future<void> initializeCamera(
-    int cameraId, {
-    ImageFormatGroup imageFormatGroup = ImageFormatGroup.unknown,
-  }) async {
-    await hold;
-    _started.add(
-      CameraInitializedEvent(
-        cameraId,
-        1280,
-        720,
-        ExposureMode.auto,
-        true,
-        FocusMode.auto,
-        true,
-      ),
+  Future<void> initialize() async {
+    phone.created++;
+    await phone.hold;
+    value = value.copyWith(
+      isInitialized: true,
+      previewSize: const Size(1280, 720),
     );
   }
 
   @override
-  Stream<CameraInitializedEvent> onCameraInitialized(int cameraId) =>
-      _started.stream.where((CameraInitializedEvent e) => e.cameraId == cameraId);
+  Widget buildPreview() => const SizedBox(key: ValueKey('preview'));
 
   @override
-  Stream<CameraErrorEvent> onCameraError(int cameraId) => _errors.stream;
-
-  @override
-  Stream<DeviceOrientationChangedEvent> onDeviceOrientationChanged() =>
-      const Stream.empty();
-
-  @override
-  Widget buildPreview(int cameraId) =>
-      const SizedBox(key: ValueKey('preview'));
-
-  @override
-  Future<void> dispose(int cameraId) async => disposed++;
+  Future<void> dispose() async {
+    phone.disposed++;
+    super.dispose();
+  }
 }

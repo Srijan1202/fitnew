@@ -64,7 +64,7 @@ Owner, 2026-11-06: "the gallery is showing in background but the camera opens an
 | G1 | **The camera is let go before the gallery opens**, and leaving and coming back does not start it while the gallery is up. If no photo is chosen, the camera starts again. |
 | G2 | **The camera starts once.** On first use, the permission dialog made FITOS leave and come back while the camera was still starting. That started it a second time, and it showed "The camera could not start". Leaving and coming back is ignored while the camera starts. |
 | G3 | **A failing crash reporter no longer stops start-up.** One emulator launch out of three never left the splash. Crashlytics threw while starting (`Null` is not a `bool` in `FirebaseCrashlyticsPlatform.instanceFor`), and `main()` never reached `runApp`. Now reports stay off for that run, and the app opens. |
-| G4 | **Tests:** a stand-in camera (`camera_platform_interface`, a dev dependency) counts what is opened and let go. Both camera tests fail on the 5.6.2 code. |
+| G4 | **Tests:** a stand-in camera controller (`InAppCameraScreen.controllerFor`) counts what is opened and let go. A test-only dependency was tried first and dropped, because any pubspec change makes `patch.ps1` ask for a full APK. Both camera tests fail on the 5.6.2 code. |
 
 ## Release
 
