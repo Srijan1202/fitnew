@@ -98,6 +98,8 @@ dev_dependencies:
   drift_dev: 2.35.2
   flutter_launcher_icons: 0.14.4
   flutter_native_splash: 2.4.8
+  # The in-app camera's tests stand in for the phone's camera (beta 5.6.3).
+  camera_platform_interface: 2.15.0
   # riverpod_lint runs as an analyzer plugin (analysis_options.yaml), inside
   # `dart analyze`; custom_lint is no longer needed (beta 3.9).
 

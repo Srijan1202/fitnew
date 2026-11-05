@@ -55,6 +55,17 @@ Owner, 2026-11-05: 12 of the 19 approved; 7 rejected with new notes.
 | F7 | **Russian twist:** "the second hand is going weird". The arms turn with the shoulders as one piece, drawn where the turn puts them: the far elbow comes to the middle and the hands stay together (`Pose.elbows`). |
 | F8 | **Back to Waiting:** migration **0047** clears only the rejections of these 7. |
 
+## Beta 5.6.3: the camera's Gallery button, again
+
+Owner, 2026-11-06: "the gallery is showing in background but the camera opens and i cant use gallery". On the Pixel 8 emulator (Android 17), the photo picker opens as a sheet and returns its photo. The S24 was not reproduced. The cause is shared by both phones: the camera screen follows the app leaving and coming back. The picker makes FITOS inactive, so the camera was let go. When FITOS counted as back while the picker was still up, the camera started again on top of it. The emulator also showed two more faults.
+
+| # | Decision |
+|---|---|
+| G1 | **The camera is let go before the gallery opens**, and leaving and coming back does not start it while the gallery is up. If no photo is chosen, the camera starts again. |
+| G2 | **The camera starts once.** On first use, the permission dialog made FITOS leave and come back while the camera was still starting. That started it a second time, and it showed "The camera could not start". Leaving and coming back is ignored while the camera starts. |
+| G3 | **A failing crash reporter no longer stops start-up.** One emulator launch out of three never left the splash. Crashlytics threw while starting (`Null` is not a `bool` in `FirebaseCrashlyticsPlatform.instanceFor`), and `main()` never reached `runApp`. Now reports stay off for that run, and the app opens. |
+| G4 | **Tests:** a stand-in camera (`camera_platform_interface`, a dev dependency) counts what is opened and let go. Both camera tests fail on the 5.6.2 code. |
+
 ## Release
 
 - **API:** migration 0045. The owner runs `deploy.ps1`.
@@ -62,4 +73,5 @@ Owner, 2026-11-05: 12 of the 19 approved; 7 rejected with new notes.
 - **App:** a Shorebird patch to 1.0.0-beta.5.3 (build 33). It is Dart only, and every icon is already in the release's font. 5.6.1 is a further patch on the same release.
 - **5.6.1:** migration 0046 (`deploy.ps1`), the 19 previews (`admin.ps1`), the patch. Released 2026-11-05: API ec430d1, 5.3 patch 5.
 - **5.6.2:** migration 0047, the 7 previews, the patch. Released 2026-11-05 at b31263d.
+- **5.6.3:** app only. A Shorebird patch on the same release; no migration or previews. Checked on the S24.
 - **Then:** the owner re-checks the 62 in Admin → Content → Exercise demos. The app shows each one once it is approved.

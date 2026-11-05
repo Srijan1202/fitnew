@@ -58,6 +58,13 @@ class _InAppCameraScreenState extends State<InAppCameraScreen>
   String? _problem;
   bool _busy = false;
 
+  /// The camera is starting (its permission dialog may be up) or the
+  /// gallery is open: leaving and coming back must not start it again.
+  /// Beta 5.6.3 (owner: the camera came back over the gallery on the S24;
+  /// on first use the permission dialog started it twice and it failed).
+  bool _opening = false;
+  bool _picking = false;
+
   @override
   void initState() {
     super.initState();
@@ -76,6 +83,7 @@ class _InAppCameraScreenState extends State<InAppCameraScreen>
   /// take it again on return.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_opening || _picking) return;
     final c = _controller;
     if (state == AppLifecycleState.inactive) {
       _controller = null;
@@ -106,23 +114,30 @@ class _InAppCameraScreenState extends State<InAppCameraScreen>
   }
 
   Future<void> _open(int index) async {
+    if (_opening) return;
+    _opening = true;
     final old = _controller;
     _controller = null;
-    await old?.dispose();
-    final c = CameraController(
-      _all[index],
-      ResolutionPreset.high,
-      enableAudio: false,
-      imageFormatGroup: ImageFormatGroup.jpeg,
-    );
+    final CameraController c;
     try {
-      await c.initialize();
-    } on CameraException catch (e) {
-      await c.dispose();
-      _fail(e);
-      return;
+      await old?.dispose();
+      c = CameraController(
+        _all[index],
+        ResolutionPreset.high,
+        enableAudio: false,
+        imageFormatGroup: ImageFormatGroup.jpeg,
+      );
+      try {
+        await c.initialize();
+      } on CameraException catch (e) {
+        await c.dispose();
+        _fail(e);
+        return;
+      }
+    } finally {
+      _opening = false;
     }
-    if (!mounted) {
+    if (!mounted || _picking) {
       await c.dispose();
       return;
     }
@@ -160,9 +175,30 @@ class _InAppCameraScreenState extends State<InAppCameraScreen>
     }
   }
 
+  /// The camera is let go before the gallery opens and stays off while it
+  /// is up; with no photo chosen it starts again.
   Future<void> _fromGallery() async {
-    final path = await widget.gallery!();
-    if (path != null && mounted) Navigator.of(context).pop(path);
+    if (_picking) return;
+    final c = _controller;
+    setState(() {
+      _picking = true;
+      _controller = null;
+    });
+    await c?.dispose();
+    String? path;
+    try {
+      path = await widget.gallery!();
+    } finally {
+      _picking = false;
+    }
+    if (!mounted) return;
+    if (path != null) {
+      Navigator.of(context).pop(path);
+    } else if (_problem == null && _all.isNotEmpty) {
+      await _open(_index);
+    } else {
+      setState(() {});
+    }
   }
 
   void _retake() {

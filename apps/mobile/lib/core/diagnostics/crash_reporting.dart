@@ -27,9 +27,10 @@ class CrashlyticsReporter implements CrashReporter {
 
   @override
   Future<void> setEnabled(bool enabled) async {
-    _enabled = enabled;
+    _enabled = false;
     await _crashlytics.setCrashlyticsCollectionEnabled(enabled);
     if (!enabled) await _crashlytics.deleteUnsentReports();
+    _enabled = enabled;
   }
 
   @override
@@ -85,7 +86,11 @@ class CrashReportsController extends AsyncNotifier<bool> {
     } on Object {
       // The choice still applies for this run.
     }
-    await ref.read(crashReporterProvider).setEnabled(enabled);
+    try {
+      await ref.read(crashReporterProvider).setEnabled(enabled);
+    } on Object {
+      // Crashlytics is not ready; the choice applies from the next start.
+    }
   }
 }
 
@@ -95,8 +100,14 @@ final crashReportsProvider =
 );
 
 /// Wires the reporter into Flutter's two error paths. Called once by main().
+/// Beta 5.6.3: if Crashlytics fails to start (seen on a slow phone: its
+/// plugin constants missing), FITOS still opens; reports stay off this run.
 Future<void> installCrashReporting(CrashReporter reporter) async {
-  await reporter.setEnabled(await crashReportsEnabled());
+  try {
+    await reporter.setEnabled(await crashReportsEnabled());
+  } on Object catch (e) {
+    debugPrint('Crash reports off this run: $e');
+  }
   final previous = FlutterError.onError;
   FlutterError.onError = (details) {
     reporter.recordFlutterError(details);
