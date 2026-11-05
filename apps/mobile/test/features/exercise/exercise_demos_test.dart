@@ -69,9 +69,17 @@ void main() {
         final f = demo.solve(pose);
         expect(f.lowest, greaterThan(-0.02), reason: '$slug at $t');
         final bones = [
-          (Joint.shoulder, Joint.elbow, Body.upperArm * pose.upperScale.abs()),
-          // A foreshortened forearm (a front-view curl) is drawn shorter.
-          (Joint.elbow, Joint.hand, Body.forearm * pose.foreScale.abs()),
+          // Beta 5.6.1: straight arms pointing toward you are drawn shorter
+          // by how far they reach.
+          if (!pose.straightArms) ...[
+            (
+              Joint.shoulder,
+              Joint.elbow,
+              Body.upperArm * pose.upperScale.abs(),
+            ),
+            // A foreshortened forearm (a front-view curl) is drawn shorter.
+            (Joint.elbow, Joint.hand, Body.forearm * pose.foreScale.abs()),
+          ],
           (Joint.knee, Joint.ankle, Body.shin),
         ];
         if (demo.view == DemoView.side) {
@@ -330,6 +338,33 @@ void main() {
     expect(demoSlugFor('no-such-lift'), isNull);
   });
 
+  testWidgets(
+      'beta 5.6.1: the demo label is painted (the goldens leave it out)',
+      (tester) async {
+    final demo = exerciseDemos['floor-press']!;
+    Widget painted({required bool labels}) => Directionality(
+          textDirection: TextDirection.ltr,
+          child: CustomPaint(
+            size: const Size(240, 260),
+            painter: DemoPainter(
+              demo: demo,
+              figure: demo.solve(demo.frames.first),
+              bounds: demoBounds(demo),
+              ink: FitPalette.dark.ink,
+              dim: FitPalette.dark.ink35,
+              accent: FitPalette.dark.accent,
+              rule: FitPalette.dark.rule,
+              paper: FitPalette.dark.paper,
+              labels: labels,
+            ),
+          ),
+        );
+    await tester.pumpWidget(painted(labels: true));
+    expect(find.byType(CustomPaint), paints..paragraph());
+    await tester.pumpWidget(painted(labels: false));
+    expect(find.byType(CustomPaint), isNot(paints..paragraph()));
+  });
+
   group('goldens', () {
     for (final MapEntry(key: slug, value: demo) in exerciseDemos.entries) {
       testWidgets(slug, (tester) async {
@@ -362,6 +397,7 @@ void main() {
                             accent: p.accent,
                             rule: p.rule,
                             paper: p.paper,
+                            labels: false,
                           ),
                         ),
                       ),

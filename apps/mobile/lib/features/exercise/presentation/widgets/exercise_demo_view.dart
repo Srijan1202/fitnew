@@ -241,6 +241,10 @@ Rect demoBounds(Demo demo) {
           add(g.centre(f), g.radius);
         case Hang():
           add(g.centre(f), g.radius);
+        case Bar(:final length?, :final plates):
+          final mid = (f[Joint.hand] + f[Joint.handFar]) / 2;
+          add(mid + Offset(length / 2, 0), plates ? 0.225 : 0.02);
+          add(mid - Offset(length / 2, 0), plates ? 0.225 : 0.02);
         default:
           break;
       }
@@ -270,6 +274,9 @@ Rect demoBounds(Demo demo) {
       case Lever(:final pivot, :final mirrored):
         add(pivot, 0.06);
         if (mirrored) add(Offset(-pivot.dx, pivot.dy), 0.06);
+      case WeightStack(:final x, :final width, :final height):
+        add(Offset(x - width / 2, height + 0.04));
+        add(Offset(x + width / 2, 0));
       case Block(:final from, :final to, :final height):
         add(Offset(from, height));
         add(Offset(to, 0));
@@ -298,6 +305,7 @@ class DemoPainter extends CustomPainter {
     required this.accent,
     required this.rule,
     required this.paper,
+    this.labels = true,
   });
 
   final Demo demo;
@@ -311,6 +319,11 @@ class DemoPainter extends CustomPainter {
   /// The background: each body part is outlined in it, so an arm in front
   /// of the body (a curl, a pulldown) stays visible (beta 5.0.1).
   final Color paper;
+
+  /// Draw the text labels (a floor press's 45°). Beta 5.6.1: the goldens
+  /// leave them out — test text is drawn differently on Linux (CI) than on
+  /// Windows, where the goldens are made.
+  final bool labels;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -343,6 +356,10 @@ class DemoPainter extends CustomPainter {
 
     Offset mirror(Offset o) => Offset(-o.dx, o.dy);
 
+    // Beta 5.6.1: a machine's upholstery and moving parts, lighter than its
+    // frame.
+    final padTone = Color.lerp(rule, dim, 0.5)!;
+
     // Dumbbells: end-on (palms forward), or showing their length (palms in,
     // or one held upright in both hands).
     void dumbbells(Dumbbells g) {
@@ -369,6 +386,24 @@ class DemoPainter extends CustomPainter {
             final d = f[Joint.hand] - f[Joint.elbow];
             final u = d / d.distance;
             n = Offset(-u.dy, u.dx);
+          }
+          if (across && f.turn != 0) {
+            // Beta 5.6.1: turning about the forearm, the dumbbell shortens
+            // to end-on and back; the nearer end is drawn larger, on top.
+            final r = f.turn * math.pi / 180;
+            final side =
+                h.dx >= (f[Joint.hip].dx + f[Joint.hipFar].dx) / 2 ? 1.0 : -1.0;
+            final a = h + Offset(math.cos(r) * 0.1 * side, 0);
+            final b = h - Offset(math.cos(r) * 0.1 * side, 0);
+            final za = math.sin(r);
+            bone(a, b, dim, 0.035);
+            for (final (e, z)
+                in za >= 0 ? [(b, -za), (a, za)] : [(a, za), (b, -za)]) {
+              final rr = 0.055 * (1 + 0.25 * z) * s;
+              canvas.drawCircle(c(e), rr, fill(dim));
+              canvas.drawCircle(c(e), rr, stroke(ink, 0.008));
+            }
+            continue;
           }
           bone(h - n * 0.1, h + n * 0.1, dim, 0.035);
           for (final e in [h - n * 0.1, h + n * 0.1]) {
@@ -416,14 +451,22 @@ class DemoPainter extends CustomPainter {
 
     // Beta 5.6: a machine's lever, from its pivot to the joint moving it.
     void lever(Lever g) {
-      void one(Offset pivot, Offset end) {
+      void one(Offset pivot, Offset joint, double sign) {
+        final end = g.end(pivot, joint, sign);
         bone(pivot, end, dim, 0.04);
+        // Beta 5.6.1: beside the limb, the rod's end joins the handle.
+        if (end != joint && !g.roller) bone(end, joint, dim, 0.03);
         canvas.drawCircle(c(pivot), 0.045 * s, fill(dim));
         canvas.drawCircle(c(pivot), 0.018 * s, fill(rule));
-        if (g.handle) canvas.drawCircle(c(end), 0.04 * s, fill(dim));
+        if (g.roller) {
+          canvas.drawCircle(c(end), 0.06 * s, fill(padTone));
+          canvas.drawCircle(c(end), 0.06 * s, stroke(dim, 0.012));
+        } else if (g.handle) {
+          canvas.drawCircle(c(joint), 0.04 * s, fill(dim));
+        }
       }
 
-      one(g.pivot, f[g.to]);
+      one(g.pivot, f[g.to], 1);
       if (g.mirrored) {
         final cx = (f[Joint.hip].dx + f[Joint.hipFar].dx) / 2;
         final far = switch (g.to) {
@@ -433,7 +476,28 @@ class DemoPainter extends CustomPainter {
           Joint.ankle => Joint.ankleFar,
           _ => g.to,
         };
-        one(Offset(2 * cx - g.pivot.dx, g.pivot.dy), f[far]);
+        one(Offset(2 * cx - g.pivot.dx, g.pivot.dy), f[far], -1);
+      }
+    }
+
+    // Beta 5.6.1: a weight stack — guide rods, a top, the plates.
+    void stack(WeightStack g) {
+      final l = g.x - g.width / 2;
+      final r = g.x + g.width / 2;
+      bone(Offset(l, 0), Offset(l, g.height), rule, 0.035);
+      bone(Offset(r, 0), Offset(r, g.height), rule, 0.035);
+      bone(Offset(l, g.height), Offset(r, g.height), rule, 0.05);
+      canvas.drawCircle(c(Offset(g.x, g.height)), 0.045 * s, fill(dim));
+      bone(Offset(g.x, 0.68), Offset(g.x, g.height), dim, 0.008);
+      for (var i = 0; i < 10; i++) {
+        final y = 0.03 + i * 0.065;
+        canvas.drawRect(
+          Rect.fromPoints(
+            c(Offset(l + 0.03, y + 0.05)),
+            c(Offset(r - 0.03, y)),
+          ),
+          fill(padTone),
+        );
       }
     }
 
@@ -459,6 +523,7 @@ class DemoPainter extends CustomPainter {
         false,
         stroke(accent, 0.02),
       );
+      if (!labels) return;
       final mid = start + sweep / 2;
       final text = TextPainter(
         text: TextSpan(
@@ -523,8 +588,10 @@ class DemoPainter extends CustomPainter {
           );
         case Dumbbells():
           dumbbells(g);
-        case Line(:final a, :final b, :final width):
-          bone(a, b, rule, width);
+        case Line(:final a, :final b, :final width, :final pad):
+          bone(a, b, pad ? padTone : rule, width);
+        case WeightStack():
+          stack(g);
         case Link():
           link(g);
         case Lever():
@@ -694,6 +761,27 @@ class DemoPainter extends CustomPainter {
           link(g);
         case AngleMark():
           angleMark(g);
+        case Line(:final a, :final b, :final width):
+          // Beta 5.6.1: a pad in front of the body, see-through.
+          bone(a, b, padTone.withValues(alpha: 0.7), width);
+        case Bar(:final length?, :final plates):
+          // Beta 5.6.1: a long bar, a plate near each end.
+          final mid = (f[Joint.hand] + f[Joint.handFar]) / 2;
+          final half = Offset(length / 2, 0);
+          bone(mid - half, mid + half, dim, 0.035);
+          if (plates) {
+            for (final e in [mid - half, mid + half]) {
+              final at = e + Offset(e.dx > mid.dx ? -0.1 : 0.1, 0);
+              for (final dx in [-0.035, 0.035]) {
+                bone(
+                  at + Offset(dx, 0.2),
+                  at + Offset(dx, -0.2),
+                  dim,
+                  0.05,
+                );
+              }
+            }
+          }
         case Bar():
           final l = f[Joint.handFar];
           final r = f[Joint.hand];
@@ -715,5 +803,6 @@ class DemoPainter extends CustomPainter {
       old.ink != ink ||
       old.paper != paper ||
       old.accent != accent ||
-      old.bounds != bounds;
+      old.bounds != bounds ||
+      old.labels != labels;
 }

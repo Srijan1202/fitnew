@@ -25,9 +25,25 @@
 | D5 | **Back to Waiting:** migration **0045** deletes the rejection of each of the 62 slugs, so each shows under Waiting again. An approved row, or any other slug, is not touched. The notes stay in the audit log (`demo.unapprove`). Down changes nothing. |
 | D6 | The admin panel's previews (`apps/admin/public/demos`) are exported again from the app's own painter, with the app's font for the 45° label. |
 
+## Beta 5.6.1: the second round
+
+Owner, 2026-11-05: 43 of the 62 approved; 19 rejected again with new notes.
+
+| # | Decision |
+|---|---|
+| E1 | **The 19 are redrawn again**, each with a `Beta 5.6.1 (owner: …)` comment quoting the new note. The 141 other demos are untouched; their goldens did not change. |
+| E2 | **Machines look like machines:** <br>• a `WeightStack` (guide rods, plates, pulley); <br>• upholstery drawn lighter than the frame (`Line.pad`); <br>• a base along the floor and frames up to the pivots. <br>Shoulder press, row, crunch, preacher curl, triceps extension, lateral raise, pec deck and reverse pec deck use them. |
+| E3 | **Machine arms beside the limb** (`Lever.side`): the preacher curl's and triceps extension's arm turns on a cam at the elbow and runs beside the forearm to the handle. The lateral raise presses a roller pad (`Lever.roller`) on the outside of each elbow, with the forearms pointing toward you. |
+| E4 | **Views changed as the owner asked:** <br>• the suitcase carry is a walk seen from the side; <br>• the curtsy lunge is seen from the side, the only view where the back knee's 90° shows; the cue says "across"; <br>• the reverse pec deck faces the machine, with the chest pad and levers drawn in front of the body, so it no longer looks like the pec deck played backwards. |
+| E5 | **Hands:** <br>• the sumo deadlift's arms hang straight; <br>• the Russian twist's hands stay together at chest height (front-view arm IK now uses the arms' foreshortened lengths); <br>• the woodchopper's arms stay straight, shorter as they come toward you (`Pose.straightArms`); <br>• the band pulldown's elbows drive down with the forearms upright. |
+| E6 | **The rest:** <br>• the Arnold press's dumbbells turn end-on and back with the palms (`Pose.turn`); <br>• the pullover stops just past the head; <br>• the concentration curl stops before the knee; <br>• the upright row has a long bar with plates and a wider grip; <br>• the side plank keeps the elbow and feet on the floor, the hips lowering and lifting (`Pose.tilt`). |
+| E7 | **Back to Waiting:** migration **0046** clears the rejection of each of the 19 only, as 0045 did. |
+| E8 | **A text label is excluded from the goldens.** Beta 5.6's floor press golden failed on CI: the test font rasterizes differently on Linux than on Windows, where the goldens are made. The painter's `labels` is turned off in the golden test, and a separate test checks that the 45° label is painted. |
+
 ## Release
 
 - **API:** migration 0045. The owner runs `deploy.ps1`.
 - **Admin:** the new previews. The owner runs `admin.ps1`.
-- **App:** a Shorebird patch to 1.0.0-beta.5.3 (build 33). It is Dart only, and every icon is already in the release's font.
+- **App:** a Shorebird patch to 1.0.0-beta.5.3 (build 33). It is Dart only, and every icon is already in the release's font. 5.6.1 is a further patch on the same release.
+- **5.6.1:** migration 0046 (`deploy.ps1`), the 19 previews (`admin.ps1`), the patch.
 - **Then:** the owner re-checks the 62 in Admin → Content → Exercise demos. The app shows each one once it is approved.

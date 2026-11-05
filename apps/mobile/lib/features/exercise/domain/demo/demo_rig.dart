@@ -139,6 +139,9 @@ class Pose {
     this.handsFar,
     this.thighScaleFar,
     this.twist = 0,
+    this.turn = 0,
+    this.straightArms = false,
+    this.tilt,
   });
 
   final double trunk;
@@ -195,6 +198,20 @@ class Pose {
   /// narrower) — a Russian twist. Beta 5.6.
   final double twist;
 
+  /// The hands turned about the forearms this many degrees: a dumbbell held
+  /// across turns end-on at 90 (an Arnold press's palms turning from you to
+  /// forward). Beta 5.6.1.
+  final double turn;
+
+  /// Front view: the arms stay straight to [hands], drawn shorter as they
+  /// point toward you instead of bending (a woodchopper's hands passing in
+  /// front of the body). Beta 5.6.1.
+  final bool straightArms;
+
+  /// This moment's own [Demo.tilt] (a side plank's hips lowered to the
+  /// floor, then lifted, the elbow and feet staying down). Beta 5.6.1.
+  final double? tilt;
+
   Pose lerp(Pose b, double t) => Pose(
         trunk: _lerpAngle(trunk, b.trunk, t),
         head: _lerpAngle(head, b.head, t),
@@ -232,6 +249,11 @@ class Pose {
                 t,
               ),
         twist: _lerp(twist, b.twist, t),
+        turn: _lerp(turn, b.turn, t),
+        straightArms: straightArms,
+        tilt: tilt == null || b.tilt == null
+            ? tilt ?? b.tilt
+            : _lerp(tilt!, b.tilt!, t),
         anchorAt: anchorAt == null || b.anchorAt == null
             ? null
             : _lerpO(anchorAt!, b.anchorAt!, t),
@@ -257,9 +279,14 @@ class Plate extends Gear {
   bool get front => true;
 }
 
-/// A straight bar held in both hands, seen from the front (lat pulldown).
+/// A straight bar held in both hands, seen from the front (lat pulldown);
+/// [length] long when set (else just past the hands), with a plate near
+/// each end when [plates]. Beta 5.6.1 (owner: an upright row's "longer bar
+/// with plates").
 class Bar extends Gear {
-  const Bar();
+  const Bar({this.length, this.plates = false});
+  final double? length;
+  final bool plates;
   @override
   bool get front => true;
 }
@@ -388,10 +415,26 @@ class Block extends Gear {
 
 /// A fixed line: a machine's frame, a rack, a wall, a box's edge. Beta 5.2.
 class Line extends Gear {
-  const Line(this.a, this.b, {this.width = 0.04});
+  const Line(
+    this.a,
+    this.b, {
+    this.width = 0.04,
+    this.pad = false,
+    this.over = false,
+  });
   final Offset a;
   final Offset b;
   final double width;
+
+  /// Upholstery (a seat, a back or chest pad): drawn lighter than the
+  /// frame. Beta 5.6.1 (owner: "design the machine better").
+  final bool pad;
+
+  /// Drawn over the figure, see-through: a reverse pec deck's chest pad
+  /// between you and the body. Beta 5.6.1.
+  final bool over;
+  @override
+  bool get front => over;
 }
 
 /// A band, chain or cable between two points, each a joint or a fixed place;
@@ -437,11 +480,31 @@ class Lever extends Gear {
     this.mirrored = false,
     this.handle = true,
     this.over = false,
+    this.side = 0,
+    this.roller = false,
   });
   final Offset pivot;
   final Joint to;
   final bool mirrored;
   final bool handle;
+
+  /// The rod runs this far beside the limb (positive: left of the pivot's
+  /// line to the joint, as [Pad]), joined to the joint at its end: a
+  /// machine's arm beside the forearm, not on it. Beta 5.6.1.
+  final double side;
+
+  /// A roller pad at the end instead of a handle (a lateral raise's pad on
+  /// the outside of the elbow). Beta 5.6.1.
+  final bool roller;
+
+  /// Where the rod ends on [f], for the joint [at] and the pivot [from]
+  /// ([sign] -1 for the mirrored side).
+  Offset end(Offset from, Offset at, [double sign = 1]) {
+    if (side == 0) return at;
+    final d = at - from;
+    final u = d / d.distance;
+    return at + Offset(-u.dy, u.dx) * side * sign;
+  }
 
   /// Drawn over the figure (a lever on the near side).
   final bool over;
@@ -489,6 +552,16 @@ class Hang extends Gear {
         : f[Joint.hip];
     return hips - Offset(0, length);
   }
+}
+
+/// A machine's weight stack, side or front on: its guide rods from the
+/// floor to [height], centred at [x], [width] wide, the plates at the
+/// bottom. Beta 5.6.1 (owner: "design the machine better").
+class WeightStack extends Gear {
+  const WeightStack(this.x, {this.width = 0.24, this.height = 1.75});
+  final double x;
+  final double width;
+  final double height;
 }
 
 /// An angle drawn at joint [at], from the direction [from] (degrees, the
@@ -623,21 +696,26 @@ class Demo {
   /// The figure in [pose].
   Figure solve(Pose pose) {
     final f = view == DemoView.side ? _side(pose) : _front(pose);
-    if (tilt == 0) return f;
-    final r = tilt * math.pi / 180;
+    final turned = pose.tilt ?? tilt;
+    if (turned == 0) return Figure(f.view, f.joints, turn: pose.turn);
+    final r = turned * math.pi / 180;
     final c = math.cos(r), s = math.sin(r);
-    final turned = {
+    final rotated = {
       for (final e in f.joints.entries)
         e.key: Offset(
           e.value.dx * c + e.value.dy * s,
           -e.value.dx * s + e.value.dy * c,
         ),
     };
-    final low = turned.values.map((o) => o.dy).reduce(math.min);
-    return Figure(f.view, {
-      for (final e in turned.entries)
-        e.key: e.value + Offset(0, Body.ankleHeight / 2 - low),
-    });
+    final low = rotated.values.map((o) => o.dy).reduce(math.min);
+    return Figure(
+      f.view,
+      {
+        for (final e in rotated.entries)
+          e.key: e.value + Offset(0, Body.ankleHeight / 2 - low),
+      },
+      turn: pose.turn,
+    );
   }
 
   /* ------------------------------------------------------------ side -- */
@@ -918,15 +996,33 @@ class Demo {
     }
 
     // Arms: each to its target, or by angle (the left mirrors unless given).
-    if (p.hands != null) {
+    if (p.hands != null && p.straightArms) {
+      // Beta 5.6.1: straight, pointing toward you (shorter as seen).
+      void straight(Joint root, Joint mid, Joint end, Offset target) {
+        final d = target - j[root]!;
+        final u = d / d.distance;
+        final reach = math.min(d.distance, Body.upperArm + Body.forearm - 1e-6);
+        j[mid] = j[root]! +
+            u * reach * Body.upperArm / (Body.upperArm + Body.forearm);
+        j[end] = j[root]! + u * reach;
+      }
+
+      straight(Joint.shoulder, Joint.elbow, Joint.hand, p.hands!);
+      straight(
+        Joint.shoulderFar,
+        Joint.elbowFar,
+        Joint.handFar,
+        p.handsFar ?? m(p.hands!),
+      );
+    } else if (p.hands != null) {
       _reach(
         j,
         Joint.shoulder,
         Joint.elbow,
         Joint.hand,
         p.hands!,
-        Body.upperArm,
-        Body.forearm,
+        Body.upperArm * p.upperScale,
+        Body.forearm * p.foreScale,
         elbowToward,
       );
       _reach(
@@ -935,8 +1031,8 @@ class Demo {
         Joint.elbowFar,
         Joint.handFar,
         p.handsFar ?? m(p.hands!),
-        Body.upperArm,
-        Body.forearm,
+        Body.upperArm * p.upperScale,
+        Body.forearm * p.foreScale,
         Offset(-elbowToward.dx, elbowToward.dy),
       );
     } else {
@@ -965,10 +1061,13 @@ double _ease(double t) => t * t * (3 - 2 * t);
 
 /// The figure at one moment: every joint, world units.
 class Figure {
-  const Figure(this.view, this.joints);
+  const Figure(this.view, this.joints, {this.turn = 0});
 
   final DemoView view;
   final Map<Joint, Offset> joints;
+
+  /// The hands' turn ([Pose.turn]).
+  final double turn;
 
   Offset operator [](Joint j) => joints[j]!;
 
