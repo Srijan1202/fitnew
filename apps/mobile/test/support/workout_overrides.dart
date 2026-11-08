@@ -1,4 +1,5 @@
 import 'package:fitos/features/community/presentation/community_providers.dart';
+import 'package:fitos/features/water/presentation/water_providers.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fitos/features/exercise/data/demo_approvals_api.dart';
 import 'package:fitos/core/config/app_config.dart';
@@ -20,6 +21,7 @@ import 'package:riverpod/misc.dart' show Override;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_community_api.dart';
+import 'fake_water_api.dart';
 import 'fake_ai_api.dart';
 import 'fake_feedback_api.dart';
 import 'fake_premium_api.dart';
@@ -68,6 +70,7 @@ List<Override> workoutOverrides(
   FakeBatteryAccess? battery,
   FakeRunVoice? voice,
   FakeCommunityApi? community,
+  FakeWaterApi? water,
 }) {
   SharedPreferences.setMockInitialValues(const {});
   return [
@@ -126,5 +129,7 @@ List<Override> workoutOverrides(
     runVoiceProvider.overrideWithValue(voice ?? FakeRunVoice()),
     // Beta 5.8: not in Community unless a test says.
     communityApiProvider.overrideWithValue(community ?? FakeCommunityApi()),
+    // Beta 6.0: water against a scripted server.
+    waterApiProvider.overrideWithValue(water ?? FakeWaterApi()),
   ];
 }

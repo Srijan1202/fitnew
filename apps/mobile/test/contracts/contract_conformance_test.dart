@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:fitos/features/community/data/community_api.dart';
+import 'package:fitos/features/water/data/water_api.dart';
+import 'package:fitos/features/water/domain/water.dart';
 import 'package:fitos/features/community/domain/community.dart';
 import 'package:fitos/features/premium/data/premium_api.dart';
 import 'package:fitos/features/premium/domain/avatars.dart';
@@ -2626,6 +2628,25 @@ void main() {
       final back = AppConfig.fromJson(c.toJson());
       expect(back.flags, c.flags);
       expect(back.minimumBuild, c.minimumBuild);
+    });
+  });
+
+  group('Water (beta 6.0, ADR-059)', () {
+    test('the day the server sends parses, and the PUT sends the total only',
+        () {
+      final today = schemaOf('/water/today', 'get');
+      expect(keysOf(today), {'date', 'ml', 'targetMl', 'fromWeight'});
+      final day = WaterDay.fromJson({
+        'date': '2026-11-08',
+        'ml': 750,
+        'targetMl': 2750,
+        'fromWeight': true,
+      });
+      expect(day.toJson().keys.toSet(), keysOf(today));
+      expect(
+        DioWaterApi.setJson(250).keys.toSet(),
+        keysOf(schemaOf('/water/days/{date}', 'put', request: true)),
+      );
     });
   });
 

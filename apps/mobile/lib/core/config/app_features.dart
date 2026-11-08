@@ -20,7 +20,10 @@ enum AppFeature {
   running('running'),
 
   /// Beta 5.8 (ADR-057): friends, clubs and the world board.
-  community('community');
+  community('community'),
+
+  /// Beta 6.0 (ADR-059): the water card on Home.
+  water('water');
 
   const AppFeature(this.key);
 

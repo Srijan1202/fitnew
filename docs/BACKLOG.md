@@ -64,7 +64,7 @@ Not scheduled. When picked, they get a phase plan for approval first. Suggested 
 | F4 | **App features behind flags** — beta 3.3 | S | = E18: wire features to `/meta/config` so the admin panel switches them without an APK |
 | F5 | **Streaks and a weekly goal ring** on Home — beta 3.3 | S–M | Days logged in a row; sessions done against the plan this week |
 | F6 | **Mess menu ratings** (👍/👎 per dish) — beta 3.3 | M | Fun for VIT; ratings can later weigh meal suggestions. Needs a table and abuse limits |
-| F7 | **Water tracking** | S | One tap on Home; a daily target from body weight |
+| F7 | ~~**Water tracking**~~ — ✅ beta 6.0 (ADR-059): a Home card, a glass a tap, 35 ml a kg (1.5–4 L), offline-first day totals | S | One tap on Home; a daily target from body weight |
 | F8 | **Progress photos, on the phone only** — beta 3.4 (ADR-035) | M | Never uploaded; side-by-side compare. Fits the privacy rules (§23) |
 | F9 | **Server push notifications** | M | = O9. Reminders and "Premium approved" while the app is closed (FCM from the server) |
 | F10 | **AI that knows your history** | M | = O8, and only after O7 (paid Gemini): answers from the last 4 weeks of training and food |

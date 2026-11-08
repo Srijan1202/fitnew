@@ -3,7 +3,7 @@
 /// two stay in step and that the version is the server's CURRENT_POLICY_VERSION.
 library;
 
-const kPolicyVersion = '2026-11-08';
+const kPolicyVersion = '2026-11-08.2';
 
 const kPolicySections = <(String, String)>[
   (
@@ -18,7 +18,7 @@ const kPolicySections = <(String, String)>[
     'Your account (email and name, through Google Firebase sign-in). Your '
         'profile: sex, birth date, height, weight, goal, diet, allergies and '
         'any limitations you add. What you log: workouts and sets, meals, '
-        'weigh-ins and body measurements, recovery check-ins, your mess. Runs '
+        'weigh-ins and body measurements, recovery check-ins, the water you drink each day, your mess. Runs '
         'you record, with their GPS route: where and when you ran, the '
         'distance, time, pace and climb, and your notes. Your location is '
         'recorded only while a run is recording. A picture or GPX file of a '

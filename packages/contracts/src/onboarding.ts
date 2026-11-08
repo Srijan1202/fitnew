@@ -67,7 +67,7 @@ export type StoredConsentType = (typeof STORED_CONSENT_TYPES)[number];
  * records which version was agreed to (§23), so a policy change can be
  * re-consented rather than assumed.
  */
-export const CURRENT_POLICY_VERSION = '2026-11-08';
+export const CURRENT_POLICY_VERSION = '2026-11-08.2';
 
 export const consentGrantSchema = z
   .object({

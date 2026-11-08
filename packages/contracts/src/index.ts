@@ -21,3 +21,4 @@ export * from './feedback.js';
 export * from './premium.js';
 export * from './running.js';
 export * from './community.js';
+export * from './water.js';

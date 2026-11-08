@@ -198,6 +198,7 @@ export const APP_FEATURES = {
   'food-guide': { name: 'AI food guide', description: '"What should I eat?" from what you have and the mess menu (premium FITOS AI).' },
   running: { name: 'Running', description: 'Recording runs with GPS, the run history, sharing and GPX (beta 4).' },
   community: { name: 'Community', description: 'Friends, clubs and the world board (beta 5.8). Off hides Community and the server refuses it.' },
+  water: { name: 'Water', description: "The water card on Home and the day's water (beta 6.0)." },
 } as const;
 export type AppFeature = keyof typeof APP_FEATURES;
 export const APP_FEATURE_KEYS = Object.keys(APP_FEATURES) as AppFeature[];

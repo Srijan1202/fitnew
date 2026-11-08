@@ -32,6 +32,7 @@ import '../widgets/name_prompt.dart';
 import '../widgets/suggestion_carousel.dart';
 import '../widgets/streak_card.dart';
 import '../../../community/presentation/community_home_card.dart';
+import '../../../water/presentation/water_home_card.dart';
 import '../../../premium/domain/streak_rewards.dart';
 import '../../../premium/presentation/rewards_providers.dart';
 import '../../../premium/presentation/streak_rewards_ui.dart';
@@ -301,6 +302,8 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: FitSpacing.lg),
                   const SectionLabel('Today'),
                   TodayMetrics(context: c),
+                  // Beta 6.0 (ADR-059): water, one tap a glass.
+                  const WaterHomeCard(),
                   const SizedBox(height: FitSpacing.lg),
                   const SectionLabel('Recovery'),
                   RecoverySection(
