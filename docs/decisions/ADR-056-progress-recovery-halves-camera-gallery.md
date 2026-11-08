@@ -1,6 +1,6 @@
 # ADR-056 — Beta 5.7: Progress | Recovery halves; the camera closes before the gallery
 
-**Status:** Proposed. It becomes ACCEPTED after the owner's check on the S24.
+**Status:** ACCEPTED 2026-11-08 after the owner's check on the S24 ("everthing working"): the gallery opens from inside the camera, and Progress | Recovery works. Proposed after the owner's 5.7 request below.
 
 The owner, 2026-11-08: "gallery still have same problem and fix it in 5.7 in that we will divide the progress and recovery in 2 sections same as we did in gym and running we will follow the same ui by default the page will open on progress". The plan was approved the same day ("go").
 
