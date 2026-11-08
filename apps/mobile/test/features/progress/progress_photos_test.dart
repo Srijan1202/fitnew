@@ -11,6 +11,7 @@ import 'package:fitos/features/progress/data/progress_photos.dart';
 import 'package:fitos/features/progress/domain/progress.dart';
 import 'package:fitos/features/progress/presentation/photos/progress_photos_providers.dart';
 import 'package:fitos/features/progress/presentation/photos/progress_photos_screen.dart';
+import 'package:fitos/features/progress/presentation/progress_mode.dart';
 import 'package:fitos/features/progress/presentation/progress_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -191,21 +192,19 @@ void main() {
 
     Widget app({bool lostPhotoHost = false}) {
       router = GoRouter(
-        initialLocation: Routes.progress,
+        initialLocation: Routes.nutrition,
         routes: [
           GoRoute(
             path: '/elsewhere',
             builder: (_, __) => const Scaffold(body: Text('elsewhere')),
           ),
           GoRoute(
-            path: Routes.progress,
-            builder: (_, __) => const ProgressScreen(),
-            routes: [
-              GoRoute(
-                path: 'photos',
-                builder: (_, __) => const ProgressPhotosScreen(),
-              ),
-            ],
+            path: Routes.nutrition,
+            builder: (_, __) => const NutritionTabScreen(),
+          ),
+          GoRoute(
+            path: Routes.progressPhotos,
+            builder: (_, __) => const ProgressPhotosScreen(),
           ),
         ],
       );
@@ -221,6 +220,8 @@ void main() {
             (account) async => Directory('${tmp.path}/store/$account'),
           ),
           ...workoutOverrides(db, FakeWorkoutApi(), meta: meta),
+          // Beta 5.9: Progress is a part of the Nutrition tab.
+          nutritionModeProvider.overrideWith(_OnProgress.new),
         ],
         child: MaterialApp.router(
           theme: FitTheme.build(),
@@ -491,4 +492,10 @@ void main() {
       expect(find.byKey(const ValueKey('progress.start.photo')), findsNothing);
     });
   });
+}
+
+/// Beta 5.9: the Nutrition tab opens on Food; these tests start on Progress.
+class _OnProgress extends NutritionModeController {
+  @override
+  NutritionMode build() => NutritionMode.progress;
 }

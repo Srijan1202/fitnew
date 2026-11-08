@@ -108,11 +108,11 @@ void main() {
 
   Widget app() {
     final router = GoRouter(
-      initialLocation: Routes.progress,
+      initialLocation: Routes.nutrition,
       routes: [
         GoRoute(
-          path: Routes.progress,
-          builder: (_, __) => const ProgressScreen(),
+          path: Routes.nutrition,
+          builder: (_, __) => const NutritionTabScreen(),
         ),
       ],
     );
@@ -129,8 +129,8 @@ void main() {
         localTodayProvider.overrideWithValue(today),
         ...workoutOverrides(db, api, recovery: recovery, running: running),
         ...healthOverrides(health),
-        // Beta 5.7: the panel is in the tab's Recovery half.
-        progressModeProvider.overrideWith(_OnRecovery.new),
+        // Beta 5.7: the panel is in Recovery (beta 5.9: Nutrition's part).
+        nutritionModeProvider.overrideWith(_OnRecovery.new),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
     );
@@ -147,7 +147,7 @@ void main() {
   String textOf(WidgetTester tester, String k) =>
       tester.widget<Text>(key(k)).data!;
   ProviderContainer container(WidgetTester tester) => ProviderScope.containerOf(
-        tester.element(find.byType(ProgressScreen, skipOffstage: false)),
+        tester.element(find.byType(NutritionTabScreen, skipOffstage: false)),
       );
 
   Future<void> reveal(WidgetTester tester, Finder f) async {
@@ -635,7 +635,7 @@ void main() {
   });
 }
 
-class _OnRecovery extends ProgressModeController {
+class _OnRecovery extends NutritionModeController {
   @override
-  ProgressMode build() => ProgressMode.recovery;
+  NutritionMode build() => NutritionMode.recovery;
 }

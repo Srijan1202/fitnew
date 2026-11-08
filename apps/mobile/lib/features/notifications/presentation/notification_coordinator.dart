@@ -202,7 +202,7 @@ class NotificationCoordinator extends Notifier<NotifyState> {
         // Beta 5.8 (ADR-057): a friend request, or one accepted.
         case 'community':
           ref.read(communityTabProvider.notifier).set(CommunityTab.friends);
-          ref.read(routerProvider).push(Routes.community);
+          ref.read(routerProvider).go(Routes.community);
         case 'update':
           ref.read(updateControllerProvider.notifier).checkNow();
       }
@@ -496,13 +496,14 @@ class NotificationCoordinator extends Notifier<NotifyState> {
           ..push(Routes.runLive);
       case 'progress':
         // Beta 5.7: the check-in reminder opens Recovery; the weigh-in and
-        // the weekly recap open Progress.
-        ref.read(progressModeProvider.notifier).set(
+        // the weekly recap open Progress. Beta 5.9: both are parts of the
+        // Nutrition tab.
+        ref.read(nutritionModeProvider.notifier).set(
               p['kind'] == 'recovery-checkin'
-                  ? ProgressMode.recovery
-                  : ProgressMode.progress,
+                  ? NutritionMode.recovery
+                  : NutritionMode.progress,
             );
-        router.go(Routes.progress);
+        router.go(Routes.nutrition);
       case 'food-log':
         router
           ..go(Routes.nutrition)

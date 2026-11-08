@@ -137,7 +137,8 @@ class ProfileScreen extends ConsumerWidget {
                             CommunityMe() => 'Join',
                             null => null,
                           },
-                          onTap: () => context.push(Routes.community),
+                          // Beta 5.9: Community is a tab.
+                          onTap: () => context.go(Routes.community),
                         ),
                       FitRow(
                         key: const ValueKey('profile.timezone'),

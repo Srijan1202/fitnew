@@ -233,14 +233,18 @@ void main() {
       premium.premium = true;
       meta = FakeMetaApi(flags: {'weekly-report': false});
       await start(tester);
-      await tap(tester, 'nav.Progress');
+      // Beta 5.9: Progress is a part of the Nutrition tab.
+      await tap(tester, 'nav.Nutrition');
+      await tap(tester, 'nutrition.mode.progress');
       expect(find.byKey(const ValueKey('progress.weekly')), findsNothing);
     });
 
     testWidgets('free: locked on Progress, and the report screen shows Premium',
         (tester) async {
       await start(tester);
-      await tap(tester, 'nav.Progress');
+      // Beta 5.9: Progress is a part of the Nutrition tab.
+      await tap(tester, 'nav.Nutrition');
+      await tap(tester, 'nutrition.mode.progress');
       expect(
         find.byKey(const ValueKey('progress.weekly.locked')),
         findsOneWidget,
@@ -254,7 +258,9 @@ void main() {
         (tester) async {
       premium.premium = true;
       await start(tester);
-      await tap(tester, 'nav.Progress');
+      // Beta 5.9: Progress is a part of the Nutrition tab.
+      await tap(tester, 'nav.Nutrition');
+      await tap(tester, 'nutrition.mode.progress');
       await tap(tester, 'progress.weekly');
       expect(find.text('This week so far'), findsOneWidget);
       expect(find.text('3 of 4 planned sessions.'), findsOneWidget);

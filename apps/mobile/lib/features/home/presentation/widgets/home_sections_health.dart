@@ -32,12 +32,13 @@ class RecoverySection extends StatelessWidget {
     final loggedSleep = checkIn?.log?.sleepHours;
     final readiness = checkIn?.readiness;
     final unsupported = c.healthUnsupported;
-    // Beta 5.7: the check-in's sleep and readiness live in Recovery.
+    // Beta 5.7: the check-in's sleep and readiness live in Recovery, since
+    // beta 5.9 a part of the Nutrition tab.
     void openRecovery() {
       ProviderScope.containerOf(buildContext, listen: false)
-          .read(progressModeProvider.notifier)
-          .set(ProgressMode.recovery);
-      buildContext.go(Routes.progress);
+          .read(nutritionModeProvider.notifier)
+          .set(NutritionMode.recovery);
+      buildContext.go(Routes.nutrition);
     }
 
     final connect = TextButton(

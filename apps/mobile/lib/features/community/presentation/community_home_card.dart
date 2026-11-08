@@ -52,7 +52,8 @@ class CommunityHomeCard extends ConsumerWidget {
       child: FitBlock(
         key: const ValueKey('home.community'),
         padding: const EdgeInsets.all(FitSpacing.md),
-        onTap: () => context.push(Routes.community),
+        // Beta 5.9: Community is the last tab.
+        onTap: () => context.go(Routes.community),
         child: Row(
           children: [
             Icon(

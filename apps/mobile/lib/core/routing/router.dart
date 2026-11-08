@@ -21,7 +21,6 @@ import '../../features/nutrition/domain/entities/food.dart';
 import '../../features/nutrition/presentation/screens/custom_food_screen.dart';
 import '../../features/nutrition/presentation/screens/food_detail_screen.dart';
 import '../../features/nutrition/presentation/controllers/food_logger.dart';
-import '../../features/nutrition/presentation/screens/eat_screen.dart';
 import '../../features/nutrition/presentation/screens/food_library_screen.dart';
 import '../../features/nutrition/presentation/screens/food_sources_screen.dart';
 import '../../features/nutrition/presentation/screens/log_food_screen.dart';
@@ -101,8 +100,8 @@ abstract final class Routes {
   static const String foodSources = '/profile/food-sources';
   static const String feedback = '/profile/feedback';
 
-  /// Beta 5.8 (ADR-057): friends, clubs and the world board, from Home and
-  /// Profile; a friend-request push opens it.
+  /// Beta 5.8 (ADR-057): friends, clubs and the world board; since beta 5.9
+  /// the last tab. A friend-request push opens it.
   static const String community = '/community';
   static const String communitySettings = '/community/settings';
   static String communityClub(String id) => '/community/clubs/$id';
@@ -120,9 +119,6 @@ abstract final class Routes {
   static const String plan = '/plan';
   static const String chat = '/chat';
   static const String nutrition = '/nutrition';
-
-  /// Phase 12: Progress & Recovery (the tab that was Market).
-  static const String progress = '/progress';
 
   /// Beta 3.4 (ADR-035): progress photos, on the phone only.
   static const String progressPhotos = '/progress/photos';
@@ -209,25 +205,17 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
         name: 'onboarding',
         builder: (context, state) => const OnboardingFlowScreen(),
       ),
+      // Beta 3.4 / 4.x: progress photos and the weekly report (opened from
+      // the Nutrition tab's Progress part).
       GoRoute(
-        path: Routes.community,
-        name: 'community',
-        builder: (context, state) => const CommunityScreen(),
-        routes: <RouteBase>[
-          GoRoute(
-            path: 'settings',
-            name: 'community-settings',
-            builder: (context, state) => const CommunitySettingsScreen(),
-          ),
-          GoRoute(
-            path: 'clubs/:id',
-            name: 'community-club',
-            builder: (context, state) => ClubScreen(
-              clubId: state.pathParameters['id']!,
-              club: state.extra is Club ? state.extra! as Club : null,
-            ),
-          ),
-        ],
+        path: Routes.progressPhotos,
+        name: 'progress-photos',
+        builder: (context, state) => const ProgressPhotosScreen(),
+      ),
+      GoRoute(
+        path: Routes.weeklyReport,
+        name: 'weekly-report',
+        builder: (context, state) => const WeeklyReportScreen(),
       ),
       GoRoute(
         path: Routes.profile,
@@ -505,7 +493,8 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
               GoRoute(
                 path: Routes.nutrition,
                 name: 'nutrition',
-                builder: (context, state) => const EatScreen(),
+                // Beta 5.9 (owner): Food · Progress · Recovery.
+                builder: (context, state) => const NutritionTabScreen(),
                 routes: <RouteBase>[
                   GoRoute(
                     path: 'library',
@@ -556,21 +545,26 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
-                path: Routes.progress,
-                name: 'progress',
-                builder: (context, state) => const ProgressScreen(),
+                path: Routes.community,
+                name: 'community',
+                // Beta 5.9 (owner): Community is the last tab.
+                builder: (context, state) => const CommunityScreen(),
                 routes: <RouteBase>[
                   GoRoute(
-                    path: 'photos',
-                    name: 'progress-photos',
+                    path: 'settings',
+                    name: 'community-settings',
                     parentNavigatorKey: rootNavigatorKey,
-                    builder: (context, state) => const ProgressPhotosScreen(),
+                    builder: (context, state) =>
+                        const CommunitySettingsScreen(),
                   ),
                   GoRoute(
-                    path: 'weekly',
-                    name: 'weekly-report',
+                    path: 'clubs/:id',
+                    name: 'community-club',
                     parentNavigatorKey: rootNavigatorKey,
-                    builder: (context, state) => const WeeklyReportScreen(),
+                    builder: (context, state) => ClubScreen(
+                      clubId: state.pathParameters['id']!,
+                      club: state.extra is Club ? state.extra! as Club : null,
+                    ),
                   ),
                 ],
               ),

@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/errors/failure.dart';
-import '../../../core/routing/navigation.dart';
 import '../../../core/routing/router.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../shared/widgets/fit_glass.dart';
@@ -26,7 +25,8 @@ class CommunityScreen extends ConsumerWidget {
     final joined = me.value?.joined ?? false;
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(onPressed: () => context.popOrHome()),
+        // Beta 5.9 (owner): Community is the last tab, so no back button.
+        automaticallyImplyLeading: false,
         title: const Text('Community'),
         actions: [
           if (joined)
@@ -157,7 +157,13 @@ class _JoinState extends ConsumerState<JoinCommunityView> {
         );
     return ListView(
       key: const ValueKey('community.join'),
-      padding: const EdgeInsets.all(FitSpacing.screen),
+      // Room for the floating bar.
+      padding: const EdgeInsets.fromLTRB(
+        FitSpacing.screen,
+        FitSpacing.screen,
+        FitSpacing.screen,
+        112,
+      ),
       children: [
         Text('TRAIN TOGETHER', style: t.labelSmall),
         const SizedBox(height: FitSpacing.xs),
@@ -756,7 +762,7 @@ class _FriendsView extends ConsumerWidget {
           FitSpacing.screen,
           FitSpacing.sm,
           FitSpacing.screen,
-          FitSpacing.xl,
+          112,
         ),
         children: [
           if (lists != null && lists.incoming.isNotEmpty) ...[
@@ -1009,7 +1015,7 @@ class _ClubsView extends ConsumerWidget {
           FitSpacing.screen,
           FitSpacing.sm,
           FitSpacing.screen,
-          FitSpacing.xl,
+          112,
         ),
         children: [
           Text(
@@ -1141,7 +1147,7 @@ class _WorldView extends ConsumerWidget {
           FitSpacing.screen,
           FitSpacing.sm,
           FitSpacing.screen,
-          FitSpacing.xl,
+          112,
         ),
         children: [
           if (!profile.onWorld) ...[

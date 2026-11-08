@@ -21,8 +21,9 @@ class ShellDestination {
 }
 
 /// The five destinations of the app shell (owner decision 2026-09-21).
-/// Phase 12: the fifth tab is Progress (Progress & Recovery), which replaced
-/// the Market placeholder.
+/// Phase 12: the fifth tab was Progress (Progress & Recovery), which replaced
+/// the Market placeholder. Beta 5.9 (owner): Progress and Recovery moved into
+/// Nutrition (Food · Progress · Recovery), and Community is the fifth tab.
 const List<ShellDestination> kShellDestinations = <ShellDestination>[
   ShellDestination(
     label: 'Home',
@@ -49,10 +50,10 @@ const List<ShellDestination> kShellDestinations = <ShellDestination>[
     location: '/nutrition',
   ),
   ShellDestination(
-    label: 'Progress',
-    icon: Icons.insights_outlined,
-    selectedIcon: Icons.insights,
-    location: '/progress',
+    label: 'Community',
+    icon: Icons.emoji_events_outlined,
+    selectedIcon: Icons.emoji_events,
+    location: '/community',
   ),
 ];
 

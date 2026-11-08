@@ -14,6 +14,7 @@ import '../../home/domain/home_context.dart';
 import '../../home/domain/home_suggestion_engine.dart';
 import '../../home/presentation/controllers/home_providers.dart';
 import '../../home/presentation/widgets/home_sections.dart';
+import '../../nutrition/presentation/screens/eat_screen.dart';
 import '../../recovery/domain/recovery.dart';
 import '../../recovery/presentation/recovery_panel.dart';
 import '../../recovery/presentation/recovery_providers.dart';
@@ -48,9 +49,88 @@ part 'progress_start.dart';
 /// red for a single day (§17). Athletic Editorial (§6): sections divided by
 /// hairlines, metric tiles with big numbers, colour only where it means
 /// something.
-class ProgressScreen extends ConsumerWidget {
-  const ProgressScreen({super.key});
+/// Beta 5.9 (owner): the Nutrition tab — Food · Progress · Recovery, chosen
+/// at the top with Training's switch, opening on Food. Food is EAT
+/// ([EatScreen]); Progress and Recovery are the parts that were their own tab
+/// in beta 5.7. Each part is built the first time it is chosen, then kept.
+class NutritionTabScreen extends ConsumerStatefulWidget {
+  const NutritionTabScreen({super.key});
 
+  @override
+  ConsumerState<NutritionTabScreen> createState() => _NutritionTabScreenState();
+}
+
+class _NutritionTabScreenState extends ConsumerState<NutritionTabScreen> {
+  final Set<NutritionMode> _built = <NutritionMode>{};
+
+  @override
+  Widget build(BuildContext context) {
+    final mode = ref.watch(nutritionModeProvider);
+    _built.add(mode);
+    Widget part(NutritionMode m, Widget child) =>
+        _built.contains(m) ? child : const SizedBox.shrink();
+    return Scaffold(
+      body: Column(
+        children: <Widget>[
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                FitSpacing.screen,
+                FitSpacing.sm,
+                FitSpacing.screen,
+                0,
+              ),
+              child: FitModeSwitch<NutritionMode>(
+                key: const ValueKey('nutrition.mode'),
+                thumbKey: const ValueKey('nutrition.mode.thumb'),
+                value: mode,
+                halves: const [
+                  FitModeHalf(
+                    NutritionMode.food,
+                    'Food',
+                    Icons.restaurant,
+                    key: ValueKey('nutrition.mode.food'),
+                  ),
+                  FitModeHalf(
+                    NutritionMode.progress,
+                    'Progress',
+                    Icons.insights,
+                    key: ValueKey('nutrition.mode.progress'),
+                  ),
+                  FitModeHalf(
+                    NutritionMode.recovery,
+                    'Recovery',
+                    Icons.self_improvement,
+                    key: ValueKey('nutrition.mode.recovery'),
+                  ),
+                ],
+                onChanged: ref.read(nutritionModeProvider.notifier).set,
+              ),
+            ),
+          ),
+          Expanded(
+            child: MediaQuery.removePadding(
+              context: context,
+              removeTop: true,
+              child: IndexedStack(
+                index: mode.index,
+                children: <Widget>[
+                  part(NutritionMode.food, const EatScreen()),
+                  part(NutritionMode.progress, const _ProgressHalf()),
+                  part(NutritionMode.recovery, const _RecoveryHalf()),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The Progress and Recovery parts' shared copy and helpers.
+abstract final class ProgressScreen {
   /// §17 rule 3: the copy that explains fluctuation.
   static const fluctuation =
       'Day-to-day changes are water and food weight. The trend is the signal.';
@@ -77,60 +157,6 @@ class ProgressScreen extends ConsumerWidget {
     ];
     final d = DateTime.tryParse(iso);
     return d == null ? iso : '${d.day} ${months[d.month - 1]}';
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final mode = ref.watch(progressModeProvider);
-    return Scaffold(
-      body: FitBackdrop(
-        child: Column(
-          children: <Widget>[
-            SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  FitSpacing.screen,
-                  FitSpacing.sm,
-                  FitSpacing.screen,
-                  0,
-                ),
-                child: FitModeSwitch<ProgressMode>(
-                  key: const ValueKey('progress.mode'),
-                  thumbKey: const ValueKey('progress.mode.thumb'),
-                  value: mode,
-                  halves: [
-                    const FitModeHalf(
-                      ProgressMode.progress,
-                      'Progress',
-                      Icons.insights,
-                      key: ValueKey('progress.mode.progress'),
-                    ),
-                    const FitModeHalf(
-                      ProgressMode.recovery,
-                      'Recovery',
-                      Icons.self_improvement,
-                      key: ValueKey('progress.mode.recovery'),
-                    ),
-                  ],
-                  onChanged: ref.read(progressModeProvider.notifier).set,
-                ),
-              ),
-            ),
-            Expanded(
-              child: MediaQuery.removePadding(
-                context: context,
-                removeTop: true,
-                child: IndexedStack(
-                  index: mode.index,
-                  children: const <Widget>[_ProgressHalf(), _RecoveryHalf()],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   static Future<void> _refresh(WidgetRef ref) async {

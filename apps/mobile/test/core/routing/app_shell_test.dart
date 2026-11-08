@@ -171,7 +171,13 @@ void main() {
         (tester) async {
       await tester.pumpWidget(app(initial: '/'));
       await tester.pumpAndSettle();
-      for (final label in ['Home', 'Training', 'AI', 'Nutrition', 'Progress']) {
+      for (final label in [
+        'Home',
+        'Training',
+        'AI',
+        'Nutrition',
+        'Community',
+      ]) {
         expect(find.byKey(ValueKey('nav.$label')), findsOneWidget);
       }
 
@@ -202,14 +208,20 @@ void main() {
       expect(find.byKey(const ValueKey('eat.library')), findsOneWidget);
       expect(selected('Nutrition'), isTrue);
 
-      // Phase 12: Progress & Recovery replaced the Market placeholder.
-      await go('Progress');
+      // Beta 5.9 (owner): Food · Progress · Recovery, opening on Food.
+      expect(find.byKey(const ValueKey('nutrition.mode')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('nutrition.mode.progress')));
+      await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('progress.title')), findsOneWidget);
-      // Beta 5.7: Progress | Recovery, opening on Progress.
       expect(find.text('Your progress'), findsOneWidget);
-      expect(find.byKey(const ValueKey('progress.mode')), findsOneWidget);
+      expect(selected('Nutrition'), isTrue);
+
+      // Beta 5.9 (owner): Community is the last tab, with no back button.
+      await go('Community');
+      expect(find.text('Community'), findsWidgets);
+      expect(find.byType(BackButton), findsNothing);
       expect(find.textContaining('Supplements and gear'), findsNothing);
-      expect(selected('Progress'), isTrue);
+      expect(selected('Community'), isTrue);
 
       await go('Training');
       expect(find.byType(WorkoutWeekScreen), findsOneWidget);
@@ -286,7 +298,13 @@ void main() {
       expect(screen.width - rect.right, FitBottomBar.sideMargin);
       expect(screen.height - rect.bottom, FitBottomBar.bottomMargin);
       // Every item is a full-height touch target.
-      for (final label in ['Home', 'Training', 'AI', 'Nutrition', 'Progress']) {
+      for (final label in [
+        'Home',
+        'Training',
+        'AI',
+        'Nutrition',
+        'Community',
+      ]) {
         expect(
           tester.getSize(find.byKey(ValueKey('nav.$label'))).height,
           FitBottomBar.contentHeight,

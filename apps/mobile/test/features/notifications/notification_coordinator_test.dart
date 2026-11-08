@@ -49,7 +49,6 @@ void main() {
         for (final p in [
           Routes.today,
           Routes.plan,
-          Routes.progress,
           Routes.nutrition,
         ])
           GoRoute(path: p, builder: (_, __) => const SizedBox()),
@@ -309,7 +308,7 @@ void main() {
 
   testWidgets(
       'beta 5.7: the check-in reminder opens Recovery; the weigh-in opens '
-      'Progress', (tester) async {
+      'Progress (beta 5.9: both in the Nutrition tab)', (tester) async {
     api.nextItems = [workout];
     final cc = container();
     await tester.pumpWidget(
@@ -321,8 +320,8 @@ void main() {
     late NotificationCoordinator n;
     await tester.runAsync(() async => n = await started(cc));
     for (final (kind, mode) in [
-      ('recovery-checkin', ProgressMode.recovery),
-      ('weigh-in', ProgressMode.progress),
+      ('recovery-checkin', NutritionMode.recovery),
+      ('weigh-in', NutritionMode.progress),
     ]) {
       final item = plannedItem(
         'c9999999-9999-4999-8999-99999999999${mode.index}',
@@ -336,9 +335,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         router.routerDelegate.currentConfiguration.uri.toString(),
-        Routes.progress,
+        Routes.nutrition,
       );
-      expect(cc.read(progressModeProvider), mode, reason: kind);
+      expect(cc.read(nutritionModeProvider), mode, reason: kind);
     }
   });
 
