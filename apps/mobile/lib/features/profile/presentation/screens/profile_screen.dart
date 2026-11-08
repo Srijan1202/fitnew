@@ -1,5 +1,8 @@
 import '../../../../core/config/app_config.dart';
 import '../../../../core/feedback/app_feedback.dart';
+import '../../../../core/config/app_features.dart';
+import '../../../community/domain/community.dart';
+import '../../../community/presentation/community_providers.dart';
 import '../../../feedback/presentation/feedback_screen.dart';
 import '../../../premium/domain/avatars.dart';
 import '../../../premium/presentation/app_icon_controller.dart';
@@ -123,6 +126,19 @@ class ProfileScreen extends ConsumerWidget {
                         title: 'Health data',
                         onTap: () => context.push(Routes.healthData),
                       ),
+                      // Beta 5.8 (ADR-057): friends, clubs and the world board.
+                      if (ref.watch(featureOnProvider(AppFeature.community)))
+                        FitRow(
+                          key: const ValueKey('profile.community'),
+                          icon: Icons.emoji_events_outlined,
+                          title: 'Community',
+                          value: switch (ref.watch(communityMeProvider).value) {
+                            CommunityMe(profile: final p?) => '@${p.handle}',
+                            CommunityMe() => 'Join',
+                            null => null,
+                          },
+                          onTap: () => context.push(Routes.community),
+                        ),
                       FitRow(
                         key: const ValueKey('profile.timezone'),
                         icon: Icons.public,

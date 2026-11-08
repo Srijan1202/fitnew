@@ -21,6 +21,8 @@
  *   Phase 9  mess_providers, messes, mess_menu_snapshots, mess_dish_nutrition,
  *            mess_dish_corrections (+ food_logs.mess_id, food_log_items.mess_dish_slug)
  *   Beta 4   runs
+ *   Beta 5.8 community_profiles, friendships, community_blocks, clubs,
+ *            club_members, community_reports, community_week_stats
  */
 export * from './schema/enums.js';
 export * from './schema/users.js';
@@ -44,3 +46,4 @@ export * from './schema/feedback.js';
 export * from './schema/food-requests.js';
 export * from './schema/premium.js';
 export * from './schema/running.js';
+export * from './schema/community.js';

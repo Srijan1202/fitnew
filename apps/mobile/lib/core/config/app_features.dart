@@ -17,7 +17,10 @@ enum AppFeature {
   // Beta 3.6 (F15): "What should I eat?" from FITOS AI.
   foodGuide('food-guide'),
   // Beta 4.0 (ADR-038): the Running half of Training.
-  running('running');
+  running('running'),
+
+  /// Beta 5.8 (ADR-057): friends, clubs and the world board.
+  community('community');
 
   const AppFeature(this.key);
 

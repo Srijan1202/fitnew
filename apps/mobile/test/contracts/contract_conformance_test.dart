@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fitos/features/community/data/community_api.dart';
+import 'package:fitos/features/community/domain/community.dart';
 import 'package:fitos/features/premium/data/premium_api.dart';
 import 'package:fitos/features/premium/domain/avatars.dart';
 import 'package:fitos/features/premium/domain/streak_rewards.dart';
@@ -2624,6 +2626,127 @@ void main() {
       final back = AppConfig.fromJson(c.toJson());
       expect(back.flags, c.flags);
       expect(back.minimumBuild, c.minimumBuild);
+    });
+  });
+
+  group('Community (beta 5.8, ADR-057)', () {
+    /// A value of the schema's type, enough for fromJson.
+    Object? sample(Map<String, dynamic> schema) {
+      if (schema['enum'] != null) {
+        return (schema['enum'] as List<dynamic>).first;
+      }
+      final t = schema['type'];
+      final type = t is List ? t.firstWhere((x) => x != 'null') : t;
+      return switch (type) {
+        'string' => schema['format'] == 'date-time'
+            ? '2026-11-08T10:00:00.000Z'
+            : schema['format'] == 'uuid'
+                ? '11111111-1111-4111-8111-111111111111'
+                : 'x',
+        'integer' || 'number' => 1,
+        'boolean' => true,
+        'array' => [sample(schema['items'] as Map<String, dynamic>)],
+        'object' => {
+            for (final e in properties(schema).entries)
+              e.key: sample(e.value as Map<String, dynamic>),
+          },
+        _ => null,
+      };
+    }
+
+    Map<String, dynamic> example(Map<String, dynamic> schema) =>
+        sample(schema)! as Map<String, dynamic>;
+
+    test('every response the client reads parses from the server shape', () {
+      final me =
+          CommunityMe.fromJson(example(schemaOf('/community/me', 'get')));
+      expect(me.joined, isTrue);
+      final friends =
+          FriendLists.fromJson(example(schemaOf('/community/friends', 'get')));
+      expect(friends.friends.single.handle, 'x');
+      final board =
+          Board.fromJson(example(schemaOf('/community/boards/world', 'get')));
+      expect(board.rows.single.rank, 1);
+      final clubs = schemaOf('/community/clubs', 'get');
+      final club = Club.fromJson(
+        (example(clubs)['items'] as List<dynamic>).single
+            as Map<String, dynamic>,
+      );
+      expect(club.members, 1);
+      // A person carries only what anyone may see.
+      final person =
+          (properties(schemaOf('/community/friends', 'get'))['friends']
+              as Map<String, dynamic>)['items'] as Map<String, dynamic>;
+      expect(keysOf(person), {'userId', 'handle', 'avatarId', 'country'});
+      final row =
+          (properties(schemaOf('/community/boards/world', 'get'))['rows']
+              as Map<String, dynamic>)['items'] as Map<String, dynamic>;
+      expect(keysOf(row), {
+        'rank',
+        'userId',
+        'handle',
+        'avatarId',
+        'country',
+        'sessions',
+        'runM',
+        'streak',
+        'me',
+      });
+    });
+
+    test('join, change and report send exactly the accepted properties', () {
+      expect(
+        DioCommunityApi.joinJson(
+          handle: 'srijan',
+          country: 'IN',
+          onWorld: false,
+          policyVersion: 'v',
+        ).keys.toSet(),
+        keysOf(schemaOf('/community/me', 'post', request: true)),
+      );
+      final update = keysOf(schemaOf('/community/me', 'patch', request: true));
+      expect(
+        DioCommunityApi.updateJson(handle: 'a_b', country: 'IN', onWorld: true)
+            .keys
+            .toSet(),
+        update,
+      );
+      expect(
+        DioCommunityApi.updateJson(clearCountry: true),
+        {'country': null},
+      );
+      final report = schemaOf('/community/reports', 'post', request: true);
+      expect(
+        DioCommunityApi.reportJson(
+          userId: 'u',
+          reason: ReportReason.handle,
+          note: 'n',
+        ).keys.toSet(),
+        keysOf(report)..remove('clubId'),
+      );
+      expect(
+        ReportReason.values.map((r) => r.wire).toList(),
+        enumOf(properties(report)['reason'] as Map<String, dynamic>),
+      );
+      expect(
+        BoardMetric.values.map((m) => m.wire).toList(),
+        enumOf(
+          properties(schemaOf('/community/boards/world', 'get'))['metric']
+              as Map<String, dynamic>,
+        ),
+      );
+    });
+
+    test('the countries are the contracts\' list', () {
+      final source =
+          File('../../packages/contracts/src/community.ts').readAsStringSync();
+      final codes = RegExp(r'^  ([A-Z]{2}): ', multiLine: true)
+          .allMatches(source)
+          .map((m) => m.group(1))
+          .toList();
+      expect(kCountries.keys.toList(), codes);
+      expect(kCountries['IN'], 'India');
+      expect(flagOf('IN'), '🇮🇳');
     });
   });
 

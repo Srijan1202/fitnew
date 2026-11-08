@@ -58,18 +58,20 @@ class _TrainingTabScreenState extends ConsumerState<TrainingTabScreen> {
                 key: const ValueKey('training.mode'),
                 thumbKey: const ValueKey('training.mode.thumb'),
                 value: mode,
-                left: const FitModeHalf(
-                  TrainingMode.gym,
-                  'Gym',
-                  Icons.fitness_center,
-                  key: ValueKey('training.mode.gym'),
-                ),
-                right: const FitModeHalf(
-                  TrainingMode.running,
-                  'Running',
-                  Icons.directions_run,
-                  key: ValueKey('training.mode.running'),
-                ),
+                halves: [
+                  const FitModeHalf(
+                    TrainingMode.gym,
+                    'Gym',
+                    Icons.fitness_center,
+                    key: ValueKey('training.mode.gym'),
+                  ),
+                  const FitModeHalf(
+                    TrainingMode.running,
+                    'Running',
+                    Icons.directions_run,
+                    key: ValueKey('training.mode.running'),
+                  ),
+                ],
                 onChanged: ref.read(trainingModeProvider.notifier).set,
               ),
             ),

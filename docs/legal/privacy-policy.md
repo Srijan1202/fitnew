@@ -1,6 +1,6 @@
 # FITOS privacy policy
 
-**Version** 2026-11-04 · applies to the closed beta
+**Version** 2026-11-08 · applies to the closed beta
 
 This is the text the app shows in Profile → Privacy & data (`apps/mobile/lib/features/privacy/presentation/policy_text.dart`); a test keeps the two in step. MASTER-SPEC §23 · ADR-023 · ADR-026 (beta: AWS hosting, crash reports, feedback).
 
@@ -28,6 +28,10 @@ Only if you allow it. FITOS AI answers with Google's Gemini, so what you ask is 
 
 When the app crashes or hits an error, it sends Google Firebase Crashlytics a report: what went wrong, where in the app's code, the app's version and the phone's model and Android version. A report never holds your account, your health, food or workout data, or anything you typed. They are on unless you turn them off in Privacy & data; turning them off also deletes any report not yet sent.
 
+## Community
+
+Only if you join. Community shows other FITOS members the handle you choose, your profile picture and, if you give it, your country, with counts the server works out from what you log: gym sessions and run distance this week, and your streak. It never shows your name or email, weights, food, body measurements, photos, readiness, sleep, heart rate or where you ran. Friends see you once you both accept; a club's members see you while you are in it; the world board shows you only if you turn that on. You can block someone, report a handle or a club to the FITOS team, and leave Community at any time: you come off every board and friends list at once. Your handle, friends, blocks, clubs and reports are in Download my data and are deleted with your account.
+
 ## Who else
 
 Amazon Web Services hosts the FITOS server and database, in India. Google Firebase handles sign-in, notifications and crash reports. Google Gemini handles FITOS AI, only with your consent. OpenFreeMap provides the maps: to draw one, your phone asks OpenFreeMap for the map of the area on screen, as any map app does; nothing else of yours is sent. Shorebird delivers small fixes to the app: each time FITOS starts, it asks Shorebird whether a fix is waiting, sending FITOS's app id, its version, the fix it already has, the kind of phone (such as 64-bit Android) and a random number for this install; nothing of yours or about your account, and Shorebird keeps the network address in its logs only for a limited time. Bigger updates come from tryfitos.me, FITOS's own site. Nobody else: no advertising, no selling, no sharing with other companies. No data of yours is used to train an AI model by FITOS.
@@ -38,7 +42,7 @@ Until you delete your account. The database keeps automatic backups for one day,
 
 ## Your rights
 
-See and download everything FITOS holds about you (Download my data). Correct it in the app. Delete your account and every record of it at once (Delete account). Withdraw your FITOS AI consent and turn crash reports off at any time. Questions or complaints: write to the developer through Send feedback or the beta group; a published contact and grievance officer will be named before any public launch.
+See and download everything FITOS holds about you (Download my data). Correct it in the app. Delete your account and every record of it at once (Delete account). Withdraw your FITOS AI consent, leave Community and turn crash reports off at any time. Questions or complaints: write to the developer through Send feedback or the beta group; a published contact and grievance officer will be named before any public launch.
 
 ## Age
 

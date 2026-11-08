@@ -14,7 +14,7 @@ import {
   ALLERGENS,
   ALTERNATIVE_REASONS,
   CONFIDENCE_LEVELS,
-  CONSENT_TYPES,
+  STORED_CONSENT_TYPES,
   DIFFICULTIES,
   ENTRY_METHODS,
   EQUIPMENT,
@@ -48,7 +48,8 @@ export const bodyPartEnum = pgEnum('body_part', [
 ]);
 export const unitsEnum = pgEnum('units', ['metric', 'imperial']);
 export const budgetTierEnum = pgEnum('budget_tier', ['low', 'medium', 'high']);
-export const consentTypeEnum = pgEnum('consent_type', CONSENT_TYPES);
+// Beta 5.8 (ADR-057): and `community`, given and withdrawn in Community.
+export const consentTypeEnum = pgEnum('consent_type', STORED_CONSENT_TYPES);
 export const onboardingStageEnum = pgEnum('onboarding_stage', [...ONBOARDING_STEPS, ONBOARDING_COMPLETE]);
 export const weightSourceEnum = pgEnum('weight_source', ['onboarding', 'manual', 'health-sync']);
 

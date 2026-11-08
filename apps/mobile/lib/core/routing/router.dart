@@ -58,6 +58,10 @@ import 'app_shell.dart';
 import 'guards.dart';
 import '../../features/training/presentation/screens/shared_programme_screen.dart';
 import '../../features/progress/presentation/photos/progress_photos_screen.dart';
+import '../../features/community/domain/community.dart';
+import '../../features/community/presentation/club_screen.dart';
+import '../../features/community/presentation/community_screen.dart';
+import '../../features/community/presentation/community_settings_screen.dart';
 
 /// Application routes.
 ///
@@ -96,6 +100,12 @@ abstract final class Routes {
   /// Beta 3.7 (ADR-036): where FITOS's food numbers come from.
   static const String foodSources = '/profile/food-sources';
   static const String feedback = '/profile/feedback';
+
+  /// Beta 5.8 (ADR-057): friends, clubs and the world board, from Home and
+  /// Profile; a friend-request push opens it.
+  static const String community = '/community';
+  static const String communitySettings = '/community/settings';
+  static String communityClub(String id) => '/community/clubs/$id';
   static const String exercises = '/exercises';
   static String exerciseDetail(String id) => '/exercises/$id';
 
@@ -198,6 +208,26 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
         path: Routes.onboarding,
         name: 'onboarding',
         builder: (context, state) => const OnboardingFlowScreen(),
+      ),
+      GoRoute(
+        path: Routes.community,
+        name: 'community',
+        builder: (context, state) => const CommunityScreen(),
+        routes: <RouteBase>[
+          GoRoute(
+            path: 'settings',
+            name: 'community-settings',
+            builder: (context, state) => const CommunitySettingsScreen(),
+          ),
+          GoRoute(
+            path: 'clubs/:id',
+            name: 'community-club',
+            builder: (context, state) => ClubScreen(
+              clubId: state.pathParameters['id']!,
+              club: state.extra is Club ? state.extra! as Club : null,
+            ),
+          ),
+        ],
       ),
       GoRoute(
         path: Routes.profile,

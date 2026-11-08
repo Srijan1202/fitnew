@@ -18,20 +18,19 @@ class FitModeHalf<T> {
 /// bar: a 52 px track (the bar's canvas, edge and glow), the chosen half a
 /// solid block in the accent, with the buttons' corners, that slides across.
 /// Training's Gym | Running (beta 4.0); Progress | Recovery (beta 5.7, owner:
-/// "same as we did in gym and running").
+/// "same as we did in gym and running"); Community's Friends | Clubs | World
+/// (beta 5.8), so it takes any number of parts.
 class FitModeSwitch<T> extends StatelessWidget {
   const FitModeSwitch({
     required this.value,
-    required this.left,
-    required this.right,
+    required this.halves,
     required this.onChanged,
     required this.thumbKey,
     super.key,
-  });
+  }) : assert(halves.length >= 2);
 
   final T value;
-  final FitModeHalf<T> left;
-  final FitModeHalf<T> right;
+  final List<FitModeHalf<T>> halves;
   final ValueChanged<T> onChanged;
   final Key thumbKey;
 
@@ -45,6 +44,7 @@ class FitModeSwitch<T> extends StatelessWidget {
     // The chosen half has the app's button corners (FitRadius.small, owner
     // 2026-10-30: a full pill was too round); the track follows it out.
     final radius = FitRadius.small.x + _inset;
+    final chosen = halves.indexWhere((h) => h.value == value).clamp(0, 99);
     return Container(
       height: _height,
       padding: const EdgeInsets.all(_inset),
@@ -66,13 +66,11 @@ class FitModeSwitch<T> extends StatelessWidget {
       child: Stack(
         children: <Widget>[
           AnimatedAlign(
-            alignment: value == left.value
-                ? Alignment.centerLeft
-                : Alignment.centerRight,
+            alignment: Alignment(-1 + 2 * chosen / (halves.length - 1), 0),
             duration: duration,
             curve: Curves.easeOutCubic,
             child: FractionallySizedBox(
-              widthFactor: 0.5,
+              widthFactor: 1 / halves.length,
               heightFactor: 1,
               child: DecoratedBox(
                 key: thumbKey,
@@ -87,7 +85,7 @@ class FitModeSwitch<T> extends StatelessWidget {
           Positioned.fill(
             child: Row(
               children: <Widget>[
-                for (final half in [left, right])
+                for (final half in halves)
                   _Segment(
                     label: half.label,
                     icon: half.icon,

@@ -1122,6 +1122,8 @@ Firebase Analytics, privacy-conscious.
 
 `AMENDED 2026-10-27 (beta 4.0, ADR-038 D11)`: **runs carry location.** It is recorded only while a run records, with "while using the app" permission and never "all the time". Runs are deleted outright, go with the account and are in the export. Shares and GPX hide the first and last 200 m by default. The policy names runs, their route, and OpenFreeMap (map tiles for the area on screen). Its version is now `2026-10-27.1`, so everyone accepts it once.
 
+`AMENDED 2026-11-08 (beta 5.8, ADR-057)`: **Community.** Joining is its own consent (`community` in consent_records, given and withdrawn in Community, not on the Privacy list). Others see only a chosen handle, the profile picture and an optional country, with counts the server computes: gym sessions and run distance this week, and the streak. They never see a name, email, weight, food, body data, photo, readiness, sleep, heart rate or route. The world board is a separate choice, off by default. Leaving removes the person from every board and friends list at once; blocks stay. Everything is in the export and goes with the account. The policy names Community. Its version is now `2026-11-08`, so everyone accepts it once.
+
 `AMENDED 2026-10-28 (beta 4.1, ADR-040)`: **app updates.** Small fixes come by Shorebird code push. On each start the app asks Shorebird whether a fix is waiting, sending the app id, the version, the patch it has, the phone type and a random install id; nothing of the user's. Bigger updates are FITOS's own APK from tryfitos.me, checked against the SHA-256 in version.json before Android's installer opens. The policy names Shorebird. Its version is now `2026-10-28.1`, so everyone accepts it once.
 
 **Our commitments beyond the legal minimum:**
@@ -1764,7 +1766,7 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 | Feature | Why not |
 |---|---|
-| Social feed / leaderboards | Turns a personal tool into a comparison engine; high moderation cost |
+| Social feed / leaderboards | Turns a personal tool into a comparison engine; high moderation cost. `AMENDED 2026-11-08 (beta 5.8, ADR-057)`: opt-in **Community** is allowed: friends, clubs and a world board of counts only (gym sessions, run distance, streak), with its own consent, blocks, reports and an admin switch. A social feed stays out. |
 | Badges, levels, XP | `RESEARCH`: badge complexity predicts gamification burnout and abandonment |
 | Streak shaming | Actively harmful; contradicts the never-shame principle |
 | AI form checking from video | Unreliable; latency and hardware heavy; safety-critical if wrong |

@@ -1,3 +1,4 @@
+import 'package:fitos/features/community/presentation/community_providers.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fitos/features/exercise/data/demo_approvals_api.dart';
 import 'package:fitos/core/config/app_config.dart';
@@ -18,6 +19,7 @@ import 'package:fitos/features/workout/presentation/controllers/workout_provider
 import 'package:riverpod/misc.dart' show Override;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'fake_community_api.dart';
 import 'fake_ai_api.dart';
 import 'fake_feedback_api.dart';
 import 'fake_premium_api.dart';
@@ -65,6 +67,7 @@ List<Override> workoutOverrides(
   FakeLocationSource? location,
   FakeBatteryAccess? battery,
   FakeRunVoice? voice,
+  FakeCommunityApi? community,
 }) {
   SharedPreferences.setMockInitialValues(const {});
   return [
@@ -121,5 +124,7 @@ List<Override> workoutOverrides(
     runNotificationProvider.overrideWithValue(FakeRunNotification()),
     batteryAccessProvider.overrideWithValue(battery ?? FakeBatteryAccess()),
     runVoiceProvider.overrideWithValue(voice ?? FakeRunVoice()),
+    // Beta 5.8: not in Community unless a test says.
+    communityApiProvider.overrideWithValue(community ?? FakeCommunityApi()),
   ];
 }

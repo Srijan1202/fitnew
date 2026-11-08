@@ -31,6 +31,7 @@ import '../widgets/home_sections.dart';
 import '../widgets/name_prompt.dart';
 import '../widgets/suggestion_carousel.dart';
 import '../widgets/streak_card.dart';
+import '../../../community/presentation/community_home_card.dart';
 import '../../../premium/domain/streak_rewards.dart';
 import '../../../premium/presentation/rewards_providers.dart';
 import '../../../premium/presentation/streak_rewards_ui.dart';
@@ -333,6 +334,8 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: FitSpacing.lg),
+                  // Beta 5.8 (ADR-057): friends, clubs and the world board.
+                  const CommunityHomeCard(),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: FitSpacing.screen,

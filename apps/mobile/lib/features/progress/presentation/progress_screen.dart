@@ -99,18 +99,20 @@ class ProgressScreen extends ConsumerWidget {
                   key: const ValueKey('progress.mode'),
                   thumbKey: const ValueKey('progress.mode.thumb'),
                   value: mode,
-                  left: const FitModeHalf(
-                    ProgressMode.progress,
-                    'Progress',
-                    Icons.insights,
-                    key: ValueKey('progress.mode.progress'),
-                  ),
-                  right: const FitModeHalf(
-                    ProgressMode.recovery,
-                    'Recovery',
-                    Icons.self_improvement,
-                    key: ValueKey('progress.mode.recovery'),
-                  ),
+                  halves: [
+                    const FitModeHalf(
+                      ProgressMode.progress,
+                      'Progress',
+                      Icons.insights,
+                      key: ValueKey('progress.mode.progress'),
+                    ),
+                    const FitModeHalf(
+                      ProgressMode.recovery,
+                      'Recovery',
+                      Icons.self_improvement,
+                      key: ValueKey('progress.mode.recovery'),
+                    ),
+                  ],
                   onChanged: ref.read(progressModeProvider.notifier).set,
                 ),
               ),

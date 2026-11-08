@@ -13,6 +13,7 @@ import '../../../core/notifications/activity_signal.dart';
 import '../../../core/notifications/local_notifications.dart';
 import '../../../core/config/app_update.dart';
 import '../../../core/routing/router.dart';
+import '../../community/presentation/community_providers.dart';
 import '../../progress/presentation/progress_mode.dart';
 import '../../training/presentation/screens/training_tab_screen.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
@@ -198,6 +199,10 @@ class NotificationCoordinator extends Notifier<NotifyState> {
       switch (data['type']) {
         case 'feedback-reply':
           ref.read(routerProvider).push(Routes.feedback);
+        // Beta 5.8 (ADR-057): a friend request, or one accepted.
+        case 'community':
+          ref.read(communityTabProvider.notifier).set(CommunityTab.friends);
+          ref.read(routerProvider).push(Routes.community);
         case 'update':
           ref.read(updateControllerProvider.notifier).checkNow();
       }

@@ -22,6 +22,8 @@ const NAV: { group: string | null; items: NavItem[] }[] = [
       { href: '/feedback', label: 'Feedback', icon: 'feedback', count: 'feedback', keywords: 'bugs reports replies' },
       { href: '/users', label: 'Support', icon: 'support', keywords: 'user lookup email person rewards' },
       { href: '/premium', label: 'Premium', icon: 'premium', count: 'premium', keywords: 'requests members' },
+      // Beta 5.8 (ADR-057).
+      { href: '/social', label: 'Community', icon: 'world', keywords: 'friends clubs world board leaderboard reports handles' },
     ],
   },
   {

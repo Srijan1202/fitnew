@@ -20,3 +20,4 @@ export * from './privacy.js';
 export * from './feedback.js';
 export * from './premium.js';
 export * from './running.js';
+export * from './community.js';

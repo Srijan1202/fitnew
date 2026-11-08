@@ -54,11 +54,20 @@ export const REQUIRED_CONSENT_TYPES = ['privacy-policy', 'health-data-processing
 export const OPTIONAL_CONSENT_TYPES = ['ai-processing'] as const satisfies readonly ConsentType[];
 
 /**
+ * Beta 5.8 (ADR-057): joining Community is its own consent, recorded like
+ * the others but given and withdrawn in Community itself (join, leave). It is
+ * kept out of CONSENT_TYPES so the Privacy screen of an app without
+ * Community never meets a purpose it cannot read.
+ */
+export const STORED_CONSENT_TYPES = [...CONSENT_TYPES, 'community'] as const;
+export type StoredConsentType = (typeof STORED_CONSENT_TYPES)[number];
+
+/**
  * Bump this whenever the privacy policy text changes. Every consent row
  * records which version was agreed to (§23), so a policy change can be
  * re-consented rather than assumed.
  */
-export const CURRENT_POLICY_VERSION = '2026-11-04';
+export const CURRENT_POLICY_VERSION = '2026-11-08';
 
 export const consentGrantSchema = z
   .object({

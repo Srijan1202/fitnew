@@ -69,7 +69,7 @@ Not scheduled. When picked, they get a phase plan for approval first. Suggested 
 | F9 | **Server push notifications** | M | = O9. Reminders and "Premium approved" while the app is closed (FCM from the server) |
 | F10 | **AI that knows your history** | M | = O8, and only after O7 (paid Gemini): answers from the last 4 weeks of training and food |
 | F11 | **Exercise demo animations** | M–L | Short loops for the ~30 most-used lifts; mostly a content job (licensing) |
-| F12 | **Friends / VIT leaderboard** | L | Weekly sessions among friends. Needs a privacy design (opt-in, what is shown) before any code |
+| F12 | **Friends / VIT leaderboard** — beta 5.8 (ADR-057), worldwide | L | Built as Community: friends, clubs and a world board (owner 2026-11-08: "world level"). Opt-in with its own consent; counts only |
 | F13 | **Streak rewards** (owner, 2026-10-23) — beta 3.4 (ADR-027 amendment) | M | A long enough streak unlocks rewards: a theme, a profile picture and the like, kept once earned. Builds on beta 3.3's streak (F5) and the premium themes and pictures (ADR-027/028). Needs a decision on which rewards, at what streak lengths, and whether they stay premium-only otherwise |
 | F14 | **Feedback with pictures, and more** (owner, 2026-10-24) — beta 3.6 (ADR-026 amendment) | M | Attach screenshots to feedback; the owner will say what else. Needs storage, size limits and a privacy note |
 | F15 | **AI food guide** (from beta feedback, 2026-10-24) — beta 3.6 (ADR-020 amendment) | M | Asks what you have and what you feel like, then says what to eat for your targets. AI is premium-only (ADR-028); builds on the mess menu and food database |

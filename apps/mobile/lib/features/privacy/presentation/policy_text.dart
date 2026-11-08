@@ -3,7 +3,7 @@
 /// two stay in step and that the version is the server's CURRENT_POLICY_VERSION.
 library;
 
-const kPolicyVersion = '2026-11-04';
+const kPolicyVersion = '2026-11-08';
 
 const kPolicySections = <(String, String)>[
   (
@@ -93,6 +93,22 @@ const kPolicySections = <(String, String)>[
         'data; turning them off also deletes any report not yet sent.',
   ),
   (
+    'Community',
+    "Only if you join. Community shows other FITOS members the "
+        "handle you choose, your profile picture and, if you give it, "
+        "your country, with counts the server works out from what you "
+        "log: gym sessions and run distance this week, and your streak. "
+        "It never shows your name or email, weights, food, body "
+        "measurements, photos, readiness, sleep, heart rate or where "
+        "you ran. Friends see you once you both accept; a club's "
+        "members see you while you are in it; the world board shows you "
+        "only if you turn that on. You can block someone, report a "
+        "handle or a club to the FITOS team, and leave Community at any "
+        "time: you come off every board and friends list at once. Your "
+        "handle, friends, blocks, clubs and reports are in Download my "
+        "data and are deleted with your account.",
+  ),
+  (
     'Who else',
     'Amazon Web Services hosts the FITOS server and database, in India. '
         'Google Firebase handles sign-in, notifications and crash reports. '
@@ -120,8 +136,8 @@ const kPolicySections = <(String, String)>[
     'Your rights',
     'See and download everything FITOS holds about you (Download my data). '
         'Correct it in the app. Delete your account and every record of it at '
-        'once (Delete account). Withdraw your FITOS AI consent and turn crash '
-        'reports off at any time. Questions or complaints: write to the '
+        'once (Delete account). Withdraw your FITOS AI consent, leave Community '
+        'and turn crash reports off at any time. Questions or complaints: write to the '
         'developer through Send feedback or the beta group; a published contact'
         ' and grievance officer will be named before any public launch.',
   ),
