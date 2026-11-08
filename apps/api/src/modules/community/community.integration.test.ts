@@ -10,7 +10,8 @@ import { CURRENT_POLICY_VERSION, boardSchema, communityMeSchema, friendsResponse
 
 import { migrateUp } from '../../db/migrate.js';
 import type { FakeTokenVerifier } from '../../test/fake-token-verifier.js';
-import { buildDbApp, databaseUrl, type RecordingPushSender } from '../../test/build-test-app.js';
+import type { RecordingPushSender } from '../../lib/push.js';
+import { buildDbApp, databaseUrl } from '../../test/build-test-app.js';
 
 const describeIfDb = databaseUrl !== undefined ? describe : describe.skip;
 
