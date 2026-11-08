@@ -14,6 +14,7 @@ import 'package:fitos/features/health/presentation/controllers/health_providers.
 import 'package:fitos/features/home/presentation/controllers/home_providers.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:fitos/features/progress/domain/progress.dart';
+import 'package:fitos/features/progress/presentation/progress_mode.dart';
 import 'package:fitos/features/progress/presentation/progress_providers.dart';
 import 'package:fitos/features/progress/presentation/progress_screen.dart';
 import 'package:fitos/features/progress/presentation/trend_chart.dart';
@@ -253,6 +254,12 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// Beta 5.7: the tab's Recovery half.
+  Future<void> toRecovery(WidgetTester tester) async {
+    await tester.tap(key('progress.mode.recovery'));
+    await tester.pumpAndSettle();
+  }
+
   Iterable<String> allText(WidgetTester tester) => tester
       .widgetList<Text>(find.byType(Text))
       .map((t) => t.data ?? t.textSpan?.toPlainText() ?? '');
@@ -264,7 +271,7 @@ void main() {
     api.volumeResponse = someVolume();
     await tester.pumpWidget(app());
     await settle(tester);
-    expect(textOf(tester, 'progress.title'), 'Progress & Recovery');
+    expect(textOf(tester, 'progress.title'), 'Your progress');
     expect(textOf(tester, 'progress.weight.trend'), '74.1 kg');
     final headline =
         tester.widget<Text>(key('progress.weight.trend')).style!.fontSize!;
@@ -277,9 +284,10 @@ void main() {
       textOf(tester, 'progress.weight.fluctuation'),
       ProgressScreen.fluctuation,
     );
-    // Beta 3.9's order: today first, then what was logged; nothing to start.
+    // Beta 3.9's order, what was logged; nothing to start. Beta 5.7: Today
+    // is in Recovery.
+    expect(find.text('TODAY'), findsNothing);
     for (final label in [
-      'TODAY',
       'WEIGHT',
       'STRENGTH',
       'TRAINING',
@@ -584,17 +592,58 @@ void main() {
     expect(key('progress.start.health'), findsNothing);
   });
 
-  testWidgets('nothing at all: "Get started" leads, straight after Today',
-      (tester) async {
+  testWidgets(
+      'nothing at all: "Get started" leads, straight after the period; '
+      'Health data is started from Recovery (beta 5.7)', (tester) async {
+    health.connection_ = const HealthConnectionState(
+      sdk: HealthSdkStatus.available,
+      granted: {},
+    );
     await tester.pumpWidget(app());
     await settle(tester);
     expect(find.text('GET STARTED'), findsOneWidget);
     expect(key('progress.start.training'), findsOneWidget);
+    expect(key('progress.start.health'), findsNothing);
     expect(find.text('TRAINING'), findsNothing);
     expect(
       tester.getTopLeft(find.text('GET STARTED')).dy,
-      greaterThan(tester.getTopLeft(find.text('TODAY')).dy),
+      greaterThan(tester.getTopLeft(key('progress.window')).dy),
     );
+    await toRecovery(tester);
+    await reveal(tester, key('progress.start.health'));
+    expect(key('progress.start.health'), findsOneWidget);
+  });
+
+  testWidgets(
+      'beta 5.7 (owner): Progress | Recovery at the top, like Gym | Running; '
+      'it opens on Progress, and Recovery holds Today and the check-in',
+      (tester) async {
+    progress.summaries[ProgressWindow.d7] = rich();
+    await tester.pumpWidget(app());
+    await settle(tester);
+    expect(key('progress.mode'), findsOneWidget);
+    expect(container(tester).read(progressModeProvider), ProgressMode.progress);
+    expect(key('progress.title'), findsOneWidget);
+    expect(key('recovery.title'), findsNothing);
+    expect(key('recovery.checkIn.open'), findsNothing);
+    final left = tester.getCenter(key('progress.mode.progress')).dx;
+    final thumbAt = tester.getCenter(key('progress.mode.thumb')).dx;
+    expect((thumbAt - left).abs(), lessThan(60));
+
+    await toRecovery(tester);
+    expect(textOf(tester, 'recovery.title'), 'Your recovery');
+    expect(find.text('TODAY'), findsOneWidget);
+    expect(key('recovery.checkIn.open'), findsOneWidget);
+    expect(key('progress.window'), findsNothing);
+    expect(key('progress.weight.trend'), findsNothing);
+    expect(
+      tester.getCenter(key('progress.mode.thumb')).dx,
+      greaterThan(thumbAt),
+    );
+
+    await tester.tap(key('progress.mode.progress'));
+    await tester.pumpAndSettle();
+    expect(textOf(tester, 'progress.weight.trend'), '74.1 kg');
   });
 
   testWidgets('loading shows a quiet bar; the window switch fetches 90 days',
@@ -804,6 +853,7 @@ void main() {
       (tester) async {
     await tester.pumpWidget(app());
     await settle(tester);
+    await toRecovery(tester);
     // Phase 13: a score exists only from the server, after a check-in — none here.
     expect(key('recovery.readiness'), findsNothing);
     expect(key('recovery.checkIn.open'), findsOneWidget);
@@ -840,6 +890,7 @@ void main() {
       'Health Connect: 73.2 kg · on this phone, not in the trend',
     );
     expect(textOf(tester, 'progress.weight.trend'), '74.1 kg');
+    await toRecovery(tester);
     await reveal(tester, key('progress.recovery.advisory'));
     expect(textOf(tester, 'progress.sleep'), '5h 30m');
     expect(textOf(tester, 'progress.rhr'), '58 bpm');

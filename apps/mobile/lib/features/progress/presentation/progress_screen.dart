@@ -7,6 +7,7 @@ import '../../../core/config/app_features.dart';
 import '../../../core/routing/router.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../shared/widgets/fit_glass.dart';
+import '../../../shared/widgets/fit_mode_switch.dart';
 import '../../health/domain/entities/health.dart';
 import '../../health/presentation/controllers/health_providers.dart';
 import '../../home/domain/home_context.dart';
@@ -23,6 +24,7 @@ import '../domain/progress.dart';
 import 'length_unit.dart';
 import 'photos/progress_photos_providers.dart';
 import 'photos/progress_photos_screen.dart';
+import 'progress_mode.dart';
 import 'progress_providers.dart';
 import 'progress_sheets.dart';
 import 'trend_chart.dart';
@@ -34,12 +36,12 @@ part 'progress_start.dart';
 
 /// Progress & Recovery (Phase 12; redesigned during the Phase 13 S24 run and
 /// again in beta 3.9, owner-approved). What the server computed from the
-/// user's own records, over a week, a month or three, today first:
+/// user's own records, over a week, a month or three:
 ///
-///   Today — readiness, or the way into the check-in
-///   Weight · Strength (with the newest record) · Training · Nutrition
-///   Body — measurements and photos
-///   Recovery — what went into readiness; the phone's sleep and heart rate
+///   Progress — Weight · Strength (with the newest record) · Training ·
+///   Nutrition · Body (measurements and photos)
+///   Recovery — Today (readiness, or the way into the check-in); what went
+///   into readiness; the phone's sleep and heart rate
 ///
 /// A section with nothing to show is not drawn; it is a line in "Get
 /// started" instead. No number is computed here; no day-over-day figure; no
@@ -77,7 +79,59 @@ class ProgressScreen extends ConsumerWidget {
     return d == null ? iso : '${d.day} ${months[d.month - 1]}';
   }
 
-  Future<void> _refresh(WidgetRef ref) async {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(progressModeProvider);
+    return Scaffold(
+      body: FitBackdrop(
+        child: Column(
+          children: <Widget>[
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  FitSpacing.screen,
+                  FitSpacing.sm,
+                  FitSpacing.screen,
+                  0,
+                ),
+                child: FitModeSwitch<ProgressMode>(
+                  key: const ValueKey('progress.mode'),
+                  thumbKey: const ValueKey('progress.mode.thumb'),
+                  value: mode,
+                  left: const FitModeHalf(
+                    ProgressMode.progress,
+                    'Progress',
+                    Icons.insights,
+                    key: ValueKey('progress.mode.progress'),
+                  ),
+                  right: const FitModeHalf(
+                    ProgressMode.recovery,
+                    'Recovery',
+                    Icons.self_improvement,
+                    key: ValueKey('progress.mode.recovery'),
+                  ),
+                  onChanged: ref.read(progressModeProvider.notifier).set,
+                ),
+              ),
+            ),
+            Expanded(
+              child: MediaQuery.removePadding(
+                context: context,
+                removeTop: true,
+                child: IndexedStack(
+                  index: mode.index,
+                  children: const <Widget>[_ProgressHalf(), _RecoveryHalf()],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Future<void> _refresh(WidgetRef ref) async {
     ref
       ..invalidate(progressSummaryProvider)
       ..invalidate(recoveryTodayProvider)
@@ -85,99 +139,21 @@ class ProgressScreen extends ConsumerWidget {
     await ref.read(healthSnapshotProvider.notifier).refreshAll();
   }
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  /// The half's small label and title, like Running's "RUNNING / Your runs".
+  static Widget _heading(
+    BuildContext context,
+    String label,
+    String title,
+    String titleKey,
+  ) {
     final textTheme = Theme.of(context).textTheme;
-    final window = ref.watch(progressWindowProvider);
-    final async = ref.watch(progressSummaryProvider(window));
-    final view = async.value;
-    final s = view?.summary;
-    return Scaffold(
-      body: FitBackdrop(
-        child: SafeArea(
-          bottom: false,
-          child: RefreshIndicator(
-            color: FitColors.ink,
-            onRefresh: () => _refresh(ref),
-            child: ListView(
-              key: const ValueKey('progress.list'),
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 112),
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    FitSpacing.screen,
-                    FitSpacing.lg,
-                    FitSpacing.screen,
-                    FitSpacing.md,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text('PROGRESS', style: textTheme.labelSmall),
-                      const SizedBox(height: FitSpacing.xs),
-                      Text(
-                        'Progress & Recovery',
-                        key: const ValueKey('progress.title'),
-                        style: textTheme.displaySmall,
-                      ),
-                      const SizedBox(height: FitSpacing.md),
-                      SegmentedButton<ProgressWindow>(
-                        key: const ValueKey('progress.window'),
-                        segments: [
-                          for (final w in ProgressWindow.values)
-                            ButtonSegment(
-                              value: w,
-                              label: Text(
-                                w.label,
-                                key: ValueKey('progress.window.${w.wire}'),
-                              ),
-                            ),
-                        ],
-                        selected: {window},
-                        showSelectedIcon: false,
-                        onSelectionChanged: (v) => ref
-                            .read(progressWindowProvider.notifier)
-                            .set(v.first),
-                      ),
-                      const SizedBox(height: FitSpacing.sm),
-                      // Phase 19 (ADR-027): the weekly report, premium.
-                      const WeeklyReportEntry(),
-                    ],
-                  ),
-                ),
-                if (_status(ref, view) case final line?)
-                  _Pad(
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: FitSpacing.md),
-                      child: _Note(
-                        line.$2,
-                        textKey: ValueKey(line.$1),
-                        icon: Icons.cloud_off_outlined,
-                      ),
-                    ),
-                  ),
-                if (async.isLoading && s == null)
-                  Padding(
-                    padding: const EdgeInsets.all(FitSpacing.screen),
-                    child: LinearProgressIndicator(
-                      key: const ValueKey('progress.loading'),
-                      color: FitColors.ink,
-                      backgroundColor: FitColors.paper2,
-                    ),
-                  ),
-                // Beta 3.9: the one daily action leads the page.
-                const _SectionHeader(
-                  'Today',
-                  sub: 'Check in daily — readiness is worked out from it.',
-                ),
-                const _Card(child: RecoveryPanel()),
-                if (s != null) ..._sections(context, ref, s),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(label, style: textTheme.labelSmall),
+        const SizedBox(height: FitSpacing.xs),
+        Text(title, key: ValueKey(titleKey), style: textTheme.displaySmall),
+      ],
     );
   }
 
@@ -194,7 +170,6 @@ class ProgressScreen extends ConsumerWidget {
     final volume = ref.watch(volumeProvider).value;
     final hasVolume =
         volume != null && volume.weeks.isNotEmpty && volume.owned.isNotEmpty;
-    final recovery = _RecoveryFacts.of(ref);
 
     final c = s.consistency;
     final a = s.adherence;
@@ -212,7 +187,6 @@ class ProgressScreen extends ConsumerWidget {
       if (!hasNutrition) _Start.food,
       if (!hasMeasurements) _Start.measurement,
       if (photosOn && !hasBody) _Start.photo,
-      if (recovery.canConnect && !recovery.shown) _Start.health,
     ];
     final getStarted = start.isEmpty
         ? const <Widget>[]
@@ -262,14 +236,6 @@ class ProgressScreen extends ConsumerWidget {
         ),
         _Card(child: _BodySection(summary: s, photos: photosOn)),
       ],
-      if (recovery.shown) ...<Widget>[
-        const _SectionHeader(
-          'Recovery',
-          sub:
-              "What went into today's readiness, and this phone's sleep and heart rate.",
-        ),
-        _Card(child: _RecoveryDetails(facts: recovery)),
-      ],
       if (!empty) ...getStarted,
     ];
   }
@@ -301,5 +267,147 @@ class ProgressScreen extends ConsumerWidget {
               : 'Progress is unavailable right now.',
         );
     }
+  }
+}
+
+/// Progress: the period, the weekly report, then every section with
+/// something to show.
+class _ProgressHalf extends ConsumerWidget {
+  const _ProgressHalf();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final window = ref.watch(progressWindowProvider);
+    final async = ref.watch(progressSummaryProvider(window));
+    final view = async.value;
+    final s = view?.summary;
+    return RefreshIndicator(
+      color: FitColors.ink,
+      onRefresh: () => ProgressScreen._refresh(ref),
+      child: ListView(
+        key: const ValueKey('progress.list'),
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 112),
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              FitSpacing.screen,
+              FitSpacing.lg,
+              FitSpacing.screen,
+              FitSpacing.md,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                ProgressScreen._heading(
+                  context,
+                  'PROGRESS',
+                  'Your progress',
+                  'progress.title',
+                ),
+                const SizedBox(height: FitSpacing.md),
+                SegmentedButton<ProgressWindow>(
+                  key: const ValueKey('progress.window'),
+                  segments: [
+                    for (final w in ProgressWindow.values)
+                      ButtonSegment(
+                        value: w,
+                        label: Text(
+                          w.label,
+                          key: ValueKey('progress.window.${w.wire}'),
+                        ),
+                      ),
+                  ],
+                  selected: {window},
+                  showSelectedIcon: false,
+                  onSelectionChanged: (v) =>
+                      ref.read(progressWindowProvider.notifier).set(v.first),
+                ),
+                const SizedBox(height: FitSpacing.sm),
+                // Phase 19 (ADR-027): the weekly report, premium.
+                const WeeklyReportEntry(),
+              ],
+            ),
+          ),
+          if (ProgressScreen._status(ref, view) case final line?)
+            _Pad(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: FitSpacing.md),
+                child: _Note(
+                  line.$2,
+                  textKey: ValueKey(line.$1),
+                  icon: Icons.cloud_off_outlined,
+                ),
+              ),
+            ),
+          if (async.isLoading && s == null)
+            Padding(
+              padding: const EdgeInsets.all(FitSpacing.screen),
+              child: LinearProgressIndicator(
+                key: const ValueKey('progress.loading'),
+                color: FitColors.ink,
+                backgroundColor: FitColors.paper2,
+              ),
+            ),
+          if (s != null) ...ProgressScreen._sections(context, ref, s),
+        ],
+      ),
+    );
+  }
+}
+
+/// Recovery: today's check-in and readiness, what went into it, and the
+/// phone's sleep and heart rate, or the way to connect Health data.
+class _RecoveryHalf extends ConsumerWidget {
+  const _RecoveryHalf();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final recovery = _RecoveryFacts.of(ref);
+    return RefreshIndicator(
+      color: FitColors.ink,
+      onRefresh: () => ProgressScreen._refresh(ref),
+      child: ListView(
+        key: const ValueKey('recovery.list'),
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 112),
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              FitSpacing.screen,
+              FitSpacing.lg,
+              FitSpacing.screen,
+              FitSpacing.md,
+            ),
+            child: ProgressScreen._heading(
+              context,
+              'RECOVERY',
+              'Your recovery',
+              'recovery.title',
+            ),
+          ),
+          // Beta 3.9: the one daily action leads the page.
+          const _SectionHeader(
+            'Today',
+            sub: 'Check in daily — readiness is worked out from it.',
+          ),
+          const _Card(child: RecoveryPanel()),
+          if (recovery.shown) ...<Widget>[
+            const _SectionHeader(
+              'Recovery',
+              sub:
+                  "What went into today's readiness, and this phone's sleep and heart rate.",
+            ),
+            _Card(child: _RecoveryDetails(facts: recovery)),
+          ] else if (recovery.canConnect) ...<Widget>[
+            const _SectionHeader(
+              'Still to start',
+              sub: 'Sleep and heart rate appear here once connected.',
+            ),
+            const _Card(child: _GetStarted(items: [_Start.health])),
+          ],
+        ],
+      ),
+    );
   }
 }

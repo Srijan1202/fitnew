@@ -6,6 +6,7 @@ import 'package:fitos/core/notifications/activity_signal.dart';
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:fitos/features/health/presentation/controllers/health_providers.dart';
+import 'package:fitos/features/progress/presentation/progress_mode.dart';
 import 'package:fitos/features/notifications/data/notification_scheduler.dart';
 import 'package:fitos/features/notifications/domain/notifications.dart';
 import 'package:fitos/features/notifications/presentation/notification_coordinator.dart';
@@ -304,6 +305,41 @@ void main() {
     device.grantOnRequest = true;
     expect(await n.askPermission(), isTrue);
     expect(device.scheduled.keys, {workout.id});
+  });
+
+  testWidgets(
+      'beta 5.7: the check-in reminder opens Recovery; the weigh-in opens '
+      'Progress', (tester) async {
+    api.nextItems = [workout];
+    final cc = container();
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: cc,
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    late NotificationCoordinator n;
+    await tester.runAsync(() async => n = await started(cc));
+    for (final (kind, mode) in [
+      ('recovery-checkin', ProgressMode.recovery),
+      ('weigh-in', ProgressMode.progress),
+    ]) {
+      final item = plannedItem(
+        'c9999999-9999-4999-8999-99999999999${mode.index}',
+        kind: kind,
+        screen: 'progress',
+        at: DateTime.utc(2026, 10, 19, 3),
+      );
+      await tester.runAsync(
+        () => n.onTap(NotificationScheduler.payloadOf(item)),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        router.routerDelegate.currentConfiguration.uri.toString(),
+        Routes.progress,
+      );
+      expect(cc.read(progressModeProvider), mode, reason: kind);
+    }
   });
 
   testWidgets(

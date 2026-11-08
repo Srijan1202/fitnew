@@ -13,6 +13,7 @@ import '../../../core/notifications/activity_signal.dart';
 import '../../../core/notifications/local_notifications.dart';
 import '../../../core/config/app_update.dart';
 import '../../../core/routing/router.dart';
+import '../../progress/presentation/progress_mode.dart';
 import '../../training/presentation/screens/training_tab_screen.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
 import '../../auth/presentation/controllers/auth_providers.dart';
@@ -489,6 +490,13 @@ class NotificationCoordinator extends Notifier<NotifyState> {
           ..go(Routes.plan)
           ..push(Routes.runLive);
       case 'progress':
+        // Beta 5.7: the check-in reminder opens Recovery; the weigh-in and
+        // the weekly recap open Progress.
+        ref.read(progressModeProvider.notifier).set(
+              p['kind'] == 'recovery-checkin'
+                  ? ProgressMode.recovery
+                  : ProgressMode.progress,
+            );
         router.go(Routes.progress);
       case 'food-log':
         router

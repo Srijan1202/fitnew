@@ -32,6 +32,14 @@ class RecoverySection extends StatelessWidget {
     final loggedSleep = checkIn?.log?.sleepHours;
     final readiness = checkIn?.readiness;
     final unsupported = c.healthUnsupported;
+    // Beta 5.7: the check-in's sleep and readiness live in Recovery.
+    void openRecovery() {
+      ProviderScope.containerOf(buildContext, listen: false)
+          .read(progressModeProvider.notifier)
+          .set(ProgressMode.recovery);
+      buildContext.go(Routes.progress);
+    }
+
     final connect = TextButton(
       key: const ValueKey('home.recovery.connect'),
       onPressed: () => buildContext.push(Routes.healthData),
@@ -88,7 +96,7 @@ class RecoverySection extends StatelessWidget {
         value: HomeSections.hm(loggedSleep * 60),
         line: 'From your check-in',
         valueKey: const ValueKey('home.sleep'),
-        onTap: () => buildContext.go(Routes.progress),
+        onTap: () => openRecovery(),
       );
     } else {
       sleepBlock = _Block(
@@ -98,7 +106,7 @@ class RecoverySection extends StatelessWidget {
         valueKey: const ValueKey('home.sleep'),
         muted: true,
         onTap: () => sleep == null
-            ? buildContext.go(Routes.progress)
+            ? openRecovery()
             : buildContext.push(Routes.healthData),
       );
     }
@@ -123,7 +131,7 @@ class RecoverySection extends StatelessWidget {
           value: '${readiness.score}',
           line: readiness.band.label,
           valueKey: const ValueKey('home.readiness'),
-          onTap: () => buildContext.go(Routes.progress),
+          onTap: () => openRecovery(),
         ),
     ];
     return Column(

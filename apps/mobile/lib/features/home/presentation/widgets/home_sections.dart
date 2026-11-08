@@ -1,11 +1,13 @@
 import '../../../premium/presentation/profile_avatar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/router.dart';
 import '../../../../shared/widgets/fit_glass.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../health/domain/entities/health.dart';
+import '../../../progress/presentation/progress_mode.dart';
 import '../../../recovery/domain/recovery.dart';
 import '../../domain/home_context.dart';
 import '../controllers/home_providers.dart';

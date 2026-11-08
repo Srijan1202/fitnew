@@ -96,13 +96,20 @@ class _Photos implements MealPhotoSource {
   Uint8List? next;
   final calls = <String>[];
 
+  /// Beta 5.7: no photo because the gallery (opened from the camera) was
+  /// closed, not the camera.
+  bool galleryClosed = false;
+
   @override
-  Future<Uint8List?> pick({
+  Future<MealPhotoPick> pick({
     required bool camera,
     required NavigatorState navigator,
   }) async {
     calls.add(camera ? 'camera' : 'gallery');
-    return next;
+    final bytes = next;
+    return bytes == null
+        ? MealPhotoPick.none(left: camera && !galleryClosed)
+        : MealPhotoPick.photo(bytes);
   }
 }
 
@@ -1060,6 +1067,30 @@ void main() {
       expect(ai.photos, hasLength(1));
       expect(find.byKey(const ValueKey('photo.note')), findsNothing);
       expect(textOf(tester, 'describe.item.0.name').data, 'Phulka');
+    });
+
+    testWidgets(
+        'beta 5.7: the gallery (opened from the camera) closed without a '
+        'photo keeps Snap a meal open, with Take a photo and Gallery',
+        (tester) async {
+      tall(tester);
+      photos
+        ..next = null
+        ..galleryClosed = true;
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await openPhoto(tester);
+      expect(photos.calls, ['camera']);
+      expect(find.text('SNAP A MEAL'), findsOneWidget);
+      expect(find.byKey(const ValueKey('photo.camera')), findsOneWidget);
+      expect(find.byKey(const ValueKey('photo.gallery')), findsOneWidget);
+      expect(ai.photos, isEmpty);
+
+      photos.next = _png;
+      await tester.tap(find.byKey(const ValueKey('photo.gallery')));
+      await settle(tester);
+      expect(photos.calls.last, 'gallery');
+      expect(ai.photos, hasLength(1));
     });
 
     testWidgets(

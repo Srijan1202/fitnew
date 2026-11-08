@@ -11,13 +11,16 @@ import 'package:flutter/material.dart';
 /// the 1600 px FITOS keeps, and is saved in the app's cache.
 ///
 /// Returns the JPEG's path, or null when the person closed it. With
-/// [gallery], a Gallery button beside the shutter returns the path of a photo
-/// chosen there instead (beta 5.6, owner: Snap a meal from the gallery
-/// without taking a photo first).
+/// [gallery], a Gallery button beside the shutter (beta 5.6, owner: Snap a
+/// meal from the gallery without taking a photo first) returns
+/// [kCameraChoseGallery]: the camera is let go and closed, and the caller
+/// opens the gallery. Beta 5.7 (owner: on the S24 the camera still came back
+/// over a gallery opened from inside it): the gallery never opens while the
+/// camera screen is up.
 Future<String?> takePhotoInApp(
   NavigatorState navigator, {
   bool front = false,
-  Future<String?> Function()? gallery,
+  bool gallery = false,
 }) =>
     navigator.push<String>(
       MaterialPageRoute(
@@ -25,6 +28,9 @@ Future<String?> takePhotoInApp(
         builder: (_) => InAppCameraScreen(front: front, gallery: gallery),
       ),
     );
+
+/// What [takePhotoInApp] returns when its Gallery button was tapped.
+const String kCameraChoseGallery = 'fitos:gallery';
 
 /// Where the cameras come from, behind a seam for tests.
 typedef CameraList = Future<List<CameraDescription>> Function();
@@ -44,7 +50,7 @@ class InAppCameraScreen extends StatefulWidget {
     this.front = false,
     this.cameras = availableCameras,
     this.controllerFor = _jpegController,
-    this.gallery,
+    this.gallery = false,
     super.key,
   });
 
@@ -53,9 +59,8 @@ class InAppCameraScreen extends StatefulWidget {
   final CameraList cameras;
   final CameraControllerFor controllerFor;
 
-  /// A photo from the gallery instead: its path, or null when none was
-  /// chosen (the camera stays open).
-  final Future<String?> Function()? gallery;
+  /// A Gallery button, which closes the camera with [kCameraChoseGallery].
+  final bool gallery;
 
   @override
   State<InAppCameraScreen> createState() => _InAppCameraScreenState();
@@ -70,12 +75,12 @@ class _InAppCameraScreenState extends State<InAppCameraScreen>
   String? _problem;
   bool _busy = false;
 
-  /// The camera is starting (its permission dialog may be up) or the
-  /// gallery is open: leaving and coming back must not start it again.
-  /// Beta 5.6.3 (owner: the camera came back over the gallery on the S24;
-  /// on first use the permission dialog started it twice and it failed).
+  /// The camera is starting (its permission dialog may be up) or closing
+  /// for the gallery: leaving and coming back must not start it again.
+  /// Beta 5.6.3 (on first use the permission dialog started it twice and
+  /// it failed).
   bool _opening = false;
-  bool _picking = false;
+  bool _closing = false;
 
   @override
   void initState() {
@@ -95,7 +100,7 @@ class _InAppCameraScreenState extends State<InAppCameraScreen>
   /// take it again on return.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (_opening || _picking) return;
+    if (_opening || _closing) return;
     final c = _controller;
     if (state == AppLifecycleState.inactive) {
       _controller = null;
@@ -144,7 +149,7 @@ class _InAppCameraScreenState extends State<InAppCameraScreen>
     } finally {
       _opening = false;
     }
-    if (!mounted || _picking) {
+    if (!mounted || _closing) {
       await c.dispose();
       return;
     }
@@ -182,30 +187,16 @@ class _InAppCameraScreenState extends State<InAppCameraScreen>
     }
   }
 
-  /// The camera is let go before the gallery opens and stays off while it
-  /// is up; with no photo chosen it starts again.
-  Future<void> _fromGallery() async {
-    if (_picking) return;
+  /// The camera is let go, then closed; the caller opens the gallery.
+  Future<void> _toGallery() async {
+    if (_closing) return;
     final c = _controller;
     setState(() {
-      _picking = true;
+      _closing = true;
       _controller = null;
     });
     await c?.dispose();
-    String? path;
-    try {
-      path = await widget.gallery!();
-    } finally {
-      _picking = false;
-    }
-    if (!mounted) return;
-    if (path != null) {
-      Navigator.of(context).pop(path);
-    } else if (_problem == null && _all.isNotEmpty) {
-      await _open(_index);
-    } else {
-      setState(() {});
-    }
+    if (mounted) Navigator.of(context).pop(kCameraChoseGallery);
   }
 
   void _retake() {
@@ -283,7 +274,7 @@ class _InAppCameraScreenState extends State<InAppCameraScreen>
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        if (widget.gallery == null)
+                        if (!widget.gallery)
                           const SizedBox(width: 48)
                         else
                           IconButton(
@@ -291,7 +282,7 @@ class _InAppCameraScreenState extends State<InAppCameraScreen>
                             tooltip: 'Choose from gallery',
                             color: Colors.white,
                             icon: const Icon(Icons.photo_library_outlined),
-                            onPressed: _busy ? null : _fromGallery,
+                            onPressed: _busy || _closing ? null : _toGallery,
                           ),
                         Semantics(
                           button: true,

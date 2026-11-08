@@ -28,6 +28,8 @@ abstract class NotificationScheduler {
   static String payloadOf(PlannedNotification item) => jsonEncode({
         'id': item.id,
         'screen': item.screen,
+        // Beta 5.7: the check-in reminder opens Recovery, not Progress.
+        'kind': item.kind,
         'slot': item.slot,
         'localDate': item.localDate,
         'title': item.title,

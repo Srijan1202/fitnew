@@ -11,12 +11,24 @@ import '../../../shared/widgets/in_app_camera.dart';
 /// or chosen from the gallery, as bytes. The file is deleted as soon as it
 /// is read: FITOS never keeps the photo (owner). Behind a seam for tests.
 abstract class MealPhotoSource {
-  /// The photo's bytes, or null when the person closed the camera or the
-  /// gallery.
-  Future<Uint8List?> pick({
+  /// The photo, or none: with [MealPhotoPick.left] when the camera was
+  /// closed, else the gallery was closed without one.
+  Future<MealPhotoPick> pick({
     required bool camera,
     required NavigatorState navigator,
   });
+}
+
+/// Beta 5.7: a meal photo's bytes, or why there are none.
+class MealPhotoPick {
+  const MealPhotoPick.photo(Uint8List this.bytes) : left = false;
+
+  /// No photo. [left]: the camera was closed, and Snap a meal closes with
+  /// it. Otherwise the gallery was closed, and Snap a meal stays open.
+  const MealPhotoPick.none({required this.left}) : bytes = null;
+
+  final Uint8List? bytes;
+  final bool left;
 }
 
 class DeviceMealPhotoSource implements MealPhotoSource {
@@ -27,7 +39,7 @@ class DeviceMealPhotoSource implements MealPhotoSource {
   static const _quality = 85;
 
   @override
-  Future<Uint8List?> pick({
+  Future<MealPhotoPick> pick({
     required bool camera,
     required NavigatorState navigator,
   }) async {
@@ -40,14 +52,15 @@ class DeviceMealPhotoSource implements MealPhotoSource {
         ))
             ?.path;
     // Beta 5.6 (owner): the camera has a Gallery button of its own, so a
-    // gallery photo needs no camera photo (and no reading) first.
-    final path = camera
-        ? await takePhotoInApp(navigator, gallery: gallery)
-        : await gallery();
-    if (path == null) return null;
+    // gallery photo needs no camera photo (and no reading) first. Beta 5.7:
+    // the camera closes before the gallery opens.
+    var path = camera ? await takePhotoInApp(navigator, gallery: true) : null;
+    if (camera && path == null) return const MealPhotoPick.none(left: true);
+    if (!camera || path == kCameraChoseGallery) path = await gallery();
+    if (path == null) return const MealPhotoPick.none(left: false);
     final file = File(path);
     try {
-      return await file.readAsBytes();
+      return MealPhotoPick.photo(await file.readAsBytes());
     } finally {
       try {
         await file.delete();

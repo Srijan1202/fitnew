@@ -151,11 +151,13 @@ class _DescribeMealScreenState extends ConsumerState<DescribeMealScreen> {
     if (!await ensureAiConsent(context, ref) || !mounted) {
       return leaveIfEmpty();
     }
-    final bytes = await ref
+    final pick = await ref
         .read(mealPhotoSourceProvider)
         .pick(camera: camera, navigator: navigator);
     if (!mounted) return;
-    if (bytes == null) return leaveIfEmpty();
+    final bytes = pick.bytes;
+    // Beta 5.7: a gallery closed without a photo keeps Snap a meal open.
+    if (bytes == null) return pick.left ? leaveIfEmpty() : null;
     final mime = photoMimeOf(bytes);
     setState(() {
       _photo = bytes;

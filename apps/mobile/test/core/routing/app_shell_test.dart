@@ -205,7 +205,9 @@ void main() {
       // Phase 12: Progress & Recovery replaced the Market placeholder.
       await go('Progress');
       expect(find.byKey(const ValueKey('progress.title')), findsOneWidget);
-      expect(find.text('Progress & Recovery'), findsOneWidget);
+      // Beta 5.7: Progress | Recovery, opening on Progress.
+      expect(find.text('Your progress'), findsOneWidget);
+      expect(find.byKey(const ValueKey('progress.mode')), findsOneWidget);
       expect(find.textContaining('Supplements and gear'), findsNothing);
       expect(selected('Progress'), isTrue);
 

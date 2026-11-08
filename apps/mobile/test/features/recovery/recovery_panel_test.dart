@@ -10,6 +10,7 @@ import 'package:fitos/features/health/domain/entities/health.dart';
 import 'package:fitos/features/health/presentation/controllers/health_providers.dart';
 import 'package:fitos/features/home/presentation/controllers/home_providers.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
+import 'package:fitos/features/progress/presentation/progress_mode.dart';
 import 'package:fitos/features/progress/presentation/progress_screen.dart';
 import 'package:fitos/features/recovery/domain/recovery.dart';
 import 'package:fitos/features/recovery/presentation/recovery_providers.dart';
@@ -128,6 +129,8 @@ void main() {
         localTodayProvider.overrideWithValue(today),
         ...workoutOverrides(db, api, recovery: recovery, running: running),
         ...healthOverrides(health),
+        // Beta 5.7: the panel is in the tab's Recovery half.
+        progressModeProvider.overrideWith(_OnRecovery.new),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
     );
@@ -630,4 +633,9 @@ void main() {
     // Never applied without the user's accept.
     expect(api.calls.where((c) => c.startsWith('deload:')), isEmpty);
   });
+}
+
+class _OnRecovery extends ProgressModeController {
+  @override
+  ProgressMode build() => ProgressMode.recovery;
 }

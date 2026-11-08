@@ -67,10 +67,9 @@ void main() {
   });
 
   testWidgets(
-      'beta 5.6: with a gallery, a Gallery button returns its photo; '
-      'none chosen keeps the camera open', (tester) async {
+      'beta 5.7: the Gallery button closes the camera and says so; the '
+      'caller opens the gallery', (tester) async {
     String? result = 'unset';
-    final answers = <String?>[null, '/cache/plate.jpg'];
     await tester.pumpWidget(
       MaterialApp(
         home: Builder(
@@ -80,7 +79,7 @@ void main() {
                 MaterialPageRoute(
                   builder: (_) => InAppCameraScreen(
                     cameras: () async => const <CameraDescription>[],
-                    gallery: () async => answers.removeAt(0),
+                    gallery: true,
                   ),
                 ),
               );
@@ -94,12 +93,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('camera.gallery')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('camera.screen')), findsOneWidget);
-    expect(result, 'unset');
-    await tester.tap(find.byKey(const ValueKey('camera.gallery')));
-    await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('camera.screen')), findsNothing);
-    expect(result, '/cache/plate.jpg');
+    expect(result, kCameraChoseGallery);
   });
 
   group('beta 5.6.3: with a camera', () {
@@ -108,7 +103,7 @@ void main() {
 
     Future<Future<String?> Function()> openWith(
       WidgetTester tester, {
-      Future<String?> Function()? gallery,
+      bool gallery = false,
     }) async {
       String? result = 'unset';
       await tester.pumpWidget(
@@ -135,42 +130,23 @@ void main() {
     }
 
     testWidgets(
-        'the camera is let go before the gallery opens and not started '
-        'again while it is up (the S24 brought it back over the gallery)',
-        (tester) async {
-      var answer = Completer<String?>();
-      int? releasedAtOpen;
-      final result = await openWith(
-        tester,
-        gallery: () {
-          releasedAtOpen = camera.disposed;
-          return answer.future;
-        },
-      );
+        'the camera is let go before its screen closes for the gallery, '
+        'and leaving meanwhile does not start it again (the S24 brought it '
+        'back over the gallery)', (tester) async {
+      final result = await openWith(tester, gallery: true);
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('preview')), findsOneWidget);
       expect(camera.created, 1);
 
       await tester.tap(find.byKey(const ValueKey('camera.gallery')));
-      await tester.pump();
-      expect(releasedAtOpen, 1, reason: 'released before the gallery');
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-      await tester.pump();
-      expect(camera.created, 1, reason: 'not started over the gallery');
-
-      answer.complete(null);
       await tester.pumpAndSettle();
-      expect(camera.created, 2, reason: 'none chosen: the camera is back');
-      expect(find.byKey(const ValueKey('preview')), findsOneWidget);
-
-      answer = Completer<String?>()..complete('/cache/plate.jpg');
-      await tester.tap(find.byKey(const ValueKey('camera.gallery')));
-      await tester.pumpAndSettle();
+      expect(camera.disposed, 1, reason: 'released');
+      expect(camera.created, 1, reason: 'not started again');
       expect(find.byKey(const ValueKey('camera.screen')), findsNothing);
-      expect(await result(), '/cache/plate.jpg');
-      expect(camera.disposed, 2);
+      expect(await result(), kCameraChoseGallery);
     });
 
     testWidgets(
