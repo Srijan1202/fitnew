@@ -27,5 +27,5 @@ The owner, 2026-11-08: "gallery still have same problem and fix it in 5.7 in tha
 
 ## Release
 
-- **App only:** a Shorebird patch to 1.0.0-beta.5.3 (build 33). It is Dart only, with no dependency or icon changes. There is no migration and nothing for the admin panel.
+- **App only:** a Shorebird patch to 1.0.0-beta.5.3 (build 33). It is Dart only, with no dependency or icon changes. There is no migration and nothing for the admin panel. Released 2026-11-08 from 756482e as 5.3 patch 8.
 - **Then:** the owner checks the S24 and accepts.
