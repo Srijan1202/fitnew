@@ -25,7 +25,7 @@ Today a programme is 7 weekdays (`program_days.day_of_week` 1–7, unique). Skip
 
 | # | Change | Detail |
 |---|---|---|
-| C1 | **The model** | `programs.schedule`: `week` (today's behaviour, the default) or `cycle`. <br>• A cycle programme has `cycle_start`, the date of its day 1. Its days carry `position` 1…N, where N is 2–14 (§11 Q1). <br>• Weekly programmes are untouched. <br>• Migration **0050**. Its down migration refuses while a cycle programme exists. |
+| C1 | **The model** | `programs.schedule`: `week` (today's behaviour, the default) or `cycle`. <br>• A cycle programme has `cycle_start`, the date of its day 1. Its days carry `position` 1…N, where N is 2–14 (§11 Q1). <br>• Weekly programmes are untouched. <br>• Migration **0052**. Its down migration refuses while a cycle programme exists. |
 | C2 | **Which day is today** | Core's `cycleDayFor(date, cycleStart, length)` gives ((date − start) mod N) + 1, in the user's zone, with 100 % branch coverage. Every reader asks core and never computes this itself. |
 | C3 | **The server sends dates** | `GET /training/program` gains `schedule`, `cycleLength` and `upcoming`. `upcoming` lists the next 14 dates, each with its day id or rest. <br>• The week strip, TODAY, the reminders and Home's widget read dates, not weekdays. <br>• Weekly programmes fill `upcoming` the same way, so one code path serves both. |
 | C4 | **Skip today on a cycle** | Moves `cycle_start` one day later, so everything after today moves a day. Undo moves it back the same day. ADR-030's rules all still apply: only today, once a day, not with a session open or after training today. |
@@ -44,7 +44,7 @@ Today a programme is 7 weekdays (`program_days.day_of_week` 1–7, unique). Skip
 | A3 | **What it returns** | A structure only: days, session names, exercise ids in order, sets, rep ranges and target RIR. Weights are never included, as with every FITOS plan. |
 | A4 | **FITOS checks it** (§19.2) | <br>• Every id exists, is not retired and suits the equipment. <br>• Sets, reps and RIR are within the generator's bounds. <br>• Weekly sets per muscle are within the §12.3 landmarks. <br>• No day runs over the minutes asked for by more than 15 %. <br>A plan that fails is repaired once (the bad exercise is swapped for one of its alternatives, or sets are trimmed). If it still fails, the deterministic generator builds it instead, labelled as such. |
 | A5 | **The preview** | The same screen as a shared programme, with days, exercises and sets, plus "Why this plan" in two or three lines from the model. Under it are **Use this programme** and **Ask again**. Using it goes through `putCustom` (source `custom`, ADR-034 D5), and the old programme is kept. |
-| A6 | **Limits** | AI purpose `programme`: 5 a day. It needs AI consent and premium. Migration **0051** adds `programme` to `ai_route`. |
+| A6 | **Limits** | AI purpose `programme`: 5 a day. It needs AI consent and premium. Migration **0053** adds `programme` to `ai_route`. |
 
 ## 3. A week of mess meals (premium)
 
@@ -66,7 +66,7 @@ Today a programme is 7 weekdays (`program_days.day_of_week` 1–7, unique). Skip
 
 | # | Change | Detail |
 |---|---|---|
-| E1 | **Three states per switch** | Off · **Premium** · Everyone, in place of on/off. Migration **0052** gives `feature_flags` an `audience`. Existing switches become Everyone if on and Off if off. |
+| E1 | **Three states per switch** | Off · **Premium** · Everyone, in place of on/off. Migration **0051** gives `feature_flags` an `audience`. Existing switches become Everyone if on and Off if off. |
 | E2 | **The server decides per user** | `features.require(key, user)` lets premium accounts (and admins, premium by role) through a Premium switch. A switch is checked on the server, as now, not only hidden in the app. |
 | E3 | **The app** | `/meta/config` stays public, and a Premium switch reads as off there. A new signed-in `GET /v1/me/features` returns this account's switches, read after sign-in and on each refresh. A Premium-only feature shows a small **Early access** tag. |
 | E4 | **The admin panel** | The flags page gets the three-way control and a note on who sees what. Each change is audit-logged, as now. |
@@ -90,8 +90,8 @@ Today a programme is 7 weekdays (`program_days.day_of_week` 1–7, unique). Skip
 
 | # | Change | Detail |
 |---|---|---|
-| T1 | **Stored** | `user_preferences.theme_id`, empty meaning Automatic. Migration **0052** (with E1). `PUT /v1/user/theme` sets it, and the profile read returns it. It is part of Download my data and deleted with the account. |
-| T2 | **The app** | <br>• Choosing a theme saves it on the phone first, as now, then sends it. A failed send is retried on the next start. <br>• Signing in on a phone applies the account's theme. <br>• A theme the account can no longer use (premium lapsed, say) falls back to Automatic, as now. |
+| T1 | **Stored** | `user_preferences.theme_id`: a palette id or `auto` (Automatic). Null means no phone has sent one yet. Migration **0050**. It is set with the existing `PATCH /v1/user/preferences` and read with `GET`. It is part of Download my data and goes with the account (foreign keys). |
+| T2 | **The app** | <br>• Choosing a theme saves it on the phone first, as now, then sends it. One that could not be sent is marked with its account and sent at the next start, and is not overwritten by the account's older choice. <br>• At sign-in and each start, the account's choice is applied when it differs. An account that never sent one (everyone before 6.1) takes this phone's. <br>• A theme the account can no longer use (premium lapsed, a reward not earned) falls back to Automatic on the phone, as now. That correction is never sent, so it does not overwrite the account's choice. |
 
 ## 9. E19: editing alternatives in the admin panel
 
@@ -113,10 +113,10 @@ Today a programme is 7 weekdays (`program_days.day_of_week` 1–7, unique). Skip
   - every route, with premium and early access checked on the server;
   - a cycle programme read by TODAY, the reminders, the ring, recovery and the weekly report;
   - skip and undo on a cycle;
-  - migrations 0050–0052 up and down.
+  - migrations 0050–0053 up and down.
 
   On the app side, widget tests for every new screen, with the `useRootNavigator` guard kept. Before release, an emulator pass through each feature, as the owner asked for 6.0.
-- **Release:** one API deploy (0050–0052), then the app.
+- **Release:** one API deploy (0050–0053), then the app.
   - Everything in the app is Dart, so it **can** go as a Shorebird patch to 6.0. The plan is a **new APK, 1.0.0-beta.6.1 (37)**, because it changes the programme model and goes with the minimum-build raise (C9).
   - The website gets the policy, a post and the release values.
   - **ADR-060** records the decisions.

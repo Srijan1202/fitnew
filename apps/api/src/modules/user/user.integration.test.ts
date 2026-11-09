@@ -312,10 +312,19 @@ describeIfDb('/v1/user (real Postgres)', () => {
 
   describe('preferences', () => {
     it('exist with defaults after onboarding and PATCH partially', async () => {
-      expect((await call('GET', '/user/preferences')).json()).toEqual({ units: 'metric', notificationSettings: {}, featureFlags: {} });
+      expect((await call('GET', '/user/preferences')).json()).toEqual({ units: 'metric', notificationSettings: {}, featureFlags: {}, themeId: null });
       const r = await call('PATCH', '/user/preferences', { units: 'imperial' });
       expect(r.json().units).toBe('imperial');
       expect(r.json().featureFlags).toEqual({});
+    });
+
+    it('beta 6.1 (E23): keep the theme chosen on any phone; a theme id or auto, nothing else', async () => {
+      expect((await call('PATCH', '/user/preferences', { themeId: 'violet-light' })).json()).toMatchObject({ themeId: 'violet-light', units: 'metric' });
+      expect((await call('GET', '/user/preferences')).json().themeId).toBe('violet-light');
+      expect((await call('PATCH', '/user/preferences', { themeId: 'auto' })).json().themeId).toBe('auto');
+      expect((await call('PATCH', '/user/preferences', { themeId: 'Violet Light' })).statusCode).toBe(422);
+      expect((await call('PATCH', '/user/preferences', { themeId: null })).statusCode).toBe(422);
+      expect((await call('GET', '/user/preferences')).json().themeId).toBe('auto');
     });
   });
 

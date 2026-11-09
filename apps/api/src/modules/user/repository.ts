@@ -170,7 +170,7 @@ export class UserRepository {
 
   async upsertPreferences(
     userId: string,
-    patch: { units?: UserPreferencesRow['units']; notificationSettings?: Record<string, unknown> },
+    patch: { units?: UserPreferencesRow['units']; notificationSettings?: Record<string, unknown>; themeId?: string },
   ): Promise<UserPreferencesRow> {
     const [row] = await this.db
       .insert(userPreferences)

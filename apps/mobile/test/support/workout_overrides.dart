@@ -1,3 +1,4 @@
+import 'package:fitos/core/theme/theme_sync.dart';
 import 'package:fitos/features/community/presentation/community_providers.dart';
 import 'package:fitos/features/water/presentation/water_providers.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -131,5 +132,7 @@ List<Override> workoutOverrides(
     communityApiProvider.overrideWithValue(community ?? FakeCommunityApi()),
     // Beta 6.0: water against a scripted server.
     waterApiProvider.overrideWithValue(water ?? FakeWaterApi()),
+    // Beta 6.1 (E23): the theme stays on the phone unless a test says.
+    themeSyncProvider.overrideWithValue(null),
   ];
 }

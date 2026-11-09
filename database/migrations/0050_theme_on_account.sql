@@ -1,0 +1,2 @@
+ALTER TABLE "user_preferences" ADD COLUMN "theme_id" text;--> statement-breakpoint
+ALTER TABLE "user_preferences" ADD CONSTRAINT "user_preferences_theme_id" CHECK ("user_preferences"."theme_id" ~ '^[a-z][a-z0-9-]{0,39}$');

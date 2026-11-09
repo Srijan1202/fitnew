@@ -164,10 +164,19 @@ export const dietPreferencesSchema = z.object({
 });
 export type DietPreferences = z.infer<typeof dietPreferencesSchema>;
 
+/**
+ * Beta 6.1 (E23): a palette id from the app's list (`cobalt`, `violet-light`…)
+ * or `auto` for Automatic. The server only checks the shape; the app keeps a
+ * premium or reward theme to the accounts that have it, as before.
+ */
+export const themeIdSchema = z.string().regex(/^[a-z][a-z0-9-]{0,39}$/, 'a theme id');
+
 export const userPreferencesSchema = z.object({
   units: unitsSchema,
   notificationSettings: z.record(z.string(), z.unknown()),
   featureFlags: z.record(z.string(), z.unknown()),
+  /** Beta 6.1 (E23): null until a phone sends its choice. */
+  themeId: themeIdSchema.nullable(),
 });
 export type UserPreferences = z.infer<typeof userPreferencesSchema>;
 
@@ -295,6 +304,7 @@ export const patchPreferencesRequestSchema = z
   .object({
     units: unitsSchema.optional(),
     notificationSettings: z.record(z.string(), z.unknown()).optional(),
+    themeId: themeIdSchema.optional(),
   })
   .strict();
 export type PatchPreferencesRequest = z.infer<typeof patchPreferencesRequestSchema>;

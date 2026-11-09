@@ -78,6 +78,7 @@ export function preferencesFrom(bundle: ProfileBundle): UserPreferences {
     units: p?.units ?? 'metric',
     notificationSettings: (p?.notificationSettings as Record<string, unknown>) ?? {},
     featureFlags: (p?.featureFlags as Record<string, unknown>) ?? {},
+    themeId: p?.themeId ?? null,
   };
 }
 

@@ -4,6 +4,7 @@
 import { sql } from 'drizzle-orm';
 import {
   boolean,
+  check,
   index,
   jsonb,
   numeric,
@@ -96,8 +97,13 @@ export const userPreferences = pgTable('user_preferences', {
   units: unitsEnum('units').notNull().default('metric'),
   notificationSettings: jsonb('notification_settings').notNull().default(sql`'{}'::jsonb`),
   featureFlags: jsonb('feature_flags').notNull().default(sql`'{}'::jsonb`),
+  /**
+   * Beta 6.1 (E23): the theme chosen on any phone of this account; `auto` is
+   * Automatic, null is never chosen since 6.1 (the phone's own choice goes up).
+   */
+  themeId: text('theme_id'),
   ...timestamps,
-});
+}, (t) => [check('user_preferences_theme_id', sql`${t.themeId} ~ '^[a-z][a-z0-9-]{0,39}$'`)]);
 
 export type UserProfileRow = typeof userProfiles.$inferSelect;
 export type UserGoalRow = typeof userGoals.$inferSelect;

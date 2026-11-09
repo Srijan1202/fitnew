@@ -7,6 +7,7 @@ import 'core/config/app_update.dart';
 import 'core/routing/router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
+import 'core/theme/theme_sync.dart';
 import 'core/theme/tokens.dart';
 import 'shared/widgets/fit_glass.dart';
 import 'features/home_widgets/presentation/home_widgets_coordinator.dart';
@@ -49,6 +50,8 @@ class FitOSApp extends ConsumerWidget {
     ref.watch(configRefreshCoordinatorProvider);
     // Beta 5.0: the home-screen widgets' snapshot and taps.
     ref.watch(homeWidgetsCoordinatorProvider);
+    // Beta 6.1 (E23): the theme follows the account.
+    ref.watch(themeSyncProvider);
     // Phase 19 (E1): a build below the server's minimum shows only
     // "Update FITOS". Unknown (offline) never blocks.
     final updateRequired = ref.watch(updateRequiredProvider);
@@ -60,13 +63,24 @@ class FitOSApp extends ConsumerWidget {
     FitPalette.current = palette;
     ref.listen(themeControllerProvider, (previous, next) {
       if (previous?.id == next.id) return;
+      // Beta 6.1 (E23): the account's choice arrives after the checks below
+      // have run; a theme this account cannot use goes back here too.
+      final premiumKnown = ref.read(isPremiumProvider);
+      final earned = ref.read(earnedUnlocksProvider);
+      if ((next.premium && premiumKnown == false) ||
+          (next.reward != null &&
+              earned != null &&
+              !earned.contains(next.reward))) {
+        ref.read(themeControllerProvider.notifier).followDevice(share: false);
+        return;
+      }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) rebuildEverything(context);
       });
     });
     ref.listen(isPremiumProvider, (_, premium) {
       if (premium == false && FitPalette.current.premium) {
-        ref.read(themeControllerProvider.notifier).followDevice();
+        ref.read(themeControllerProvider.notifier).followDevice(share: false);
       }
       // Beta 3.2: and a premium app icon goes back to Standard.
       if (premium == false) {
@@ -80,7 +94,7 @@ class FitOSApp extends ConsumerWidget {
       if (earned == null) return;
       final reward = FitPalette.current.reward;
       if (reward != null && !earned.contains(reward)) {
-        ref.read(themeControllerProvider.notifier).followDevice();
+        ref.read(themeControllerProvider.notifier).followDevice(share: false);
       }
       ref.read(appIconControllerProvider.notifier).keepEarned(earned);
     });

@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'theme_sync.dart';
 import 'tokens.dart';
 
 /// Phase 19 (ADR-027, ADR-028), owner 2026-10-30: the chosen palette, kept
@@ -53,7 +54,9 @@ class ThemeController extends Notifier<FitPalette> with WidgetsBindingObserver {
     state = p;
   }
 
-  Future<void> choose(FitPalette palette) async {
+  /// [share]: also send it to the account (beta 6.1, E23); false for the
+  /// account's own choice arriving, and for the app's entitlement checks.
+  Future<void> choose(FitPalette palette, {bool share = true}) async {
     FitPalette.followsDevice = false;
     FitPalette.current = palette;
     state = palette;
@@ -64,10 +67,11 @@ class ThemeController extends Notifier<FitPalette> with WidgetsBindingObserver {
     } on Object {
       // The choice still applies for this run.
     }
+    if (share) await ref.read(themeSyncProvider)?.send();
   }
 
   /// Automatic: Cobalt or Cobalt Light with the phone's mode.
-  Future<void> followDevice() async {
+  Future<void> followDevice({bool share = true}) async {
     FitPalette.followsDevice = true;
     final p = FitPalette.forMode(deviceMode);
     FitPalette.current = p;
@@ -79,6 +83,7 @@ class ThemeController extends Notifier<FitPalette> with WidgetsBindingObserver {
     } on Object {
       // Automatic still applies for this run.
     }
+    if (share) await ref.read(themeSyncProvider)?.send();
   }
 }
 
