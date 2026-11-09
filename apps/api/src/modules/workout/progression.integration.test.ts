@@ -9,7 +9,7 @@ import { randomUUID } from 'node:crypto';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import postgres from 'postgres';
-import { CURRENT_POLICY_VERSION, type Program, type TodayResponse, type VolumeResponse, type WorkoutSession } from '@fitos/contracts';
+import { CURRENT_POLICY_VERSION, type LiftHistoryResponse, type Program, type TodayResponse, type VolumeResponse, type WorkoutSession } from '@fitos/contracts';
 import { isoWeekKey } from '@fitos/core/training/mesocycle';
 
 import { migrateUp } from '../../db/migrate.js';
@@ -348,6 +348,32 @@ describeIfDb('/v1/training progression, volume and deload (real Postgres, real s
     expect(d.recommendation.action).toBe('increase-load');
     expect(d.recommendation.weightKg).toBe(60 + x.incrementKg);
     expect((await app.inject({ method: 'GET', url: `/v1/training/progression/${randomUUID()}`, headers: auth(token) })).statusCode).toBe(404);
+  });
+
+  it('beta 6.1 (E3): GET /training/exercises/{id}/history — every completed session, newest first, records marked; abandoned ones left out; only your own', async () => {
+    const { token, day } = await withProgram();
+    const x = day.exercises[0]!;
+    for (const [i, w] of [50, 60, 55, 57.5].entries()) await session(token, day, daysAgo(12 - i * 3), [{ index: 0, weight: w, reps: 10, rir: 1 }]);
+    // An abandoned session with a huge load is not history.
+    const s: WorkoutSession = (await app.inject({ method: 'POST', url: '/v1/training/sessions', headers: auth(token), payload: { clientSessionId: randomUUID(), programDayId: day.id, startedAt: daysAgo(1).toISOString() } })).json();
+    const sx = s.exercises[0]!;
+    await app.inject({ method: 'POST', url: `/v1/training/sessions/${s.id}/sets`, headers: auth(token), payload: { sets: [{ clientSetId: randomUUID(), sessionExerciseId: sx.id, setIndex: 1, weightKg: 200, reps: 10, rir: 0, loggedAt: daysAgo(1).toISOString() }] } });
+    await app.inject({ method: 'POST', url: `/v1/training/sessions/${s.id}/abandon`, headers: auth(token) });
+
+    const r = await app.inject({ method: 'GET', url: `/v1/training/exercises/${x.exerciseId}/history`, headers: auth(token) });
+    expect(r.statusCode, r.body).toBe(200);
+    const h = r.json() as LiftHistoryResponse;
+    expect(h.name).toBe(x.name);
+    expect(h.truncated).toBe(false);
+    expect(h.sessions.map((p) => p.topSet?.weightKg)).toEqual([57.5, 55, 60, 50]);
+    expect(h.sessions.map((p) => p.record)).toEqual([false, false, true, true]);
+    expect(h.best).toEqual({ estimated1RmKg: 80, date: h.sessions[2]!.date });
+
+    // Someone else sees nothing of it; an unknown lift is 404; no session is 401.
+    const other = await withProgram();
+    expect(((await app.inject({ method: 'GET', url: `/v1/training/exercises/${x.exerciseId}/history`, headers: auth(other.token) })).json() as LiftHistoryResponse).sessions).toEqual([]);
+    expect((await app.inject({ method: 'GET', url: `/v1/training/exercises/${randomUUID()}/history`, headers: auth(token) })).statusCode).toBe(404);
+    expect((await app.inject({ method: 'GET', url: `/v1/training/exercises/${x.exerciseId}/history`, headers: { 'x-forwarded-for': '203.0.113.2' } })).statusCode).toBe(401);
   });
 
   it('abandoned sessions and deleted sets never feed a recommendation; bodyweight lifts progress by reps', async () => {

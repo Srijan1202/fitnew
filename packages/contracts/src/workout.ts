@@ -337,6 +337,34 @@ export type ProgressionDetail = z.infer<typeof progressionDetailSchema>;
 
 export const progressionParamsSchema = z.object({ exerciseId: z.string().uuid() });
 
+/**
+ * Beta 6.1 (E3): one lift's whole history, newest first — every completed
+ * session with it (abandoned ones are left out, as from records), at most
+ * LIFT_HISTORY_MAX. The estimate is Epley, for display only.
+ */
+export const LIFT_HISTORY_MAX = 400;
+export const liftHistorySchema = z.object({
+  exerciseId: z.string().uuid(),
+  name: z.string().min(1),
+  sessions: z.array(
+    z.object({
+      sessionId: z.string().uuid(),
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      sets: z.array(z.object({ setIndex: z.number().int().min(1), weightKg: setWeightKgSchema.nullable(), reps: repsSchema, rir: rirSchema.nullable() })),
+      topSet: z.object({ weightKg: z.number(), reps: z.number().int() }).nullable(),
+      estimated1RmKg: z.number().nullable(),
+      volumeKg: z.number(),
+      reps: z.number().int(),
+      /** Its best estimate beats every earlier session's. */
+      record: z.boolean(),
+    }),
+  ),
+  best: z.object({ estimated1RmKg: z.number(), date: z.string() }).nullable(),
+  /** More than LIFT_HISTORY_MAX sessions: the oldest are left out. */
+  truncated: z.boolean(),
+});
+export type LiftHistoryResponse = z.infer<typeof liftHistorySchema>;
+
 /* ---------------------------------------------------------------- write -- */
 
 /**

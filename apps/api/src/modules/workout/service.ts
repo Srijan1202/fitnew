@@ -6,6 +6,7 @@
  */
 import { randomUUID } from 'node:crypto';
 
+import { liftHistory } from '@fitos/core/progress/lift-history';
 import { isoWeekKey } from '@fitos/core/training/mesocycle';
 import { prefillSet } from '@fitos/core/training/prefill';
 import { recommendProgression, type SessionLog } from '@fitos/core/training/progression';
@@ -16,6 +17,7 @@ import type {
   AddSessionExerciseRequest,
   CompleteSessionRequest,
   LastPerformance,
+  LiftHistoryResponse,
   LogSetsRequest,
   MuscleGroup,
   PatchSessionExerciseRequest,
@@ -36,6 +38,7 @@ import type {
   TodayResponse,
   WorkoutSession,
 } from '@fitos/contracts';
+import { LIFT_HISTORY_MAX } from '@fitos/contracts';
 
 import { uniqueViolationOf } from '../../db/errors.js';
 import { AppError } from '../../lib/errors.js';
@@ -664,6 +667,23 @@ export class WorkoutService {
         .slice(0, 3)
         .map((p) => ({ sessionId: p.sessionId, date: localDate(p.completedAt, tz), sets: p.sets.map((s) => ({ setIndex: s.setIndex, weightKg: num(s.weightKg), reps: s.reps, rir: s.rir })) })),
     };
+  }
+
+  /** Beta 6.1 (E3): every completed session with this lift, newest first. */
+  async liftHistory(userId: string, exerciseId: string): Promise<LiftHistoryResponse> {
+    const name = (await this.training.exercisesById([exerciseId])).get(exerciseId)?.name;
+    if (name === undefined) throw new AppError('NOT_FOUND', 'Unknown exercise.');
+    const tz = await this.repo.userTimezone(userId);
+    const prior = (await this.repo.priorWork(userId, [exerciseId])).filter((p) => p.exerciseId === exerciseId);
+    const kept = prior.slice(0, LIFT_HISTORY_MAX);
+    const h = liftHistory(
+      kept.map((p) => ({
+        sessionId: p.sessionId,
+        date: localDate(p.completedAt, tz),
+        sets: p.sets.map((s) => ({ setIndex: s.setIndex, weightKg: num(s.weightKg), reps: s.reps, rir: s.rir })),
+      })),
+    );
+    return { exerciseId, name, sessions: h.sessions.map((s) => ({ ...s, sets: [...s.sets] })), best: h.best, truncated: prior.length > kept.length };
   }
 
   async acceptDeload(userId: string): Promise<DeloadState> {

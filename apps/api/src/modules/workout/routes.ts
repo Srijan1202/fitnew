@@ -11,6 +11,7 @@ import {
   completeSessionRequestSchema,
   deloadStateSchema,
   errorEnvelopeSchema,
+  liftHistorySchema,
   progressionDetailSchema,
   progressionParamsSchema,
   programSchema,
@@ -258,6 +259,20 @@ export async function workoutRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request) => service.progressionDetail(requireUserId(request.userId), request.params.exerciseId),
+  );
+
+  typed.get(
+    '/training/exercises/:exerciseId/history',
+    {
+      schema: {
+        summary: 'One lift: every completed session with it, newest first, with the top set, estimated 1RM (display only), volume and records (beta 6.1, E3)',
+        tags,
+        security,
+        params: progressionParamsSchema,
+        response: { 200: liftHistorySchema, ...errors },
+      },
+    },
+    async (request) => service.liftHistory(requireUserId(request.userId), request.params.exerciseId),
   );
 
   typed.post(
