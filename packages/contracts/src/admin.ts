@@ -214,6 +214,7 @@ export const APP_FEATURES = {
   running: { name: 'Running', description: 'Recording runs with GPS, the run history, sharing and GPX (beta 4).' },
   community: { name: 'Community', description: 'Friends, clubs and the world board (beta 5.8). Off hides Community and the server refuses it.' },
   water: { name: 'Water', description: "The water card on Home and the day's water (beta 6.0)." },
+  'mess-week': { name: 'Mess week plan', description: 'The premium week of mess meals, planned by FITOS (beta 6.1).' },
   'monthly-report': { name: 'Monthly report', description: 'The premium monthly report (a PDF made on the phone) on Progress (beta 6.1).' },
 } as const;
 export type AppFeature = keyof typeof APP_FEATURES;

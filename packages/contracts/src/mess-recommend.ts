@@ -222,3 +222,32 @@ export const messRecommendationSchema = z.object({
   smallestMealKcal: amount.nullable(),
 });
 export type MessRecommendation = z.infer<typeof messRecommendationSchema>;
+
+/**
+ * Beta 6.1 (premium): a week of mess meals — today and the next six days,
+ * each served meal with the plate FITOS's own recommender would suggest, as
+ * if the day's earlier plates were eaten (owner: not the AI). A day keeps
+ * its basis: an inferred menu is planned and says so; a day without a menu
+ * has no meals. Only today's plates can be logged.
+ */
+export const MESS_WEEK_DAYS = 7;
+export const messWeekQuerySchema = z.object({ mess: messCodeSchema.optional() }).strict();
+export const messWeekPlanSchema = z.object({
+  mess: messSchema,
+  today: isoDateSchema,
+  filters: z.object({ diet: dietTypeSchema, allergies: z.array(allergenSchema) }),
+  goal: goalTypeSchema,
+  /** False before targets exist: every meal then says no-targets. */
+  hasTargets: z.boolean(),
+  days: z
+    .array(
+      z.object({
+        date: isoDateSchema,
+        basis: z.enum(['published', 'inferred']).nullable(),
+        meals: z.array(z.object({ slot: mealSlotSchema, status: z.enum(RECOMMENDATION_STATUSES), plate: plateSchema.nullable() })),
+        totals: z.object(macroTotals),
+      }),
+    )
+    .length(MESS_WEEK_DAYS),
+});
+export type MessWeekPlan = z.infer<typeof messWeekPlanSchema>;

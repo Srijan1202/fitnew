@@ -20,7 +20,10 @@ import {
 import type { DishNutrition, MessDay } from '@fitos/core/mess/types';
 import { proteinDishOf, type DinnerDish } from '@fitos/core/notify/dinner-dish';
 import { addDays, localDateOf, localHourOf } from '@fitos/core/nutrition/log';
-import type { MessRecommendQuery, MessRecommendation, RecommendationReason } from '@fitos/contracts';
+import type { MessRecommendQuery, MessRecommendation, MessWeekPlan, RecommendationReason } from '@fitos/contracts';
+import { MESS_WEEK_DAYS } from '@fitos/contracts';
+import { planWeek } from '@fitos/core/mess/week-plan';
+import type { RankedPlate } from '@fitos/core/mess/recommendation';
 
 import { AppError } from '../../lib/errors.js';
 import type { MessDishNutritionRow, MessRow } from '../../db/schema.js';
@@ -44,6 +47,28 @@ function storedNutrition(row: MessDishNutritionRow): DishNutrition {
     },
     confidence: capMessConfidence(row.confidence),
     source: 'estimated-table',
+  };
+}
+
+/** A plate on the wire (the recommendation's and the week plan's). */
+function plateOut(p: RankedPlate): MessRecommendation['plates'][number] {
+  return {
+    rank: p.rank,
+    items: p.items.map((i) => ({
+      dishSlug: i.dishId,
+      name: i.name,
+      servings: i.servings,
+      servingLabel: i.servingLabel,
+      servingGrams: i.servingGrams,
+      ...i.macros,
+      confidence: capMessConfidence(i.confidence),
+      component: i.component,
+    })),
+    totals: p.macros,
+    confidence: capMessConfidence(p.confidence),
+    // ADR-016: the meal this plate makes (the tier stays internal).
+    structure: { kind: p.structure.kind, missing: [...p.structure.missing] },
+    reasons: p.reasons.map((x) => ({ ...x, ...('missing' in x ? { missing: [...x.missing] } : {}) })) as RecommendationReason[],
   };
 }
 
@@ -98,6 +123,51 @@ export class MessRecommendService {
       if (dish !== null) out[date] = dish;
     }
     return out;
+  }
+
+  /**
+   * Beta 6.1 (premium): today and the next six days, each served meal with
+   * the recommender's plate (core `planWeek`); the user's own filters, the
+   * targets in effect today, and the dishes eaten in the three days before.
+   */
+  async weekPlan(userId: string, query: { mess?: string | undefined }): Promise<MessWeekPlan> {
+    const bundle = await this.users.loadBundle(userId);
+    if (bundle === null) throw new AppError('NOT_FOUND', 'User not found.');
+    const today = localDateOf(this.now(), bundle.user.timezone);
+    let mess: MessRow | null;
+    if (query.mess !== undefined) {
+      mess = await this.mess.messByCode(query.mess);
+      if (mess === null) throw new AppError('NOT_FOUND', 'No such mess.', [{ path: 'mess', issue: query.mess }]);
+    } else {
+      mess = await this.mess.configuredMessRow(userId);
+      if (mess === null) throw new AppError('NOT_FOUND', 'Choose your mess first.', [{ path: 'mess', issue: 'not configured' }]);
+    }
+    const diet = bundle.diet?.dietType ?? 'vegetarian';
+    const allergies: Allergen[] = [...new Set(bundle.allergies.map((a) => a.allergen))].sort();
+    const excluded = Array.isArray(bundle.diet?.excludedDishIds) ? (bundle.diet?.excludedDishIds as string[]) : [];
+    const goal = bundle.goal?.goalType ?? 'general';
+    const dates = Array.from({ length: MESS_WEEK_DAYS }, (_, i) => addDays(today, i));
+    const [menus, targetsRow, history, describedMess] = await Promise.all([
+      Promise.all(dates.map((d) => this.storedMenu(mess, d))),
+      this.logs.targetsOn(userId, today),
+      this.history.varietyDays(userId, addDays(today, -3), addDays(today, -1)),
+      this.mess.describe(mess),
+    ]);
+    const targets = targetsRow === null ? null : { kcal: targetsRow.kcal, proteinG: targetsRow.proteinG, carbG: targetsRow.carbG, fatG: targetsRow.fatG };
+    const days = planWeek({ days: menus, diet, allergies, excludedDishIds: excluded, goal, targets, history });
+    return {
+      mess: describedMess,
+      today,
+      filters: { diet, allergies },
+      goal,
+      hasTargets: targets !== null,
+      days: days.map((d) => ({
+        date: d.date,
+        basis: d.basis,
+        meals: d.meals.map((m) => ({ slot: m.slot, status: m.status, plate: m.plate === null ? null : plateOut(m.plate) })),
+        totals: d.totals,
+      })),
+    };
   }
 
   async recommend(userId: string, query: MessRecommendQuery): Promise<MessRecommendation> {
@@ -182,24 +252,7 @@ export class MessRecommendService {
       goal,
       target: r.target,
       postWorkout,
-      plates: r.plates.map((p) => ({
-        rank: p.rank,
-        items: p.items.map((i) => ({
-          dishSlug: i.dishId,
-          name: i.name,
-          servings: i.servings,
-          servingLabel: i.servingLabel,
-          servingGrams: i.servingGrams,
-          ...i.macros,
-          confidence: capMessConfidence(i.confidence),
-          component: i.component,
-        })),
-        totals: p.macros,
-        confidence: capMessConfidence(p.confidence),
-        // ADR-016: the meal this plate makes (the tier stays internal).
-        structure: { kind: p.structure.kind, missing: [...p.structure.missing] },
-        reasons: p.reasons.map((x) => ({ ...x, ...('missing' in x ? { missing: [...x.missing] } : {}) })) as RecommendationReason[],
-      })),
+      plates: r.plates.map(plateOut),
       shortfall: r.shortfall,
       dishes: r.dishes.map((o) => ({
         dishSlug: o.dish.id,

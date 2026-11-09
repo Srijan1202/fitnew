@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_features.dart';
 import '../../../core/routing/navigation.dart';
+import '../../../core/routing/router.dart';
 import '../../../core/theme/tokens.dart';
 import '../../auth/presentation/widgets/auth_form_field.dart';
 import '../../nutrition/domain/entities/food_log.dart';
@@ -75,6 +78,14 @@ class MessScreen extends ConsumerWidget {
           ],
         ),
         actions: <Widget>[
+          // Beta 6.1 (premium): the week, planned by FITOS.
+          if (ref.watch(featureOnProvider(AppFeature.messWeek)))
+            IconButton(
+              key: const ValueKey('mess.week'),
+              tooltip: 'This week',
+              onPressed: () => context.push(Routes.messWeek),
+              icon: const Icon(Icons.calendar_view_week),
+            ),
           IconButton(
             key: const ValueKey('mess.switch'),
             tooltip: 'Show another mess',

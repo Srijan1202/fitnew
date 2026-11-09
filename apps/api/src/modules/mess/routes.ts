@@ -22,6 +22,8 @@ import {
   messMenuSchema,
   messRecommendQuerySchema,
   messRecommendationSchema,
+  messWeekPlanSchema,
+  messWeekQuerySchema,
   messProvidersResponseSchema,
   messesResponseSchema,
   providerSlugParamsSchema,
@@ -39,6 +41,8 @@ import { RecommendRepository } from './recommend-repository.js';
 import { MessRecommendService } from './recommend-service.js';
 import { MessRepository } from './repository.js';
 import { MessService } from './service.js';
+import { PremiumRepository } from '../premium/repository.js';
+import { PremiumService, premiumRequired } from '../premium/service.js';
 
 /** Corrections are rare by nature; a tighter budget than the default 120/min. */
 export const CORRECTION_RATE_LIMIT = { max: 20, timeWindow: '1 hour' } as const;
@@ -150,6 +154,28 @@ export async function messRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request) => recommend.recommend(requireUserId(request.userId), request.query),
+  );
+
+  // Beta 6.1 (premium): a week of mess meals, planned by FITOS (not the AI).
+  const premium = new PremiumService(new PremiumRepository(app.database.db));
+  typed.get(
+    '/mess/week-plan',
+    {
+      schema: {
+        summary: 'A week of mess meals: today and the next six days, each served meal with the recommender’s plate for YOUR filters and targets (premium, beta 6.1)',
+        description: 'FITOS plans it, not the AI. A day keeps its basis (published or inferred); without a menu it has no meals. Only today is loggable. Nothing is stored.',
+        tags: ['mess'],
+        security,
+        querystring: messWeekQuerySchema,
+        response: { 200: messWeekPlanSchema, 403: errorEnvelopeSchema, ...errors },
+      },
+    },
+    async (request) => {
+      const userId = requireUserId(request.userId);
+      await app.features.require('mess-week', request);
+      if (!(await premium.isPremium(userId, request.identity?.claims))) throw premiumRequired('The mess week plan');
+      return recommend.weekPlan(userId, request.query);
+    },
   );
 
   typed.post(

@@ -14,6 +14,7 @@ import '../../features/exercise/presentation/screens/exercise_browser_screen.dar
 import '../../features/exercise/presentation/screens/exercise_detail_screen.dart';
 import '../../features/progress/presentation/lift_history_screen.dart';
 import '../../features/progress/presentation/monthly_report_screen.dart';
+import '../../features/mess/presentation/mess_week_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_demos_screen.dart';
 import '../../features/mess/presentation/mess_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
@@ -140,6 +141,9 @@ abstract final class Routes {
 
   /// Phase 9: the MESS screen (root navigator).
   static const String mess = '/nutrition/mess';
+
+  /// Beta 6.1 (premium): a week of mess meals.
+  static const String messWeek = '/nutrition/mess/week';
   static String foodDetail(String id) => '/nutrition/foods/$id';
 
   // Deeper training screens (root navigator; the bar is hidden).
@@ -538,6 +542,14 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
                     name: 'mess',
                     parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) => const MessScreen(),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: 'week',
+                        name: 'mess-week',
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (context, state) => const MessWeekScreen(),
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: 'foods/new',

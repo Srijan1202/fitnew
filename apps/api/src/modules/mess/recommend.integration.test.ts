@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import postgres from 'postgres';
-import { ALLERGENS, type CreateLogResponse, type MessRecommendation } from '@fitos/contracts';
+import { ALLERGENS, messWeekPlanSchema, type CreateLogResponse, type MessRecommendation } from '@fitos/contracts';
 import { ALLERGENS as CORE_ALLERGENS, allergenStatus } from '@fitos/core/mess/allergens';
 import { VIT_ENDPOINTS } from '@fitos/core/mess/providers/vit/config';
 import { defaultRecommendationSlot } from '@fitos/core/mess/recommendation';
@@ -506,5 +506,39 @@ describeIfDb('/v1/mess/menu/recommend (real Postgres)', { timeout: 30_000 }, () 
     } finally {
       await sql`update mess_dish_nutrition set protein_low = ${before!.protein_low}, protein_high = ${before!.protein_high} where dish_slug = 'dhal'`;
     }
+  });
+  it('beta 6.1: the mess week plan is premium; seven days from today, a plate for each served meal by the user’s filters, the basis kept, nothing stored', async () => {
+    const day = today();
+    const u = await user({ diet: 'vegetarian', allergies: [{ allergen: 'peanut', severity: 'mild' }] });
+    const week = () => app.inject({ method: 'GET', url: '/v1/mess/week-plan', headers: headers(u.token) });
+    const free = await week();
+    expect(free.statusCode).toBe(403);
+    await sql`update users set premium_since = now() where id = ${u.id}`;
+    const r = await week();
+    expect(r.statusCode, r.body).toBe(200);
+    const plan = messWeekPlanSchema.parse(r.json());
+    expect(plan.days.map((d) => d.date)).toEqual(Array.from({ length: 7 }, (_, i) => addDays(day, i)));
+    expect(plan).toMatchObject({ today: day, hasTargets: true, filters: { diet: 'vegetarian', allergies: ['peanut'] } });
+    const first = plan.days[0]!;
+    expect(first.basis).toBe('published');
+    const plates = first.meals.filter((m) => m.plate !== null);
+    expect(plates.length).toBeGreaterThan(0);
+    // The day's plates add up to its totals; no plate holds an unsafe dish.
+    expect(first.totals.kcalLow).toBeCloseTo(plates.reduce((a, m) => a + m.plate!.totals.kcalLow, 0), 1);
+    const today0 = await rec(u, `?slot=${plates[0]!.slot}`);
+    const unsafe = new Set(today0.dishes.filter((d) => d.reasons.some((x) => x.code === 'diet' || x.code === 'allergen')).map((d) => d.dishSlug));
+    expect(plates.flatMap((m) => m.plate!.items.map((i) => i.dishSlug)).some((s) => unsafe.has(s))).toBe(false);
+    // Nothing logged by planning.
+    expect((await sql`select 1 from food_logs where user_id = ${u.id}`).length).toBe(0);
+
+    // A mess whose copy stopped yesterday: the week is planned from the cycle, and says so.
+    const inferred = await user({ diet: 'vegetarian', mess: { hostelId: 'womens', messId: 'special' } });
+    await sql`update users set premium_since = now() where id = ${inferred.id}`;
+    const theirs = messWeekPlanSchema.parse((await app.inject({ method: 'GET', url: '/v1/mess/week-plan', headers: headers(inferred.token) })).json());
+    expect(theirs.days.every((d) => d.basis !== 'published')).toBe(true);
+    // Without a mess: 404, as the recommender.
+    const none = await user({ mess: null });
+    await sql`update users set premium_since = now() where id = ${none.id}`;
+    expect((await app.inject({ method: 'GET', url: '/v1/mess/week-plan', headers: headers(none.token) })).statusCode).toBe(404);
   });
 });
