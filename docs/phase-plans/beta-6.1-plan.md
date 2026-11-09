@@ -75,9 +75,9 @@ Today a programme is 7 weekdays (`program_days.day_of_week` 1–7, unique). Skip
 
 | # | Change | Detail |
 |---|---|---|
-| P1 | **The planner picks it** | The reminders are planned on the server (Phase 15) for 7 days ahead. For each date with a dinner menu, the plan names the dish with the most protein a serving that passes your diet filters, using the same safety filters as the recommender. |
-| P2 | **New lines** | A `{dish}` variant in both tones, for example: <br>• cheeky: "Tonight's mess has {dish}. Your protein would like a word."; <br>• plain: "{dish} is on tonight's menu, about {protein} g protein a serving." <br>They are under the same no-body-talk rules (`BANNED`, tested). |
-| P3 | **When it isn't used** | <br>• no mess, or no published or inferred dinner; <br>• no dish passes the filters; <br>• the dish is under 10 g protein a serving. <br>In those cases today's lines are used. An inferred menu says "usually" ("Thursday's dinner usually has …"). |
+| P1 | **The planner picks it** | The reminders are planned on the server (Phase 15) for 7 days ahead. For each date with a **published** dinner menu, the plan names the dish with the most protein a serving that the mess recommender would allow on this user's plate (diet, allergens, dishes they dislike, a FITOS estimate). Core's `proteinDishOf` does the pick, with 100 % branch coverage. |
+| P2 | **New lines** | Three cheeky and two gentle, for example: <br>• cheeky: "Protein has entered the mess: {dish} is on tonight's menu. About {protein} g protein a serving."; <br>• gentle: "{dish} is on tonight's mess menu, about {protein} g protein a serving." <br>When there is a dish, these lines are chosen; when there is not, today's lines are. They are under the same no-body-talk rules (`BANNED`, tested). The "why" line names the dish. |
+| P3 | **When it isn't used** | <br>• no mess, or no **published** dinner menu. A menu inferred from the cycle may not be what is served, so no dish is named from it; <br>• no dish passes the filters; <br>• the best dish is under 10 g protein a serving. <br>In those cases today's lines are used. A menu that cannot be read never stops the plan. |
 
 ## 7. E3: a lift's full history
 

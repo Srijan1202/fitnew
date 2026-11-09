@@ -4,6 +4,7 @@
  * back-off, words) is in core `notify/`; this file only reads and writes.
  */
 import type { NotifyPlanRequest, NotifyPlanResponse, NotifySettings, NotifySettingsPatch, PlannedNotification } from '@fitos/contracts';
+import type { DinnerDish } from '@fitos/core/notify/dinner-dish';
 import { TEMPLATES, render } from '@fitos/core/notify/copy';
 import { chooseVariant, planNotifications, type NotifyHistoryItem, type PlanFacts, type ReadinessBand } from '@fitos/core/notify/planner';
 import { isoWeekday } from '@fitos/core/notify/time';
@@ -90,6 +91,8 @@ export class NotificationService {
     private readonly readiness: ReadinessAssembler,
     private readonly plans: PlanRepository,
     private readonly now: () => Date = () => new Date(),
+    /** Beta 6.1 (E17): tonight's mess dish by date (MessRecommendService.dinnerDishes); none when absent. */
+    private readonly dinnerDishes: (userId: string, dates: readonly string[]) => Promise<Record<string, DinnerDish>> = async () => ({}),
   ) {}
 
   async settings(userId: string): Promise<NotifySettings> {
@@ -131,6 +134,11 @@ export class NotificationService {
       this.plans.between(userId, addDays(today, -1), addDays(today, HORIZON_DAYS)),
       this.plans.loads(userId, since),
     ]);
+    // Beta 6.1 (E17): only while the nudge can be planned at all; a menu that cannot be read never stops the plan.
+    const dinnerDishes =
+      targets === null || !settings.enabled || settings.kinds['protein-gap'] === false
+        ? {}
+        : await this.dinnerDishes(userId, Array.from({ length: HORIZON_DAYS + 1 }, (_, i) => addDays(today, i))).catch(() => ({}));
 
     const proteinTargetG = targets?.proteinG ?? null;
     const goal = proteinTargetG === null ? null : Math.ceil(proteinTargetG * PROTEIN_GAP_SHARE);
@@ -161,6 +169,7 @@ export class NotificationService {
       proteinTargetG,
       todayProteinHigh: proteinDays.find((d) => d.localDate === today)?.proteinHigh ?? 0,
       readinessBand: (assessment.readiness?.band ?? null) as ReadinessBand | null,
+      dinnerDishes,
       history: history.map(
         (h): NotifyHistoryItem => ({ kind: h.kind as NotifyKind, localDate: h.localDate, variant: h.variant, at: h.sentAt ?? h.scheduledFor, status: h.status }),
       ),

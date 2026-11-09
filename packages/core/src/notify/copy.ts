@@ -16,7 +16,7 @@
 import type { NotifyKind, NotifyTone } from './types.js';
 
 /** Data a template may need (besides `name`, which always has a fallback). */
-export type CopySlot = 'session' | 'streak' | 'target' | 'sessions' | 'planned';
+export type CopySlot = 'session' | 'streak' | 'target' | 'sessions' | 'planned' | 'dish' | 'dishProtein';
 
 export interface Template {
   readonly id: string;
@@ -93,6 +93,12 @@ export const TEMPLATES: readonly Template[] = [
   t('pg-c8', 'protein-gap', 'cheeky', 'Protein: the sequel', 'Part one (today so far) was slow. Part two (dinner) can be a blockbuster.'),
   t('pg-g1', 'protein-gap', 'gentle', 'A little protein left for today', 'You are under three quarters of your {target} g. A protein-rich dinner would help.', { needs: ['target'] }),
   t('pg-g2', 'protein-gap', 'gentle', 'Dinner idea: add protein', "Today's protein is behind. Paneer, dal, eggs or curd all help."),
+  // Beta 6.1 (E17): tonight's mess dinner names the dish (published menus only).
+  t('pg-d-c1', 'protein-gap', 'cheeky', 'Tonight: {dish}', 'Protein is behind and the mess is serving {dish}, about {dishProtein} g a serving. Destiny, {name}.', { needs: ['dish', 'dishProtein'] }),
+  t('pg-d-c2', 'protein-gap', 'cheeky', 'Protein has entered the mess', "{dish} is on tonight's menu. About {dishProtein} g protein a serving. You know what to do.", { needs: ['dish', 'dishProtein'] }),
+  t('pg-d-c3', 'protein-gap', 'cheeky', 'Dinner has one job tonight', 'Protein. {dish} is on the menu with about {dishProtein} g a serving. Pick a fighter.', { needs: ['dish', 'dishProtein'] }),
+  t('pg-d-g1', 'protein-gap', 'gentle', 'A protein idea for dinner', "{dish} is on tonight's mess menu, about {dishProtein} g protein a serving.", { needs: ['dish', 'dishProtein'] }),
+  t('pg-d-g2', 'protein-gap', 'gentle', 'Tonight at the mess', "Today's protein is behind. {dish} at dinner has about {dishProtein} g a serving.", { needs: ['dish', 'dishProtein'] }),
 
   // --------------------------------------------------- streak at risk --
   t('sr-c1', 'streak-at-risk', 'cheeky', "{streak} days. Don't blink.", 'Nothing logged today. Your streak has until midnight.', { needs: ['streak'] }),
@@ -174,6 +180,9 @@ export interface CopyData {
   readonly target?: number | null;
   readonly sessions?: number | null;
   readonly planned?: number | null;
+  /** Beta 6.1 (E17): tonight's mess dish with the most protein, and its grams a serving. */
+  readonly dish?: string | null;
+  readonly dishProtein?: number | null;
 }
 
 /** The name a template uses: the first word of the display name, or a tone's stand-in. */
@@ -193,7 +202,7 @@ export function fits(template: Template, data: CopyData): boolean {
 /** A template with its slots filled. */
 export function render(template: Template, data: CopyData): { title: string; body: string } {
   const fill = (s: string): string =>
-    s.replace(/\{(name|session|streak|target|sessions|planned)\}/g, (_, k: string) =>
+    s.replace(/\{(name|session|streak|target|sessions|planned|dishProtein|dish)\}/g, (_, k: string) =>
       k === 'name' ? nameFor(data.name, template.tone) : String((data as unknown as Record<string, unknown>)[k] ?? ''),
     );
   return { title: fill(template.title), body: fill(template.body) };

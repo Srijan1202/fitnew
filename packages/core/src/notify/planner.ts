@@ -26,6 +26,7 @@
  *     rest-band day gets no workout reminder (§18: advice, never pressure).
  */
 import { addDays, localDateOf } from '../nutrition/log.js';
+import type { DinnerDish } from './dinner-dish.js';
 import { TEMPLATES, fits, render, type CopyData, type Template } from './copy.js';
 import { daysBetween, formatClock, inWindow, instantAt, isoWeekday, minuteOfDay, parseClock, usualMinute } from './time.js';
 import {
@@ -82,6 +83,12 @@ export interface PlanFacts {
   /** Today's protein so far (the high end of the range). */
   readonly todayProteinHigh: number;
   readonly readinessBand: ReadinessBand | null;
+  /**
+   * Beta 6.1 (E17): by local date, the dish the protein nudge names — from
+   * that day's PUBLISHED mess dinner (core `proteinDishOf`); absent without a
+   * mess, a published menu or a dish worth naming.
+   */
+  readonly dinnerDishes?: Readonly<Record<string, DinnerDish>>;
   /** Notifications already planned or sent (about five weeks). */
   readonly history: readonly NotifyHistoryItem[];
 }
@@ -334,11 +341,14 @@ export function chooseVariant(
     (t) => t.kind === kind && t.tone === tone && t.stage === stage && (t.run ?? false) === (data.run ?? false) && fits(t, data),
   );
   if (pool.length === 0) return null;
+  // Beta 6.1 (E17): with a dish to name, the words that name it.
+  const named = data.dish === undefined || data.dish === null ? [] : pool.filter((t) => t.needs?.includes('dish') === true);
+  const words = named.length > 0 ? named : pool;
   const recent = new Set(
     used.filter((u) => u.kind === kind && Math.abs(daysBetween(u.localDate, date)) < 7).map((u) => u.variant),
   );
-  const fresh = pool.filter((t) => !recent.has(t.id));
-  const choices = fresh.length > 0 ? fresh : pool;
+  const fresh = words.filter((t) => !recent.has(t.id));
+  const choices = fresh.length > 0 ? fresh : words;
   // The user's open rate (Laplace-smoothed); words that use their own data
   // ("5 days", "Legs") get a small head start, so they lead until the
   // evidence says otherwise.
@@ -455,17 +465,19 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
 
     if (!silentAfterStop && proteinGoal !== null && !(i === 0 && facts.todayProteinHigh >= proteinGoal)) {
       const learned = habits.dinner;
+      const dish = facts.dinnerDishes?.[d];
       candidates.push({
         kind: 'protein-gap',
         minute: clamp((learned ?? DEFAULT_MINUTES.dinner + 45) - 45, 17 * 60, 21 * 60),
-        data: { name: facts.name, target: facts.proteinTargetG },
+        data: { name: facts.name, target: facts.proteinTargetG, dish: dish?.name ?? null, dishProtein: dish?.proteinG ?? null },
         screen: 'food-log',
         slot: 'dinner',
         cancelOn: [{ event: 'protein-reached', localDate: d, grams: proteinGoal }],
         why:
-          learned === null
+          (learned === null
             ? 'Before dinner, only while protein is under three quarters of your target.'
-            : `Before you usually log dinner (around ${at(learned)}), only while protein is under three quarters of your target.`,
+            : `Before you usually log dinner (around ${at(learned)}), only while protein is under three quarters of your target.`) +
+          (dish === undefined ? '' : ` ${dish.name} has the most protein a serving on the mess's published dinner menu that suits your diet.`),
       });
     }
 

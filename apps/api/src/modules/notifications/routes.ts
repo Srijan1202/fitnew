@@ -19,10 +19,14 @@ import {
 import { z } from 'zod';
 
 import { AppError } from '../../lib/errors.js';
+import { RecommendRepository } from '../mess/recommend-repository.js';
+import { MessRecommendService } from '../mess/recommend-service.js';
+import { messServiceFor } from '../mess/routes.js';
 import { FoodLogRepository } from '../nutrition/log-repository.js';
 import { ReadinessAssembler } from '../recovery/readiness.js';
 import { PlanRepository } from '../running/plan-repository.js';
 import { TrainingRepository } from '../training/repository.js';
+import { UserRepository } from '../user/repository.js';
 import { NotificationRepository } from './repository.js';
 import { NotificationService } from './service.js';
 
@@ -33,12 +37,16 @@ function requireUserId(userId: string | null): string {
 
 export async function notificationRoutes(app: FastifyInstance): Promise<void> {
   const db = app.database.db;
+  // Beta 6.1 (E17): the protein nudge names tonight's dish from the published mess menu.
+  const menus = new MessRecommendService(messServiceFor(db, app.features), new UserRepository(db), new FoodLogRepository(db), new RecommendRepository(db));
   const service = new NotificationService(
     new NotificationRepository(db),
     new TrainingRepository(db),
     new FoodLogRepository(db),
     ReadinessAssembler.forDb(db),
     new PlanRepository(db),
+    undefined,
+    (userId, dates) => menus.dinnerDishes(userId, dates),
   );
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const security = [{ bearerAuth: [] }];

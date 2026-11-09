@@ -18,6 +18,7 @@ import {
   type EatenRanges,
 } from '@fitos/core/mess/recommendation';
 import type { DishNutrition, MessDay } from '@fitos/core/mess/types';
+import { proteinDishOf, type DinnerDish } from '@fitos/core/notify/dinner-dish';
 import { addDays, localDateOf, localHourOf } from '@fitos/core/nutrition/log';
 import type { MessRecommendQuery, MessRecommendation, RecommendationReason } from '@fitos/contracts';
 
@@ -72,6 +73,31 @@ export class MessRecommendService {
           }),
       })),
     };
+  }
+
+  /**
+   * Beta 6.1 (E17): for each date, the dinner dish the protein nudge names —
+   * only from a PUBLISHED menu (never one inferred from the cycle), with the
+   * recommender's own filters. Nothing without a configured mess.
+   */
+  async dinnerDishes(userId: string, dates: readonly string[]): Promise<Record<string, DinnerDish>> {
+    const mess = await this.mess.configuredMessRow(userId);
+    if (mess === null) return {};
+    const bundle = await this.users.loadBundle(userId);
+    if (bundle === null) return {};
+    const filters = {
+      diet: bundle.diet?.dietType ?? 'vegetarian',
+      allergies: [...new Set(bundle.allergies.map((a) => a.allergen))] as Allergen[],
+      excludedDishIds: Array.isArray(bundle.diet?.excludedDishIds) ? (bundle.diet?.excludedDishIds as string[]) : [],
+    };
+    const out: Record<string, DinnerDish> = {};
+    for (const date of dates) {
+      const menu = await this.storedMenu(mess, date);
+      if (menu.resolution.kind !== 'exact') continue;
+      const dish = proteinDishOf(menu.meals.find((m) => m.slot === 'dinner'), filters);
+      if (dish !== null) out[date] = dish;
+    }
+    return out;
   }
 
   async recommend(userId: string, query: MessRecommendQuery): Promise<MessRecommendation> {

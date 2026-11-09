@@ -472,4 +472,39 @@ describeIfDb('/v1/mess/menu/recommend (real Postgres)', { timeout: 30_000 }, () 
     times.sort((x, y) => x - y);
     expect(times[Math.floor(times.length * 0.95) - 1]).toBeLessThan(200);
   });
+  it('beta 6.1 (E17): the protein nudge names tonight’s dish — the most protein a serving that suits the diet, from a published dinner only', async () => {
+    const day = today();
+    const tomorrow = addDays(day, 1);
+    // Tomorrow's dinner here is phulka, dhal, dum aloo, rice…: make the dhal worth naming (16 g a serving) for this test.
+    const [before] = await sql<{ protein_low: string; protein_high: string }[]>`select protein_low, protein_high from mess_dish_nutrition where dish_slug = 'dhal'`;
+    await sql`update mess_dish_nutrition set protein_low = 14, protein_high = 18 where dish_slug = 'dhal'`;
+    try {
+      const veg = await user({ diet: 'vegetarian' });
+      const notify = { enabled: true, kinds: { 'protein-gap': true } };
+      const on = async (u: TestUser) =>
+        expect((await app.inject({ method: 'PATCH', url: '/v1/notifications/settings', headers: headers(u.token), payload: notify })).statusCode).toBe(200);
+      const plan = async (u: TestUser) =>
+        ((await app.inject({ method: 'POST', url: '/v1/notifications/plan', headers: headers(u.token), payload: { events: [] } })).json() as {
+          items: { kind: string; localDate: string; title: string; body: string; variant: string; why: string }[];
+        }).items.filter((i) => i.kind === 'protein-gap');
+      await on(veg);
+      const nudge = (await plan(veg)).find((i) => i.localDate === tomorrow);
+      expect(nudge, 'a protein nudge for tomorrow').toBeDefined();
+      expect(nudge!.variant.startsWith('pg-d-')).toBe(true);
+      expect(`${nudge!.title} ${nudge!.body}`).toContain('Dhal');
+      expect(nudge!.body).toContain('16 g');
+      expect(nudge!.why).toContain("Dhal has the most protein a serving on the mess's published dinner menu");
+
+      // A dish they dislike is never named.
+      expect((await app.inject({ method: 'PUT', url: '/v1/user/diet-preferences', headers: headers(veg.token), payload: { dietType: 'vegetarian', allergies: [], excludedDishIds: ['dhal'] } })).statusCode).toBe(200);
+      expect((await plan(veg)).find((i) => i.localDate === tomorrow)!.variant.startsWith('pg-d-')).toBe(false);
+
+      // Women's special has no published copy for today on: an inferred menu is never named.
+      const inferred = await user({ diet: 'vegetarian', mess: { hostelId: 'womens', messId: 'special' } });
+      await on(inferred);
+      expect((await plan(inferred)).every((i) => !i.variant.startsWith('pg-d-'))).toBe(true);
+    } finally {
+      await sql`update mess_dish_nutrition set protein_low = ${before!.protein_low}, protein_high = ${before!.protein_high} where dish_slug = 'dhal'`;
+    }
+  });
 });
