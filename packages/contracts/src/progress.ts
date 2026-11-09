@@ -180,6 +180,51 @@ export const weeklyReportSchema = z
   .strict();
 export type WeeklyReport = z.infer<typeof weeklyReportSchema>;
 
+/**
+ * Beta 6.1 (premium): the monthly report, a calendar month — this one or
+ * one of the MONTHLY_REPORT_MONTHS before it. The phone draws it as a PDF;
+ * nothing of the PDF is stored on the server.
+ */
+export const MONTHLY_REPORT_MONTHS = 12;
+export const monthlyReportQuerySchema = z.object({ month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/).optional() }).strict();
+
+export const monthlyReportSchema = z
+  .object({
+    month: z.string(),
+    from: isoDateSchema,
+    to: isoDateSchema,
+    complete: z.boolean(),
+    /** The months a report can be asked for, oldest first. */
+    months: z.array(z.string()),
+    training: z
+      .object({
+        completed: z.number().int().min(0),
+        planned: z.number().int().min(0).nullable(),
+        percent: z.number().int().nullable(),
+        hardSets: z.number().min(0),
+        tonnageKg: z.number().min(0),
+        topMuscles: z.array(z.object({ muscle: z.string(), hardSets: z.number() }).strict()),
+      })
+      .strict(),
+    prs: z.object({ count: z.number().int().min(0), lifts: z.array(z.string()) }).strict(),
+    running: z.object({ runs: z.number().int().min(0), km: z.number().min(0) }).strict(),
+    nutrition: z
+      .object({
+        loggedDays: z.number().int().min(0),
+        judgedDays: z.number().int().min(0),
+        proteinMet: z.number().int().min(0),
+        caloriesOn: z.number().int().min(0),
+        averageKcal: z.number().int().nullable(),
+      })
+      .strict(),
+    water: z.object({ loggedDays: z.number().int().min(0), daysAtTarget: z.number().int().min(0), targetMl: z.number().int() }).strict(),
+    recovery: z.object({ checkIns: z.number().int().min(0), averageSleepHours: z.number().nullable() }).strict(),
+    weight: z.object({ startKg: z.number(), endKg: z.number(), changeKg: z.number() }).strict().nullable(),
+    highlights: z.array(z.string()),
+  })
+  .strict();
+export type MonthlyReportResponse = z.infer<typeof monthlyReportSchema>;
+
 /* ---------------------------------------- streak and goal (beta 3.3) -- */
 
 /**

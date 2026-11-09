@@ -5,7 +5,10 @@
  * never recalculates the nutrition targets (owner D5) — the targets follow
  * the trend through TODAY's calorie-adjust action instead.
  */
-import type { VolumeResponse, WeeklyReport } from '@fitos/contracts';
+import type { MonthlyReportResponse, VolumeResponse, WeeklyReport } from '@fitos/contracts';
+import { MONTHLY_REPORT_MONTHS } from '@fitos/contracts';
+import { waterTargetMl } from '@fitos/core/nutrition/water';
+import { monthSpan, monthlyReport } from '@fitos/core/progress/monthly';
 import { computeTrend } from '@fitos/core/nutrition/trend';
 import { STREAK_LOOKBACK_DAYS, isoWeekday, streak, streakCalendar, streakDays, weekGoal } from '@fitos/core/progress/streak';
 import { weeklyReport } from '@fitos/core/progress/weekly';
@@ -203,6 +206,70 @@ export class ProgressService {
       trend: computeTrend(weights.filter((w) => w.date <= to)),
     });
     return { ...report, weeks, volume: { ...report.volume, productive: [...report.volume.productive], below: [...report.volume.below], above: [...report.volume.above] }, prs: { count: report.prs.count, lifts: [...report.prs.lifts] }, highlights: [...report.highlights] };
+  }
+
+  /**
+   * Beta 6.1 (premium): the monthly report for one calendar month — this one
+   * unless asked, or one of the MONTHLY_REPORT_MONTHS before it.
+   */
+  async monthly(userId: string, month: string | undefined): Promise<MonthlyReportResponse> {
+    const tz = await this.logs.timezoneOf(userId);
+    const today = localDateOf(this.now(), tz);
+    const current = today.slice(0, 7);
+    const months: string[] = [];
+    for (let i = MONTHLY_REPORT_MONTHS; i >= 0; i -= 1) {
+      const [y, m] = current.split('-').map(Number) as [number, number];
+      const d = new Date(Date.UTC(y, m - 1 - i, 1));
+      months.push(d.toISOString().slice(0, 7));
+    }
+    const asked = month ?? current;
+    if (!months.includes(asked)) {
+      throw new AppError('VALIDATION_FAILED', `A report covers this month or one of the ${MONTHLY_REPORT_MONTHS} before it.`, [{ path: 'month', issue: 'not available' }]);
+    }
+    const { from, to, isoWeeks } = monthSpan(asked);
+    const lo = new Date(Date.parse(`${from}T00:00:00Z`) - DAY_MS);
+    const hi = new Date(Date.parse(`${to}T00:00:00Z`) + 2 * DAY_MS);
+    const inMonth = (at: Date): boolean => {
+      const d = localDateOf(at, tz);
+      return d >= from && d <= to;
+    };
+    const [weights, days, targets, completed, planned, prs, muscles, runs, water, checkIns] = await Promise.all([
+      this.repo.weights(userId),
+      this.repo.nutritionDays(userId, from, to),
+      this.repo.targets(userId),
+      this.repo.completedAt(userId, lo, hi),
+      this.repo.plannedDays(userId),
+      this.repo.prs(userId, lo, hi),
+      this.repo.muscleWeeks(userId, isoWeeks),
+      this.repo.runsBetween(userId, lo, hi),
+      this.repo.waterDays(userId, from, to),
+      this.repo.checkInDays(userId, from, to),
+    ]);
+    const lastWeight = weights.filter((w) => w.date <= to).at(-1)?.kg ?? null;
+    const r = monthlyReport({
+      month: asked,
+      from,
+      to,
+      today,
+      sessionsCompleted: completed.filter(inMonth).length,
+      sessionsPlannedPerWeek: planned === null ? null : planned.length,
+      muscles,
+      prs: prs.filter((p) => inMonth(p.achievedAt)),
+      runs: runs.filter((x) => inMonth(x.startedAt)),
+      days,
+      targets,
+      water,
+      waterTargetMl: waterTargetMl(lastWeight),
+      checkIns,
+      trend: computeTrend(weights.filter((w) => w.date <= to)),
+    });
+    return {
+      ...r,
+      months,
+      training: { ...r.training, topMuscles: r.training.topMuscles.map((m) => ({ ...m })) },
+      prs: { count: r.prs.count, lifts: [...r.prs.lifts] },
+      highlights: [...r.highlights],
+    };
   }
 
   /**

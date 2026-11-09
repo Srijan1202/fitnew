@@ -15,6 +15,8 @@ import {
   progressSummaryQuerySchema,
   progressSummarySchema,
   streakSchema,
+  monthlyReportQuerySchema,
+  monthlyReportSchema,
   weeklyReportQuerySchema,
   weeklyReportSchema,
 } from '@fitos/contracts';
@@ -44,6 +46,25 @@ export async function progressRoutes(app: FastifyInstance): Promise<void> {
   const db = app.database.db;
   const premium = new PremiumService(new PremiumRepository(db));
   const workouts = new WorkoutService(new WorkoutRepository(db), new TrainingRepository(db), ReadinessAssembler.forDb(db));
+
+  typed.get(
+    '/progress/monthly',
+    {
+      schema: {
+        summary: 'The monthly report: sessions, sets per muscle, records, runs, food, water, sleep and trend weight; the phone draws the PDF (premium, beta 6.1)',
+        tags: ['progress'],
+        security,
+        querystring: monthlyReportQuerySchema,
+        response: { 200: monthlyReportSchema, 403: errorEnvelopeSchema, ...errors },
+      },
+    },
+    async (request) => {
+      const userId = requireUserId(request.userId);
+      await app.features.require('monthly-report', request);
+      if (!(await premium.isPremium(userId, request.identity?.claims))) throw premiumRequired('The monthly report');
+      return service.monthly(userId, request.query.month);
+    },
+  );
 
   typed.get(
     '/progress/weekly',

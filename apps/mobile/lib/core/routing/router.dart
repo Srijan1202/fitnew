@@ -13,6 +13,7 @@ import '../../features/auth/presentation/screens/splash_gate_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_browser_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_detail_screen.dart';
 import '../../features/progress/presentation/lift_history_screen.dart';
+import '../../features/progress/presentation/monthly_report_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_demos_screen.dart';
 import '../../features/mess/presentation/mess_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
@@ -128,6 +129,9 @@ abstract final class Routes {
   static const String progressPhotos = '/progress/photos';
   static const String weeklyReport = '/progress/weekly';
 
+  /// Beta 6.1 (premium): the monthly report and its PDF.
+  static const String monthlyReport = '/progress/monthly';
+
   // Food library (Phase 7) and logging (Phase 8); root navigator, the bar
   // is hidden. `/nutrition` itself is EAT.
   static const String foodLibrary = '/nutrition/library';
@@ -220,6 +224,11 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
         path: Routes.weeklyReport,
         name: 'weekly-report',
         builder: (context, state) => const WeeklyReportScreen(),
+      ),
+      GoRoute(
+        path: Routes.monthlyReport,
+        name: 'monthly-report',
+        builder: (context, state) => const MonthlyReportScreen(),
       ),
       GoRoute(
         path: Routes.profile,

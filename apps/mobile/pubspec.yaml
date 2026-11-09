@@ -86,6 +86,9 @@ dependencies:
   # Beta 4.1 (updates plan, U1): the Shorebird patch this build runs, shown
   # next to the version so a report names it (Dart only; no native code).
   shorebird_code_push: 2.0.7
+  # Beta 6.1: the monthly report drawn as a PDF on the phone (pure Dart; no
+  # native code, nothing uploaded).
+  pdf: 3.13.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

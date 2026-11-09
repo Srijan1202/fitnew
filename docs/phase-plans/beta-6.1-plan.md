@@ -58,9 +58,9 @@ Today a programme is 7 weekdays (`program_days.day_of_week` 1–7, unique). Skip
 
 | # | Change | Detail |
 |---|---|---|
-| R1 | **`GET /v1/progress/monthly?month=2026-10`** | Like the weekly report, for a calendar month: <br>• sessions done against planned, and tonnage; <br>• sets per muscle; <br>• new records (lifts and best efforts); <br>• run km; <br>• protein days, the average kcal against target, and water days at target; <br>• the start and end of the trend weight; <br>• the readiness average. <br>Premium only. The current month and the last 12 are offered. |
-| R2 | **The PDF is made on the phone** | The pure-Dart `pdf` package draws a 2–3 page report in the app's theme colours, with no new native plugin. It opens the share sheet (`share_plus`, already in the app) to save or send it. **It is never uploaded or stored on the server.** |
-| R3 | **Where** | Progress → the weekly report → **Monthly report (PDF)**, plus a line on the 1st of the month in the weekly recap ("October's report is ready"). |
+| R1 | **`GET /v1/progress/monthly?month=2026-10`** | Like the weekly report, for a calendar month: <br>• sessions done against planned (the plan's days per week over the month's days so far), hard sets, weight moved, and the five most-worked muscles (from the weekly volume table, over the ISO weeks whose Thursday is in the month); <br>• personal records; <br>• runs and km; <br>• logged days, protein days, calories within 10 %, and the average kcal of a logged day; <br>• water days at target (the day target from the latest weigh-in); <br>• check-ins and average sleep; <br>• the start and end of the trend weight. <br>Core's `monthlyReport` builds it, with 100 % branch coverage. Premium only, with its own switch (`monthly-report`). This month and the 12 before it are offered. |
+| R2 | **The PDF is made on the phone** | The pure-Dart `pdf` package (3.13.1) draws it: ink on white with the Cobalt accent, so it prints the same whatever the theme. Text the built-in font cannot draw is cleaned (`pdfSafe`). It opens the share sheet (`share_plus`, already in the app) to save or send it. **It is never uploaded or stored on the server.** |
+| R3 | **Where** | Progress → **Monthly report (PDF)**, under the weekly report. The screen shows the month (earlier ones with the arrows) and **Share as PDF**. |
 
 ## 5. Premium early access
 

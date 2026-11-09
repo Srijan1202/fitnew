@@ -3,13 +3,17 @@
  * is scoped to one user and excludes soft-deleted rows. Reads are indexed
  * range queries the service runs in parallel — no per-row follow-ups.
  */
-import { and, asc, desc, eq, gt, gte, isNull, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, gte, inArray, isNull, lt, lte, sql } from 'drizzle-orm';
 
 import type { DatabaseHandle } from '../../db/client.js';
 import {
   bodyMeasurements,
   bodyMetrics,
   dailyNutrition,
+  muscleVolumeWeekly,
+  recoveryLogs,
+  runs,
+  waterLogs,
   exercisePrs,
   exercises,
   nutritionTargets,
@@ -32,6 +36,43 @@ export class ProgressRepository {
   constructor(private readonly db: Db) {}
 
   /* ------------------------------------------------------------ reads -- */
+
+  /** Beta 6.1 (monthly report): hard sets and tonnage per muscle, summed over these ISO weeks. */
+  async muscleWeeks(userId: string, isoWeeks: readonly string[]): Promise<{ muscle: string; hardSets: number; tonnageKg: number }[]> {
+    if (isoWeeks.length === 0) return [];
+    const rows = await this.db
+      .select({ muscle: muscleVolumeWeekly.muscleGroup, hardSets: sql<string>`sum(${muscleVolumeWeekly.hardSets})`, tonnageKg: sql<string>`sum(${muscleVolumeWeekly.tonnageKg})` })
+      .from(muscleVolumeWeekly)
+      .where(and(eq(muscleVolumeWeekly.userId, userId), inArray(muscleVolumeWeekly.isoWeek, [...isoWeeks])))
+      .groupBy(muscleVolumeWeekly.muscleGroup);
+    return rows.map((r) => ({ muscle: r.muscle, hardSets: Number(r.hardSets), tonnageKg: Number(r.tonnageKg) }));
+  }
+
+  /** Beta 6.1: the runs started in [from, to), every source. */
+  async runsBetween(userId: string, from: Date, to: Date): Promise<{ startedAt: Date; distanceM: number }[]> {
+    const rows = await this.db
+      .select({ startedAt: runs.startedAt, distanceM: runs.distanceM })
+      .from(runs)
+      .where(and(eq(runs.userId, userId), gte(runs.startedAt, from), lt(runs.startedAt, to)));
+    return rows.map((r) => ({ startedAt: r.startedAt, distanceM: Number(r.distanceM) }));
+  }
+
+  /** Beta 6.1: the day water totals between two local dates. */
+  async waterDays(userId: string, from: string, to: string): Promise<{ date: string; ml: number }[]> {
+    return this.db
+      .select({ date: waterLogs.loggedOn, ml: waterLogs.ml })
+      .from(waterLogs)
+      .where(and(eq(waterLogs.userId, userId), gte(waterLogs.loggedOn, from), lte(waterLogs.loggedOn, to)));
+  }
+
+  /** Beta 6.1: the check-ins between two local dates (sleep only). */
+  async checkInDays(userId: string, from: string, to: string): Promise<{ date: string; sleepHours: number | null }[]> {
+    const rows = await this.db
+      .select({ date: recoveryLogs.loggedOn, sleep: recoveryLogs.sleepHours })
+      .from(recoveryLogs)
+      .where(and(eq(recoveryLogs.userId, userId), gte(recoveryLogs.loggedOn, from), lte(recoveryLogs.loggedOn, to)));
+    return rows.map((r) => ({ date: r.date, sleepHours: r.sleep === null ? null : Number(r.sleep) }));
+  }
 
   /** Every live weight reading, oldest first — the EWMA needs the whole history. */
   async weights(userId: string): Promise<{ date: string; kg: number }[]> {

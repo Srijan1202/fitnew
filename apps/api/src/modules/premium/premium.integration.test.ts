@@ -7,7 +7,7 @@ import { randomUUID } from 'node:crypto';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import postgres from 'postgres';
-import { premiumStatusSchema, rewardsResponseSchema, weeklyReportSchema, type PremiumStatus } from '@fitos/contracts';
+import { monthlyReportSchema, premiumStatusSchema, rewardsResponseSchema, weeklyReportSchema, type PremiumStatus } from '@fitos/contracts';
 
 import { migrateUp } from '../../db/migrate.js';
 import type { FakeTokenVerifier } from '../../test/fake-token-verifier.js';
@@ -191,6 +191,31 @@ describeIfDb('/v1/premium (real Postgres)', { timeout: 60_000 }, () => {
     expect(earlier).toMatchObject({ isoWeek: report.weeks[0], complete: true });
     expect((await call(u, 'GET', '/progress/weekly?week=2020-W01')).statusCode).toBe(422);
     expect((await call(u, 'GET', '/progress/weekly?week=nonsense')).statusCode).toBe(422);
+  });
+
+  it('beta 6.1: the monthly report is premium — this month or one of the 12 before it; it counts runs, water and check-ins from the month only', async () => {
+    const u = await user();
+    const free = await call(u, 'GET', '/progress/monthly');
+    expect(free.statusCode).toBe(403);
+    expect(issue(free)).toBe('premium-required');
+
+    await sql`update users set premium_since = now(), timezone = 'Asia/Kolkata' where id = ${u.id}`;
+    const r = await call(u, 'GET', '/progress/monthly');
+    expect(r.statusCode, r.body).toBe(200);
+    const report = monthlyReportSchema.parse(r.json());
+    expect(report.months).toHaveLength(13);
+    expect(report.month).toBe(report.months.at(-1));
+    expect(report.complete).toBe(false);
+    expect(report.highlights).toContain('No sessions logged this month.');
+
+    // Last month: one check-in and one water day at target (2.5 L without a weigh-in); this month's water is not last month's.
+    const last = report.months.at(-2)!;
+    await sql`insert into recovery_logs (user_id, logged_on, sleep_hours) values (${u.id}, ${`${last}-10`}, 7.5)`;
+    await sql`insert into water_logs (user_id, logged_on, ml) values (${u.id}, ${`${last}-10`}, 2500), (${u.id}, ${`${last}-11`}, 1000), (${u.id}, ${`${report.month}-01`}, 3000)`;
+    const earlier = monthlyReportSchema.parse((await call(u, 'GET', `/progress/monthly?month=${last}`)).json());
+    expect(earlier).toMatchObject({ month: last, complete: true, recovery: { checkIns: 1, averageSleepHours: 7.5 }, water: { loggedDays: 2, daysAtTarget: 1, targetMl: 2500 } });
+    expect((await call(u, 'GET', '/progress/monthly?month=2020-01')).statusCode).toBe(422);
+    expect((await call(u, 'GET', '/progress/monthly?month=2026-13')).statusCode).toBe(422);
   });
 
   it('the admin unlock-all switch (owner 2026-10-30): only an admin sets it; the rewards say unlockAll and keep what was earned; streak pictures allowed; off again, an unearned streak picture goes back to none; audited', async () => {

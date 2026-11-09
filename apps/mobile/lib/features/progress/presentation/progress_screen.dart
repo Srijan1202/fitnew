@@ -354,6 +354,9 @@ class _ProgressHalf extends ConsumerWidget {
                 const SizedBox(height: FitSpacing.sm),
                 // Phase 19 (ADR-027): the weekly report, premium.
                 const WeeklyReportEntry(),
+                // Beta 6.1: and the monthly one, as a PDF.
+                const SizedBox(height: FitSpacing.xs),
+                const WeeklyReportEntry.monthly(),
               ],
             ),
           ),

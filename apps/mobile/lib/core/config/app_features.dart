@@ -23,7 +23,10 @@ enum AppFeature {
   community('community', 'Community'),
 
   /// Beta 6.0 (ADR-059): the water card on Home.
-  water('water', 'Water');
+  water('water', 'Water'),
+
+  /// Beta 6.1: the premium monthly report (a PDF made on the phone).
+  monthlyReport('monthly-report', 'Monthly report');
 
   const AppFeature(this.key, this.label);
 
