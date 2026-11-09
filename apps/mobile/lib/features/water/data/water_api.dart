@@ -19,14 +19,14 @@ class DioWaterApi implements WaterApi {
 
   @override
   Future<Result<WaterDay>> today() => _guard(() async {
-        final r = await _dio.get<Map<String, dynamic>>('/water/today');
+        final r = await _dio.get<Map<String, dynamic>>('/v1/water/today');
         return WaterDay.fromJson(r.data!);
       });
 
   @override
   Future<Result<WaterDay>> set(String date, int ml) => _guard(() async {
         final r = await _dio.put<Map<String, dynamic>>(
-          '/water/days/$date',
+          '/v1/water/days/$date',
           data: setJson(ml),
         );
         return WaterDay.fromJson(r.data!);

@@ -430,7 +430,7 @@ class _Targets extends StatelessWidget {
           Text(
             targets.isCustom
                 ? 'Your own target since ${targets.effectiveFrom}'
-                : 'Since ${targets.effectiveFrom} · ${targets.reason}',
+                : targetsLine(targets.effectiveFrom, targets.reason),
             key: const ValueKey('profile.targetsLine'),
             style: textTheme.bodyMedium,
           ),
@@ -737,4 +737,21 @@ class _AppearanceState extends ConsumerState<_Appearance> {
       ],
     );
   }
+}
+
+/// The line under the daily targets: the date, and the server's reason code
+/// in words (beta 6.0 emulator check: it showed "goal-change" as is). An
+/// unknown code is left out rather than shown raw.
+@visibleForTesting
+String targetsLine(String since, String reason) {
+  final why = switch (reason) {
+    'onboarding' => 'set when you joined',
+    'goal-change' => 'after your goal changed',
+    'profile-change' => 'after your details changed',
+    'weight-change' => 'after your weight changed',
+    'calorie-adjust' => 'adjusted to your weight trend',
+    'reset-to-fitos' => 'back to FITOS targets',
+    _ => null,
+  };
+  return why == null ? 'Since $since' : 'Since $since · $why';
 }

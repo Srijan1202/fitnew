@@ -696,7 +696,7 @@ void main() {
       await settle(tester);
       await tester.tap(find.byKey(const ValueKey('eat.log')));
       await settle(tester);
-      await tester.tap(find.byKey(const ValueKey('log.source.Saved meals')));
+      await tester.tap(find.byKey(const ValueKey('log.source.Saved')));
       await settle(tester);
       expect(find.textContaining('about 440 kcal'), findsWidgets);
       await tester.tap(find.byKey(const ValueKey('saved.m1.log')));

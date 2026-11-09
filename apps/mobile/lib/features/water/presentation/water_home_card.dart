@@ -106,6 +106,7 @@ class WaterHomeCard extends ConsumerWidget {
 
   static Future<void> _sheet(BuildContext context) =>
       showModalBottomSheet<void>(
+        useRootNavigator: true,
         context: context,
         showDragHandle: true,
         isScrollControlled: true,

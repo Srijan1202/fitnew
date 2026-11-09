@@ -266,6 +266,7 @@ class _JoinState extends ConsumerState<JoinCommunityView> {
 /// A country from the list, searchable; '' for "not shown"; null when closed.
 Future<String?> pickCountry(BuildContext context, {String? current}) =>
     showModalBottomSheet<String>(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -629,6 +630,7 @@ Future<void> showPersonSheet(
   bool friend = false,
 }) =>
     showModalBottomSheet<void>(
+      useRootNavigator: true,
       context: context,
       useSafeArea: true,
       builder: (sheet) {
@@ -709,6 +711,7 @@ Future<void> showReportSheet(
   String? clubId,
 }) async {
   final reason = await showModalBottomSheet<ReportReason>(
+    useRootNavigator: true,
     context: context,
     useSafeArea: true,
     builder: (sheet) => SafeArea(
@@ -886,6 +889,7 @@ class _InviteLine extends StatelessWidget {
 
 Future<void> _addFriend(BuildContext context, WidgetRef ref) =>
     showModalBottomSheet<void>(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       useSafeArea: true,

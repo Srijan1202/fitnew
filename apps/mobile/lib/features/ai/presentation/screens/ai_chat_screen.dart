@@ -361,6 +361,9 @@ extension on _Composer {
         decoration: InputDecoration(
           hintText: 'Ask FITOS AI…',
           counterText: '',
+          // The composer is the rounded field; the theme's square fill
+          // inside it showed as a grey box (beta 6.0 emulator check).
+          filled: false,
           border: InputBorder.none,
           isDense: true,
           contentPadding:

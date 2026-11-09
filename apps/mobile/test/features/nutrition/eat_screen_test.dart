@@ -578,7 +578,7 @@ void main() {
       ];
       await tester.pumpWidget(harness());
       await settle(tester);
-      await openLog(tester, 'Saved meals');
+      await openLog(tester, 'Saved');
       expect(find.text('about 213 kcal · preview'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('saved.meal-1.log')));
       await settle(tester);

@@ -40,7 +40,7 @@ enum LogSource {
   mess('Mess', Icons.restaurant_outlined),
   recent('Recent', Icons.history),
   search('Search', Icons.search),
-  saved('Saved meals', Icons.bookmark_border),
+  saved('Saved', Icons.bookmark_border),
   quickAdd('Quick add', Icons.bolt_outlined);
 
   const LogSource(this.label, this.icon);

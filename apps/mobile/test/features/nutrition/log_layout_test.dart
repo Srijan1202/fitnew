@@ -314,7 +314,7 @@ void main() {
         await settle(tester);
         await openLog(tester);
         expectClean(tester, 'Log Food, Recent');
-        for (final source in ['Saved meals', 'Quick add', 'Recent']) {
+        for (final source in ['Saved', 'Quick add', 'Recent']) {
           await tester.tap(find.byKey(ValueKey('log.source.$source')));
           await settle(tester);
           expectClean(tester, source);
