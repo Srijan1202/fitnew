@@ -76,7 +76,9 @@ void main() {
     expect(seen, ['PATCH /v1/user/preferences {themeId: auto}']);
   });
 
-  test('a choice made offline is sent at the next start, not overwritten by the account', () async {
+  test(
+      'a choice made offline is sent at the next start, not overwritten by the account',
+      () async {
     offline = true;
     await ThemeSync(dio(), 'u1', (_) {}).send();
     final prefs = await SharedPreferences.getInstance();
