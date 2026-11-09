@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_features.dart';
 import '../../../core/errors/result.dart';
 import '../../../core/theme/tokens.dart';
 import '../domain/avatars.dart';
@@ -104,6 +105,17 @@ class PremiumPitch extends ConsumerWidget {
           'During the beta, premium is free: ask, and the FITOS team turns it on.',
           style: textTheme.bodySmall?.copyWith(color: FitColors.ink60),
         ),
+        // Beta 6.1: what this premium account has before everyone else.
+        if (status?.premium == true &&
+            ref.watch(earlyAccessProvider).isNotEmpty) ...<Widget>[
+          const SizedBox(height: FitSpacing.sm),
+          Text(
+            'Early access for you: '
+            '${ref.watch(earlyAccessProvider).map((f) => f.label).join(', ')}.',
+            key: const ValueKey('premium.earlyAccess'),
+            style: textTheme.bodyMedium?.copyWith(color: kGoldDeep),
+          ),
+        ],
         const SizedBox(height: FitSpacing.md),
         PremiumRequestPanel(status: status),
       ],

@@ -774,10 +774,16 @@ void main() {
     });
   });
 
-  test('perks name the four premium features', () {
+  test('perks name the premium features (beta 6.1: and early access)', () {
     expect(
       kPremiumPerks.map((p) => p.$1),
-      ['FITOS AI', 'Weekly report', 'Themes and app icons', 'Premium pictures'],
+      [
+        'FITOS AI',
+        'Weekly report',
+        'Themes and app icons',
+        'Premium pictures',
+        'Early access',
+      ],
     );
   });
 }

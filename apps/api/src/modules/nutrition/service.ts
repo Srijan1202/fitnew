@@ -73,7 +73,7 @@ export class FoodService {
   async search(userId: string, query: FoodSearchQuery): Promise<FoodSearchResponse> {
     const q = normaliseFoodText(query.q);
     if (q === '') return { items: [] };
-    const community = (await this.features?.isOn('community-foods')) ?? true;
+    const community = (await this.features?.isOn('community-foods', userId)) ?? true;
     const hits = await this.repo.search(q, userId, query.limit, community);
     const details = await this.repo.details(
       hits.map((h) => h.id),

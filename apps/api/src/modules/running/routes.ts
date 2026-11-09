@@ -73,7 +73,7 @@ export async function runningRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request, reply) => {
-      await app.features.require('running');
+      await app.features.require('running', request);
       const { created, body } = await service.create(requireUserId(request.userId), request.body);
       return reply.code(created ? 201 : 200).send(body);
     },
@@ -131,7 +131,7 @@ export async function runningRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request) => {
-      await app.features.require('running');
+      await app.features.require('running', request);
       return service.patch(requireUserId(request.userId), request.params.id, request.body);
     },
   );
@@ -170,7 +170,7 @@ export async function runningRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request, reply) => {
-      await app.features.require('running');
+      await app.features.require('running', request);
       return reply.code(201).send(await plans.create(requireUserId(request.userId), request.body));
     },
   );
@@ -197,7 +197,7 @@ export async function runningRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request) => {
-      await app.features.require('running');
+      await app.features.require('running', request);
       return plans.patch(requireUserId(request.userId), request.params.id, request.body);
     },
   );

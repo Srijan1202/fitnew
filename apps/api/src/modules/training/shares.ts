@@ -222,7 +222,7 @@ export async function shareRoutes(app: FastifyInstance): Promise<void> {
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const security = [{ bearerAuth: [] }];
   const errors = { 401: errorEnvelopeSchema, 403: errorEnvelopeSchema, 404: errorEnvelopeSchema, 422: errorEnvelopeSchema, 429: errorEnvelopeSchema };
-  const feature = () => app.features.require('share-programme');
+  const feature = (request: FastifyRequest) => app.features.require('share-programme', request);
 
   typed.post('/training/program/share', {
     config: {
@@ -241,7 +241,7 @@ export async function shareRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (request, reply) => {
     const userId = requireUserId(request.userId);
-    await feature();
+    await feature(request);
     return reply.code(201).send(await service.share(userId));
   });
 
@@ -267,7 +267,7 @@ export async function shareRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (request) => {
     const userId = requireUserId(request.userId);
-    await feature();
+    await feature(request);
     return service.preview(request.params.code, userId);
   });
 
@@ -281,7 +281,7 @@ export async function shareRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (request) => {
     const userId = requireUserId(request.userId);
-    await feature();
+    await feature(request);
     return service.use(userId, request.params.code);
   });
 
@@ -297,7 +297,7 @@ export async function shareRoutes(app: FastifyInstance): Promise<void> {
     },
   }, async (request, reply) => {
     void reply.header('Access-Control-Allow-Origin', 'https://tryfitos.me').header('Vary', 'Origin');
-    await feature();
+    await feature(request);
     return service.preview(request.params.code, null);
   });
 }

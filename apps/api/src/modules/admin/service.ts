@@ -7,6 +7,7 @@
 import type {
   AdminAlternative,
   ExerciseInput,
+  FlagAudience,
   NotifySettings,
   PutAlternativesRequest,
 } from '@fitos/contracts';
@@ -364,18 +365,19 @@ export class AdminService {
     const byKey = new Map(rows.map((r) => [r.key, r]));
     const switches = APP_FEATURE_KEYS.map((key) => {
       const r = byKey.get(key);
-      return { key, name: APP_FEATURES[key].name, enabled: r?.enabled ?? true, description: APP_FEATURES[key].description, updatedAt: r?.updatedAt.toISOString() ?? null };
+      return { key, name: APP_FEATURES[key].name, enabled: r?.enabled ?? true, audience: r?.audience ?? ('everyone' as const), description: APP_FEATURES[key].description, updatedAt: r?.updatedAt.toISOString() ?? null };
     });
     const others = rows
       .filter((r) => !isAppFeature(r.key))
-      .map((f) => ({ key: f.key, name: null, enabled: f.enabled, description: f.description, updatedAt: f.updatedAt.toISOString() }));
+      .map((f) => ({ key: f.key, name: null, enabled: f.enabled, audience: f.audience, description: f.description, updatedAt: f.updatedAt.toISOString() }));
     return [...switches, ...others];
   }
 
-  async putFlag(actor: string | null, key: string, enabled: boolean, description?: string) {
+  /** [audience]: beta 6.1 early access; left out, a switch keeps the one it has (`everyone` when new). */
+  async putFlag(actor: string | null, key: string, enabled: boolean, description?: string, audience?: FlagAudience) {
     const row = await this.repo.inTransaction(async (tx) => {
-      const r = await tx.putFlag(key, enabled, description, actor);
-      await tx.audit({ actorUserId: actor, action: 'flag.set', entity: 'feature_flag', entityId: key, metadata: { enabled, description: description ?? null } });
+      const r = await tx.putFlag(key, enabled, description, actor, audience);
+      await tx.audit({ actorUserId: actor, action: 'flag.set', entity: 'feature_flag', entityId: key, metadata: { enabled, audience: r.audience, description: description ?? null } });
       return r;
     });
     const feature = isAppFeature(row.key) ? APP_FEATURES[row.key] : null;
@@ -383,6 +385,7 @@ export class AdminService {
       key: row.key,
       name: feature?.name ?? null,
       enabled: row.enabled,
+      audience: row.audience,
       description: feature?.description ?? row.description,
       updatedAt: row.updatedAt.toISOString(),
     };

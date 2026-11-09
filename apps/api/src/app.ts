@@ -28,6 +28,8 @@ import { aiRoutes } from './modules/ai/routes.js';
 import type { AiProvider } from './modules/ai/provider.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { healthRoutes } from './modules/health/routes.js';
+import { PremiumRepository } from './modules/premium/repository.js';
+import { PremiumService } from './modules/premium/service.js';
 import { exerciseRoutes } from './modules/exercise/routes.js';
 import { onboardingRoutes } from './modules/onboarding/routes.js';
 import { shareRoutes } from './modules/training/shares.js';
@@ -194,7 +196,14 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
   app.decorate('releaseFeed', options.releaseFeed ?? (options.tokenVerifier !== undefined ? new ScriptedReleaseFeed() : new WebsiteReleaseFeed()));
 
   // Beta 3.3 (ADR-033): the admin panel's feature switches.
-  app.decorate('features', new FeatureSwitches(() => app.database.db));
+  // Beta 6.1: an early-access switch asks the premium rule (granted, or an admin by role).
+  app.decorate(
+    'features',
+    new FeatureSwitches(
+      () => app.database.db,
+      (userId, claims) => new PremiumService(new PremiumRepository(app.database.db)).isPremium(userId, claims),
+    ),
+  );
 
   await app.register(aiPlugin, options.aiProvider !== undefined ? { provider: options.aiProvider, env } : { env });
 

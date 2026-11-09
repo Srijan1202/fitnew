@@ -265,7 +265,7 @@ export async function foodRequestRoutes(app: FastifyInstance, opts: { salt: stri
     },
   }, async (request, reply) => {
     const userId = requireUserId(request.userId);
-    await app.features.require('food-requests');
+    await app.features.require('food-requests', request);
     await service.report(userId, request.body.query, request.body.asked);
     return reply.code(204).send(null);
   });
@@ -315,7 +315,7 @@ export async function foodRequestRoutes(app: FastifyInstance, opts: { salt: stri
     },
   }, async (request, reply) => {
     const userId = requireUserId(request.userId);
-    await app.features.require('community-foods');
+    await app.features.require('community-foods', request);
     await community.report(userId, request.params.id, request.body.note);
     return reply.code(204).send(null);
   });

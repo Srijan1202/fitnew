@@ -218,12 +218,22 @@ export const APP_FEATURES = {
 export type AppFeature = keyof typeof APP_FEATURES;
 export const APP_FEATURE_KEYS = Object.keys(APP_FEATURES) as AppFeature[];
 
+/**
+ * Beta 6.1 (early access): who an ON switch is on for. `premium` is early
+ * access: premium accounts (and admins, premium by role) only; the server
+ * refuses everyone else (403 `early-access`), and the public config reads it
+ * as off.
+ */
+export const FLAG_AUDIENCES = ['everyone', 'premium'] as const;
+export const flagAudienceSchema = z.enum(FLAG_AUDIENCES);
+export type FlagAudience = z.infer<typeof flagAudienceSchema>;
+
 /** A flag; an app feature carries its plain `name`, and `updatedAt` is null while it was never changed (on). */
 export const featureFlagSchema = z
-  .object({ key: z.string(), name: z.string().nullable(), enabled: z.boolean(), description: z.string(), updatedAt: isoOrNull })
+  .object({ key: z.string(), name: z.string().nullable(), enabled: z.boolean(), audience: flagAudienceSchema, description: z.string(), updatedAt: isoOrNull })
   .strict();
 export const featureFlagListSchema = z.object({ items: z.array(featureFlagSchema) }).strict();
-export const putFlagRequestSchema = z.object({ enabled: z.boolean(), description: z.string().trim().max(300).optional() }).strict();
+export const putFlagRequestSchema = z.object({ enabled: z.boolean(), audience: flagAudienceSchema.optional(), description: z.string().trim().max(300).optional() }).strict();
 export const flagParamsSchema = z.object({ key: flagKeySchema }).strict();
 /**
  * Beta 5.2 (owner): an exercise demo's approval; the app shows a demo only once approved.
@@ -273,6 +283,9 @@ export type AdminUpdatePushResult = z.infer<typeof adminUpdatePushResultSchema>;
  * build below it shows "Update FITOS" and nothing else; 0 asks nothing.
  */
 export const metaConfigSchema = z.object({ flags: z.record(z.string(), z.boolean()), minimumBuild: z.number().int().min(0) }).strict();
+/** Beta 6.1: the switches as they are for the signed-in account; `earlyAccess` lists the ones on for it because it is premium. */
+export const myFeaturesSchema = z.object({ flags: z.record(z.string(), z.boolean()), earlyAccess: z.array(z.string()) }).strict();
+export type MyFeatures = z.infer<typeof myFeaturesSchema>;
 
 /* ---------------------------------------------------------- support view -- */
 

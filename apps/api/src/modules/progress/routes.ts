@@ -58,7 +58,7 @@ export async function progressRoutes(app: FastifyInstance): Promise<void> {
     },
     async (request) => {
       const userId = requireUserId(request.userId);
-      await app.features.require('weekly-report');
+      await app.features.require('weekly-report', request);
       if (!(await premium.isPremium(userId, request.identity?.claims))) throw premiumRequired('The weekly report');
       return service.weekly(userId, await workouts.volume(userId), request.query.week);
     },
@@ -76,7 +76,7 @@ export async function progressRoutes(app: FastifyInstance): Promise<void> {
     },
     async (request) => {
       const userId = requireUserId(request.userId);
-      await app.features.require('streaks');
+      await app.features.require('streaks', request);
       return service.streak(userId);
     },
   );

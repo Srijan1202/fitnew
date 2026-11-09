@@ -65265,6 +65265,118 @@
         }
       }
     },
+    "/me/features": {
+      "get": {
+        "summary": "The feature switches for the signed-in account: early-access ones are on for premium accounts (beta 6.1)",
+        "tags": [
+          "meta"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "flags": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "boolean"
+                      }
+                    },
+                    "earlyAccess": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "flags",
+                    "earlyAccess"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "UNAUTHENTICATED",
+                            "FORBIDDEN",
+                            "NOT_FOUND",
+                            "VALIDATION_FAILED",
+                            "CONFLICT",
+                            "RATE_LIMITED",
+                            "UPSTREAM_UNAVAILABLE",
+                            "INTERNAL"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "issue": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "issue"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message",
+                        "requestId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/me": {
       "get": {
         "summary": "Am I an administrator? (403 if not)",
@@ -74744,6 +74856,13 @@
                           "enabled": {
                             "type": "boolean"
                           },
+                          "audience": {
+                            "type": "string",
+                            "enum": [
+                              "everyone",
+                              "premium"
+                            ]
+                          },
                           "description": {
                             "type": "string"
                           },
@@ -74764,6 +74883,7 @@
                           "key",
                           "name",
                           "enabled",
+                          "audience",
                           "description",
                           "updatedAt"
                         ],
@@ -75123,6 +75243,13 @@
                   "enabled": {
                     "type": "boolean"
                   },
+                  "audience": {
+                    "type": "string",
+                    "enum": [
+                      "everyone",
+                      "premium"
+                    ]
+                  },
                   "description": {
                     "type": "string",
                     "maxLength": 300
@@ -75172,6 +75299,13 @@
                     "enabled": {
                       "type": "boolean"
                     },
+                    "audience": {
+                      "type": "string",
+                      "enum": [
+                        "everyone",
+                        "premium"
+                      ]
+                    },
                     "description": {
                       "type": "string"
                     },
@@ -75192,6 +75326,7 @@
                     "key",
                     "name",
                     "enabled",
+                    "audience",
                     "description",
                     "updatedAt"
                   ],

@@ -376,13 +376,13 @@ export class AdminRepository {
     return row!;
   }
 
-  async putFlag(key: string, enabled: boolean, description: string | undefined, actor: string | null) {
+  async putFlag(key: string, enabled: boolean, description: string | undefined, actor: string | null, audience?: 'everyone' | 'premium') {
     const [row] = await this.db
       .insert(featureFlags)
-      .values({ key, enabled, description: description ?? '', updatedBy: actor })
+      .values({ key, enabled, description: description ?? '', updatedBy: actor, ...(audience !== undefined ? { audience } : {}) })
       .onConflictDoUpdate({
         target: featureFlags.key,
-        set: { enabled, ...(description !== undefined ? { description } : {}), updatedBy: actor, updatedAt: sql`now()` },
+        set: { enabled, ...(description !== undefined ? { description } : {}), ...(audience !== undefined ? { audience } : {}), updatedBy: actor, updatedAt: sql`now()` },
       })
       .returning();
     return row!;

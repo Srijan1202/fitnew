@@ -36,11 +36,16 @@ export const featureFlags = pgTable(
   {
     key: text('key').primaryKey(),
     enabled: boolean('enabled').notNull().default(false),
+    /** Beta 6.1: who an on switch is on for — `everyone`, or `premium` (early access). */
+    audience: text('audience', { enum: ['everyone', 'premium'] }).notNull().default('everyone'),
     description: text('description').notNull().default(''),
     updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [check('feature_flags_key', sql`${t.key} ~ '^[a-z][a-z0-9-]{1,48}$'`)],
+  (t) => [
+    check('feature_flags_key', sql`${t.key} ~ '^[a-z][a-z0-9-]{1,48}$'`),
+    check('feature_flags_audience', sql`${t.audience} in ('everyone', 'premium')`),
+  ],
 );
 
 export const messDishOverrides = pgTable(

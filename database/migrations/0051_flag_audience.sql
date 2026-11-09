@@ -1,0 +1,2 @@
+ALTER TABLE "feature_flags" ADD COLUMN "audience" text DEFAULT 'everyone' NOT NULL;--> statement-breakpoint
+ALTER TABLE "feature_flags" ADD CONSTRAINT "feature_flags_audience" CHECK ("feature_flags"."audience" in ('everyone', 'premium'));

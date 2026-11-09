@@ -333,7 +333,7 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request) => {
-      await app.features.require('food-guide');
+      await app.features.require('food-guide', request);
       return guide.guide(requireUserId(request.userId), request.body, await premiumOf(request));
     },
   );

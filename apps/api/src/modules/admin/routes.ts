@@ -42,6 +42,7 @@ import {
   flagParamsSchema,
   grantAdminRequestSchema,
   metaConfigSchema,
+  myFeaturesSchema,
   putDemoApprovalRequestSchema,
   putAlternativesRequestSchema,
   putFlagRequestSchema,
@@ -78,6 +79,16 @@ export async function adminRoutes(app: FastifyInstance, opts: { minimumAppBuild:
       response: { 200: metaConfigSchema },
     },
   }, async () => ({ flags: await app.features.config(), minimumBuild: opts.minimumAppBuild }));
+
+  // Beta 6.1 (early access): the switches as they are for this account.
+  typed.get('/me/features', {
+    schema: {
+      summary: 'The feature switches for the signed-in account: early-access ones are on for premium accounts (beta 6.1)',
+      tags: ['meta'],
+      security,
+      response: { 200: myFeaturesSchema, 401: errorEnvelopeSchema },
+    },
+  }, async (request) => app.features.configFor(request));
 
   typed.get('/admin/me', { ...admin, schema: { summary: 'Am I an administrator? (403 if not)', tags, security, response: { 200: adminMeSchema, ...errors } } }, async (request) => ({
     userId: request.userId,
@@ -208,7 +219,7 @@ export async function adminRoutes(app: FastifyInstance, opts: { minimumAppBuild:
     ...admin,
     schema: { summary: 'Create or change a feature flag', tags, security, params: flagParamsSchema, body: putFlagRequestSchema, response: { 200: featureFlagSchema, ...errors } },
   }, async (request) => {
-    const flag = await service.putFlag(request.userId, request.params.key, request.body.enabled, request.body.description);
+    const flag = await service.putFlag(request.userId, request.params.key, request.body.enabled, request.body.description, request.body.audience);
     app.features.invalidate();
     return flag;
   });

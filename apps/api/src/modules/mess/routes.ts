@@ -68,7 +68,7 @@ export function messServiceFor(db: DatabaseHandle['db'], features?: FeatureSwitc
     (id) => logs.timezoneOf(id),
     configuredMessOf(db),
     undefined,
-    async () => (await features?.isOn('mess-ratings')) ?? true,
+    async (userId) => (await features?.isOn('mess-ratings', userId)) ?? true,
   );
 }
 
@@ -194,7 +194,7 @@ export async function messRoutes(app: FastifyInstance): Promise<void> {
     },
     async (request) => {
       const userId = requireUserId(request.userId);
-      await app.features.require('mess-ratings');
+      await app.features.require('mess-ratings', request);
       return service.rate(userId, request.params.slug, request.body);
     },
   );

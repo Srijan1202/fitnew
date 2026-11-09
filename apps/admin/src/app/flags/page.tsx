@@ -1,6 +1,6 @@
 'use client';
 
-import type { FeatureFlag } from '@fitos/contracts';
+import type { FeatureFlag, FlagAudience } from '@fitos/contracts';
 import { useState } from 'react';
 
 import { Badge, Header, Status, useGet, when } from '@/components/ui';
@@ -18,11 +18,15 @@ export default function Flags() {
   const [busy, setBusy] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const put = async (k: string, enabled: boolean, desc?: string) => {
+  const put = async (k: string, enabled: boolean, desc?: string, audience?: FlagAudience) => {
     setActionError(null);
     setBusy(k);
     try {
-      await api('PUT', `/admin/flags/${encodeURIComponent(k)}`, { enabled, ...(desc !== undefined ? { description: desc } : {}) });
+      await api('PUT', `/admin/flags/${encodeURIComponent(k)}`, {
+        enabled,
+        ...(desc !== undefined ? { description: desc } : {}),
+        ...(audience !== undefined ? { audience } : {}),
+      });
       reload();
     } catch (e) {
       setActionError(errorText(e));
@@ -38,7 +42,8 @@ export default function Flags() {
     <>
       <Header eyebrow="Configuration" title="App features">
         Turn a feature off and the app hides it the next time it opens or comes back (within a few minutes); the server refuses it at once, so older
-        versions of the app cannot use it either. Everything is on until you turn it off. Each change is audited.
+        versions of the app cannot use it either. <strong>Premium</strong> is early access: on for premium accounts and admins only, with an Early access
+        tag in their app; everyone else sees it as off. Everything is on for everyone until you change it. Each change is audited.
       </Header>
       <Status error={error} loading={loading && data === null} />
       {actionError !== null && <p className="error">{actionError}</p>}
@@ -46,19 +51,29 @@ export default function Flags() {
       {switches.map((f) => (
         <div key={f.key} className="switch-row">
           <div className="grow">
-            <strong>{f.name}</strong> {f.enabled ? <Badge tone="ok">on</Badge> : <Badge tone="bad">off</Badge>}
+            <strong>{f.name}</strong>{' '}
+            {!f.enabled ? <Badge tone="bad">off</Badge> : f.audience === 'premium' ? <Badge tone="warn">premium only</Badge> : <Badge tone="ok">on</Badge>}
             <div className="muted small">{f.description}</div>
             <div className="muted small">
               <code>{f.key}</code> · {f.updatedAt === null ? 'never changed' : `changed ${when(f.updatedAt)}`}
             </div>
           </div>
-          <button
-            className={`button${f.enabled ? '' : ' primary'}`}
-            disabled={busy === f.key}
-            onClick={() => void put(f.key, !f.enabled)}
-          >
-            {f.enabled ? 'Turn off' : 'Turn on'}
-          </button>
+          <div className="segmented" role="group" aria-label={`Who has ${f.name}`} style={{ margin: 0 }}>
+            {(['off', 'premium', 'everyone'] as const).map((s) => {
+              const now = !f.enabled ? 'off' : f.audience;
+              return (
+                <button
+                  key={s}
+                  className={now === s ? 'active' : ''}
+                  aria-pressed={now === s}
+                  disabled={busy === f.key || now === s}
+                  onClick={() => void (s === 'off' ? put(f.key, false) : put(f.key, true, undefined, s))}
+                >
+                  {s === 'off' ? 'Off' : s === 'premium' ? 'Premium' : 'Everyone'}
+                </button>
+              );
+            })}
+          </div>
         </div>
       ))}
 

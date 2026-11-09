@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
 
+import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../features/auth/presentation/controllers/auth_providers.dart';
 import '../theme/tokens.dart';
 import 'app_update.dart';
@@ -27,9 +28,28 @@ class AppConfig {
       {'flags': flags, 'minimumBuild': minimumBuild};
 }
 
+/// Beta 6.1 (early access): the switches as they are for this account,
+/// `GET /v1/me/features`. [earlyAccess]: the ones on only because it is
+/// premium.
+class MyFeatures {
+  const MyFeatures({required this.flags, required this.earlyAccess});
+
+  factory MyFeatures.fromJson(Map<String, dynamic> json) => MyFeatures(
+        flags: (json['flags'] as Map<String, dynamic>)
+            .map((k, v) => MapEntry(k, v as bool)),
+        earlyAccess: (json['earlyAccess'] as List<dynamic>).cast<String>(),
+      );
+
+  final Map<String, bool> flags;
+  final List<String> earlyAccess;
+}
+
 abstract class MetaApi {
   /// Null when it cannot be read (offline): nothing is then blocked.
   Future<AppConfig?> config();
+
+  /// Null when it cannot be read: the public config then decides.
+  Future<MyFeatures?> mine() async => null;
 }
 
 class DioMetaApi implements MetaApi {
@@ -42,6 +62,16 @@ class DioMetaApi implements MetaApi {
     try {
       final r = await _dio.get<Map<String, dynamic>>('/v1/meta/config');
       return AppConfig.fromJson(r.data!);
+    } on Object {
+      return null;
+    }
+  }
+
+  @override
+  Future<MyFeatures?> mine() async {
+    try {
+      final r = await _dio.get<Map<String, dynamic>>('/v1/me/features');
+      return MyFeatures.fromJson(r.data!);
     } on Object {
       return null;
     }
@@ -79,6 +109,23 @@ final appConfigProvider = FutureProvider<AppConfig?>(
   retry: (_, __) => null,
 );
 
+/// Beta 6.1: this account's switches; null while signed out or unread.
+/// Re-read with the public config (it watches it), so a change in the
+/// admin panel reaches a premium phone as fast as everyone else's.
+final myFeaturesProvider = FutureProvider<MyFeatures?>(
+  (ref) async {
+    ref.watch(appConfigProvider);
+    if (ref.watch(sessionUserIdProvider) == null) return null;
+    return ref.watch(metaApiProvider).mine();
+  },
+  retry: (_, __) => null,
+);
+
+/// A switch for this phone: the account's when known, else the public one.
+bool? switchFor(Ref ref, String key) =>
+    ref.watch(myFeaturesProvider).value?.flags[key] ??
+    ref.watch(appConfigProvider).value?.flags[key];
+
 /// True only when the server says this build is too old. Unknown (offline,
 /// still loading, an error) is never "too old": the app keeps working.
 final updateRequiredProvider = Provider<bool>((ref) {
@@ -90,7 +137,9 @@ final updateRequiredProvider = Provider<bool>((ref) {
 
 /// A feature flag from the server; [fallback] until the config is read.
 bool flagOn(WidgetRef ref, String key, {bool fallback = true}) =>
-    ref.watch(appConfigProvider).value?.flags[key] ?? fallback;
+    ref.watch(myFeaturesProvider).value?.flags[key] ??
+    ref.watch(appConfigProvider).value?.flags[key] ??
+    fallback;
 
 /// Everything the app shows while its build is below the minimum.
 class UpdateRequiredScreen extends ConsumerWidget {

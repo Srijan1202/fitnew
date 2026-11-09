@@ -113,4 +113,9 @@ const kPremiumPerks = <(String, String)>[
     'Premium pictures',
     'Crown, Flame and Trophy, and a gold rim around your picture.'
   ),
+  // Beta 6.1: a switch the admin sets to Premium.
+  (
+    'Early access',
+    'New features before everyone else, while they are being finished.'
+  ),
 ];

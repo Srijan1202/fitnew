@@ -95,7 +95,7 @@ export async function communityRoutes(app: FastifyInstance, opts: { ipSalt: stri
   const errors = { 401: errorEnvelopeSchema, 403: errorEnvelopeSchema, 404: errorEnvelopeSchema, 409: errorEnvelopeSchema, 422: errorEnvelopeSchema, 429: errorEnvelopeSchema };
   const admin = { preValidation: requireAdmin };
   const tags = ['community'];
-  const on = { preHandler: async () => app.features.require('community') };
+  const on = { preHandler: async (request: FastifyRequest) => app.features.require('community', request) };
   const ip = (request: FastifyRequest) => hashIp(request.ip, opts.ipSalt);
 
   /* ------------------------------------------------------------ joining -- */

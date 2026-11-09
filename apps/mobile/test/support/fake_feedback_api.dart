@@ -74,4 +74,10 @@ class FakeMetaApi implements MetaApi {
   @override
   Future<AppConfig?> config() async =>
       offline ? null : AppConfig(flags: flags, minimumBuild: minimumBuild);
+
+  /// Beta 6.1: this account's switches; null = not read (the public ones decide).
+  MyFeatures? my;
+
+  @override
+  Future<MyFeatures?> mine() async => offline ? null : my;
 }

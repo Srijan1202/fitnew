@@ -67,9 +67,9 @@ Today a programme is 7 weekdays (`program_days.day_of_week` 1–7, unique). Skip
 | # | Change | Detail |
 |---|---|---|
 | E1 | **Three states per switch** | Off · **Premium** · Everyone, in place of on/off. Migration **0051** gives `feature_flags` an `audience`. Existing switches become Everyone if on and Off if off. |
-| E2 | **The server decides per user** | `features.require(key, user)` lets premium accounts (and admins, premium by role) through a Premium switch. A switch is checked on the server, as now, not only hidden in the app. |
-| E3 | **The app** | `/meta/config` stays public, and a Premium switch reads as off there. A new signed-in `GET /v1/me/features` returns this account's switches, read after sign-in and on each refresh. A Premium-only feature shows a small **Early access** tag. |
-| E4 | **The admin panel** | The flags page gets the three-way control and a note on who sees what. Each change is audit-logged, as now. |
+| E2 | **The server decides per user** | `features.require(key, request)` lets premium accounts (and admins, premium by role) through a Premium switch, and refuses the rest with 403 `early-access`. Reads that only show or hide something (mess ratings in the menu, community foods in search) ask `isOn(key, userId)` the same way. |
+| E3 | **The app** | `/meta/config` stays public, and a Premium switch reads as off there, so older apps hide it. A new signed-in `GET /v1/me/features` returns this account's switches and which are early access. It is re-read whenever the public config is (start, and coming back after 5 minutes). Profile → Premium names the features this account has in early access, and the perks list gains "Early access". |
+| E4 | **The admin panel** | The flags page gets the three-way control and a note on who sees what. Turning a switch off keeps its audience for next time. Each change is audit-logged with the audience. |
 
 ## 6. E17: the protein nudge names tonight's dish
 

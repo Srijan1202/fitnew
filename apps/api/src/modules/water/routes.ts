@@ -3,7 +3,7 @@
  * and Zod only. Default-deny like every /v1 route; the admin's `water`
  * switch turns it off (403 feature-off).
  */
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { errorEnvelopeSchema, setWaterRequestSchema, waterDateParamsSchema, waterDaySchema } from '@fitos/contracts';
 
@@ -23,7 +23,7 @@ export async function waterRoutes(app: FastifyInstance): Promise<void> {
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const security = [{ bearerAuth: [] }];
   const errors = { 401: errorEnvelopeSchema, 403: errorEnvelopeSchema, 422: errorEnvelopeSchema };
-  const on = { preHandler: async (): Promise<void> => app.features.require('water') };
+  const on = { preHandler: async (request: FastifyRequest): Promise<void> => app.features.require('water', request) };
 
   typed.get(
     '/water/today',

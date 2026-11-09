@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fitos/core/config/app_config.dart';
 import 'package:fitos/core/config/app_features.dart';
+import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:fitos/features/nutrition/presentation/controllers/food_providers.dart';
 import 'package:fitos/features/nutrition/presentation/widgets/ask_to_add_food.dart';
 import 'package:flutter/material.dart';
@@ -44,6 +45,40 @@ void main() {
       expect(c.read(featureOnProvider(AppFeature.messRatings)), isTrue);
       final offline = await container(FakeMetaApi()..offline = true);
       expect(offline.read(featureOnProvider(AppFeature.streaks)), isTrue);
+    });
+
+    test(
+        'beta 6.1: signed in, the account switches decide (early access on for a premium account)',
+        () async {
+      final meta = FakeMetaApi(flags: {'running': false})
+        ..my = const MyFeatures(
+          flags: {'running': true},
+          earlyAccess: ['running'],
+        );
+      final c = ProviderContainer(
+        overrides: [
+          metaApiProvider.overrideWithValue(meta),
+          sessionUserIdProvider.overrideWithValue('u1'),
+        ],
+      );
+      addTearDown(c.dispose);
+      await c.read(appConfigProvider.future);
+      await c.read(myFeaturesProvider.future);
+      expect(c.read(featureOnProvider(AppFeature.running)), isTrue);
+      expect(c.read(earlyAccessProvider), [AppFeature.running]);
+
+      // Signed out: the public config (early access reads off).
+      final out = ProviderContainer(
+        overrides: [
+          metaApiProvider.overrideWithValue(meta),
+          sessionUserIdProvider.overrideWithValue(null),
+        ],
+      );
+      addTearDown(out.dispose);
+      await out.read(appConfigProvider.future);
+      await out.read(myFeaturesProvider.future);
+      expect(out.read(featureOnProvider(AppFeature.running)), isFalse);
+      expect(out.read(earlyAccessProvider), isEmpty);
     });
 
     test('a re-read picks up a switch turned off meanwhile', () async {

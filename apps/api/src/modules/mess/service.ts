@@ -85,7 +85,7 @@ export class MessService {
     private readonly configuredMess: (userId: string) => Promise<MessRef | null>,
     private readonly now: () => Date = () => new Date(),
     /** Beta 3.3 (ADR-033): whether dish ratings are switched on. */
-    private readonly ratingsOn: () => Promise<boolean> = async () => true,
+    private readonly ratingsOn: (userId: string) => Promise<boolean> = async () => true,
   ) {}
 
   private messFrom(m: MessRow, providerSlug: string, latestPublished: string | null): Mess {
@@ -205,7 +205,7 @@ export class MessService {
       this.repo.nutritionFor(slugs),
       this.repo.pendingCorrectionSlugs(userId, slugs),
       this.repo.loggedDishes(userId, date),
-      this.ratingsOn().then((on) => (on ? this.repo.ratingsFor(mess.id, userId, slugs) : null)),
+      this.ratingsOn(userId).then((on) => (on ? this.repo.ratingsFor(mess.id, userId, slugs) : null)),
     ]);
 
     return {

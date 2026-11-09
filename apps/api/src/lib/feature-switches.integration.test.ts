@@ -87,16 +87,50 @@ describeIfDb('feature switches (real Postgres)', () => {
     const switches = new FeatureSwitches(() => {
       reads += 1;
       return app.database.db;
-    }, () => t);
-    expect(await switches.isOn('streaks')).toBe(true);
-    expect(await switches.isOn('mess-ratings')).toBe(true);
+    }, undefined, () => t);
+    expect(await switches.state('streaks')).toBe('everyone');
+    expect(await switches.state('mess-ratings')).toBe('everyone');
     expect(reads).toBe(1);
     t = 10_001;
-    await switches.isOn('streaks');
+    await switches.state('streaks');
     expect(reads).toBe(2);
     switches.invalidate();
-    await switches.isOn('streaks');
+    await switches.state('streaks');
     expect(reads).toBe(3);
+  });
+
+  it('beta 6.1 early access: a premium switch is on for premium accounts and admins, refused for others, off in the public config', async () => {
+    // Running: no other test file switches it, so files running side by side are not disturbed.
+    const plain = await user();
+    const granted = await user();
+    await sql`update users set premium_since = now() where id = ${granted.id}`;
+    const put = await call(admin, 'PUT', '/admin/flags/running', { enabled: true, audience: 'premium' });
+    expect(put.statusCode, put.body).toBe(200);
+    expect(put.json()).toMatchObject({ key: 'running', enabled: true, audience: 'premium' });
+
+    // The server decides per account: past the switch, an unknown run is 404.
+    const patch = (u: U) =>
+      app.inject({ method: 'PATCH', url: `/v1/running/runs/${randomUUID()}`, headers: headers(u.token), payload: { name: 'Probe' } });
+    const refused = await patch(plain);
+    expect(refused.statusCode).toBe(403);
+    expect(issue(refused)).toBe('early-access');
+    expect((await patch(granted)).statusCode).toBe(404);
+    expect((await patch(admin)).statusCode).toBe(404);
+
+    // Before sign-in it reads off; signed in, each account sees its own.
+    expect(((await app.inject({ method: 'GET', url: '/v1/meta/config', headers: { 'x-forwarded-for': '198.51.0.9' } })).json() as { flags: Record<string, boolean> }).flags.running).toBe(false);
+    expect((await call(plain, 'GET', '/me/features')).json()).toMatchObject({ flags: { running: false }, earlyAccess: [] });
+    expect((await call(granted, 'GET', '/me/features')).json()).toMatchObject({ flags: { running: true }, earlyAccess: ['running'] });
+    expect((await app.inject({ method: 'GET', url: '/v1/me/features', headers: { 'x-forwarded-for': '198.51.0.9' } })).statusCode).toBe(401);
+
+    // Switching it off keeps the audience for next time; off is off for everyone.
+    expect((await call(admin, 'PUT', '/admin/flags/running', { enabled: false })).json()).toMatchObject({ enabled: false, audience: 'premium' });
+    expect(issue(await patch(granted))).toBe('feature-off');
+    expect((await call(admin, 'PUT', '/admin/flags/running', { enabled: true, audience: 'everyone' })).statusCode).toBe(200);
+    expect((await patch(plain)).statusCode).toBe(404);
+    const [audit] = await sql<{ metadata: Record<string, unknown> }[]>`select metadata from audit_logs where action = 'flag.set' and entity_id = 'running' and actor_user_id = ${admin.id} order by occurred_at limit 1`;
+    expect(audit!.metadata).toMatchObject({ enabled: true, audience: 'premium' });
+    expect((await call(admin, 'PUT', '/admin/flags/running', { enabled: true, audience: 'friends' })).statusCode).toBe(422);
   });
 
   it('missing-food requests: refused while off, counted again when back on', async () => {
