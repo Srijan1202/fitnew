@@ -8,6 +8,7 @@ import type { DatabaseHandle } from '../../db/client.js';
 import {
   aiUsage,
   auditLogs,
+  exerciseAlternatives,
   bodyMetrics,
   exerciseContraindications,
   exerciseMuscles,
@@ -293,6 +294,56 @@ export class AdminRepository {
       await this.db.insert(exerciseContraindications).values([...new Set(input.contraindications)].map((bodyPart) => ({ exerciseId, bodyPart })));
     }
     return exerciseId;
+  }
+
+  /* -------------------------------------------- alternatives (E19) -- */
+
+  /** An exercise's alternatives as the panel lists them: by reason, then name. */
+  async alternatives(id: string) {
+    const rows = await this.db
+      .select({ id: exercises.id, slug: exercises.slug, name: exercises.name, reason: exerciseAlternatives.reason, movementPattern: exercises.movementPattern, retiredAt: exercises.retiredAt })
+      .from(exerciseAlternatives)
+      .innerJoin(exercises, eq(exercises.id, exerciseAlternatives.alternativeId))
+      .where(eq(exerciseAlternatives.exerciseId, id))
+      .orderBy(asc(exerciseAlternatives.reason), asc(exercises.name));
+    return rows.map((r) => ({ ...r, retiredAt: r.retiredAt?.toISOString() ?? null }));
+  }
+
+  /** What §12.6's rules need of each exercise: its pattern, primary muscles, retirement and how many alternatives it has. */
+  async alternativeFacts(ids: readonly string[]) {
+    if (ids.length === 0) return [];
+    const [rows, primaries, counts] = await Promise.all([
+      this.db.select({ id: exercises.id, slug: exercises.slug, movementPattern: exercises.movementPattern, retiredAt: exercises.retiredAt }).from(exercises).where(inArray(exercises.id, [...ids])),
+      this.db.select({ id: exerciseMuscles.exerciseId, muscle: exerciseMuscles.muscleGroup }).from(exerciseMuscles).where(and(inArray(exerciseMuscles.exerciseId, [...ids]), eq(exerciseMuscles.role, 'primary'))),
+      this.db.select({ id: exerciseAlternatives.exerciseId, n: count() }).from(exerciseAlternatives).where(inArray(exerciseAlternatives.exerciseId, [...ids])).groupBy(exerciseAlternatives.exerciseId),
+    ]);
+    return rows.map((r) => ({
+      ...r,
+      primaryMuscles: primaries.filter((p) => p.id === r.id).map((p) => p.muscle),
+      alternatives: counts.find((c) => c.id === r.id)?.n ?? 0,
+    }));
+  }
+
+  /** Replace one exercise's own list wholesale. */
+  async replaceAlternatives(id: string, items: readonly { id: string; reason: (typeof exerciseAlternatives.$inferInsert)['reason'] }[]): Promise<void> {
+    await this.db.delete(exerciseAlternatives).where(eq(exerciseAlternatives.exerciseId, id));
+    if (items.length > 0) await this.db.insert(exerciseAlternatives).values(items.map((a) => ({ exerciseId: id, alternativeId: a.id, reason: a.reason })));
+  }
+
+  async addAlternative(exerciseId: string, alternativeId: string, reason: (typeof exerciseAlternatives.$inferInsert)['reason']): Promise<void> {
+    await this.db.insert(exerciseAlternatives).values({ exerciseId, alternativeId, reason }).onConflictDoNothing();
+  }
+
+  async removeAlternative(exerciseId: string, alternativeId: string, reason: (typeof exerciseAlternatives.$inferInsert)['reason']): Promise<void> {
+    await this.db
+      .delete(exerciseAlternatives)
+      .where(and(eq(exerciseAlternatives.exerciseId, exerciseId), eq(exerciseAlternatives.alternativeId, alternativeId), eq(exerciseAlternatives.reason, reason)));
+  }
+
+  /** Edited in the panel: the seed leaves these exercises and their join rows alone from now on (ADR-022 D6). */
+  async markEdited(ids: readonly string[]): Promise<void> {
+    if (ids.length === 0) return;
+    await this.db.update(exercises).set({ adminEditedAt: sql`now()`, updatedAt: sql`now()` }).where(inArray(exercises.id, [...ids]));
   }
 
   async setRetired(id: string, retired: boolean): Promise<void> {

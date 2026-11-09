@@ -6,7 +6,7 @@
  */
 import { z } from 'zod';
 
-import { exerciseSeedSchema, movementPatternSchema, slugSchema } from './exercise.js';
+import { alternativeReasonSchema, exerciseSeedSchema, movementPatternSchema, slugSchema } from './exercise.js';
 import { foodNutritionSchema, foodSourceSchema } from './food.js';
 import { equipmentSchema } from './profile.js';
 
@@ -177,6 +177,21 @@ export type ExerciseInput = z.infer<typeof exerciseInputSchema>;
 export const adminExerciseSchema = exerciseInputSchema.extend({ id: z.string().uuid(), retiredAt: isoOrNull, adminEditedAt: isoOrNull }).strict();
 export const editExerciseRequestSchema = exerciseInputSchema.omit({ slug: true });
 
+/**
+ * Beta 6.1 (E19): an exercise's alternatives, edited in the panel. §12.6's
+ * rules hold as in the seed: the same movement pattern and a shared primary
+ * muscle; `equipment` and `preference` links are kept both ways (the other
+ * exercise gets the reverse), `injury` links point one way, to the gentler one.
+ */
+export const MAX_ALTERNATIVES = 10;
+export const adminAlternativeSchema = z
+  .object({ id: z.string().uuid(), slug: slugSchema, name: z.string(), reason: alternativeReasonSchema, movementPattern: movementPatternSchema, retiredAt: isoOrNull })
+  .strict();
+export const adminAlternativeListSchema = z.object({ items: z.array(adminAlternativeSchema) }).strict();
+export const putAlternativesRequestSchema = z
+  .object({ items: z.array(z.object({ id: z.string().uuid(), reason: alternativeReasonSchema }).strict()).max(MAX_ALTERNATIVES) })
+  .strict();
+
 /* ------------------------------------------------------------------ flags -- */
 
 export const flagKeySchema = z.string().regex(/^[a-z][a-z0-9-]{1,48}$/, 'lower-case words joined by hyphens');
@@ -334,6 +349,8 @@ export type AdminFoodSummary = z.infer<typeof adminFoodSummarySchema>;
 export type AdminFood = z.infer<typeof adminFoodSchema>;
 export type AdminExerciseSummary = z.infer<typeof adminExerciseSummarySchema>;
 export type AdminExercise = z.infer<typeof adminExerciseSchema>;
+export type AdminAlternative = z.infer<typeof adminAlternativeSchema>;
+export type PutAlternativesRequest = z.infer<typeof putAlternativesRequestSchema>;
 export type FeatureFlag = z.infer<typeof featureFlagSchema>;
 export type UserSupport = z.infer<typeof userSupportSchema>;
 export type AdminAccount = z.infer<typeof adminAccountSchema>;

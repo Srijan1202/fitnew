@@ -4,6 +4,7 @@ import type { AdminExercise } from '@fitos/contracts';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { ExerciseAlternatives } from '@/components/ExerciseAlternatives';
 import { ExerciseForm } from '@/components/ExerciseForm';
 import { Badge, Header, Status, useGet, when } from '@/components/ui';
 import { api, errorText } from '@/lib/api';
@@ -56,6 +57,8 @@ export function ExerciseEditor({ id: rawId, inPanel = false }: { id: string; inP
               reload();
             }}
           />
+          <hr />
+          <ExerciseAlternatives key={data.adminEditedAt ?? 'seed'} exercise={data} />
         </>
       )}
     </>

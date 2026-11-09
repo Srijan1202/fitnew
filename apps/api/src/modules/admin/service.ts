@@ -5,10 +5,13 @@
  * too: who looked at whose account is itself worth a trail.
  */
 import type {
+  AdminAlternative,
   ExerciseInput,
   NotifySettings,
+  PutAlternativesRequest,
 } from '@fitos/contracts';
-import { APP_FEATURES, APP_FEATURE_KEYS } from '@fitos/contracts';
+import { APP_FEATURES, APP_FEATURE_KEYS, MAX_ALTERNATIVES } from '@fitos/contracts';
+import { planAlternatives } from '@fitos/core/admin/alternatives';
 import { applyCorrection, endpointHealth, notificationRates, recommendationRates, type MacroField, type MacroRanges } from '@fitos/core/admin/admin';
 import { normaliseFoodText } from '@fitos/core/nutrition/food';
 import type { z } from 'zod';
@@ -308,6 +311,49 @@ export class AdminService {
       await tx.audit({ actorUserId: actor, action: retired ? 'exercise.retire' : 'exercise.restore', entity: 'exercise', entityId: id, metadata: { slug: before.slug } });
     });
     return this.exercise(id);
+  }
+
+  /* -------------------------------------------- alternatives (E19) -- */
+
+  async alternatives(id: string): Promise<AdminAlternative[]> {
+    await this.exercise(id);
+    return this.repo.alternatives(id);
+  }
+
+  /**
+   * Replace an exercise's alternatives (§12.6's rules, core's
+   * `planAlternatives`). Symmetric links change on the other exercise too,
+   * and every exercise touched is marked edited, so the seed leaves it alone.
+   */
+  async putAlternatives(actor: string | null, id: string, body: PutAlternativesRequest): Promise<AdminAlternative[]> {
+    const exercise = await this.exercise(id);
+    const before = await this.repo.alternatives(id);
+    const ids = [...new Set([id, ...before.map((a) => a.id), ...body.items.map((a) => a.id)])];
+    const facts = new Map((await this.repo.alternativeFacts(ids)).map((f) => [f.id, { ...f, retired: f.retiredAt !== null }]));
+    const result = planAlternatives(facts.get(id)!, before, body.items, facts, MAX_ALTERNATIVES);
+    if (!result.ok) throw new AppError('VALIDATION_FAILED', 'Those alternatives break the exercise rules.', result.problems);
+    const { plan } = result;
+    if (plan.touched.length === 0) return before;
+    await this.repo.inTransaction(async (tx) => {
+      await tx.replaceAlternatives(id, body.items);
+      for (const l of plan.removeReverse) await tx.removeAlternative(l.exerciseId, l.alternativeId, l.reason);
+      for (const l of plan.addReverse) await tx.addAlternative(l.exerciseId, l.alternativeId, l.reason);
+      await tx.markEdited(plan.touched);
+      await tx.audit({
+        actorUserId: actor,
+        action: 'exercise.alternatives',
+        entity: 'exercise',
+        entityId: id,
+        metadata: {
+          slug: exercise.slug,
+          before: before.map((a) => ({ slug: a.slug, reason: a.reason })),
+          after: body.items.map((a) => ({ slug: facts.get(a.id)!.slug, reason: a.reason })),
+          reverseAdded: plan.addReverse.map((l) => facts.get(l.exerciseId)!.slug),
+          reverseRemoved: plan.removeReverse.map((l) => facts.get(l.exerciseId)!.slug),
+        },
+      });
+    });
+    return this.repo.alternatives(id);
   }
 
   /* -------------------------------------------------------------- flags -- */

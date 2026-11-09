@@ -12,6 +12,7 @@ import {
   adminAccountParamsSchema,
   adminAccountSchema,
   adminDishParamsSchema,
+  adminAlternativeListSchema,
   adminExerciseListSchema,
   adminExerciseQuerySchema,
   adminExerciseSchema,
@@ -42,6 +43,7 @@ import {
   grantAdminRequestSchema,
   metaConfigSchema,
   putDemoApprovalRequestSchema,
+  putAlternativesRequestSchema,
   putFlagRequestSchema,
   reviewCorrectionRequestSchema,
   userLookupQuerySchema,
@@ -177,6 +179,23 @@ export async function adminRoutes(app: FastifyInstance, opts: { minimumAppBuild:
     ...admin,
     schema: { summary: 'Bring a retired exercise back', tags, security, params: idParams, response: { 200: adminExerciseSchema, ...errors } },
   }, async (request) => service.retireExercise(request.userId, request.params.id, false));
+
+  typed.get('/admin/exercises/:id/alternatives', {
+    ...admin,
+    schema: { summary: "An exercise's alternatives (beta 6.1, E19)", tags, security, params: idParams, response: { 200: adminAlternativeListSchema, ...errors } },
+  }, async (request) => ({ items: await service.alternatives(request.params.id) }));
+
+  typed.put('/admin/exercises/:id/alternatives', {
+    ...admin,
+    schema: {
+      summary: "Replace an exercise's alternatives: same movement, a shared primary muscle; equipment and preference links kept both ways (beta 6.1, E19)",
+      tags,
+      security,
+      params: idParams,
+      body: putAlternativesRequestSchema,
+      response: { 200: adminAlternativeListSchema, ...errors },
+    },
+  }, async (request) => ({ items: await service.putAlternatives(request.userId, request.params.id, request.body) }));
 
   /* -------------------------------------------------------------- flags -- */
 

@@ -319,6 +319,55 @@ describeIfDb('/v1/admin (real Postgres)', { timeout: 60_000 }, () => {
     expect((await audits('exercise.restore')).length).toBe(1);
   });
 
+  it('beta 6.1 (E19): alternatives are edited by the §12.6 rules, kept both ways for equipment and preference, audited, and kept through a re-seed', async () => {
+    const plain = await user();
+    const idOf = async (slug: string) => (await sql<{ id: string }[]>`select id from exercises where slug = ${slug}`)[0]!.id;
+    type Alt = { id: string; slug: string; reason: string };
+    const list = async (id: string) => ((await call(admin, 'GET', `/admin/exercises/${id}/alternatives`)).json() as { items: Alt[] }).items;
+    const bench = await idOf('barbell-bench-press');
+    const machine = await idOf('machine-chest-press');
+    const decline = await idOf('decline-barbell-bench-press');
+    const goblet = await idOf('goblet-squat');
+
+    expect((await call(plain, 'GET', `/admin/exercises/${bench}/alternatives`)).statusCode).toBe(403);
+    expect((await call(plain, 'PUT', `/admin/exercises/${bench}/alternatives`, { items: [] })).statusCode).toBe(403);
+    const before = await list(bench);
+    expect(before.map((a) => `${a.slug}:${a.reason}`)).toContain('machine-chest-press:equipment');
+
+    // A squat is another movement: refused, nothing changes.
+    const bad = await call(admin, 'PUT', `/admin/exercises/${bench}/alternatives`, { items: [{ id: goblet, reason: 'equipment' }] });
+    expect(bad.statusCode).toBe(422);
+    expect(JSON.stringify(bad.json())).toContain('different movement');
+    expect(await list(bench)).toEqual(before);
+
+    // Drop the machine press, add the decline bench as a preference.
+    const items = [...before.filter((a) => a.slug !== 'machine-chest-press').map((a) => ({ id: a.id, reason: a.reason })), { id: decline, reason: 'preference' }];
+    const put = await call(admin, 'PUT', `/admin/exercises/${bench}/alternatives`, { items });
+    expect(put.statusCode).toBe(200);
+    const after = (put.json() as { items: Alt[] }).items.map((a) => `${a.slug}:${a.reason}`);
+    expect(after).toContain('decline-barbell-bench-press:preference');
+    expect(after).not.toContain('machine-chest-press:equipment');
+    // Both ways: the decline bench lists the bench, the machine press no longer does.
+    expect((await list(decline)).map((a) => `${a.slug}:${a.reason}`)).toContain('barbell-bench-press:preference');
+    expect((await list(machine)).map((a) => a.slug)).not.toContain('barbell-bench-press');
+    // The app's exercise page reads the new list at once.
+    const detail = (await call(plain, 'GET', `/exercises/${bench}`)).json() as { alternatives: { slug: string }[] };
+    expect(detail.alternatives.map((a) => a.slug)).toContain('decline-barbell-bench-press');
+
+    const [audit] = await audits('exercise.alternatives');
+    expect(audit).toMatchObject({ actor_user_id: admin.id, entity_id: bench });
+    expect(audit!.metadata).toMatchObject({ slug: 'barbell-bench-press', reverseAdded: ['decline-barbell-bench-press'], reverseRemoved: ['machine-chest-press'] });
+
+    // The same list again changes nothing and writes no audit row.
+    expect((await call(admin, 'PUT', `/admin/exercises/${bench}/alternatives`, { items })).statusCode).toBe(200);
+    expect((await audits('exercise.alternatives')).length).toBe(1);
+
+    // Every exercise touched is the panel's now: a re-seed keeps the edit.
+    await seedExercises(url);
+    expect((await list(bench)).map((a) => a.slug)).toContain('decline-barbell-bench-press');
+    expect((await list(machine)).map((a) => a.slug)).not.toContain('barbell-bench-press');
+  });
+
   /* ---------------------------------------------------------------- flags -- */
 
   it('flags: set by an admin, audited, served by the public /meta/config (§10.1); the app switches are listed and on by default (ADR-033)', async () => {
