@@ -110,6 +110,16 @@ class _Detail extends StatelessWidget {
                   '${d.contraindications.map((b) => b.label.toLowerCase()).join(', ')} is bothering you',
               emphasis: true,
             ),
+          // Beta 6.1 (E3): every session you have done it in.
+          Padding(
+            padding: const EdgeInsets.only(top: FitSpacing.sm),
+            child: OutlinedButton.icon(
+              key: const ValueKey('exercise.history'),
+              onPressed: () => context.push(Routes.liftHistory(d.id)),
+              icon: const Icon(Icons.show_chart),
+              label: const Text('Your history'),
+            ),
+          ),
           // Beta 5.0 (owner): the lift drawn, its key moments tied to the
           // cues; beta 5.2: only once an admin approved it.
           Consumer(

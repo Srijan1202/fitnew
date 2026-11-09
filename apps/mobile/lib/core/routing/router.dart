@@ -12,6 +12,7 @@ import '../../features/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/auth/presentation/screens/splash_gate_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_browser_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_detail_screen.dart';
+import '../../features/progress/presentation/lift_history_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_demos_screen.dart';
 import '../../features/mess/presentation/mess_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
@@ -107,6 +108,9 @@ abstract final class Routes {
   static String communityClub(String id) => '/community/clubs/$id';
   static const String exercises = '/exercises';
   static String exerciseDetail(String id) => '/exercises/$id';
+
+  /// Beta 6.1 (E3): every session with one lift.
+  static String liftHistory(String id) => '/exercises/$id/history';
 
   /// Same browser, returning the tapped exercise to the caller.
   static const String exercisePicker = '/exercises/pick';
@@ -302,6 +306,14 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
             name: 'exercise-detail',
             builder: (context, state) =>
                 ExerciseDetailScreen(id: state.pathParameters['id']!),
+            routes: <RouteBase>[
+              GoRoute(
+                path: 'history',
+                name: 'lift-history',
+                builder: (context, state) =>
+                    LiftHistoryScreen(exerciseId: state.pathParameters['id']!),
+              ),
+            ],
           ),
         ],
       ),

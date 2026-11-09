@@ -243,51 +243,58 @@ class _StrengthSectionState extends State<_StrengthSection> {
       children: <Widget>[
         for (final b in visible) ...<Widget>[
           if (b != visible.first) const _RowRule(),
-          _Pad(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: FitSpacing.sm + 4),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(b.exerciseName, style: textTheme.titleMedium),
-                        const SizedBox(height: 2),
-                        Text(
-                          'From ${ProgressScreen.kg(b.weightKg)} kg × ${b.reps} · ${ProgressScreen.date(b.date)}',
-                          style: textTheme.bodySmall
-                              ?.copyWith(color: FitColors.ink60),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: FitSpacing.sm),
-                  // At large text sizes the number shrinks rather than
-                  // pushing past the edge (found at 200 % on 360 px).
-                  Flexible(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
+          // Beta 6.1 (E3): a lift opens its whole history.
+          InkWell(
+            key: ValueKey('progress.lift.${b.exerciseId}'),
+            onTap: () => context.push(Routes.liftHistory(b.exerciseId)),
+            child: _Pad(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: FitSpacing.sm + 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
+                          Text(b.exerciseName, style: textTheme.titleMedium),
+                          const SizedBox(height: 2),
                           Text(
-                            '${ProgressScreen.kg(b.estimated1RmKg)} kg',
-                            key: ValueKey('progress.best.${b.exerciseId}'),
-                            style: textTheme.displaySmall,
-                          ),
-                          Text(
-                            'est. 1RM',
+                            'From ${ProgressScreen.kg(b.weightKg)} kg × ${b.reps} · ${ProgressScreen.date(b.date)}',
                             style: textTheme.bodySmall
                                 ?.copyWith(color: FitColors.ink60),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: FitSpacing.sm),
+                    // At large text sizes the number shrinks rather than
+                    // pushing past the edge (found at 200 % on 360 px).
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: <Widget>[
+                            Text(
+                              '${ProgressScreen.kg(b.estimated1RmKg)} kg',
+                              key: ValueKey('progress.best.${b.exerciseId}'),
+                              style: textTheme.displaySmall,
+                            ),
+                            Text(
+                              'est. 1RM',
+                              style: textTheme.bodySmall
+                                  ?.copyWith(color: FitColors.ink60),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: FitColors.ink35),
+                  ],
+                ),
               ),
             ),
           ),

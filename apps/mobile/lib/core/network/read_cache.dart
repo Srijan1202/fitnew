@@ -58,6 +58,8 @@ ReadKind? readKindOf(String path) {
     '/v1/training/templates',
     '/v1/training/volume',
     '/v1/training/sessions/',
+    // Beta 6.1 (E3): a lift's history.
+    '/v1/training/exercises/',
     '/v1/exercises',
     '/v1/notifications/settings',
     '/v1/progress/streak',
