@@ -10,8 +10,8 @@ import { liftHistory } from '@fitos/core/progress/lift-history';
 import { isoWeekKey } from '@fitos/core/training/mesocycle';
 import { prefillSet } from '@fitos/core/training/prefill';
 import { recommendProgression, type SessionLog } from '@fitos/core/training/progression';
-import { trainingDays, type BodyPart } from '@fitos/core/training/generator';
-import { cycleLayout, plusDays } from '@fitos/core/training/schedule';
+import type { BodyPart } from '@fitos/core/training/generator';
+import { cycleLayout, plusDays, weekdaysFor } from '@fitos/core/training/schedule';
 import { detectPRs, type LoggedSet, type PriorSession } from '@fitos/core/training/records';
 import { summarizeSession } from '@fitos/core/training/session-summary';
 import type {
@@ -653,7 +653,13 @@ export class WorkoutService {
       schedule = { schedule: 'cycle', cycleStart: start, cycleLength: layout.length };
     } else {
       if (program.program.schedule === 'week') return programFrom(program);
-      const weekdays = trainingDays(training.length);
+      // Audit 2026-11-10: a cycle can hold 7–14 sessions (a rest day edited into a session).
+      const weekdays = weekdaysFor(training.length);
+      if (weekdays === null) {
+        throw new AppError('VALIDATION_FAILED', `${training.length} sessions do not fit in a week. Make some of them rest days first.`, [
+          { path: 'kind', issue: 'too-many-sessions' },
+        ]);
+      }
       slots = [1, 2, 3, 4, 5, 6, 7].map((dow) => {
         const i = weekdays.indexOf(dow);
         return i < 0 ? null : training[i]!.id;

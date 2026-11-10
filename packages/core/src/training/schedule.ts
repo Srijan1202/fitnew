@@ -12,6 +12,8 @@
  * becomes a rest-like gap and everything after moves a day.
  */
 
+import { trainingDays } from './generator.js';
+
 export const CYCLE_MIN_DAYS = 2;
 export const CYCLE_MAX_DAYS = 14;
 
@@ -65,8 +67,19 @@ export function cycleLayout(sessions: number, on: number, off: number): (number 
   return out.length < CYCLE_MIN_DAYS || out.length > CYCLE_MAX_DAYS ? null : out;
 }
 
+/**
+ * The weekdays [sessions] training sessions take on a week programme: the
+ * generator's spread for 2–6, one on Monday, every day for 7. Null for more
+ * than 7 (they do not fit in a week).
+ */
+export function weekdaysFor(sessions: number): number[] | null {
+  if (sessions > 7) return null;
+  if (sessions >= 2 && sessions <= 6) return [...trainingDays(sessions)];
+  return [1, 2, 3, 4, 5, 6, 7].slice(0, Math.max(0, sessions));
+}
+
 /** Training sessions per seven days, for the reports and the ring. */
-export function sessionsPerWeek(schedule: Schedule, trainingDays: number): number {
-  if (schedule.kind === 'week') return trainingDays;
-  return Math.round((trainingDays * 7) / schedule.length);
+export function sessionsPerWeek(schedule: Schedule, sessions: number): number {
+  if (schedule.kind === 'week') return sessions;
+  return Math.round((sessions * 7) / schedule.length);
 }

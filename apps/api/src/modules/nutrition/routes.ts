@@ -40,7 +40,7 @@ export async function nutritionRoutes(app: FastifyInstance): Promise<void> {
         response: { 200: foodSearchResponseSchema, ...errors },
       },
     },
-    async (request) => service.search(requireUserId(request.userId), request.query),
+    async (request) => service.search(requireUserId(request.userId), request.query, request.identity?.claims),
   );
 
   typed.post(

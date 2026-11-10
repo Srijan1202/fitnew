@@ -100,7 +100,8 @@ class DioAiProgrammeApi implements AiProgrammeApi {
           if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
         },
         // The model takes a while with a whole library to read.
-        options: Options(receiveTimeout: const Duration(seconds: 90)),
+        // Up to 60 s for the model, and once more if it is busy (audit 2026-11-10).
+        options: Options(receiveTimeout: const Duration(seconds: 150)),
       );
       return Ok(AiProgrammeDraft.fromJson(r.data!));
     } on DioException catch (e) {

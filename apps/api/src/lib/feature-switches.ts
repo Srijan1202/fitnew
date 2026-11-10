@@ -76,10 +76,11 @@ export class FeatureSwitches {
   }
 
   /** On for this user: on for everyone, or early access and [userId] is premium (a read that only shows or hides something). */
-  async isOn(feature: AppFeature, userId?: string | null): Promise<boolean> {
+  async isOn(feature: AppFeature, userId?: string | null, claims?: Readonly<Record<string, unknown>>): Promise<boolean> {
     const state = await this.state(feature);
     if (state === 'everyone') return true;
-    return state === 'premium' && (await this.premiumAsker({ userId: userId ?? null }));
+    // Audit 2026-11-10: with the token's claims, an admin (premium by role) counts as premium here too.
+    return state === 'premium' && (await this.premiumAsker({ userId: userId ?? null, identity: claims === undefined ? null : { claims } }));
   }
 
   /** Throws 403 `feature-off` when off, and 403 `early-access` when on for premium only and [who] is not. */

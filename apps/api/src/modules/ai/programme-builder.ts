@@ -21,6 +21,10 @@ import { AiProviderError, type AiProvider } from './provider.js';
 import { AiService } from './service.js';
 import type { AiBudget } from './usage.js';
 
+/** The answer's room and wait (the server's defaults are for short answers: 2,048 tokens, 25 s). */
+export const PROGRAMME_MAX_OUTPUT_TOKENS = 8192;
+export const PROGRAMME_TIMEOUT_MS = 60_000;
+
 export class ProgrammeBuilderService {
   constructor(
     private readonly provider: AiProvider,
@@ -65,6 +69,10 @@ export class ProgrammeBuilderService {
         messages: [{ role: 'user', content: prompt.user }],
         jsonMode: true,
         temperature: 0.4,
+        // A week is a long answer (up to 6 days × 8 exercises) after a long prompt (the library):
+        // room to finish, and time to write it (audit 2026-11-10).
+        maxOutputTokens: PROGRAMME_MAX_OUTPUT_TOKENS,
+        timeoutMs: PROGRAMME_TIMEOUT_MS,
       });
       usage = response.usage;
       read = ProgrammeBuilderService.read(response.text, candidates, body.sessions);

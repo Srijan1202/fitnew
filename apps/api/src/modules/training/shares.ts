@@ -13,6 +13,8 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import {
+  MAX_DAYS_PER_WEEK,
+  MIN_DAYS_PER_WEEK,
   SHARE_CODE_ALPHABET,
   SHARE_PAGE_URL,
   SHARED_LOOKUPS_PER_HOUR,
@@ -36,16 +38,19 @@ import { sharedProgrammes, userProfiles, users } from '../../db/schema.js';
 import { AppError } from '../../lib/errors.js';
 import { TrainingRepository, type ProgramBundle } from './repository.js';
 import { TrainingService, programFrom } from './service.js';
-import { trainingDays } from '@fitos/core/training/generator';
-import { cycleLayout } from '@fitos/core/training/schedule';
+import { weekdaysFor } from '@fitos/core/training/schedule';
 import { localDateOf } from '@fitos/core/nutrition/log';
 
 type Db = DatabaseHandle['db'];
 
 /** What is stored: the structure only. */
 interface Snapshot {
-  /** Beta 6.1 (F2): a cycle's pattern; absent on codes from before and on weekday programmes. */
-  readonly cycle?: { readonly on: number; readonly off: number } | null;
+  /**
+   * Beta 6.1 (F2): a cycle's days in order, true for a rest day — the exact
+   * layout (an edited rest day may break any on/off pattern). Absent on codes
+   * from before and on weekday programmes.
+   */
+  readonly cycle?: { readonly rest: readonly boolean[] } | null;
   readonly days: readonly {
     readonly dayOfWeek: number;
     readonly sessionName: string;
@@ -69,7 +74,7 @@ export function newShareCode(pick: (n: number) => number = randomInt): string {
 /** The structure of a programme, without a single weight. */
 export function snapshotOf(bundle: ProgramBundle): Snapshot {
   return {
-    cycle: bundle.program.schedule === 'cycle' ? cyclePattern(bundle.days) : null,
+    cycle: bundle.program.schedule === 'cycle' ? { rest: [...bundle.days].sort((a, b) => a.dayOfWeek - b.dayOfWeek).map((d) => d.isRest) } : null,
     days: bundle.days.map((d) => ({
       dayOfWeek: d.dayOfWeek,
       sessionName: d.sessionName,
@@ -91,20 +96,6 @@ export function snapshotOf(bundle: ProgramBundle): Snapshot {
         })),
     })),
   };
-}
-
-/**
- * Beta 6.1 (F2): a cycle's on/off from its days (it was made by core
- * `cycleLayout`): the training days before the first rest day, then the rest
- * days after them.
- */
-export function cyclePattern(days: readonly { dayOfWeek: number; isRest: boolean }[]): { on: number; off: number } {
-  const order = [...days].sort((a, b) => a.dayOfWeek - b.dayOfWeek);
-  const on = order.findIndex((d) => d.isRest);
-  if (on < 0) return { on: order.length, off: 0 };
-  let off = 0;
-  while (order[on + off]?.isRest === true) off += 1;
-  return { on, off };
 }
 
 export class ShareService {
@@ -212,8 +203,14 @@ export class ShareService {
     const { name, snapshot } = await this.live(code);
     const cycle = snapshot.cycle ?? null;
     const sessions = [...snapshot.days].sort((a, b) => a.dayOfWeek - b.dayOfWeek).filter((d) => !d.isRest && d.exercises.length > 0);
-    // Beta 6.1 (F2): a cycle's sessions go on the usual weekdays first, then become the same cycle from today.
-    const weekdays = cycle === null ? null : trainingDays(sessions.length);
+    // Beta 6.1 (F2): a cycle's sessions go on weekdays first, then become the same cycle from today.
+    // Audit 2026-11-10: a programme is 2–6 sessions; one with more (rest days edited into sessions) cannot be copied.
+    if (sessions.length < MIN_DAYS_PER_WEEK || sessions.length > MAX_DAYS_PER_WEEK) {
+      throw new AppError('VALIDATION_FAILED', `This programme has ${sessions.length} sessions; FITOS copies programmes of ${MIN_DAYS_PER_WEEK} to ${MAX_DAYS_PER_WEEK}.`, [
+        { path: 'code', issue: 'sessions-out-of-range' },
+      ]);
+    }
+    const weekdays = cycle === null ? null : weekdaysFor(sessions.length);
     const body = putProgramRequestSchema.parse({
       name,
       days: sessions
@@ -233,16 +230,16 @@ export class ShareService {
     });
     const program = await this.programs.putCustom(userId, body);
     if (cycle === null) return program;
-    const layout = cycleLayout(sessions.length, cycle.on, cycle.off);
-    // A stored pattern always fits: it was read off a cycle that cycleLayout made.
-    if (layout === null) return program;
     const ordered = [...program.days].sort((a, b) => a.dayOfWeek - b.dayOfWeek);
     const training = ordered.filter((d) => !d.isRest);
+    // The cycle's own layout: its sessions in order, its rest days where they were.
+    let next = 0;
+    const layout = cycle.rest.map((rest) => (rest ? null : next++));
     const [u] = await this.db.select({ tz: users.timezone }).from(users).where(eq(users.id, userId)).limit(1);
     const today = localDateOf(new Date(), u?.tz ?? 'Asia/Kolkata');
     const bundle = await this.training.applySchedule(
       program.id,
-      layout.map((i) => (i === null ? null : training[i]!.id)),
+      layout.map((i) => (i === null || training[i] === undefined ? null : training[i]!.id)),
       ordered.filter((d) => d.isRest).map((d) => d.id),
       { schedule: 'cycle', cycleStart: today, cycleLength: layout.length },
     );

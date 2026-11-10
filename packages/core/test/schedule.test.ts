@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { cycleLayout, dayNumberOn, plusDays, sessionsPerWeek, upcomingDays, weekdayOf, type Schedule } from '../src/training/schedule.js';
+import { cycleLayout, dayNumberOn, plusDays, sessionsPerWeek, upcomingDays, weekdayOf, weekdaysFor, type Schedule } from '../src/training/schedule.js';
 
 const week: Schedule = { kind: 'week' };
 const fiveDay: Schedule = { kind: 'cycle', start: '2026-11-10', length: 5 };
@@ -38,5 +38,13 @@ describe('schedule (F2)', () => {
     expect(sessionsPerWeek(week, 4)).toBe(4);
     expect(sessionsPerWeek(fiveDay, 4)).toBe(6);
     expect(sessionsPerWeek({ kind: 'cycle', start: '2026-11-10', length: 7 }, 5)).toBe(5);
+  });
+
+  it('audit 2026-11-10: weekdays for any number of sessions a week holds; more than 7 do not fit', () => {
+    expect(weekdaysFor(4)).toEqual([1, 2, 4, 5]);
+    expect(weekdaysFor(7)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(weekdaysFor(1)).toEqual([1]);
+    expect(weekdaysFor(0)).toEqual([]);
+    expect(weekdaysFor(8)).toBeNull();
   });
 });

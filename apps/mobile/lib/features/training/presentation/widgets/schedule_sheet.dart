@@ -196,7 +196,7 @@ class _ScheduleSheetState extends ConsumerState<_ScheduleSheet> {
                   )
                 else ...<Widget>[
                   Text(
-                    'A ${layout.length}-day cycle with no weekdays, starting today:',
+                    'A ${layout.length}-day cycle with no weekdays. Day 1 is today, or tomorrow if you have already trained today:',
                     style: textTheme.bodyMedium,
                   ),
                   const SizedBox(height: FitSpacing.xs),

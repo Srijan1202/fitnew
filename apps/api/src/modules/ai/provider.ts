@@ -53,6 +53,8 @@ export interface AiRequest {
   /** Results for the tool calls the previous answer asked for. */
   readonly toolResults?: readonly AiToolResult[];
   readonly maxOutputTokens?: number;
+  /** Beta 6.1: this call's wait (a long answer, such as a programme); the provider's AI_TIMEOUT_MS otherwise. */
+  readonly timeoutMs?: number;
   readonly temperature?: number;
   /** Ask for a JSON object as the answer (structured extraction). */
   readonly jsonMode?: boolean;

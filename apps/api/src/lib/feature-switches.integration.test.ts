@@ -116,6 +116,11 @@ describeIfDb('feature switches (real Postgres)', () => {
     expect(issue(refused)).toBe('early-access');
     expect((await patch(granted)).statusCode).toBe(404);
     expect((await patch(admin)).statusCode).toBe(404);
+    // Reads that only show or hide something see an admin as premium too, given the claims.
+    expect(await app.features.isOn('running', plain.id)).toBe(false);
+    expect(await app.features.isOn('running', granted.id)).toBe(true);
+    expect(await app.features.isOn('running', admin.id, { role: 'admin' })).toBe(true);
+    expect(await app.features.isOn('running', admin.id)).toBe(false);
 
     // Before sign-in it reads off; signed in, each account sees its own.
     expect(((await app.inject({ method: 'GET', url: '/v1/meta/config', headers: { 'x-forwarded-for': '198.51.0.9' } })).json() as { flags: Record<string, boolean> }).flags.running).toBe(false);

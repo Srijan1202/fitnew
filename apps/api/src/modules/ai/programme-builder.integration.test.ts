@@ -108,6 +108,8 @@ describeIfDb('POST /v1/training/program/ai-draft (beta 6.1, real Postgres, scrip
 
     const prompt = `${seen[0]!.system}\n${seen[0]!.messages[0]!.content}`;
     expect(prompt).toContain('Sessions a week: 3. Minutes a session: 45.');
+    // Audit 2026-11-10: room and time for a whole week's answer.
+    expect(seen[0]).toMatchObject({ maxOutputTokens: 8192, timeoutMs: 60_000, jsonMode: true });
     expect(prompt).toContain('Muscles to bring up: chest.');
     expect(prompt).toContain('They add: my knees are fine');
     expect(prompt).not.toContain(squat!.name);

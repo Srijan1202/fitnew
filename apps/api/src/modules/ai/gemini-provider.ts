@@ -212,7 +212,7 @@ export class GeminiProvider implements AiProvider {
 
   private async once(request: AiRequest): Promise<AiResponse> {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+    const timer = setTimeout(() => controller.abort(), request.timeoutMs ?? this.timeoutMs);
     let res: Response;
     try {
       res = await this.post(request, 'generateContent', controller.signal);

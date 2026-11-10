@@ -7,7 +7,7 @@
 
 | # | Item | Why it waits | Notes |
 |---|---|---|---|
-| O1 | **Hosting**: now **AWS** (ADR-025, 2026-10-22) | The owner creates the account, domain and stack and runs every step (docs/hosting/AWS.md); no AWS resource is created without the owner | Everything is prepared on `phase-19` and rehearsed locally. Until the stack exists the app works only on the PC's Wi-Fi. Cloud Run stays ready as the second target. The admin panel (Phase 16) is still local; §20 names Vercel for it |
+| O1 | ~~**Hosting**~~ — ✅ live on AWS since beta 3.2 (api.tryfitos.me, admin.tryfitos.me; ADR-025) | The owner creates the account, domain and stack and runs every step (docs/hosting/AWS.md); no AWS resource is created without the owner | Everything is prepared on `phase-19` and rehearsed locally. Until the stack exists the app works only on the PC's Wi-Fi. Cloud Run stays ready as the second target. The admin panel (Phase 16) is still local; §20 names Vercel for it |
 | O2 | **§18 readiness cap** | Spec consequence | The check-in alone bottoms out at 35 (the reduce band), so rest and escalation need a training or nutrition penalty. Options: count 35 as rest, change the caps, or keep §18 as written |
 | O3 | **Merges into `main`** | Explicit approval only | Unmerged, all accepted: `phase-12`, `phase-13`, `phase-13-audit-fixes`, `phase-14`, `phase-15` (2026-10-22). `phase-15` contains all of them, so one fast-forward of `main` to it would bring everything in |
 | O4 | ~~**Phase 12 Progress & Recovery UI polish**~~ — ✅ beta 3.9 (ADR-018 amendment; owner approved the 12-point proposal) | Owner: after Phase 13 is accepted | A separate visual pass; not to be mixed into feature work |
@@ -15,7 +15,7 @@
 | O6 | ~~S24 pass on `phase-13-audit-fixes`~~ | Done 2026-10-22 | Covered by the combined Phase 13–15 build the owner passed |
 | O7 | **Gemini paid tier (or Vertex AI)** | Owner, 2026-10-21: free tier for the alpha | **Before beta or any user outside the alpha group.** §19.3's privacy rule is suspended only for the alpha (ADR-020 D1). The change is configuration: a paid key in `GEMINI_API_KEY`; `ai_usage` shows real token use for sizing |
 | O10 | **Before public launch: legal** | A human must confirm (§23 `UNVERIFIED`) | DPDP Rules obligations and deadlines for this operator; a published contact and grievance officer; the breach notification form to the Board (docs/legal/) |
-| O9 | **Server push (FCM)** | Needs the API hosted (O1) | Phase 15 registers tokens (`push_tokens`) but the phone schedules every reminder from the plan (ADR-021 D1/D2). Push would make reminders current even when the app has not synced |
+| O9 | ~~**Server push (FCM)**~~ — ✅ beta 3.6 (push working since 2026-10-25) | Needs the API hosted (O1) | Phase 15 registers tokens (`push_tokens`) but the phone schedules every reminder from the plan (ADR-021 D1/D2). Push would make reminders current even when the app has not synced |
 | O8 | **TODAY and recovery in the AI chat context** | §31 Phase 11/13 deferred them to Phase 14; not in Phase 14's task list | Would let the assistant answer "why rest today?" from readiness, but sends more health-adjacent data to the model (free tier, O7). ADR-020 "Not in Phase 14" |
 
 ## Engineering (no decision needed, not yet scheduled)
@@ -23,13 +23,13 @@
 | # | Item | Size | Notes |
 |---|---|---|---|
 | E1 | ~~Minimum app version in `/meta/config`~~ | — | **Done in Phase 19** (ADR-026 D5): `MIN_APP_BUILD` → `minimumBuild`; below it the app shows only "Update FITOS" |
-| E18 | Switch app features on `/meta/config` flags | S | Phase 19 reads them (`flagOn()`); no feature is wired to a flag yet |
-| E19 | Edit exercise alternatives in the admin panel | S | Phase 16 keeps them as seeded (ADR-022 D6) |
+| E18 | ~~Switch app features on `/meta/config` flags~~ — ✅ beta 3.3 (ADR-033); beta 6.1 adds a Premium audience (early access) | S | Phase 19 reads them (`flagOn()`); no feature is wired to a flag yet |
+| E19 | ~~Edit exercise alternatives in the admin panel~~ — ✅ beta 6.1 (ADR-060) | S | Phase 16 keeps them as seeded (ADR-022 D6) |
 | E2 | `/nutrition/targets` (current + history) | S | §10.1, no owning phase; targets are currently read through `/user/goal` |
-| E3 | `/exercises/{id}/history` (full history of a lift) | S–M | §10.1; today only the last three sessions, via `/training/progression/{id}` |
-| E4 | §33 pre-caching: tomorrow's plan and the 200 most-used foods | M | Tomorrow's mess menu is already cached ahead |
-| E27 | Run-specific reminder copy | S | Beta 4.1 (ADR-039 D12): a plan run's day reuses the gym reminder templates, named after the run; a cheeky gym line can read oddly on a run day. Needs run variants in core's `notify/copy.ts` |
-| E28 | Sync "your own" running sessions to the account | S–M | Beta 4.1 (ADR-039 D3) keeps them on the phone; a second phone does not see them |
+| E3 | ~~`/exercises/{id}/history` (full history of a lift)~~ — ✅ beta 6.1 as `/training/exercises/{id}/history` + Lift history screen | S–M | §10.1; today only the last three sessions, via `/training/progression/{id}` |
+| E4 | §33 pre-caching: the 200 most-used foods (the plan and tomorrow's menu are kept since beta 4.1.1) | M | Tomorrow's mess menu is already cached ahead |
+| E27 | ~~Run-specific reminder copy~~ — ✅ beta 4.4 (ADR-044 D3) | S | Beta 4.1 (ADR-039 D12): a plan run's day reuses the gym reminder templates, named after the run; a cheeky gym line can read oddly on a run day. Needs run variants in core's `notify/copy.ts` |
+| E28 | ~~Sync "your own" running sessions to the account~~ — ✅ beta 4.4 (ADR-044 D4, migration 0038) | S–M | Beta 4.1 (ADR-039 D3) keeps them on the phone; a second phone does not see them |
 | E29 | Shorebird builds with the Play upload key | S | ADR-040 D4: the WSL build refuses with `key.properties` until the upload keystore is set up in WSL too |
 | E5 | Flutter dependency majors (go_router 14→18, firebase 6→7/4→5, riverpod 3.0→3.4, drift 2.29→2.35, flutter_secure_storage 9→11, connectivity_plus 6→7…) | L | Needs its own pass with device testing; `sqlite3_flutter_libs` is marked end-of-life (drift storage); the Kotlin Gradle Plugin warning comes from the firebase plugins |
 | E6 | `fastify-type-provider-zod` 4 → 7 and zod 3 → 4 | M | Majors; not security-driven |
@@ -43,14 +43,25 @@
 | E14 | §38 Phase 0 open boxes: Neon staging/prod, the extra Firebase projects, Cloud Run region verification | — | Follow O1 (hosting) |
 | E15 | Reading GitHub CI from this PC | S | The public API allows 60 calls an hour; installing `gh` (authenticated) would make CI checks reliable |
 | E16 | `tsx` "module.register() is deprecated" warning | S | Upgrade tsx when convenient |
-| E22 | More premium features (ADR-027 "More premium ideas") | M | AI programme builder, weekly meal plan from the mess, monthly PDF report, exercise videos, gold app icon, early access via flags. Owner to choose |
-| E23 | Theme choice per account, not per phone | S | ADR-027 keeps it on the phone |
+| E22 | More premium features (ADR-027 "More premium ideas") — beta 6.1 built the AI programme builder, the mess week plan, the monthly PDF and early access; the gold icon exists; left: none named | M | AI programme builder, weekly meal plan from the mess, monthly PDF report, exercise videos, gold app icon, early access via flags. Owner to choose |
+| E23 | ~~Theme choice per account, not per phone~~ — ✅ beta 6.1 (migration 0050) | S | ADR-027 keeps it on the phone |
 | E24 | ~~Plain milk and plain paneer in the food database~~ — ✅ done in beta 3.7 (ADR-036) | S | IFCT cow and buffalo milk and paneer, CoFID whole and semi-skimmed milk; pinned in `GUIDE_STAPLES` and back in the food guide's common items. Found in beta 3.6: only dishes and condensed milk exist, so the food guide's common items leave them out (`GUIDE_STAPLES`), and a typed "milk" is "not in FITOS yet". Add them through the food-sources pipeline (ADR-032), then pin them |
 | E25 | ~~INDB's deep-fried recipes~~ — ✅ beta 3.9 (ADR-036 amendment): 45 in, by a CoFID-checked oil share per kind (±15 %); samosa, vada and cutlet stay out (CoFID's own measurements disagree by more) | M | Beta 3.7 leaves out all 421: INDB counts the whole pan of oil, and a correction for the oil soaked up proved unreliable (ADR-036 item 5). Needs an oil-uptake rule per kind of fried food, checked against CoFID's measured fried dishes |
 | E26 | Ask NIN and the INDB authors for written permission | S | Owner's choice. IFCT and INDB are used with the risk accepted (ADR-036 item 1); a granted permission closes it. A draft email can be written on request |
 | E20 | Golden tests for `MetricDisplay`, `EstimateRange`, `LedgerRow`, `ConfidenceBar` (§26.4) | S | The components do not exist yet; write the goldens with the design-system pass (O4, ADR-024 D4) |
 | E21 | Re-run the load test against the hosted API | S | Phase 19, after O1; `load:test` measures the local stack (ADR-024 D5) |
-| E17 | Name a high-protein dish from tonight's mess menu in the protein nudge | M | Phase 10 suggestions exist on the Eat tab; the planner would need that day's menu at plan time (ADR-021 "Not in Phase 15") |
+| E17 | ~~Name a high-protein dish from tonight's mess menu in the protein nudge~~ — ✅ beta 6.1 (published menus only) | M | Phase 10 suggestions exist on the Eat tab; the planner would need that day's menu at plan time (ADR-021 "Not in Phase 15") |
+
+## From the 2026-11-10 audit (docs/audits/2026-11-10-audit.md)
+
+| # | Item | Size | Notes |
+|---|---|---|---|
+| A1 | Timing tests flake on a busy PC | S | Food search p95 < 200 ms and "seeding twice" in 5 s fail while Docker or Gradle build; pass alone. Longer timeout for the seed test, or run timing tests on their own |
+| A2 | Watch the 6.1 load | S | `/notifications/plan` reads up to 8 mess menus a run, `/mess/week-plan` 7; check response times after deploy |
+| A3 | Rollback past 0052 | S | Its down migration refuses while any programme is a cycle: put it in the Phase 20 runbook (switch cycles to weekdays first) |
+| A4 | 5 moderate advisories left | S | esbuild 0.18 in drizzle-kit (dev), glob 10/13 (firebase-admin's rimraf, swagger static), minimatch 9/10 (eslint); none patched in the same major |
+| A5 | MASTER-SPEC §38 drift | S | Phases 16–19 boxes unticked; reconcile with the phase reports |
+| A6 | A `gym` switch exists only in production | S | Not in the code; the owner to confirm or delete it |
 
 ## Feature ideas for beta 4 and later (owner, 2026-10-23: "add to the future plan; bugs first")
 
@@ -59,16 +70,16 @@ Not scheduled. When picked, they get a phase plan for approval first. Suggested 
 | # | Feature | Size | Notes |
 |---|---|---|---|
 | F1 | **In-app update prompt** — ✅ done in beta 3.2 | S | The APK is sideloaded, so testers miss new betas. The app reads the latest version (from tryfitos.me or `/meta/config`) and offers "Beta N is out → Download". E1's minimum-build gate stays for forced updates |
-| F2 | **Rolling-cycle programmes** ("4 on, 1 off", no weekdays) | M | ADR-030 option 3. Skip today then simply moves the cycle |
+| F2 | ~~**Rolling-cycle programmes**~~ — ✅ beta 6.1 (ADR-060, migration 0052) | M | ADR-030 option 3. Skip today then simply moves the cycle |
 | F3 | **Food requests from an empty search** — ✅ done in beta 3.2 (ADR-032) | S | "Ask us to add this" goes into Feedback (category food, tagged in the panel), so the E13 gap closes in the order testers need |
-| F4 | **App features behind flags** — beta 3.3 | S | = E18: wire features to `/meta/config` so the admin panel switches them without an APK |
+| F4 | ~~**App features behind flags**~~ — ✅ beta 3.3 | S | = E18: wire features to `/meta/config` so the admin panel switches them without an APK |
 | F5 | **Streaks and a weekly goal ring** on Home — beta 3.3 | S–M | Days logged in a row; sessions done against the plan this week |
 | F6 | **Mess menu ratings** (👍/👎 per dish) — beta 3.3 | M | Fun for VIT; ratings can later weigh meal suggestions. Needs a table and abuse limits |
 | F7 | ~~**Water tracking**~~ — ✅ beta 6.0 (ADR-059): a Home card, a glass a tap, 35 ml a kg (1.5–4 L), offline-first day totals | S | One tap on Home; a daily target from body weight |
 | F8 | **Progress photos, on the phone only** — beta 3.4 (ADR-035) | M | Never uploaded; side-by-side compare. Fits the privacy rules (§23) |
-| F9 | **Server push notifications** | M | = O9. Reminders and "Premium approved" while the app is closed (FCM from the server) |
-| F10 | **AI that knows your history** | M | = O8, and only after O7 (paid Gemini): answers from the last 4 weeks of training and food |
-| F11 | **Exercise demo animations** | M–L | Short loops for the ~30 most-used lifts; mostly a content job (licensing) |
+| F9 | ~~**Server push notifications**~~ — ✅ beta 3.6 | M | = O9. Reminders and "Premium approved" while the app is closed (FCM from the server) |
+| F10 | **AI that knows your history** — partly in beta 5.4 (today's food, readiness and 7 check-ins, the weight trend, recent workouts); earlier days' food waits on O7 | M | = O8, and only after O7 (paid Gemini): answers from the last 4 weeks of training and food |
+| F11 | ~~**Exercise demo animations**~~ — ✅ beta 5.0–5.6 (every lift, admin-approved) | M–L | Short loops for the ~30 most-used lifts; mostly a content job (licensing) |
 | F12 | **Friends / VIT leaderboard** — beta 5.8 (ADR-057), worldwide | L | Built as Community: friends, clubs and a world board (owner 2026-11-08: "world level"). Opt-in with its own consent; counts only |
 | F13 | **Streak rewards** (owner, 2026-10-23) — beta 3.4 (ADR-027 amendment) | M | A long enough streak unlocks rewards: a theme, a profile picture and the like, kept once earned. Builds on beta 3.3's streak (F5) and the premium themes and pictures (ADR-027/028). Needs a decision on which rewards, at what streak lengths, and whether they stay premium-only otherwise |
 | F14 | **Feedback with pictures, and more** (owner, 2026-10-24) — beta 3.6 (ADR-026 amendment) | M | Attach screenshots to feedback; the owner will say what else. Needs storage, size limits and a privacy note |

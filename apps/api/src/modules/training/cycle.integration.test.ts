@@ -167,4 +167,58 @@ describeIfDb('/v1/training/program/schedule (beta 6.1, real Postgres)', { timeou
       expect(`${r.title} ${r.body}`).toContain(names[n]!);
     }
   });
+
+  it('audit 2026-11-10: rest days edited into sessions — 7 go on every weekday, 8 are refused; such a code cannot be copied', async () => {
+    const { token, program } = await withProgram();
+    const cycle = (await schedule(token, { kind: 'cycle', on: 1, off: 1 })).json() as Program;
+    expect(cycle.cycleLength).toBe(8);
+    const someExercise = program.days.find((d) => !d.isRest)!.exercises[0]!;
+    const fill = async (d: Program['days'][number]) => {
+      const r = await app.inject({
+        method: 'PATCH',
+        url: `/v1/training/program/days/${d.id}`,
+        headers: auth(token),
+        payload: { exercises: [{ exerciseId: someExercise.exerciseId, setCount: 3, repMin: 8, repMax: 12, targetRir: 2 }] },
+      });
+      expect(r.statusCode, r.body).toBe(200);
+    };
+    const rests = [...cycle.days].sort((a, b) => a.dayOfWeek - b.dayOfWeek).filter((d) => d.isRest);
+    await fill(rests[0]!);
+    await fill(rests[1]!);
+    await fill(rests[2]!);
+    // 7 sessions: every weekday.
+    const seven = await schedule(token, { kind: 'week' });
+    expect(seven.statusCode, seven.body).toBe(200);
+    expect((seven.json() as Program).days.filter((d) => !d.isRest).map((d) => d.dayOfWeek).sort()).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    // Back to a cycle, one more session: 8 do not fit in a week.
+    const again = (await schedule(token, { kind: 'cycle', on: 7, off: 1 })).json() as Program;
+    await fill(again.days.find((d) => d.isRest)!);
+    const eight = await schedule(token, { kind: 'week' });
+    expect(eight.statusCode).toBe(422);
+    expect(JSON.stringify(eight.json())).toContain('too-many-sessions');
+    // Shared, it cannot become someone else's programme (2–6 sessions).
+    const code = ((await app.inject({ method: 'POST', url: '/v1/training/program/share', headers: auth(token), payload: {} })).json() as { code: string }).code;
+    const other = await withProgram();
+    const used = await app.inject({ method: 'POST', url: `/v1/training/shared/${code}/use`, headers: auth(other.token), payload: {} });
+    expect(used.statusCode).toBe(422);
+  });
+
+  it('audit 2026-11-10: a shared cycle keeps its exact layout, an edited rest day included', async () => {
+    const { token, program } = await withProgram();
+    const cycle = (await schedule(token, { kind: 'cycle', on: 2, off: 1 })).json() as Program;
+    const ordered = [...cycle.days].sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+    expect(ordered.map((d) => d.isRest)).toEqual([false, false, true, false, false, true]);
+    // The first rest day becomes a session: S S S S S R.
+    const someExercise = program.days.find((d) => !d.isRest)!.exercises[0]!;
+    await app.inject({
+      method: 'PATCH',
+      url: `/v1/training/program/days/${ordered[2]!.id}`,
+      headers: auth(token),
+      payload: { exercises: [{ exerciseId: someExercise.exerciseId, setCount: 3, repMin: 8, repMax: 12, targetRir: 2 }] },
+    });
+    const code = ((await app.inject({ method: 'POST', url: '/v1/training/program/share', headers: auth(token), payload: {} })).json() as { code: string }).code;
+    const other = await withProgram();
+    const used = (await app.inject({ method: 'POST', url: `/v1/training/shared/${code}/use`, headers: auth(other.token), payload: {} })).json() as Program;
+    expect([...used.days].sort((a, b) => a.dayOfWeek - b.dayOfWeek).map((d) => d.isRest)).toEqual([false, false, false, false, false, true]);
+  });
 });
