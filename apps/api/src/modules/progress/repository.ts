@@ -5,6 +5,9 @@
  */
 import { and, asc, desc, eq, gt, gte, inArray, isNull, lt, lte, sql } from 'drizzle-orm';
 
+import { localDateOf } from '@fitos/core/nutrition/log';
+import { dayNumberOn, plusDays, weekdayOf, type Schedule } from '@fitos/core/training/schedule';
+
 import type { DatabaseHandle } from '../../db/client.js';
 import {
   bodyMeasurements,
@@ -135,11 +138,33 @@ export class ProgressRepository {
     return rows.flatMap((r) => (r.at === null ? [] : [asDate(r.at)]));
   }
 
-  /** ISO weekdays (1–7) of the active programme's training days; null without a programme. */
+  /**
+   * ISO weekdays (1–7) of the active programme's training days; null without
+   * a programme. Beta 6.1 (F2): for a cycle, the weekdays its training days
+   * fall on THIS week (the ring counts this week; a cycle has no fixed ones).
+   */
   async plannedDays(userId: string): Promise<number[] | null> {
+    const active = await this.activeSchedule(userId);
+    if (active === null) return null;
+    if (active.schedule.kind === 'week') return [...active.training].sort((a, b) => a - b);
+    const today = localDateOf(new Date(), active.timezone);
+    const monday = plusDays(today, 1 - weekdayOf(today));
+    return [1, 2, 3, 4, 5, 6, 7].filter((i) => active.training.has(dayNumberOn(active.schedule, plusDays(monday, i - 1))));
+  }
+
+  /** Beta 6.1 (F2): a cycle's rest days by date, for the streak; null for weekdays or no programme. */
+  async cycleRestDay(userId: string): Promise<((date: string) => boolean) | null> {
+    const active = await this.activeSchedule(userId);
+    if (active === null || active.schedule.kind === 'week') return null;
+    const { schedule, training } = active;
+    return (date) => !training.has(dayNumberOn(schedule, date));
+  }
+
+  private async activeSchedule(userId: string): Promise<{ schedule: Schedule; training: Set<number>; timezone: string } | null> {
     const [program] = await this.db
-      .select({ id: programs.id })
+      .select({ id: programs.id, schedule: programs.schedule, cycleStart: programs.cycleStart, cycleLength: programs.cycleLength, timezone: users.timezone })
       .from(programs)
+      .innerJoin(users, eq(users.id, programs.userId))
       .where(and(eq(programs.userId, userId), eq(programs.active, true), isNull(programs.deletedAt)))
       .limit(1);
     if (program === undefined) return null;
@@ -147,7 +172,11 @@ export class ProgressRepository {
       .select({ dow: programDays.dayOfWeek })
       .from(programDays)
       .where(and(eq(programDays.programId, program.id), eq(programDays.isRest, false)));
-    return days.map((d) => d.dow).sort((a, b) => a - b);
+    return {
+      schedule: program.schedule === 'cycle' ? { kind: 'cycle', start: program.cycleStart!, length: program.cycleLength! } : { kind: 'week' },
+      training: new Set(days.map((d) => d.dow)),
+      timezone: program.timezone,
+    };
   }
 
   /** Beta 3.3: days with any food logged in [from, to]. */

@@ -138,6 +138,17 @@ class DioTrainingRepository implements TrainingRepository {
       );
 
   @override
+  Future<Result<Program>> setSchedule({int? on, int? off}) => _guard(
+        () => _dio.put<Map<String, dynamic>>(
+          '/v1/training/program/schedule',
+          data: on == null
+              ? const {'kind': 'week'}
+              : {'kind': 'cycle', 'on': on, 'off': off ?? 0},
+        ),
+        Program.fromJson,
+      );
+
+  @override
   Future<Result<List<ProgramTemplate>>> listTemplates() => _guard(
         () => _dio.get<Map<String, dynamic>>('/v1/training/templates'),
         (json) => [

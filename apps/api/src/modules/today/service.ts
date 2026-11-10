@@ -25,7 +25,8 @@ import type { ReadinessAssembler } from '../recovery/readiness.js';
 import type { PlanRepository } from '../running/plan-repository.js';
 import type { FoodLogRepository } from '../nutrition/log-repository.js';
 import type { TrainingRepository } from '../training/repository.js';
-import { isoDayOfWeek, type WorkoutService } from '../workout/service.js';
+import type { WorkoutService } from '../workout/service.js';
+import { programDayOn } from '../training/schedule-of.js';
 import type { TodayRepository } from './repository.js';
 
 /** Whole days from `from` to `to` (both yyyy-mm-dd). */
@@ -112,7 +113,8 @@ export class TodayService {
     if (program !== null) {
       for (let d = 1; d <= 7 && nextSession === null; d++) {
         const date = addDays(localDate, d);
-        const next = program.days.find((x) => x.dayOfWeek === isoDayOfWeek(date) && !x.isRest);
+        // Beta 6.1 (F2): by the programme's schedule (a weekday, or the place in a cycle).
+        const next = program.days.find((x) => x.dayOfWeek === programDayOn(program.program, date) && !x.isRest);
         if (next !== undefined) nextSession = { name: next.sessionName, date };
       }
     }

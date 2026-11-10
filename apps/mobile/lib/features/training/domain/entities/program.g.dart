@@ -184,6 +184,9 @@ _Program _$ProgramFromJson(Map<String, dynamic> json) => _Program(
       active: json['active'] as bool,
       createdAt: json['createdAt'] as String,
       skippedOn: json['skippedOn'] as String? ?? null,
+      schedule: json['schedule'] as String? ?? 'week',
+      cycleStart: json['cycleStart'] as String? ?? null,
+      cycleLength: (json['cycleLength'] as num?)?.toInt() ?? null,
       days: (json['days'] as List<dynamic>)
           .map((e) => ProgramDay.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -208,6 +211,9 @@ Map<String, dynamic> _$ProgramToJson(_Program instance) => <String, dynamic>{
       'active': instance.active,
       'createdAt': instance.createdAt,
       'skippedOn': instance.skippedOn,
+      'schedule': instance.schedule,
+      'cycleStart': instance.cycleStart,
+      'cycleLength': instance.cycleLength,
       'days': instance.days,
       'weeklyVolume': instance.weeklyVolume,
       'rationale': instance.rationale,

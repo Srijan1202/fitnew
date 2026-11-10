@@ -49,6 +49,17 @@ export const daysPerWeekSchema = z.number().int().min(MIN_DAYS_PER_WEEK).max(MAX
 /** 1 = Monday … 7 = Sunday (ISO). */
 export const dayOfWeekSchema = z.number().int().min(1).max(7);
 
+/**
+ * Beta 6.1 (F2): a programme day's number — its weekday on a `week`
+ * programme, its place in the cycle (1…14) on a `cycle` one. Day 1 of a cycle
+ * falls on `cycleStart`; core `dayNumberOn` says which day a date is.
+ */
+export const dayNumberSchema = z.number().int().min(1).max(14);
+export const SCHEDULE_KINDS = ['week', 'cycle'] as const;
+export const scheduleKindSchema = z.enum(SCHEDULE_KINDS);
+export const CYCLE_MAX_ON = 7;
+export const CYCLE_MAX_OFF = 7;
+
 /* ----------------------------------------------------------------- read -- */
 
 /**
@@ -94,7 +105,8 @@ export type PlannedExercise = z.infer<typeof plannedExerciseSchema>;
 
 export const programDaySchema = z.object({
   id: z.string().uuid(),
-  dayOfWeek: dayOfWeekSchema,
+  /** Beta 6.1: the day's number — a weekday, or its place in a cycle. */
+  dayOfWeek: dayNumberSchema,
   sessionName: z.string().min(1),
   focus: z.array(muscleGroupSchema),
   isRest: z.boolean(),
@@ -128,8 +140,12 @@ export const programSchema = z.object({
    * day later); that date is shown as skipped and its skip can be undone.
    */
   skippedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
-  /** Always seven, Monday first; rest days included so a week is a week. */
-  days: z.array(programDaySchema).length(7),
+  /** Beta 6.1 (F2): weekdays, or a cycle of `cycleLength` days with day 1 on `cycleStart`. */
+  schedule: scheduleKindSchema,
+  cycleStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
+  cycleLength: z.number().int().min(2).max(14).nullable(),
+  /** Seven for a week, Monday first; a cycle's days in order. Rest days included. */
+  days: z.array(programDaySchema).min(2).max(14),
   /** Weekly hard sets per muscle as planned, secondaries at 0.5. Derived on read. */
   weeklyVolume: z.record(muscleGroupSchema, z.number()),
   /** The generator's explanation; empty on a custom programme. */
@@ -273,6 +289,19 @@ export const patchProgramDayRequestSchema = z
 export type PatchProgramDayRequest = z.infer<typeof patchProgramDayRequestSchema>;
 
 export const patchProgramRequestSchema = z.object({ name: z.string().trim().min(1).max(60) }).strict();
+
+/**
+ * Beta 6.1 (F2): `PUT /training/program/schedule`. A cycle lays the
+ * programme's training sessions out in order, `on` of them then `off` rest
+ * days, until all are placed (core `cycleLayout`; 2–14 days); day 1 is today,
+ * or tomorrow when today's session is done. Weekdays puts them back on the
+ * usual weekdays. Day ids, exercises and history are kept.
+ */
+export const putScheduleRequestSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('week') }).strict(),
+  z.object({ kind: z.literal('cycle'), on: z.number().int().min(1).max(CYCLE_MAX_ON), off: z.number().int().min(0).max(CYCLE_MAX_OFF) }).strict(),
+]);
+export type PutScheduleRequest = z.infer<typeof putScheduleRequestSchema>;
 export type PatchProgramRequest = z.infer<typeof patchProgramRequestSchema>;
 
 export const programDayIdParamsSchema = z.object({ id: z.string().uuid() });
@@ -379,12 +408,19 @@ export const sharedExerciseSchema = z
   .strict();
 
 export const sharedDaySchema = z
-  .object({ dayOfWeek: dayOfWeekSchema, sessionName: z.string(), isRest: z.boolean(), exercises: z.array(sharedExerciseSchema) })
+  .object({ dayOfWeek: dayNumberSchema, sessionName: z.string(), isRest: z.boolean(), exercises: z.array(sharedExerciseSchema) })
   .strict();
 
-/** What a code shows before anyone uses it. */
+/** What a code shows before anyone uses it. Beta 6.1: a cycle's code keeps its schedule (codes from before are weekdays). */
 export const sharedProgrammeSchema = z
-  .object({ code: shareCodeSchema, name: z.string(), daysPerWeek: z.number().int().min(0), days: z.array(sharedDaySchema) })
+  .object({
+    code: shareCodeSchema,
+    name: z.string(),
+    daysPerWeek: z.number().int().min(0),
+    schedule: scheduleKindSchema,
+    cycleLength: z.number().int().min(2).max(14).nullable(),
+    days: z.array(sharedDaySchema),
+  })
   .strict();
 export type SharedProgramme = z.infer<typeof sharedProgrammeSchema>;
 

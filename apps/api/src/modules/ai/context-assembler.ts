@@ -77,6 +77,12 @@ export interface FitosAiContext {
     readonly splitType: string;
     readonly daysPerWeek: number;
     readonly mesocycleWeek: number;
+    /**
+     * Beta 6.1 (F2): "weekdays" (dayOfWeek 1 = Monday) or "cycle of N days"
+     * (dayOfWeek is the place in the cycle; day 1 was cycleStart).
+     */
+    readonly schedule: string;
+    readonly cycleStart: string | null;
     readonly days: readonly { readonly dayOfWeek: number; readonly sessionName: string; readonly isRest: boolean; readonly exercises: readonly string[] }[];
   } | null;
   readonly today: {
@@ -325,6 +331,8 @@ export class UserContextAssembler {
       splitType: p.splitType,
       daysPerWeek: p.daysPerWeek,
       mesocycleWeek: p.mesocycleWeek,
+      schedule: p.schedule === 'cycle' ? `cycle of ${p.cycleLength} days` : 'weekdays',
+      cycleStart: p.cycleStart,
       days: p.days.map((d) => ({ dayOfWeek: d.dayOfWeek, sessionName: d.sessionName, isRest: d.isRest, exercises: d.exercises.map((x) => x.name) })),
     };
   }

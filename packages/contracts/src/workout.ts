@@ -13,7 +13,7 @@ import { z } from 'zod';
 
 import { difficultySchema, movementPatternSchema, muscleGroupSchema, slugSchema } from './exercise.js';
 import { equipmentSchema } from './profile.js';
-import { dayOfWeekSchema, plannedSetSchema } from './training.js';
+import { dayNumberSchema, plannedSetSchema } from './training.js';
 
 /* ------------------------------------------------------------- vocabulary -- */
 
@@ -274,7 +274,8 @@ export const todayExerciseSchema = z.object({
 export const todayResponseSchema = z.object({
   /** Local calendar date the server used (user's timezone). */
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  dayOfWeek: dayOfWeekSchema,
+  /** Beta 6.1: the programme day's number (a weekday, or the place in a cycle). */
+  dayOfWeek: dayNumberSchema,
   programId: z.string().uuid().nullable(),
   programDayId: z.string().uuid().nullable(),
   sessionName: z.string().nullable(),
@@ -477,7 +478,7 @@ export type SessionListQuery = z.infer<typeof sessionListQuerySchema>;
 
 export const todayQuerySchema = z.object({
   /** Another day of the week, for the day screen; defaults to today. */
-  dayOfWeek: z.coerce.number().int().min(1).max(7).optional(),
+  dayOfWeek: z.coerce.number().int().min(1).max(14).optional(),
 });
 
 export const sessionParamsSchema = z.object({ id: z.string().uuid() });

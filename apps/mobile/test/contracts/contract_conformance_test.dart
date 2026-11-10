@@ -857,13 +857,16 @@ void main() {
     test(
         'Phase 6.6 Gate 7: one weekday convention — ISO 1..7 in the API and in Dart; the start names its day by id, and the ad-hoc resend omits it',
         () {
-      // The API's dayOfWeek (programme days, /today?dayOfWeek) is ISO 1..7.
+      // The API's dayOfWeek (programme days, /today?dayOfWeek) is ISO 1..7
+      // on a weekday programme; beta 6.1 (F2): a cycle's place, up to 14.
       final days = schemaOf('/training/program', 'get');
       final day = (properties(days)['days'] as Map<String, dynamic>)['items']
           as Map<String, dynamic>;
       final dow = properties(day)['dayOfWeek'] as Map<String, dynamic>;
       expect(dow['minimum'], 1);
-      expect(dow['maximum'], 7);
+      expect(dow['maximum'], 14);
+      expect(programDayLabel(3, cycle: false), 'Wednesday');
+      expect(programDayLabel(9, cycle: false), 'Day 9');
       // Dart's DateTime.weekday is the same ISO numbering: the S24's week.
       expect(
         [for (var d = 21; d <= 27; d++) DateTime(2026, 9, d).weekday],

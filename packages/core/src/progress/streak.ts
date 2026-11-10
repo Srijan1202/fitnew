@@ -27,6 +27,8 @@ export interface StreakInput {
   readonly activeDays: ReadonlySet<string>;
   /** Rest days of the active programme, 1 = Monday … 7 = Sunday. */
   readonly restWeekdays: ReadonlySet<number>;
+  /** Beta 6.1 (F2): a cycle programme's rest days by date; when given, it replaces [restWeekdays]. */
+  readonly restDay?: (date: string) => boolean;
   /** Days used by Skip today. */
   readonly skippedDays: ReadonlySet<string>;
   /** The first day to look at (the account's first day); null looks back the full window. */
@@ -60,7 +62,7 @@ export function isoWeekday(date: string): number {
 export function streak(input: StreakInput): Streak {
   const windowStart = addDays(input.today, -STREAK_LOOKBACK_DAYS);
   const start = input.firstDay !== null && input.firstDay > windowStart ? input.firstDay : windowStart;
-  const rest = (d: string): boolean => input.restWeekdays.has(isoWeekday(d));
+  const rest = (d: string): boolean => (input.restDay !== undefined ? input.restDay(d) : input.restWeekdays.has(isoWeekday(d)));
   const excused = (d: string): boolean => rest(d) || input.skippedDays.has(d);
   let run = 0;
   let best = 0;
@@ -96,7 +98,7 @@ export function streakDayStatus(input: StreakInput, d: string): StreakDayStatus 
   if (trained.has(d)) return 'logged';
   if (input.activeDays.has(d)) return 'rest';
   if (input.firstDay !== null && d < input.firstDay) return 'before';
-  if (input.restWeekdays.has(isoWeekday(d))) return 'rest';
+  if (input.restDay !== undefined ? input.restDay(d) : input.restWeekdays.has(isoWeekday(d))) return 'rest';
   if (input.skippedDays.has(d)) return 'skipped';
   return d === input.today ? 'today' : 'missed';
 }

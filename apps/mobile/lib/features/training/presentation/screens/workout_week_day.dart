@@ -23,10 +23,14 @@ class _DayView extends StatelessWidget {
     this.substitutions = const {},
     this.onSubstitute,
     this.last = const {},
+    this.cycle = false,
     super.key,
   });
 
   final ProgramDay day;
+
+  /// Beta 6.1 (F2): the header says "Day 3" instead of a weekday.
+  final bool cycle;
   final List<PlannedExercise> exercises;
   final Widget startButton;
   final ValueChanged<String> onAddSet;
@@ -56,7 +60,7 @@ class _DayView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final weekday = kWeekdayLabels[day.dayOfWeek - 1].toUpperCase();
+    final weekday = programDayLabel(day.dayOfWeek, cycle: cycle).toUpperCase();
     final sets = exercises.fold<int>(0, (s, x) => s + x.sets.length);
     final minutes = (sets * 3.5).round();
 

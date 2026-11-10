@@ -12,11 +12,15 @@ class DaySelector extends StatelessWidget {
     required this.days,
     required this.selected,
     required this.onSelect,
+    this.cycle = false,
     super.key,
   });
 
-  /// Seven, Monday first.
+  /// Seven, Monday first; beta 6.1: a cycle's days in order.
   final List<ProgramDay> days;
+
+  /// Beta 6.1 (F2): the tabs say D1, D2… instead of the weekdays.
+  final bool cycle;
   final int selected;
   final ValueChanged<int> onSelect;
 
@@ -40,13 +44,17 @@ class DaySelector extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          for (final day in days)
+          for (final day in [
+            ...days,
+          ]..sort((a, b) => a.dayOfWeek.compareTo(b.dayOfWeek)))
             Expanded(
               child: _DayTab(
                 key: ValueKey('day.tab.${day.dayOfWeek}'),
-                label: kWeekdayLabels[day.dayOfWeek - 1]
-                    .substring(0, 3)
-                    .toUpperCase(),
+                label: cycle
+                    ? 'D${day.dayOfWeek}'
+                    : programDayLabel(day.dayOfWeek, cycle: false)
+                        .substring(0, 3)
+                        .toUpperCase(),
                 selected: day.dayOfWeek == selected,
                 isRest: day.isRest,
                 onTap: () => onSelect(day.dayOfWeek),

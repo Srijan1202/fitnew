@@ -14,6 +14,7 @@ import {
   liftHistorySchema,
   progressionDetailSchema,
   progressionParamsSchema,
+  putScheduleRequestSchema,
   programSchema,
   volumeResponseSchema,
   logSetsRequestSchema,
@@ -95,6 +96,20 @@ export async function workoutRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     async (request) => service.undoSkip(requireUserId(request.userId)),
+  );
+
+  typed.put(
+    '/training/program/schedule',
+    {
+      schema: {
+        summary: 'Weekdays or a rolling cycle (beta 6.1, F2): the sessions in order, on/off, day 1 today (tomorrow if trained today); 422 when it is not 2–14 days, 409 with a session open',
+        tags,
+        security,
+        body: putScheduleRequestSchema,
+        response: { 200: programSchema, ...errors },
+      },
+    },
+    async (request) => service.setSchedule(requireUserId(request.userId), request.body),
   );
 
   typed.post(

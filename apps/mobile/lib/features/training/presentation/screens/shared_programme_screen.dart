@@ -148,12 +148,14 @@ class _SharedProgrammeScreenState extends ConsumerState<SharedProgrammeScreen> {
                   style: textTheme.headlineSmall,
                 ),
                 Text(
-                  '${p.daysPerWeek} training days a week · sets and reps only, no weights',
+                  p.cycleLength == null
+                      ? '${p.daysPerWeek} training days a week · sets and reps only, no weights'
+                      : '${p.daysPerWeek} sessions in a ${p.cycleLength}-day cycle, starting today · sets and reps only, no weights',
                   style: textTheme.bodyMedium?.copyWith(color: FitColors.ink60),
                 ),
                 const SizedBox(height: FitSpacing.md),
                 for (final d in p.days.where((d) => !d.isRest))
-                  _SharedDayBlock(day: d),
+                  _SharedDayBlock(day: d, cycle: p.cycleLength != null),
                 const SizedBox(height: FitSpacing.md),
                 FilledButton(
                   key: const ValueKey('shared.use'),
@@ -170,9 +172,10 @@ class _SharedProgrammeScreenState extends ConsumerState<SharedProgrammeScreen> {
 }
 
 class _SharedDayBlock extends StatelessWidget {
-  const _SharedDayBlock({required this.day});
+  const _SharedDayBlock({required this.day, this.cycle = false});
 
   final SharedDay day;
+  final bool cycle;
 
   @override
   Widget build(BuildContext context) {
@@ -185,7 +188,7 @@ class _SharedDayBlock extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              '${_weekdays[day.dayOfWeek - 1]} · ${day.sessionName}',
+              '${cycle || day.dayOfWeek > 7 ? 'Day ${day.dayOfWeek}' : _weekdays[day.dayOfWeek - 1]} · ${day.sessionName}',
               style: textTheme.titleMedium,
             ),
             const SizedBox(height: FitSpacing.xs),

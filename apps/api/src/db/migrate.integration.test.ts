@@ -74,9 +74,9 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
   const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
   const PHASE6_TABLES = ['muscle_volume_weekly', 'exercise_rejections'];
-  const TOTAL_MIGRATIONS = 52;
+  const TOTAL_MIGRATIONS = 53;
   /** Beta 6.1's migrations, newest first: rolled back before a chain that starts at 0049. */
-  const AFTER_0049 = ['0051_flag_audience', '0050_theme_on_account'];
+  const AFTER_0049 = ['0052_rolling_cycles', '0051_flag_audience', '0050_theme_on_account'];
   const peelAfter0049 = async () => {
     for (const tag of AFTER_0049) expect(await rollbackLastMigration(connectionString)).toBe(tag);
   };
@@ -485,11 +485,30 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await client`delete from mess_providers where id = ${prov!.id}`;
   });
 
+  it('0052: rolling cycles (beta 6.1, F2) — a week or a cycle of 2–14 days with its start; days up to 14; down refuses while a cycle exists', async () => {
+    const [u] = await client<{ id: string }[]>`insert into users (firebase_uid) values ('mig-cycle-a') returning id`;
+    const [p] = await client<{ id: string }[]>`insert into programs (user_id, name, split_type, days_per_week, source) values (${u!.id}, 'Mig', 'push-pull-legs', 3, 'custom') returning id`;
+    expect((await client<{ schedule: string }[]>`select schedule from programs where id = ${p!.id}`)[0]!.schedule).toBe('week');
+    await expect(client`update programs set schedule = 'cycle' where id = ${p!.id}`).rejects.toThrow(/programs_schedule/);
+    await expect(client`update programs set schedule = 'cycle', cycle_start = '2026-11-10', cycle_length = 15 where id = ${p!.id}`).rejects.toThrow(/programs_schedule/);
+    await expect(client`update programs set cycle_length = 5 where id = ${p!.id}`).rejects.toThrow(/programs_schedule/);
+    await client`update programs set schedule = 'cycle', cycle_start = '2026-11-10', cycle_length = 9 where id = ${p!.id}`;
+    await client`insert into program_days (program_id, day_of_week, session_name) values (${p!.id}, 9, 'Legs')`;
+    await expect(client`insert into program_days (program_id, day_of_week, session_name) values (${p!.id}, 15, 'Arms')`).rejects.toThrow(/program_days_dow_range/);
+    await expect(rollbackLastMigration(connectionString)).rejects.toThrow(/are cycles/);
+    await client`delete from users where id = ${u!.id}`;
+    expect(await rollbackLastMigration(connectionString)).toBe('0052_rolling_cycles');
+    expect((await client`select 1 from information_schema.columns where table_name = 'programs' and column_name = 'schedule'`).length).toBe(0);
+    await migrateUp(connectionString);
+    expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
+  });
+
   it('0051: early access (beta 6.1) — a switch is on for everyone or premium, nothing else; down drops the audience', async () => {
     await client`insert into feature_flags (key, enabled) values ('mig-audience', true)`;
     expect((await client<{ audience: string }[]>`select audience from feature_flags where key = 'mig-audience'`)[0]!.audience).toBe('everyone');
     await client`update feature_flags set audience = 'premium' where key = 'mig-audience'`;
     await expect(client`update feature_flags set audience = 'friends' where key = 'mig-audience'`).rejects.toThrow(/feature_flags_audience/);
+    expect(await rollbackLastMigration(connectionString)).toBe('0052_rolling_cycles');
     expect(await rollbackLastMigration(connectionString)).toBe('0051_flag_audience');
     expect((await client`select 1 from information_schema.columns where table_name = 'feature_flags' and column_name = 'audience'`).length).toBe(0);
     await client`delete from feature_flags where key = 'mig-audience'`;
@@ -505,6 +524,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await expect(client`update user_preferences set theme_id = '' where user_id = ${a!.id}`).rejects.toThrow(/user_preferences_theme_id/);
     await client`delete from users where id = ${a!.id}`;
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0052_rolling_cycles');
     expect(await rollbackLastMigration(connectionString)).toBe('0051_flag_audience');
     expect(await rollbackLastMigration(connectionString)).toBe('0050_theme_on_account');
     expect((await client`select 1 from information_schema.columns where table_name = 'user_preferences' and column_name = 'theme_id'`).length).toBe(0);

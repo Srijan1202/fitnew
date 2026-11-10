@@ -104,8 +104,9 @@ abstract final class WidgetSnapshot {
         'done': run.status == PlannedRunStatus.done,
       };
     }
-    final weekday = DateTime.parse(date).weekday;
-    final day = program?.days.where((d) => d.dayOfWeek == weekday).firstOrNull;
+    // Beta 6.1 (F2): by the programme's schedule (a weekday, or the place in a cycle).
+    final number = program?.dayNumberOn(date);
+    final day = program?.days.where((d) => d.dayOfWeek == number).firstOrNull;
     if (day == null || day.isRest) {
       return {
         'date': date,

@@ -10,7 +10,8 @@ import { liftHistory } from '@fitos/core/progress/lift-history';
 import { isoWeekKey } from '@fitos/core/training/mesocycle';
 import { prefillSet } from '@fitos/core/training/prefill';
 import { recommendProgression, type SessionLog } from '@fitos/core/training/progression';
-import type { BodyPart } from '@fitos/core/training/generator';
+import { trainingDays, type BodyPart } from '@fitos/core/training/generator';
+import { cycleLayout, plusDays } from '@fitos/core/training/schedule';
 import { detectPRs, type LoggedSet, type PriorSession } from '@fitos/core/training/records';
 import { summarizeSession } from '@fitos/core/training/session-summary';
 import type {
@@ -18,6 +19,7 @@ import type {
   CompleteSessionRequest,
   LastPerformance,
   LiftHistoryResponse,
+  PutScheduleRequest,
   LogSetsRequest,
   MuscleGroup,
   PatchSessionExerciseRequest,
@@ -43,6 +45,7 @@ import { LIFT_HISTORY_MAX } from '@fitos/contracts';
 import { uniqueViolationOf } from '../../db/errors.js';
 import { AppError } from '../../lib/errors.js';
 import { programFrom } from '../training/service.js';
+import { programDayOn } from '../training/schedule-of.js';
 import type { PlannedExerciseJoined, ProgramBundle, TrainingRepository } from '../training/repository.js';
 import type { LowReadinessSource } from '../recovery/readiness.js';
 import { ProgressionAssembler } from './progression.js';
@@ -523,11 +526,13 @@ export class WorkoutService {
     const tz = await this.repo.userTimezone(userId);
     const now = new Date();
     const date = localDate(now, tz);
-    const dow = dayOfWeek ?? isoDayOfWeek(date);
     const program = await this.training.activeProgram(userId);
+    // Beta 6.1 (F2): today's number by the programme's schedule (a weekday, or the place in a cycle).
+    const todayNumber = program === null ? isoDayOfWeek(date) : programDayOn(program.program, date);
+    const dow = dayOfWeek ?? todayNumber;
     // ADR-030: a skipped today has no session (its weekday now holds
     // yesterday's, the week having moved on a day).
-    const skipped = program !== null && program.program.skippedOn === date && dow === isoDayOfWeek(date);
+    const skipped = program !== null && program.program.skippedOn === date && dow === todayNumber;
     const day = skipped ? null : (program?.days.find((d) => d.dayOfWeek === dow) ?? null);
     const planned = program !== null && day !== null ? program.exercises.filter((x) => x.programDayId === day.id) : [];
     const prior = await this.repo.priorWork(userId, [...new Set(planned.map((x) => x.exerciseId))]);
@@ -615,6 +620,47 @@ export class WorkoutService {
     const { program, date } = await this.skipContext(userId);
     const bundle = await this.training.shiftWeek(userId, program.program.id, 'undo', date);
     if (bundle === null) throw new AppError('CONFLICT', 'Only a skip made today can be undone.', [{ path: 'date', issue: 'not-skipped' }]);
+    return programFrom(bundle);
+  }
+
+  /**
+   * Beta 6.1 (F2): weekdays or a cycle. A cycle lays the training sessions
+   * out in order — `on` of them, then `off` rest days — until all are placed
+   * (core `cycleLayout`); day 1 is today, or tomorrow once today's session is
+   * done. Back to weekdays, the sessions take the usual weekdays for their
+   * number. Day ids, exercises and history stay; rest days are made or
+   * removed as the new layout needs.
+   */
+  async setSchedule(userId: string, body: PutScheduleRequest): Promise<Program> {
+    const { program, date } = await this.skipContext(userId);
+    if ((await this.repo.active(userId)) !== null) {
+      throw new AppError('CONFLICT', 'Finish or discard the open session before changing the schedule.', [{ path: 'session', issue: 'session-open' }]);
+    }
+    const days = [...program.days].sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+    const training = days.filter((d) => !d.isRest);
+    const rests = days.filter((d) => d.isRest);
+    let slots: (string | null)[];
+    let schedule: { schedule: 'week' | 'cycle'; cycleStart: string | null; cycleLength: number | null };
+    if (body.kind === 'cycle') {
+      const layout = cycleLayout(training.length, body.on, body.off);
+      if (layout === null) {
+        throw new AppError('VALIDATION_FAILED', `With ${training.length} sessions, ${body.on} on and ${body.off} off is not a cycle of 2 to 14 days.`, [
+          { path: 'off', issue: 'cycle-length' },
+        ]);
+      }
+      slots = layout.map((i) => (i === null ? null : training[i]!.id));
+      const start = (await this.completedOn(userId, date)) ? plusDays(date, 1) : date;
+      schedule = { schedule: 'cycle', cycleStart: start, cycleLength: layout.length };
+    } else {
+      if (program.program.schedule === 'week') return programFrom(program);
+      const weekdays = trainingDays(training.length);
+      slots = [1, 2, 3, 4, 5, 6, 7].map((dow) => {
+        const i = weekdays.indexOf(dow);
+        return i < 0 ? null : training[i]!.id;
+      });
+      schedule = { schedule: 'week', cycleStart: null, cycleLength: null };
+    }
+    const bundle = await this.training.applySchedule(program.program.id, slots, rests.map((r) => r.id), schedule);
     return programFrom(bundle);
   }
 

@@ -2112,6 +2112,13 @@ mixin _$Program {
 
   /// ADR-030: the local date last skipped (the week then moved a day).
   String? get skippedOn;
+
+  /// Beta 6.1 (F2): `week`, or `cycle` — days 1…[cycleLength], day 1 on
+  /// [cycleStart], then round again. A day's `dayOfWeek` is then its place
+  /// in the cycle.
+  String get schedule;
+  String? get cycleStart;
+  int? get cycleLength;
   List<ProgramDay> get days;
   Map<String, double> get weeklyVolume;
   List<String> get rationale;
@@ -2151,6 +2158,12 @@ mixin _$Program {
                 other.createdAt == _this.createdAt) &&
             (identical(other.skippedOn, _this.skippedOn) ||
                 other.skippedOn == _this.skippedOn) &&
+            (identical(other.schedule, _this.schedule) ||
+                other.schedule == _this.schedule) &&
+            (identical(other.cycleStart, _this.cycleStart) ||
+                other.cycleStart == _this.cycleStart) &&
+            (identical(other.cycleLength, _this.cycleLength) ||
+                other.cycleLength == _this.cycleLength) &&
             const DeepCollectionEquality().equals(other.days, _this.days) &&
             const DeepCollectionEquality()
                 .equals(other.weeklyVolume, _this.weeklyVolume) &&
@@ -2176,6 +2189,9 @@ mixin _$Program {
         _this.active,
         _this.createdAt,
         _this.skippedOn,
+        _this.schedule,
+        _this.cycleStart,
+        _this.cycleLength,
         const DeepCollectionEquality().hash(_this.days),
         const DeepCollectionEquality().hash(_this.weeklyVolume),
         const DeepCollectionEquality().hash(_this.rationale),
@@ -2185,7 +2201,7 @@ mixin _$Program {
   @override
   String toString() {
     final _this = this as Program;
-    return 'Program(id: ${_this.id}, name: ${_this.name}, splitType: ${_this.splitType}, daysPerWeek: ${_this.daysPerWeek}, source: ${_this.source}, templateSlug: ${_this.templateSlug}, mesocycleWeek: ${_this.mesocycleWeek}, active: ${_this.active}, createdAt: ${_this.createdAt}, skippedOn: ${_this.skippedOn}, days: ${_this.days}, weeklyVolume: ${_this.weeklyVolume}, rationale: ${_this.rationale}, shortfalls: ${_this.shortfalls})';
+    return 'Program(id: ${_this.id}, name: ${_this.name}, splitType: ${_this.splitType}, daysPerWeek: ${_this.daysPerWeek}, source: ${_this.source}, templateSlug: ${_this.templateSlug}, mesocycleWeek: ${_this.mesocycleWeek}, active: ${_this.active}, createdAt: ${_this.createdAt}, skippedOn: ${_this.skippedOn}, schedule: ${_this.schedule}, cycleStart: ${_this.cycleStart}, cycleLength: ${_this.cycleLength}, days: ${_this.days}, weeklyVolume: ${_this.weeklyVolume}, rationale: ${_this.rationale}, shortfalls: ${_this.shortfalls})';
   }
 }
 
@@ -2205,6 +2221,9 @@ abstract mixin class $ProgramCopyWith<$Res> {
       bool active,
       String createdAt,
       String? skippedOn,
+      String schedule,
+      String? cycleStart,
+      int? cycleLength,
       List<ProgramDay> days,
       Map<String, double> weeklyVolume,
       List<String> rationale,
@@ -2233,6 +2252,9 @@ class _$ProgramCopyWithImpl<$Res> implements $ProgramCopyWith<$Res> {
     Object? active = null,
     Object? createdAt = null,
     Object? skippedOn = freezed,
+    Object? schedule = null,
+    Object? cycleStart = freezed,
+    Object? cycleLength = freezed,
     Object? days = null,
     Object? weeklyVolume = null,
     Object? rationale = null,
@@ -2279,6 +2301,18 @@ class _$ProgramCopyWithImpl<$Res> implements $ProgramCopyWith<$Res> {
           ? _self.skippedOn
           : skippedOn // ignore: cast_nullable_to_non_nullable
               as String?,
+      schedule: null == schedule
+          ? _self.schedule
+          : schedule // ignore: cast_nullable_to_non_nullable
+              as String,
+      cycleStart: freezed == cycleStart
+          ? _self.cycleStart
+          : cycleStart // ignore: cast_nullable_to_non_nullable
+              as String?,
+      cycleLength: freezed == cycleLength
+          ? _self.cycleLength
+          : cycleLength // ignore: cast_nullable_to_non_nullable
+              as int?,
       days: null == days
           ? _self.days
           : days // ignore: cast_nullable_to_non_nullable
@@ -2403,6 +2437,9 @@ extension ProgramPatterns on Program {
             bool active,
             String createdAt,
             String? skippedOn,
+            String schedule,
+            String? cycleStart,
+            int? cycleLength,
             List<ProgramDay> days,
             Map<String, double> weeklyVolume,
             List<String> rationale,
@@ -2424,6 +2461,9 @@ extension ProgramPatterns on Program {
             _that.active,
             _that.createdAt,
             _that.skippedOn,
+            _that.schedule,
+            _that.cycleStart,
+            _that.cycleLength,
             _that.days,
             _that.weeklyVolume,
             _that.rationale,
@@ -2459,6 +2499,9 @@ extension ProgramPatterns on Program {
             bool active,
             String createdAt,
             String? skippedOn,
+            String schedule,
+            String? cycleStart,
+            int? cycleLength,
             List<ProgramDay> days,
             Map<String, double> weeklyVolume,
             List<String> rationale,
@@ -2479,6 +2522,9 @@ extension ProgramPatterns on Program {
             _that.active,
             _that.createdAt,
             _that.skippedOn,
+            _that.schedule,
+            _that.cycleStart,
+            _that.cycleLength,
             _that.days,
             _that.weeklyVolume,
             _that.rationale,
@@ -2513,6 +2559,9 @@ extension ProgramPatterns on Program {
             bool active,
             String createdAt,
             String? skippedOn,
+            String schedule,
+            String? cycleStart,
+            int? cycleLength,
             List<ProgramDay> days,
             Map<String, double> weeklyVolume,
             List<String> rationale,
@@ -2533,6 +2582,9 @@ extension ProgramPatterns on Program {
             _that.active,
             _that.createdAt,
             _that.skippedOn,
+            _that.schedule,
+            _that.cycleStart,
+            _that.cycleLength,
             _that.days,
             _that.weeklyVolume,
             _that.rationale,
@@ -2557,6 +2609,9 @@ class _Program implements Program {
       required this.active,
       required this.createdAt,
       this.skippedOn = null,
+      this.schedule = 'week',
+      this.cycleStart = null,
+      this.cycleLength = null,
       required List<ProgramDay> days,
       required Map<String, double> weeklyVolume,
       required List<String> rationale,
@@ -2591,6 +2646,19 @@ class _Program implements Program {
   @override
   @JsonKey()
   final String? skippedOn;
+
+  /// Beta 6.1 (F2): `week`, or `cycle` — days 1…[cycleLength], day 1 on
+  /// [cycleStart], then round again. A day's `dayOfWeek` is then its place
+  /// in the cycle.
+  @override
+  @JsonKey()
+  final String schedule;
+  @override
+  @JsonKey()
+  final String? cycleStart;
+  @override
+  @JsonKey()
+  final int? cycleLength;
   final List<ProgramDay> _days;
   @override
   List<ProgramDay> get days {
@@ -2659,6 +2727,12 @@ class _Program implements Program {
                 other.createdAt == createdAt) &&
             (identical(other.skippedOn, skippedOn) ||
                 other.skippedOn == skippedOn) &&
+            (identical(other.schedule, schedule) ||
+                other.schedule == schedule) &&
+            (identical(other.cycleStart, cycleStart) ||
+                other.cycleStart == cycleStart) &&
+            (identical(other.cycleLength, cycleLength) ||
+                other.cycleLength == cycleLength) &&
             const DeepCollectionEquality().equals(other.days, _days) &&
             const DeepCollectionEquality()
                 .equals(other.weeklyVolume, _weeklyVolume) &&
@@ -2683,6 +2757,9 @@ class _Program implements Program {
         active,
         createdAt,
         skippedOn,
+        schedule,
+        cycleStart,
+        cycleLength,
         const DeepCollectionEquality().hash(_days),
         const DeepCollectionEquality().hash(_weeklyVolume),
         const DeepCollectionEquality().hash(_rationale),
@@ -2691,7 +2768,7 @@ class _Program implements Program {
 
   @override
   String toString() {
-    return 'Program(id: $id, name: $name, splitType: $splitType, daysPerWeek: $daysPerWeek, source: $source, templateSlug: $templateSlug, mesocycleWeek: $mesocycleWeek, active: $active, createdAt: $createdAt, skippedOn: $skippedOn, days: $days, weeklyVolume: $weeklyVolume, rationale: $rationale, shortfalls: $shortfalls)';
+    return 'Program(id: $id, name: $name, splitType: $splitType, daysPerWeek: $daysPerWeek, source: $source, templateSlug: $templateSlug, mesocycleWeek: $mesocycleWeek, active: $active, createdAt: $createdAt, skippedOn: $skippedOn, schedule: $schedule, cycleStart: $cycleStart, cycleLength: $cycleLength, days: $days, weeklyVolume: $weeklyVolume, rationale: $rationale, shortfalls: $shortfalls)';
   }
 }
 
@@ -2712,6 +2789,9 @@ abstract mixin class _$ProgramCopyWith<$Res> implements $ProgramCopyWith<$Res> {
       bool active,
       String createdAt,
       String? skippedOn,
+      String schedule,
+      String? cycleStart,
+      int? cycleLength,
       List<ProgramDay> days,
       Map<String, double> weeklyVolume,
       List<String> rationale,
@@ -2740,6 +2820,9 @@ class __$ProgramCopyWithImpl<$Res> implements _$ProgramCopyWith<$Res> {
     Object? active = null,
     Object? createdAt = null,
     Object? skippedOn = freezed,
+    Object? schedule = null,
+    Object? cycleStart = freezed,
+    Object? cycleLength = freezed,
     Object? days = null,
     Object? weeklyVolume = null,
     Object? rationale = null,
@@ -2786,6 +2869,18 @@ class __$ProgramCopyWithImpl<$Res> implements _$ProgramCopyWith<$Res> {
           ? _self.skippedOn
           : skippedOn // ignore: cast_nullable_to_non_nullable
               as String?,
+      schedule: null == schedule
+          ? _self.schedule
+          : schedule // ignore: cast_nullable_to_non_nullable
+              as String,
+      cycleStart: freezed == cycleStart
+          ? _self.cycleStart
+          : cycleStart // ignore: cast_nullable_to_non_nullable
+              as String?,
+      cycleLength: freezed == cycleLength
+          ? _self.cycleLength
+          : cycleLength // ignore: cast_nullable_to_non_nullable
+              as int?,
       days: null == days
           ? _self._days
           : days // ignore: cast_nullable_to_non_nullable

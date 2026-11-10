@@ -52,7 +52,7 @@ export class ProgressService {
     const lo = new Date(Date.parse(`${from}T00:00:00Z`) - DAY_MS);
     const hi = new Date(Date.parse(`${today}T00:00:00Z`) + 2 * DAY_MS);
     const weekFrom = addDays(today, 1 - isoWeekday(today));
-    const [completed, logged, planned, context, runs, plan, weekRuns] = await Promise.all([
+    const [completed, logged, planned, context, runs, plan, weekRuns, cycleRest] = await Promise.all([
       this.repo.completedAt(userId, lo, hi),
       this.repo.loggedDays(userId, from, today),
       this.repo.plannedDays(userId),
@@ -60,6 +60,7 @@ export class ProgressService {
       this.plans.loads(userId, lo),
       this.plans.active(userId),
       this.plans.between(userId, weekFrom, addDays(weekFrom, 6)),
+      this.repo.cycleRestDay(userId),
     ]);
     const workoutDays = completed.map((at) => localDateOf(at, tz));
     // Beta 4.1: a saved run is a logged day; the plan's running days are not rest days.
@@ -74,6 +75,8 @@ export class ProgressService {
       firstDay: localDateOf(context.createdAt, tz),
       // Beta 4.8 (owner): a rest day shows as one unless you trained on it.
       trainedDays: new Set([...workoutDays, ...runDays]),
+      // Beta 6.1 (F2): a cycle's rest days go by date (the running plan's days still count as training).
+      ...(cycleRest === null ? {} : { restDay: (d: string) => cycleRest(d) && !(plan?.weekdays ?? []).includes(isoWeekday(d)) }),
     };
     const s = streak(input);
     // Beta 3.4 (ADR-027 amendment): every reward the best run has reached, once.

@@ -102,6 +102,10 @@ export function programFrom(bundle: ProgramBundle): Program {
     for (const m of x.secondaryMuscles) volume[m] += x.setCount * SECONDARY_CONTRIBUTION;
   }
   const p = bundle.program;
+  // Beta 6.1 (F2): a cycle's sets are averaged over seven days, so the §12.3 landmarks still read per week.
+  if (p.schedule === 'cycle' && p.cycleLength !== null) {
+    for (const m of MUSCLE_GROUPS) volume[m] = Math.round(((volume[m] * 7) / p.cycleLength) * 10) / 10;
+  }
   return {
     id: p.id,
     name: p.name,
@@ -113,6 +117,9 @@ export function programFrom(bundle: ProgramBundle): Program {
     active: p.active,
     createdAt: p.createdAt.toISOString(),
     skippedOn: p.skippedOn,
+    schedule: p.schedule,
+    cycleStart: p.cycleStart,
+    cycleLength: p.cycleLength,
     days: [...bundle.days].sort((a, b) => a.dayOfWeek - b.dayOfWeek).map((d) => dayFrom(bundle, d.id)),
     weeklyVolume: volume,
     rationale: p.rationale,

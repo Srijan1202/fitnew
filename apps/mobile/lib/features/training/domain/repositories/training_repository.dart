@@ -20,6 +20,10 @@ abstract class TrainingRepository {
 
   /// ADR-030: undo today's skip — every day moves back.
   Future<Result<Program>> undoSkip();
+
+  /// Beta 6.1 (F2): weekdays (`on` null), or a cycle — `on` sessions then
+  /// `off` rest days, repeated until every session is placed.
+  Future<Result<Program>> setSchedule({int? on, int? off});
   Future<Result<List<ProgramTemplate>>> listTemplates();
   Future<Result<TemplatePreview>> previewTemplate(
     String slug,

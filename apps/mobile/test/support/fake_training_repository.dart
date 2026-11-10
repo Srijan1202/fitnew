@@ -412,6 +412,20 @@ class FakeTrainingRepository implements TrainingRepository {
     return Ok(next);
   }
 
+  /// Beta 6.1 (F2): the last schedule asked for; [nextSchedule] scripts the answer.
+  ({int? on, int? off})? lastSchedule;
+  Result<Program>? nextSchedule;
+
+  @override
+  Future<Result<Program>> setSchedule({int? on, int? off}) async {
+    calls.add('setSchedule');
+    lastSchedule = (on: on, off: off);
+    final r = nextSchedule;
+    if (r == null) return Ok(stored ?? generatedProgram);
+    if (r case Ok(:final value)) stored = value;
+    return r;
+  }
+
   @override
   Future<Result<List<ProgramTemplate>>> listTemplates() async {
     calls.add('listTemplates');

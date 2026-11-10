@@ -9,6 +9,7 @@ import 'package:fitos/features/exercise/presentation/controllers/exercise_provid
 import 'package:fitos/features/exercise/presentation/screens/exercise_browser_screen.dart';
 import 'package:fitos/features/health/presentation/controllers/health_providers.dart';
 import 'package:fitos/features/profile/data/profile_repository.dart';
+import 'package:fitos/features/training/presentation/widgets/schedule_sheet.dart';
 import 'package:fitos/features/training/domain/entities/program.dart';
 import 'package:fitos/features/training/presentation/controllers/program_controller.dart';
 import 'package:fitos/features/training/presentation/screens/custom_builder_screen.dart';
@@ -1172,6 +1173,92 @@ void main() {
             .onPressed,
         isNotNull,
       );
+    });
+  });
+
+  group('rolling cycle (beta 6.1, F2)', () {
+    String localToday() {
+      final n = DateTime.now();
+      return '${n.year.toString().padLeft(4, '0')}-${n.month.toString().padLeft(2, '0')}-${n.day.toString().padLeft(2, '0')}';
+    }
+
+    /// Two sessions, then a rest day: a 3-day cycle whose day 1 is today.
+    Program cycle() {
+      final sessions = generatedProgram.days.where((d) => !d.isRest).toList();
+      final rest = generatedProgram.days.firstWhere((d) => d.isRest);
+      return generatedProgram.copyWith(
+        schedule: 'cycle',
+        cycleStart: localToday(),
+        cycleLength: 3,
+        days: [
+          sessions[0].copyWith(dayOfWeek: 1, sessionName: 'Upper'),
+          sessions[1].copyWith(dayOfWeek: 2, sessionName: 'Lower'),
+          rest.copyWith(dayOfWeek: 3),
+        ],
+      );
+    }
+
+    test(
+        'the phone finds the day as the server does: weekdays, or the place in the cycle',
+        () {
+      final c = cycle();
+      expect(c.isCycle, isTrue);
+      final start = DateTime.parse(c.cycleStart!);
+      String plus(int n) =>
+          start.add(Duration(days: n)).toIso8601String().substring(0, 10);
+      expect(
+        [for (var i = -1; i < 5; i++) c.dayNumberOn(plus(i))],
+        [3, 1, 2, 3, 1, 2],
+      );
+      expect(generatedProgram.dayNumberOn('2026-11-09'), 1); // a Monday
+      expect(c.labelOf(2), 'Day 2');
+      expect(generatedProgram.labelOf(2), 'Tuesday');
+      expect(programDayLabel(12, cycle: false), 'Day 12');
+      expect(previewCycle(4, 4, 1), [0, 1, 2, 3, null]);
+      expect(previewCycle(4, 1, 7), isNull);
+    });
+
+    testWidgets(
+        'a cycle shows D1, D2… opening on today’s day; Schedule goes back to weekdays',
+        (tester) async {
+      training.stored = cycle();
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      expect(find.text('D1'), findsOneWidget);
+      expect(find.text('D3'), findsOneWidget);
+      expect(find.text('MON'), findsNothing);
+      expect(find.textContaining('DAY 1'), findsWidgets);
+
+      await tester.tap(find.byKey(const ValueKey('plan.menu')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('plan.schedule')));
+      await settle(tester);
+      await tester.tap(find.text('Weekdays'));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('schedule.save')));
+      await settle(tester);
+      expect(training.lastSchedule, (on: null, off: null));
+    });
+
+    testWidgets('from weekdays, a preset previews the cycle and saves it',
+        (tester) async {
+      training.stored = generatedProgram;
+      await tester.pumpWidget(harness());
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('plan.menu')));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('plan.schedule')));
+      await settle(tester);
+      await tester.tap(find.text('Days on / off'));
+      await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('schedule.preset.2-1')));
+      await settle(tester);
+      expect(find.byKey(const ValueKey('schedule.day.3')), findsOneWidget);
+      expect(find.text('Day 3 · Rest'), findsOneWidget);
+      expect(find.byKey(const ValueKey('schedule.day.4')), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('schedule.save')));
+      await settle(tester);
+      expect(training.lastSchedule, (on: 2, off: 1));
     });
   });
 }

@@ -109,7 +109,7 @@ class _DayEditorScreenState extends ConsumerState<DayEditorScreen> {
       );
     }
 
-    final weekday = kWeekdayLabels[day.dayOfWeek - 1].toUpperCase();
+    final weekday = (async.value?.labelOf(day.dayOfWeek) ?? '').toUpperCase();
     return Scaffold(
       appBar: AppBar(
         leading:

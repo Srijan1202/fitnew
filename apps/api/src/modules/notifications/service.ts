@@ -8,6 +8,7 @@ import type { DinnerDish } from '@fitos/core/notify/dinner-dish';
 import { TEMPLATES, render } from '@fitos/core/notify/copy';
 import { chooseVariant, planNotifications, type NotifyHistoryItem, type PlanFacts, type ReadinessBand } from '@fitos/core/notify/planner';
 import { isoWeekday } from '@fitos/core/notify/time';
+import { sessionsPerWeek } from '@fitos/core/training/schedule';
 import { DEFAULT_NOTIFY_SETTINGS, HORIZON_DAYS, NOTIFY_KINDS, PROTEIN_GAP_SHARE, type NotifyKind } from '@fitos/core/notify/types';
 import { addDays, localDateOf } from '@fitos/core/nutrition/log';
 
@@ -15,6 +16,7 @@ import type { FoodLogRepository } from '../nutrition/log-repository.js';
 import type { ReadinessAssembler } from '../recovery/readiness.js';
 import type { PlanRepository } from '../running/plan-repository.js';
 import type { TrainingRepository } from '../training/repository.js';
+import { programDayOn, scheduleOf } from '../training/schedule-of.js';
 import type { NotificationRepository } from './repository.js';
 
 const LOOKBACK_DAYS = 35;
@@ -142,14 +144,34 @@ export class NotificationService {
 
     const proteinTargetG = targets?.proteinG ?? null;
     const goal = proteinTargetG === null ? null : Math.ceil(proteinTargetG * PROTEIN_GAP_SHARE);
-    const gym = program === null ? null : Object.fromEntries(program.days.filter((d) => !d.isRest).map((d) => [d.dayOfWeek, d.sessionName]));
+    const isCycle = program !== null && program.program.schedule === 'cycle';
+    const gym = program === null || isCycle ? null : Object.fromEntries(program.days.filter((d) => !d.isRest).map((d) => [d.dayOfWeek, d.sessionName]));
     const { programme, skippedDates, completedDates, runWeekdays } = withRunning(
       gym,
       program === null || program.program.skippedOn === null ? [] : [program.program.skippedOn],
       sessions.filter((s) => s.completedAt !== null).map((s) => localDateOf(s.completedAt!, timeZone)),
-      planned,
+      isCycle ? [] : planned,
       runs.map((r) => localDateOf(r.startedAt, timeZone)),
     );
+    // Beta 6.1 (F2): a cycle's sessions go by date — yesterday to the horizon — with the running plan's runs on free dates.
+    let cycleFacts: Pick<PlanFacts, 'sessionsByDate' | 'runDates' | 'plannedPerWeek'> = {};
+    if (isCycle) {
+      const sessionsByDate: Record<string, string> = {};
+      const runDates: string[] = [];
+      for (let i = -1; i <= HORIZON_DAYS; i += 1) {
+        const date = addDays(today, i);
+        const day = program.days.find((d) => !d.isRest && d.dayOfWeek === programDayOn(program.program, date));
+        if (day !== undefined) sessionsByDate[date] = day.sessionName;
+      }
+      for (const p of planned) {
+        if (sessionsByDate[p.date] !== undefined) continue;
+        sessionsByDate[p.date] = p.title;
+        runDates.push(p.date);
+        if (p.status === 'skipped') skippedDates.push(p.date);
+      }
+      const trainingCount = program.days.filter((d) => !d.isRest).length;
+      cycleFacts = { sessionsByDate, runDates, plannedPerWeek: sessionsPerWeek(scheduleOf(program.program), trainingCount) };
+    }
 
     return {
       now,
@@ -157,8 +179,9 @@ export class NotificationService {
       seed: userId,
       name,
       settings,
-      programme,
+      programme: isCycle ? {} : programme,
       runWeekdays,
+      ...cycleFacts,
       skippedDates,
       sessionStarts: sessions.map((s) => s.startedAt),
       completedDates,

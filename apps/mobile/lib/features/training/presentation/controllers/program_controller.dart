@@ -79,6 +79,10 @@ class ProgramController extends AsyncNotifier<Program?> {
   /// ADR-030: undo today's skip.
   Future<Failure?> undoSkip() => _apply(_repo.undoSkip());
 
+  /// Beta 6.1 (F2): weekdays (`on` null) or a rolling cycle.
+  Future<Failure?> setSchedule({int? on, int? off}) =>
+      _apply(_repo.setSchedule(on: on, off: off));
+
   Future<Failure?> applyTemplate(
     String slug, {
     int? preferredSessionMinutes,

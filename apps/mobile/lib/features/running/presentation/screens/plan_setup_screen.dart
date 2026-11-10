@@ -7,6 +7,7 @@ import '../../../../core/errors/failure.dart';
 import '../../../../core/errors/result.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import '../../../training/domain/entities/program.dart';
 import '../../../training/presentation/controllers/program_controller.dart';
 import '../controllers/running_providers.dart';
 
@@ -148,14 +149,14 @@ class _PlanSetupScreenState extends ConsumerState<PlanSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
-    final gymDays = ref
-            .watch(programControllerProvider)
-            .value
-            ?.days
+    // Beta 6.1 (F2): a cycle has no fixed weekdays to clash with.
+    final programme = ref.watch(programControllerProvider).value;
+    final gymDays = programme == null || programme.isCycle
+        ? const <int>{}
+        : programme.days
             .where((d) => !d.isRest)
             .map((d) => d.dayOfWeek)
-            .toSet() ??
-        const <int>{};
+            .toSet();
     final overlap = _weekdays.intersection(gymDays).toList()..sort();
     final beginnerOk = _goal == '5k';
     if (!beginnerOk && _from == _From.zero) _from = _From.race;

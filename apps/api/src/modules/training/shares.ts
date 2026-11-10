@@ -32,15 +32,20 @@ import {
 } from '@fitos/contracts';
 
 import type { DatabaseHandle } from '../../db/client.js';
-import { sharedProgrammes, userProfiles } from '../../db/schema.js';
+import { sharedProgrammes, userProfiles, users } from '../../db/schema.js';
 import { AppError } from '../../lib/errors.js';
 import { TrainingRepository, type ProgramBundle } from './repository.js';
-import { TrainingService } from './service.js';
+import { TrainingService, programFrom } from './service.js';
+import { trainingDays } from '@fitos/core/training/generator';
+import { cycleLayout } from '@fitos/core/training/schedule';
+import { localDateOf } from '@fitos/core/nutrition/log';
 
 type Db = DatabaseHandle['db'];
 
 /** What is stored: the structure only. */
 interface Snapshot {
+  /** Beta 6.1 (F2): a cycle's pattern; absent on codes from before and on weekday programmes. */
+  readonly cycle?: { readonly on: number; readonly off: number } | null;
   readonly days: readonly {
     readonly dayOfWeek: number;
     readonly sessionName: string;
@@ -64,6 +69,7 @@ export function newShareCode(pick: (n: number) => number = randomInt): string {
 /** The structure of a programme, without a single weight. */
 export function snapshotOf(bundle: ProgramBundle): Snapshot {
   return {
+    cycle: bundle.program.schedule === 'cycle' ? cyclePattern(bundle.days) : null,
     days: bundle.days.map((d) => ({
       dayOfWeek: d.dayOfWeek,
       sessionName: d.sessionName,
@@ -85,6 +91,20 @@ export function snapshotOf(bundle: ProgramBundle): Snapshot {
         })),
     })),
   };
+}
+
+/**
+ * Beta 6.1 (F2): a cycle's on/off from its days (it was made by core
+ * `cycleLayout`): the training days before the first rest day, then the rest
+ * days after them.
+ */
+export function cyclePattern(days: readonly { dayOfWeek: number; isRest: boolean }[]): { on: number; off: number } {
+  const order = [...days].sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+  const on = order.findIndex((d) => d.isRest);
+  if (on < 0) return { on: order.length, off: 0 };
+  let off = 0;
+  while (order[on + off]?.isRest === true) off += 1;
+  return { on, off };
 }
 
 export class ShareService {
@@ -155,7 +175,7 @@ export class ShareService {
       const [p] = await this.db.select({ equipment: userProfiles.equipment }).from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
       have = new Set(p?.equipment ?? []);
     }
-    const days = snapshot.days.map((d) => ({
+    const days = [...snapshot.days].sort((a, b) => a.dayOfWeek - b.dayOfWeek).map((d) => ({
       dayOfWeek: d.dayOfWeek,
       sessionName: d.sessionName,
       isRest: d.isRest,
@@ -176,18 +196,29 @@ export class ShareService {
         }];
       }),
     }));
-    return { code, name, daysPerWeek: days.filter((d) => !d.isRest).length, days };
+    const cycle = snapshot.cycle ?? null;
+    return {
+      code,
+      name,
+      daysPerWeek: days.filter((d) => !d.isRest).length,
+      schedule: cycle === null ? ('week' as const) : ('cycle' as const),
+      cycleLength: cycle === null ? null : days.length,
+      days,
+    };
   }
 
   /** Use a code: a copy becomes this person's active programme (the old one is kept, inactive). */
   async use(userId: string, code: string): Promise<Program> {
     const { name, snapshot } = await this.live(code);
+    const cycle = snapshot.cycle ?? null;
+    const sessions = [...snapshot.days].sort((a, b) => a.dayOfWeek - b.dayOfWeek).filter((d) => !d.isRest && d.exercises.length > 0);
+    // Beta 6.1 (F2): a cycle's sessions go on the usual weekdays first, then become the same cycle from today.
+    const weekdays = cycle === null ? null : trainingDays(sessions.length);
     const body = putProgramRequestSchema.parse({
       name,
-      days: snapshot.days
-        .filter((d) => !d.isRest && d.exercises.length > 0)
-        .map((d) => ({
-          dayOfWeek: d.dayOfWeek,
+      days: sessions
+        .map((d, i) => ({
+          dayOfWeek: weekdays === null ? d.dayOfWeek : weekdays[i]!,
           sessionName: d.sessionName,
           focus: d.focus,
           exercises: d.exercises.map((x) => ({
@@ -200,7 +231,22 @@ export class ShareService {
           })),
         })),
     });
-    return this.programs.putCustom(userId, body);
+    const program = await this.programs.putCustom(userId, body);
+    if (cycle === null) return program;
+    const layout = cycleLayout(sessions.length, cycle.on, cycle.off);
+    // A stored pattern always fits: it was read off a cycle that cycleLayout made.
+    if (layout === null) return program;
+    const ordered = [...program.days].sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+    const training = ordered.filter((d) => !d.isRest);
+    const [u] = await this.db.select({ tz: users.timezone }).from(users).where(eq(users.id, userId)).limit(1);
+    const today = localDateOf(new Date(), u?.tz ?? 'Asia/Kolkata');
+    const bundle = await this.training.applySchedule(
+      program.id,
+      layout.map((i) => (i === null ? null : training[i]!.id)),
+      ordered.filter((d) => d.isRest).map((d) => d.id),
+      { schedule: 'cycle', cycleStart: today, cycleLength: layout.length },
+    );
+    return programFrom(bundle);
   }
 }
 

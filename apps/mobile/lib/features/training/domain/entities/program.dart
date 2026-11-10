@@ -98,6 +98,13 @@ const List<String> kWeekdayLabels = [
   'Sunday',
 ];
 
+/// Beta 6.1 (F2): a programme day's name — its weekday, or "Day 3" in a
+/// cycle (a cycle's numbers go to 14, past the weekdays).
+String programDayLabel(int number, {required bool cycle}) =>
+    cycle || number < 1 || number > 7
+        ? 'Day $number'
+        : kWeekdayLabels[number - 1];
+
 /// One set's TARGET (Phase 4 rework): a rep range, or a pinned number when
 /// min == max; the starting weight the user typed, or null — never invented.
 @freezed
@@ -229,6 +236,13 @@ abstract class Program with _$Program {
 
     /// ADR-030: the local date last skipped (the week then moved a day).
     @Default(null) String? skippedOn,
+
+    /// Beta 6.1 (F2): `week`, or `cycle` — days 1…[cycleLength], day 1 on
+    /// [cycleStart], then round again. A day's `dayOfWeek` is then its place
+    /// in the cycle.
+    @Default('week') String schedule,
+    @Default(null) String? cycleStart,
+    @Default(null) int? cycleLength,
     required List<ProgramDay> days,
     required Map<String, double> weeklyVolume,
     required List<String> rationale,
@@ -237,6 +251,34 @@ abstract class Program with _$Program {
 
   factory Program.fromJson(Map<String, dynamic> json) =>
       _$ProgramFromJson(json);
+}
+
+/// Beta 6.1 (F2): which programme day falls on a date — the same rule as the
+/// server's (core `dayNumberOn`), so the phone agrees with it offline.
+extension ProgramSchedule on Program {
+  bool get isCycle =>
+      schedule == 'cycle' && cycleStart != null && cycleLength != null;
+
+  /// The day number on a local date (yyyy-mm-dd).
+  int dayNumberOn(String date) {
+    final d = DateTime.utc(
+      int.parse(date.substring(0, 4)),
+      int.parse(date.substring(5, 7)),
+      int.parse(date.substring(8, 10)),
+    );
+    if (!isCycle) return d.weekday;
+    final s = DateTime.utc(
+      int.parse(cycleStart!.substring(0, 4)),
+      int.parse(cycleStart!.substring(5, 7)),
+      int.parse(cycleStart!.substring(8, 10)),
+    );
+    final n = cycleLength!;
+    final offset = d.difference(s).inDays;
+    return ((offset % n) + n) % n + 1;
+  }
+
+  /// "Monday", or "Day 3" in a cycle.
+  String labelOf(int number) => programDayLabel(number, cycle: isCycle);
 }
 
 /* ---------------------------------------------------------------- write -- */

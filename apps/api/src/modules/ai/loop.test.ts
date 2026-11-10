@@ -73,7 +73,7 @@ function fakeContext(): FitosAiContext {
       trainingDaysPerWeek: 4, preferredSessionMinutes: 60, trainingLocation: 'commercial-gym', equipment: ['barbell', 'dumbbell'], timezone: 'Asia/Kolkata',
     },
     goal: { type: 'muscle-gain', targetWeightKg: null, targets: { kcal: 2276, proteinG: 106, carbG: 250, fatG: 70, fiberG: 30, reason: 'r', setByUser: false } },
-    programme: { name: 'PPL', splitType: 'push-pull-legs', daysPerWeek: 6, mesocycleWeek: 1, days: [] },
+    programme: { name: 'PPL', splitType: 'push-pull-legs', daysPerWeek: 6, mesocycleWeek: 1, schedule: 'weekdays', cycleStart: null, days: [] },
     today: {
       date: '2026-09-22', dayOfWeek: 2, isRest: false, sessionName: 'Pull', status: 'ready', mesocycleWeek: 1,
       deload: { state: 'none', trigger: null, reason: 'No fatigue signal.', endsOn: null }, neglected: [], exercises: [],

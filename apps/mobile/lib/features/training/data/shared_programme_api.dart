@@ -69,12 +69,15 @@ class SharedProgramme {
     required this.name,
     required this.daysPerWeek,
     required this.days,
+    this.cycleLength,
   });
 
   factory SharedProgramme.fromJson(Map<String, dynamic> j) => SharedProgramme(
         code: j['code'] as String,
         name: j['name'] as String,
         daysPerWeek: j['daysPerWeek'] as int,
+        // Beta 6.1 (F2): a cycle's length; absent from older servers.
+        cycleLength: j['schedule'] == 'cycle' ? j['cycleLength'] as int? : null,
         days: [
           for (final d in j['days'] as List<dynamic>)
             SharedDay.fromJson(d as Map<String, dynamic>),
@@ -84,6 +87,9 @@ class SharedProgramme {
   final String code;
   final String name;
   final int daysPerWeek;
+
+  /// Beta 6.1 (F2): a cycle of this many days; null on weekdays.
+  final int? cycleLength;
   final List<SharedDay> days;
 }
 

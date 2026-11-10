@@ -18,6 +18,7 @@ import '../../../workout/presentation/widgets/deload_panel.dart';
 import '../../domain/entities/program.dart';
 import '../controllers/program_controller.dart';
 import '../widgets/day_selector.dart';
+import '../widgets/schedule_sheet.dart';
 import '../widgets/exercise_card.dart';
 import 'plan_start_screen.dart';
 import '../../../../shared/widgets/fit_glass.dart';
@@ -244,17 +245,26 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
 
   /* -------------------------------------------------------------- build -- */
 
-  int _defaultDay(Program p) {
-    final today = DateTime.now().weekday; // ISO, 1 = Monday
+  int _defaultDay(Program p, String localToday) {
+    // Beta 6.1 (F2): today's number by the schedule (a weekday, or the place in a cycle).
+    final today = p.dayNumberOn(localToday);
+    final count = p.days.length;
     final training = p.days.where((d) => !d.isRest).map((d) => d.dayOfWeek);
     if (training.contains(today)) return today;
     // Next training day after today, wrapping.
-    for (var i = 1; i <= 7; i++) {
-      final dow = ((today - 1 + i) % 7) + 1;
+    for (var i = 1; i <= count; i++) {
+      final dow = ((today - 1 + i) % count) + 1;
       if (training.contains(dow)) return dow;
     }
     return 1;
   }
+
+  /// The local date after [date] (yyyy-mm-dd).
+  static String _nextDate(String date) => DateTime.utc(
+        int.parse(date.substring(0, 4)),
+        int.parse(date.substring(5, 7)),
+        int.parse(date.substring(8, 10)) + 1,
+      ).toIso8601String().substring(0, 10);
 
   @override
   Widget build(BuildContext context) {
@@ -278,11 +288,12 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
       ),
       data: (program) {
         if (program == null) return const PlanStartScreen();
-        final selected = _selectedDow ??= _defaultDay(program);
+        final localToday = ref.watch(localTodayProvider);
+        final selected = _selectedDow ??= _defaultDay(program, localToday);
         final day = program.days.firstWhere((d) => d.dayOfWeek == selected);
         // ADR-030: today can be skipped once; then it shows as skipped.
-        final todayDow = DateTime.now().weekday;
-        final skippedToday = program.skippedOn == ref.watch(localTodayProvider);
+        final todayDow = program.dayNumberOn(localToday);
+        final skippedToday = program.skippedOn == localToday;
         final todayDay =
             program.days.firstWhere((d) => d.dayOfWeek == todayDow);
         final canSkip = !skippedToday && !todayDay.isRest;
@@ -332,6 +343,8 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
                                 _start(program, null);
                               case 'skip':
                                 _skip(program, todayDay);
+                              case 'schedule':
+                                showScheduleSheet(context, program);
                               case 'share':
                                 shareProgramme(context, ref);
                               case 'shared':
@@ -360,6 +373,12 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
                             const PopupMenuItem(
                               value: 'adhoc',
                               child: Text('Start empty session'),
+                            ),
+                            // Beta 6.1 (F2): weekdays or days on / off.
+                            const PopupMenuItem(
+                              key: ValueKey('plan.schedule'),
+                              value: 'schedule',
+                              child: Text('Schedule'),
                             ),
                             const PopupMenuItem(
                               value: 'rename',
@@ -391,18 +410,22 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
                     days: program.days,
                     selected: selected,
                     onSelect: (dow) => setState(() => _selectedDow = dow),
+                    cycle: program.isCycle,
                   ),
                   Expanded(
                     child: skippedToday && selected == todayDow
                         ? _SkippedToday(
                             tomorrow: program.days.firstWhere(
-                              (d) => d.dayOfWeek == (todayDow % 7) + 1,
+                              (d) =>
+                                  d.dayOfWeek ==
+                                  program.dayNumberOn(_nextDate(localToday)),
                             ),
                             onUndo: _undoSkip,
                           )
                         : _DayView(
                             key: ValueKey('day.${day.id}'),
                             day: day,
+                            cycle: program.isCycle,
                             exercises: _exercisesOf(day),
                             startButton: StartSessionButton(
                               dayOfWeek: day.dayOfWeek,
@@ -480,16 +503,20 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
 
   /// ADR-030: skip today — confirm, then every day moves one day later.
   Future<void> _skip(Program program, ProgramDay today) async {
-    final tomorrowDow = (today.dayOfWeek % 7) + 1;
+    final localToday = ref.read(localTodayProvider);
+    final tomorrowDow = DateTime.parse(_nextDate(localToday)).weekday;
     final go = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         key: const ValueKey('skip.dialog'),
         title: const Text('Skip today?'),
         content: Text(
-          '${today.sessionName} moves to tomorrow, and every day after it '
-          'moves one day later — rest days too. Your week keeps its order; '
-          'it just starts a day later from here.',
+          program.isCycle
+              ? '${today.sessionName} moves to tomorrow, and the rest of the '
+                  'cycle moves one day later. The order stays the same.'
+              : '${today.sessionName} moves to tomorrow, and every day after it '
+                  'moves one day later — rest days too. Your week keeps its order; '
+                  'it just starts a day later from here.',
         ),
         actions: <Widget>[
           TextButton(
@@ -513,7 +540,12 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
       messenger.showSnackBar(SnackBar(content: Text(failure.message)));
       return;
     }
-    setState(() => _selectedDow = DateTime.now().weekday);
+    // Today's place after the skip (a cycle's has moved back one).
+    setState(
+      () => _selectedDow =
+          ref.read(programControllerProvider).value?.dayNumberOn(localToday) ??
+              DateTime.now().weekday,
+    );
     messenger.showSnackBar(
       SnackBar(
         key: const ValueKey('skip.done'),

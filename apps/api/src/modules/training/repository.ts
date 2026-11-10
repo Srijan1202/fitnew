@@ -397,6 +397,15 @@ export class TrainingRepository {
         )
         .returning();
       if (p === undefined) return null;
+      // Beta 6.1 (F2): a cycle moves its start a day instead; the days keep their places.
+      if (p.schedule === 'cycle') {
+        const [moved] = await tx
+          .update(programs)
+          .set({ cycleStart: sql`${programs.cycleStart} + ${move === 'skip' ? 1 : -1}::integer` })
+          .where(eq(programs.id, programId))
+          .returning();
+        return moved!;
+      }
       await tx.execute(sql`SET CONSTRAINTS program_days_program_day DEFERRED`);
       await tx
         .update(programDays)
@@ -410,6 +419,45 @@ export class TrainingRepository {
       return p;
     });
     return program === null ? null : this.bundle(program);
+  }
+
+  /**
+   * Beta 6.1 (F2): lay the programme's days out anew. [slots] is the new
+   * order, one entry per day number from 1: a training day's id, or null for
+   * a rest day — the existing rest days are reused in order, more are made
+   * when needed, and any left over are removed (they hold no exercises; a
+   * session that pointed at one keeps its history, the link set null).
+   * One transaction, the day-number rule checked at commit.
+   */
+  async applySchedule(
+    programId: string,
+    slots: readonly (string | null)[],
+    restIds: readonly string[],
+    schedule: { schedule: 'week' | 'cycle'; cycleStart: string | null; cycleLength: number | null },
+  ): Promise<ProgramBundle> {
+    const program = await this.db.transaction(async (tx) => {
+      await tx.execute(sql`SET CONSTRAINTS program_days_program_day DEFERRED`);
+      const spare = [...restIds];
+      const used = new Set<string>();
+      for (let i = 0; i < slots.length; i += 1) {
+        const id = slots[i] ?? spare.shift() ?? null;
+        if (id === null) {
+          await tx.insert(programDays).values({ programId, dayOfWeek: i + 1, sessionName: 'Rest', focus: [], isRest: true });
+        } else {
+          used.add(id);
+          await tx.update(programDays).set({ dayOfWeek: i + 1 }).where(eq(programDays.id, id));
+        }
+      }
+      const leftover = restIds.filter((id) => !used.has(id));
+      if (leftover.length > 0) await tx.delete(programDays).where(inArray(programDays.id, leftover));
+      const [p] = await tx
+        .update(programs)
+        .set({ ...schedule, skippedOn: null, updatedAt: sql`now()` })
+        .where(eq(programs.id, programId))
+        .returning();
+      return p!;
+    });
+    return this.bundle(program);
   }
 
   /** Rename the active programme; null when there is none. */

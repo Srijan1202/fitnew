@@ -59,6 +59,14 @@ export const programs = pgTable(
      * one day later). That date shows as skipped; undo is allowed on it.
      */
     skippedOn: date('skipped_on', { mode: 'string' }),
+    /**
+     * Beta 6.1 (F2): `week` (days on weekdays, 1 = Monday) or `cycle` (days
+     * 1…cycle_length, day 1 on cycle_start, then round again). A day's
+     * `day_of_week` is its place in the cycle for a cycle (core schedule.ts).
+     */
+    schedule: text('schedule', { enum: ['week', 'cycle'] }).notNull().default('week'),
+    cycleStart: date('cycle_start', { mode: 'string' }),
+    cycleLength: smallint('cycle_length'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
@@ -71,6 +79,10 @@ export const programs = pgTable(
     index('programs_user_idx').on(t.userId, t.createdAt),
     check('programs_days_range', sql`${t.daysPerWeek} BETWEEN 2 AND 6`),
     check('programs_week_positive', sql`${t.mesocycleWeek} >= 1`),
+    check(
+      'programs_schedule',
+      sql`(${t.schedule} = 'week' AND ${t.cycleStart} IS NULL AND ${t.cycleLength} IS NULL) OR (${t.schedule} = 'cycle' AND ${t.cycleStart} IS NOT NULL AND ${t.cycleLength} BETWEEN 2 AND 14)`,
+    ),
   ],
 );
 
@@ -81,7 +93,7 @@ export const programDays = pgTable(
     programId: uuid('program_id')
       .notNull()
       .references(() => programs.id, { onDelete: 'cascade' }),
-    /** 1 = Monday … 7 = Sunday. */
+    /** 1 = Monday … 7 = Sunday; beta 6.1: for a cycle, its place 1…14 in the cycle. */
     dayOfWeek: smallint('day_of_week').notNull(),
     sessionName: text('session_name').notNull(),
     focus: muscleGroupEnum('focus').array().notNull().default([]),
@@ -91,7 +103,7 @@ export const programDays = pgTable(
     // ADR-030: a constraint (DEFERRABLE in the migration, which drizzle does
     // not model) so a skip can move all seven days one weekday in one update.
     unique('program_days_program_day').on(t.programId, t.dayOfWeek),
-    check('program_days_dow_range', sql`${t.dayOfWeek} BETWEEN 1 AND 7`),
+    check('program_days_dow_range', sql`${t.dayOfWeek} BETWEEN 1 AND 14`),
   ],
 );
 

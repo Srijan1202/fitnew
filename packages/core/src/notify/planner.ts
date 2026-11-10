@@ -66,6 +66,16 @@ export interface PlanFacts {
    */
   readonly runWeekdays?: readonly number[];
   /**
+   * Beta 6.1 (F2): a cycle programme's sessions by local date, from the day
+   * before today to the horizon (training days only). When given, it replaces
+   * [programme]'s weekdays for a day's session; [programme] then only says a
+   * programme exists, and [plannedPerWeek] gives the recap its number.
+   */
+  readonly sessionsByDate?: Readonly<Record<string, string>>;
+  /** With [sessionsByDate]: the dates whose session is a running plan's run. */
+  readonly runDates?: readonly string[];
+  readonly plannedPerWeek?: number;
+  /**
    * ADR-030: local dates the user skipped. No workout reminder on them, and no
    * "missed session" the morning after (the week has moved on by a day).
    */
@@ -416,6 +426,11 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
 
   const skipped = new Set(facts.skippedDates);
   const runDays = new Set(facts.runWeekdays ?? []);
+  const runDates = new Set(facts.runDates ?? []);
+  const byDate = facts.sessionsByDate;
+  const sessionOn = (day: string): string | null =>
+    byDate !== undefined ? (byDate[day] ?? null) : (facts.programme?.[isoWeekday(day)] ?? null);
+  const isRun = (day: string): boolean => (byDate !== undefined ? runDates.has(day) : runDays.has(isoWeekday(day)));
   for (let i = 0; i <= HORIZON_DAYS; i++) {
     const d = addDays(today, i);
     const weekday = isoWeekday(d);
@@ -429,7 +444,7 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
     // Day 7 of no app use is the last word: "we'll stop for now" and nothing else.
     const silentAfterStop = i === HORIZON_DAYS;
 
-    const session = skipped.has(d) ? null : (facts.programme?.[weekday] ?? null);
+    const session = skipped.has(d) ? null : sessionOn(d);
     // Beta 3.5 (owner): a workout STARTED that day is enough — the session
     // may still be running, or not yet synced, when the plan is rebuilt.
     const trained = (day: string): boolean => sets.completed.has(day) || sets.started.has(day);
@@ -438,7 +453,7 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
       candidates.push({
         kind: 'workout-reminder',
         minute: (learned ?? DEFAULT_MINUTES.training) - 60,
-        data: { name: facts.name, session, run: runDays.has(weekday) },
+        data: { name: facts.name, session, run: isRun(d) },
         screen: 'plan',
         slot: null,
         cancelOn: [{ event: 'workout-started', localDate: d, grams: null }],
@@ -447,12 +462,12 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
     }
 
     const prev = addDays(d, -1);
-    const missed = skipped.has(prev) ? null : (facts.programme?.[isoWeekday(prev)] ?? null);
+    const missed = skipped.has(prev) ? null : sessionOn(prev);
     if (!silentAfterStop && missed !== null && !trained(prev) && !(i === 0 && trained(d))) {
       candidates.push({
         kind: 'missed-session',
         minute: clamp(habits.breakfast ?? DEFAULT_MINUTES.morning, 7 * 60, 11 * 60),
-        data: { name: facts.name, session: missed, run: runDays.has(isoWeekday(prev)) },
+        data: { name: facts.name, session: missed, run: isRun(prev) },
         screen: 'plan',
         slot: null,
         cancelOn: [
@@ -483,7 +498,7 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
 
     // Beta 3.8: a planned rest day counts toward the streak by itself and a
     // skipped day cannot break it, so neither is "at risk".
-    const restDay = (day: string): boolean => facts.programme !== null && facts.programme[isoWeekday(day)] === undefined;
+    const restDay = (day: string): boolean => facts.programme !== null && sessionOn(day) === null;
     if (!silentAfterStop && !(i === 0 && sets.active.has(d)) && !restDay(d) && !skipped.has(d)) {
       const streak = i === 0 ? streakEnding(sets.active, addDays(d, -1), restDay) : null;
       candidates.push({
@@ -527,7 +542,7 @@ export function planNotifications(facts: PlanFacts): PlannedNotification[] {
       let planned: number | null = null;
       let sessions: number | null = null;
       if (i === 0 && facts.programme !== null) {
-        planned = Object.keys(facts.programme).length;
+        planned = facts.plannedPerWeek ?? Object.keys(facts.programme).length;
         sessions = facts.completedDates.filter((c) => daysBetween(c, d) >= 0 && daysBetween(c, d) <= 6).length;
       }
       candidates.push({
