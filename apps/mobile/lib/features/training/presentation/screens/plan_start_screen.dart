@@ -89,6 +89,17 @@ class PlanStartScreen extends ConsumerWidget {
                   action: 'Enter a code',
                   onTap: () => context.push(Routes.planShared),
                 ),
+              // Beta 6.1 (premium): FITOS AI builds a week, FITOS checks it.
+              if (ref.watch(featureOnProvider(AppFeature.aiProgramme)))
+                _Mode(
+                  modeKey: const ValueKey('start.ai'),
+                  number: '05',
+                  title: 'FITOS AI',
+                  body:
+                      'Say how often, how long and what to bring up; FITOS AI builds a week from the exercises you can do, and FITOS checks it. Premium.',
+                  action: 'Build with FITOS AI',
+                  onTap: () => context.push(Routes.planAi),
+                ),
             ],
           ),
         ),

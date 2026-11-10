@@ -10,6 +10,7 @@ import { foodMatchKindSchema, foodNutritionSchema, nutritionBasisSchema } from '
 import { dishSlugSchema, messCodeSchema } from './mess-common.js';
 import { mealSlotSchema } from './nutrition-log.js';
 import { allergenSchema, isoDateSchema } from './profile.js';
+import { muscleGroupSchema } from './exercise.js';
 import { programRequestSchema } from './training.js';
 
 export const aiStatusResponseSchema = z.object({
@@ -315,3 +316,57 @@ export const foodGuideResponseSchema = z
 export type FoodGuideResponse = z.infer<typeof foodGuideResponseSchema>;
 export type GuideOption = z.infer<typeof guideOptionSchema>;
 export type GuideItem = z.infer<typeof guideItemSchema>;
+
+/* ----------------------------------------------- programme builder (6.1) -- */
+
+/**
+ * Beta 6.1 (premium): `POST /training/program/ai-draft`. FITOS AI builds a
+ * week from the exercises this person can do (their equipment, their
+ * limitations, minus `avoid`); FITOS reads it, keeps it within the minutes
+ * and each muscle's MRV, and says what it changed. Nothing is saved: the app
+ * uses a draft through the ordinary `PUT /training/program`. Sent to the
+ * model: the answers below (with `note` as written), the goal and experience
+ * and the exercise list — never the person's name, weight or history.
+ */
+export const AI_PROGRAMME_MAX_AVOID = 30;
+export const AI_PROGRAMME_NOTE_MAX = 200;
+export const aiProgrammeRequestSchema = z
+  .object({
+    sessions: z.number().int().min(2).max(6),
+    minutes: z.number().int().min(30).max(120),
+    focus: z.array(muscleGroupSchema).max(3).default([]),
+    avoid: z.array(z.string().uuid()).max(AI_PROGRAMME_MAX_AVOID).default([]),
+    note: z.string().trim().max(AI_PROGRAMME_NOTE_MAX).nullable().optional(),
+  })
+  .strict();
+export type AiProgrammeRequest = z.infer<typeof aiProgrammeRequestSchema>;
+
+export const aiProgrammeDraftSchema = z
+  .object({
+    name: z.string(),
+    why: z.string(),
+    days: z.array(
+      z
+        .object({
+          sessionName: z.string(),
+          exercises: z.array(
+            z
+              .object({
+                exerciseId: z.string().uuid(),
+                name: z.string(),
+                setCount: z.number().int().min(1),
+                repMin: z.number().int().min(1),
+                repMax: z.number().int().min(1),
+                targetRir: z.number().int().min(0),
+              })
+              .strict(),
+          ),
+        })
+        .strict(),
+    ),
+    /** What FITOS changed in the model's plan, in plain lines. */
+    adjustments: z.array(z.string()),
+    model: z.string(),
+  })
+  .strict();
+export type AiProgrammeDraft = z.infer<typeof aiProgrammeDraftSchema>;

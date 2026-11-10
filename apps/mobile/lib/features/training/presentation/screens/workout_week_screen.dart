@@ -345,6 +345,8 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
                                 _skip(program, todayDay);
                               case 'schedule':
                                 showScheduleSheet(context, program);
+                              case 'ai':
+                                context.push(Routes.planAi);
                               case 'share':
                                 shareProgramme(context, ref);
                               case 'shared':
@@ -388,6 +390,15 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
                               value: 'change',
                               child: Text('Change programme'),
                             ),
+                            // Beta 6.1 (premium), behind the admin's switch.
+                            if (ref.watch(
+                              featureOnProvider(AppFeature.aiProgramme),
+                            ))
+                              const PopupMenuItem(
+                                key: ValueKey('plan.ai'),
+                                value: 'ai',
+                                child: Text('Build with FITOS AI'),
+                              ),
                             // Beta 3.3 (ADR-034), behind the admin's switch.
                             if (shareOn) ...[
                               const PopupMenuItem(

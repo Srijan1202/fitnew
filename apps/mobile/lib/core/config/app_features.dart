@@ -25,6 +25,9 @@ enum AppFeature {
   /// Beta 6.0 (ADR-059): the water card on Home.
   water('water', 'Water'),
 
+  /// Beta 6.1: Build with FITOS AI (premium).
+  aiProgramme('ai-programme', 'AI programme builder'),
+
   /// Beta 6.1: the premium week of mess meals, planned by FITOS.
   messWeek('mess-week', 'Mess week plan'),
 

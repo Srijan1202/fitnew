@@ -15,6 +15,7 @@ import '../../features/exercise/presentation/screens/exercise_detail_screen.dart
 import '../../features/progress/presentation/lift_history_screen.dart';
 import '../../features/progress/presentation/monthly_report_screen.dart';
 import '../../features/mess/presentation/mess_week_screen.dart';
+import '../../features/training/presentation/screens/ai_programme_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_demos_screen.dart';
 import '../../features/mess/presentation/mess_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
@@ -155,6 +156,9 @@ abstract final class Routes {
 
   /// Beta 3.3 (ADR-034): use a programme someone shared.
   static const String planShared = '/plan/shared';
+
+  /// Beta 6.1 (premium): Build with FITOS AI.
+  static const String planAi = '/plan/ai';
   static String planDayEdit(String dayId) => '/plan/days/$dayId/edit';
 
   // Workout logging (Phase 5). Sessions are addressed by CLIENT id.
@@ -429,6 +433,12 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
                     name: 'plan-shared',
                     parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) => const SharedProgrammeScreen(),
+                  ),
+                  GoRoute(
+                    path: 'ai',
+                    name: 'plan-ai',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const AiProgrammeScreen(),
                   ),
                   GoRoute(
                     path: 'templates',

@@ -44,6 +44,10 @@ Future<bool?> showAiConsentSheet(BuildContext context) {
               'Snap a meal: the photo, and your mess menu\'s dish names for '
                   'that meal. FITOS never keeps the photo.',
               'Explain simply: that one suggestion and its numbers.',
+              // Beta 6.1 (premium): the programme builder.
+              'Build with FITOS AI: your answers (with any line you add, as '
+                  'you write it), your goal and experience, and the exercises '
+                  'your equipment allows.',
             ])
               Padding(
                 padding: const EdgeInsets.only(bottom: FitSpacing.xs),

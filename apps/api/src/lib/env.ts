@@ -117,6 +117,8 @@ const envSchema = z.object({
   // own hourly limit and a cap per day (the cap is not multiplied for premium).
   AI_PHOTO_PER_HOUR: z.coerce.number().int().min(1).default(10),
   AI_PHOTO_PER_DAY: z.coerce.number().int().min(1).default(20),
+  // Beta 6.1: the AI programme builder — the biggest prompt of all (the catalogue).
+  AI_PROGRAMME_PER_HOUR: z.coerce.number().int().min(1).default(5),
   AI_DAILY_TOKEN_BUDGET: z.coerce.number().int().min(1000).default(200_000),
   // Phase 19 (ADR-027): FITOS AI is premium; premium users get the limits
   // above times this (2 = double). Change it like any server setting.

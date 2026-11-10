@@ -33,6 +33,7 @@ const env: Env = {
     AI_CHAT_PER_HOUR: 60,
     AI_PHOTO_PER_HOUR: 10,
     AI_PHOTO_PER_DAY: 20,
+    AI_PROGRAMME_PER_HOUR: 5,
     AI_DAILY_TOKEN_BUDGET: 200_000,
 };
 

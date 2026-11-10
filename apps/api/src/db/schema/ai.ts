@@ -13,7 +13,7 @@ import { check, index, integer, pgEnum, pgTable, text, timestamp, uuid } from 'd
 import { users } from './users.js';
 
 /** Beta 5.5 (0044): `photo`, a meal read from a photo. */
-export const aiRouteEnum = pgEnum('ai_route', ['chat', 'parse', 'explain', 'guide', 'photo']);
+export const aiRouteEnum = pgEnum('ai_route', ['chat', 'parse', 'explain', 'guide', 'photo', 'programme']);
 /** `discarded`: the model answered but a guard threw it away (§19.2). */
 export const aiOutcomeEnum = pgEnum('ai_outcome', ['ok', 'discarded', 'failed']);
 

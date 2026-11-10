@@ -3,7 +3,7 @@
 /// two stay in step and that the version is the server's CURRENT_POLICY_VERSION.
 library;
 
-const kPolicyVersion = '2026-11-08.2';
+const kPolicyVersion = '2026-11-10';
 
 const kPolicySections = <(String, String)>[
   (
@@ -29,7 +29,7 @@ const kPolicySections = <(String, String)>[
         '(deleted after six months), your phone\'s model, Android version and '
         'the screen you came from unless you leave them out, and the FITOS '
         'team\'s replies. Your profile picture '
-        'choice, and any request for Premium with the answer to it. A count of '
+        'choice, your theme choice, and any request for Premium with the answer to it. A count of '
         'FITOS AI uses (not what was said). Your consent records, with a one-'
         'way scrambled form of the network address you consented from. Foods '
         'you add from a label; if you share one with everyone, other people '
@@ -42,7 +42,8 @@ const kPolicySections = <(String, String)>[
         'with the code, never your weights or your name; you can stop sharing '
         'it, and the codes are deleted with your account. Progress photos stay '
         'on your phone: they are never uploaded, not even to a backup, and '
-        'are deleted with your account.',
+        'are deleted with your account. The monthly report\'s PDF is made on '
+        'your phone from these records and is never uploaded.',
   ),
   (
     'What stays on your phone',
@@ -77,7 +78,11 @@ const kPolicySections = <(String, String)>[
         'photo and, if you have a mess, the dish names on its menu for that '
         'meal (FITOS never keeps the photo); for "What should I '
         'eat?", the meal, the foods you have and the mess menu, what is left '
-        'of today\'s calories and protein, and what you feel like; for "Explain '
+        'of today\'s calories and protein, and what you feel like; for '
+        'building a programme, your answers (how often, how long, what to '
+        'bring up, what to leave out and any line you add, as you write it), '
+        'your goal and experience, and the exercises your equipment allows; '
+        'for "Explain '
         'simply", that one suggestion. While FITOS uses Google\'s free tier, '
         'Google may use what is sent to improve its products; this will change '
         'before a public release. You can withdraw this any time in Privacy & '

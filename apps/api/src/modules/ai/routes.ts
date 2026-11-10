@@ -25,6 +25,8 @@ import {
   errorEnvelopeSchema,
   explainRequestSchema,
   explainResponseSchema,
+  aiProgrammeDraftSchema,
+  aiProgrammeRequestSchema,
   foodGuideRequestSchema,
   foodGuideResponseSchema,
   PHOTO_MAX_BASE64,
@@ -43,6 +45,7 @@ import { FoodService } from '../nutrition/service.js';
 import { TodayRepository } from '../today/repository.js';
 import { TrainingRepository } from '../training/repository.js';
 import { TrainingService } from '../training/service.js';
+import { ProgrammeBuilderService } from './programme-builder.js';
 import { UserRepository } from '../user/repository.js';
 import { messServiceFor } from '../mess/routes.js';
 import { ReadinessAssembler } from '../recovery/readiness.js';
@@ -165,6 +168,8 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
     app.aiConfig,
     app.log,
   );
+  // Beta 6.1 (premium): the AI programme builder.
+  const builder = new ProgrammeBuilderService(app.ai, new TrainingRepository(db), budget, app.log);
   const typed = app.withTypeProvider<ZodTypeProvider>();
   const errors = { 401: errorEnvelopeSchema, 422: errorEnvelopeSchema, 429: errorEnvelopeSchema, 503: errorEnvelopeSchema };
 
@@ -335,6 +340,29 @@ export async function aiRoutes(app: FastifyInstance): Promise<void> {
     async (request) => {
       await app.features.require('food-guide', request);
       return guide.guide(requireUserId(request.userId), request.body, await premiumOf(request));
+    },
+  );
+  typed.post(
+    '/training/program/ai-draft',
+    {
+      config: { rateLimit: AI_CHAT_RATE_LIMIT },
+      schema: {
+        summary: 'Beta 6.1: Build with FITOS AI — a training week from your answers and the exercises you can do (nothing is saved)',
+        description:
+          'The model gets the answers (sessions, minutes, muscles to bring up, the optional note as written), the goal and ' +
+          'experience, and the exercises that suit your equipment and limitations minus `avoid` — never your name, weight or ' +
+          'history. FITOS reads the answer (known exercises only, numbers in bounds) and keeps each session within the minutes ' +
+          'and each muscle within its MRV, listing what it changed. Use a draft with PUT /training/program. Premium; needs the ' +
+          'FITOS AI consent; behind the ai-programme switch.',
+        tags: ['training', 'ai'],
+        security: [{ bearerAuth: [] }],
+        body: aiProgrammeRequestSchema,
+        response: { 200: aiProgrammeDraftSchema, 403: errorEnvelopeSchema, 409: errorEnvelopeSchema, ...errors },
+      },
+    },
+    async (request) => {
+      await app.features.require('ai-programme', request);
+      return builder.draft(requireUserId(request.userId), request.body, await premiumOf(request));
     },
   );
 }

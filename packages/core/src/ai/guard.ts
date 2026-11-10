@@ -153,5 +153,5 @@ export function checkEstimate(e: AiFoodEstimate): EstimateCheck {
 
 /** §19.3 cost control: per user per hour, by route (owner D4). */
 /** Beta 5.5: `photo`, a meal read from a photo, is its own purpose (a photo costs more than words). */
-export const AI_ROUTES = ['chat', 'parse', 'explain', 'guide', 'photo'] as const;
+export const AI_ROUTES = ['chat', 'parse', 'explain', 'guide', 'photo', 'programme'] as const;
 export type AiRoute = (typeof AI_ROUTES)[number];
