@@ -199,6 +199,10 @@ This:
 ```
 - Migrations are forward-only and backward-compatible, so a rollback never needs a down migration.
 - A release that fails its checks never takes traffic.
+- **Rolling back past beta 6.1** (audit 2026-11-10). The 6.1 data stays and an older API ignores most of it, with three exceptions:
+  - **Cycles.** An older API sends a cycle's day numbers (up to 14) on as weekdays, and its own response check refuses them, so those users' plans fail to load. Find them with `select count(*) from programs where schedule = 'cycle' and deleted_at is null`. Ask them to switch to Weekdays first (Training ⋯ → Schedule), or roll forward instead.
+  - **Early access.** An older API reads a switch set to Premium as on for everyone. Set such switches to Off or Everyone first.
+  - **The 0052 down migration** (`db:rollback`) refuses while any cycle exists, by design.
 
 ## The website and the admin panel (same server)
 

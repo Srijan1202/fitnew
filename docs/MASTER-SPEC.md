@@ -1875,13 +1875,13 @@ Progressive profiling. **Maximum 7 screens before the user sees value.**
 
 **Phase 15** — [x] FCM registration (no server push until hosting, BACKLOG O9) · [x] scheduled notifications (on the phone, ADR-021) · [x] local timers · [x] preferences · [x] ≤2/day enforced (owner-accepted 2026-10-22 on the S24)
 
-**Phase 16** — [ ] Next.js admin · [ ] correction queue · [ ] exercise CRUD · [ ] provider health · [ ] feature flags · [ ] audit logging · [ ] 403 test
+**Phase 16** — [x] Next.js admin (live at admin.tryfitos.me) · [x] correction queue · [x] exercise CRUD · [x] provider health · [x] feature flags · [x] audit logging · [x] 403 test (phase-16 report; reconciled in the 2026-11-10 audit)
 
-**Phase 17** — [ ] consent flows · [ ] export · [ ] **delete verified by direct query** · [ ] log redaction · [ ] rate limits · [ ] Secret Manager · [ ] nightly pg_dump · [ ] privacy policy
+**Phase 17** — [x] consent flows · [x] export · [x] **delete verified by direct query** · [x] log redaction · [x] rate limits · [x] Secret Manager (on AWS: SSM Parameter Store, ADR-025) · [ ] nightly pg_dump (the script verifies each dump; the schedule is the owner's step, BACKLOG O5) · [x] privacy policy
 
-**Phase 18** — [ ] 100% branch coverage on core · [ ] all personas · [ ] Flutter integration tests · [ ] load test p95 <500ms
+**Phase 18** — [x] 100% branch coverage on core · [x] all personas · [x] Flutter integration tests · [x] load test p95 <500ms (222 ms locally; E21 re-runs it on the hosted API) — accepted 2026-10-30
 
-**Phase 19** — [ ] staging · [ ] production Cloud Run · [ ] Play internal testing · [ ] Crashlytics · [ ] billing alerts · [ ] 20 beta users
+**Phase 19** — [ ] staging (none: the beta server is the only one) · [x] production — on AWS instead of Cloud Run (ADR-025) · [ ] Play internal testing (the beta is sideloaded from tryfitos.me, with in-app updates and Shorebird patches instead) · [x] Crashlytics · [x] billing alerts (AWS budget `fitos-monthly`) · [ ] 20 beta users (7 phones on 2026-11-08)
 
 **Phase 20** — [ ] store listings · [ ] privacy policy live · [ ] alerts · [ ] **backup restore rehearsed** · [ ] rollback tested · [ ] runbook
 

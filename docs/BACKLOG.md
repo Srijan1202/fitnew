@@ -56,11 +56,11 @@
 
 | # | Item | Size | Notes |
 |---|---|---|---|
-| A1 | Timing tests flake on a busy PC | S | Food search p95 < 200 ms and "seeding twice" in 5 s fail while Docker or Gradle build; pass alone. Longer timeout for the seed test, or run timing tests on their own |
+| A1 | ~~Timing tests flake on a busy PC~~ — ✅ seed test 60 s, p95 retried twice | S | Food search p95 < 200 ms and "seeding twice" in 5 s fail while Docker or Gradle build; pass alone. Longer timeout for the seed test, or run timing tests on their own |
 | A2 | Watch the 6.1 load | S | `/notifications/plan` reads up to 8 mess menus a run, `/mess/week-plan` 7; check response times after deploy |
-| A3 | Rollback past 0052 | S | Its down migration refuses while any programme is a cycle: put it in the Phase 20 runbook (switch cycles to weekdays first) |
+| A3 | ~~Rollback past 0052~~ — ✅ in docs/hosting/AWS.md | S | Its down migration refuses while any programme is a cycle: put it in the Phase 20 runbook (switch cycles to weekdays first) |
 | A4 | 5 moderate advisories left | S | esbuild 0.18 in drizzle-kit (dev), glob 10/13 (firebase-admin's rimraf, swagger static), minimatch 9/10 (eslint); none patched in the same major |
-| A5 | MASTER-SPEC §38 drift | S | Phases 16–19 boxes unticked; reconcile with the phase reports |
+| A5 | ~~MASTER-SPEC §38 drift~~ — ✅ reconciled 2026-11-10 | S | Phases 16–19 boxes unticked; reconcile with the phase reports |
 | A6 | A `gym` switch exists only in production | S | Not in the code; the owner to confirm or delete it |
 
 ## Feature ideas for beta 4 and later (owner, 2026-10-23: "add to the future plan; bugs first")
