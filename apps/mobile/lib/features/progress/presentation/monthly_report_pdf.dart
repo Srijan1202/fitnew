@@ -35,7 +35,16 @@ String pdfSafe(String s) {
   return out.toString().replaceAll(RegExp(r'\s{2,}'), ' ').trim();
 }
 
-String _plural(int n, String word) => '$n $word${n == 1 ? '' : 's'}';
+String _plural(int n, String word) =>
+    '${_thousands(n)} $word${n == 1 ? '' : 's'}';
+
+/// 4135 → "4,135" (emulator check, beta 6.1).
+String _thousands(int n) => n
+    .toString()
+    .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]},');
+
+String _capital(String s) =>
+    s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
 
 /// The rows of each section, in the order the PDF draws them (also what the
 /// tests read, since a PDF's text is compressed).
@@ -51,9 +60,9 @@ List<(String, List<(String, String)>)> monthlySections(MonthlyReport r) => [
                 : '${r.sessionsCompleted}',
           ),
           ('Hard sets', r.hardSets.toStringAsFixed(0)),
-          ('Weight moved', '${r.tonnageKg.toStringAsFixed(0)} kg'),
+          ('Weight moved', '${_thousands(r.tonnageKg.round())} kg'),
           for (final (muscle, sets) in r.topMuscles)
-            ('  $muscle', '${sets.toStringAsFixed(0)} sets'),
+            ('  ${_capital(muscle)}', _plural(sets.round(), 'set')),
           (
             'Personal records',
             r.prCount == 0 ? 'none' : '${r.prCount} (${r.prLifts.join(', ')})',
@@ -85,7 +94,7 @@ List<(String, List<(String, String)>)> monthlySections(MonthlyReport r) => [
           ),
           (
             'Average a logged day',
-            r.averageKcal == null ? '-' : '${r.averageKcal} kcal',
+            r.averageKcal == null ? '-' : '${_thousands(r.averageKcal!)} kcal',
           ),
         ],
       ),

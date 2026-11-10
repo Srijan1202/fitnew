@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/tokens.dart';
 import '../../domain/entities/program.dart';
+import '../../../today/presentation/today_providers.dart';
+import '../../../workout/presentation/controllers/workout_providers.dart';
 import '../controllers/program_controller.dart';
 
 /// Beta 6.1 (F2): the presets a cycle offers, (on, off).
@@ -23,6 +25,12 @@ List<int?>? previewCycle(int sessions, int on, int off) {
   }
   return out.length < 2 || out.length > 14 ? null : out;
 }
+
+/// "a 5-day", "an 8-day", "an 11-day" (emulator check, beta 6.1).
+String aDays(int n) => '${n == 8 || n == 11 || n == 18 ? 'an' : 'a'} $n-day';
+
+String capitalise(String s) =>
+    s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
 
 /// Training ⋯ → Schedule: weekdays, or "days on / off" with no weekdays.
 Future<void> showScheduleSheet(BuildContext context, Program program) =>
@@ -69,12 +77,17 @@ class _ScheduleSheetState extends ConsumerState<_ScheduleSheet> {
       });
       return;
     }
+    // Today's session moved with the schedule: Home, TODAY and the day views re-read it.
+    ref
+      ..invalidate(todayProvider)
+      ..invalidate(dayProvider)
+      ..invalidate(todayPlanProvider);
     Navigator.of(context).pop();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           _cycle
-              ? 'Your plan is now a ${previewCycle(_sessions.length, _on, _off)!.length}-day cycle, starting with ${_sessions.first.sessionName}.'
+              ? 'Your plan is now ${aDays(previewCycle(_sessions.length, _on, _off)!.length)} cycle, starting with ${_sessions.first.sessionName}.'
               : 'Your plan is back on weekdays.',
         ),
       ),
@@ -196,7 +209,7 @@ class _ScheduleSheetState extends ConsumerState<_ScheduleSheet> {
                   )
                 else ...<Widget>[
                   Text(
-                    'A ${layout.length}-day cycle with no weekdays. Day 1 is today, or tomorrow if you have already trained today:',
+                    '${capitalise(aDays(layout.length))} cycle with no weekdays. Day 1 is today, or tomorrow if you have already trained today:',
                     style: textTheme.bodyMedium,
                   ),
                   const SizedBox(height: FitSpacing.xs),

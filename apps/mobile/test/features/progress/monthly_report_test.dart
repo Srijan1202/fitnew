@@ -81,8 +81,11 @@ void main() {
         for (final (l, v) in rs) l.trim(): v,
     };
     expect(rows['Sessions'], '15 of 18 planned (83%)');
-    expect(rows['back'], '52 sets');
+    expect(rows['Back'], '52 sets');
     expect(rows['Personal records'], '3 (Bench, Squat)');
+    // Emulator check: thousands, a capital, and one set is a set.
+    expect(rows['Weight moved'], '39,900 kg');
+    expect(rows['Average a logged day'], '2,310 kcal');
     expect(rows['Distance'], '15.1 km');
     expect(rows['Protein target reached'], '12 of 20 days');
     expect(rows['Water target reached'], '6 of 9 days (2.5 L)');

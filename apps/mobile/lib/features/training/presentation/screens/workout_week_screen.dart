@@ -48,6 +48,7 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
   static const _debounce = Duration(milliseconds: 900);
 
   int? _selectedDow;
+  String? _scheduleKey;
   final Set<String> _expanded = <String>{};
 
   /// Unsaved edits per day id.
@@ -289,6 +290,13 @@ class _WorkoutWeekScreenState extends ConsumerState<WorkoutWeekScreen> {
       data: (program) {
         if (program == null) return const PlanStartScreen();
         final localToday = ref.watch(localTodayProvider);
+        // Beta 6.1 (emulator check): a new schedule opens on today's day, not the old selection.
+        final scheduleKey =
+            '${program.schedule}|${program.cycleStart}|${program.cycleLength}';
+        if (_scheduleKey != null && _scheduleKey != scheduleKey) {
+          _selectedDow = null;
+        }
+        _scheduleKey = scheduleKey;
         final selected = _selectedDow ??= _defaultDay(program, localToday);
         final day = program.days.firstWhere((d) => d.dayOfWeek == selected);
         // ADR-030: today can be skipped once; then it shows as skipped.
