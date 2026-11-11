@@ -457,7 +457,8 @@ describeIfDb('/v1/admin (real Postgres)', { timeout: 60_000 }, () => {
     expect(r.statusCode, r.body).toBe(200);
     expect(r.json()).toMatchObject({ userId: someone.id, email: someone.email, counts: { foodLogs: 1, sessions: 0 }, notifications: { enabled: true, tone: 'cheeky' } });
     expect(r.body).not.toContain('Secret lunch');
-    expect(r.body).not.toContain('500');
+    // Not the number itself: a random id or a timestamp can hold "500" (audit 2026-11-11).
+    expect(r.body).not.toContain('kcal');
     expect((await call(admin, 'GET', `/admin/users?id=${someone.id}`)).statusCode).toBe(200);
     expect((await call(admin, 'GET', '/admin/users?email=nobody@vit.ac.in')).statusCode).toBe(404);
     expect((await call(admin, 'GET', '/admin/users')).statusCode).toBe(422);
