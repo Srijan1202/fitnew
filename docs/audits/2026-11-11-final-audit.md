@@ -170,7 +170,7 @@ The owner said "do it for beta 6.2". The plan is `docs/phase-plans/beta-6.2-plan
 |---|---|
 | S2 | **Changed.** The free tier refuses more than 1 day of automatic backups (`FreeTierRestrictionError`). Instead, `deploy.ps1` takes a manual snapshot before every release, keeps the newest 3 and deletes any older than 30 days. A baseline snapshot was taken on 2026-11-11. The privacy policy says so. |
 | S3 | **Built:** club owner tools (rename, new code, pass, remove and keep out until let back). |
-| S5 | **Built:** a CSP on tryfitos.me (enforced). On the admin panel, the safe parts are enforced and the full policy is report-only until a sign-in has been checked with it. |
+| S5 | **Built:** a CSP on tryfitos.me (enforced). On the admin panel, the safe parts were enforced and the full policy report-only until a sign-in had been checked with it; the full policy is enforced since 2026-11-11, after the owner's sign-in and no violation on the panel's pages. |
 | S6 | **Built:** HSTS and `nosniff` on the API, live from the next API release. |
 | S7 | **Built:** a 7-day cooldown after a decline. |
 | S8 | **Built:** 300 handle searches a day. |

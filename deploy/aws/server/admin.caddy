@@ -14,10 +14,11 @@ __DOMAIN__ {
 		X-Frame-Options DENY
 		Referrer-Policy no-referrer
 		X-Robots-Tag "noindex, nofollow"
-		# Beta 6.2 (audit S5): the parts that cannot break Google sign-in are enforced.
-		Content-Security-Policy "object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
-		# The whole policy is only reported (browser console) until a sign-in has been checked with it.
-		Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self' 'unsafe-inline' https://apis.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.googleusercontent.com; font-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com; frame-src https://*.firebaseapp.com https://accounts.google.com https://apis.google.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+		# Beta 6.2 (audit S5): enforced since 2026-11-11, after a sign-in and the
+		# panel's pages ran report-only with no violation. Google sign-in needs
+		# apis.google.com and gstatic (scripts), *.googleapis.com (tokens) and
+		# the firebaseapp.com / accounts.google.com frames.
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://apis.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.googleusercontent.com; font-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com; frame-src https://*.firebaseapp.com https://accounts.google.com https://apis.google.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
 	}
 
 	handle /robots.txt {
