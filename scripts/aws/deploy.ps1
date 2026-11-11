@@ -47,8 +47,12 @@ if (-not $SkipMigrate) {
   $snapshot = "$db-pre-$($Sha.Substring(0, 7))-$(Get-Date -Format 'yyyyMMdd-HHmm')"
   Write-Host "   snapshot $snapshot"
   Invoke-Aws rds create-db-snapshot --db-instance-identifier $db --db-snapshot-identifier $snapshot --query 'DBSnapshot.Status' --output text | Out-Null
-  $old = Invoke-Aws rds describe-db-snapshots --db-instance-identifier $db --snapshot-type manual --query 'reverse(sort_by(DBSnapshots, &SnapshotCreateTime))[3:].DBSnapshotIdentifier' --output text
-  foreach ($id in ("$old" -split '\s+' | Where-Object { $_ -match "^$db-pre-" })) {
+  # The privacy policy (2026-11-11): a snapshot is deleted within 30 days.
+  # Beyond the newest three, and anything older than 30 days, goes now; with no
+  # release for a month, delete the rest by hand (docs/hosting/AWS.md).
+  $cutoff = (Get-Date).ToUniversalTime().AddDays(-30).ToString('yyyy-MM-ddTHH:mm:ss')
+  $old = Invoke-Aws rds describe-db-snapshots --db-instance-identifier $db --snapshot-type manual --query "[reverse(sort_by(DBSnapshots, &SnapshotCreateTime))[3:].DBSnapshotIdentifier, DBSnapshots[?SnapshotCreateTime<'$cutoff'].DBSnapshotIdentifier][]" --output text
+  foreach ($id in ("$old" -split '\s+' | Where-Object { $_ -match "^$db-pre-" } | Sort-Object -Unique)) {
     Invoke-Aws rds delete-db-snapshot --db-snapshot-identifier $id --query 'DBSnapshot.DBSnapshotIdentifier' --output text | Out-Null
     Write-Host "   old snapshot $id deleted"
   }

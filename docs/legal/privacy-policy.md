@@ -38,7 +38,7 @@ Amazon Web Services hosts the FITOS server and database, in India. Google Fireba
 
 ## How long
 
-Until you delete your account. The database keeps automatic backups for one day, so deleted data leaves them within a day. Before a risky change the developer may take one extra snapshot of the database, deleted within 30 days.
+Until you delete your account. The database keeps automatic backups for one day, so deleted data leaves them within a day. Before each update of the server a snapshot of the database is taken, so a faulty update can be undone; each snapshot is deleted within 30 days.
 
 ## Your rights
 

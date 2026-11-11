@@ -1,7 +1,8 @@
 /// Beta 5.8 (ADR-057): Community as the server sees it — the member's own
 /// profile, other people (a handle, a picture and a country, never more),
 /// clubs and the boards. Boards hold counts only: gym sessions and run
-/// distance this week, and the streak.
+/// distance this week, and the streak; beta 6.2 adds active days, the plan
+/// kept and last week.
 library;
 
 /// A handle: 3–20 of a–z, 0–9 and _ (the server checks the rest).
@@ -137,16 +138,214 @@ class Club {
       code.length == 8 ? '${code.substring(0, 4)}-${code.substring(4)}' : code;
 }
 
-/// What a board ranks by.
+/// What a board ranks by. Beta 6.2 (C11): the streak, active days and
+/// the plan kept as well.
 enum BoardMetric {
-  sessions('sessions'),
-  distance('distance');
+  sessions('sessions', 'Gym sessions'),
+  distance('distance', 'Run km'),
+  streak('streak', 'Streak'),
+  activeDays('active-days', 'Active days'),
+  plan('plan', 'Kept my plan');
 
-  const BoardMetric(this.wire);
+  const BoardMetric(this.wire, this.label);
   final String wire;
+  final String label;
 
   static BoardMetric fromWire(String w) =>
       values.firstWhere((m) => m.wire == w, orElse: () => sessions);
+}
+
+String _plural(int n, String one, String many) => '$n ${n == 1 ? one : many}';
+
+/// The number a board row shows for its metric.
+String boardValue(BoardRow r, BoardMetric m) => switch (m) {
+      BoardMetric.sessions => _plural(r.sessions, 'session', 'sessions'),
+      BoardMetric.distance => kmOf(r.runM),
+      BoardMetric.streak => _plural(r.streak, 'day', 'days'),
+      BoardMetric.activeDays => _plural(r.activeDays, 'day', 'days'),
+      BoardMetric.plan => r.keptPct == null ? '–' : '${r.keptPct}%',
+    };
+
+/// The smaller line under a row: what else counted.
+String? boardOther(BoardRow r, BoardMetric m) {
+  final parts = <String>[
+    if (m != BoardMetric.streak && r.streak > 0) '${r.streak}-day streak',
+    if (m != BoardMetric.sessions && r.sessions > 0)
+      _plural(r.sessions, 'session', 'sessions'),
+    if (m != BoardMetric.distance && r.runM > 0) kmOf(r.runM),
+  ];
+  return parts.isEmpty ? null : parts.join(' · ');
+}
+
+/// "1st", "2nd", "3rd", "4th"…
+String ordinal(int n) {
+  final teen = n % 100 >= 11 && n % 100 <= 13;
+  final suffix = teen
+      ? 'th'
+      : switch (n % 10) {
+          1 => 'st',
+          2 => 'nd',
+          3 => 'rd',
+          _ => 'th',
+        };
+  return '$n$suffix';
+}
+
+/// Beta 6.2 (C12): last week on a board.
+class LastWeek {
+  const LastWeek({
+    required this.weekFrom,
+    required this.podium,
+    required this.myRank,
+    required this.moved,
+  });
+
+  factory LastWeek.fromJson(Map<String, dynamic> j) => LastWeek(
+        weekFrom: j['weekFrom'] as String,
+        podium: [
+          for (final r in j['podium'] as List<dynamic>)
+            BoardRow.fromJson(r as Map<String, dynamic>),
+        ],
+        myRank: (j['myRank'] as num?)?.toInt(),
+        moved: (j['moved'] as num?)?.toInt(),
+      );
+
+  final String weekFrom;
+
+  /// The top three (ties share a place).
+  final List<BoardRow> podium;
+
+  /// Your place last week; null when you were not on it.
+  final int? myRank;
+
+  /// Places gained since the week before (negative: lost).
+  final int? moved;
+
+  /// "You were 3rd last week · up 2", or null.
+  String? get myLine {
+    final rank = myRank;
+    if (rank == null) return null;
+    final m = moved;
+    final change = m == null || m == 0
+        ? ''
+        : m > 0
+            ? ' · up $m'
+            : ' · down ${-m}';
+    return 'You were ${ordinal(rank)} last week$change';
+  }
+}
+
+/// Beta 6.2 (C4): one week's counts on a profile.
+class WeekCounts {
+  const WeekCounts({
+    required this.weekFrom,
+    required this.sessions,
+    required this.runM,
+    required this.activeDays,
+    required this.keptPct,
+  });
+
+  factory WeekCounts.fromJson(Map<String, dynamic> j) => WeekCounts(
+        weekFrom: j['weekFrom'] as String,
+        sessions: (j['sessions'] as num).toInt(),
+        runM: (j['runM'] as num).toInt(),
+        activeDays: (j['activeDays'] as num).toInt(),
+        keptPct: (j['keptPct'] as num?)?.toInt(),
+      );
+
+  final String weekFrom;
+  final int sessions;
+  final int runM;
+  final int activeDays;
+
+  /// Sessions done of those planned, in per cent; null without a plan.
+  final int? keptPct;
+}
+
+/// Beta 6.2 (C4, owner 2026-11-11): a friend's or club-mate's board data.
+class PersonProfile {
+  const PersonProfile({
+    required this.person,
+    required this.friend,
+    required this.friendsSince,
+    required this.streak,
+    required this.thisWeek,
+    required this.weeks,
+    required this.clubsInCommon,
+  });
+
+  factory PersonProfile.fromJson(Map<String, dynamic> j) => PersonProfile(
+        person: CommunityPerson.fromJson(j['person'] as Map<String, dynamic>),
+        friend: j['relation'] == 'friend',
+        friendsSince: j['friendsSince'] == null
+            ? null
+            : DateTime.parse(j['friendsSince'] as String),
+        streak: (j['streak'] as num).toInt(),
+        thisWeek: WeekCounts.fromJson(j['thisWeek'] as Map<String, dynamic>),
+        weeks: [
+          for (final w in j['weeks'] as List<dynamic>)
+            WeekCounts.fromJson(w as Map<String, dynamic>),
+        ],
+        clubsInCommon: [
+          for (final c in j['clubsInCommon'] as List<dynamic>)
+            (
+              id: (c as Map<String, dynamic>)['id'] as String,
+              name: c['name'] as String,
+            ),
+        ],
+      );
+
+  final CommunityPerson person;
+
+  /// A friend; otherwise someone in a club with you.
+  final bool friend;
+  final DateTime? friendsSince;
+  final int streak;
+  final WeekCounts thisWeek;
+
+  /// The weeks before this one, oldest first.
+  final List<WeekCounts> weeks;
+  final List<({String id, String name})> clubsInCommon;
+}
+
+/// Beta 6.2 (C8, C15, owner Q1): the links that open FITOS (Android App Links).
+String clubInviteUrl(String code) => 'https://tryfitos.me/c/$code';
+String friendInviteUrl(String handle) => 'https://tryfitos.me/u/$handle';
+
+/// What an opened link asks for.
+sealed class InviteLink {
+  const InviteLink();
+
+  /// A tryfitos.me club or friend link; null for anything else.
+  static InviteLink? parse(String link) {
+    final uri = Uri.tryParse(link);
+    if (uri == null || uri.scheme != 'https' || uri.host != 'tryfitos.me') {
+      return null;
+    }
+    final parts = uri.pathSegments.where((s) => s.isNotEmpty).toList();
+    if (parts.length != 2) return null;
+    if (parts[0] == 'c') {
+      final code = parts[1].toUpperCase();
+      return RegExp(r'^[A-HJ-NP-Z2-9]{8}$').hasMatch(code)
+          ? ClubInvite(code)
+          : null;
+    }
+    if (parts[0] == 'u') {
+      final handle = parts[1].toLowerCase();
+      return kHandlePattern.hasMatch(handle) ? FriendInvite(handle) : null;
+    }
+    return null;
+  }
+}
+
+class ClubInvite extends InviteLink {
+  const ClubInvite(this.code);
+  final String code;
+}
+
+class FriendInvite extends InviteLink {
+  const FriendInvite(this.handle);
+  final String handle;
 }
 
 class BoardRow {
@@ -160,6 +359,8 @@ class BoardRow {
     required this.runM,
     required this.streak,
     required this.me,
+    this.activeDays = 0,
+    this.keptPct,
   });
 
   factory BoardRow.fromJson(Map<String, dynamic> j) => BoardRow(
@@ -172,6 +373,8 @@ class BoardRow {
         runM: (j['runM'] as num).toInt(),
         streak: (j['streak'] as num).toInt(),
         me: j['me'] as bool,
+        activeDays: (j['activeDays'] as num?)?.toInt() ?? 0,
+        keptPct: (j['keptPct'] as num?)?.toInt(),
       );
 
   final int rank;
@@ -183,6 +386,12 @@ class BoardRow {
   final int runM;
   final int streak;
   final bool me;
+
+  /// Beta 6.2: days this week with a counted session or run.
+  final int activeDays;
+
+  /// Beta 6.2: sessions done of those planned up to today; null without a plan.
+  final int? keptPct;
 }
 
 class Board {
@@ -193,6 +402,7 @@ class Board {
     required this.rows,
     required this.me,
     required this.total,
+    this.lastWeek,
   });
 
   factory Board.fromJson(Map<String, dynamic> j) => Board(
@@ -207,6 +417,9 @@ class Board {
             ? null
             : BoardRow.fromJson(j['me'] as Map<String, dynamic>),
         total: (j['total'] as num).toInt(),
+        lastWeek: j['lastWeek'] == null
+            ? null
+            : LastWeek.fromJson(j['lastWeek'] as Map<String, dynamic>),
       );
 
   final BoardMetric metric;
@@ -217,6 +430,9 @@ class Board {
   /// Your own row when it is below the top; null when you are not on it.
   final BoardRow? me;
   final int total;
+
+  /// Beta 6.2 (C12): null when nobody here counted anything last week.
+  final LastWeek? lastWeek;
 }
 
 /// Why a report is made.

@@ -2714,8 +2714,26 @@ void main() {
         'sessions',
         'runM',
         'streak',
+        // Beta 6.2 (C11): with the policy of 2026-11-11.
+        'activeDays',
+        'keptPct',
         'me',
       });
+      // Beta 6.2 (C4, C12): a friend's week and last week's podium.
+      final profile = PersonProfile.fromJson(
+        example(schemaOf('/community/people/{userId}', 'get')),
+      );
+      expect(profile.weeks.single.sessions, 1);
+      expect(profile.clubsInCommon.single.name, 'x');
+      expect(board.lastWeek?.podium.single.handle, 'x');
+      final removed = schemaOf('/community/clubs/{id}/removed', 'get');
+      expect(
+        CommunityPerson.fromJson(
+          (example(removed)['items'] as List<dynamic>).single
+              as Map<String, dynamic>,
+        ).handle,
+        'x',
+      );
     });
 
     test('join, change and report send exactly the accepted properties', () {

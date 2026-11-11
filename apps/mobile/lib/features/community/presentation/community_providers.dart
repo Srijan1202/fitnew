@@ -119,6 +119,28 @@ final worldBoardProvider =
   retry: (_, __) => null,
 );
 
+/// Beta 6.2 (C4): a friend's or club-mate's board data.
+final personProfileProvider =
+    FutureProvider.autoDispose.family<PersonProfile, String>(
+  (ref, userId) async {
+    requireSession(ref);
+    final r = await ref.watch(communityApiProvider).personProfile(userId);
+    return r.when(ok: (p) => p, err: (f) => throw f);
+  },
+  retry: (_, __) => null,
+);
+
+/// Beta 6.2 (C5): who a club's owner removed.
+final removedFromClubProvider =
+    FutureProvider.autoDispose.family<List<CommunityPerson>, String>(
+  (ref, clubId) async {
+    requireSession(ref);
+    final r = await ref.watch(communityApiProvider).removedFrom(clubId);
+    return r.when(ok: (p) => p, err: (f) => throw f);
+  },
+  retry: (_, __) => null,
+);
+
 /// After anything that changes who is where: every list and board again.
 void refreshCommunity(WidgetRef ref) {
   ref
@@ -128,5 +150,7 @@ void refreshCommunity(WidgetRef ref) {
     ..invalidate(blockedProvider)
     ..invalidate(friendsBoardProvider)
     ..invalidate(clubBoardProvider)
-    ..invalidate(worldBoardProvider);
+    ..invalidate(worldBoardProvider)
+    ..invalidate(personProfileProvider)
+    ..invalidate(removedFromClubProvider);
 }

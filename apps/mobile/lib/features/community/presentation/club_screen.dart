@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../../../core/routing/navigation.dart';
+import '../../../core/routing/router.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../shared/widgets/fit_glass.dart';
 import '../domain/community.dart';
 import 'community_providers.dart';
 import 'community_screen.dart';
+import 'invite_qr.dart';
 
 /// Beta 5.8 (ADR-057): one club — its board this week, its code to share,
-/// leaving it, and reporting its name.
+/// leaving it, and reporting its name. Beta 6.2: an invite link and QR code
+/// (C8), the owner's settings (C5), and a tap opens a member's week (C4).
 class ClubScreen extends ConsumerWidget {
   const ClubScreen({required this.clubId, this.club, super.key});
 
@@ -38,7 +43,9 @@ class ClubScreen extends ConsumerWidget {
             key: const ValueKey('club.menu'),
             icon: const Icon(Icons.more_horiz),
             onSelected: (v) async {
-              if (v == 'report') {
+              if (v == 'settings') {
+                await context.push(Routes.communityClubSettings(clubId));
+              } else if (v == 'report') {
                 await showReportSheet(context, ref, clubId: clubId);
               } else if (v == 'leave') {
                 final sure = await showDialog<bool>(
@@ -69,13 +76,19 @@ class ClubScreen extends ConsumerWidget {
                 if (context.mounted) context.popOrHome();
               }
             },
-            itemBuilder: (_) => const [
-              PopupMenuItem(
+            itemBuilder: (_) => [
+              if (c?.mine ?? false)
+                const PopupMenuItem(
+                  key: ValueKey('club.settings'),
+                  value: 'settings',
+                  child: Text('Club settings'),
+                ),
+              const PopupMenuItem(
                 key: ValueKey('club.report'),
                 value: 'report',
                 child: Text('Report the club name'),
               ),
-              PopupMenuItem(
+              const PopupMenuItem(
                 key: ValueKey('club.leave'),
                 value: 'leave',
                 child: Text('Leave the club'),
@@ -115,16 +128,45 @@ class ClubScreen extends ConsumerWidget {
                           ],
                         ),
                       ),
+                      IconButton.outlined(
+                        key: const ValueKey('club.qr'),
+                        tooltip: 'QR code',
+                        icon: const Icon(Icons.qr_code_2),
+                        onPressed: () => showModalBottomSheet<void>(
+                          useRootNavigator: true,
+                          context: context,
+                          useSafeArea: true,
+                          builder: (sheet) => SafeArea(
+                            child: Padding(
+                              padding: const EdgeInsets.all(FitSpacing.lg),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    c.name,
+                                    style: Theme.of(sheet).textTheme.titleLarge,
+                                  ),
+                                  const SizedBox(height: FitSpacing.md),
+                                  InviteQr(data: clubInviteUrl(c.code)),
+                                  const SizedBox(height: FitSpacing.sm),
+                                  Text('Code ${c.shownCode}'),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: FitSpacing.xs),
                       IconButton.filledTonal(
                         key: const ValueKey('club.share'),
-                        tooltip: 'Share the code',
+                        tooltip: 'Share an invite link',
                         icon: const Icon(Icons.ios_share),
+                        // Beta 6.2 (C8): the link opens FITOS on "Join this club?".
                         onPressed: () => SharePlus.instance.share(
                           ShareParams(
-                            text:
-                                'Join "${c.name}" on FITOS: Community › Clubs › '
-                                'Join with a code: ${c.shownCode}. Get the app '
-                                'at https://tryfitos.me',
+                            text: 'Join "${c.name}" on FITOS: '
+                                '${clubInviteUrl(c.code)} (or Community › Clubs › '
+                                'Join with a code: ${c.shownCode})',
                           ),
                         ),
                       ),
@@ -132,32 +174,15 @@ class ClubScreen extends ConsumerWidget {
                   ),
                 ),
               const SizedBox(height: FitSpacing.md),
-              SegmentedButton<BoardMetric>(
-                showSelectedIcon: false,
-                segments: const [
-                  ButtonSegment(
-                    value: BoardMetric.sessions,
-                    label: Text('Gym sessions'),
-                  ),
-                  ButtonSegment(
-                    value: BoardMetric.distance,
-                    label: Text('Run km'),
-                  ),
-                ],
-                selected: {metric},
-                onSelectionChanged: (v) =>
-                    ref.read(boardMetricProvider.notifier).set(v.first),
-              ),
+              const BoardMetricPicker(),
               const SizedBox(height: FitSpacing.md),
               BoardLoader(
                 board: ref.watch(clubBoardProvider((clubId, metric))),
                 emptyText: 'Nobody here yet: share the code.',
                 onRetry: () => ref.invalidate(clubBoardProvider),
-                onPerson: (r) => showPersonSheet(
-                  context,
-                  ref,
-                  userId: r.userId,
-                  handle: r.handle,
+                onPerson: (r) => context.push(
+                  Routes.communityPerson(r.userId),
+                  extra: r.handle,
                 ),
               ),
             ],

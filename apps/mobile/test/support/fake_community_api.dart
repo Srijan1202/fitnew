@@ -161,6 +161,65 @@ class FakeCommunityApi implements CommunityApi {
     return _r(null);
   }
 
+  /// Beta 6.2: the profile [personProfile] answers (404 when null).
+  PersonProfile? profileOf;
+  List<CommunityPerson> removed = [];
+
+  @override
+  Future<Result<PersonProfile>> personProfile(String userId) async {
+    calls.add('profile $userId');
+    final p = profileOf;
+    return p == null ? const Err(NotFound('No such member.')) : _r(p);
+  }
+
+  Club _changed(String clubId, {String? name, String? code, bool? mine}) {
+    final c = myClubs.firstWhere((x) => x.id == clubId);
+    final next = Club(
+      id: c.id,
+      name: name ?? c.name,
+      code: code ?? c.code,
+      members: c.members,
+      mine: mine ?? c.mine,
+    );
+    myClubs = [for (final x in myClubs) x.id == clubId ? next : x];
+    return next;
+  }
+
+  @override
+  Future<Result<Club>> renameClub(String clubId, String name) async {
+    calls.add('rename-club $clubId $name');
+    return _r(_changed(clubId, name: name));
+  }
+
+  @override
+  Future<Result<Club>> newClubCode(String clubId) async {
+    calls.add('new-code $clubId');
+    return _r(_changed(clubId, code: 'WXYZ6789'));
+  }
+
+  @override
+  Future<Result<Club>> passClub(String clubId, String userId) async {
+    calls.add('pass-club $clubId $userId');
+    return _r(_changed(clubId, mine: false));
+  }
+
+  @override
+  Future<Result<void>> removeMember(String clubId, String userId) async {
+    calls.add('remove $clubId $userId');
+    return _r(null);
+  }
+
+  @override
+  Future<Result<List<CommunityPerson>>> removedFrom(String clubId) async =>
+      _r(removed);
+
+  @override
+  Future<Result<void>> letBack(String clubId, String userId) async {
+    calls.add('let-back $clubId $userId');
+    removed = removed.where((p) => p.userId != userId).toList();
+    return _r(null);
+  }
+
   Board _board(BoardMetric metric, String? country) =>
       board?.call(metric, country) ??
       Board(
@@ -213,6 +272,8 @@ BoardRow row(
   int streak = 0,
   bool me = false,
   String? country,
+  int activeDays = 0,
+  int? keptPct,
 }) =>
     BoardRow(
       rank: rank,
@@ -224,6 +285,8 @@ BoardRow row(
       runM: runM,
       streak: streak,
       me: me,
+      activeDays: activeDays,
+      keptPct: keptPct,
     );
 
 CommunityPerson person(String handle) => CommunityPerson(

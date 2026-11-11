@@ -65,6 +65,9 @@ import '../../features/community/domain/community.dart';
 import '../../features/community/presentation/club_screen.dart';
 import '../../features/community/presentation/community_screen.dart';
 import '../../features/community/presentation/community_settings_screen.dart';
+import '../../features/community/presentation/club_settings_screen.dart';
+import '../../features/community/presentation/invite_screen.dart';
+import '../../features/community/presentation/person_profile_screen.dart';
 
 /// Application routes.
 ///
@@ -109,6 +112,11 @@ abstract final class Routes {
   static const String community = '/community';
   static const String communitySettings = '/community/settings';
   static String communityClub(String id) => '/community/clubs/$id';
+  // Beta 6.2: a member's week, a club's settings, an opened invite link.
+  static String communityPerson(String id) => '/community/people/$id';
+  static String communityClubSettings(String id) =>
+      '/community/clubs/$id/settings';
+  static const String communityInvite = '/community/invite';
   static const String exercises = '/exercises';
   static String exerciseDetail(String id) => '/exercises/$id';
 
@@ -608,6 +616,36 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
                       clubId: state.pathParameters['id']!,
                       club: state.extra is Club ? state.extra! as Club : null,
                     ),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: 'settings',
+                        name: 'community-club-settings',
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (context, state) => ClubSettingsScreen(
+                          clubId: state.pathParameters['id']!,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'people/:id',
+                    name: 'community-person',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => PersonProfileScreen(
+                      userId: state.pathParameters['id']!,
+                      handle:
+                          state.extra is String ? state.extra! as String : null,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'invite',
+                    name: 'community-invite',
+                    parentNavigatorKey: rootNavigatorKey,
+                    // Opened only with the parsed link; anything else goes to Community.
+                    redirect: (context, state) =>
+                        state.extra is InviteLink ? null : Routes.community,
+                    builder: (context, state) =>
+                        InviteScreen(invite: state.extra! as InviteLink),
                   ),
                 ],
               ),

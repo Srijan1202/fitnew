@@ -161,3 +161,21 @@ Ordered by value for the effort. S, M and L are small, medium and large.
 - Live: response headers, CORS probe, unauthenticated probes, TLS certificate and version, `/health`, `/meta/config`, `version.json`.
 - AWS (read-only): security groups, RDS settings, EC2 metadata options, S3 public-access blocks, IAM access keys and MFA.
 - Android: manifest permissions, exported components, backup rules.
+
+## 8. Status after beta 6.2 (built 2026-11-11, not released)
+
+The owner said "do it for beta 6.2". The plan is `docs/phase-plans/beta-6.2-plan.md` and the decisions are ADR-061.
+
+| # | Status |
+|---|---|
+| S2 | **Changed.** The free tier refuses more than 1 day of automatic backups (`FreeTierRestrictionError`). Instead, `deploy.ps1` takes a manual snapshot before every release, keeps the newest 3 and deletes any older than 30 days. A baseline snapshot was taken on 2026-11-11. The privacy policy says so. |
+| S3 | **Built:** club owner tools (rename, new code, pass, remove and keep out until let back). |
+| S5 | **Built:** a CSP on tryfitos.me (enforced). On the admin panel, the safe parts are enforced and the full policy is report-only until a sign-in has been checked with it. |
+| S6 | **Built:** HSTS and `nosniff` on the API, live from the next API release. |
+| S7 | **Built:** a 7-day cooldown after a decline. |
+| S8 | **Built:** 300 handle searches a day. |
+| S9 | **Built:** a 60-second cache of verified tokens, cleared on sign-out, a role change and account deletion. |
+| S10 | **Waiting:** `fast-xml-parser` 5.12.0 was published 2026-11-03. It goes in once it is two weeks old; FITOS does not use the affected path. |
+| A2 | **Built:** a member is recounted when they finish a session or save or delete a run; the full round runs hourly. |
+| A8 | **Built:** `tool/patch.ps1` repairs a worktree's paths for WSL. |
+| C4, C5, C8, C11, C12, C15 | **Built** (§6). |

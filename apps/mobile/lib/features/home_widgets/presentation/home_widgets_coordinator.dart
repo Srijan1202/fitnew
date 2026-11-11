@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/routing/router.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
+import '../../community/domain/community.dart';
 import '../../health/presentation/controllers/health_providers.dart';
 import '../../home/presentation/controllers/home_providers.dart';
 import '../../nutrition/presentation/controllers/food_log_providers.dart';
@@ -28,7 +29,8 @@ import '../domain/widget_snapshot.dart';
 ///    widgets read it and they are asked to redraw — a second after the
 ///    last change, so a burst writes once.
 ///  * A widget tap opens FITOS with `fitos://widget/<target>`; the screen
-///    opens here (nothing starts without a tap there).
+///    opens here (nothing starts without a tap there). Beta 6.2: so does an
+///    invite link (`https://tryfitos.me/c/<code>`, `/u/<handle>`).
 abstract class HomeWidgets {
   Future<void> save(Map<String, Object?> snapshot);
 
@@ -127,8 +129,15 @@ final homeWidgetsCoordinatorProvider = Provider<void>((ref) {
   );
 });
 
-/// Opens the screen a widget asked for.
+/// Opens the screen a widget asked for. Beta 6.2 (C8, C15): or a
+/// tryfitos.me club or friend link Android handed to FITOS (App Links),
+/// which comes the same way so it waits until someone is signed in.
 void _open(Ref ref, String link) {
+  final invite = InviteLink.parse(link);
+  if (invite != null) {
+    ref.read(routerProvider).push(Routes.communityInvite, extra: invite);
+    return;
+  }
   final target = WidgetTarget.fromLink(link);
   if (target == null) return;
   final router = ref.read(routerProvider);

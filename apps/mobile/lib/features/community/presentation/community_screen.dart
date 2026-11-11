@@ -12,6 +12,7 @@ import '../../premium/presentation/profile_avatar.dart';
 import '../../privacy/presentation/policy_text.dart';
 import '../domain/community.dart';
 import 'community_providers.dart';
+import 'invite_qr.dart';
 
 /// Beta 5.8 (ADR-057; owner 2026-11-08: "Friends / VIT leaderboard ... we
 /// have to make world level"): friends, clubs and the world board. Nobody
@@ -405,30 +406,33 @@ class _Joined extends ConsumerWidget {
 
 /* --------------------------------------------------------------- boards -- */
 
-/// Sessions | Run km, for every board.
-class _MetricToggle extends ConsumerWidget {
-  const _MetricToggle();
+/// What every board ranks by. Beta 6.2 (C11): five choices, so a row of
+/// chips that scrolls sideways.
+class BoardMetricPicker extends ConsumerWidget {
+  const BoardMetricPicker({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final metric = ref.watch(boardMetricProvider);
-    return SegmentedButton<BoardMetric>(
+    return SingleChildScrollView(
       key: const ValueKey('community.metric'),
-      showSelectedIcon: false,
-      segments: const [
-        ButtonSegment(
-          value: BoardMetric.sessions,
-          label:
-              Text('Gym sessions', key: ValueKey('community.metric.sessions')),
-        ),
-        ButtonSegment(
-          value: BoardMetric.distance,
-          label: Text('Run km', key: ValueKey('community.metric.distance')),
-        ),
-      ],
-      selected: {metric},
-      onSelectionChanged: (v) =>
-          ref.read(boardMetricProvider.notifier).set(v.first),
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (final m in BoardMetric.values)
+            Padding(
+              padding: const EdgeInsets.only(right: FitSpacing.xs),
+              child: ChoiceChip(
+                key: ValueKey('community.metric.${m.wire}'),
+                label: Text(m.label),
+                selected: m == metric,
+                showCheckmark: false,
+                onSelected: (_) =>
+                    ref.read(boardMetricProvider.notifier).set(m),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -470,9 +474,14 @@ class BoardBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     final rows = board.rows;
+    final last = board.lastWeek;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (last != null) ...[
+          _LastWeek(last: last, metric: board.metric),
+          const SizedBox(height: FitSpacing.lg),
+        ],
         Text(
           'THIS WEEK · ${_day(board.weekFrom)} – ${_day(board.weekTo)}'
               .toUpperCase(),
@@ -512,6 +521,77 @@ class BoardBlock extends StatelessWidget {
   }
 }
 
+/// Beta 6.2 (C12): last week's top three and your place.
+class _LastWeek extends StatelessWidget {
+  const _LastWeek({required this.last, required this.metric});
+
+  final LastWeek last;
+  final BoardMetric metric;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final mine = last.myLine;
+    return Column(
+      key: const ValueKey('community.lastWeek'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'LAST WEEK · FROM ${_day(last.weekFrom)}'.toUpperCase(),
+          style: t.labelSmall,
+        ),
+        const SizedBox(height: FitSpacing.sm),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final r in last.podium)
+              Expanded(
+                child: Column(
+                  key: ValueKey('community.podium.${r.handle}'),
+                  children: [
+                    ProfileAvatar(
+                      avatarId: r.avatarId,
+                      name: r.handle,
+                      premium: false,
+                      size: r.rank == 1 ? 48 : 40,
+                    ),
+                    const SizedBox(height: FitSpacing.xs),
+                    Text(
+                      ordinal(r.rank),
+                      style: t.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: r.rank == 1 ? FitColors.accent : null,
+                      ),
+                    ),
+                    Text(
+                      '@${r.handle}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: t.bodySmall,
+                    ),
+                    Text(
+                      boardValue(r, metric),
+                      style: t.bodySmall?.copyWith(color: FitColors.ink60),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        if (mine != null) ...[
+          const SizedBox(height: FitSpacing.sm),
+          Text(
+            mine,
+            key: const ValueKey('community.lastWeek.me'),
+            textAlign: TextAlign.center,
+            style: t.bodyMedium,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 class _BoardLine extends StatelessWidget {
   const _BoardLine({required this.row, required this.metric, this.onTap});
 
@@ -522,12 +602,8 @@ class _BoardLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
-    final value = metric == BoardMetric.sessions
-        ? '${row.sessions} ${row.sessions == 1 ? 'session' : 'sessions'}'
-        : kmOf(row.runM);
-    final other = metric == BoardMetric.sessions
-        ? (row.runM > 0 ? kmOf(row.runM) : null)
-        : (row.sessions > 0 ? '${row.sessions} gym' : null);
+    final value = boardValue(row, metric);
+    final other = boardOther(row, metric);
     return InkWell(
       key: ValueKey('community.row.${row.handle}'),
       onTap: row.me || onTap == null ? null : () => onTap!(row),
@@ -564,12 +640,9 @@ class _BoardLine extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: t.titleSmall,
                   ),
-                  if (row.streak > 0 || other != null)
+                  if (other != null)
                     Text(
-                      [
-                        if (row.streak > 0) '${row.streak}-day streak',
-                        if (other != null) other,
-                      ].join(' · '),
+                      other,
                       style: t.bodySmall?.copyWith(color: FitColors.ink60),
                     ),
                 ],
@@ -784,6 +857,10 @@ class _FriendsView extends ConsumerWidget {
                         size: 34,
                       ),
                       title: Text('@${p.handle} ${flagOf(p.country)}'),
+                      onTap: () => context.push(
+                        Routes.communityPerson(p.userId),
+                        extra: p.handle,
+                      ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -815,7 +892,7 @@ class _FriendsView extends ConsumerWidget {
           ],
           Row(
             children: [
-              const Expanded(child: _MetricToggle()),
+              const Expanded(child: BoardMetricPicker()),
               const SizedBox(width: FitSpacing.sm),
               IconButton.filledTonal(
                 key: const ValueKey('community.addFriend'),
@@ -830,13 +907,18 @@ class _FriendsView extends ConsumerWidget {
             board: ref.watch(friendsBoardProvider(metric)),
             emptyText: 'Add friends to see their week here.',
             onRetry: () => ref.invalidate(friendsBoardProvider),
-            onPerson: (r) => showPersonSheet(
-              context,
-              ref,
-              userId: r.userId,
-              handle: r.handle,
-              friend: friendIds.contains(r.userId),
-            ),
+            // Beta 6.2 (C4): a friend's week.
+            onPerson: (r) => friendIds.contains(r.userId)
+                ? context.push(
+                    Routes.communityPerson(r.userId),
+                    extra: r.handle,
+                  )
+                : showPersonSheet(
+                    context,
+                    ref,
+                    userId: r.userId,
+                    handle: r.handle,
+                  ),
           ),
           if (lists != null && lists.outgoing.isNotEmpty) ...[
             const SizedBox(height: FitSpacing.lg),
@@ -874,16 +956,29 @@ class _InviteLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) => handle == null
       ? const SizedBox.shrink()
-      : OutlinedButton.icon(
-          key: const ValueKey('community.invite'),
-          icon: const Icon(Icons.ios_share),
-          label: Text('Invite a friend · @$handle'),
-          onPressed: () => SharePlus.instance.share(
-            ShareParams(
-              text: 'Train with me on FITOS: add @$handle in Community. '
-                  'Get the app at https://tryfitos.me',
+      : Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                key: const ValueKey('community.invite'),
+                icon: const Icon(Icons.ios_share),
+                label: Text('Invite a friend · @$handle'),
+                // Beta 6.2 (C15): the link opens FITOS on "Add @you?".
+                onPressed: () => SharePlus.instance.share(
+                  ShareParams(
+                    text: 'Train with me on FITOS: ${friendInviteUrl(handle!)}',
+                  ),
+                ),
+              ),
             ),
-          ),
+            const SizedBox(width: FitSpacing.sm),
+            IconButton.outlined(
+              key: const ValueKey('community.invite.qr'),
+              tooltip: 'My QR code',
+              icon: const Icon(Icons.qr_code_2),
+              onPressed: () => showHandleQr(context, handle!),
+            ),
+          ],
         );
 }
 
@@ -1184,7 +1279,7 @@ class _WorldView extends ConsumerWidget {
             ),
             const SizedBox(height: FitSpacing.md),
           ],
-          const _MetricToggle(),
+          const BoardMetricPicker(),
           if (profile.country != null) ...[
             const SizedBox(height: FitSpacing.sm),
             SegmentedButton<bool>(

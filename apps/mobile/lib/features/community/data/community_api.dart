@@ -41,6 +41,17 @@ abstract class CommunityApi {
   Future<Result<Club>> joinClub(String code);
   Future<Result<void>> leaveClub(String clubId);
 
+  /// Beta 6.2 (C4): a friend's or club-mate's board data.
+  Future<Result<PersonProfile>> personProfile(String userId);
+
+  /// Beta 6.2 (C5): the owner's tools.
+  Future<Result<Club>> renameClub(String clubId, String name);
+  Future<Result<Club>> newClubCode(String clubId);
+  Future<Result<Club>> passClub(String clubId, String userId);
+  Future<Result<void>> removeMember(String clubId, String userId);
+  Future<Result<List<CommunityPerson>>> removedFrom(String clubId);
+  Future<Result<void>> letBack(String clubId, String userId);
+
   Future<Result<Board>> friendsBoard(BoardMetric metric);
   Future<Result<Board>> clubBoard(String clubId, BoardMetric metric);
   Future<Result<Board>> worldBoard(BoardMetric metric, {String? country});
@@ -243,6 +254,59 @@ class DioCommunityApi implements CommunityApi {
   @override
   Future<Result<void>> leaveClub(String clubId) => _guard(
         () => _dio.delete<void>('/v1/community/clubs/$clubId/membership'),
+      );
+
+  @override
+  Future<Result<PersonProfile>> personProfile(String userId) =>
+      _guard(() async {
+        final r = await _dio
+            .get<Map<String, dynamic>>('/v1/community/people/$userId');
+        return PersonProfile.fromJson(r.data!);
+      });
+
+  @override
+  Future<Result<Club>> renameClub(String clubId, String name) =>
+      _guard(() async {
+        final r = await _dio.patch<Map<String, dynamic>>(
+          '/v1/community/clubs/$clubId',
+          data: {'name': name.trim()},
+        );
+        return Club.fromJson(r.data!);
+      });
+
+  @override
+  Future<Result<Club>> newClubCode(String clubId) => _guard(() async {
+        final r = await _dio
+            .post<Map<String, dynamic>>('/v1/community/clubs/$clubId/code');
+        return Club.fromJson(r.data!);
+      });
+
+  @override
+  Future<Result<Club>> passClub(String clubId, String userId) =>
+      _guard(() async {
+        final r = await _dio.post<Map<String, dynamic>>(
+          '/v1/community/clubs/$clubId/owner',
+          data: {'userId': userId},
+        );
+        return Club.fromJson(r.data!);
+      });
+
+  @override
+  Future<Result<void>> removeMember(String clubId, String userId) => _guard(
+        () => _dio.delete<void>('/v1/community/clubs/$clubId/members/$userId'),
+      );
+
+  @override
+  Future<Result<List<CommunityPerson>>> removedFrom(String clubId) =>
+      _guard(() async {
+        final r = await _dio
+            .get<Map<String, dynamic>>('/v1/community/clubs/$clubId/removed');
+        return _people(r.data);
+      });
+
+  @override
+  Future<Result<void>> letBack(String clubId, String userId) => _guard(
+        () => _dio.delete<void>('/v1/community/clubs/$clubId/removed/$userId'),
       );
 
   Future<Board> _board(String path, Map<String, dynamic> query) async {

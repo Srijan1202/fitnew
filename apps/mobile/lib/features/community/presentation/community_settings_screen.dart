@@ -8,6 +8,7 @@ import '../../../shared/widgets/fit_glass.dart';
 import '../domain/community.dart';
 import 'community_providers.dart';
 import 'community_screen.dart';
+import 'invite_qr.dart';
 
 /// Beta 5.8 (ADR-057): the handle, the country, the world-board choice,
 /// people blocked, and leaving Community.
@@ -48,6 +49,14 @@ class CommunitySettingsScreen extends ConsumerWidget {
                         title: 'Handle',
                         value: '@${p.handle}',
                         onTap: () => _rename(context, ref, p.handle),
+                      ),
+                      // Beta 6.2 (C15): a friend's camera opens FITOS on "Add @you?".
+                      FitRow(
+                        key: const ValueKey('communitySettings.qr'),
+                        icon: Icons.qr_code_2,
+                        title: 'My QR code',
+                        value: 'For friends to scan',
+                        onTap: () => showHandleQr(context, p.handle),
                       ),
                       FitRow(
                         key: const ValueKey('communitySettings.country'),

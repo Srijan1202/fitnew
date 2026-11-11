@@ -138,6 +138,18 @@
             <meta-data
                 android:name="flutter_deeplinking_enabled"
                 android:value="false" />
+            <!-- Beta 6.2 (C8, C15, owner Q1): Android App Links. A club invite
+                 (tryfitos.me/c/<code>) or a friend's QR code (tryfitos.me/u/<handle>)
+                 opens FITOS; tryfitos.me/.well-known/assetlinks.json proves
+                 the site and the app are the same owner's. MainActivity passes the
+                 link to Dart over fitos/widget. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="tryfitos.me" android:pathPrefix="/c/" />
+                <data android:scheme="https" android:host="tryfitos.me" android:pathPrefix="/u/" />
+            </intent-filter>
         </activity>
         <!-- Beta 3.2 (ADR-027 amendment): the app icon. MainActivity is no
              longer the launcher entry: exactly one of these aliases is, Standard

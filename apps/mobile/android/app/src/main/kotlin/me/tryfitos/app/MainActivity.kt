@@ -27,9 +27,18 @@ class MainActivity : FlutterFragmentActivity() {
     private var widgetChannel: MethodChannel? = null
     private var widgetLaunch: String? = null
 
+    /**
+     * A home-screen widget's fitos://widget link, or (beta 6.2, App Links) a
+     * tryfitos.me club or friend invite: both reach Dart over fitos/widget,
+     * never the router.
+     */
     private fun widgetLink(intent: android.content.Intent?): String? {
         val data = intent?.data ?: return null
-        return if (data.scheme == "fitos" && data.host == "widget") data.toString() else null
+        if (data.scheme == "fitos" && data.host == "widget") return data.toString()
+        val path = data.path ?: return null
+        val invite = data.scheme == "https" && data.host == "tryfitos.me" &&
+            (path.startsWith("/c/") || path.startsWith("/u/"))
+        return if (invite) data.toString() else null
     }
 
     /**

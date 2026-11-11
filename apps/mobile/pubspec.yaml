@@ -89,6 +89,8 @@ dependencies:
   # Beta 6.1: the monthly report drawn as a PDF on the phone (pure Dart; no
   # native code, nothing uploaded).
   pdf: 3.13.1
+  # Beta 6.2 (C15): the handle and club QR codes (already in the app through pdf).
+  barcode: 2.2.9
 dev_dependencies:
   flutter_test:
     sdk: flutter

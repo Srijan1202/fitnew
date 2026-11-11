@@ -199,6 +199,11 @@ This:
 ```
 - Migrations are forward-only and backward-compatible, so a rollback never needs a down migration.
 - A release that fails its checks never takes traffic.
+- **A database snapshot before every release** (beta 6.2, audit 2026-11-11 S2). The free tier keeps automatic backups for one day only and refuses more (`FreeTierRestrictionError`). So `deploy.ps1` takes a manual snapshot named `fitos-beta-pre-<sha7>-<date>` before releasing (not with `-SkipMigrate`).
+  - **What it keeps:** the newest three. Any older than 30 days is deleted at the next release, which is the privacy policy's promise (2026-11-11, "How long").
+  - **With no release for a month,** delete the old ones by hand: `aws rds describe-db-snapshots --db-instance-identifier fitos-beta --snapshot-type manual`, then `aws rds delete-db-snapshot --db-snapshot-identifier <id>`.
+  - **To undo a bad migration:** restore the snapshot to a new instance (`aws rds restore-db-instance-from-db-snapshot`), check it, then point the API's `DATABASE_URL` at it, or copy back the rows that were lost.
+- **Rolling back past beta 6.2.** Migration 0054 only adds things, so an older API keeps working. It ignores the new board metrics, club bans and declines, which means someone removed from a club could rejoin through an older server.
 - **Rolling back past beta 6.1** (audit 2026-11-10). The 6.1 data stays and an older API ignores most of it, with three exceptions:
   - **Cycles.** An older API sends a cycle's day numbers (up to 14) on as weekdays, and its own response check refuses them, so those users' plans fail to load. Find them with `select count(*) from programs where schedule = 'cycle' and deleted_at is null`. Ask them to switch to Weekdays first (Training ⋯ → Schedule), or roll forward instead.
   - **Early access.** An older API reads a switch set to Premium as on for everyone. Set such switches to Off or Everyone first.
