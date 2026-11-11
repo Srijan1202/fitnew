@@ -101,6 +101,36 @@ export const clubMembers = pgTable(
   (t) => [primaryKey({ columns: [t.clubId, t.userId] }), index('club_members_user_idx').on(t.userId)],
 );
 
+/**
+ * Beta 6.2 (C5, owner Q2): someone the club's owner removed. They cannot
+ * join again with the code until the owner lets them back.
+ */
+export const clubBans = pgTable(
+  'club_bans',
+  {
+    clubId: uuid('club_id')
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    userId: userRef('user_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.clubId, t.userId] }), index('club_bans_user_idx').on(t.userId)],
+);
+
+/**
+ * Beta 6.2 (S7): a declined friend request. The requester cannot ask the
+ * same person again for FRIEND_DECLINE_COOLDOWN_DAYS.
+ */
+export const friendDeclines = pgTable(
+  'friend_declines',
+  {
+    requesterId: userRef('requester_id'),
+    addresseeId: userRef('addressee_id'),
+    declinedAt: timestamp('declined_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.requesterId, t.addresseeId] }), index('friend_declines_addressee_idx').on(t.addresseeId)],
+);
+
 /** A report of a person or a club, for the admin; the reporter's own row. */
 export const communityReports = pgTable(
   'community_reports',
@@ -138,11 +168,41 @@ export const communityWeekStats = pgTable(
     sessions: smallint('sessions').notNull().default(0),
     runM: integer('run_m').notNull().default(0),
     streak: integer('streak').notNull().default(0),
+    /** Beta 6.2 (C11): days with a counted session or run. */
+    activeDays: smallint('active_days').notNull().default(0),
+    /** Beta 6.2 (C11): sessions planned up to today; null without a programme. */
+    planned: smallint('planned'),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     index('community_week_stats_sessions_idx').on(t.sessions, t.runM),
     index('community_week_stats_run_idx').on(t.runM),
     check('community_week_stats_counts', sql`${t.sessions} between 0 and 7 and ${t.runM} >= 0 and ${t.streak} >= 0`),
+    check('community_week_stats_days', sql`${t.activeDays} between 0 and 7 and (${t.planned} is null or ${t.planned} between 0 and 7)`),
+  ],
+);
+
+/**
+ * Beta 6.2 (C4, C12): a finished week's counts, written when the person's
+ * week rolls over (the finished week recounted first). The last 8 are kept.
+ */
+export const communityWeekHistory = pgTable(
+  'community_week_history',
+  {
+    userId: userRef('user_id'),
+    weekFrom: text('week_from').notNull(),
+    sessions: smallint('sessions').notNull(),
+    runM: integer('run_m').notNull(),
+    streak: integer('streak').notNull(),
+    activeDays: smallint('active_days').notNull(),
+    planned: smallint('planned'),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.weekFrom] }),
+    index('community_week_history_week_idx').on(t.weekFrom),
+    check(
+      'community_week_history_counts',
+      sql`${t.sessions} between 0 and 7 and ${t.runM} >= 0 and ${t.streak} >= 0 and ${t.activeDays} between 0 and 7 and (${t.planned} is null or ${t.planned} between 0 and 7)`,
+    ),
   ],
 );

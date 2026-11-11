@@ -8,9 +8,11 @@ import { randomInt } from 'node:crypto';
 
 import {
   CLUB_CODE_ALPHABET,
+  COMMUNITY_HISTORY_WEEKS,
   COUNTED_RUN,
   COUNTED_SESSION,
   CURRENT_POLICY_VERSION,
+  FRIEND_DECLINE_COOLDOWN_DAYS,
   MAX_CLUB_MEMBERS,
   MAX_CLUBS_JOINED,
   MAX_CLUBS_OWNED,
@@ -26,18 +28,28 @@ import {
   type CommunityProfile,
   type FriendsResponse,
   type JoinCommunityRequest,
+  type LastWeek,
+  type PersonProfile,
   type ReportRequest,
+  type WeekCounts,
   type UpdateCommunityRequest,
 } from '@fitos/contracts';
+import { boardKey, keptPlanPct, placesMoved, rankBy, type BoardMetricKey } from '@fitos/core/community/board';
 import { addDays, localDateOf } from '@fitos/core/nutrition/log';
 import { isoWeekday } from '@fitos/core/progress/streak';
 
 import { AppError } from '../../lib/errors.js';
 import type { PushSender } from '../../lib/push.js';
-import type { CommunityRepository, PersonRow, StatRow } from './repository.js';
+import type { CommunityRepository, PersonRow, StatRow, WeekRow } from './repository.js';
 
 /** The person's current streak (the progress service's own count). */
 export type StreakOf = (userId: string) => Promise<number>;
+
+/** Beta 6.2 (C11): training days planned from `from` to `to`; null without a programme. */
+export type PlannedOf = (userId: string, from: string, to: string) => Promise<number | null>;
+
+/** Past weeks kept per person (the profile shows 4; last week and the one before for "moved"). */
+export const HISTORY_WEEKS_KEPT = 8;
 
 const notJoined = (): AppError =>
   new AppError('FORBIDDEN', 'Join Community first.', [{ path: 'community', issue: 'not-joined' }]);
@@ -58,25 +70,42 @@ export function newClubCode(): string {
   return out;
 }
 
-/** Best first by the metric, then the other count, the streak and the handle. */
+const rowOf = (r: StatRow & { rank: number }, viewer: string): BoardRow => ({
+  rank: r.rank,
+  ...personOf(r),
+  sessions: r.sessions,
+  runM: r.runM,
+  streak: r.streak,
+  activeDays: r.activeDays,
+  keptPct: r.keptPct,
+  me: r.userId === viewer,
+});
+
+/** Best first by the metric (core rankBy: ties share a place, 1, 2, 2, 4). */
 export function rankRows(rows: readonly StatRow[], metric: BoardMetric, viewer: string): BoardRow[] {
-  const key = (r: StatRow): number[] => (metric === 'sessions' ? [r.sessions, r.runM, r.streak] : [r.runM, r.sessions, r.streak]);
-  const sorted = [...rows].sort((a, b) => {
-    const ka = key(a);
-    const kb = key(b);
-    for (let i = 0; i < ka.length; i++) if (ka[i] !== kb[i]) return kb[i]! - ka[i]!;
-    return a.handle.localeCompare(b.handle);
-  });
-  // Equal counts share a rank (1, 2, 2, 4).
-  const out: BoardRow[] = [];
-  sorted.forEach((r, i) => {
-    const prev = sorted[i - 1];
-    const tied = prev !== undefined && key(prev).every((v, j) => v === key(r)[j]);
-    const rank = tied ? out[i - 1]!.rank : i + 1;
-    out.push({ rank, ...personOf(r), sessions: r.sessions, runM: r.runM, streak: r.streak, me: r.userId === viewer });
-  });
-  return out;
+  return rankBy(rows, metric).map((r) => rowOf(r, viewer));
 }
+
+/** A stored week as a board row's counts. */
+const statOf = (p: PersonRow, w: WeekRow): StatRow => ({
+  ...p,
+  sessions: w.sessions,
+  runM: w.runM,
+  streak: w.streak,
+  activeDays: w.activeDays,
+  keptPct: keptPlanPct(w.sessions, w.planned ?? 0),
+});
+
+const weekCountsOf = (w: WeekRow): WeekCounts => ({
+  weekFrom: w.weekFrom,
+  sessions: w.sessions,
+  runM: w.runM,
+  activeDays: w.activeDays,
+  keptPct: keptPlanPct(w.sessions, w.planned ?? 0),
+});
+
+/** Something counted for this metric (the first key above zero). */
+const counted = (metric: BoardMetricKey, r: StatRow): boolean => (boardKey(metric, r)[0] ?? 0) > 0;
 
 export class CommunityService {
   constructor(
@@ -84,6 +113,7 @@ export class CommunityService {
     private readonly streakOf: StreakOf,
     private readonly push: PushSender,
     private readonly now: () => Date = () => new Date(),
+    private readonly plannedOf: PlannedOf = async () => null,
   ) {}
 
   /* -------------------------------------------------------------- joining -- */
@@ -184,6 +214,9 @@ export class CommunityService {
     if (existing?.status === 'accepted') return { status: 'friends' };
     if (existing !== null && existing.requesterId === other.userId) return this.accept(viewer, other.userId);
     if (existing !== null) return { status: 'requested' };
+    // Beta 6.2 (S7): they declined lately; it looks sent, nothing is.
+    const since = new Date(this.now().getTime() - FRIEND_DECLINE_COOLDOWN_DAYS * 86_400_000);
+    if (await this.repo.declinedSince(viewer, other.userId, since)) return { status: 'requested' };
     if ((await this.repo.friendCount(viewer)) >= MAX_FRIENDS) {
       throw new AppError('CONFLICT', `${MAX_FRIENDS} friends is the most for now.`, [{ path: 'friends', issue: 'limit' }]);
     }
@@ -197,6 +230,7 @@ export class CommunityService {
     if ((await this.repo.visible(viewer, requester)) === null || !(await this.repo.accept(requester, viewer))) {
       throw new AppError('NOT_FOUND', 'No such friend request.');
     }
+    await this.repo.clearDeclines(viewer, requester);
     await this.tell(requester, 'Friend request accepted', `You and @${me.handle} are friends on FITOS.`, { type: 'community', screen: 'friends' });
     return { status: 'friends' };
   }
@@ -204,7 +238,34 @@ export class CommunityService {
   /** Decline, cancel or unfriend: the same act. */
   async unfriend(viewer: string, other: string): Promise<void> {
     await this.requireMember(viewer);
+    const f = await this.repo.friendship(viewer, other);
     await this.repo.unfriend(viewer, other);
+    // Beta 6.2 (S7): declining a request starts the requester's cooldown.
+    if (f?.status === 'pending' && f.addresseeId === viewer) await this.repo.recordDecline(other, viewer);
+  }
+
+  /** Beta 6.2 (C4, owner Q3): a friend's or club-mate's board data; 404 for anyone else. */
+  async personProfile(viewer: string, userId: string): Promise<PersonProfile> {
+    await this.requireMember(viewer);
+    const p = userId === viewer ? null : await this.repo.visible(viewer, userId);
+    if (p === null) throw new AppError('NOT_FOUND', 'No such member.');
+    const [f, common] = await Promise.all([this.repo.friendship(viewer, userId), this.repo.clubsInCommon(viewer, userId)]);
+    const friend = f?.status === 'accepted';
+    if (!friend && common.length === 0) throw new AppError('NOT_FOUND', 'No such member.');
+    await this.refreshOne(userId);
+    const now = (await this.repo.stats(userId))!;
+    const weeks = Array.from({ length: COMMUNITY_HISTORY_WEEKS }, (_, i) => addDays(now.weekFrom, -7 * (COMMUNITY_HISTORY_WEEKS - i)));
+    const past = new Map((await this.repo.history([userId], weeks)).map((h) => [h.weekFrom, h]));
+    const zero = (weekFrom: string): WeekRow => ({ weekFrom, sessions: 0, runM: 0, streak: 0, activeDays: 0, planned: null });
+    return {
+      person: personOf(p),
+      relation: friend ? 'friend' : 'club-mate',
+      friendsSince: friend && f.acceptedAt !== null ? f.acceptedAt.toISOString() : null,
+      streak: now.streak,
+      thisWeek: weekCountsOf(now),
+      weeks: weeks.map((w) => weekCountsOf(past.get(w) ?? zero(w))),
+      clubsInCommon: common,
+    };
   }
 
   async block(viewer: string, other: string): Promise<void> {
@@ -256,6 +317,9 @@ export class CommunityService {
     if (club === null) throw new AppError('NOT_FOUND', 'No club has that code.');
     if (await this.repo.isMember(club.id, viewer)) return this.clubOf(club, viewer);
     if (await this.repo.blockedEitherWay(viewer, club.ownerId)) throw new AppError('NOT_FOUND', 'No club has that code.');
+    if (await this.repo.isBanned(club.id, viewer)) {
+      throw new AppError('FORBIDDEN', "The club's owner removed you from this club.", [{ path: 'clubs', issue: 'removed' }]);
+    }
     if ((await this.repo.joinedCount(viewer)) >= MAX_CLUBS_JOINED) {
       throw new AppError('CONFLICT', `You can be in ${MAX_CLUBS_JOINED} clubs.`, [{ path: 'clubs', issue: 'joined-limit' }]);
     }
@@ -269,6 +333,59 @@ export class CommunityService {
     await this.repo.inTransaction((tx) => tx.leaveClub(clubId, viewer));
   }
 
+  /* --------------------------------------- beta 6.2 (C5): the owner's tools -- */
+
+  /** The club when the viewer owns it: 404 when they are not in it, 403 when they are but do not own it. */
+  private async requireOwner(viewer: string, clubId: string) {
+    await this.requireMember(viewer);
+    const c = await this.repo.club(clubId);
+    if (c === null || !(await this.repo.isMember(clubId, viewer))) throw new AppError('NOT_FOUND', 'No such club.');
+    if (c.ownerId !== viewer) throw new AppError('FORBIDDEN', 'Only the club\'s owner can do that.', [{ path: 'clubs', issue: 'not-owner' }]);
+    return c;
+  }
+
+  async renameClub(viewer: string, clubId: string, name: string): Promise<Club> {
+    await this.requireOwner(viewer, clubId);
+    await this.repo.renameClub(clubId, name);
+    return this.clubOf((await this.repo.club(clubId))!, viewer);
+  }
+
+  /** A new code: the old one stops working at once. */
+  async newClubCode(viewer: string, clubId: string): Promise<Club> {
+    await this.requireOwner(viewer, clubId);
+    for (let attempt = 0; attempt < 5; attempt++) {
+      if (await this.repo.setClubCode(clubId, newClubCode())) return this.clubOf((await this.repo.club(clubId))!, viewer);
+    }
+    throw new AppError('INTERNAL', 'Could not make a club code; try again.');
+  }
+
+  /** Pass the club to another member; they are told. */
+  async passClub(viewer: string, clubId: string, userId: string): Promise<Club> {
+    const c = await this.requireOwner(viewer, clubId);
+    if (userId === viewer || !(await this.repo.isMember(clubId, userId))) throw new AppError('NOT_FOUND', 'No such member in this club.');
+    await this.repo.setClubOwner(clubId, userId);
+    await this.tell(userId, 'A club is yours', `You now run ${c.name} on FITOS.`, { type: 'community', screen: 'clubs' });
+    return this.clubOf((await this.repo.club(clubId))!, viewer);
+  }
+
+  /** Out, and kept out until let back (owner Q2). */
+  async removeMember(viewer: string, clubId: string, userId: string): Promise<void> {
+    await this.requireOwner(viewer, clubId);
+    if (userId === viewer) throw new AppError('VALIDATION_FAILED', 'Pass the club to someone, or leave it.');
+    if (!(await this.repo.isMember(clubId, userId))) throw new AppError('NOT_FOUND', 'No such member in this club.');
+    await this.repo.inTransaction((tx) => tx.removeFromClub(clubId, userId));
+  }
+
+  async removedFrom(viewer: string, clubId: string): Promise<CommunityPerson[]> {
+    await this.requireOwner(viewer, clubId);
+    return (await this.repo.removedFrom(clubId)).map(personOf);
+  }
+
+  async letBack(viewer: string, clubId: string, userId: string): Promise<void> {
+    await this.requireOwner(viewer, clubId);
+    if (!(await this.repo.letBack(clubId, userId))) throw new AppError('NOT_FOUND', 'They were not removed from this club.');
+  }
+
   /* --------------------------------------------------------------- boards -- */
 
   private async week(viewer: string): Promise<{ from: string; to: string }> {
@@ -280,7 +397,26 @@ export class CommunityService {
 
   private async board(viewer: string, metric: BoardMetric, rows: StatRow[]): Promise<Board> {
     const w = await this.week(viewer);
-    return { metric, weekFrom: w.from, weekTo: w.to, rows: rankRows(rows, metric, viewer), me: null, total: rows.length };
+    const ranked = rankRows(rows, metric, viewer);
+    // Beta 6.2 (C12): the same people, last week and the week before.
+    const weeks = [addDays(w.from, -7), addDays(w.from, -14)];
+    const people = new Map(rows.map((r) => [r.userId, r as PersonRow]));
+    const past = await this.repo.history([...people.keys()], weeks);
+    const at = (week: string) => past.filter((h) => h.weekFrom === week).map((h) => statOf(people.get(h.userId)!, h));
+    return { metric, weekFrom: w.from, weekTo: w.to, rows: ranked, me: null, total: ranked.length, lastWeek: this.lastWeek(viewer, metric, weeks, at(weeks[0]!), at(weeks[1]!)) };
+  }
+
+  /**
+   * Beta 6.2 (C12): last week's top three (only people who counted
+   * something), the viewer's place, and the places moved since the week before.
+   */
+  private lastWeek(viewer: string, metric: BoardMetric, weeks: string[], last: StatRow[], before: StatRow[]): LastWeek | null {
+    const lastRanked = rankBy(last, metric);
+    const podium = lastRanked.filter((r) => r.rank <= 3 && counted(metric, r)).map((r) => rowOf(r, viewer));
+    if (podium.length === 0) return null;
+    const rankIn = (rs: (StatRow & { rank: number })[]) => rs.find((r) => r.userId === viewer)?.rank ?? null;
+    const myRank = rankIn(lastRanked);
+    return { weekFrom: weeks[0]!, podium, myRank, moved: placesMoved(rankIn(rankBy(before, metric)), myRank) };
   }
 
   async friendsBoard(viewer: string, metric: BoardMetric): Promise<Board> {
@@ -303,23 +439,52 @@ export class CommunityService {
     const w = await this.week(viewer);
     const r = await this.repo.worldBoard(viewer, metric, country, WORLD_BOARD_ROWS);
     const rows = rankRows(r.rows, metric, viewer);
-    const me = r.me === null ? null : { ...rankRows([r.me], metric, viewer)[0]!, rank: r.me.rank };
-    return { metric, weekFrom: w.from, weekTo: w.to, rows, me, total: r.total };
+    const me = r.me === null ? null : { ...rowOf({ ...r.me, rank: r.me.rank }, viewer) };
+    // Beta 6.2 (C12): last week among those who chose the world board and counted something.
+    const weeks = [addDays(w.from, -7), addDays(w.from, -14)];
+    const past = (await this.repo.worldHistory(country, weeks)).map((h) => ({ week: h.weekFrom, row: statOf(h, h) }));
+    const at = (week: string) => past.filter((p) => p.week === week && counted(metric, p.row)).map((p) => p.row);
+    let lastWeek = this.lastWeek(viewer, metric, weeks, at(weeks[0]!), at(weeks[1]!));
+    if (lastWeek !== null) {
+      // Someone who blocked the viewer, or was blocked, is left off the podium (the places stay true).
+      const shown = [];
+      for (const p of lastWeek.podium) if (p.me || !(await this.repo.blockedEitherWay(viewer, p.userId))) shown.push(p);
+      lastWeek = shown.length === 0 ? null : { ...lastWeek, podium: shown };
+    }
+    return { metric, weekFrom: w.from, weekTo: w.to, rows, me, total: r.total, lastWeek };
   }
 
   /* --------------------------------------------------------- week counts -- */
 
-  /** This person's counts for their week, from their synced records. */
+  /**
+   * This person's counts for their week, from their synced records. Beta 6.2:
+   * with active days and the sessions planned up to today; when their week has
+   * rolled over, the finished week is recounted and kept first (C12).
+   */
   async refreshOne(userId: string): Promise<void> {
     const tz = await this.repo.timezoneOf(userId);
     const today = localDateOf(this.now(), tz);
     const from = addDays(today, 1 - isoWeekday(today));
-    const [sessions, runM, streak] = await Promise.all([
-      this.repo.countedSessions(userId, tz, from, COUNTED_SESSION.minSets, COUNTED_SESSION.minSeconds),
-      this.repo.countedRunM(userId, tz, from, COUNTED_RUN.minM, COUNTED_RUN.fastestSecPerKm, COUNTED_RUN.slowestSecPerKm),
+    const prev = await this.repo.stats(userId);
+    if (prev !== null && prev.weekFrom < from) {
+      const end = addDays(prev.weekFrom, 6);
+      const [c, planned] = await Promise.all([
+        this.repo.weekCounts(userId, tz, prev.weekFrom, end, COUNTED_SESSION, COUNTED_RUN),
+        this.plannedOf(userId, prev.weekFrom, end),
+      ]);
+      await this.repo.saveHistory(userId, { weekFrom: prev.weekFrom, ...c, streak: prev.streak, planned }, HISTORY_WEEKS_KEPT);
+    }
+    const [c, planned, streak] = await Promise.all([
+      this.repo.weekCounts(userId, tz, from, today, COUNTED_SESSION, COUNTED_RUN),
+      this.plannedOf(userId, from, today),
       this.streakOf(userId),
     ]);
-    await this.repo.saveStats(userId, from, sessions, runM, streak);
+    await this.repo.saveStats(userId, from, c.sessions, c.runM, streak, c.activeDays, planned);
+  }
+
+  /** Beta 6.2 (A2): recount someone after they sync a session or a run, when they are in Community. */
+  async refreshIfMember(userId: string): Promise<void> {
+    if ((await this.repo.profile(userId)) !== null) await this.refreshOne(userId);
   }
 
   /** Every member, one at a time (the timer); a failure skips that person. */

@@ -3,17 +3,21 @@
  * reports and the week's counts. Every read of another person passes the
  * visibility rule: a member, not hidden by the admin, and no block either way.
  */
-import { and, asc, desc, eq, inArray, or, sql, type AnyColumn } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, or, sql, type AnyColumn, type SQL } from 'drizzle-orm';
+import type { BoardMetricKey } from '@fitos/core/community/board';
 
 import type { DatabaseHandle } from '../../db/client.js';
 import {
   auditLogs,
+  clubBans,
   clubMembers,
   clubs,
   communityBlocks,
   communityProfiles,
   communityReports,
+  communityWeekHistory,
   communityWeekStats,
+  friendDeclines,
   consentRecords,
   friendships,
   pushTokens,
@@ -37,6 +41,61 @@ export interface StatRow extends PersonRow {
   sessions: number;
   runM: number;
   streak: number;
+  /** Beta 6.2 (C11). */
+  activeDays: number;
+  keptPct: number | null;
+}
+
+/** Beta 6.2: one person's counts for one week, as stored. */
+export interface WeekRow {
+  weekFrom: string;
+  sessions: number;
+  runM: number;
+  streak: number;
+  activeDays: number;
+  planned: number | null;
+}
+
+/** Sessions done of planned, in per cent (core keptPlanPct, in SQL). */
+const keptPctOf = (sessions: AnyColumn, planned: AnyColumn): SQL<number | null> =>
+  sql<number | null>`case when ${planned} is null or ${planned} <= 0 then null
+    else round(100.0 * least(greatest(${sessions}, 0), ${planned}) / ${planned})::int end`;
+
+/** Beta 6.2: the world board's order for a metric (core boardKey, in SQL). */
+function worldKey(metric: BoardMetricKey): SQL[] {
+  const s = sql`${communityWeekStats.sessions}`;
+  const m = sql`${communityWeekStats.runM}`;
+  const k = sql`${communityWeekStats.streak}`;
+  const d = sql`${communityWeekStats.activeDays}`;
+  const p = sql`coalesce(${keptPctOf(communityWeekStats.sessions, communityWeekStats.planned)}, -1)`;
+  switch (metric) {
+    case 'sessions':
+      return [s, m, k];
+    case 'distance':
+      return [m, s, k];
+    case 'streak':
+      return [k, s, m];
+    case 'active-days':
+      return [d, s, m];
+    case 'plan':
+      return [p, s, k];
+  }
+}
+
+/** The viewer's own values in [worldKey]'s order. */
+function worldKeyOf(metric: BoardMetricKey, r: StatRow): number[] {
+  switch (metric) {
+    case 'sessions':
+      return [r.sessions, r.runM, r.streak];
+    case 'distance':
+      return [r.runM, r.sessions, r.streak];
+    case 'streak':
+      return [r.streak, r.sessions, r.runM];
+    case 'active-days':
+      return [r.activeDays, r.sessions, r.runM];
+    case 'plan':
+      return [r.keptPct ?? -1, r.sessions, r.streak];
+  }
 }
 
 /** True when neither has blocked the other. */
@@ -119,6 +178,7 @@ export class CommunityRepository {
     await this.db.delete(clubMembers).where(eq(clubMembers.userId, userId));
     await this.db.delete(friendships).where(or(eq(friendships.requesterId, userId), eq(friendships.addresseeId, userId)));
     await this.db.delete(communityWeekStats).where(eq(communityWeekStats.userId, userId));
+    await this.db.delete(communityWeekHistory).where(eq(communityWeekHistory.userId, userId));
     await this.db.delete(communityProfiles).where(eq(communityProfiles.userId, userId));
   }
 
@@ -208,6 +268,48 @@ export class CommunityRepository {
       .from(friendships)
       .where(and(or(eq(friendships.requesterId, userId), eq(friendships.addresseeId, userId)), eq(friendships.status, 'accepted')));
     return r?.n ?? 0;
+  }
+
+  /** Beta 6.2 (S7): the addressee declined the requester's request. */
+  async recordDecline(requester: string, addressee: string): Promise<void> {
+    await this.db
+      .insert(friendDeclines)
+      .values({ requesterId: requester, addresseeId: addressee })
+      .onConflictDoUpdate({ target: [friendDeclines.requesterId, friendDeclines.addresseeId], set: { declinedAt: new Date() } });
+  }
+
+  async declinedSince(requester: string, addressee: string, since: Date): Promise<boolean> {
+    const [r] = await this.db
+      .select({ one: sql<number>`1` })
+      .from(friendDeclines)
+      .where(and(eq(friendDeclines.requesterId, requester), eq(friendDeclines.addresseeId, addressee), gte(friendDeclines.declinedAt, since)))
+      .limit(1);
+    return r !== undefined;
+  }
+
+  async clearDeclines(a: string, b: string): Promise<void> {
+    await this.db
+      .delete(friendDeclines)
+      .where(
+        or(
+          and(eq(friendDeclines.requesterId, a), eq(friendDeclines.addresseeId, b)),
+          and(eq(friendDeclines.requesterId, b), eq(friendDeclines.addresseeId, a)),
+        ),
+      );
+  }
+
+  /** Beta 6.2 (C4): clubs both are in. */
+  async clubsInCommon(a: string, b: string): Promise<{ id: string; name: string }[]> {
+    return this.db
+      .select({ id: clubs.id, name: clubs.name })
+      .from(clubs)
+      .where(
+        and(
+          sql`exists (select 1 from ${clubMembers} m where m.club_id = ${clubs.id} and m.user_id = ${a})`,
+          sql`exists (select 1 from ${clubMembers} m where m.club_id = ${clubs.id} and m.user_id = ${b})`,
+        ),
+      )
+      .orderBy(asc(clubs.name));
   }
 
   async incomingCount(userId: string): Promise<number> {
@@ -364,6 +466,59 @@ export class CommunityRepository {
     return (await this.db.delete(clubs).where(eq(clubs.id, clubId)).returning()).length > 0;
   }
 
+  /* ------------------------------------------------- beta 6.2: the owner -- */
+
+  async renameClub(clubId: string, name: string): Promise<void> {
+    await this.db.update(clubs).set({ name }).where(eq(clubs.id, clubId));
+  }
+
+  /** False when the code was taken meanwhile. */
+  async setClubCode(clubId: string, code: string): Promise<boolean> {
+    const taken = await this.db.select({ id: clubs.id }).from(clubs).where(eq(clubs.code, code)).limit(1);
+    if (taken.length > 0) return false;
+    try {
+      await this.db.update(clubs).set({ code }).where(eq(clubs.id, clubId));
+      return true;
+    } catch (e) {
+      if (String((e as { code?: string }).code) === '23505') return false;
+      throw e;
+    }
+  }
+
+  async setClubOwner(clubId: string, userId: string): Promise<void> {
+    await this.db.update(clubs).set({ ownerId: userId }).where(eq(clubs.id, clubId));
+  }
+
+  /** Out of the club, and kept out until let back (owner Q2). */
+  async removeFromClub(clubId: string, userId: string): Promise<void> {
+    await this.db.delete(clubMembers).where(and(eq(clubMembers.clubId, clubId), eq(clubMembers.userId, userId)));
+    await this.db.insert(clubBans).values({ clubId, userId }).onConflictDoNothing();
+  }
+
+  async letBack(clubId: string, userId: string): Promise<boolean> {
+    return (await this.db.delete(clubBans).where(and(eq(clubBans.clubId, clubId), eq(clubBans.userId, userId))).returning()).length > 0;
+  }
+
+  async isBanned(clubId: string, userId: string): Promise<boolean> {
+    const [r] = await this.db
+      .select({ one: sql<number>`1` })
+      .from(clubBans)
+      .where(and(eq(clubBans.clubId, clubId), eq(clubBans.userId, userId)))
+      .limit(1);
+    return r !== undefined;
+  }
+
+  /** The people removed from a club who are still in Community, by handle. */
+  async removedFrom(clubId: string): Promise<PersonRow[]> {
+    return this.db
+      .select(person)
+      .from(clubBans)
+      .innerJoin(communityProfiles, eq(communityProfiles.userId, clubBans.userId))
+      .innerJoin(users, eq(users.id, communityProfiles.userId))
+      .where(eq(clubBans.clubId, clubId))
+      .orderBy(asc(communityProfiles.handle));
+  }
+
   /* --------------------------------------------------------------- boards -- */
 
   private statSelect = {
@@ -371,6 +526,8 @@ export class CommunityRepository {
     sessions: sql<number>`coalesce(${communityWeekStats.sessions}, 0)::int`,
     runM: sql<number>`coalesce(${communityWeekStats.runM}, 0)::int`,
     streak: sql<number>`coalesce(${communityWeekStats.streak}, 0)::int`,
+    activeDays: sql<number>`coalesce(${communityWeekStats.activeDays}, 0)::int`,
+    keptPct: keptPctOf(communityWeekStats.sessions, communityWeekStats.planned),
   };
 
   /** The viewer and their friends. */
@@ -413,17 +570,16 @@ export class CommunityRepository {
    * The world board (or a country's): members who chose to be on it, with a
    * count this week, best first. One indexed read of the counts table.
    */
-  async worldBoard(viewer: string, metric: 'sessions' | 'distance', country: string | null, limit: number): Promise<{ rows: StatRow[]; total: number; me: (StatRow & { rank: number }) | null }> {
+  async worldBoard(viewer: string, metric: BoardMetricKey, country: string | null, limit: number): Promise<{ rows: StatRow[]; total: number; me: (StatRow & { rank: number }) | null }> {
+    const key = worldKey(metric);
+    // On it: something counted this week (the plan board: a plan and a session).
     const where = and(
       eq(communityProfiles.onWorld, true),
       eq(communityProfiles.hidden, false),
       country === null ? undefined : eq(communityProfiles.country, country),
-      metric === 'sessions' ? sql`${communityWeekStats.sessions} > 0` : sql`${communityWeekStats.runM} > 0`,
+      metric === 'plan' ? sql`${communityWeekStats.planned} > 0 and ${communityWeekStats.sessions} > 0` : sql`${key[0]} > 0`,
     );
-    const order =
-      metric === 'sessions'
-        ? [desc(communityWeekStats.sessions), desc(communityWeekStats.runM), desc(communityWeekStats.streak), asc(communityProfiles.handle)]
-        : [desc(communityWeekStats.runM), desc(communityWeekStats.sessions), desc(communityWeekStats.streak), asc(communityProfiles.handle)];
+    const order = [...key.map((k) => sql`${k} desc`), asc(communityProfiles.handle)];
     const rows = await this.db
       .select(this.statSelect)
       .from(communityWeekStats)
@@ -447,10 +603,8 @@ export class CommunityRepository {
         .where(and(where, eq(communityProfiles.userId, viewer)))
         .limit(1);
       if (mine !== undefined) {
-        const ahead =
-          metric === 'sessions'
-            ? sql`(${communityWeekStats.sessions}, ${communityWeekStats.runM}, ${communityWeekStats.streak}) > (${mine.sessions}, ${mine.runM}, ${mine.streak})`
-            : sql`(${communityWeekStats.runM}, ${communityWeekStats.sessions}, ${communityWeekStats.streak}) > (${mine.runM}, ${mine.sessions}, ${mine.streak})`;
+        const mineKey = worldKeyOf(metric, mine);
+        const ahead = sql`(${sql.join(key, sql`, `)}) > (${sql.join(mineKey.map((v) => sql`${v}`), sql`, `)})`;
         const [above] = await this.db
           .select({ n: sql<number>`count(*)::int` })
           .from(communityWeekStats)
@@ -474,18 +628,58 @@ export class CommunityRepository {
    * `minSeconds` long, at most one a local day, from `weekFrom` in `tz`.
    */
   async countedSessions(userId: string, tz: string, weekFrom: string, minSets: number, minSeconds: number): Promise<number> {
-    const [r] = await this.db.execute<{ n: number }>(sql`
-      select count(distinct (ws.completed_at at time zone ${tz})::date)::int as n
+    return Math.min(7, (await this.sessionDays(userId, tz, weekFrom, '9999-12-31', minSets, minSeconds)).length);
+  }
+
+  /** Beta 6.2: the local days with a counted session, from `from` to `to`. */
+  private async sessionDays(userId: string, tz: string, from: string, to: string, minSets: number, minSeconds: number): Promise<string[]> {
+    const rows = await this.db.execute<{ d: string }>(sql`
+      select distinct ((ws.completed_at at time zone ${tz})::date)::text as d
       from workout_sessions ws
       where ws.user_id = ${userId}
         and ws.status = 'completed'
         and ws.deleted_at is null
         and ws.completed_at is not null
-        and (ws.completed_at at time zone ${tz})::date >= ${weekFrom}::date
+        and (ws.completed_at at time zone ${tz})::date between ${from}::date and ${to}::date
         and coalesce(ws.duration_seconds, extract(epoch from ws.completed_at - ws.started_at)) >= ${minSeconds}
         and (select count(*) from set_logs sl join session_exercises se on se.id = sl.session_exercise_id
              where se.session_id = ws.id and se.removed_at is null and sl.deleted_at is null and sl.reps > 0) >= ${minSets}`);
-    return Math.min(7, r?.n ?? 0);
+    return [...rows].map((r) => r.d);
+  }
+
+  /** Beta 6.2: the local days with counted runs and their metres, from `from` to `to`. */
+  private async runDays(userId: string, tz: string, from: string, to: string, minM: number, fastest: number, slowest: number): Promise<{ d: string; m: number }[]> {
+    const rows = await this.db.execute<{ d: string; m: number }>(sql`
+      select ((r.started_at at time zone ${tz})::date)::text as d, sum(r.distance_m)::int as m
+      from runs r
+      where r.user_id = ${userId}
+        and (r.started_at at time zone ${tz})::date between ${from}::date and ${to}::date
+        and r.distance_m >= ${minM}
+        and (r.source = 'watch' or (r.kind = 'outdoor' and r.track_points is not null))
+        and r.duration_seconds > 0
+        and coalesce(r.avg_pace_sec_per_km, r.duration_seconds / (r.distance_m / 1000)) between ${fastest} and ${slowest}
+      group by 1`);
+    return [...rows];
+  }
+
+  /**
+   * Beta 6.2: a week's counted sessions, run metres and active days (a day
+   * with either), from `from` to `to`.
+   */
+  async weekCounts(
+    userId: string,
+    tz: string,
+    from: string,
+    to: string,
+    session: { minSets: number; minSeconds: number },
+    run: { minM: number; fastestSecPerKm: number; slowestSecPerKm: number },
+  ): Promise<{ sessions: number; runM: number; activeDays: number }> {
+    const [s, r] = await Promise.all([
+      this.sessionDays(userId, tz, from, to, session.minSets, session.minSeconds),
+      this.runDays(userId, tz, from, to, run.minM, run.fastestSecPerKm, run.slowestSecPerKm),
+    ]);
+    const days = new Set([...s, ...r.map((x) => x.d)]);
+    return { sessions: Math.min(7, s.length), runM: r.reduce((n, x) => n + x.m, 0), activeDays: Math.min(7, days.size) };
   }
 
   /**
@@ -505,11 +699,87 @@ export class CommunityRepository {
     return r?.m ?? 0;
   }
 
-  async saveStats(userId: string, weekFrom: string, sessions: number, runM: number, streak: number): Promise<void> {
+  async saveStats(userId: string, weekFrom: string, sessions: number, runM: number, streak: number, activeDays = 0, planned: number | null = null): Promise<void> {
     await this.db
       .insert(communityWeekStats)
-      .values({ userId, weekFrom, sessions, runM, streak })
-      .onConflictDoUpdate({ target: communityWeekStats.userId, set: { weekFrom, sessions, runM, streak, updatedAt: new Date() } });
+      .values({ userId, weekFrom, sessions, runM, streak, activeDays, planned })
+      .onConflictDoUpdate({ target: communityWeekStats.userId, set: { weekFrom, sessions, runM, streak, activeDays, planned, updatedAt: new Date() } });
+  }
+
+  /** Beta 6.2: the stored counts for this person's current week, or null. */
+  async stats(userId: string): Promise<WeekRow | null> {
+    const [r] = await this.db
+      .select({
+        weekFrom: communityWeekStats.weekFrom,
+        sessions: communityWeekStats.sessions,
+        runM: communityWeekStats.runM,
+        streak: communityWeekStats.streak,
+        activeDays: communityWeekStats.activeDays,
+        planned: communityWeekStats.planned,
+      })
+      .from(communityWeekStats)
+      .where(eq(communityWeekStats.userId, userId))
+      .limit(1);
+    return r ?? null;
+  }
+
+  /** Beta 6.2: a finished week, kept; only the newest `keep` weeks stay. */
+  async saveHistory(userId: string, w: WeekRow, keep: number): Promise<void> {
+    await this.db
+      .insert(communityWeekHistory)
+      .values({ userId, ...w })
+      .onConflictDoUpdate({
+        target: [communityWeekHistory.userId, communityWeekHistory.weekFrom],
+        set: { sessions: w.sessions, runM: w.runM, streak: w.streak, activeDays: w.activeDays, planned: w.planned },
+      });
+    await this.db.execute(sql`
+      delete from ${communityWeekHistory}
+      where ${communityWeekHistory.userId} = ${userId}
+        and ${communityWeekHistory.weekFrom} not in (
+          select h.week_from from community_week_history h where h.user_id = ${userId} order by h.week_from desc limit ${keep})`);
+  }
+
+  /** Beta 6.2: stored past weeks for these people and weeks. */
+  async history(userIds: readonly string[], weeks: readonly string[]): Promise<(WeekRow & { userId: string })[]> {
+    if (userIds.length === 0 || weeks.length === 0) return [];
+    return this.db
+      .select({
+        userId: communityWeekHistory.userId,
+        weekFrom: communityWeekHistory.weekFrom,
+        sessions: communityWeekHistory.sessions,
+        runM: communityWeekHistory.runM,
+        streak: communityWeekHistory.streak,
+        activeDays: communityWeekHistory.activeDays,
+        planned: communityWeekHistory.planned,
+      })
+      .from(communityWeekHistory)
+      .where(and(inArray(communityWeekHistory.userId, [...userIds]), inArray(communityWeekHistory.weekFrom, [...weeks])));
+  }
+
+  /** Beta 6.2 (C12): the world board's people (who chose it, not hidden) in past weeks. */
+  async worldHistory(country: string | null, weeks: readonly string[]): Promise<(PersonRow & WeekRow)[]> {
+    if (weeks.length === 0) return [];
+    return this.db
+      .select({
+        ...person,
+        weekFrom: communityWeekHistory.weekFrom,
+        sessions: communityWeekHistory.sessions,
+        runM: communityWeekHistory.runM,
+        streak: communityWeekHistory.streak,
+        activeDays: communityWeekHistory.activeDays,
+        planned: communityWeekHistory.planned,
+      })
+      .from(communityWeekHistory)
+      .innerJoin(communityProfiles, eq(communityProfiles.userId, communityWeekHistory.userId))
+      .innerJoin(users, eq(users.id, communityProfiles.userId))
+      .where(
+        and(
+          inArray(communityWeekHistory.weekFrom, [...weeks]),
+          eq(communityProfiles.onWorld, true),
+          eq(communityProfiles.hidden, false),
+          country === null ? undefined : eq(communityProfiles.country, country),
+        ),
+      );
   }
 
   /* -------------------------------------------------------------- reports -- */

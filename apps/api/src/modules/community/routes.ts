@@ -15,6 +15,7 @@ import {
   adminCommunityReportQuerySchema,
   adminUpdateMemberSchema,
   blockRequestSchema,
+  boardMetricSchema,
   boardQuerySchema,
   boardSchema,
   clubListSchema,
@@ -27,11 +28,16 @@ import {
   friendsResponseSchema,
   joinClubSchema,
   joinCommunitySchema,
+  passClubSchema,
   personListSchema,
+  personProfileSchema,
+  renameClubSchema,
   reportRequestSchema,
   searchQuerySchema,
   updateCommunitySchema,
 } from '@fitos/contracts';
+
+import { plannedBetween } from '@fitos/core/community/board';
 
 import { AppError } from '../../lib/errors.js';
 import { requireAdmin } from '../../plugins/auth.js';
@@ -54,12 +60,20 @@ export const FRIEND_REQUESTS_PER_DAY = 30;
 export const REPORTS_PER_DAY = 10;
 /** Club joins and creations a day. */
 export const CLUB_ACTIONS_PER_DAY = 20;
-/** How often the server recounts every member's week. */
-export const REFRESH_EVERY_MS = 5 * 60 * 1000;
+/** Beta 6.2 (S8): handle searches a day. */
+export const SEARCHES_PER_DAY = 300;
+/** Beta 6.2 (C5): a club owner's changes a day. */
+export const CLUB_OWNER_ACTIONS_PER_DAY = 60;
+/**
+ * How often the server recounts every member's week. Beta 6.2 (A2): hourly,
+ * as a catch-up; a completed session or a saved run recounts that person at once.
+ */
+export const REFRESH_EVERY_MS = 60 * 60 * 1000;
 
 const userParams = z.object({ userId: z.string().uuid() }).strict();
 const idParams = z.object({ id: z.string().uuid() }).strict();
-const metricQuery = z.object({ metric: z.enum(['sessions', 'distance']).default('sessions') }).strict();
+const clubUserParams = z.object({ id: z.string().uuid(), userId: z.string().uuid() }).strict();
+const metricQuery = z.object({ metric: boardMetricSchema.default('sessions') }).strict();
 
 const perUser = (prefix: string, max: number) => ({
   rateLimit: {
@@ -70,10 +84,57 @@ const perUser = (prefix: string, max: number) => ({
   },
 });
 
+/**
+ * Beta 6.2 (audit A2): the routes after which a member's week is recounted
+ * at once (a session completed or deleted, a run saved or deleted).
+ */
+export const RECOUNT_AFTER: ReadonlySet<string> = new Set([
+  'POST /v1/training/sessions/:id/complete',
+  'POST /v1/running/runs',
+  'DELETE /v1/running/runs/:id',
+]);
+
+/**
+ * Registered on the /v1 scope (app.ts), so it sees the workout and running
+ * routes: after a successful one, the caller's week is recounted in the
+ * background when they are in Community. A failure only waits for the hourly round.
+ */
+export function recountOnSync(v1: FastifyInstance): void {
+  const db = v1.database.db;
+  const progress = new ProgressService(new ProgressRepository(db), new FoodLogRepository(db), new PlanRepository(db));
+  const progressRepo = new ProgressRepository(db);
+  const service = new CommunityService(
+    new CommunityRepository(db),
+    async (userId) => (await progress.streak(userId)).current,
+    v1.push,
+    () => new Date(),
+    async (userId, from, to) => {
+      const s = await progressRepo.trainingSchedule(userId);
+      return s === null ? null : plannedBetween(s.schedule, s.training, from, to);
+    },
+  );
+  v1.addHook('onResponse', async (request, reply) => {
+    const userId = request.userId;
+    if (userId === null || reply.statusCode >= 300) return;
+    if (!RECOUNT_AFTER.has(`${request.method} ${request.routeOptions.url ?? ''}`)) return;
+    void service.refreshIfMember(userId).catch((e: unknown) => request.log.warn({ err: e }, 'community: recount after sync failed'));
+  });
+}
+
 export async function communityRoutes(app: FastifyInstance, opts: { ipSalt: string; refreshTimer: boolean }): Promise<void> {
   const db = app.database.db;
   const progress = new ProgressService(new ProgressRepository(db), new FoodLogRepository(db), new PlanRepository(db));
-  const service = new CommunityService(new CommunityRepository(db), async (userId) => (await progress.streak(userId)).current, app.push);
+  const progressRepo = new ProgressRepository(db);
+  const service = new CommunityService(
+    new CommunityRepository(db),
+    async (userId) => (await progress.streak(userId)).current,
+    app.push,
+    () => new Date(),
+    async (userId, from, to) => {
+      const s = await progressRepo.trainingSchedule(userId);
+      return s === null ? null : plannedBetween(s.schedule, s.training, from, to);
+    },
+  );
 
   // Every member's week is recounted at start and every five minutes.
   const refresh = () =>
@@ -133,8 +194,20 @@ export async function communityRoutes(app: FastifyInstance, opts: { ipSalt: stri
 
   typed.get('/community/people', {
     ...on,
+    config: perUser('community-search', SEARCHES_PER_DAY),
     schema: { summary: 'Members whose handle starts with q (never hidden or blocked people)', tags, security, querystring: searchQuerySchema, response: { 200: personListSchema, ...errors } },
   }, async (request) => ({ items: await service.search(requireUserId(request.userId), request.query.q) }));
+
+  typed.get('/community/people/:userId', {
+    ...on,
+    schema: {
+      summary: "A friend's or club-mate's profile: board data only — this week, the last 4 weeks, the clubs you share (404 for anyone else)",
+      tags,
+      security,
+      params: userParams,
+      response: { 200: personProfileSchema, ...errors },
+    },
+  }, async (request) => service.personProfile(requireUserId(request.userId), request.params.userId));
 
   typed.get('/community/friends', {
     ...on,
@@ -200,6 +273,46 @@ export async function communityRoutes(app: FastifyInstance, opts: { ipSalt: stri
     schema: { summary: 'Leave a club (one you made passes to its longest member)', tags, security, params: idParams, response: { 204: z.null(), ...errors } },
   }, async (request, reply) => {
     await service.leaveClub(requireUserId(request.userId), request.params.id);
+    return reply.code(204).send(null);
+  });
+
+  /* ------------------------------------------- beta 6.2 (C5): the owner -- */
+
+  const owner = { ...on, config: perUser('club-owner', CLUB_OWNER_ACTIONS_PER_DAY) };
+
+  typed.patch('/community/clubs/:id', {
+    ...owner,
+    schema: { summary: 'Rename a club you own', tags, security, params: idParams, body: renameClubSchema, response: { 200: clubSchema, ...errors } },
+  }, async (request) => service.renameClub(requireUserId(request.userId), request.params.id, request.body.name));
+
+  typed.post('/community/clubs/:id/code', {
+    ...owner,
+    schema: { summary: 'A new code for a club you own (the old one stops working)', tags, security, params: idParams, response: { 200: clubSchema, ...errors } },
+  }, async (request) => service.newClubCode(requireUserId(request.userId), request.params.id));
+
+  typed.post('/community/clubs/:id/owner', {
+    ...owner,
+    schema: { summary: 'Pass a club you own to another member', tags, security, params: idParams, body: passClubSchema, response: { 200: clubSchema, ...errors } },
+  }, async (request) => service.passClub(requireUserId(request.userId), request.params.id, request.body.userId));
+
+  typed.delete('/community/clubs/:id/members/:userId', {
+    ...owner,
+    schema: { summary: 'Remove a member from a club you own; they cannot rejoin with the code until let back', tags, security, params: clubUserParams, response: { 204: z.null(), ...errors } },
+  }, async (request, reply) => {
+    await service.removeMember(requireUserId(request.userId), request.params.id, request.params.userId);
+    return reply.code(204).send(null);
+  });
+
+  typed.get('/community/clubs/:id/removed', {
+    ...on,
+    schema: { summary: 'People removed from a club you own', tags, security, params: idParams, response: { 200: personListSchema, ...errors } },
+  }, async (request) => ({ items: await service.removedFrom(requireUserId(request.userId), request.params.id) }));
+
+  typed.delete('/community/clubs/:id/removed/:userId', {
+    ...owner,
+    schema: { summary: 'Let someone back: they can join again with the code', tags, security, params: clubUserParams, response: { 204: z.null(), ...errors } },
+  }, async (request, reply) => {
+    await service.letBack(requireUserId(request.userId), request.params.id, request.params.userId);
     return reply.code(204).send(null);
   });
 

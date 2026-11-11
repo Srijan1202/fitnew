@@ -6,7 +6,7 @@
  */
 import { getAuth, type UserRecord } from 'firebase-admin/auth';
 
-import { firebaseApp, type FirebaseVerifierOptions } from './token-verifier.js';
+import { firebaseApp, verifiedTokens, type FirebaseVerifierOptions } from './token-verifier.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -87,6 +87,8 @@ export class FirebaseAdminDirectory implements AdminDirectory {
   }
 
   async revokeSessions(uid: string): Promise<void> {
+    // Beta 6.2 (S9): a changed role is seen at once, not after the cache's minute.
+    verifiedTokens.forgetUid(uid);
     await this.auth().revokeRefreshTokens(uid);
   }
 }

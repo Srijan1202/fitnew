@@ -58,6 +58,16 @@ switch ($kind) {
   }
 }
 
+# Beta 6.2 (audit A8): a patch to an older release is built from a git
+# worktree. WSL cannot follow a worktree's absolute Windows paths, so they are
+# made relative first (a no-op in the main checkout).
+$gitDir = (& git -C $root rev-parse --path-format=absolute --git-dir).Trim()
+$commonDir = (& git -C $root rev-parse --path-format=absolute --git-common-dir).Trim()
+if ($gitDir -ne $commonDir) {
+  & git -C $root worktree repair --relative-paths | Out-Null
+  Write-Host 'A worktree: its paths made relative for WSL.'
+}
+
 $hostedArgs = @{ Version = $Version; BuildNumber = $BuildNumber; Patch = $true; TargetPlatform = $TargetPlatform }
 if ($ApiBaseUrl) { $hostedArgs.ApiBaseUrl = $ApiBaseUrl }
 if ($SkipHealthCheck) { $hostedArgs.SkipHealthCheck = $true }

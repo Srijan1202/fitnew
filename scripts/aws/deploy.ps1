@@ -38,6 +38,22 @@ $out = Get-StackOutputs $Stack
 Write-Host "1. image $Sha in ECR"
 Invoke-Aws ecr describe-images --repository-name fitos-api --image-ids "imageTag=$Sha" --query 'imageDetails[0].imagePushedAt' --output text | Out-Null
 
+# Beta 6.2 (audit 2026-11-11 S2): the free tier keeps automatic backups for
+# one day only, so every release first takes a manual snapshot (a bad
+# migration noticed later can still be undone) and keeps the newest three.
+# A snapshot is consistent as of the moment it starts, so the release need not wait.
+if (-not $SkipMigrate) {
+  $db = Invoke-Aws rds describe-db-instances --query 'DBInstances[0].DBInstanceIdentifier' --output text
+  $snapshot = "$db-pre-$($Sha.Substring(0, 7))-$(Get-Date -Format 'yyyyMMdd-HHmm')"
+  Write-Host "   snapshot $snapshot"
+  Invoke-Aws rds create-db-snapshot --db-instance-identifier $db --db-snapshot-identifier $snapshot --query 'DBSnapshot.Status' --output text | Out-Null
+  $old = Invoke-Aws rds describe-db-snapshots --db-instance-identifier $db --snapshot-type manual --query 'reverse(sort_by(DBSnapshots, &SnapshotCreateTime))[3:].DBSnapshotIdentifier' --output text
+  foreach ($id in ("$old" -split '\s+' | Where-Object { $_ -match "^$db-pre-" })) {
+    Invoke-Aws rds delete-db-snapshot --db-snapshot-identifier $id --query 'DBSnapshot.DBSnapshotIdentifier' --output text | Out-Null
+    Write-Host "   old snapshot $id deleted"
+  }
+}
+
 $flags = @()
 if ($SkipMigrate) { $flags += '--skip-migrate' }
 if ($Seed) { $flags += '--seed' }

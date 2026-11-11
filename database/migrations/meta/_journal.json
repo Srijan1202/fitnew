@@ -379,6 +379,13 @@
       "when": 1794286986968,
       "tag": "0053_ai_programme",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1794404007246,
+      "tag": "0054_community_moves",
+      "breakpoints": true
     }
   ]
 }

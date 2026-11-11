@@ -408,6 +408,41 @@ export const friendsResponseSchema = z
   .strict();
 export type FriendsResponse = z.infer<typeof friendsResponseSchema>;
 
+/**
+ * Beta 6.2 (C4): a friend or club-mate's profile, board data only (owner
+ * 2026-11-11): the counts this week, the last 4 weeks, the clubs you share.
+ */
+export const COMMUNITY_HISTORY_WEEKS = 4;
+export const weekCountsSchema = z
+  .object({
+    /** Monday of that week. */
+    weekFrom: z.string(),
+    sessions: z.number().int().nonnegative(),
+    runM: z.number().int().nonnegative(),
+    activeDays: z.number().int().min(0).max(7),
+    /** Sessions done of those planned, in per cent; null without a plan that week. */
+    keptPct: z.number().int().min(0).max(100).nullable(),
+  })
+  .strict();
+export type WeekCounts = z.infer<typeof weekCountsSchema>;
+
+export const personProfileSchema = z
+  .object({
+    person: communityPersonSchema,
+    relation: z.enum(['friend', 'club-mate']),
+    friendsSince: iso.nullable(),
+    streak: z.number().int().nonnegative(),
+    thisWeek: weekCountsSchema,
+    /** The weeks before this one, oldest first, a zero week when nothing counted. */
+    weeks: z.array(weekCountsSchema),
+    clubsInCommon: z.array(z.object({ id: z.string().uuid(), name: z.string() }).strict()),
+  })
+  .strict();
+export type PersonProfile = z.infer<typeof personProfileSchema>;
+
+/** Beta 6.2 (S7): after a decline, the same person cannot ask again for this long. */
+export const FRIEND_DECLINE_COOLDOWN_DAYS = 7;
+
 /** What a friend request did: sent, or accepted because they had asked you. */
 export const friendRequestResultSchema = z.object({ status: z.enum(['requested', 'friends']) }).strict();
 
@@ -448,6 +483,14 @@ export const clubListSchema = z.object({ items: z.array(clubSchema) }).strict();
 export const createClubSchema = z.object({ name: clubNameSchema }).strict();
 export const joinClubSchema = z.object({ code: clubCodeSchema }).strict();
 
+/** Beta 6.2 (C5): the owner's changes. */
+export const renameClubSchema = z.object({ name: clubNameSchema }).strict();
+export const passClubSchema = z.object({ userId: z.string().uuid() }).strict();
+
+/** Beta 6.2 (C8, Q1): the links that open FITOS (Android App Links). */
+export const clubInviteUrl = (code: string): string => `https://tryfitos.me/c/${code}`;
+export const friendInviteUrl = (handle: string): string => `https://tryfitos.me/u/${handle}`;
+
 /** Clubs one person may make, and join. */
 export const MAX_CLUBS_OWNED = 5;
 export const MAX_CLUBS_JOINED = 20;
@@ -456,8 +499,12 @@ export const MAX_FRIENDS = 300;
 
 /* ------------------------------------------------------------- boards -- */
 
-/** What a board ranks by: gym sessions (the default) or run distance. */
-export const BOARD_METRICS = ['sessions', 'distance'] as const;
+/**
+ * What a board ranks by: gym sessions (the default) or run distance; beta 6.2
+ * (C11): the streak, active days (a counted session or run) and the plan kept
+ * (sessions done of those planned up to today).
+ */
+export const BOARD_METRICS = ['sessions', 'distance', 'streak', 'active-days', 'plan'] as const;
 export const boardMetricSchema = z.enum(BOARD_METRICS);
 export type BoardMetric = z.infer<typeof boardMetricSchema>;
 
@@ -478,10 +525,28 @@ export const boardRowSchema = z
     runM: z.number().int().nonnegative(),
     /** The current streak, in days. */
     streak: z.number().int().nonnegative(),
+    /** Beta 6.2: days this week with a counted session or run. */
+    activeDays: z.number().int().min(0).max(7),
+    /** Beta 6.2: sessions done of those planned up to today, in per cent; null without a plan. */
+    keptPct: z.number().int().min(0).max(100).nullable(),
     me: z.boolean(),
   })
   .strict();
 export type BoardRow = z.infer<typeof boardRowSchema>;
+
+/** Beta 6.2 (C12): last week on this board. */
+export const lastWeekSchema = z
+  .object({
+    weekFrom: z.string(),
+    /** The top three last week (ties share a place). */
+    podium: z.array(boardRowSchema),
+    /** The viewer's place last week; null when they were not on it. */
+    myRank: z.number().int().positive().nullable(),
+    /** Places gained since the week before (negative: lost); null when not known. */
+    moved: z.number().int().nullable(),
+  })
+  .strict();
+export type LastWeek = z.infer<typeof lastWeekSchema>;
 
 export const boardSchema = z
   .object({
@@ -495,6 +560,8 @@ export const boardSchema = z
     me: boardRowSchema.nullable(),
     /** Everyone on the board, including those below the top. */
     total: z.number().int().nonnegative(),
+    /** Beta 6.2 (C12): null when nobody on it counted anything last week. */
+    lastWeek: lastWeekSchema.nullable(),
   })
   .strict();
 export type Board = z.infer<typeof boardSchema>;

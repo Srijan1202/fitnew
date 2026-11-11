@@ -160,6 +160,11 @@ export class ProgressRepository {
     return (date) => !training.has(dayNumberOn(schedule, date));
   }
 
+  /** Beta 6.2 (C11): the active programme's schedule and its training day numbers; null without one. */
+  async trainingSchedule(userId: string): Promise<{ schedule: Schedule; training: Set<number> } | null> {
+    return this.activeSchedule(userId);
+  }
+
   private async activeSchedule(userId: string): Promise<{ schedule: Schedule; training: Set<number>; timezone: string } | null> {
     const [program] = await this.db
       .select({ id: programs.id, schedule: programs.schedule, cycleStart: programs.cycleStart, cycleLength: programs.cycleLength, timezone: users.timezone })

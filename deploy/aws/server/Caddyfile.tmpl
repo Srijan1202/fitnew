@@ -17,7 +17,12 @@
 
 __API_DOMAIN__ {
 	encode zstd gzip
-	header -Server
+	# Beta 6.2 (audit 2026-11-11 S6): HTTPS only from the first answer on, and no type sniffing.
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+	}
 	import fitos_api
 }
 

@@ -1,6 +1,6 @@
 # FITOS privacy policy
 
-**Version** 2026-11-10 · applies to the closed beta
+**Version** 2026-11-11 · applies to the closed beta
 
 This is the text the app shows in Profile → Privacy & data (`apps/mobile/lib/features/privacy/presentation/policy_text.dart`); a test keeps the two in step. MASTER-SPEC §23 · ADR-023 · ADR-026 (beta: AWS hosting, crash reports, feedback).
 
@@ -30,7 +30,7 @@ When the app crashes or hits an error, it sends Google Firebase Crashlytics a re
 
 ## Community
 
-Only if you join. Community shows other FITOS members the handle you choose, your profile picture and, if you give it, your country, with counts the server works out from what you log: gym sessions and run distance this week, and your streak. It never shows your name or email, weights, food, body measurements, photos, readiness, sleep, heart rate or where you ran. Friends see you once you both accept; a club's members see you while you are in it; the world board shows you only if you turn that on. You can block someone, report a handle or a club to the FITOS team, and leave Community at any time: you come off every board and friends list at once. Your handle, friends, blocks, clubs and reports are in Download my data and are deleted with your account.
+Only if you join. Community shows other FITOS members the handle you choose, your profile picture and, if you give it, your country, with counts the server works out from what you log: gym sessions, run distance and active days this week, how many of your planned sessions you did, your streak, and the same counts for your last 4 weeks. It never shows your name or email, weights, food, body measurements, photos, readiness, sleep, heart rate or where you ran. Friends see you once you both accept; a club's members see you while you are in it, and its owner can remove someone; the world board shows you only if you turn that on. An invite link or QR code holds only your handle or the club's code. You can block someone, report a handle or a club to the FITOS team, and leave Community at any time: you come off every board and friends list at once. Your handle, friends, blocks, clubs, past weeks and reports are in Download my data and are deleted with your account.
 
 ## Who else
 

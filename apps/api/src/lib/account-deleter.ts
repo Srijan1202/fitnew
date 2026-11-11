@@ -5,7 +5,7 @@
  */
 import { getAuth } from 'firebase-admin/auth';
 
-import { firebaseApp, type FirebaseVerifierOptions } from './token-verifier.js';
+import { firebaseApp, verifiedTokens, type FirebaseVerifierOptions } from './token-verifier.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -22,6 +22,8 @@ export class FirebaseAccountDeleter implements AccountDeleter {
   constructor(private readonly options: FirebaseVerifierOptions) {}
 
   async deleteAccount(firebaseUid: string): Promise<void> {
+    // Beta 6.2 (S9): a cached token never outlives the account.
+    verifiedTokens.forgetUid(firebaseUid);
     try {
       await getAuth(firebaseApp(this.options)).deleteUser(firebaseUid);
     } catch (e) {

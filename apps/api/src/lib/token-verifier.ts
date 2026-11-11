@@ -8,6 +8,7 @@
  */
 import { applicationDefault, cert, getApps, initializeApp, type App } from 'firebase-admin/app';
 import { getAuth, type DecodedIdToken as FirebaseDecodedIdToken } from 'firebase-admin/auth';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 /** What a verified token tells us. Deliberately narrow. */
@@ -44,6 +45,66 @@ export interface TokenVerifier {
   /** Invalidates every refresh token for the user. Used by sign-out. */
   revokeRefreshTokens(uid: string): Promise<void>;
 }
+
+/* ------------------------------------------------------------ the cache -- */
+
+/**
+ * Beta 6.2 (audit 2026-11-11 S9): a verified token is trusted for up to
+ * [ttlMs] (never past its own expiry) without asking Firebase again, so a
+ * slow or unreachable Firebase does not slow or stop every request. Sign-out,
+ * an admin role change and account deletion on this server forget the
+ * person's tokens at once; a revocation made elsewhere bites within [ttlMs].
+ * Keys are SHA-256 digests: no token is kept in memory as it was sent.
+ */
+export class VerifiedTokenCache {
+  readonly #entries = new Map<string, { identity: VerifiedIdentity; until: number }>();
+
+  constructor(
+    readonly ttlMs = 60_000,
+    readonly max = 10_000,
+    private readonly now: () => number = () => Date.now(),
+  ) {}
+
+  static #key(token: string): string {
+    return createHash('sha256').update(token).digest('base64url');
+  }
+
+  get size(): number {
+    return this.#entries.size;
+  }
+
+  get(token: string): VerifiedIdentity | null {
+    const key = VerifiedTokenCache.#key(token);
+    const e = this.#entries.get(key);
+    if (e === undefined) return null;
+    if (e.until <= this.now()) {
+      this.#entries.delete(key);
+      return null;
+    }
+    return e.identity;
+  }
+
+  /** `expiresAtMs`: the token's own expiry; nothing is kept past it. */
+  set(token: string, identity: VerifiedIdentity, expiresAtMs: number): void {
+    const now = this.now();
+    const until = Math.min(now + this.ttlMs, expiresAtMs);
+    if (until <= now) return;
+    if (this.#entries.size >= this.max) {
+      for (const [k, e] of this.#entries) if (e.until <= now) this.#entries.delete(k);
+      // Still full: the oldest goes (a Map keeps insertion order).
+      if (this.#entries.size >= this.max) this.#entries.delete(this.#entries.keys().next().value!);
+    }
+    this.#entries.set(VerifiedTokenCache.#key(token), { identity, until });
+  }
+
+  /** Every cached token of this person goes. */
+  forgetUid(uid: string): void {
+    for (const [k, e] of this.#entries) if (e.identity.uid === uid) this.#entries.delete(k);
+  }
+}
+
+/** The server's one cache (the verifier, the account deleter and the admin directory share it). */
+export const verifiedTokens = new VerifiedTokenCache();
 
 /* --------------------------------------------------------------- firebase -- */
 
@@ -117,6 +178,8 @@ export class FirebaseTokenVerifier implements TokenVerifier {
   }
 
   async verifyIdToken(idToken: string): Promise<VerifiedIdentity> {
+    const cached = verifiedTokens.get(idToken);
+    if (cached !== null) return cached;
     let decoded: FirebaseDecodedIdToken;
     try {
       // checkRevoked=true costs a round trip to Firebase but is what makes
@@ -126,15 +189,18 @@ export class FirebaseTokenVerifier implements TokenVerifier {
       const reason = classify(error);
       throw new TokenVerificationError(reason, `ID token ${reason}`);
     }
-    return {
+    const identity: VerifiedIdentity = {
       uid: decoded.uid,
       email: decoded.email ?? null,
       emailVerified: decoded.email_verified ?? false,
       claims: customClaims(decoded),
     };
+    verifiedTokens.set(idToken, identity, decoded.exp * 1000);
+    return identity;
   }
 
   async revokeRefreshTokens(uid: string): Promise<void> {
+    verifiedTokens.forgetUid(uid);
     await getAuth(this.#app).revokeRefreshTokens(uid);
   }
 }

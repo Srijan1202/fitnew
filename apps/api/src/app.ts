@@ -48,7 +48,7 @@ import { updatePushRoutes } from './modules/admin/update-push.js';
 import { privacyRoutes } from './modules/privacy/routes.js';
 import { feedbackRoutes } from './modules/feedback/routes.js';
 import { premiumRoutes } from './modules/premium/routes.js';
-import { communityRoutes } from './modules/community/routes.js';
+import { communityRoutes, recountOnSync } from './modules/community/routes.js';
 import { waterRoutes } from './modules/water/routes.js';
 import { todayRoutes } from './modules/today/routes.js';
 import { userRoutes } from './modules/user/routes.js';
@@ -214,6 +214,8 @@ export async function buildApp(env: Env, options: BuildAppOptions = {}): Promise
   // Everything under /v1 is authenticated by default (plugins/auth.ts).
   await app.register(
     async (v1) => {
+      // Beta 6.2 (audit A2): a member's week is recounted when they sync a session or a run.
+      recountOnSync(v1);
       await v1.register(authRoutes);
       await v1.register(userRoutes);
       await v1.register(onboardingRoutes, { ipSalt: env.CONSENT_IP_SALT });

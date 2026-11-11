@@ -33,7 +33,11 @@ const quote = (ident: string): string => `"${ident.replace(/"/g, '""')}"`;
  * theirs: beta 3.2 (ADR-032) "wrong numbers" reports on a food they shared.
  * Deleted with it (CASCADE), never exported to its owner.
  */
-export const OTHER_PEOPLES: ReadonlySet<string> = new Set(['food_reports']);
+export const OTHER_PEOPLES: ReadonlySet<string> = new Set([
+  'food_reports',
+  // Beta 6.2 (S7): a declined request; the requester never learns who declined.
+  'friend_declines',
+]);
 
 export class PrivacyRepository {
   constructor(private readonly db: Db) {}

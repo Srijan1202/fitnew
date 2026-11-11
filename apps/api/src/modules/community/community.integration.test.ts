@@ -6,7 +6,10 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import postgres from 'postgres';
-import { CURRENT_POLICY_VERSION, boardSchema, communityMeSchema, friendsResponseSchema, type Board } from '@fitos/contracts';
+import { CURRENT_POLICY_VERSION, boardSchema, clubSchema, communityMeSchema, friendsResponseSchema, personListSchema, personProfileSchema, type Board } from '@fitos/contracts';
+import { keptPlanPct } from '@fitos/core/community/board';
+import { addDays, localDateOf } from '@fitos/core/nutrition/log';
+import { isoWeekday } from '@fitos/core/progress/streak';
 
 import { migrateUp } from '../../db/migrate.js';
 import type { FakeTokenVerifier } from '../../test/fake-token-verifier.js';
@@ -282,5 +285,178 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
     expect(friendsResponseSchema.parse((await call(b, 'GET', '/community/friends')).json()).friends).toEqual([]);
     const consents = await sql<{ granted: boolean }[]>`select granted from consent_records where user_id = ${a.id} and consent_type = 'community' order by granted_at`;
     expect(consents.map((c) => c.granted)).toEqual([true, false]);
+  });
+
+  /* ---------------------------------------------------------- beta 6.2 -- */
+
+  const today = () => localDateOf(new Date(), 'Asia/Kolkata');
+  const monday = () => addDays(today(), 1 - isoWeekday(today()));
+
+  async function friends(a: U, b: U, bHandle: string): Promise<void> {
+    await call(a, 'POST', '/community/friends', { handle: bHandle });
+    expect((await call(b, 'POST', `/community/friends/${a.id}/accept`)).statusCode).toBe(200);
+  }
+
+  /** An active programme training on these weekdays. */
+  async function programme(u: U, weekdays: number[]): Promise<void> {
+    const [p] = await sql<{ id: string }[]>`insert into programs (user_id, name, split_type, days_per_week, source) values (${u.id}, 'C62', 'full-body', ${Math.min(6, weekdays.length)}, 'custom') returning id`;
+    for (const d of weekdays) await sql`insert into program_days (program_id, day_of_week, session_name) values (${p!.id}, ${d}, ${`Day ${d}`})`;
+  }
+
+  it('beta 6.2 (C11): boards by streak, active days and the plan kept; no plan, not on the plan board', async () => {
+    const a = await member('c62_planner');
+    const b = await member('c62_freeform');
+    await friends(a, b, 'c62_freeform');
+    await programme(a, [1, 2, 3, 4, 5, 6, 7]);
+    await session(a, 6, 20);
+    await run(a, 3000, 1000);
+    await session(b, 6, 20);
+    // b's week is recounted when they sync or look (the timer is off in tests).
+    await board(b, '/community/boards/friends');
+
+    const plan = await board(a, '/community/boards/friends?metric=plan');
+    expect(plan.rows.map((r) => r.handle)).toEqual(['c62_planner']);
+    expect(plan.rows[0]).toMatchObject({ sessions: 1, activeDays: 1, keptPct: keptPlanPct(1, isoWeekday(today())) });
+    const days = await board(a, '/community/boards/friends?metric=active-days');
+    expect(days.rows.map((r) => [r.handle, r.activeDays, r.keptPct])).toEqual([
+      ['c62_planner', 1, keptPlanPct(1, isoWeekday(today()))],
+      ['c62_freeform', 1, null],
+    ]);
+    expect((await board(a, '/community/boards/friends?metric=streak')).metric).toBe('streak');
+    expect((await call(a, 'GET', '/community/boards/friends?metric=calories')).statusCode).toBe(422);
+  });
+
+  it('beta 6.2 (C12): a rolled-over week is recounted and kept; last week’s podium, my place and the places moved', async () => {
+    const a = await member('c62_climber', { onWorld: true, country: 'IN' });
+    const b = await member('c62_leader');
+    await friends(a, b, 'c62_leader');
+    const last = addDays(monday(), -7);
+    const before = addDays(monday(), -14);
+    // A week ago: a trained once (counted from the records when the week rolls over).
+    await session(a, 6, 20, 7);
+    await sql`insert into community_week_stats (user_id, week_from, sessions, run_m, streak) values (${a.id}, ${last}, 0, 0, 3)
+      on conflict (user_id) do update set week_from = excluded.week_from, sessions = 0, streak = 3`;
+    // The week before: b was ahead.
+    await sql`insert into community_week_history (user_id, week_from, sessions, run_m, streak, active_days, planned) values
+      (${a.id}, ${before}, 1, 0, 1, 1, null), (${b.id}, ${before}, 3, 0, 3, 3, null)`;
+
+    const f = await board(a, '/community/boards/friends?metric=sessions');
+    const [kept] = await sql<{ sessions: number; streak: number }[]>`select sessions, streak from community_week_history where user_id = ${a.id} and week_from = ${last}`;
+    expect(kept).toEqual({ sessions: 1, streak: 3 });
+    expect(f.lastWeek).toMatchObject({ weekFrom: last, myRank: 1, moved: 1 });
+    expect(f.lastWeek!.podium.map((r) => [r.handle, r.rank, r.me])).toEqual([['c62_climber', 1, true]]);
+    // The world board's last week: those who chose it.
+    const w = await board(a, '/community/boards/world?metric=sessions&country=IN');
+    expect(w.lastWeek!.podium.some((r) => r.handle === 'c62_climber')).toBe(true);
+    // Nothing counted last week: no podium.
+    expect((await board(b, '/community/boards/friends?metric=distance')).lastWeek).toBeNull();
+  });
+
+  it('beta 6.2 (C4): a friend’s or club-mate’s profile is board data only; anyone else is 404', async () => {
+    const a = await member('c62_viewer');
+    const b = await member('c62_friend');
+    const c = await member('c62_clubmate');
+    const d = await member('c62_stranger');
+    await friends(a, b, 'c62_friend');
+    const club = clubSchema.parse((await call(c, 'POST', '/community/clubs', { name: 'C62 Lifters' })).json());
+    expect((await call(a, 'POST', '/community/clubs/join', { code: club.code })).statusCode).toBe(200);
+    await session(b, 6, 20);
+    await sql`insert into community_week_history (user_id, week_from, sessions, run_m, streak, active_days, planned) values (${b.id}, ${addDays(monday(), -7)}, 4, 2500, 6, 5, 4)`;
+
+    const p = personProfileSchema.parse((await call(a, 'GET', `/community/people/${b.id}`)).json());
+    expect(p).toMatchObject({ relation: 'friend', person: { handle: 'c62_friend' }, thisWeek: { weekFrom: monday(), sessions: 1, activeDays: 1, keptPct: null }, clubsInCommon: [] });
+    expect(p.friendsSince).not.toBeNull();
+    expect(p.weeks.map((x) => x.weekFrom)).toEqual([-28, -21, -14, -7].map((n) => addDays(monday(), n)));
+    expect(p.weeks[3]).toEqual({ weekFrom: addDays(monday(), -7), sessions: 4, runM: 2500, activeDays: 5, keptPct: 100 });
+    expect(p.weeks[0]).toMatchObject({ sessions: 0, runM: 0, keptPct: null });
+    // Nothing else about them: no name, email, weights or food.
+    expect(JSON.stringify(p)).not.toMatch(/@example\.com|weightKg|kcal/);
+
+    const mate = personProfileSchema.parse((await call(a, 'GET', `/community/people/${c.id}`)).json());
+    expect(mate).toMatchObject({ relation: 'club-mate', friendsSince: null, clubsInCommon: [{ id: club.id, name: 'C62 Lifters' }] });
+    expect((await call(a, 'GET', `/community/people/${d.id}`)).statusCode).toBe(404);
+    expect((await call(a, 'GET', `/community/people/${a.id}`)).statusCode).toBe(404);
+    await call(b, 'POST', '/community/blocks', { userId: a.id });
+    expect((await call(a, 'GET', `/community/people/${b.id}`)).statusCode).toBe(404);
+  });
+
+  it('beta 6.2 (C5): the owner renames, makes a new code, removes (kept out until let back) and passes the club', async () => {
+    const push = app.push as RecordingPushSender;
+    const owner = await member('c62_owner');
+    const m = await member('c62_member');
+    const other = await member('c62_other');
+    await sql`insert into push_tokens (user_id, token, platform) values (${m.id}, ${`cm-push-${m.id}`}, 'android')`;
+    const club = clubSchema.parse((await call(owner, 'POST', '/community/clubs', { name: 'C62 Run Club' })).json());
+    expect((await call(m, 'POST', '/community/clubs/join', { code: club.code })).statusCode).toBe(200);
+
+    // Only the owner; a stranger does not even learn the club exists.
+    const notOwner = await call(m, 'PATCH', `/community/clubs/${club.id}`, { name: 'Mine now' });
+    expect(notOwner.statusCode).toBe(403);
+    expect(issue(notOwner)).toBe('not-owner');
+    expect((await call(other, 'GET', `/community/clubs/${club.id}/removed`)).statusCode).toBe(404);
+    expect(clubSchema.parse((await call(owner, 'PATCH', `/community/clubs/${club.id}`, { name: 'C62 Runners' })).json()).name).toBe('C62 Runners');
+    expect((await call(owner, 'PATCH', `/community/clubs/${club.id}`, { name: 'x' })).statusCode).toBe(422);
+
+    // A new code: the old one stops working.
+    const recoded = clubSchema.parse((await call(owner, 'POST', `/community/clubs/${club.id}/code`)).json());
+    expect(recoded.code).not.toBe(club.code);
+    expect((await call(other, 'POST', '/community/clubs/join', { code: club.code })).statusCode).toBe(404);
+
+    // Removed: off the board, and the new code does not let them back in.
+    expect((await call(owner, 'DELETE', `/community/clubs/${club.id}/members/${owner.id}`)).statusCode).toBe(422);
+    expect((await call(owner, 'DELETE', `/community/clubs/${club.id}/members/${m.id}`)).statusCode).toBe(204);
+    expect((await board(owner, `/community/boards/clubs/${club.id}`)).rows.map((r) => r.handle)).toEqual(['c62_owner']);
+    const back = await call(m, 'POST', '/community/clubs/join', { code: recoded.code });
+    expect(back.statusCode).toBe(403);
+    expect(issue(back)).toBe('removed');
+    expect(personListSchema.parse((await call(owner, 'GET', `/community/clubs/${club.id}/removed`)).json()).items.map((p) => p.handle)).toEqual(['c62_member']);
+    expect((await call(owner, 'DELETE', `/community/clubs/${club.id}/removed/${m.id}`)).statusCode).toBe(204);
+    expect((await call(owner, 'DELETE', `/community/clubs/${club.id}/removed/${m.id}`)).statusCode).toBe(404);
+    expect((await call(m, 'POST', '/community/clubs/join', { code: recoded.code })).statusCode).toBe(200);
+
+    // Passed on: the new owner is told; the old one is an ordinary member.
+    expect((await call(owner, 'POST', `/community/clubs/${club.id}/owner`, { userId: other.id })).statusCode).toBe(404);
+    const sent = push.sends.length;
+    const passed = clubSchema.parse((await call(owner, 'POST', `/community/clubs/${club.id}/owner`, { userId: m.id })).json());
+    expect(passed.mine).toBe(false);
+    expect(push.sends.slice(sent).map((s) => s.message.title)).toEqual(['A club is yours']);
+    expect(clubSchema.array().parse((await call(m, 'GET', '/community/clubs')).json().items).find((c) => c.id === club.id)!.mine).toBe(true);
+    expect((await call(owner, 'POST', `/community/clubs/${club.id}/code`)).statusCode).toBe(403);
+  });
+
+  it('beta 6.2 (S7): after a decline, asking again looks sent for 7 days but is not; then it goes through', async () => {
+    const push = app.push as RecordingPushSender;
+    const a = await member('c62_asker');
+    const b = await member('c62_decliner');
+    await sql`insert into push_tokens (user_id, token, platform) values (${b.id}, ${`cm-push-${b.id}`}, 'android')`;
+    await call(a, 'POST', '/community/friends', { handle: 'c62_decliner' });
+    expect((await call(b, 'DELETE', `/community/friends/${a.id}`)).statusCode).toBe(204);
+    const sent = push.sends.length;
+    expect((await call(a, 'POST', '/community/friends', { handle: 'c62_decliner' })).json()).toEqual({ status: 'requested' });
+    expect(push.sends.length).toBe(sent);
+    expect(friendsResponseSchema.parse((await call(b, 'GET', '/community/friends')).json()).incoming).toEqual([]);
+    // Nobody learns of it in their data download.
+    expect(JSON.stringify((await call(a, 'POST', '/user/export')).json())).not.toContain('friend_declines');
+    await sql`update friend_declines set declined_at = now() - interval '8 days' where requester_id = ${a.id}`;
+    await call(a, 'POST', '/community/friends', { handle: 'c62_decliner' });
+    expect(friendsResponseSchema.parse((await call(b, 'GET', '/community/friends')).json()).incoming.map((p) => p.handle)).toEqual(['c62_asker']);
+    // Cancelling your own request is not a decline.
+    expect((await call(a, 'DELETE', `/community/friends/${b.id}`)).statusCode).toBe(204);
+    expect((await sql`select 1 from friend_declines where requester_id = ${a.id} and declined_at > now() - interval '1 day'`).length).toBe(0);
+  });
+
+  it('beta 6.2 (A2): deleting a run recounts the week at once', async () => {
+    const a = await member('c62_runner');
+    await run(a, 5000, 1500);
+    expect((await board(a, '/community/boards/friends?metric=distance')).rows[0]!.runM).toBe(5000);
+    const [r] = await sql<{ id: string }[]>`select client_run_id as id from runs where user_id = ${a.id}`;
+    expect((await call(a, 'DELETE', `/running/runs/${r!.id}`)).statusCode).toBe(204);
+    let runM = -1;
+    for (let i = 0; i < 40 && runM !== 0; i++) {
+      await new Promise((ok) => setTimeout(ok, 50));
+      const [s] = await sql<{ run_m: number }[]>`select run_m from community_week_stats where user_id = ${a.id}`;
+      runM = s!.run_m;
+    }
+    expect(runM).toBe(0);
   });
 });
