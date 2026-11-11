@@ -223,7 +223,11 @@ void main() {
   group('on screen', () {
     late FakeOpener opener;
 
-    Widget host({LatestRelease release = beta41, bool android = true}) {
+    Widget scope({
+      required Widget child,
+      LatestRelease release = beta41,
+      bool android = true,
+    }) {
       opener = FakeOpener();
       return ProviderScope(
         overrides: [
@@ -237,16 +241,32 @@ void main() {
           apkDownloaderProvider.overrideWithValue(downloader),
           apkInstallerProvider.overrideWithValue(installer),
         ],
-        child: MaterialApp(
-          theme: FitTheme.build(),
-          home: const Scaffold(
-            body: Column(
-              children: <Widget>[UpdatePromptHost(), UpdateBanner()],
-            ),
-          ),
-        ),
+        child: child,
       );
     }
+
+    Widget host({LatestRelease release = beta41, bool android = true}) => scope(
+          release: release,
+          android: android,
+          child: MaterialApp(
+            theme: FitTheme.build(),
+            home: const Scaffold(
+              body: Column(
+                children: <Widget>[UpdatePromptHost(), UpdateBanner()],
+              ),
+            ),
+          ),
+        );
+
+    /// The app while its build is below the server's minimum: the screen
+    /// sits in MaterialApp's builder with no router navigator above it.
+    Widget tooOld({bool android = true}) => scope(
+          android: android,
+          child: MaterialApp(
+            theme: FitTheme.build(),
+            builder: (_, __) => const UpdateRequiredScreen(),
+          ),
+        );
 
     Finder key(String k) => find.byKey(ValueKey(k));
 
@@ -345,6 +365,43 @@ void main() {
       await tester.pumpAndSettle();
       expect(installer.installed, hasLength(1));
       expect(opener.opened, isEmpty);
+    });
+
+    testWidgets(
+        'owner 2026-11-11: the forced "too old" screen updates inside FITOS too',
+        (tester) async {
+      downloader.gate = Completer<void>();
+      await tester.pumpWidget(tooOld());
+      await tester.pumpAndSettle();
+      expect(key('update.required'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: key('update.required.download'),
+          matching: find.text('Update now'),
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(key('update.required.download'));
+      await tester.pump();
+      await tester.pump();
+      expect(key('update.downloading'), findsOneWidget);
+      downloader.gate!.complete();
+      await tester.pumpAndSettle();
+      expect(installer.installed, ['/cache/updates/fitos-18.apk']);
+      expect(opener.opened, isEmpty);
+      // Android's installer has it; the screen stays until the new build runs.
+      expect(key('update.required'), findsOneWidget);
+    });
+
+    testWidgets('the "too old" screen when not on Android: the download page',
+        (tester) async {
+      await tester.pumpWidget(tooOld(android: false));
+      await tester.pumpAndSettle();
+      expect(find.text('Download the latest FITOS'), findsOneWidget);
+      await tester.tap(key('update.required.download'));
+      await tester.pumpAndSettle();
+      expect(opener.opened, ['https://tryfitos.me/download/']);
+      expect(downloader.downloads, isEmpty);
     });
 
     testWidgets('no APK in version.json, or not Android: the download page',

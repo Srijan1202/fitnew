@@ -7,6 +7,7 @@ import 'package:shorebird_code_push/shorebird_code_push.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../features/auth/presentation/controllers/auth_providers.dart';
 import '../theme/tokens.dart';
+import 'apk_update.dart';
 import 'app_update.dart';
 import '../../shared/widgets/fit_glass.dart';
 
@@ -142,12 +143,33 @@ bool flagOn(WidgetRef ref, String key, {bool fallback = true}) =>
     fallback;
 
 /// Everything the app shows while its build is below the minimum.
-class UpdateRequiredScreen extends ConsumerWidget {
+///
+/// Beta 6.1 (owner 2026-11-11, "forced but with in-app update"): the button
+/// is the same in-app update as the "Update now" dialog (download, check,
+/// Android's installer), and the download page only when that cannot work.
+/// The screen replaces the router, so it brings its own navigator for the
+/// update's dialogs.
+class UpdateRequiredScreen extends StatelessWidget {
   const UpdateRequiredScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) => Navigator(
+        onGenerateRoute: (_) => PageRouteBuilder<void>(
+          pageBuilder: (_, __, ___) => const _UpdateRequiredPage(),
+        ),
+      );
+}
+
+class _UpdateRequiredPage extends ConsumerWidget {
+  const _UpdateRequiredPage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
+    final update = ref.watch(updateControllerProvider).value;
+    final inApp = update != null &&
+        ref.watch(inAppInstallProvider) &&
+        ApkFile.of(update.release) != null;
     return Scaffold(
       key: const ValueKey('update.required'),
       body: FitBackdrop(
@@ -166,17 +188,28 @@ class UpdateRequiredScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: FitSpacing.sm),
                 Text(
-                  'Download the latest FITOS from tryfitos.me. It installs over '
-                  'this one; your data is safe on the server and comes back when '
-                  'you sign in.',
+                  inApp
+                      ? 'Update now downloads the latest FITOS from tryfitos.me '
+                          'and installs it over this one; your data is safe on '
+                          'the server and comes back when you sign in.'
+                      : 'Download the latest FITOS from tryfitos.me. It installs '
+                          'over this one; your data is safe on the server and '
+                          'comes back when you sign in.',
                   style: textTheme.bodyLarge,
                 ),
                 const SizedBox(height: FitSpacing.lg),
                 FilledButton(
                   key: const ValueKey('update.required.download'),
-                  onPressed: () =>
-                      ref.read(linkOpenerProvider).open(kDownloadUrl),
-                  child: const Text('Download the latest FITOS'),
+                  onPressed: () => update == null
+                      ? ref.read(linkOpenerProvider).open(kDownloadUrl)
+                      : startUpdate(
+                          context,
+                          ref,
+                          ref.read(updateControllerProvider.notifier),
+                        ),
+                  child: Text(
+                    inApp ? 'Update now' : 'Download the latest FITOS',
+                  ),
                 ),
               ],
             ),
