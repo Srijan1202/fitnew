@@ -74,9 +74,9 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
   const PHASE4_TABLES = ['programs', 'program_days', 'planned_exercises'];
   const PHASE5_TABLES = ['workout_sessions', 'session_exercises', 'set_logs', 'exercise_prs'];
   const PHASE6_TABLES = ['muscle_volume_weekly', 'exercise_rejections'];
-  const TOTAL_MIGRATIONS = 55;
+  const TOTAL_MIGRATIONS = 56;
   /** Beta 6.1's migrations, newest first: rolled back before a chain that starts at 0049. */
-  const AFTER_0049 = ['0054_community_moves', '0053_ai_programme', '0052_rolling_cycles', '0051_flag_audience', '0050_theme_on_account'];
+  const AFTER_0049 = ['0055_community_talks', '0054_community_moves', '0053_ai_programme', '0052_rolling_cycles', '0051_flag_audience', '0050_theme_on_account'];
   const peelAfter0049 = async () => {
     for (const tag of AFTER_0049) expect(await rollbackLastMigration(connectionString)).toBe(tag);
   };
@@ -485,6 +485,50 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await client`delete from mess_providers where id = ${prov!.id}`;
   });
 
+  it('0055: Community that talks (beta 6.3) — posts, kudos, nudges, dismissed suggestions, period counts and the feed settings; down drops them', async () => {
+    const [u] = await client<{ id: string }[]>`insert into users (firebase_uid) values ('mig-c63-a') returning id`;
+    const [v] = await client<{ id: string }[]>`insert into users (firebase_uid) values ('mig-c63-b') returning id`;
+    await client`insert into community_profiles (user_id, handle) values (${u!.id}, 'mig_c63_a')`;
+    const [p] = await client<{ feed: string[]; suggest: boolean; notify: boolean }[]>`select feed, suggest, notify from community_profiles where user_id = ${u!.id}`;
+    // Nothing shared until chosen; suggestions and notifications on (owner Q1, Q3).
+    expect(p).toEqual({ feed: [], suggest: true, notify: true });
+    await client`update community_profiles set feed = array['session', 'record']::text[] where user_id = ${u!.id}`;
+    await expect(client`update community_profiles set feed = array['weights']::text[] where user_id = ${u!.id}`).rejects.toThrow(/community_profiles_feed/);
+    const [post] = await client<{ id: string }[]>`insert into community_posts (user_id, kind, ref, title, at) values (${u!.id}, 'session', 'ref-1', 'Push', now()) returning id`;
+    await expect(client`insert into community_posts (user_id, kind, ref, at) values (${u!.id}, 'session', 'ref-1', now())`).rejects.toThrow(/community_posts_event_key/);
+    await expect(client`insert into community_posts (user_id, kind, ref, at) values (${u!.id}, 'weights', 'ref-2', now())`).rejects.toThrow(/community_posts_kind/);
+    await client`insert into community_kudos (post_id, giver_id) values (${post!.id}, ${v!.id})`;
+    await client`insert into community_nudges (from_id, to_id) values (${v!.id}, ${u!.id})`;
+    await expect(client`insert into community_nudges (from_id, to_id) values (${u!.id}, ${u!.id})`).rejects.toThrow(/community_nudges_not_self/);
+    await client`insert into community_suggestion_dismissals (viewer_id, dismissed_id) values (${v!.id}, ${u!.id})`;
+    await client`insert into community_period_stats (user_id, period, period_from, sessions) values (${u!.id}, 'all', '2026-10-01', 40)`;
+    await expect(client`insert into community_period_stats (user_id, period, period_from) values (${u!.id}, 'year', '2026-01-01')`).rejects.toThrow(/community_period_stats_period/);
+    // A post takes its kudos with it.
+    await client`delete from community_posts where id = ${post!.id}`;
+    expect((await client`select 1 from community_kudos where giver_id = ${v!.id}`).length).toBe(0);
+    expect(await rollbackLastMigration(connectionString)).toBe('0055_community_talks');
+    expect(
+      (await client`select 1 from information_schema.tables where table_name in ('community_posts', 'community_kudos', 'community_nudges', 'community_suggestion_dismissals', 'community_period_stats')`).length,
+    ).toBe(0);
+    expect((await client`select 1 from information_schema.columns where table_name = 'community_profiles' and column_name in ('feed', 'feed_since', 'suggest', 'notify', 'kudos_pushed_on', 'nudge_pushed_on')`).length).toBe(0);
+    await client`delete from users where id in (${u!.id}, ${v!.id})`;
+    await migrateUp(connectionString);
+    expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
+  });
+
+  it('0055: this week\'s counts are copied into the period table', async () => {
+    const [u] = await client<{ id: string }[]>`insert into users (firebase_uid) values ('mig-c63-c') returning id`;
+    await client`insert into community_profiles (user_id, handle) values (${u!.id}, 'mig_c63_c')`;
+    expect(await rollbackLastMigration(connectionString)).toBe('0055_community_talks');
+    await client`insert into community_week_stats (user_id, week_from, sessions, run_m, streak, active_days, planned) values (${u!.id}, '2026-11-09', 2, 3000, 5, 3, 4)`;
+    await migrateUp(connectionString);
+    const [w] = await client<{ period_from: string; sessions: number; run_m: number; active_days: number; planned: number }[]>`
+      select period_from, sessions, run_m, active_days, planned from community_period_stats where user_id = ${u!.id} and period = 'week'`;
+    expect(w).toEqual({ period_from: '2026-11-09', sessions: 2, run_m: 3000, active_days: 3, planned: 4 });
+    await client`delete from users where id = ${u!.id}`;
+    expect(await appliedCount(client)).toBe(TOTAL_MIGRATIONS);
+  });
+
   it('0054: Community that moves (beta 6.2) — club bans, friend declines, past weeks, active days and planned; down drops them', async () => {
     const [u] = await client<{ id: string }[]>`insert into users (firebase_uid) values ('mig-c62-a') returning id`;
     const [v] = await client<{ id: string }[]>`insert into users (firebase_uid) values ('mig-c62-b') returning id`;
@@ -498,6 +542,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     // Deleting the club or a person takes their rows with them.
     await client`delete from clubs where id = ${c!.id}`;
     expect((await client`select 1 from club_bans where user_id = ${v!.id}`).length).toBe(0);
+    expect(await rollbackLastMigration(connectionString)).toBe('0055_community_talks');
     expect(await rollbackLastMigration(connectionString)).toBe('0054_community_moves');
     expect((await client`select 1 from information_schema.tables where table_name in ('club_bans', 'friend_declines', 'community_week_history')`).length).toBe(0);
     expect((await client`select 1 from information_schema.columns where table_name = 'community_week_stats' and column_name in ('active_days', 'planned')`).length).toBe(0);
@@ -509,6 +554,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
   it('0053: the AI programme builder (beta 6.1) — its own AI purpose; down drops its usage rows', async () => {
     const [u] = await client<{ id: string }[]>`insert into users (firebase_uid) values ('mig-aiprog-a') returning id`;
     await client`insert into ai_usage (user_id, route, model, input_tokens, output_tokens, outcome) values (${u!.id}, 'programme', 'gemini', 10, 10, 'ok')`;
+    expect(await rollbackLastMigration(connectionString)).toBe('0055_community_talks');
     expect(await rollbackLastMigration(connectionString)).toBe('0054_community_moves');
     expect(await rollbackLastMigration(connectionString)).toBe('0053_ai_programme');
     expect((await client`select 1 from ai_usage where user_id = ${u!.id}`).length).toBe(0);
@@ -527,6 +573,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await client`update programs set schedule = 'cycle', cycle_start = '2026-11-10', cycle_length = 9 where id = ${p!.id}`;
     await client`insert into program_days (program_id, day_of_week, session_name) values (${p!.id}, 9, 'Legs')`;
     await expect(client`insert into program_days (program_id, day_of_week, session_name) values (${p!.id}, 15, 'Arms')`).rejects.toThrow(/program_days_dow_range/);
+    expect(await rollbackLastMigration(connectionString)).toBe('0055_community_talks');
     expect(await rollbackLastMigration(connectionString)).toBe('0054_community_moves');
     expect(await rollbackLastMigration(connectionString)).toBe('0053_ai_programme');
     await expect(rollbackLastMigration(connectionString)).rejects.toThrow(/are cycles/);
@@ -542,6 +589,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     expect((await client<{ audience: string }[]>`select audience from feature_flags where key = 'mig-audience'`)[0]!.audience).toBe('everyone');
     await client`update feature_flags set audience = 'premium' where key = 'mig-audience'`;
     await expect(client`update feature_flags set audience = 'friends' where key = 'mig-audience'`).rejects.toThrow(/feature_flags_audience/);
+    expect(await rollbackLastMigration(connectionString)).toBe('0055_community_talks');
     expect(await rollbackLastMigration(connectionString)).toBe('0054_community_moves');
     expect(await rollbackLastMigration(connectionString)).toBe('0053_ai_programme');
     expect(await rollbackLastMigration(connectionString)).toBe('0052_rolling_cycles');
@@ -560,6 +608,7 @@ describeIfDb('migrations (real Postgres)', { timeout: 30_000 }, () => {
     await expect(client`update user_preferences set theme_id = '' where user_id = ${a!.id}`).rejects.toThrow(/user_preferences_theme_id/);
     await client`delete from users where id = ${a!.id}`;
 
+    expect(await rollbackLastMigration(connectionString)).toBe('0055_community_talks');
     expect(await rollbackLastMigration(connectionString)).toBe('0054_community_moves');
     expect(await rollbackLastMigration(connectionString)).toBe('0053_ai_programme');
     expect(await rollbackLastMigration(connectionString)).toBe('0052_rolling_cycles');

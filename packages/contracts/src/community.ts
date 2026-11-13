@@ -5,6 +5,8 @@
  * consent (`community`, kept in consent_records with the policy version).
  * Boards show counts only: gym sessions and run distance this week, and the
  * streak. Never weights, food, body, readiness, sleep, heart rate or routes.
+ * Beta 6.3 (Community that talks): an opt-in feed for friends, kudos, nudges,
+ * month and all-time boards, and suggestions.
  */
 import { z } from 'zod';
 
@@ -340,6 +342,14 @@ export const countrySchema = z.string().refine((c): c is CountryCode => Object.h
 
 /* ------------------------------------------------------------ profile -- */
 
+/**
+ * Beta 6.3 (C1, owner Q1): what a member shares with friends in the feed,
+ * each kind switched on separately; nothing until chosen.
+ */
+export const FEED_KINDS = ['session', 'run', 'record', 'streak'] as const;
+export const feedKindSchema = z.enum(FEED_KINDS);
+export type FeedKind = z.infer<typeof feedKindSchema>;
+
 export const communityProfileSchema = z
   .object({
     handle: z.string(),
@@ -348,6 +358,12 @@ export const communityProfileSchema = z
     /** On the world board (a separate choice, off by default). */
     onWorld: z.boolean(),
     joinedAt: iso,
+    /** Beta 6.3 (C1): the kinds shared with friends in the feed (none at first). */
+    feed: z.array(feedKindSchema),
+    /** Beta 6.3 (C16, owner Q3): suggested to friends of friends and club-mates (on at first). */
+    suggest: z.boolean(),
+    /** Beta 6.3 (C2, C3): the evening kudos summary and nudges as notifications (on at first). */
+    notify: z.boolean(),
   })
   .strict();
 export type CommunityProfile = z.infer<typeof communityProfileSchema>;
@@ -374,7 +390,18 @@ export const joinCommunitySchema = z
 export type JoinCommunityRequest = z.infer<typeof joinCommunitySchema>;
 
 export const updateCommunitySchema = z
-  .object({ handle: handleSchema.optional(), country: countrySchema.nullable().optional(), onWorld: z.boolean().optional() })
+  .object({
+    handle: handleSchema.optional(),
+    country: countrySchema.nullable().optional(),
+    onWorld: z.boolean().optional(),
+    feed: z
+      .array(feedKindSchema)
+      .max(FEED_KINDS.length)
+      .refine((k) => new Set(k).size === k.length, 'Each kind once.')
+      .optional(),
+    suggest: z.boolean().optional(),
+    notify: z.boolean().optional(),
+  })
   .strict()
   .refine((b) => Object.keys(b).length > 0, 'Nothing to change.');
 export type UpdateCommunityRequest = z.infer<typeof updateCommunitySchema>;
@@ -436,9 +463,82 @@ export const personProfileSchema = z
     /** The weeks before this one, oldest first, a zero week when nothing counted. */
     weeks: z.array(weekCountsSchema),
     clubsInCommon: z.array(z.object({ id: z.string().uuid(), name: z.string() }).strict()),
+    /**
+     * Beta 6.3 (C3): a friend can be nudged (`can`), counted something in the
+     * last 3 days (`active`), or was nudged by you this week (`sent`); null
+     * for a club-mate who is not a friend.
+     */
+    nudge: z.enum(['can', 'active', 'sent']).nullable(),
   })
   .strict();
 export type PersonProfile = z.infer<typeof personProfileSchema>;
+
+/* ------------------------------------------------- beta 6.3: the feed -- */
+
+/**
+ * A post's kind: a counted session ("finished Push"), a counted run ("ran
+ * 5.2 km"), a lift's record, a run distance's record, a streak milestone.
+ */
+export const POST_KINDS = ['session', 'run', 'lift-record', 'run-record', 'streak'] as const;
+export const postKindSchema = z.enum(POST_KINDS);
+export type PostKind = z.infer<typeof postKindSchema>;
+
+export const feedPostSchema = z
+  .object({
+    id: z.string().uuid(),
+    person: communityPersonSchema,
+    kind: postKindSchema,
+    /**
+     * session: the day's name ("Push"); lift-record: the lift; run-record: the
+     * distance (a running EFFORT_KEYS value); run and streak: null.
+     */
+    title: z.string().nullable(),
+    /** run: metres; streak: days; lift-record: other lifts with a record in that session; else null. */
+    value: z.number().int().nonnegative().nullable(),
+    at: iso,
+    kudos: z.number().int().nonnegative(),
+    /** The viewer cheered it. */
+    cheered: z.boolean(),
+    mine: z.boolean(),
+    /** On your own posts: who cheered, newest first (at most 10); empty on others'. */
+    cheeredBy: z.array(communityPersonSchema),
+  })
+  .strict();
+export type FeedPost = z.infer<typeof feedPostSchema>;
+
+/** Beta 6.3 (C3): a nudge you received in the last 3 days. */
+export const nudgeSchema = z.object({ person: communityPersonSchema, at: iso }).strict();
+
+export const feedQuerySchema = z.object({ before: iso.optional() }).strict();
+export const feedSchema = z
+  .object({
+    items: z.array(feedPostSchema),
+    /** Pass as `before` for older posts; null at the end (the feed covers 14 days). */
+    next: iso.nullable(),
+    /** Nudges received in the last 3 days, newest first (on the first page only). */
+    nudges: z.array(nudgeSchema),
+  })
+  .strict();
+export type Feed = z.infer<typeof feedSchema>;
+
+export const FEED_PAGE = 20;
+
+export const kudosResultSchema = z.object({ kudos: z.number().int().nonnegative(), cheered: z.boolean() }).strict();
+
+/* ------------------------------------------- beta 6.3: suggestions -- */
+
+export const suggestionSchema = z
+  .object({
+    person: communityPersonSchema,
+    /** Friends you both have: a count, never who (owner Q3). */
+    mutualFriends: z.number().int().nonnegative(),
+    /** A club you are both in, by name; null when none. */
+    club: z.string().nullable(),
+  })
+  .strict();
+export type Suggestion = z.infer<typeof suggestionSchema>;
+export const suggestionListSchema = z.object({ items: z.array(suggestionSchema) }).strict();
+export const SUGGESTIONS_SHOWN = 20;
 
 /** Beta 6.2 (S7): after a decline, the same person cannot ask again for this long. */
 export const FRIEND_DECLINE_COOLDOWN_DAYS = 7;
@@ -508,8 +608,13 @@ export const BOARD_METRICS = ['sessions', 'distance', 'streak', 'active-days', '
 export const boardMetricSchema = z.enum(BOARD_METRICS);
 export type BoardMetric = z.infer<typeof boardMetricSchema>;
 
+/** Beta 6.3 (C13, owner Q4): this week, this month, or since joining Community. */
+export const BOARD_PERIODS = ['week', 'month', 'all'] as const;
+export const boardPeriodSchema = z.enum(BOARD_PERIODS);
+export type BoardPeriod = z.infer<typeof boardPeriodSchema>;
+
 export const boardQuerySchema = z
-  .object({ metric: boardMetricSchema.default('sessions'), country: countrySchema.optional() })
+  .object({ metric: boardMetricSchema.default('sessions'), period: boardPeriodSchema.default('week'), country: countrySchema.optional() })
   .strict();
 
 export const boardRowSchema = z
@@ -525,8 +630,8 @@ export const boardRowSchema = z
     runM: z.number().int().nonnegative(),
     /** The current streak, in days. */
     streak: z.number().int().nonnegative(),
-    /** Beta 6.2: days this week with a counted session or run. */
-    activeDays: z.number().int().min(0).max(7),
+    /** Beta 6.2: days this week with a counted session or run (beta 6.3: in the board's period). */
+    activeDays: z.number().int().nonnegative(),
     /** Beta 6.2: sessions done of those planned up to today, in per cent; null without a plan. */
     keptPct: z.number().int().min(0).max(100).nullable(),
     me: z.boolean(),
@@ -560,8 +665,12 @@ export const boardSchema = z
     me: boardRowSchema.nullable(),
     /** Everyone on the board, including those below the top. */
     total: z.number().int().nonnegative(),
-    /** Beta 6.2 (C12): null when nobody on it counted anything last week. */
+    /** Beta 6.2 (C12): null when nobody on it counted anything last week (beta 6.3: and off the week period). */
     lastWeek: lastWeekSchema.nullable(),
+    /** Beta 6.3 (C13): the period counted, from its first day to today. */
+    period: boardPeriodSchema,
+    periodFrom: z.string(),
+    periodTo: z.string(),
   })
   .strict();
 export type Board = z.infer<typeof boardSchema>;

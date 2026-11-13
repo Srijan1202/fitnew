@@ -4,7 +4,7 @@
  * leaving Community deletes the profile, the friendships and the club places.
  */
 import { sql } from 'drizzle-orm';
-import { boolean, check, index, integer, pgTable, primaryKey, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { boolean, check, index, integer, jsonb, pgTable, primaryKey, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
 import { users } from './users.js';
 
@@ -23,6 +23,17 @@ export const communityProfiles = pgTable(
     onWorld: boolean('on_world').notNull().default(false),
     /** The admin took this person off every board and out of search. */
     hidden: boolean('hidden').notNull().default(false),
+    /** Beta 6.3 (C1, owner Q1): the kinds shared with friends in the feed; none at first. */
+    feed: text('feed').array().notNull().default(sql`'{}'::text[]`),
+    /** Beta 6.3: when each kind was last switched on; only later events are posted. */
+    feedSince: jsonb('feed_since').$type<Record<string, string>>().notNull().default(sql`'{}'::jsonb`),
+    /** Beta 6.3 (C16, owner Q3): suggested to friends of friends and club-mates. */
+    suggest: boolean('suggest').notNull().default(true),
+    /** Beta 6.3 (C2, C3): the evening kudos summary and nudges as notifications. */
+    notify: boolean('notify').notNull().default(true),
+    /** Beta 6.3: the local dates of the last kudos summary and the last nudge notification (one a day each). */
+    kudosPushedOn: text('kudos_pushed_on'),
+    nudgePushedOn: text('nudge_pushed_on'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -31,6 +42,7 @@ export const communityProfiles = pgTable(
     index('community_profiles_world_idx').on(t.onWorld, t.country),
     check('community_profiles_handle', sql`${t.handle} ~ '^[a-z0-9_]{3,20}$'`),
     check('community_profiles_country', sql`${t.country} is null or ${t.country} ~ '^[A-Z]{2}$'`),
+    check('community_profiles_feed', sql`${t.feed} <@ array['session', 'run', 'record', 'streak']::text[]`),
   ],
 );
 
@@ -205,4 +217,105 @@ export const communityWeekHistory = pgTable(
       sql`${t.sessions} between 0 and 7 and ${t.runM} >= 0 and ${t.streak} >= 0 and ${t.activeDays} between 0 and 7 and (${t.planned} is null or ${t.planned} between 0 and 7)`,
     ),
   ],
+);
+
+/**
+ * Beta 6.3 (C13, owner Q4): each member's counts for this week, this
+ * calendar month and since joining Community, written with the week's counts,
+ * so every board period is one indexed read.
+ */
+export const communityPeriodStats = pgTable(
+  'community_period_stats',
+  {
+    userId: userRef('user_id'),
+    period: text('period').notNull(),
+    periodFrom: text('period_from').notNull(),
+    sessions: integer('sessions').notNull().default(0),
+    runM: integer('run_m').notNull().default(0),
+    streak: integer('streak').notNull().default(0),
+    activeDays: integer('active_days').notNull().default(0),
+    planned: integer('planned'),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.period] }),
+    index('community_period_stats_sessions_idx').on(t.period, t.sessions, t.runM),
+    index('community_period_stats_run_idx').on(t.period, t.runM),
+    check('community_period_stats_period', sql`${t.period} in ('week', 'month', 'all')`),
+    check(
+      'community_period_stats_counts',
+      sql`${t.sessions} >= 0 and ${t.runM} >= 0 and ${t.streak} >= 0 and ${t.activeDays} >= 0 and (${t.planned} is null or ${t.planned} >= 0)`,
+    ),
+  ],
+);
+
+/**
+ * Beta 6.3 (C1): a post in friends' feeds — a counted session, a counted run,
+ * a record or a streak milestone. Never weights, sets, routes or food. One per
+ * event (`ref`: the session or run id, or the streak's milestone and first day);
+ * deleted after 30 days, when its kind is switched off, or with its session or run.
+ */
+export const communityPosts = pgTable(
+  'community_posts',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    userId: userRef('user_id'),
+    kind: text('kind').notNull(),
+    ref: text('ref').notNull(),
+    title: text('title'),
+    value: integer('value'),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('community_posts_event_key').on(t.userId, t.kind, t.ref),
+    index('community_posts_user_at_idx').on(t.userId, t.at),
+    index('community_posts_at_idx').on(t.at),
+    check('community_posts_kind', sql`${t.kind} in ('session', 'run', 'lift-record', 'run-record', 'streak')`),
+    check('community_posts_title', sql`${t.title} is null or length(${t.title}) <= 80`),
+    check('community_posts_value', sql`${t.value} is null or ${t.value} >= 0`),
+  ],
+);
+
+/** Beta 6.3 (C2): a friend cheered a post; `notified` once it was in an evening summary. */
+export const communityKudos = pgTable(
+  'community_kudos',
+  {
+    postId: uuid('post_id')
+      .notNull()
+      .references(() => communityPosts.id, { onDelete: 'cascade' }),
+    giverId: userRef('giver_id'),
+    notified: boolean('notified').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.postId, t.giverId] }), index('community_kudos_giver_idx').on(t.giverId)],
+);
+
+/** Beta 6.3 (C3): the last time one friend nudged another (once a week per pair). */
+export const communityNudges = pgTable(
+  'community_nudges',
+  {
+    fromId: userRef('from_id'),
+    toId: userRef('to_id'),
+    at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.fromId, t.toId] }),
+    index('community_nudges_to_idx').on(t.toId, t.at),
+    check('community_nudges_not_self', sql`${t.fromId} <> ${t.toId}`),
+  ],
+);
+
+/**
+ * Beta 6.3 (C16): a suggestion the viewer hid; never suggested to them again.
+ * Other people's to the dismissed person (never in their data download).
+ */
+export const communitySuggestionDismissals = pgTable(
+  'community_suggestion_dismissals',
+  {
+    viewerId: userRef('viewer_id'),
+    dismissedId: userRef('dismissed_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.viewerId, t.dismissedId] }), index('community_suggestion_dismissals_dismissed_idx').on(t.dismissedId)],
 );

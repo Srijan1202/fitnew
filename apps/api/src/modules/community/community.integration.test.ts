@@ -6,7 +6,20 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import postgres from 'postgres';
-import { CURRENT_POLICY_VERSION, boardSchema, clubSchema, communityMeSchema, friendsResponseSchema, personListSchema, personProfileSchema, type Board } from '@fitos/contracts';
+import {
+  CURRENT_POLICY_VERSION,
+  boardSchema,
+  clubSchema,
+  communityMeSchema,
+  feedSchema,
+  friendsResponseSchema,
+  kudosResultSchema,
+  personListSchema,
+  personProfileSchema,
+  suggestionListSchema,
+  type Board,
+  type Feed,
+} from '@fitos/contracts';
 import { keptPlanPct } from '@fitos/core/community/board';
 import { addDays, localDateOf } from '@fitos/core/nutrition/log';
 import { isoWeekday } from '@fitos/core/progress/streak';
@@ -15,6 +28,8 @@ import { migrateUp } from '../../db/migrate.js';
 import type { FakeTokenVerifier } from '../../test/fake-token-verifier.js';
 import type { RecordingPushSender } from '../../lib/push.js';
 import { buildDbApp, databaseUrl } from '../../test/build-test-app.js';
+import { CommunityRepository } from './repository.js';
+import { CommunityService } from './service.js';
 
 const describeIfDb = databaseUrl !== undefined ? describe : describe.skip;
 
@@ -458,5 +473,230 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
       runM = s!.run_m;
     }
     expect(runM).toBe(0);
+  });
+  /* ------------------------------------------------ beta 6.3: Community that talks -- */
+
+  const feedOf = async (u: U): Promise<Feed> => {
+    const r = await call(u, 'GET', '/community/feed');
+    expect(r.statusCode, r.body).toBe(200);
+    return feedSchema.parse(r.json());
+  };
+
+  it('beta 6.3 (C1): nothing is shared until chosen; then friends see the kinds shared, from then on; off deletes them', async () => {
+    const a = await member('c63_poster');
+    const b = await member('c63_friend');
+    const c = await member('c63_stranger');
+    await friends(a, b, 'c63_friend');
+    const me = communityMeSchema.parse((await call(a, 'GET', '/community/me')).json());
+    expect(me.profile).toMatchObject({ feed: [], suggest: true, notify: true });
+
+    // Before sharing: nothing is posted.
+    await session(a, 6, 20);
+    await board(a, '/community/boards/friends');
+    expect((await feedOf(b)).items).toEqual([]);
+
+    expect((await call(a, 'PATCH', '/community/me', { feed: ['session', 'run', 'record', 'session'] })).statusCode).toBe(422);
+    expect(communityMeSchema.parse((await call(a, 'PATCH', '/community/me', { feed: ['session', 'run', 'record'] })).json()).profile!.feed).toEqual(['session', 'run', 'record']);
+    // The earlier session stays unposted; what happens from now is.
+    await session(a, 6, 20);
+    await sql`update set_logs set is_pr = true where session_exercise_id in (
+      select se.id from session_exercises se join workout_sessions ws on ws.id = se.session_id where ws.user_id = ${a.id} and ws.completed_at > now() - interval '1 minute')`;
+    await run(a, 5200, 1700);
+    const [r] = await sql<{ id: string }[]>`select id from runs where user_id = ${a.id}`;
+    await sql`insert into run_best_efforts (run_id, user_id, key, seconds, start_m) values (${r!.id}, ${a.id}, '1k', 300, 0), (${r!.id}, ${a.id}, '5k', 1600, 0)`;
+    await board(a, '/community/boards/friends');
+
+    const seen = await feedOf(b);
+    expect(seen.items.map((p) => [p.kind, p.title, p.value, p.mine]).sort()).toEqual([
+      ['lift-record', 'CM bench', 0, false],
+      ['run', null, 5200, false],
+      ['run-record', '5k', null, false],
+      ['session', 'Push', null, false],
+    ]);
+    expect(seen.items.every((p) => p.person.handle === 'c63_poster' && p.kudos === 0 && !p.cheered)).toBe(true);
+    // Never weights, sets or routes.
+    expect(JSON.stringify(seen)).not.toMatch(/weight|kg|track|reps/i);
+    expect((await feedOf(a)).items.every((p) => p.mine)).toBe(true);
+    expect((await feedOf(c)).items).toEqual([]);
+
+    // Kudos: friends only, once; not your own.
+    const post = seen.items.find((p) => p.kind === 'session')!;
+    expect(kudosResultSchema.parse((await call(b, 'POST', `/community/feed/${post.id}/kudos`)).json())).toEqual({ kudos: 1, cheered: true });
+    expect((await call(b, 'POST', `/community/feed/${post.id}/kudos`)).json()).toEqual({ kudos: 1, cheered: true });
+    expect((await call(a, 'POST', `/community/feed/${post.id}/kudos`)).statusCode).toBe(404);
+    expect((await call(c, 'POST', `/community/feed/${post.id}/kudos`)).statusCode).toBe(404);
+    const mine = (await feedOf(a)).items.find((p) => p.id === post.id)!;
+    expect(mine).toMatchObject({ kudos: 1, cheered: false, mine: true });
+    expect(mine.cheeredBy.map((p) => p.handle)).toEqual(['c63_friend']);
+    expect((await feedOf(b)).items.find((p) => p.id === post.id)).toMatchObject({ kudos: 1, cheered: true, cheeredBy: [] });
+    expect((await call(b, 'DELETE', `/community/feed/${post.id}/kudos`)).json()).toEqual({ kudos: 0, cheered: false });
+
+    // Switching a kind off deletes its posts; an unfriended person sees nothing.
+    await call(a, 'PATCH', '/community/me', { feed: ['run'] });
+    expect((await feedOf(b)).items.map((p) => p.kind)).toEqual(['run']);
+    await call(b, 'DELETE', `/community/friends/${a.id}`);
+    expect((await feedOf(b)).items).toEqual([]);
+    // A deleted run takes its post with it.
+    expect((await call(a, 'DELETE', `/running/runs/${(await sql<{ id: string }[]>`select client_run_id as id from runs where user_id = ${a.id}`)[0]!.id}`)).statusCode).toBe(204);
+    await board(a, '/community/boards/friends');
+    expect((await feedOf(a)).items).toEqual([]);
+  });
+
+  it('beta 6.3 (C1): a streak milestone posts once; posts older than 30 days go', async () => {
+    const a = await member('c63_streaker');
+    await call(a, 'PATCH', '/community/me', { feed: ['streak'] });
+    const repo = new CommunityRepository(app.database.db);
+    const service = new CommunityService(repo, async () => 7, app.push);
+    await service.refreshOne(a.id);
+    await service.refreshOne(a.id);
+    const items = (await feedOf(a)).items;
+    expect(items.map((p) => [p.kind, p.value])).toEqual([['streak', 7]]);
+    await sql`update community_posts set at = now() - interval '31 days' where user_id = ${a.id}`;
+    // 31 days on, the streak's milestone is long past: the round deletes and does not post again.
+    await new CommunityService(repo, async () => 20, app.push).refreshAll();
+    expect((await sql`select 1 from community_posts where user_id = ${a.id}`).length).toBe(0);
+  });
+
+  it('beta 6.3 (C2): one evening summary a day of the kudos not yet told; none with notifications off', async () => {
+    const push = app.push as RecordingPushSender;
+    const a = await member('c63_cheered');
+    const b = await member('c63_cheer_b');
+    const c = await member('c63_cheer_c');
+    await friends(a, b, 'c63_cheer_b');
+    await friends(a, c, 'c63_cheer_c');
+    await sql`insert into push_tokens (user_id, token, platform) values (${a.id}, ${`cm-push-${a.id}`}, 'android')`;
+    await call(a, 'PATCH', '/community/me', { feed: ['session'] });
+    await session(a, 6, 20);
+    await board(a, '/community/boards/friends');
+    const post = (await feedOf(b)).items[0]!;
+    await call(b, 'POST', `/community/feed/${post.id}/kudos`);
+    await call(c, 'POST', `/community/feed/${post.id}/kudos`);
+
+    const day = today();
+    const at = (h: number) => new Date(`${day}T${String(h).padStart(2, '0')}:00:00+05:30`);
+    const round = (h: number) => new CommunityService(new CommunityRepository(app.database.db), async () => 0, app.push, () => at(h)).kudosRound();
+    const mineSends = () => push.sends.filter((s) => s.tokens.includes(`cm-push-${a.id}`));
+    const before = mineSends().length;
+    await round(18);
+    expect(mineSends().length).toBe(before);
+    await round(19);
+    const told = mineSends().slice(before);
+    expect(told.map((s) => [s.message.title, s.message.body])).toEqual([['Kudos', '@c63_cheer_c and @c63_cheer_b cheered you.']]);
+    // Once a day: a later cheer waits for tomorrow.
+    await call(c, 'DELETE', `/community/feed/${post.id}/kudos`);
+    await call(c, 'POST', `/community/feed/${post.id}/kudos`);
+    await round(21);
+    expect(mineSends().length).toBe(before + 1);
+    // Notifications off: nothing, and the kudos count as told.
+    await call(a, 'PATCH', '/community/me', { notify: false });
+    await sql`update community_profiles set kudos_pushed_on = null where user_id = ${a.id}`;
+    await round(20);
+    expect(mineSends().length).toBe(before + 1);
+    expect((await sql`select 1 from community_kudos k join community_posts p on p.id = k.post_id where p.user_id = ${a.id} and not k.notified`).length).toBe(0);
+  });
+
+  it('beta 6.3 (C3): a quiet friend can be nudged once a week, with at most one notification a day; never a stranger', async () => {
+    const push = app.push as RecordingPushSender;
+    const a = await member('c63_nudger');
+    const b = await member('c63_busy');
+    const d = await member('c63_quiet');
+    const e = await member('c63_nudger_two');
+    const s = await member('c63_nobody');
+    await friends(a, b, 'c63_busy');
+    await friends(a, d, 'c63_quiet');
+    await friends(e, d, 'c63_quiet');
+    await sql`insert into push_tokens (user_id, token, platform) values (${d.id}, ${`cm-push-${d.id}`}, 'android')`;
+    await session(b, 6, 20, 1);
+
+    const busy = await call(a, 'POST', `/community/friends/${b.id}/nudge`);
+    expect(busy.statusCode).toBe(409);
+    expect(issue(busy)).toBe('active');
+    expect(personProfileSchema.parse((await call(a, 'GET', `/community/people/${b.id}`)).json()).nudge).toBe('active');
+    expect(personProfileSchema.parse((await call(a, 'GET', `/community/people/${d.id}`)).json()).nudge).toBe('can');
+    expect((await call(a, 'POST', `/community/friends/${s.id}/nudge`)).statusCode).toBe(404);
+
+    const sent = push.sends.length;
+    expect((await call(a, 'POST', `/community/friends/${d.id}/nudge`)).statusCode).toBe(204);
+    expect(push.sends.slice(sent).map((x) => x.message.body)).toEqual(['@c63_nudger nudged you: time to move. A short session counts.']);
+    const again = await call(a, 'POST', `/community/friends/${d.id}/nudge`);
+    expect(issue(again)).toBe('sent');
+    expect(personProfileSchema.parse((await call(a, 'GET', `/community/people/${d.id}`)).json()).nudge).toBe('sent');
+    // A second friend's nudge the same day shows in the app, without a notification.
+    expect((await call(e, 'POST', `/community/friends/${d.id}/nudge`)).statusCode).toBe(204);
+    expect(push.sends.length).toBe(sent + 1);
+    expect((await feedOf(d)).nudges.map((n) => n.person.handle)).toEqual(['c63_nudger_two', 'c63_nudger']);
+    // A week on, a nudge can go again.
+    await sql`update community_nudges set at = now() - interval '8 days' where from_id = ${a.id}`;
+    expect(personProfileSchema.parse((await call(a, 'GET', `/community/people/${d.id}`)).json()).nudge).toBe('can');
+  });
+
+  it('beta 6.3 (C16): friends of friends and club-mates, a count only; opt-out, asked, blocked and dismissed people are not suggested', async () => {
+    const a = await member('c63_me');
+    const b = await member('c63_bridge');
+    const x = await member('c63_fof');
+    const y = await member('c63_mate');
+    const z = await member('c63_private');
+    const w = await member('c63_asked');
+    await friends(a, b, 'c63_bridge');
+    await friends(b, x, 'c63_fof');
+    await friends(b, z, 'c63_private');
+    await friends(b, w, 'c63_asked');
+    await call(z, 'PATCH', '/community/me', { suggest: false });
+    await call(a, 'POST', '/community/friends', { handle: 'c63_asked' });
+    const club = clubSchema.parse((await call(y, 'POST', '/community/clubs', { name: 'C63 Gym' })).json());
+    await call(a, 'POST', '/community/clubs/join', { code: club.code });
+    await call(x, 'POST', '/community/clubs/join', { code: club.code });
+
+    const got = suggestionListSchema.parse((await call(a, 'GET', '/community/suggestions')).json()).items;
+    expect(got.map((s) => [s.person.handle, s.mutualFriends, s.club])).toEqual([
+      ['c63_fof', 1, 'C63 Gym'],
+      ['c63_mate', 0, 'C63 Gym'],
+    ]);
+    // Never which friends.
+    expect(JSON.stringify(got)).not.toContain('c63_bridge');
+    expect((await call(a, 'DELETE', `/community/suggestions/${y.id}`)).statusCode).toBe(204);
+    expect((await call(a, 'DELETE', `/community/suggestions/${a.id}`)).statusCode).toBe(404);
+    await call(x, 'POST', '/community/blocks', { userId: a.id });
+    expect(suggestionListSchema.parse((await call(a, 'GET', '/community/suggestions')).json()).items).toEqual([]);
+    // The dismissed person never learns of it.
+    expect(JSON.stringify((await call(y, 'POST', '/user/export')).json())).not.toContain('community_suggestion_dismissals');
+  });
+
+  it('beta 6.3 (C13): month and all-time boards; all time counts from joining; the podium is for weeks', async () => {
+    const a = await member('c63_periods');
+    await session(a, 6, 20);
+    await session(a, 6, 20, 15);
+    await session(a, 6, 20, 25);
+    await sql`update community_profiles set created_at = now() - interval '20 days' where user_id = ${a.id}`;
+    const all = await board(a, '/community/boards/friends?period=all');
+    expect(all).toMatchObject({ period: 'all', periodFrom: localDateOf(new Date(Date.now() - 20 * 86_400_000), 'Asia/Kolkata'), periodTo: today(), lastWeek: null });
+    expect(all.rows[0]).toMatchObject({ sessions: 2, activeDays: 2 });
+    const month = await board(a, '/community/boards/friends?period=month');
+    const first = `${today().slice(0, 7)}-01`;
+    const inMonth = [0, 15].filter((d) => localDateOf(new Date(Date.now() - d * 86_400_000), 'Asia/Kolkata') >= first).length;
+    expect(month).toMatchObject({ period: 'month', periodFrom: first });
+    expect(month.rows[0]!.sessions).toBe(inMonth + (localDateOf(new Date(Date.now() - 25 * 86_400_000), 'Asia/Kolkata') >= first ? 1 : 0));
+    expect((await board(a, '/community/boards/friends')).period).toBe('week');
+    expect((await call(a, 'GET', '/community/boards/friends?period=year')).statusCode).toBe(422);
+    // The world board by period.
+    await call(a, 'PATCH', '/community/me', { onWorld: true });
+    const world = await board(a, '/community/boards/world?period=all');
+    expect(world.period).toBe('all');
+  });
+
+  it('beta 6.3: leaving takes posts, kudos given, nudges and period counts with it', async () => {
+    const a = await member('c63_leaver');
+    const b = await member('c63_stayer');
+    await friends(a, b, 'c63_stayer');
+    await call(b, 'PATCH', '/community/me', { feed: ['session'] });
+    await session(b, 6, 20);
+    await board(b, '/community/boards/friends');
+    await call(a, 'POST', `/community/feed/${(await feedOf(a)).items[0]!.id}/kudos`);
+    await call(a, 'PATCH', '/community/me', { feed: ['session'] });
+    await sql`insert into community_nudges (from_id, to_id) values (${a.id}, ${b.id})`;
+    expect((await call(a, 'DELETE', '/community/me')).statusCode).toBe(204);
+    for (const [table, col] of [['community_posts', 'user_id'], ['community_kudos', 'giver_id'], ['community_nudges', 'from_id'], ['community_period_stats', 'user_id']] as const) {
+      expect((await sql`select 1 from ${sql(table)} where ${sql(col)} = ${a.id}`).length, table).toBe(0);
+    }
   });
 });

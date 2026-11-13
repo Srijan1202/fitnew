@@ -16,6 +16,7 @@ import {
   adminUpdateMemberSchema,
   blockRequestSchema,
   boardMetricSchema,
+  boardPeriodSchema,
   boardQuerySchema,
   boardSchema,
   clubListSchema,
@@ -23,17 +24,21 @@ import {
   communityMeSchema,
   createClubSchema,
   errorEnvelopeSchema,
+  feedQuerySchema,
+  feedSchema,
   friendRequestResultSchema,
   friendRequestSchema,
   friendsResponseSchema,
   joinClubSchema,
   joinCommunitySchema,
+  kudosResultSchema,
   passClubSchema,
   personListSchema,
   personProfileSchema,
   renameClubSchema,
   reportRequestSchema,
   searchQuerySchema,
+  suggestionListSchema,
   updateCommunitySchema,
 } from '@fitos/contracts';
 
@@ -69,11 +74,17 @@ export const CLUB_OWNER_ACTIONS_PER_DAY = 60;
  * as a catch-up; a completed session or a saved run recounts that person at once.
  */
 export const REFRESH_EVERY_MS = 60 * 60 * 1000;
+/** Beta 6.3 (C2): how often the evening kudos summaries are looked for. */
+export const KUDOS_ROUND_EVERY_MS = 15 * 60 * 1000;
+/** Beta 6.3: cheers and nudges a day. */
+export const KUDOS_PER_DAY = 500;
+export const NUDGES_PER_DAY = 30;
 
 const userParams = z.object({ userId: z.string().uuid() }).strict();
 const idParams = z.object({ id: z.string().uuid() }).strict();
 const clubUserParams = z.object({ id: z.string().uuid(), userId: z.string().uuid() }).strict();
-const metricQuery = z.object({ metric: boardMetricSchema.default('sessions') }).strict();
+const metricQuery = z.object({ metric: boardMetricSchema.default('sessions'), period: boardPeriodSchema.default('week') }).strict();
+const postParams = z.object({ postId: z.string().uuid() }).strict();
 
 const perUser = (prefix: string, max: number) => ({
   rateLimit: {
@@ -141,14 +152,24 @@ export async function communityRoutes(app: FastifyInstance, opts: { ipSalt: stri
     service.refreshAll().catch((e: unknown) => {
       app.log.warn({ err: e }, 'community: refresh failed');
     });
+  const kudos = () =>
+    service.kudosRound().catch((e: unknown) => {
+      app.log.warn({ err: e }, 'community: kudos round failed');
+    });
   let timer: NodeJS.Timeout | undefined;
+  let kudosTimer: NodeJS.Timeout | undefined;
   if (opts.refreshTimer) {
     app.addHook('onReady', async () => {
       void refresh();
       timer = setInterval(() => void refresh(), REFRESH_EVERY_MS);
       timer.unref();
+      kudosTimer = setInterval(() => void kudos(), KUDOS_ROUND_EVERY_MS);
+      kudosTimer.unref();
     });
-    app.addHook('onClose', async () => clearInterval(timer));
+    app.addHook('onClose', async () => {
+      clearInterval(timer);
+      clearInterval(kudosTimer);
+    });
   }
 
   const typed = app.withTypeProvider<ZodTypeProvider>();
@@ -231,6 +252,66 @@ export async function communityRoutes(app: FastifyInstance, opts: { ipSalt: stri
     await service.unfriend(requireUserId(request.userId), request.params.userId);
     return reply.code(204).send(null);
   });
+
+  typed.post('/community/friends/:userId/nudge', {
+    ...on,
+    config: perUser('community-nudge', NUDGES_PER_DAY),
+    schema: {
+      summary: 'Nudge a friend who has counted nothing for 3 days: a fixed message, once a week per friend (409 active or sent)',
+      tags,
+      security,
+      params: userParams,
+      response: { 204: z.null(), ...errors },
+    },
+  }, async (request, reply) => {
+    await service.nudge(requireUserId(request.userId), request.params.userId);
+    return reply.code(204).send(null);
+  });
+
+  /* --------------------------------------------- beta 6.3: suggestions -- */
+
+  typed.get('/community/suggestions', {
+    ...on,
+    schema: {
+      summary: 'Friends of friends and club-mates who allow suggestions: a count of friends in common or a shared club, never who',
+      tags,
+      security,
+      response: { 200: suggestionListSchema, ...errors },
+    },
+  }, async (request) => ({ items: await service.suggestions(requireUserId(request.userId)) }));
+
+  typed.delete('/community/suggestions/:userId', {
+    ...on,
+    schema: { summary: 'Never suggest this person again', tags, security, params: userParams, response: { 204: z.null(), ...errors } },
+  }, async (request, reply) => {
+    await service.dismissSuggestion(requireUserId(request.userId), request.params.userId);
+    return reply.code(204).send(null);
+  });
+
+  /* ---------------------------------------------------- beta 6.3: feed -- */
+
+  typed.get('/community/feed', {
+    ...on,
+    schema: {
+      summary: "Your posts and your friends' (what each shares), newest first, 20 a page, from the last 14 days; nudges received",
+      tags,
+      security,
+      querystring: feedQuerySchema,
+      response: { 200: feedSchema, ...errors },
+    },
+  }, async (request) => service.feed(requireUserId(request.userId), request.query.before));
+
+  typed.post('/community/feed/:postId/kudos', {
+    ...on,
+    config: perUser('community-kudos', KUDOS_PER_DAY),
+    schema: { summary: "Cheer a friend's post (once)", tags, security, params: postParams, response: { 200: kudosResultSchema, ...errors } },
+  }, async (request) => service.cheer(requireUserId(request.userId), request.params.postId, true));
+
+  typed.delete('/community/feed/:postId/kudos', {
+    ...on,
+    config: perUser('community-kudos', KUDOS_PER_DAY),
+    schema: { summary: 'Take a cheer back', tags, security, params: postParams, response: { 200: kudosResultSchema, ...errors } },
+  }, async (request) => service.cheer(requireUserId(request.userId), request.params.postId, false));
 
   typed.get('/community/blocks', {
     schema: { summary: 'People you blocked', tags, security, response: { 200: personListSchema, ...errors } },
@@ -320,13 +401,13 @@ export async function communityRoutes(app: FastifyInstance, opts: { ipSalt: stri
 
   typed.get('/community/boards/friends', {
     ...on,
-    schema: { summary: 'You and your friends this week', tags, security, querystring: metricQuery, response: { 200: boardSchema, ...errors } },
-  }, async (request) => service.friendsBoard(requireUserId(request.userId), request.query.metric));
+    schema: { summary: 'You and your friends this week, this month or since joining', tags, security, querystring: metricQuery, response: { 200: boardSchema, ...errors } },
+  }, async (request) => service.friendsBoard(requireUserId(request.userId), request.query.metric, request.query.period));
 
   typed.get('/community/boards/clubs/:id', {
     ...on,
-    schema: { summary: "A club's members this week", tags, security, params: idParams, querystring: metricQuery, response: { 200: boardSchema, ...errors } },
-  }, async (request) => service.clubBoard(requireUserId(request.userId), request.params.id, request.query.metric));
+    schema: { summary: "A club's members this week, this month or since joining", tags, security, params: idParams, querystring: metricQuery, response: { 200: boardSchema, ...errors } },
+  }, async (request) => service.clubBoard(requireUserId(request.userId), request.params.id, request.query.metric, request.query.period));
 
   typed.get('/community/boards/world', {
     ...on,
@@ -337,7 +418,7 @@ export async function communityRoutes(app: FastifyInstance, opts: { ipSalt: stri
       querystring: boardQuerySchema,
       response: { 200: boardSchema, ...errors },
     },
-  }, async (request) => service.worldBoard(requireUserId(request.userId), request.query.metric, request.query.country ?? null));
+  }, async (request) => service.worldBoard(requireUserId(request.userId), request.query.metric, request.query.country ?? null, request.query.period));
 
   /* ------------------------------------------------------------ reports -- */
 

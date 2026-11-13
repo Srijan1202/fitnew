@@ -12,7 +12,9 @@ import {
   COUNTED_RUN,
   COUNTED_SESSION,
   CURRENT_POLICY_VERSION,
+  FEED_PAGE,
   FRIEND_DECLINE_COOLDOWN_DAYS,
+  SUGGESTIONS_SHOWN,
   MAX_CLUB_MEMBERS,
   MAX_CLUBS_JOINED,
   MAX_CLUBS_OWNED,
@@ -21,11 +23,16 @@ import {
   handleProblem,
   type Board,
   type BoardMetric,
+  type BoardPeriod,
   type BoardRow,
   type Club,
   type CommunityMe,
   type CommunityPerson,
   type CommunityProfile,
+  type Feed,
+  type FeedKind,
+  type FeedPost,
+  type Suggestion,
   type FriendsResponse,
   type JoinCommunityRequest,
   type LastWeek,
@@ -35,12 +42,25 @@ import {
   type UpdateCommunityRequest,
 } from '@fitos/contracts';
 import { boardKey, keptPlanPct, placesMoved, rankBy, type BoardMetricKey } from '@fitos/core/community/board';
-import { addDays, localDateOf } from '@fitos/core/nutrition/log';
+import {
+  FEED_DAYS,
+  NUDGE_QUIET_DAYS,
+  POST_CATCH_UP_DAYS,
+  POSTS_KEPT_DAYS,
+  kudosLine,
+  kudosPushDue,
+  nudgeState,
+  periodFrom,
+  postFrom,
+  streakPostDue,
+  type NudgeState,
+} from '@fitos/core/community/feed';
+import { addDays, localDateOf, localHourOf } from '@fitos/core/nutrition/log';
 import { isoWeekday } from '@fitos/core/progress/streak';
 
 import { AppError } from '../../lib/errors.js';
 import type { PushSender } from '../../lib/push.js';
-import type { CommunityRepository, PersonRow, StatRow, WeekRow } from './repository.js';
+import type { CommunityRepository, PersonRow, PostRow, StatRow, WeekRow } from './repository.js';
 
 /** The person's current streak (the progress service's own count). */
 export type StreakOf = (userId: string) => Promise<number>;
@@ -107,6 +127,23 @@ const weekCountsOf = (w: WeekRow): WeekCounts => ({
 /** Something counted for this metric (the first key above zero). */
 const counted = (metric: BoardMetricKey, r: StatRow): boolean => (boardKey(metric, r)[0] ?? 0) > 0;
 
+/** Beta 6.3: nudges show in the feed for as long as a friend stays quiet. */
+const NUDGES_SHOWN_DAYS = NUDGE_QUIET_DAYS;
+const CHEERERS_SHOWN = 10;
+
+const postOf = (p: PostRow, viewer: string, cheeredBy: CommunityPerson[]): FeedPost => ({
+  id: p.id,
+  person: personOf(p),
+  kind: p.kind as FeedPost['kind'],
+  title: p.title,
+  value: p.value,
+  at: p.at.toISOString(),
+  kudos: p.kudos,
+  cheered: p.cheered,
+  mine: p.userId === viewer,
+  cheeredBy,
+});
+
 export class CommunityService {
   constructor(
     private readonly repo: CommunityRepository,
@@ -118,8 +155,26 @@ export class CommunityService {
 
   /* -------------------------------------------------------------- joining -- */
 
-  private profileOf(p: { handle: string; avatarId: string | null; country: string | null; onWorld: boolean; createdAt: Date }): CommunityProfile {
-    return { handle: p.handle, avatarId: avatar(p.avatarId), country: p.country, onWorld: p.onWorld, joinedAt: p.createdAt.toISOString() };
+  private profileOf(p: {
+    handle: string;
+    avatarId: string | null;
+    country: string | null;
+    onWorld: boolean;
+    createdAt: Date;
+    feed: string[];
+    suggest: boolean;
+    notify: boolean;
+  }): CommunityProfile {
+    return {
+      handle: p.handle,
+      avatarId: avatar(p.avatarId),
+      country: p.country,
+      onWorld: p.onWorld,
+      joinedAt: p.createdAt.toISOString(),
+      feed: p.feed as FeedKind[],
+      suggest: p.suggest,
+      notify: p.notify,
+    };
   }
 
   async me(userId: string): Promise<CommunityMe> {
@@ -159,14 +214,21 @@ export class CommunityService {
   }
 
   async update(userId: string, body: UpdateCommunityRequest): Promise<CommunityMe> {
-    await this.requireMember(userId);
+    const p = await this.requireMember(userId);
     if (body.handle !== undefined) await this.checkHandle(body.handle, userId);
+    // Beta 6.3 (C1): a kind switched on posts only what happens from now; one switched off loses its posts.
+    let feedSince: Record<string, string> | undefined;
+    if (body.feed !== undefined) {
+      feedSince = { ...p.feedSince };
+      for (const k of body.feed) if (!p.feed.includes(k)) feedSince[k] = this.now().toISOString();
+    }
     try {
-      await this.repo.updateProfile(userId, body);
+      await this.repo.updateProfile(userId, { ...body, feedSince });
     } catch (e) {
       if (String((e as { code?: string }).code) === '23505') throw handleRefused('taken');
       throw e;
     }
+    if (body.feed !== undefined) await this.repo.prunePosts(userId, body.feed);
     return this.me(userId);
   }
 
@@ -192,6 +254,13 @@ export class CommunityService {
     await this.requireMember(viewer);
     const l = await this.repo.friendLists(viewer);
     return { friends: l.friends.map(personOf), incoming: l.incoming.map(personOf), outgoing: l.outgoing.map(personOf) };
+  }
+
+  /** Beta 6.3: a kudos summary or a nudge, only when the person allows Community notifications. */
+  private async tellIfAllowed(p: { userId: string; notify: boolean }, title: string, body: string): Promise<boolean> {
+    if (!p.notify) return false;
+    await this.tell(p.userId, title, body, { type: 'community', screen: 'feed' });
+    return true;
   }
 
   private async tell(userId: string, title: string, body: string, data: Record<string, string>): Promise<void> {
@@ -265,7 +334,148 @@ export class CommunityService {
       thisWeek: weekCountsOf(now),
       weeks: weeks.map((w) => weekCountsOf(past.get(w) ?? zero(w))),
       clubsInCommon: common,
+      nudge: friend ? await this.nudgeStateOf(viewer, userId) : null,
     };
+  }
+
+  /* ----------------------------------------------- beta 6.3 (C3): nudges -- */
+
+  private async nudgeStateOf(viewer: string, friend: string): Promise<NudgeState> {
+    const tz = await this.repo.timezoneOf(friend);
+    const today = localDateOf(this.now(), tz);
+    const [c, last] = await Promise.all([
+      this.repo.periodCounts(friend, tz, addDays(today, -NUDGE_QUIET_DAYS), today, COUNTED_SESSION, COUNTED_RUN),
+      this.repo.lastNudge(viewer, friend),
+    ]);
+    return nudgeState(c.lastActive, today, last, this.now());
+  }
+
+  /**
+   * A fixed message to a friend who has counted nothing for 3 days, once a
+   * week per friend; they get at most one nudge notification a day.
+   */
+  async nudge(viewer: string, friendId: string): Promise<void> {
+    const me = await this.requireMember(viewer);
+    const f = friendId === viewer ? null : await this.repo.friendship(viewer, friendId);
+    if (f?.status !== 'accepted' || (await this.repo.visible(viewer, friendId)) === null) throw new AppError('NOT_FOUND', 'No such friend.');
+    const state = await this.nudgeStateOf(viewer, friendId);
+    if (state === 'active') throw new AppError('CONFLICT', 'They trained in the last 3 days.', [{ path: 'nudge', issue: 'active' }]);
+    if (state === 'sent') throw new AppError('CONFLICT', 'You nudged them this week.', [{ path: 'nudge', issue: 'sent' }]);
+    await this.repo.nudge(viewer, friendId, this.now());
+    const friend = (await this.repo.profile(friendId))!;
+    const today = localDateOf(this.now(), await this.repo.timezoneOf(friendId));
+    if (friend.nudgePushedOn === today) return;
+    if (await this.tellIfAllowed(friend, 'A nudge from a friend', `@${me.handle} nudged you: time to move. A short session counts.`)) {
+      await this.repo.updateProfile(friendId, { nudgePushedOn: today });
+    }
+  }
+
+  /* -------------------------------------------- beta 6.3 (C1, C2): feed -- */
+
+  /** Your posts and friends', newest first, 20 a page, from the last 14 days; nudges on the first page. */
+  async feed(viewer: string, before: string | undefined): Promise<Feed> {
+    await this.requireMember(viewer);
+    const now = this.now().getTime();
+    const rows = await this.repo.feed(viewer, new Date(now - FEED_DAYS * 86_400_000), before === undefined ? null : new Date(before), FEED_PAGE + 1);
+    const page = rows.slice(0, FEED_PAGE);
+    const mine = page.filter((p) => p.userId === viewer && p.kudos > 0).map((p) => p.id);
+    const by = new Map<string, CommunityPerson[]>();
+    for (const c of await this.repo.cheerers(viewer, mine)) {
+      const list = by.get(c.postId) ?? [];
+      if (list.length < CHEERERS_SHOWN) list.push(personOf(c));
+      by.set(c.postId, list);
+    }
+    const nudges = before === undefined ? await this.repo.nudgesTo(viewer, new Date(now - NUDGES_SHOWN_DAYS * 86_400_000)) : [];
+    return {
+      items: page.map((p) => postOf(p, viewer, by.get(p.id) ?? [])),
+      next: rows.length > FEED_PAGE ? page.at(-1)!.at.toISOString() : null,
+      nudges: nudges.map((n) => ({ person: personOf(n), at: n.at.toISOString() })),
+    };
+  }
+
+  /** Cheer a friend's post (once); 404 for your own or one you cannot see. */
+  async cheer(viewer: string, postId: string, on: boolean): Promise<{ kudos: number; cheered: boolean }> {
+    await this.requireMember(viewer);
+    if ((await this.repo.cheerablePost(viewer, postId)) === null) throw new AppError('NOT_FOUND', 'No such post.');
+    if (on) await this.repo.cheer(postId, viewer);
+    else await this.repo.uncheer(postId, viewer);
+    return this.repo.kudosOf(postId, viewer);
+  }
+
+  /**
+   * Owner Q2: one evening summary a day (19:00–23:00 local) of the kudos not
+   * yet told; someone who switched notifications off is not told, and their
+   * kudos are marked told. Returns how many were sent.
+   */
+  async kudosRound(): Promise<number> {
+    let sent = 0;
+    for (const w of await this.repo.kudosWaiting()) {
+      try {
+        if (!w.notify) {
+          await this.repo.markKudosNotified(w.userId);
+          continue;
+        }
+        const today = localDateOf(this.now(), w.tz);
+        if (!kudosPushDue(localHourOf(this.now(), w.tz), today, w.pushedOn)) continue;
+        const handles = await this.repo.waitingCheerers(w.userId);
+        await this.repo.markKudosNotified(w.userId);
+        if (handles.length === 0) continue;
+        await this.tell(w.userId, 'Kudos', kudosLine(handles), { type: 'community', screen: 'feed' });
+        await this.repo.updateProfile(w.userId, { kudosPushedOn: today });
+        sent++;
+      } catch {
+        // The next round tries again.
+      }
+    }
+    return sent;
+  }
+
+  /**
+   * Posts for what this person shares (owner Q1): counted sessions and runs,
+   * records and streak milestones since the kind was switched on (at most 2
+   * days back, for a late sync); posts that should no longer be go first.
+   */
+  private async sweepPosts(
+    userId: string,
+    p: { feed: string[]; feedSince: Record<string, string> },
+    tz: string,
+    today: string,
+    streak: number,
+  ): Promise<void> {
+    await this.repo.prunePosts(userId, p.feed);
+    if (p.feed.length === 0) return;
+    const window = this.now().getTime() - POST_CATCH_UP_DAYS * 86_400_000;
+    const sinceOf = (k: string): Date => {
+      const s = p.feedSince[k];
+      return new Date(Math.max(window, s === undefined ? window : Date.parse(s)));
+    };
+    const { minM, fastestSecPerKm: fast, slowestSecPerKm: slow } = COUNTED_RUN;
+    if (p.feed.includes('session')) {
+      await this.repo.savePosts(userId, 'session', await this.repo.sessionEvents(userId, sinceOf('session'), COUNTED_SESSION.minSets, COUNTED_SESSION.minSeconds));
+    }
+    if (p.feed.includes('run')) await this.repo.savePosts(userId, 'run', await this.repo.runEvents(userId, sinceOf('run'), minM, fast, slow));
+    if (p.feed.includes('record')) {
+      await this.repo.savePosts(userId, 'lift-record', await this.repo.liftRecordEvents(userId, sinceOf('record')));
+      await this.repo.savePosts(userId, 'run-record', await this.repo.runRecordEvents(userId, sinceOf('record'), minM, fast, slow));
+    }
+    if (p.feed.includes('streak')) {
+      const due = streakPostDue(streak, today, postFrom(today, localDateOf(sinceOf('streak'), tz)));
+      if (due !== null) await this.repo.savePosts(userId, 'streak', [{ ref: due.ref, title: null, value: due.milestone, at: this.now() }]);
+    }
+  }
+
+  /* --------------------------------------- beta 6.3 (C16): suggestions -- */
+
+  async suggestions(viewer: string): Promise<Suggestion[]> {
+    await this.requireMember(viewer);
+    return (await this.repo.suggestions(viewer, SUGGESTIONS_SHOWN)).map((s) => ({ person: personOf(s), mutualFriends: s.mutual, club: s.club }));
+  }
+
+  /** Never suggest this person again. */
+  async dismissSuggestion(viewer: string, userId: string): Promise<void> {
+    await this.requireMember(viewer);
+    if (userId === viewer || (await this.repo.visible(viewer, userId)) === null) throw new AppError('NOT_FOUND', 'No such member.');
+    await this.repo.dismissSuggestion(viewer, userId);
   }
 
   async block(viewer: string, other: string): Promise<void> {
@@ -395,15 +605,35 @@ export class CommunityService {
     return { from, to: addDays(from, 6) };
   }
 
-  private async board(viewer: string, metric: BoardMetric, rows: StatRow[]): Promise<Board> {
+  /** Beta 6.3 (C13): the viewer's period, from its first day to today. */
+  private async periodOf(viewer: string, period: BoardPeriod): Promise<{ period: BoardPeriod; periodFrom: string; periodTo: string }> {
+    const tz = await this.repo.timezoneOf(viewer);
+    const today = localDateOf(this.now(), tz);
+    const p = await this.repo.profile(viewer);
+    const joinedOn = p === null ? today : localDateOf(p.createdAt, tz);
+    return { period, periodFrom: periodFrom(period, today, joinedOn), periodTo: today };
+  }
+
+  private async board(viewer: string, metric: BoardMetric, rows: StatRow[], period: BoardPeriod): Promise<Board> {
     const w = await this.week(viewer);
     const ranked = rankRows(rows, metric, viewer);
+    const p = await this.periodOf(viewer, period);
+    if (period !== 'week') return { metric, weekFrom: w.from, weekTo: w.to, rows: ranked, me: null, total: ranked.length, lastWeek: null, ...p };
     // Beta 6.2 (C12): the same people, last week and the week before.
     const weeks = [addDays(w.from, -7), addDays(w.from, -14)];
     const people = new Map(rows.map((r) => [r.userId, r as PersonRow]));
     const past = await this.repo.history([...people.keys()], weeks);
     const at = (week: string) => past.filter((h) => h.weekFrom === week).map((h) => statOf(people.get(h.userId)!, h));
-    return { metric, weekFrom: w.from, weekTo: w.to, rows: ranked, me: null, total: ranked.length, lastWeek: this.lastWeek(viewer, metric, weeks, at(weeks[0]!), at(weeks[1]!)) };
+    return {
+      metric,
+      weekFrom: w.from,
+      weekTo: w.to,
+      rows: ranked,
+      me: null,
+      total: ranked.length,
+      lastWeek: this.lastWeek(viewer, metric, weeks, at(weeks[0]!), at(weeks[1]!)),
+      ...p,
+    };
   }
 
   /**
@@ -419,27 +649,29 @@ export class CommunityService {
     return { weekFrom: weeks[0]!, podium, myRank, moved: placesMoved(rankIn(rankBy(before, metric)), myRank) };
   }
 
-  async friendsBoard(viewer: string, metric: BoardMetric): Promise<Board> {
+  async friendsBoard(viewer: string, metric: BoardMetric, period: BoardPeriod = 'week'): Promise<Board> {
     await this.requireMember(viewer);
     await this.refreshOne(viewer);
-    return this.board(viewer, metric, await this.repo.friendsBoard(viewer));
+    return this.board(viewer, metric, await this.repo.friendsBoard(viewer, period), period);
   }
 
-  async clubBoard(viewer: string, clubId: string, metric: BoardMetric): Promise<Board> {
+  async clubBoard(viewer: string, clubId: string, metric: BoardMetric, period: BoardPeriod = 'week'): Promise<Board> {
     await this.requireMember(viewer);
     if (!(await this.repo.isMember(clubId, viewer))) throw new AppError('NOT_FOUND', 'No such club.');
     await this.refreshOne(viewer);
-    return this.board(viewer, metric, await this.repo.clubBoard(viewer, clubId));
+    return this.board(viewer, metric, await this.repo.clubBoard(viewer, clubId, period), period);
   }
 
   /** The top 100 who chose to be on it (worldwide or one country), and the viewer's own place. */
-  async worldBoard(viewer: string, metric: BoardMetric, country: string | null): Promise<Board> {
+  async worldBoard(viewer: string, metric: BoardMetric, country: string | null, period: BoardPeriod = 'week'): Promise<Board> {
     await this.requireMember(viewer);
     await this.refreshOne(viewer);
     const w = await this.week(viewer);
-    const r = await this.repo.worldBoard(viewer, metric, country, WORLD_BOARD_ROWS);
+    const r = await this.repo.worldBoard(viewer, metric, country, WORLD_BOARD_ROWS, period);
     const rows = rankRows(r.rows, metric, viewer);
     const me = r.me === null ? null : { ...rowOf({ ...r.me, rank: r.me.rank }, viewer) };
+    const p = await this.periodOf(viewer, period);
+    if (period !== 'week') return { metric, weekFrom: w.from, weekTo: w.to, rows, me, total: r.total, lastWeek: null, ...p };
     // Beta 6.2 (C12): last week among those who chose the world board and counted something.
     const weeks = [addDays(w.from, -7), addDays(w.from, -14)];
     const past = (await this.repo.worldHistory(country, weeks)).map((h) => ({ week: h.weekFrom, row: statOf(h, h) }));
@@ -451,7 +683,7 @@ export class CommunityService {
       for (const p of lastWeek.podium) if (p.me || !(await this.repo.blockedEitherWay(viewer, p.userId))) shown.push(p);
       lastWeek = shown.length === 0 ? null : { ...lastWeek, podium: shown };
     }
-    return { metric, weekFrom: w.from, weekTo: w.to, rows, me, total: r.total, lastWeek };
+    return { metric, weekFrom: w.from, weekTo: w.to, rows, me, total: r.total, lastWeek, ...p };
   }
 
   /* --------------------------------------------------------- week counts -- */
@@ -480,6 +712,18 @@ export class CommunityService {
       this.streakOf(userId),
     ]);
     await this.repo.saveStats(userId, from, c.sessions, c.runM, streak, c.activeDays, planned);
+    // Beta 6.3 (C13): the same for the week, the month and since joining.
+    const p = await this.repo.profile(userId);
+    if (p === null) return;
+    await this.repo.savePeriod(userId, 'week', { periodFrom: from, sessions: c.sessions, runM: c.runM, streak, activeDays: c.activeDays, planned });
+    const joinedOn = localDateOf(p.createdAt, tz);
+    for (const period of ['month', 'all'] as const) {
+      const pf = periodFrom(period, today, joinedOn);
+      const [pc, pp] = await Promise.all([this.repo.periodCounts(userId, tz, pf, today, COUNTED_SESSION, COUNTED_RUN), this.plannedOf(userId, pf, today)]);
+      await this.repo.savePeriod(userId, period, { periodFrom: pf, sessions: pc.sessions, runM: pc.runM, streak, activeDays: pc.activeDays, planned: pp });
+    }
+    // Beta 6.3 (C1): their posts.
+    await this.sweepPosts(userId, p, tz, today, streak);
   }
 
   /** Beta 6.2 (A2): recount someone after they sync a session or a run, when they are in Community. */
@@ -489,6 +733,8 @@ export class CommunityService {
 
   /** Every member, one at a time (the timer); a failure skips that person. */
   async refreshAll(): Promise<number> {
+    // Beta 6.3: posts are kept 30 days.
+    await this.repo.deleteOldPosts(new Date(this.now().getTime() - POSTS_KEPT_DAYS * 86_400_000));
     let n = 0;
     for (const id of await this.repo.memberIds()) {
       try {
