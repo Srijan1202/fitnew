@@ -12,6 +12,7 @@ import '../../premium/presentation/profile_avatar.dart';
 import '../../privacy/presentation/policy_text.dart';
 import '../domain/community.dart';
 import 'community_providers.dart';
+import 'feed_view.dart';
 import 'invite_qr.dart';
 
 /// Beta 5.8 (ADR-057; owner 2026-11-08: "Friends / VIT leaderboard ... we
@@ -373,6 +374,13 @@ class _Joined extends ConsumerWidget {
                 Icons.person_outline,
                 key: const ValueKey('community.tab.friends'),
               ),
+              // Beta 6.3 (C1): what friends shared.
+              const FitModeHalf(
+                CommunityTab.feed,
+                'Feed',
+                Icons.dynamic_feed_outlined,
+                key: ValueKey('community.tab.feed'),
+              ),
               const FitModeHalf(
                 CommunityTab.clubs,
                 'Clubs',
@@ -394,6 +402,7 @@ class _Joined extends ConsumerWidget {
             index: tab.index,
             children: [
               const _FriendsView(),
+              const FeedView(),
               const _ClubsView(),
               _WorldView(profile: profile),
             ],
@@ -407,35 +416,70 @@ class _Joined extends ConsumerWidget {
 /* --------------------------------------------------------------- boards -- */
 
 /// What every board ranks by. Beta 6.2 (C11): five choices, so a row of
-/// chips that scrolls sideways.
+/// chips that scrolls sideways. Beta 6.3 (C13): the week, the month or all
+/// time above them.
 class BoardMetricPicker extends ConsumerWidget {
   const BoardMetricPicker({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final metric = ref.watch(boardMetricProvider);
-    return SingleChildScrollView(
-      key: const ValueKey('community.metric'),
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          for (final m in BoardMetric.values)
-            Padding(
-              padding: const EdgeInsets.only(right: FitSpacing.xs),
-              child: ChoiceChip(
-                key: ValueKey('community.metric.${m.wire}'),
-                label: Text(m.label),
-                selected: m == metric,
-                showCheckmark: false,
-                onSelected: (_) =>
-                    ref.read(boardMetricProvider.notifier).set(m),
+    final period = ref.watch(boardPeriodProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          key: const ValueKey('community.period'),
+          children: [
+            for (final p in BoardPeriod.values)
+              Padding(
+                padding: const EdgeInsets.only(right: FitSpacing.xs),
+                child: ChoiceChip(
+                  key: ValueKey('community.period.${p.wire}'),
+                  label: Text(p.label),
+                  selected: p == period,
+                  showCheckmark: false,
+                  visualDensity: VisualDensity.compact,
+                  onSelected: (_) =>
+                      ref.read(boardPeriodProvider.notifier).set(p),
+                ),
               ),
-            ),
-        ],
-      ),
+          ],
+        ),
+        const SizedBox(height: FitSpacing.xs),
+        SingleChildScrollView(
+          key: const ValueKey('community.metric'),
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (final m in BoardMetric.values)
+                Padding(
+                  padding: const EdgeInsets.only(right: FitSpacing.xs),
+                  child: ChoiceChip(
+                    key: ValueKey('community.metric.${m.wire}'),
+                    label: Text(m.label),
+                    selected: m == metric,
+                    showCheckmark: false,
+                    onSelected: (_) =>
+                        ref.read(boardMetricProvider.notifier).set(m),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
+
+/// The board's heading: this week's dates, this month, or since joining.
+String boardHeading(Board b) => switch (b.period) {
+      BoardPeriod.week => 'THIS WEEK · ${_day(b.weekFrom)} – ${_day(b.weekTo)}',
+      BoardPeriod.month =>
+        'THIS MONTH · FROM ${_day(b.periodFrom ?? b.weekFrom)}',
+      BoardPeriod.all => 'ALL TIME · SINCE JOINING COMMUNITY',
+    };
 
 String _day(String iso) {
   const months = [
@@ -483,8 +527,7 @@ class BoardBlock extends StatelessWidget {
           const SizedBox(height: FitSpacing.lg),
         ],
         Text(
-          'THIS WEEK · ${_day(board.weekFrom)} – ${_day(board.weekTo)}'
-              .toUpperCase(),
+          boardHeading(board).toUpperCase(),
           key: const ValueKey('community.board.week'),
           style: t.labelSmall,
         ),
@@ -920,6 +963,8 @@ class _FriendsView extends ConsumerWidget {
                     handle: r.handle,
                   ),
           ),
+          // Beta 6.3 (C16, owner Q3): a count or a club, never which friends.
+          const _Suggestions(),
           if (lists != null && lists.outgoing.isNotEmpty) ...[
             const SizedBox(height: FitSpacing.lg),
             Text('WAITING FOR AN ANSWER', style: t.labelSmall),
@@ -943,6 +988,87 @@ class _FriendsView extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Beta 6.3 (C16): friends of friends and club-mates, five at a time.
+class _Suggestions extends ConsumerWidget {
+  const _Suggestions();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = Theme.of(context).textTheme;
+    final items = ref.watch(suggestionsProvider).value ?? const <Suggestion>[];
+    if (items.isEmpty) return const SizedBox.shrink();
+    final api = ref.read(communityApiProvider);
+    return Column(
+      key: const ValueKey('community.suggestions'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: FitSpacing.lg),
+        Text('PEOPLE YOU MAY KNOW', style: t.labelSmall),
+        const SizedBox(height: FitSpacing.sm),
+        FitBlock(
+          child: Column(
+            children: [
+              for (final (i, s) in items.take(5).indexed) ...[
+                if (i > 0) const FitRule(),
+                ListTile(
+                  key: ValueKey('community.suggestion.${s.person.handle}'),
+                  leading: ProfileAvatar(
+                    avatarId: s.person.avatarId,
+                    name: s.person.handle,
+                    premium: false,
+                    size: 34,
+                  ),
+                  title:
+                      Text('@${s.person.handle} ${flagOf(s.person.country)}'),
+                  subtitle: Text(s.why),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        key: ValueKey(
+                          'community.suggestion.hide.${s.person.handle}',
+                        ),
+                        tooltip: 'Not now',
+                        icon: const Icon(Icons.close),
+                        onPressed: () async {
+                          await api.dismissSuggestion(s.person.userId);
+                          ref.invalidate(suggestionsProvider);
+                        },
+                      ),
+                      IconButton(
+                        key: ValueKey(
+                          'community.suggestion.add.${s.person.handle}',
+                        ),
+                        tooltip: 'Add friend',
+                        icon: const Icon(Icons.person_add_alt),
+                        onPressed: () async {
+                          final r = await api.addFriend(s.person.handle);
+                          refreshCommunity(ref);
+                          if (context.mounted) {
+                            _snack(
+                              context,
+                              r.when(
+                                ok: (v) => v == 'friends'
+                                    ? 'You are now friends.'
+                                    : 'Request sent.',
+                                err: (f) => f.message,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -198,6 +198,11 @@ class _ProfileBody extends ConsumerWidget {
             ],
           ),
         ),
+        // Beta 6.3 (C3): a set message to a friend who has been quiet 3 days.
+        if (p.nudge != null) ...[
+          const SizedBox(height: FitSpacing.lg),
+          _NudgeButton(profile: p),
+        ],
         if (p.clubsInCommon.isNotEmpty && p.friend) ...[
           const SizedBox(height: FitSpacing.lg),
           Text('CLUBS YOU SHARE', style: t.labelSmall),
@@ -236,6 +241,62 @@ class _ProfileBody extends ConsumerWidget {
         Text(
           'Only counts: never their weights, food, body or where they ran.',
           style: t.bodySmall?.copyWith(color: FitColors.ink60),
+        ),
+      ],
+    );
+  }
+}
+
+class _NudgeButton extends ConsumerWidget {
+  const _NudgeButton({required this.profile});
+
+  final PersonProfile profile;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = profile;
+    final why = switch (p.nudge) {
+      NudgeState.active => 'They trained in the last 3 days.',
+      NudgeState.sent => 'You nudged them this week.',
+      _ => 'Sends: "time to move. A short session counts."',
+    };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        OutlinedButton.icon(
+          key: const ValueKey('person.nudge'),
+          icon: const Icon(Icons.waving_hand_outlined),
+          label: Text('Nudge @${p.person.handle}'),
+          onPressed: p.nudge != NudgeState.can
+              ? null
+              : () async {
+                  final r = await ref
+                      .read(communityApiProvider)
+                      .nudge(p.person.userId);
+                  ref.invalidate(personProfileProvider(p.person.userId));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          r.when(
+                            ok: (_) => 'Nudge sent.',
+                            err: (f) => f.message,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                },
+        ),
+        const SizedBox(height: FitSpacing.xs),
+        Text(
+          why,
+          key: const ValueKey('person.nudge.why'),
+          textAlign: TextAlign.center,
+          style: Theme.of(context)
+              .textTheme
+              .bodySmall
+              ?.copyWith(color: FitColors.ink60),
         ),
       ],
     );

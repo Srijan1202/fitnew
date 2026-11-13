@@ -93,6 +93,9 @@ class FitModeSwitch<T> extends StatelessWidget {
                     radius: radius - _inset,
                     onTap: () => onChanged(half.value),
                     textKey: half.key,
+                    // Beta 6.3: four parts fit a phone with smaller labels
+                    // and no icons.
+                    dense: halves.length >= 4,
                   ),
               ],
             ),
@@ -111,8 +114,10 @@ class _Segment extends StatelessWidget {
     required this.radius,
     required this.onTap,
     required this.textKey,
+    this.dense = false,
   });
 
+  final bool dense;
   final String label;
   final IconData icon;
   final bool on;
@@ -122,7 +127,8 @@ class _Segment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.titleMedium;
+    final text = Theme.of(context).textTheme;
+    final style = dense ? text.titleSmall : text.titleMedium;
     return Expanded(
       child: Semantics(
         button: true,
@@ -140,8 +146,10 @@ class _Segment extends StatelessWidget {
               builder: (_, colour, __) => Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Icon(icon, size: 20, color: colour),
-                  const SizedBox(width: FitSpacing.sm),
+                  if (!dense) ...[
+                    Icon(icon, size: 20, color: colour),
+                    const SizedBox(width: FitSpacing.sm),
+                  ],
                   Flexible(
                     child: Text(
                       label,

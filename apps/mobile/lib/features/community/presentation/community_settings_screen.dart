@@ -11,7 +11,8 @@ import 'community_screen.dart';
 import 'invite_qr.dart';
 
 /// Beta 5.8 (ADR-057): the handle, the country, the world-board choice,
-/// people blocked, and leaving Community.
+/// people blocked, and leaving Community. Beta 6.3: what friends see in the
+/// feed (nothing until chosen), suggestions and notifications.
 class CommunitySettingsScreen extends ConsumerWidget {
   const CommunitySettingsScreen({super.key});
 
@@ -89,6 +90,79 @@ class CommunitySettingsScreen extends ConsumerWidget {
                             save(() => api.update(onWorld: !p.onWorld)),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: FitSpacing.lg),
+                  // Beta 6.3 (C1, owner Q1): each kind on its own; none at first.
+                  FitGroup(
+                    label: 'Share with friends',
+                    children: [
+                      for (final k in FeedKind.values)
+                        FitRow(
+                          key: ValueKey('communitySettings.feed.${k.wire}'),
+                          icon: switch (k) {
+                            FeedKind.session => Icons.fitness_center,
+                            FeedKind.run => Icons.directions_run,
+                            FeedKind.record => Icons.emoji_events_outlined,
+                            FeedKind.streak =>
+                              Icons.local_fire_department_outlined,
+                          },
+                          title: k.label,
+                          value: k.hint,
+                          trailing: Switch(
+                            key: ValueKey(
+                              'communitySettings.feedSwitch.${k.wire}',
+                            ),
+                            value: p.feed.contains(k),
+                            onChanged: (v) => save(
+                              () => api.update(
+                                feed: v
+                                    ? {...p.feed, k}
+                                    : ({...p.feed}..remove(k)),
+                              ),
+                            ),
+                          ),
+                          onTap: () => save(
+                            () => api.update(
+                              feed: p.feed.contains(k)
+                                  ? ({...p.feed}..remove(k))
+                                  : {...p.feed, k},
+                            ),
+                          ),
+                        ),
+                      FitRow(
+                        key: const ValueKey('communitySettings.suggest'),
+                        icon: Icons.group_add_outlined,
+                        title: 'Suggest me to friends of friends',
+                        value: 'And to people in my clubs',
+                        trailing: Switch(
+                          key:
+                              const ValueKey('communitySettings.suggestSwitch'),
+                          value: p.suggest,
+                          onChanged: (v) => save(() => api.update(suggest: v)),
+                        ),
+                        onTap: () =>
+                            save(() => api.update(suggest: !p.suggest)),
+                      ),
+                      FitRow(
+                        key: const ValueKey('communitySettings.notify'),
+                        icon: Icons.notifications_none,
+                        title: 'Cheers and nudges',
+                        value: 'One evening note a day, and nudges',
+                        trailing: Switch(
+                          key: const ValueKey('communitySettings.notifySwitch'),
+                          value: p.notify,
+                          onChanged: (v) => save(() => api.update(notify: v)),
+                        ),
+                        onTap: () => save(() => api.update(notify: !p.notify)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: FitSpacing.sm),
+                  Text(
+                    'Only friends see your posts, and only the kinds you turn '
+                    'on, from then on. Never weights, food, body or where you '
+                    'ran. Turning a kind off deletes its posts.',
+                    style: t.bodySmall?.copyWith(color: FitColors.ink60),
                   ),
                   const SizedBox(height: FitSpacing.lg),
                   FitGroup(

@@ -27,6 +27,16 @@ class FakeCommunityApi implements CommunityApi {
   /// What join answers instead of joining (a taken handle, say).
   Failure? joinFailure;
 
+  /// Beta 6.3: the feed (first page; `older` answers `before`), suggestions,
+  /// and what a nudge answers.
+  Feed feedPage = const Feed(items: [], next: null, nudges: []);
+  Feed? older;
+  List<Suggestion> suggested = [];
+  Failure? nudgeFailure;
+
+  /// The period the last board call asked for.
+  BoardPeriod lastPeriod = BoardPeriod.week;
+
   Result<T> _r<T>(T value) => failure == null ? Ok(value) : Err(failure!);
 
   CommunityMe get _me =>
@@ -60,10 +70,20 @@ class FakeCommunityApi implements CommunityApi {
     String? country,
     bool clearCountry = false,
     bool? onWorld,
+    Set<FeedKind>? feed,
+    bool? suggest,
+    bool? notify,
   }) async {
-    calls.add(
-      'update ${handle ?? ''} ${clearCountry ? 'none' : country ?? ''} ${onWorld ?? ''}',
-    );
+    if (feed != null || suggest != null || notify != null) {
+      calls.add(
+        'update-share ${feed == null ? '' : FeedKind.values.where(feed.contains).map((k) => k.wire).join(',')} '
+        '${suggest ?? ''} ${notify ?? ''}',
+      );
+    } else {
+      calls.add(
+        'update ${handle ?? ''} ${clearCountry ? 'none' : country ?? ''} ${onWorld ?? ''}',
+      );
+    }
     final p = profile!;
     profile = CommunityProfile(
       handle: handle ?? p.handle,
@@ -71,8 +91,48 @@ class FakeCommunityApi implements CommunityApi {
       country: clearCountry ? null : country ?? p.country,
       onWorld: onWorld ?? p.onWorld,
       joinedAt: p.joinedAt,
+      feed: feed ?? p.feed,
+      suggest: suggest ?? p.suggest,
+      notify: notify ?? p.notify,
     );
     return _r(_me);
+  }
+
+  @override
+  Future<Result<Feed>> feed({DateTime? before}) async {
+    calls.add(before == null ? 'feed' : 'feed-older');
+    return _r(
+      before == null
+          ? feedPage
+          : older ?? const Feed(items: [], next: null, nudges: []),
+    );
+  }
+
+  @override
+  Future<Result<({int kudos, bool cheered})>> cheer(
+    String postId, {
+    required bool on,
+  }) async {
+    calls.add('${on ? 'cheer' : 'uncheer'} $postId');
+    final p = feedPage.items.firstWhere((x) => x.id == postId);
+    final before = p.kudos - (p.cheered ? 1 : 0);
+    return _r((kudos: before + (on ? 1 : 0), cheered: on));
+  }
+
+  @override
+  Future<Result<void>> nudge(String userId) async {
+    calls.add('nudge $userId');
+    return nudgeFailure == null ? _r(null) : Err(nudgeFailure!);
+  }
+
+  @override
+  Future<Result<List<Suggestion>>> suggestions() async => _r(suggested);
+
+  @override
+  Future<Result<void>> dismissSuggestion(String userId) async {
+    calls.add('dismiss $userId');
+    suggested = suggested.where((s) => s.person.userId != userId).toList();
+    return _r(null);
   }
 
   @override
@@ -231,15 +291,28 @@ class FakeCommunityApi implements CommunityApi {
         total: 0,
       );
 
+  /// " month" or " all" after a board call; nothing for the week.
+  String _p(BoardPeriod p) {
+    lastPeriod = p;
+    return p == BoardPeriod.week ? '' : ' ${p.wire}';
+  }
+
   @override
-  Future<Result<Board>> friendsBoard(BoardMetric metric) async {
-    calls.add('friends-board ${metric.wire}');
+  Future<Result<Board>> friendsBoard(
+    BoardMetric metric, {
+    BoardPeriod period = BoardPeriod.week,
+  }) async {
+    calls.add('friends-board ${metric.wire}${_p(period)}');
     return _r(_board(metric, null));
   }
 
   @override
-  Future<Result<Board>> clubBoard(String clubId, BoardMetric metric) async {
-    calls.add('club-board $clubId ${metric.wire}');
+  Future<Result<Board>> clubBoard(
+    String clubId,
+    BoardMetric metric, {
+    BoardPeriod period = BoardPeriod.week,
+  }) async {
+    calls.add('club-board $clubId ${metric.wire}${_p(period)}');
     return _r(_board(metric, null));
   }
 
@@ -247,8 +320,9 @@ class FakeCommunityApi implements CommunityApi {
   Future<Result<Board>> worldBoard(
     BoardMetric metric, {
     String? country,
+    BoardPeriod period = BoardPeriod.week,
   }) async {
-    calls.add('world-board ${metric.wire} ${country ?? 'all'}');
+    calls.add('world-board ${metric.wire} ${country ?? 'all'}${_p(period)}');
     return _r(_board(metric, country));
   }
 

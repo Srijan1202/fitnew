@@ -20,8 +20,23 @@ abstract class CommunityApi {
     String? country,
     bool clearCountry = false,
     bool? onWorld,
+    Set<FeedKind>? feed,
+    bool? suggest,
+    bool? notify,
   });
   Future<Result<void>> leave();
+
+  /// Beta 6.3 (C1–C3, C16): the feed, kudos, nudges and suggestions.
+  Future<Result<Feed>> feed({DateTime? before});
+
+  /// Cheer (or take it back): the post's kudos after.
+  Future<Result<({int kudos, bool cheered})>> cheer(
+    String postId, {
+    required bool on,
+  });
+  Future<Result<void>> nudge(String userId);
+  Future<Result<List<Suggestion>>> suggestions();
+  Future<Result<void>> dismissSuggestion(String userId);
 
   Future<Result<List<CommunityPerson>>> search(String q);
   Future<Result<FriendLists>> friends();
@@ -52,9 +67,20 @@ abstract class CommunityApi {
   Future<Result<List<CommunityPerson>>> removedFrom(String clubId);
   Future<Result<void>> letBack(String clubId, String userId);
 
-  Future<Result<Board>> friendsBoard(BoardMetric metric);
-  Future<Result<Board>> clubBoard(String clubId, BoardMetric metric);
-  Future<Result<Board>> worldBoard(BoardMetric metric, {String? country});
+  Future<Result<Board>> friendsBoard(
+    BoardMetric metric, {
+    BoardPeriod period = BoardPeriod.week,
+  });
+  Future<Result<Board>> clubBoard(
+    String clubId,
+    BoardMetric metric, {
+    BoardPeriod period = BoardPeriod.week,
+  });
+  Future<Result<Board>> worldBoard(
+    BoardMetric metric, {
+    String? country,
+    BoardPeriod period = BoardPeriod.week,
+  });
 
   Future<Result<void>> report({
     String? userId,
@@ -98,6 +124,9 @@ class DioCommunityApi implements CommunityApi {
     String? country,
     bool clearCountry = false,
     bool? onWorld,
+    Set<FeedKind>? feed,
+    bool? suggest,
+    bool? notify,
   }) =>
       {
         if (handle != null) 'handle': handle,
@@ -106,6 +135,13 @@ class DioCommunityApi implements CommunityApi {
         else if (country != null)
           'country': country,
         if (onWorld != null) 'onWorld': onWorld,
+        if (feed != null)
+          'feed': [
+            for (final k in FeedKind.values)
+              if (feed.contains(k)) k.wire,
+          ],
+        if (suggest != null) 'suggest': suggest,
+        if (notify != null) 'notify': notify,
       };
 
   static Map<String, dynamic> reportJson({
@@ -153,6 +189,9 @@ class DioCommunityApi implements CommunityApi {
     String? country,
     bool clearCountry = false,
     bool? onWorld,
+    Set<FeedKind>? feed,
+    bool? suggest,
+    bool? notify,
   }) =>
       _guard(() async {
         final r = await _dio.patch<Map<String, dynamic>>(
@@ -162,10 +201,59 @@ class DioCommunityApi implements CommunityApi {
             country: country,
             clearCountry: clearCountry,
             onWorld: onWorld,
+            feed: feed,
+            suggest: suggest,
+            notify: notify,
           ),
         );
         return CommunityMe.fromJson(r.data!);
       });
+
+  @override
+  Future<Result<Feed>> feed({DateTime? before}) => _guard(() async {
+        final r = await _dio.get<Map<String, dynamic>>(
+          '/v1/community/feed',
+          queryParameters: {
+            if (before != null) 'before': before.toUtc().toIso8601String(),
+          },
+        );
+        return Feed.fromJson(r.data!);
+      });
+
+  @override
+  Future<Result<({int kudos, bool cheered})>> cheer(
+    String postId, {
+    required bool on,
+  }) =>
+      _guard(() async {
+        final path = '/v1/community/feed/$postId/kudos';
+        final r = on
+            ? await _dio.post<Map<String, dynamic>>(path)
+            : await _dio.delete<Map<String, dynamic>>(path);
+        return (
+          kudos: (r.data!['kudos'] as num).toInt(),
+          cheered: r.data!['cheered'] as bool,
+        );
+      });
+
+  @override
+  Future<Result<void>> nudge(String userId) => _guard(
+        () => _dio.post<void>('/v1/community/friends/$userId/nudge'),
+      );
+
+  @override
+  Future<Result<List<Suggestion>>> suggestions() => _guard(() async {
+        final r =
+            await _dio.get<Map<String, dynamic>>('/v1/community/suggestions');
+        return [
+          for (final s in r.data!['items'] as List<dynamic>)
+            Suggestion.fromJson(s as Map<String, dynamic>),
+        ];
+      });
+
+  @override
+  Future<Result<void>> dismissSuggestion(String userId) =>
+      _guard(() => _dio.delete<void>('/v1/community/suggestions/$userId'));
 
   @override
   Future<Result<void>> leave() =>
@@ -316,23 +404,40 @@ class DioCommunityApi implements CommunityApi {
   }
 
   @override
-  Future<Result<Board>> friendsBoard(BoardMetric metric) => _guard(
-        () => _board('/v1/community/boards/friends', {'metric': metric.wire}),
-      );
-
-  @override
-  Future<Result<Board>> clubBoard(String clubId, BoardMetric metric) => _guard(
+  Future<Result<Board>> friendsBoard(
+    BoardMetric metric, {
+    BoardPeriod period = BoardPeriod.week,
+  }) =>
+      _guard(
         () => _board(
-          '/v1/community/boards/clubs/$clubId',
-          {'metric': metric.wire},
+          '/v1/community/boards/friends',
+          {'metric': metric.wire, 'period': period.wire},
         ),
       );
 
   @override
-  Future<Result<Board>> worldBoard(BoardMetric metric, {String? country}) =>
+  Future<Result<Board>> clubBoard(
+    String clubId,
+    BoardMetric metric, {
+    BoardPeriod period = BoardPeriod.week,
+  }) =>
+      _guard(
+        () => _board(
+          '/v1/community/boards/clubs/$clubId',
+          {'metric': metric.wire, 'period': period.wire},
+        ),
+      );
+
+  @override
+  Future<Result<Board>> worldBoard(
+    BoardMetric metric, {
+    String? country,
+    BoardPeriod period = BoardPeriod.week,
+  }) =>
       _guard(
         () => _board('/v1/community/boards/world', {
           'metric': metric.wire,
+          'period': period.wire,
           if (country != null) 'country': country,
         }),
       );

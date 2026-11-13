@@ -2,7 +2,8 @@
 /// profile, other people (a handle, a picture and a country, never more),
 /// clubs and the boards. Boards hold counts only: gym sessions and run
 /// distance this week, and the streak; beta 6.2 adds active days, the plan
-/// kept and last week.
+/// kept and last week; beta 6.3 the feed, kudos, nudges, suggestions and
+/// month and all-time boards.
 library;
 
 /// A handle: 3–20 of a–z, 0–9 and _ (the server checks the rest).
@@ -12,6 +13,27 @@ final kHandlePattern = RegExp(r'^[a-z0-9_]{3,20}$');
 String normalizeHandle(String raw) =>
     raw.trim().replaceFirst(RegExp('^@'), '').toLowerCase();
 
+/// Beta 6.3 (C1, owner Q1): what a member shares with friends in the feed,
+/// each switched on separately; nothing until chosen.
+enum FeedKind {
+  session('session', 'Sessions I finish', 'The day\'s name, like Push'),
+  run('run', 'Runs', 'The distance, never the route'),
+  record('record', 'Records', 'The lift or the run distance, never the weight'),
+  streak('streak', 'Streak milestones', '7, 14, 30 days and on');
+
+  const FeedKind(this.wire, this.label, this.hint);
+  final String wire;
+  final String label;
+  final String hint;
+
+  static FeedKind? fromWire(String w) {
+    for (final k in values) {
+      if (k.wire == w) return k;
+    }
+    return null;
+  }
+}
+
 class CommunityProfile {
   const CommunityProfile({
     required this.handle,
@@ -19,6 +41,9 @@ class CommunityProfile {
     required this.country,
     required this.onWorld,
     required this.joinedAt,
+    this.feed = const {},
+    this.suggest = true,
+    this.notify = true,
   });
 
   factory CommunityProfile.fromJson(Map<String, dynamic> j) => CommunityProfile(
@@ -27,6 +52,12 @@ class CommunityProfile {
         country: j['country'] as String?,
         onWorld: j['onWorld'] as bool,
         joinedAt: DateTime.parse(j['joinedAt'] as String),
+        feed: {
+          for (final k in (j['feed'] as List<dynamic>?) ?? const [])
+            if (FeedKind.fromWire(k as String) case final f?) f,
+        },
+        suggest: j['suggest'] as bool? ?? true,
+        notify: j['notify'] as bool? ?? true,
       );
 
   final String handle;
@@ -36,6 +67,15 @@ class CommunityProfile {
   /// On the world board: a separate choice, off by default.
   final bool onWorld;
   final DateTime joinedAt;
+
+  /// Beta 6.3 (C1): the kinds shared with friends (none at first).
+  final Set<FeedKind> feed;
+
+  /// Beta 6.3 (C16): suggested to friends of friends and club-mates.
+  final bool suggest;
+
+  /// Beta 6.3 (C2, C3): the evening kudos summary and nudges as notifications.
+  final bool notify;
 }
 
 class CommunityMe {
@@ -136,6 +176,20 @@ class Club {
 
   String get shownCode =>
       code.length == 8 ? '${code.substring(0, 4)}-${code.substring(4)}' : code;
+}
+
+/// Beta 6.3 (C13, owner Q4): this week, this month, or since joining.
+enum BoardPeriod {
+  week('week', 'Week'),
+  month('month', 'Month'),
+  all('all', 'All time');
+
+  const BoardPeriod(this.wire, this.label);
+  final String wire;
+  final String label;
+
+  static BoardPeriod fromWire(String w) =>
+      values.firstWhere((p) => p.wire == w, orElse: () => week);
 }
 
 /// What a board ranks by. Beta 6.2 (C11): the streak, active days and
@@ -272,6 +326,7 @@ class PersonProfile {
     required this.thisWeek,
     required this.weeks,
     required this.clubsInCommon,
+    this.nudge,
   });
 
   factory PersonProfile.fromJson(Map<String, dynamic> j) => PersonProfile(
@@ -293,6 +348,12 @@ class PersonProfile {
               name: c['name'] as String,
             ),
         ],
+        nudge: switch (j['nudge']) {
+          'can' => NudgeState.can,
+          'active' => NudgeState.active,
+          'sent' => NudgeState.sent,
+          _ => null,
+        },
       );
 
   final CommunityPerson person;
@@ -306,6 +367,209 @@ class PersonProfile {
   /// The weeks before this one, oldest first.
   final List<WeekCounts> weeks;
   final List<({String id, String name})> clubsInCommon;
+
+  /// Beta 6.3 (C3): whether you can nudge them; null for a club-mate.
+  final NudgeState? nudge;
+}
+
+/// Beta 6.3 (C3): a friend can be nudged, trained in the last 3 days, or was
+/// nudged by you this week.
+enum NudgeState { can, active, sent }
+
+/* ------------------------------------------------ beta 6.3: the feed -- */
+
+/// A post's kind: a counted session, a counted run, a lift's record, a run
+/// distance's record, a streak milestone.
+enum PostKind {
+  session('session'),
+  run('run'),
+  liftRecord('lift-record'),
+  runRecord('run-record'),
+  streak('streak');
+
+  const PostKind(this.wire);
+  final String wire;
+
+  static PostKind fromWire(String w) =>
+      values.firstWhere((k) => k.wire == w, orElse: () => session);
+}
+
+/// The run distances a record can be for, as people say them.
+const kEffortLabels = <String, String>{
+  '400m': '400 m',
+  '1k': '1K',
+  '1mile': '1 mile',
+  '5k': '5K',
+  '10k': '10K',
+  'half': 'half marathon',
+  'marathon': 'marathon',
+};
+
+class FeedPost {
+  const FeedPost({
+    required this.id,
+    required this.person,
+    required this.kind,
+    required this.title,
+    required this.value,
+    required this.at,
+    required this.kudos,
+    required this.cheered,
+    required this.mine,
+    this.cheeredBy = const [],
+  });
+
+  factory FeedPost.fromJson(Map<String, dynamic> j) => FeedPost(
+        id: j['id'] as String,
+        person: CommunityPerson.fromJson(j['person'] as Map<String, dynamic>),
+        kind: PostKind.fromWire(j['kind'] as String),
+        title: j['title'] as String?,
+        value: (j['value'] as num?)?.toInt(),
+        at: DateTime.parse(j['at'] as String),
+        kudos: (j['kudos'] as num).toInt(),
+        cheered: j['cheered'] as bool,
+        mine: j['mine'] as bool,
+        cheeredBy: [
+          for (final p in (j['cheeredBy'] as List<dynamic>?) ?? const [])
+            CommunityPerson.fromJson(p as Map<String, dynamic>),
+        ],
+      );
+
+  final String id;
+  final CommunityPerson person;
+  final PostKind kind;
+
+  /// session: the day's name; lift-record: the lift; run-record: the distance.
+  final String? title;
+
+  /// run: metres; streak: days; lift-record: other lifts with a record.
+  final int? value;
+  final DateTime at;
+  final int kudos;
+  final bool cheered;
+  final bool mine;
+
+  /// On your own posts: who cheered, newest first.
+  final List<CommunityPerson> cheeredBy;
+
+  FeedPost cheer({required bool on, required int kudos}) => FeedPost(
+        id: id,
+        person: person,
+        kind: kind,
+        title: title,
+        value: value,
+        at: at,
+        kudos: kudos,
+        cheered: on,
+        mine: mine,
+        cheeredBy: cheeredBy,
+      );
+}
+
+/// What a post says after the handle: "finished Push", "ran 5.2 km",
+/// "set a record on Bench press and 2 more", "set a 5K record", "hit a
+/// 30-day streak".
+String postLine(FeedPost p) {
+  switch (p.kind) {
+    case PostKind.session:
+      return 'finished ${p.title ?? 'a session'}';
+    case PostKind.run:
+      return 'ran ${kmOf(p.value ?? 0)}';
+    case PostKind.liftRecord:
+      final more = p.value ?? 0;
+      return 'set a record on ${p.title ?? 'a lift'}'
+          '${more > 0 ? ' and $more more' : ''}';
+    case PostKind.runRecord:
+      return 'set a ${kEffortLabels[p.title] ?? p.title ?? 'run'} record';
+    case PostKind.streak:
+      return 'hit a ${p.value ?? 0}-day streak';
+  }
+}
+
+/// "Cheered by @asha", "Cheered by @asha and @ravi", "Cheered by @asha and 3
+/// others".
+String? cheeredLine(FeedPost p) {
+  final by = p.cheeredBy;
+  if (by.isEmpty) return null;
+  final first = '@${by[0].handle}';
+  final rest = p.kudos - 1;
+  if (rest <= 0) return 'Cheered by $first';
+  if (rest == 1 && by.length >= 2) {
+    return 'Cheered by $first and @${by[1].handle}';
+  }
+  return 'Cheered by $first and $rest ${rest == 1 ? 'other' : 'others'}';
+}
+
+/// "just now", "12 min ago", "3 h ago", "yesterday", "4 days ago".
+String agoOf(DateTime at, DateTime now) {
+  final d = now.difference(at);
+  if (d.inMinutes < 1) return 'just now';
+  if (d.inHours < 1) return '${d.inMinutes} min ago';
+  if (d.inHours < 24) return '${d.inHours} h ago';
+  if (d.inDays < 2) return 'yesterday';
+  return '${d.inDays} days ago';
+}
+
+/// Beta 6.3 (C3): a nudge you received.
+class Nudge {
+  const Nudge({required this.person, required this.at});
+
+  factory Nudge.fromJson(Map<String, dynamic> j) => Nudge(
+        person: CommunityPerson.fromJson(j['person'] as Map<String, dynamic>),
+        at: DateTime.parse(j['at'] as String),
+      );
+
+  final CommunityPerson person;
+  final DateTime at;
+}
+
+class Feed {
+  const Feed({required this.items, required this.next, required this.nudges});
+
+  factory Feed.fromJson(Map<String, dynamic> j) => Feed(
+        items: [
+          for (final p in j['items'] as List<dynamic>)
+            FeedPost.fromJson(p as Map<String, dynamic>),
+        ],
+        next: j['next'] == null ? null : DateTime.parse(j['next'] as String),
+        nudges: [
+          for (final n in (j['nudges'] as List<dynamic>?) ?? const [])
+            Nudge.fromJson(n as Map<String, dynamic>),
+        ],
+      );
+
+  final List<FeedPost> items;
+
+  /// Pass as `before` for older posts; null at the end.
+  final DateTime? next;
+  final List<Nudge> nudges;
+}
+
+/// Beta 6.3 (C16, owner Q3): someone you may know — a count of friends in
+/// common or a club you share, never which friends.
+class Suggestion {
+  const Suggestion({
+    required this.person,
+    required this.mutualFriends,
+    required this.club,
+  });
+
+  factory Suggestion.fromJson(Map<String, dynamic> j) => Suggestion(
+        person: CommunityPerson.fromJson(j['person'] as Map<String, dynamic>),
+        mutualFriends: (j['mutualFriends'] as num).toInt(),
+        club: j['club'] as String?,
+      );
+
+  final CommunityPerson person;
+  final int mutualFriends;
+  final String? club;
+
+  /// "2 friends in common · In Gym Bros".
+  String get why => [
+        if (mutualFriends > 0)
+          '$mutualFriends ${mutualFriends == 1 ? 'friend' : 'friends'} in common',
+        if (club != null) 'In $club',
+      ].join(' · ');
 }
 
 /// Beta 6.2 (C8, C15, owner Q1): the links that open FITOS (Android App Links).
@@ -403,6 +667,8 @@ class Board {
     required this.me,
     required this.total,
     this.lastWeek,
+    this.period = BoardPeriod.week,
+    this.periodFrom,
   });
 
   factory Board.fromJson(Map<String, dynamic> j) => Board(
@@ -420,6 +686,8 @@ class Board {
         lastWeek: j['lastWeek'] == null
             ? null
             : LastWeek.fromJson(j['lastWeek'] as Map<String, dynamic>),
+        period: BoardPeriod.fromWire(j['period'] as String? ?? 'week'),
+        periodFrom: j['periodFrom'] as String?,
       );
 
   final BoardMetric metric;
@@ -433,6 +701,10 @@ class Board {
 
   /// Beta 6.2 (C12): null when nobody here counted anything last week.
   final LastWeek? lastWeek;
+
+  /// Beta 6.3 (C13): the period counted, and its first day (null: the week).
+  final BoardPeriod period;
+  final String? periodFrom;
 }
 
 /// Why a report is made.

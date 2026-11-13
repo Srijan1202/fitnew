@@ -2734,6 +2734,53 @@ void main() {
         ).handle,
         'x',
       );
+      // Beta 6.3: the feed, suggestions, the nudge state and the period.
+      expect(profile.nudge, NudgeState.can);
+      expect(me.profile!.feed, {FeedKind.session});
+      final feed = Feed.fromJson(example(schemaOf('/community/feed', 'get')));
+      expect(feed.items.single.kind, PostKind.session);
+      expect(feed.items.single.cheeredBy.single.handle, 'x');
+      expect(feed.nudges.single.person.handle, 'x');
+      final suggestions = schemaOf('/community/suggestions', 'get');
+      expect(
+        Suggestion.fromJson(
+          (example(suggestions)['items'] as List<dynamic>).single
+              as Map<String, dynamic>,
+        ).mutualFriends,
+        1,
+      );
+      expect(board.period, BoardPeriod.week);
+      expect(board.periodFrom, 'x');
+    });
+
+    test('beta 6.3: the client knows every feed kind, post kind and period',
+        () {
+      final profile = properties(schemaOf('/community/me', 'get'))['profile']
+          as Map<String, dynamic>;
+      final p = (profile['anyOf'] as List<dynamic>?)
+              ?.cast<Map<String, dynamic>>()
+              .firstWhere((s) => s['type'] == 'object') ??
+          profile;
+      expect(
+        FeedKind.values.map((k) => k.wire).toList(),
+        enumOf(
+          (properties(p)['feed'] as Map<String, dynamic>)['items']
+              as Map<String, dynamic>,
+        ),
+      );
+      final post = (properties(schemaOf('/community/feed', 'get'))['items']
+          as Map<String, dynamic>)['items'] as Map<String, dynamic>;
+      expect(
+        PostKind.values.map((k) => k.wire).toList(),
+        enumOf(properties(post)['kind'] as Map<String, dynamic>),
+      );
+      expect(
+        BoardPeriod.values.map((x) => x.wire).toList(),
+        enumOf(
+          properties(schemaOf('/community/boards/world', 'get'))['period']
+              as Map<String, dynamic>,
+        ),
+      );
     });
 
     test('join, change and report send exactly the accepted properties', () {
@@ -2748,10 +2795,22 @@ void main() {
       );
       final update = keysOf(schemaOf('/community/me', 'patch', request: true));
       expect(
-        DioCommunityApi.updateJson(handle: 'a_b', country: 'IN', onWorld: true)
-            .keys
-            .toSet(),
+        DioCommunityApi.updateJson(
+          handle: 'a_b',
+          country: 'IN',
+          onWorld: true,
+          feed: {FeedKind.run, FeedKind.session},
+          suggest: false,
+          notify: true,
+        ).keys.toSet(),
         update,
+      );
+      // In the contract's order, whatever the set's.
+      expect(
+        DioCommunityApi.updateJson(feed: {FeedKind.streak, FeedKind.session}),
+        {
+          'feed': ['session', 'streak'],
+        },
       );
       expect(
         DioCommunityApi.updateJson(clearCountry: true),

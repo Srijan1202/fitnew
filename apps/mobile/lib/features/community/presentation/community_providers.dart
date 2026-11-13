@@ -46,8 +46,9 @@ final blockedProvider = FutureProvider.autoDispose<List<CommunityPerson>>(
   retry: (_, __) => null,
 );
 
-/// Community's three parts, chosen at the top (Friends first).
-enum CommunityTab { friends, clubs, world }
+/// Community's parts, chosen at the top (Friends first; beta 6.3: the Feed
+/// beside it).
+enum CommunityTab { friends, feed, clubs, world }
 
 class CommunityTabController extends Notifier<CommunityTab> {
   @override
@@ -87,11 +88,27 @@ final worldCountryOnlyProvider = NotifierProvider<WorldScopeController, bool>(
   WorldScopeController.new,
 );
 
+/// Beta 6.3 (C13): every board's period, the week unless the person picks.
+class BoardPeriodController extends Notifier<BoardPeriod> {
+  @override
+  BoardPeriod build() => BoardPeriod.week;
+
+  void set(BoardPeriod period) => state = period;
+}
+
+final boardPeriodProvider =
+    NotifierProvider<BoardPeriodController, BoardPeriod>(
+  BoardPeriodController.new,
+);
+
 final friendsBoardProvider =
     FutureProvider.autoDispose.family<Board, BoardMetric>(
   (ref, metric) async {
     requireSession(ref);
-    final r = await ref.watch(communityApiProvider).friendsBoard(metric);
+    final period = ref.watch(boardPeriodProvider);
+    final r = await ref
+        .watch(communityApiProvider)
+        .friendsBoard(metric, period: period);
     return r.when(ok: (b) => b, err: (f) => throw f);
   },
   retry: (_, __) => null,
@@ -101,7 +118,10 @@ final clubBoardProvider =
     FutureProvider.autoDispose.family<Board, (String, BoardMetric)>(
   (ref, key) async {
     requireSession(ref);
-    final r = await ref.watch(communityApiProvider).clubBoard(key.$1, key.$2);
+    final period = ref.watch(boardPeriodProvider);
+    final r = await ref
+        .watch(communityApiProvider)
+        .clubBoard(key.$1, key.$2, period: period);
     return r.when(ok: (b) => b, err: (f) => throw f);
   },
   retry: (_, __) => null,
@@ -111,10 +131,31 @@ final worldBoardProvider =
     FutureProvider.autoDispose.family<Board, (BoardMetric, String?)>(
   (ref, key) async {
     requireSession(ref);
+    final period = ref.watch(boardPeriodProvider);
     final r = await ref
         .watch(communityApiProvider)
-        .worldBoard(key.$1, country: key.$2);
+        .worldBoard(key.$1, country: key.$2, period: period);
     return r.when(ok: (b) => b, err: (f) => throw f);
+  },
+  retry: (_, __) => null,
+);
+
+/// Beta 6.3 (C1): the feed's first page (older pages load in the view).
+final feedProvider = FutureProvider.autoDispose<Feed>(
+  (ref) async {
+    requireSession(ref);
+    final r = await ref.watch(communityApiProvider).feed();
+    return r.when(ok: (f) => f, err: (f) => throw f);
+  },
+  retry: (_, __) => null,
+);
+
+/// Beta 6.3 (C16): people you may know.
+final suggestionsProvider = FutureProvider.autoDispose<List<Suggestion>>(
+  (ref) async {
+    requireSession(ref);
+    final r = await ref.watch(communityApiProvider).suggestions();
+    return r.when(ok: (s) => s, err: (f) => throw f);
   },
   retry: (_, __) => null,
 );
@@ -152,5 +193,7 @@ void refreshCommunity(WidgetRef ref) {
     ..invalidate(clubBoardProvider)
     ..invalidate(worldBoardProvider)
     ..invalidate(personProfileProvider)
-    ..invalidate(removedFromClubProvider);
+    ..invalidate(removedFromClubProvider)
+    ..invalidate(feedProvider)
+    ..invalidate(suggestionsProvider);
 }

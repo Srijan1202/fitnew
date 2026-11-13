@@ -253,6 +253,10 @@ void main() {
   testWidgets(
       'settings: unblock, the world switch, and leaving after a confirmation',
       (tester) async {
+    // Beta 6.3: the sharing settings make the list longer than a phone.
+    tester.view.physicalSize = const Size(1080, 3600);
+    tester.view.devicePixelRatio = 1.5;
+    addTearDown(tester.view.reset);
     api
       ..profile = me(onWorld: true)
       ..blockedPeople = [person('rude_one')];
