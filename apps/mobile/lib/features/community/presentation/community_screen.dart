@@ -378,7 +378,7 @@ class _Joined extends ConsumerWidget {
               const FitModeHalf(
                 CommunityTab.feed,
                 'Feed',
-                Icons.dynamic_feed_outlined,
+                Icons.chat_bubble_outline,
                 key: ValueKey('community.tab.feed'),
               ),
               const FitModeHalf(
@@ -1044,7 +1044,7 @@ class _Suggestions extends ConsumerWidget {
                           'community.suggestion.add.${s.person.handle}',
                         ),
                         tooltip: 'Add friend',
-                        icon: const Icon(Icons.person_add_alt),
+                        icon: const Icon(Icons.add),
                         onPressed: () async {
                           final r = await api.addFriend(s.person.handle);
                           refreshCommunity(ref);

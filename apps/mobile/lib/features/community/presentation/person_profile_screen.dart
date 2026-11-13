@@ -265,7 +265,7 @@ class _NudgeButton extends ConsumerWidget {
       children: [
         OutlinedButton.icon(
           key: const ValueKey('person.nudge'),
-          icon: const Icon(Icons.waving_hand_outlined),
+          icon: const Icon(Icons.notifications_active_outlined),
           label: Text('Nudge @${p.person.handle}'),
           onPressed: p.nudge != NudgeState.can
               ? null

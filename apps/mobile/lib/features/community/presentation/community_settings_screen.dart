@@ -103,8 +103,7 @@ class CommunitySettingsScreen extends ConsumerWidget {
                             FeedKind.session => Icons.fitness_center,
                             FeedKind.run => Icons.directions_run,
                             FeedKind.record => Icons.emoji_events_outlined,
-                            FeedKind.streak =>
-                              Icons.local_fire_department_outlined,
+                            FeedKind.streak => Icons.local_fire_department,
                           },
                           title: k.label,
                           value: k.hint,
@@ -131,7 +130,7 @@ class CommunitySettingsScreen extends ConsumerWidget {
                         ),
                       FitRow(
                         key: const ValueKey('communitySettings.suggest'),
-                        icon: Icons.group_add_outlined,
+                        icon: Icons.person_outline,
                         title: 'Suggest me to friends of friends',
                         value: 'And to people in my clubs',
                         trailing: Switch(

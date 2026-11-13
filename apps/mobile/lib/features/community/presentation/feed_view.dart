@@ -186,7 +186,7 @@ class _Nudges extends StatelessWidget {
       padding: const EdgeInsets.all(FitSpacing.md),
       child: Row(
         children: [
-          Icon(Icons.waving_hand_outlined, color: FitColors.accent),
+          Icon(Icons.notifications_active_outlined, color: FitColors.accent),
           const SizedBox(width: FitSpacing.md),
           Expanded(
             child: Text(
