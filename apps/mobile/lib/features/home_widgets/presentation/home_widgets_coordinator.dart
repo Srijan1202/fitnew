@@ -19,6 +19,9 @@ import '../../progress/presentation/progress_sheets.dart';
 import '../../running/presentation/controllers/running_providers.dart';
 import '../../training/presentation/controllers/program_controller.dart';
 import '../../training/presentation/screens/training_tab_screen.dart';
+import '../../water/domain/water.dart';
+import '../../water/presentation/water_providers.dart';
+import '../../workout/domain/entities/workout.dart';
 import '../../workout/presentation/controllers/workout_providers.dart';
 import '../domain/widget_snapshot.dart';
 
@@ -39,6 +42,10 @@ abstract class HomeWidgets {
 
   /// Taps while FITOS is open.
   Stream<String> get taps;
+
+  /// Beta 6.4 (N1): glasses tapped on the widget since the last time, per
+  /// day, now forgotten by the widget.
+  Future<Map<String, int>> takeWater();
 }
 
 class ChannelHomeWidgets implements HomeWidgets {
@@ -81,6 +88,20 @@ class ChannelHomeWidgets implements HomeWidgets {
 
   @override
   Stream<String> get taps => _taps.stream;
+
+  @override
+  Future<Map<String, int>> takeWater() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      // The widget wrote it outside this app's cached copy.
+      await p.reload();
+      final taps = WidgetWater.parse(p.getString(WidgetWater.key));
+      if (taps.isNotEmpty) await p.remove(WidgetWater.key);
+      return taps;
+    } on Object {
+      return const {};
+    }
+  }
 }
 
 /// Android only (the widgets are Android's); tests hand in a fake.
@@ -116,8 +137,22 @@ final homeWidgetsCoordinatorProvider = Provider<void>((ref) {
       workoutDoneToday:
           ref.watch(todayProvider).value?.completedSessionId != null,
       unit: ref.watch(runSettingsProvider).unit,
+      // Beta 6.4 (N1): the widget's water taps add to this.
+      water: ref.watch(waterProvider).value,
     ),
   );
+
+  // Beta 6.4 (N1, owner Q4): water tapped on the widget, now and whenever
+  // FITOS comes back.
+  Future<void> water() async {
+    final taps = await widgets.takeWater();
+    if (taps.isEmpty || !ref.mounted) return;
+    await addWidgetWater(ref, taps);
+  }
+
+  unawaited(water());
+  final lifecycle = AppLifecycleListener(onResume: () => unawaited(water()));
+  ref.onDispose(lifecycle.dispose);
 
   // Taps: the one FITOS opened from, then any while open.
   final taps = widgets.taps.listen((link) => _open(ref, link));
@@ -156,6 +191,10 @@ void _open(Ref ref, String link) {
     case WidgetTarget.workout:
       mode.set(TrainingMode.gym);
       router.go(Routes.plan);
+    // Beta 6.4 (N1): straight into today's session, already started.
+    case WidgetTarget.session:
+      mode.set(TrainingMode.gym);
+      unawaited(_startSession(ref));
     case WidgetTarget.run:
       mode.set(TrainingMode.running);
       router.go(Routes.plan);
@@ -177,5 +216,53 @@ void _open(Ref ref, String link) {
       });
     case WidgetTarget.streak:
       router.go(Routes.rewards);
+  }
+}
+
+/// Beta 6.4 (N1): a running session resumes; today's planned one starts and
+/// opens; a rest day, a done day or no programme opens the plan.
+Future<void> _startSession(Ref ref) async {
+  final router = ref.read(routerProvider);
+  final repo = ref.read(workoutRepositoryProvider);
+  try {
+    final active = await repo.activeSession();
+    TodayResponse? today;
+    if (active == null) {
+      today = await ref.read(todayProvider.future);
+    }
+    if (!ref.mounted) return;
+    switch (sessionStartFor(today, active: active != null)) {
+      case SessionStart.resume:
+        router.push(Routes.session(active!.clientSessionId));
+      case SessionStart.start:
+        final session = await repo.startSession(day: today);
+        if (!ref.mounted) return;
+        router.push(Routes.session(session.clientSessionId));
+      case SessionStart.plan:
+        router.go(Routes.plan);
+    }
+  } on Object {
+    // Offline before today was ever loaded: the plan, where Start is.
+    if (ref.mounted) router.go(Routes.plan);
+  }
+}
+
+/// Adds the widget's glasses to their days: today through the water
+/// controller (synced as any tap is), an earlier day as that day's total.
+Future<void> addWidgetWater(Ref ref, Map<String, int> taps) async {
+  final today = ref.read(localTodayProvider);
+  for (final MapEntry(key: date, value: glasses) in taps.entries) {
+    final ml = glasses * kWaterGlassMl;
+    if (date == today) {
+      try {
+        await ref.read(waterProvider.future);
+      } on Object {
+        // Offline and nothing kept yet: the controller still counts it.
+      }
+      if (!ref.mounted) return;
+      ref.read(waterProvider.notifier).add(ml);
+    } else {
+      await ref.read(waterProvider.notifier).addToDay(date, ml);
+    }
   }
 }

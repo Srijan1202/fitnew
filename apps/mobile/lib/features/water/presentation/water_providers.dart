@@ -79,6 +79,27 @@ class WaterController extends AsyncNotifier<WaterDay> {
     _schedule();
   }
 
+  /// Beta 6.4 (N1): glasses from the home-screen widget for a day before
+  /// today: that day's total as the phone last knew it, plus [deltaMl]. A
+  /// failed send keeps it for the next time FITOS starts.
+  Future<void> addToDay(String date, int deltaMl) async {
+    final saved = await _load();
+    final base = saved != null && saved.date == date ? saved.ml : 0;
+    final ml = (base + deltaMl).clamp(0, kWaterMaxMl);
+    final r = await ref.read(waterApiProvider).set(date, ml);
+    if (r is Err) {
+      final next = WaterDay(
+        date: date,
+        ml: ml,
+        targetMl: saved?.targetMl ?? kWaterDefaultTargetMl,
+        fromWeight: saved?.fromWeight ?? false,
+        unsynced: true,
+      );
+      // Only when today's own total is not waiting to be sent.
+      if (saved == null || !saved.unsynced) await _save(next);
+    }
+  }
+
   void _schedule() {
     _timer?.cancel();
     _timer = Timer(sendAfter, () => unawaited(_send()));

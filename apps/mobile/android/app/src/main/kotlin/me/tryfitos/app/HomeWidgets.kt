@@ -15,6 +15,7 @@ import android.graphics.RectF
 import android.net.Uri
 import android.view.View
 import android.widget.RemoteViews
+import android.widget.Toast
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -30,11 +31,17 @@ import org.json.JSONObject
  * without the app (an alarm just past midnight redraws them).
  *
  * A tap opens FITOS on the screen it names (`fitos://widget/<target>`);
- * nothing starts without a tap there.
+ * nothing starts without a tap there. Beta 6.4 (N1, owner Q4): the Water
+ * button adds a glass without opening FITOS ([WaterTapReceiver]).
  */
 object HomeWidgets {
     private const val PREFS = "FlutterSharedPreferences"
     private const val KEY = "flutter.widgets.snapshot"
+
+    /** Glasses tapped per day, until FITOS takes them (Dart: `widgets.water`). */
+    private const val WATER = "flutter.widgets.water"
+    const val GLASS_ML = 250
+    const val MAX_ML = 10000
 
     private val providers = listOf(
         FoodWidget::class.java,
@@ -66,6 +73,42 @@ object HomeWidgets {
     }
 
     fun today(): String = LocalDate.now().toString()
+
+    /** Glasses waiting for FITOS, per day. */
+    fun waterTaps(context: Context): JSONObject = try {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getString(WATER, null)
+            ?.let { JSONObject(it) } ?: JSONObject()
+    } catch (e: Exception) {
+        JSONObject()
+    }
+
+    /** One more glass on [date]; the glasses now waiting for that day. */
+    fun addWaterTap(context: Context, date: String): Int {
+        val taps = waterTaps(context)
+        val n = taps.optInt(date, 0) + 1
+        taps.put(date, n)
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit().putString(WATER, taps.toString()).apply()
+        return n
+    }
+
+    /** "1.25 L", "2 L", "750 ml". */
+    fun litres(ml: Int): String = when {
+        ml < 1000 -> "$ml ml"
+        ml % 1000 == 0 -> "${ml / 1000} L"
+        ml % 100 == 0 -> String.format(Locale.ENGLISH, "%.1f L", ml / 1000.0)
+        else -> String.format(Locale.ENGLISH, "%.2f L", ml / 1000.0)
+    }
+
+    /** The receiver behind the widget's Water button. */
+    fun waterTap(context: Context): PendingIntent =
+        PendingIntent.getBroadcast(
+            context,
+            44,
+            Intent(context, WaterTapReceiver::class.java),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
 
     /** Opens FITOS on [target]; [code] keeps each tap's intent apart. */
     fun open(context: Context, target: String, code: Int): PendingIntent =
@@ -327,14 +370,48 @@ class StreakWidget : FitWidget() {
     }
 }
 
-/** Log food · Start workout · Start run · Log weight. */
+/**
+ * Log food · Water · Start session · Run · Log weight. Beta 6.4 (N1): Water
+ * adds a glass without opening FITOS; Session opens today's session, started.
+ */
 class ActionsWidget : FitWidget() {
     override fun render(context: Context, snap: JSONObject?, today: String): RemoteViews =
         RemoteViews(context.packageName, R.layout.widget_actions).apply {
             setOnClickPendingIntent(R.id.action_food, HomeWidgets.open(context, "food", 40))
-            setOnClickPendingIntent(R.id.action_workout, HomeWidgets.open(context, "workout", 41))
+            setOnClickPendingIntent(R.id.action_water, HomeWidgets.waterTap(context))
+            setOnClickPendingIntent(R.id.action_workout, HomeWidgets.open(context, "session", 41))
             setOnClickPendingIntent(R.id.action_run, HomeWidgets.open(context, "run", 42))
             setOnClickPendingIntent(R.id.action_weight, HomeWidgets.open(context, "weight", 43))
         }
+}
+
+/**
+ * Beta 6.4 (N1, owner Q4): a glass of water from the home screen, FITOS
+ * closed. It is kept per day on the phone and said in a toast; FITOS adds
+ * it to the day (and syncs it) when it next starts or comes back.
+ */
+class WaterTapReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        val snap = HomeWidgets.snapshot(context)
+        if (snap == null || !snap.optBoolean("signedIn", false)) {
+            Toast.makeText(context, "Open FITOS to sign in", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val today = HomeWidgets.today()
+        val water = snap.optJSONObject("water")
+        val base = if (water != null && water.optString("date") == today) water.optInt("ml", 0) else 0
+        val waiting = HomeWidgets.waterTaps(context).optInt(today, 0)
+        if (base + (waiting + 1) * HomeWidgets.GLASS_ML > HomeWidgets.MAX_ML) {
+            Toast.makeText(context, "10 L is the most a day holds", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val n = HomeWidgets.addWaterTap(context, today)
+        val total = base + n * HomeWidgets.GLASS_ML
+        Toast.makeText(
+            context,
+            "+${HomeWidgets.GLASS_ML} ml water · ${HomeWidgets.litres(total)} today",
+            Toast.LENGTH_SHORT,
+        ).show()
+    }
 }
 

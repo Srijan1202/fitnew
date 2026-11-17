@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import '../../home/data/streak_api.dart';
 import '../../nutrition/domain/entities/food_log.dart';
 import '../../nutrition/presentation/widgets/eat_widgets.dart';
 import '../../running/domain/units.dart';
 import '../../running/domain/workout.dart';
 import '../../training/domain/entities/program.dart';
+import '../../water/domain/water.dart';
+import '../../workout/domain/entities/workout.dart';
 
 /// Beta 5.0 (owner): what the home-screen widgets show, written by the app
 /// whenever it changes and read by the native widgets (HomeWidgets.kt).
@@ -17,7 +21,8 @@ import '../../training/domain/entities/program.dart';
 ///   food: { date, leftValue, leftCaption, protein, kcalTarget, proteinTarget,
 ///           eatenShare, over, loggedAt },
 ///   week: [ { date, kind: workout|run|rest|none, title, detail, done } ×7 ],
-///   streak: { current, todayCounted, days: [ { date, status } ×14 ] } }
+///   streak: { current, todayCounted, days: [ { date, status } ×14 ] },
+///   water: { date, ml, targetMl } }   // beta 6.4: the widget's water taps
 /// ```
 abstract final class WidgetSnapshot {
   static const version = 1;
@@ -33,6 +38,7 @@ abstract final class WidgetSnapshot {
     required Streak? streak,
     required bool workoutDoneToday,
     required DistanceUnit unit,
+    WaterDay? water,
   }) =>
       {
         'v': version,
@@ -50,6 +56,12 @@ abstract final class WidgetSnapshot {
             ),
         ],
         if (streak != null) 'streak': _streak(streak),
+        if (water != null && water.date == today)
+          'water': {
+            'date': water.date,
+            'ml': water.ml,
+            'targetMl': water.targetMl,
+          },
       };
 
   static Map<String, Object?> _food(NutritionDay d) {
@@ -151,11 +163,13 @@ abstract final class WidgetSnapshot {
   }
 }
 
-/// What a widget tap asks for (`fitos://widget/<target>`).
+/// What a widget tap asks for (`fitos://widget/<target>`). Beta 6.4 (N1):
+/// `session` starts today's session at once.
 enum WidgetTarget {
   food,
   training,
   workout,
+  session,
   run,
   weight,
   streak;
@@ -178,3 +192,50 @@ MealSlot slotAt(int hour) => hour < 11
         : hour < 19
             ? MealSlot.snacks
             : MealSlot.dinner;
+
+/// Beta 6.4 (N1, owner Q4): glasses of water tapped on the widget without
+/// opening FITOS. The widget keeps them per day (`flutter.widgets.water`:
+/// `{"2026-11-17": 2}`); FITOS adds them to those days when it next starts
+/// or comes back, then forgets them.
+abstract final class WidgetWater {
+  /// The shared preference (Android stores it as `flutter.widgets.water`).
+  static const key = 'widgets.water';
+
+  /// Glasses per day; anything unreadable is nothing.
+  static Map<String, int> parse(String? raw) {
+    if (raw == null || raw.isEmpty) return const {};
+    try {
+      final j = jsonDecode(raw);
+      if (j is! Map) return const {};
+      return {
+        for (final e in j.entries)
+          if (e.key is String &&
+              RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(e.key as String) &&
+              e.value is int &&
+              (e.value as int) > 0)
+            e.key as String:
+                (e.value as int).clamp(0, kWaterMaxMl ~/ kWaterGlassMl),
+      };
+    } on Object {
+      return const {};
+    }
+  }
+}
+
+/// What the widget's Start session does (beta 6.4, N1).
+enum SessionStart { resume, start, plan }
+
+/// A session running: resume it. Today a training day, not skipped and not
+/// done: start it. Otherwise (a rest day, done, no programme): the plan.
+SessionStart sessionStartFor(TodayResponse? today, {required bool active}) {
+  if (active) return SessionStart.resume;
+  final t = today;
+  if (t == null ||
+      t.isRest ||
+      t.skipped ||
+      t.programDayId == null ||
+      t.completedSessionId != null) {
+    return SessionStart.plan;
+  }
+  return SessionStart.start;
+}

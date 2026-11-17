@@ -29,6 +29,28 @@
             android:textSize="12sp" />
     </LinearLayout>
     <LinearLayout
+        android:id="@+id/action_water"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_margin="3dp"
+        android:layout_weight="1"
+        android:background="@drawable/widget_button"
+        android:gravity="center"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="💧"
+            android:textSize="20sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:text="Water"
+            android:textColor="@color/widget_ink"
+            android:textSize="12sp" />
+    </LinearLayout>
+    <LinearLayout
         android:id="@+id/action_workout"
         android:layout_width="0dp"
         android:layout_height="match_parent"
@@ -46,7 +68,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxLines="1"
-            android:text="Workout"
+            android:text="Session"
             android:textColor="@color/widget_ink"
             android:textSize="12sp" />
     </LinearLayout>

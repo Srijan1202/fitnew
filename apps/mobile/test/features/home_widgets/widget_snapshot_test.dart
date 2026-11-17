@@ -5,6 +5,8 @@ import 'package:fitos/features/nutrition/domain/entities/food_log.dart';
 import 'package:fitos/features/running/domain/units.dart';
 import 'package:fitos/features/running/domain/workout.dart';
 import 'package:fitos/features/training/domain/entities/program.dart';
+import 'package:fitos/features/water/domain/water.dart';
+import 'package:fitos/features/workout/domain/entities/workout.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Beta 5.0 (owner): what the home-screen widgets are given.
@@ -219,10 +221,93 @@ void main() {
     expect(WidgetTarget.fromLink('fitos://other/food'), isNull);
     expect(WidgetTarget.fromLink('https://widget/food'), isNull);
     expect(WidgetTarget.fromLink('fitos://widget/nope'), isNull);
+    // Beta 6.4 (N1): Start session.
+    expect(
+      WidgetTarget.fromLink('fitos://widget/session'),
+      WidgetTarget.session,
+    );
     expect(slotAt(8), MealSlot.breakfast);
     expect(slotAt(13), MealSlot.lunch);
     expect(slotAt(17), MealSlot.snacks);
     expect(slotAt(21), MealSlot.dinner);
+  });
+
+  test('beta 6.4 (N1): today\'s water goes to the widget, for its toast', () {
+    WaterDay water(String date) =>
+        WaterDay(date: date, ml: 750, targetMl: 2500, fromWeight: false);
+    final s = WidgetSnapshot.build(
+      today: today,
+      food: null,
+      program: null,
+      runningPlan: null,
+      streak: null,
+      workoutDoneToday: false,
+      unit: DistanceUnit.km,
+      water: water(today),
+    );
+    expect(s['water'], {'date': today, 'ml': 750, 'targetMl': 2500});
+    // Yesterday's total is not today's.
+    expect(
+      WidgetSnapshot.build(
+        today: today,
+        food: null,
+        program: null,
+        runningPlan: null,
+        streak: null,
+        workoutDoneToday: false,
+        unit: DistanceUnit.km,
+        water: water('2026-11-01'),
+      ).containsKey('water'),
+      isFalse,
+    );
+  });
+
+  test('beta 6.4 (N1, owner Q4): the water tapped on the widget, per day', () {
+    expect(
+      WidgetWater.parse('{"2026-11-17": 2, "2026-11-16": 1}'),
+      {'2026-11-17': 2, '2026-11-16': 1},
+    );
+    // Nonsense is nothing; a day is capped at 10 L.
+    expect(WidgetWater.parse(null), isEmpty);
+    expect(WidgetWater.parse(''), isEmpty);
+    expect(WidgetWater.parse('[1]'), isEmpty);
+    expect(WidgetWater.parse('{'), isEmpty);
+    expect(
+      WidgetWater.parse('{"today": 2, "2026-11-17": "2", "2026-11-18": 0}'),
+      isEmpty,
+    );
+    expect(WidgetWater.parse('{"2026-11-17": 99}'), {'2026-11-17': 40});
+  });
+
+  test('beta 6.4 (N1): Start session resumes, starts today, or opens the plan',
+      () {
+    TodayResponse t({
+      bool rest = false,
+      bool skipped = false,
+      String? dayId = 'd1',
+      String? done,
+    }) =>
+        TodayResponse(
+          date: today,
+          dayOfWeek: 1,
+          programId: 'p',
+          programDayId: dayId,
+          sessionName: 'Upper A',
+          isRest: rest,
+          skipped: skipped,
+          focus: const [],
+          exercises: const [],
+          activeSession: null,
+          completedSessionId: done,
+        );
+    expect(sessionStartFor(t(), active: true), SessionStart.resume);
+    expect(sessionStartFor(null, active: true), SessionStart.resume);
+    expect(sessionStartFor(t(), active: false), SessionStart.start);
+    expect(sessionStartFor(t(rest: true), active: false), SessionStart.plan);
+    expect(sessionStartFor(t(skipped: true), active: false), SessionStart.plan);
+    expect(sessionStartFor(t(dayId: null), active: false), SessionStart.plan);
+    expect(sessionStartFor(t(done: 's1'), active: false), SessionStart.plan);
+    expect(sessionStartFor(null, active: false), SessionStart.plan);
   });
 }
 

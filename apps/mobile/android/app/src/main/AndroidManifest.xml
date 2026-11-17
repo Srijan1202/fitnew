@@ -101,6 +101,8 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_actions_info" />
         </receiver>
+        <!-- Beta 6.4 (N1): the Actions widget's Water button, FITOS closed. -->
+        <receiver android:name=".WaterTapReceiver" android:exported="false" />
         <receiver android:name=".HomeWidgetsRefresh" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.TIME_SET" />
