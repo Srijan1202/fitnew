@@ -1,3 +1,4 @@
+import '../../../workout/presentation/widgets/plate_sheet.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/feedback/app_feedback.dart';
 import '../../../../core/config/app_features.dart';
@@ -125,6 +126,16 @@ class ProfileScreen extends ConsumerWidget {
                         icon: Icons.favorite_border,
                         title: 'Health data',
                         onTap: () => context.push(Routes.healthData),
+                      ),
+                      // Beta 6.4 (N3, owner Q2): the gym's bar and plates.
+                      Consumer(
+                        builder: (context, ref, _) => FitRow(
+                          key: const ValueKey('profile.plates'),
+                          icon: Icons.fitness_center,
+                          title: 'Bar and plates',
+                          value: ref.watch(gymPlatesProvider).summary,
+                          onTap: () => showGymPlatesSheet(context),
+                        ),
                       ),
                       // Beta 5.8 (ADR-057): friends, clubs and the world board.
                       if (ref.watch(featureOnProvider(AppFeature.community)))

@@ -5,8 +5,10 @@ import '../../../../core/theme/tokens.dart';
 import '../../../exercise/presentation/widgets/exercise_demo_sheet.dart';
 import '../../../training/domain/entities/program.dart';
 import '../../../training/presentation/widgets/set_row.dart';
+import '../../../profile/domain/entities/vocabulary.dart';
 import '../../domain/entities/workout.dart';
 import '../../../../shared/widgets/fit_glass.dart';
+import 'plate_sheet.dart';
 import '../../../exercise/data/demo_approvals_api.dart';
 
 /// One exercise in the session in progress. Collapsed: number, name,
@@ -101,6 +103,20 @@ class SessionExerciseCard extends StatelessWidget {
         ProgressionAction.reduceLoad || ProgressionAction.deload => '↓',
         ProgressionAction.establishBaseline => '·',
       };
+
+  /// The weight the plates sheet opens on: the next set to do, else the
+  /// last one shown.
+  double? _barKg() {
+    for (final r in rows) {
+      if (r.logged == null && r.values.weightKg != null) {
+        return r.values.weightKg;
+      }
+    }
+    for (final r in rows.reversed) {
+      if (r.values.weightKg != null) return r.values.weightKg;
+    }
+    return null;
+  }
 
   static String _kg(double v) =>
       v == v.roundToDouble() ? v.toInt().toString() : v.toString();
@@ -201,6 +217,24 @@ class SessionExerciseCard extends StatelessWidget {
                                     ),
                                   ),
                           ),
+                          // Beta 6.4 (N3): which plates go on the bar.
+                          if (x.equipment.contains(Equipment.barbell))
+                            IconButton(
+                              key: ValueKey('$key.plates'),
+                              tooltip: 'Plates',
+                              onPressed: () =>
+                                  showPlateSheet(context, kg: _barKg()),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints.tightFor(
+                                width: 32,
+                                height: 28,
+                              ),
+                              iconSize: 20,
+                              icon: Icon(
+                                Icons.fitness_center,
+                                color: FitColors.ink60,
+                              ),
+                            ),
                         ],
                       ),
                       const SizedBox(height: FitSpacing.xs),
