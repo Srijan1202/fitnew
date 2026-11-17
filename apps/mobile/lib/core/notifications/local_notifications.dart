@@ -5,6 +5,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
+import 'rest_countdown.dart';
+
 /// The one flutter_local_notifications set-up for the app: the rest timer
 /// (Phase 5) and the Phase 15 reminders share it, so a tap is always routed
 /// (initialising the plugin twice would replace the tap handler).
@@ -63,6 +65,10 @@ abstract final class FitNotifications {
       onDidReceiveNotificationResponse: (r) {
         if (r.actionId == 'snooze') {
           snooze(r);
+        } else if (r.actionId == RestCountdown.addAction ||
+            r.actionId == RestCountdown.skipAction) {
+          // Beta 6.4 (N2): +15 s or Skip from the lock screen.
+          RestCountdown.handle(plugin, r);
         } else {
           onTap?.call(r);
         }
@@ -102,9 +108,12 @@ abstract final class FitNotifications {
 
 /// A Snooze tapped while the app is not running: a fresh isolate, so the
 /// plugin and the zones are set up again before re-scheduling.
+/// Beta 6.4 (N2): the rest countdown's +15 s and Skip, the same way.
 @pragma('vm:entry-point')
 void notificationBackgroundTap(NotificationResponse response) {
-  if (response.actionId != 'snooze') return;
+  final rest = response.actionId == RestCountdown.addAction ||
+      response.actionId == RestCountdown.skipAction;
+  if (response.actionId != 'snooze' && !rest) return;
   tzdata.initializeTimeZones();
   FitNotifications.plugin
       .initialize(
@@ -112,6 +121,10 @@ void notificationBackgroundTap(NotificationResponse response) {
           android: AndroidInitializationSettings('@mipmap/ic_launcher'),
         ),
       )
-      .then((_) => FitNotifications.snooze(response))
-      .catchError((Object e) => debugPrint('snooze failed: $e'));
+      .then(
+        (_) => rest
+            ? RestCountdown.handle(FitNotifications.plugin, response)
+            : FitNotifications.snooze(response),
+      )
+      .catchError((Object e) => debugPrint('notification action failed: $e'));
 }
