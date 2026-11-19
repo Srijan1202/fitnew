@@ -47,6 +47,28 @@ function Get-StackOutputs([string]$Stack) {
 }
 
 <#
+  The release snapshots the privacy policy (2026-11-11, "How long") says go
+  within 30 days: beyond the newest $Keep, and any older than $Days days.
+  Only the database's own manual snapshots named <db>-pre-* are ever listed.
+  Returns their identifiers, oldest first. deploy.ps1 and snapshots.ps1.
+#>
+function Get-OldSnapshots([string]$Db, [int]$Keep = 3, [int]$Days = 30) {
+  $cutoff = (Get-Date).ToUniversalTime().AddDays(-$Days).ToString('yyyy-MM-ddTHH:mm:ss')
+  # Text rows "<id><tab><ISO time>": ISO times sort and compare as strings, and
+  # text avoids ConvertFrom-Json turning them into local dates.
+  $rows = Invoke-Aws rds describe-db-snapshots --db-instance-identifier $Db --snapshot-type manual --query 'DBSnapshots[].[DBSnapshotIdentifier,SnapshotCreateTime]' --output text
+  $all = @("$rows" -split "`n" | Where-Object { $_.Trim() } | ForEach-Object {
+      $f = $_.Trim() -split '\s+'
+      [pscustomobject]@{ id = $f[0]; at = $f[1] }
+    } | Where-Object { $_.id -like "$Db-pre-*" } | Sort-Object at -Descending)
+  $old = @()
+  for ($i = 0; $i -lt $all.Count; $i++) {
+    if ($i -ge $Keep -or $all[$i].at -lt $cutoff) { $old += $all[$i] }
+  }
+  return @($old | Sort-Object at | ForEach-Object { $_.id })
+}
+
+<#
   Runs a shell script on the server as root through Systems Manager and waits.
   The deploy/aws/server/ files go with every command, so the repository is the
   only source of the server's scripts. Returns the output; throws on failure.
