@@ -61,7 +61,7 @@ The privacy policy (2026-11-11) promises that a snapshot is deleted within 30 da
 
 ## Owner's answers (2026-11-19)
 
-1. **The package updates ship inside 6.5's full APK.** Each update is committed on `phase-19` as soon as it is two weeks old. Two of them already were on 2026-11-19, so they go first:
-   - geolocator 14.1.2, out of round 1;
-   - maplibre_gl 0.28.0, out of round 2.
+1. **The package updates ship inside 6.5's full APK.** Each update is committed on `phase-19` as soon as it is two weeks old. Two of them already were on 2026-11-19:
+   - **maplibre_gl 0.28.0**, out of round 2: done first. The run map now drops calls on a map that has gone (MAP_DISPOSED), where they used to do nothing.
+   - **geolocator 14.1.2: held.** Every geolocator from 14.0.3 on brings geolocator_linux, which needs dbus 0.7. connectivity_plus 7.3.2 needs nm 0.6, which needs dbus 0.8, so pub cannot resolve them together. FITOS does not build for Linux, but pub resolves every platform. It moves once geolocator_linux takes dbus 0.8.
 2. **`snapshots.ps1` added** (93697c6). The rule lives in `common.ps1` as `Get-OldSnapshots`, shared with `deploy.ps1`. Run it on about 2026-12-08: on its own it lists the snapshots and marks the ones to delete, and `-Delete` deletes them after the owner's yes.
