@@ -80,7 +80,7 @@ dependencies:
   # Beta 4.0 (ADR-038): GPS for runs (Fused Location on Android) and the map
   # (MapLibre drawing OpenFreeMap's tiles; no key, no account).
   geolocator: 14.0.1
-  maplibre_gl: 0.27.1
+  maplibre_gl: 0.28.0
   # Beta 4.1 (ADR-039): the voice coach, the phone's own text-to-speech (offline).
   flutter_tts: 4.2.5
   # Beta 4.1 (updates plan, U1): the Shorebird patch this build runs, shown

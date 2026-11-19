@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
@@ -216,7 +217,32 @@ class _TileMapState extends State<_TileMap> {
 
   int get _count => widget.segments.fold(0, (n, s) => n + s.length);
 
-  Future<void> _onStyle() async {
+  @override
+  void dispose() {
+    _map = null;
+    super.dispose();
+  }
+
+  /// maplibre_gl 0.28: a call on a map that is gone throws MAP_DISPOSED
+  /// instead of doing nothing. Nobody awaits the drawing and the camera, so
+  /// a call still on its way when the screen closes is dropped; anything
+  /// else on a live map is real.
+  Future<void> _guard(Future<void> Function() call) async {
+    try {
+      await call();
+    } on PlatformException catch (e) {
+      if (mounted && _map != null && e.code != 'MAP_DISPOSED') rethrow;
+    }
+  }
+
+  Future<void> _onStyle() => _guard(_style);
+
+  Future<void> _draw(MapLibreMapController map) => _guard(() async {
+        await map.setGeoJsonSource(_route, _lines());
+        await map.setGeoJsonSource(_me, _point());
+      });
+
+  Future<void> _style() async {
     final map = _map;
     if (map == null) return;
     await map.addGeoJsonSource(_route, _lines());
@@ -242,12 +268,16 @@ class _TileMapState extends State<_TileMap> {
         circleStrokeWidth: 2,
       ),
     );
+    if (!mounted) return;
     _styled = true;
     _drawnPoints = _count;
-    await _camera(force: true);
+    await _move(force: true);
   }
 
-  Future<void> _camera({bool force = false}) async {
+  Future<void> _camera({bool force = false}) =>
+      _guard(() => _move(force: force));
+
+  Future<void> _move({bool force = false}) async {
     final map = _map;
     if (map == null || !_styled) return;
     final all = [for (final s in widget.frame ?? widget.segments) ...s];
@@ -294,8 +324,7 @@ class _TileMapState extends State<_TileMap> {
         !identical(old.coloured, widget.coloured) ||
         old.position != widget.position) {
       _drawnPoints = _count;
-      unawaited(map.setGeoJsonSource(_route, _lines()));
-      unawaited(map.setGeoJsonSource(_me, _point()));
+      unawaited(_draw(map));
       // The replay keeps its frame: the camera moves only when it changes.
       if (widget.frame == null || !identical(old.frame, widget.frame)) {
         unawaited(_camera());
