@@ -1,6 +1,6 @@
 # Upkeep plan — Flutter packages (A7) and old database snapshots
 
-**Status:** Proposed (2026-11-18). It needs the owner's answers to the two questions at the end.
+**Status:** Accepted 2026-11-19. The owner took both recommendations (see the end).
 
 ## 1. Flutter package updates (A7)
 
@@ -59,7 +59,9 @@ The privacy policy (2026-11-11) promises that a snapshot is deleted within 30 da
 - Run it on about **2026-12-08**, after the owner signs in with `aws login`.
 - The snapshot list could not be checked on 2026-11-18 because the AWS sign-in had expired. Confirm the list before deleting anything.
 
-## Questions for the owner
+## Owner's answers (2026-11-19)
 
-1. **Ship the package updates** inside 6.5's full APK (recommended, if 6.5 is ready in early December), or as a full 6.4.1 APK of their own?
-2. **Snapshots:** add `snapshots.ps1` now, as its own commit?
+1. **The package updates ship inside 6.5's full APK.** Each update is committed on `phase-19` as soon as it is two weeks old. Two of them already were on 2026-11-19, so they go first:
+   - geolocator 14.1.2, out of round 1;
+   - maplibre_gl 0.28.0, out of round 2.
+2. **`snapshots.ps1` added** (93697c6). The rule lives in `common.ps1` as `Get-OldSnapshots`, shared with `deploy.ps1`. Run it on about 2026-12-08: on its own it lists the snapshots and marks the ones to delete, and `-Delete` deletes them after the owner's yes.
