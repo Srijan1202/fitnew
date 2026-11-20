@@ -378,13 +378,7 @@ export class CommunityService {
     const now = this.now().getTime();
     const rows = await this.repo.feed(viewer, new Date(now - FEED_DAYS * 86_400_000), before === undefined ? null : new Date(before), FEED_PAGE + 1);
     const page = rows.slice(0, FEED_PAGE);
-    const mine = page.filter((p) => p.userId === viewer && p.kudos > 0).map((p) => p.id);
-    const by = new Map<string, CommunityPerson[]>();
-    for (const c of await this.repo.cheerers(viewer, mine)) {
-      const list = by.get(c.postId) ?? [];
-      if (list.length < CHEERERS_SHOWN) list.push(personOf(c));
-      by.set(c.postId, list);
-    }
+    const by = await this.cheerersOf(viewer, page);
     const nudges = before === undefined ? await this.repo.nudgesTo(viewer, new Date(now - NUDGES_SHOWN_DAYS * 86_400_000)) : [];
     return {
       items: page.map((p) => postOf(p, viewer, by.get(p.id) ?? [])),
@@ -393,7 +387,38 @@ export class CommunityService {
     };
   }
 
-  /** Cheer a friend's post (once); 404 for your own or one you cannot see. */
+  /**
+   * Beta 6.5 (K1): a club's feed, for its members: what each member shares,
+   * from after they joined and agreed to the 2026-11-20 policy; 20 a page,
+   * the last 14 days. Your own posts' cheerers are listed, as in the feed.
+   */
+  async clubFeed(viewer: string, clubId: string, before: string | undefined): Promise<Feed> {
+    await this.requireMember(viewer);
+    if (!(await this.repo.isMember(clubId, viewer))) throw new AppError('NOT_FOUND', 'No such club.');
+    const now = this.now().getTime();
+    const rows = await this.repo.clubFeed(viewer, clubId, new Date(now - FEED_DAYS * 86_400_000), before === undefined ? null : new Date(before), FEED_PAGE + 1);
+    const page = rows.slice(0, FEED_PAGE);
+    const by = await this.cheerersOf(viewer, page);
+    return {
+      items: page.map((p) => postOf(p, viewer, by.get(p.id) ?? [])),
+      next: rows.length > FEED_PAGE ? page.at(-1)!.at.toISOString() : null,
+      nudges: [],
+    };
+  }
+
+  /** Who cheered the viewer's own posts on this page (the first 10 each). */
+  private async cheerersOf(viewer: string, page: readonly PostRow[]): Promise<Map<string, CommunityPerson[]>> {
+    const mine = page.filter((p) => p.userId === viewer && p.kudos > 0).map((p) => p.id);
+    const by = new Map<string, CommunityPerson[]>();
+    for (const c of await this.repo.cheerers(viewer, mine)) {
+      const list = by.get(c.postId) ?? [];
+      if (list.length < CHEERERS_SHOWN) list.push(personOf(c));
+      by.set(c.postId, list);
+    }
+    return by;
+  }
+
+  /** Cheer a friend's or a club-mate's post (once); 404 for your own or one you cannot see. */
   async cheer(viewer: string, postId: string, on: boolean): Promise<{ kudos: number; cheered: boolean }> {
     await this.requireMember(viewer);
     if ((await this.repo.cheerablePost(viewer, postId)) === null) throw new AppError('NOT_FOUND', 'No such post.');

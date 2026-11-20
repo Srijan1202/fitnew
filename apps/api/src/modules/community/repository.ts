@@ -5,7 +5,7 @@
  */
 import { and, asc, desc, eq, gte, inArray, lt, or, sql, type AnyColumn, type SQL } from 'drizzle-orm';
 import type { BoardMetricKey } from '@fitos/core/community/board';
-import type { BoardPeriod } from '@fitos/core/community/feed';
+import { CLUB_FEED_FROM_POLICY, type BoardPeriod } from '@fitos/core/community/feed';
 
 import type { DatabaseHandle } from '../../db/client.js';
 import {
@@ -122,6 +122,39 @@ const RUN_END = sql`coalesce(r.ended_at, r.started_at + make_interval(secs => r.
 
 /** Beta 6.3: the share kind a post belongs to (both records are `record`). */
 const shareKindOf = (kind: AnyColumn | SQL) => sql`(case when ${kind} in ('lift-record', 'run-record') then 'record' else ${kind} end)`;
+
+/**
+ * Beta 6.5 (K1, owner Q1): a post `p` its author's club `m` may see: from
+ * after they joined it and after they agreed to the policy that says clubs
+ * see the feed (CLUB_FEED_FROM_POLICY or later).
+ */
+const inClubFeed = sql`p.at >= m.joined_at
+  and exists (select 1 from consent_records c where c.user_id = p.user_id and c.granted
+        and c.policy_version >= ${CLUB_FEED_FROM_POLICY} and c.granted_at <= p.at)`;
+
+type PostDbRow = {
+  id: string; user_id: string; handle: string; avatar_id: string | null; country: string | null;
+  kind: string; title: string | null; value: number | null; at: Date; kudos: number; cheered: boolean;
+};
+
+const postRowOf = (r: PostDbRow): PostRow => ({
+  id: r.id,
+  userId: r.user_id,
+  handle: r.handle,
+  avatarId: r.avatar_id,
+  country: r.country,
+  kind: r.kind,
+  title: r.title,
+  value: r.value,
+  at: new Date(r.at),
+  kudos: r.kudos,
+  cheered: r.cheered,
+});
+
+/** A post's columns as the feeds return them, with its cheers. */
+const postColumns = (viewer: string) => sql`p.id, p.user_id, cp.handle, u.avatar_id, cp.country, p.kind, p.title, p.value, p.at,
+  (select count(*)::int from community_kudos k where k.post_id = p.id) as kudos,
+  exists (select 1 from community_kudos k where k.post_id = p.id and k.giver_id = ${viewer}) as cheered`;
 
 /** Beta 6.3 (C1): a post as stored, with its author. */
 export interface PostRow extends PersonRow {
@@ -985,13 +1018,8 @@ export class CommunityRepository {
    * the kind), from `since`, older than `before`, newest first.
    */
   async feed(viewer: string, since: Date, before: Date | null, limit: number): Promise<PostRow[]> {
-    const rows = await this.db.execute<{
-      id: string; user_id: string; handle: string; avatar_id: string | null; country: string | null;
-      kind: string; title: string | null; value: number | null; at: Date; kudos: number; cheered: boolean;
-    }>(sql`
-      select p.id, p.user_id, cp.handle, u.avatar_id, cp.country, p.kind, p.title, p.value, p.at,
-             (select count(*)::int from community_kudos k where k.post_id = p.id) as kudos,
-             exists (select 1 from community_kudos k where k.post_id = p.id and k.giver_id = ${viewer}) as cheered
+    const rows = await this.db.execute<PostDbRow>(sql`
+      select ${postColumns(viewer)}
       from community_posts p
       join community_profiles cp on cp.user_id = p.user_id
       join users u on u.id = p.user_id
@@ -1005,19 +1033,29 @@ export class CommunityRepository {
           and ${notBlocked(viewer, sql`p.user_id`)}))
       order by p.at desc, p.id
       limit ${limit}`);
-    return [...rows].map((r) => ({
-      id: r.id,
-      userId: r.user_id,
-      handle: r.handle,
-      avatarId: r.avatar_id,
-      country: r.country,
-      kind: r.kind,
-      title: r.title,
-      value: r.value,
-      at: new Date(r.at),
-      kudos: r.kudos,
-      cheered: r.cheered,
-    }));
+    return [...rows].map(postRowOf);
+  }
+
+  /**
+   * Beta 6.5 (K1): a club's feed: its members' posts (the kinds each shares)
+   * the club may see, the viewer's own included; hidden and blocked people
+   * left out. The caller checks the viewer is in the club.
+   */
+  async clubFeed(viewer: string, clubId: string, since: Date, before: Date | null, limit: number): Promise<PostRow[]> {
+    const rows = await this.db.execute<PostDbRow>(sql`
+      select ${postColumns(viewer)}
+      from community_posts p
+      join club_members m on m.club_id = ${clubId} and m.user_id = p.user_id
+      join community_profiles cp on cp.user_id = p.user_id
+      join users u on u.id = p.user_id
+      where p.at >= ${since.toISOString()}::timestamptz
+        ${before === null ? sql`` : sql`and p.at < ${before.toISOString()}::timestamptz`}
+        and ${shareKindOf(sql`p.kind`)} = any(cp.feed)
+        and ${inClubFeed}
+        and (p.user_id = ${viewer} or (cp.hidden = false and ${notBlocked(viewer, sql`p.user_id`)}))
+      order by p.at desc, p.id
+      limit ${limit}`);
+    return [...rows].map(postRowOf);
   }
 
   /** Who cheered these posts (visible members), newest first. */
@@ -1032,7 +1070,7 @@ export class CommunityRepository {
       .orderBy(desc(communityKudos.createdAt));
   }
 
-  /** A friend's post the viewer may cheer (not their own), or null. */
+  /** A friend's or a club-mate's post the viewer may see and cheer (not their own), or null. */
   async cheerablePost(viewer: string, postId: string): Promise<{ id: string; userId: string } | null> {
     const [r] = await this.db.execute<{ id: string; user_id: string }>(sql`
       select p.id, p.user_id
@@ -1042,8 +1080,10 @@ export class CommunityRepository {
         and p.user_id <> ${viewer}
         and cp.hidden = false
         and ${shareKindOf(sql`p.kind`)} = any(cp.feed)
-        and exists (select 1 from friendships f where f.status = 'accepted'
+        and (exists (select 1 from friendships f where f.status = 'accepted'
               and ((f.requester_id = ${viewer} and f.addressee_id = p.user_id) or (f.addressee_id = ${viewer} and f.requester_id = p.user_id)))
+          or exists (select 1 from club_members m join club_members mv on mv.club_id = m.club_id and mv.user_id = ${viewer}
+              where m.user_id = p.user_id and ${inClubFeed}))
         and ${notBlocked(viewer, sql`p.user_id`)}
       limit 1`);
     return r === undefined ? null : { id: r.id, userId: r.user_id };

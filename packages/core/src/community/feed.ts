@@ -21,6 +21,13 @@ export const FEED_DAYS = 14;
 export const POSTS_KEPT_DAYS = 30;
 
 /**
+ * Beta 6.5 (K1, owner Q1): what a member shares with friends reaches their
+ * clubs too, but only posts from after they joined the club and after they
+ * agreed to the policy that says so: this version, or a later one.
+ */
+export const CLUB_FEED_FROM_POLICY = '2026-11-20';
+
+/**
  * The first local date an event may be posted from: the later of the day
  * sharing was switched on and the catch-up window.
  */

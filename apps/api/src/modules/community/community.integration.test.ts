@@ -699,4 +699,66 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
       expect((await sql`select 1 from ${sql(table)} where ${sql(col)} = ${a.id}`).length, table).toBe(0);
     }
   });
+
+  /* ------------------------------------------------ beta 6.5: Clubs together -- */
+
+  const clubFeedOf = async (u: U, clubId: string): Promise<Feed> => {
+    const r = await call(u, 'GET', `/community/clubs/${clubId}/feed`);
+    expect(r.statusCode, r.body).toBe(200);
+    return feedSchema.parse(r.json());
+  };
+
+  /** A club made by `owner` and joined by the others, each joined as of now (the test's clock). */
+  async function clubOf(owner: U, name: string, ...joiners: U[]): Promise<{ id: string; code: string }> {
+    const made = await call(owner, 'POST', '/community/clubs', { name });
+    expect(made.statusCode, made.body).toBe(201);
+    const c = clubSchema.parse(made.json());
+    for (const j of joiners) expect((await call(j, 'POST', '/community/clubs/join', { code: c.code })).statusCode).toBe(200);
+    await sql`update club_members set joined_at = ${new Date()} where club_id = ${c.id}`;
+    return c;
+  }
+
+  it('beta 6.5 (K1): a club sees what its members share, from joining and the 2026-11-20 policy; club-mates can cheer', async () => {
+    const a = await member('c65_poster');
+    const b = await member('c65_mate');
+    const c = await member('c65_outsider');
+    const late = await member('c65_late');
+    for (const u of [a, late]) await call(u, 'PATCH', '/community/me', { feed: ['session'] });
+    // Agreed only to the policy before 2026-11-20 (friends only).
+    await sql`update consent_records set policy_version = '2026-11-12' where user_id = ${late.id}`;
+
+    // A session from before joining the club stays out of it.
+    await session(a, 6, 20);
+    await board(a, '/community/boards/friends');
+    const club = await clubOf(b, 'C65 Hostel', a, late);
+    expect((await clubFeedOf(b, club.id)).items).toEqual([]);
+
+    await session(a, 6, 20);
+    await session(late, 6, 20);
+    for (const u of [a, late]) await board(u, '/community/boards/friends');
+    const seen = await clubFeedOf(b, club.id);
+    expect(seen.items.map((p) => [p.person.handle, p.kind, p.mine])).toEqual([['c65_poster', 'session', false]]);
+    expect(seen.nudges).toEqual([]);
+    // Not a member: 404, and no cheering.
+    expect((await call(c, 'GET', `/community/clubs/${club.id}/feed`)).statusCode).toBe(404);
+    const post = seen.items[0]!;
+    expect((await call(c, 'POST', `/community/feed/${post.id}/kudos`)).statusCode).toBe(404);
+    // A club-mate cheers; the poster sees who.
+    expect(kudosResultSchema.parse((await call(b, 'POST', `/community/feed/${post.id}/kudos`)).json())).toEqual({ kudos: 1, cheered: true });
+    const own = (await clubFeedOf(a, club.id)).items.find((p) => p.id === post.id)!;
+    expect(own).toMatchObject({ mine: true, kudos: 1 });
+    expect(own.cheeredBy.map((p) => p.handle)).toEqual(['c65_mate']);
+
+    // Agreeing to the 2026-11-20 policy brings later posts, never earlier ones.
+    await sql`insert into consent_records (user_id, consent_type, granted, policy_version, granted_at)
+      values (${late.id}, 'community', true, ${CURRENT_POLICY_VERSION}, ${new Date()})`;
+    await session(late, 6, 20);
+    await board(late, '/community/boards/friends');
+    expect((await clubFeedOf(b, club.id)).items.filter((p) => p.person.handle === 'c65_late')).toHaveLength(1);
+
+    // Leaving the club takes its posts out of it at once.
+    expect((await call(a, 'DELETE', `/community/clubs/${club.id}/membership`)).statusCode).toBe(204);
+    expect((await clubFeedOf(b, club.id)).items.map((p) => p.person.handle)).toEqual(['c65_late']);
+    expect((await call(b, 'DELETE', `/community/feed/${post.id}/kudos`)).statusCode).toBe(404);
+  });
 });

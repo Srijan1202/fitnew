@@ -301,10 +301,22 @@ export async function communityRoutes(app: FastifyInstance, opts: { ipSalt: stri
     },
   }, async (request) => service.feed(requireUserId(request.userId), request.query.before));
 
+  typed.get('/community/clubs/:id/feed', {
+    ...on,
+    schema: {
+      summary: "A club's feed (beta 6.5): what its members share, from after they joined and agreed to the 2026-11-20 policy; 20 a page, the last 14 days",
+      tags,
+      security,
+      params: idParams,
+      querystring: feedQuerySchema,
+      response: { 200: feedSchema, ...errors },
+    },
+  }, async (request) => service.clubFeed(requireUserId(request.userId), request.params.id, request.query.before));
+
   typed.post('/community/feed/:postId/kudos', {
     ...on,
     config: perUser('community-kudos', KUDOS_PER_DAY),
-    schema: { summary: "Cheer a friend's post (once)", tags, security, params: postParams, response: { 200: kudosResultSchema, ...errors } },
+    schema: { summary: "Cheer a friend's or a club-mate's post (once)", tags, security, params: postParams, response: { 200: kudosResultSchema, ...errors } },
   }, async (request) => service.cheer(requireUserId(request.userId), request.params.postId, true));
 
   typed.delete('/community/feed/:postId/kudos', {
