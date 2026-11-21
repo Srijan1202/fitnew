@@ -319,3 +319,61 @@ export const communitySuggestionDismissals = pgTable(
   },
   (t) => [primaryKey({ columns: [t.viewerId, t.dismissedId] }), index('community_suggestion_dismissals_dismissed_idx').on(t.dismissedId)],
 );
+
+/**
+ * Beta 6.5 (K2, C6): a club's goal for a calendar month (owner Q2), set by its
+ * owner. No free text: the title is made from the metric, target and month.
+ * One open challenge a club; closed ones are kept a year for the club's history.
+ */
+export const clubChallenges = pgTable(
+  'club_challenges',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    clubId: uuid('club_id')
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    metric: text('metric').notNull(),
+    /** Sessions, kilometres or active days. */
+    target: integer('target').notNull(),
+    /** The calendar month, "2026-12". */
+    month: text('month').notNull(),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    /** The club's count, in the metric's raw unit (metres for distance), kept by the round. */
+    total: integer('total').notNull().default(0),
+    reachedAt: timestamp('reached_at', { withTimezone: true }),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    /** The owner ended it before the month was over. */
+    endedEarly: boolean('ended_early').notNull().default(false),
+  },
+  (t) => [
+    uniqueIndex('club_challenges_open_key').on(t.clubId).where(sql`${t.closedAt} is null`),
+    index('club_challenges_club_idx').on(t.clubId, t.month),
+    check('club_challenges_metric', sql`${t.metric} in ('sessions', 'distance', 'active-days')`),
+    check('club_challenges_target', sql`${t.target} between 10 and 100000`),
+    check('club_challenges_month', sql`${t.month} ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'`),
+    check('club_challenges_total', sql`${t.total} >= 0`),
+  ],
+);
+
+/**
+ * Beta 6.5 (K2): what one member added to an open challenge, counted in their
+ * own month and time zone. Leaving the club takes their part with them; the
+ * parts go when the challenge closes (its total stays).
+ */
+export const clubChallengeParts = pgTable(
+  'club_challenge_parts',
+  {
+    challengeId: uuid('challenge_id')
+      .notNull()
+      .references(() => clubChallenges.id, { onDelete: 'cascade' }),
+    userId: userRef('user_id'),
+    value: integer('value').notNull().default(0),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.challengeId, t.userId] }),
+    index('club_challenge_parts_user_idx').on(t.userId),
+    check('club_challenge_parts_value', sql`${t.value} >= 0`),
+  ],
+);

@@ -393,6 +393,13 @@
       "when": 1794486409683,
       "tag": "0055_community_talks",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1795196176660,
+      "tag": "0056_club_challenges",
+      "breakpoints": true
     }
   ]
 }
