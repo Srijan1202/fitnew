@@ -1,6 +1,7 @@
 import 'package:fitos/core/errors/failure.dart';
 import 'package:fitos/core/errors/result.dart';
 import 'package:fitos/features/community/data/community_api.dart';
+import 'package:fitos/features/community/domain/club_goals.dart';
 import 'package:fitos/features/community/domain/community.dart';
 
 /// Beta 5.8 (ADR-057): Community in memory — not joined until [join]; the
@@ -34,6 +35,12 @@ class FakeCommunityApi implements CommunityApi {
 
   /// Beta 6.5 (K1): each club's feed, by club id.
   Map<String, Feed> clubFeeds = {};
+
+  /// Beta 6.5 (K2): each club's challenge, by club id; what setting one answers.
+  Map<String, ClubChallengeView> challenges = {};
+  ClubChallengeView Function(ChallengeMetric metric, int target, String? month)?
+      onSetChallenge;
+  Failure? challengeFailure;
   List<Suggestion> suggested = [];
   Failure? nudgeFailure;
 
@@ -119,6 +126,46 @@ class FakeCommunityApi implements CommunityApi {
           ? clubFeeds[clubId] ?? const Feed(items: [], next: null, nudges: [])
           : const Feed(items: [], next: null, nudges: []),
     );
+  }
+
+  static const _noChallenge =
+      ClubChallengeView(current: null, history: [], suggested: null);
+
+  @override
+  Future<Result<ClubChallengeView>> clubChallenge(String clubId) async {
+    calls.add('challenge $clubId');
+    return _r(challenges[clubId] ?? _noChallenge);
+  }
+
+  @override
+  Future<Result<ClubChallengeView>> setChallenge(
+    String clubId, {
+    required ChallengeMetric metric,
+    required int target,
+    String? month,
+  }) async {
+    calls.add('set-challenge $clubId ${metric.wire} $target ${month ?? ''}');
+    if (challengeFailure != null) return Err(challengeFailure!);
+    final v = onSetChallenge?.call(metric, target, month) ?? _noChallenge;
+    challenges[clubId] = v;
+    return _r(v);
+  }
+
+  @override
+  Future<Result<ClubChallengeView>> changeChallenge(
+    String clubId,
+    int target,
+  ) async {
+    calls.add('change-challenge $clubId $target');
+    if (challengeFailure != null) return Err(challengeFailure!);
+    return _r(challenges[clubId] ?? _noChallenge);
+  }
+
+  @override
+  Future<Result<void>> endChallenge(String clubId) async {
+    calls.add('end-challenge $clubId');
+    challenges[clubId] = _noChallenge;
+    return _r(null);
   }
 
   @override

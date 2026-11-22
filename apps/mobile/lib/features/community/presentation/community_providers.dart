@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
 import '../../auth/presentation/controllers/auth_providers.dart';
 import '../data/community_api.dart';
+import '../domain/club_goals.dart';
 import '../domain/community.dart';
 
 final communityApiProvider =
@@ -160,6 +161,17 @@ final clubFeedProvider = FutureProvider.autoDispose.family<Feed, String>(
   retry: (_, __) => null,
 );
 
+/// Beta 6.5 (K2): a club's challenge.
+final clubChallengeProvider =
+    FutureProvider.autoDispose.family<ClubChallengeView, String>(
+  (ref, clubId) async {
+    requireSession(ref);
+    final r = await ref.watch(communityApiProvider).clubChallenge(clubId);
+    return r.when(ok: (v) => v, err: (f) => throw f);
+  },
+  retry: (_, __) => null,
+);
+
 /// Beta 6.3 (C16): people you may know.
 final suggestionsProvider = FutureProvider.autoDispose<List<Suggestion>>(
   (ref) async {
@@ -206,5 +218,6 @@ void refreshCommunity(WidgetRef ref) {
     ..invalidate(removedFromClubProvider)
     ..invalidate(feedProvider)
     ..invalidate(clubFeedProvider)
+    ..invalidate(clubChallengeProvider)
     ..invalidate(suggestionsProvider);
 }

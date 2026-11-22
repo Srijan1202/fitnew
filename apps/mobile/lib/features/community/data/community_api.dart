@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../../core/errors/error_mapper.dart';
 import '../../../core/errors/failure.dart';
 import '../../../core/errors/result.dart';
+import '../domain/club_goals.dart';
 import '../domain/community.dart';
 
 /// Beta 5.8 (ADR-057): `/v1/community/...` — joining and leaving, people,
@@ -31,6 +32,17 @@ abstract class CommunityApi {
 
   /// Beta 6.5 (K1): a club's feed, for its members.
   Future<Result<Feed>> clubFeed(String clubId, {DateTime? before});
+
+  /// Beta 6.5 (K2): the club's challenge; the owner sets, changes or ends it.
+  Future<Result<ClubChallengeView>> clubChallenge(String clubId);
+  Future<Result<ClubChallengeView>> setChallenge(
+    String clubId, {
+    required ChallengeMetric metric,
+    required int target,
+    String? month,
+  });
+  Future<Result<ClubChallengeView>> changeChallenge(String clubId, int target);
+  Future<Result<void>> endChallenge(String clubId);
 
   /// Cheer (or take it back): the post's kudos after.
   Future<Result<({int kudos, bool cheered})>> cheer(
@@ -234,6 +246,52 @@ class DioCommunityApi implements CommunityApi {
         );
         return Feed.fromJson(r.data!);
       });
+
+  @override
+  Future<Result<ClubChallengeView>> clubChallenge(String clubId) =>
+      _guard(() async {
+        final r = await _dio.get<Map<String, dynamic>>(
+          '/v1/community/clubs/$clubId/challenge',
+        );
+        return ClubChallengeView.fromJson(r.data!);
+      });
+
+  @override
+  Future<Result<ClubChallengeView>> setChallenge(
+    String clubId, {
+    required ChallengeMetric metric,
+    required int target,
+    String? month,
+  }) =>
+      _guard(() async {
+        final r = await _dio.post<Map<String, dynamic>>(
+          '/v1/community/clubs/$clubId/challenge',
+          data: {
+            'metric': metric.wire,
+            'target': target,
+            if (month != null) 'month': month,
+          },
+        );
+        return ClubChallengeView.fromJson(r.data!);
+      });
+
+  @override
+  Future<Result<ClubChallengeView>> changeChallenge(
+    String clubId,
+    int target,
+  ) =>
+      _guard(() async {
+        final r = await _dio.patch<Map<String, dynamic>>(
+          '/v1/community/clubs/$clubId/challenge',
+          data: {'target': target},
+        );
+        return ClubChallengeView.fromJson(r.data!);
+      });
+
+  @override
+  Future<Result<void>> endChallenge(String clubId) => _guard(
+        () => _dio.delete<void>('/v1/community/clubs/$clubId/challenge'),
+      );
 
   @override
   Future<Result<({int kudos, bool cheered})>> cheer(

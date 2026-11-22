@@ -1,6 +1,7 @@
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:fitos/features/community/domain/club_goals.dart';
 import 'package:fitos/features/community/domain/community.dart';
 import 'package:fitos/features/community/presentation/club_screen.dart';
 import 'package:fitos/features/community/presentation/community_providers.dart';
@@ -183,5 +184,160 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  /* --------------------------------------------------- K2: the challenge -- */
+
+  ClubChallenge challenge({
+    ChallengeMetric metric = ChallengeMetric.sessions,
+    int target = 200,
+    num total = 143,
+    num? mine = 12,
+    bool reached = false,
+    bool closed = false,
+    bool endedEarly = false,
+    int daysLeft = 11,
+    bool started = true,
+    String id = 'ch-1',
+    String month = '2026-11',
+  }) =>
+      ClubChallenge(
+        id: id,
+        metric: metric,
+        target: target,
+        month: month,
+        title: '$target ${metric.unit} together in ${monthName(month)}',
+        total: total,
+        mine: mine,
+        reachedAt: reached ? DateTime.utc(2026, 11, 20) : null,
+        closedAt: closed ? DateTime.utc(2026, 11, 2) : null,
+        endedEarly: endedEarly,
+        daysLeft: daysLeft,
+        started: started,
+      );
+
+  test('counts as shown; next month across the year', () {
+    expect(countText(143), '143');
+    expect(countText(12.3), '12.3');
+    expect(countText(12.0), '12');
+    expect(monthKey(DateTime(2026, 12, 31)), '2026-12');
+    expect(nextMonthKey(DateTime(2026, 12, 31)), '2027-01');
+    expect(monthName('2027-01'), 'January');
+    expect(challenge(total: 250).progress, 1);
+    expect(challenge().countLine, '143 of 200 sessions');
+  });
+
+  testWidgets(
+      'a member sees the club’s bar, the days left, their part and '
+      'the last ones finished; nothing to change', (tester) async {
+    api = FakeCommunityApi(profile: me())
+      ..myClubs = [club]
+      ..challenges = {
+        club.id: ClubChallengeView(
+          current: challenge(),
+          history: [
+            challenge(
+              id: 'ch-0',
+              month: '2026-10',
+              target: 150,
+              total: 162,
+              mine: null,
+              reached: true,
+              closed: true,
+            ),
+            challenge(
+              id: 'ch-9',
+              month: '2026-09',
+              metric: ChallengeMetric.distance,
+              target: 300,
+              total: 120.5,
+              mine: null,
+              closed: true,
+              endedEarly: true,
+            ),
+          ],
+          suggested: null,
+        ),
+      };
+    await tester
+        .pumpWidget(app(initial: Routes.communityClub(club.id), extra: club));
+    await tester.pumpAndSettle();
+    expect(find.text('200 sessions together in November'), findsOneWidget);
+    expect(find.text('143 of 200 sessions · 11 days left'), findsOneWidget);
+    expect(find.text('Your part: 12 sessions'), findsOneWidget);
+    expect(
+      find.text('150 sessions together in October · 162 · reached'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('300 km together in September · 120.5 · ended early'),
+      findsOneWidget,
+    );
+    expect(key('challenge.change'), findsNothing);
+    expect(key('challenge.end'), findsNothing);
+  });
+
+  testWidgets('nothing set: members see nothing', (tester) async {
+    api = FakeCommunityApi(profile: me())..myClubs = [club];
+    await tester
+        .pumpWidget(app(initial: Routes.communityClub(club.id), extra: club));
+    await tester.pumpAndSettle();
+    expect(key('challenge.card'), findsNothing);
+  });
+
+  testWidgets(
+      'the owner sets one: a metric, the suggestion, a target in '
+      'range; then ends it after a confirmation', (tester) async {
+    const mineClub = Club(
+      id: 'club-2',
+      name: 'Hostel A',
+      code: 'WXYZ2345',
+      members: 12,
+      mine: true,
+    );
+    api = FakeCommunityApi(profile: me())
+      ..myClubs = [mineClub]
+      ..challenges = {
+        mineClub.id: const ClubChallengeView(
+          current: null,
+          history: [],
+          suggested: {
+            ChallengeMetric.sessions: 125,
+            ChallengeMetric.distance: 440,
+            ChallengeMetric.activeDays: 60,
+          },
+        ),
+      }
+      ..onSetChallenge = (m, t, month) => ClubChallengeView(
+            current: challenge(metric: m, target: t, total: 0, mine: 0),
+            history: const [],
+            suggested: null,
+          );
+    await tester.pumpWidget(
+      app(initial: Routes.communityClub(mineClub.id), extra: mineClub),
+    );
+    await tester.pumpAndSettle();
+    await tap(tester, 'challenge.set');
+    expect(find.text('125'), findsOneWidget);
+    await tap(tester, 'challenge.metric.distance');
+    expect(find.text('440'), findsOneWidget);
+    expect(
+      find.text('Suggested: 440, the club’s last 4 weeks plus 10%'),
+      findsOneWidget,
+    );
+    await tester.enterText(key('challenge.target'), '9');
+    await tap(tester, 'challenge.save');
+    expect(find.text('A target is 10 to 100000.'), findsOneWidget);
+    expect(api.calls.where((c) => c.startsWith('set-challenge')), isEmpty);
+    await tester.enterText(key('challenge.target'), '50');
+    await tap(tester, 'challenge.save');
+    expect(api.calls, contains('set-challenge club-2 distance 50 '));
+    expect(key('challenge.save'), findsNothing);
+    expect(find.text('0 of 50 km · 11 days left'), findsOneWidget);
+
+    await tap(tester, 'challenge.end');
+    await tap(tester, 'challenge.end.confirm');
+    expect(api.calls, contains('end-challenge club-2'));
+    expect(key('challenge.set'), findsOneWidget);
   });
 }
