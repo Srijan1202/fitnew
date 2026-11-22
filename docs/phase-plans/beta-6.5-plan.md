@@ -43,7 +43,7 @@ Club-mates who are not friends see each other on the club board and nowhere else
 - **Migration 0056** (done): `club_challenges` and `club_challenge_parts`.
 - **Migration 0057** (K3 and K0):
   - `club_matches` and `club_match_members`;
-  - `community_profiles.feed_chosen`;
+  - `community_profiles.feed_defaulted`;
   - the feed default switched to every kind.
 - **Ownership:**
   - A challenge and a match belong to their club, and go with it.
@@ -90,14 +90,15 @@ Club-mates who are not friends see each other on the club board and nowhere else
 | What they are told | Policy: "Each kind is off until you turn it on" | The join screen says, before **Join**, that friends and clubs will see these posts and that any of them can be turned off in Community settings. The policy says the same. |
 | Switching off | Deletes that kind's posts | The same |
 
-**Members who joined before 6.5** (Q5):
-- Anyone who never touched the switches (`feed_since` empty) has every kind switched on **from the moment they accept the 2026-11-20 policy**. Nothing from before that is posted.
-- Anyone who changed a switch keeps exactly what they chose (`feed_chosen`).
+**Members who joined before 6.5** (owner Q5, 2026-11-22: **on for everyone**):
+- Every earlier member gets every kind switched on **once, from the moment they accept the 2026-11-20 policy**. That includes people who had turned kinds off. Nothing from before that moment is posted.
+- After that one switch-on, their own changes stick as usual.
+- The policy they accept says so in plain words: "If you were already in Community, sharing is switched on for every kind when you agree to this version, even if you had turned some off; you can turn any off again."
 
 **Built as:**
-- Migration 0057 adds `community_profiles.feed_chosen`. It is true where `feed_since` is not empty, and set by any later change to the switches.
-- Joining stores every kind, with `feed_since` = now.
-- In the round, a member with `feed_chosen = false` who has a consent row at version 2026-11-20 or later gets every kind, from that consent's time.
+- Migration 0057 adds `community_profiles.feed_defaulted` (false for everyone already in Community).
+- Joining stores every kind, with `feed_since` = now and `feed_defaulted` = true.
+- In the round, a member with `feed_defaulted = false` who has a consent row at version 2026-11-20 or later gets every kind, with `feed_since` = that consent's time, and `feed_defaulted` = true.
 - `FEED_KINDS` stays the same list. The 6.3 "Share your activity" card in the feed shows only to someone who switched everything off.
 - **Policy 2026-11-20** (not released yet, so amended in place): "Each kind is on from when you join, or for members who joined earlier, from when you agree to this version, unless you turned it off; you can turn any off at any time."
 
@@ -114,7 +115,7 @@ Club-mates who are not friends see each other on the club board and nowhere else
 |---|---|---|
 | 1 | Package updates due | drift 2.35.4, drift_dev, sqlite3 (22 Nov). go_router, synchronized (23 Nov). shared_preferences and objective_c (25 Nov). |
 | 2 | K2 server | <ul><li>`GET`, `POST`, `PATCH` and `DELETE /community/clubs/:id/challenge`.</li><li>Parts counted in `refreshOne`.</li><li>After `refreshAll`: totals, the reached push, closing once the month is over everywhere, deleting closed challenges after 12 months.</li><li>Integration tests and the OpenAPI export.</li></ul> |
-| 3 | K0 server | <ul><li>Migration 0057 `feed_chosen`.</li><li>Joining shares every kind.</li><li>The earlier members as in §7.</li><li>The policy text amended in the repo, app and website.</li><li>Tests.</li></ul> |
+| 3 | K0 server | <ul><li>Migration 0057 `feed_defaulted`.</li><li>Joining shares every kind.</li><li>Every earlier member switched on once, as in §7.</li><li>The policy text amended in the repo, app and website.</li><li>Tests.</li></ul> |
 | 4 | K3 server | <ul><li>Migration 0057 (with K0): `club_matches` and `club_match_members`.</li><li>Challenge a club by code; accept or decline.</li><li>One match a week, refused across a block.</li><li>The per-member average, and the result push after the week.</li><li>Tests and OpenAPI.</li></ul> |
 | 5 | App: K0 and K1 | <ul><li>The join screen's sharing line.</li><li>Settings switches on, "Shared with your friends and your clubs".</li><li>Club **Feed · Board** halves.</li><li>Cheers in a club.</li><li>The new policy to accept.</li></ul> |
 | 6 | App: K2 | The challenge bar, your part, the last 3 finished, and the owner's "Set a challenge" sheet. |
@@ -127,8 +128,8 @@ Club-mates who are not friends see each other on the club board and nowhere else
 
 **Outside 6.5:** `snapshots.ps1` about 2026-12-08 (deleting on the owner's yes; deadline 2026-12-11), and the S24 checks for 6.0–6.4.
 
-## 9. Question for the owner
+## 9. Owner's answer (2026-11-22)
 
-| # | Question | Recommended |
+| # | Question | Answer |
 |---|---|---|
-| Q5 | **Members who joined before 6.5:** switch their sharing on too? | Yes, but only for those who never touched the switches, and only from when they accept the new policy. Anyone who chose keeps their choice. |
+| Q5 | **Members who joined before 6.5:** switch their sharing on too? | **On for everyone**, once, from when each accepts the 2026-11-20 policy, including people who had turned kinds off (recommended was: only those who never touched the switches). The policy says so plainly, and anyone can turn kinds off again. |
