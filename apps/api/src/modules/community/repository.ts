@@ -1297,6 +1297,16 @@ export class CommunityRepository {
         createdAt: clubs.createdAt,
         ownerHandle: communityProfiles.handle,
         members: sql<number>`(select count(*)::int from ${clubMembers} m where m.club_id = ${clubs.id})`,
+        // Beta 6.5: the open challenge, and the latest match with the other club's name.
+        challenge: sql<{ metric: string; target: number; month: string; total: number; reached: boolean } | null>`(
+          select json_build_object('metric', c.metric, 'target', c.target, 'month', c.month, 'total', c.total, 'reached', c.reached_at is not null)
+          from club_challenges c where c.club_id = ${clubs.id} and c.closed_at is null limit 1)`,
+        match: sql<{ other: string; weekFrom: string; status: string } | null>`(
+          select json_build_object('other', o.name, 'weekFrom', m.week_from, 'status', m.status)
+          from club_matches m
+          join clubs o on o.id = case when m.home_club_id = ${clubs.id} then m.away_club_id else m.home_club_id end
+          where m.home_club_id = ${clubs.id} or m.away_club_id = ${clubs.id}
+          order by m.week_from desc limit 1)`,
       })
       .from(clubs)
       .leftJoin(communityProfiles, eq(communityProfiles.userId, clubs.ownerId))

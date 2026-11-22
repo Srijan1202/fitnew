@@ -854,6 +854,8 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
     expect(again.statusCode).toBe(409);
     expect(issue(again)).toBe('open');
     expect((await challengeOf(m1, club.id)).current).toMatchObject({ total: 2, mine: 1 });
+    const listed = ((await call(admin, 'GET', '/admin/community/clubs')).json() as { items: { id: string; challenge: string | null }[] }).items;
+    expect(listed.find((c) => c.id === club.id)!.challenge).toMatch(/^10 sessions together in \w+ · 2 so far$/);
 
     // The owner changes the target; the round finds it reached and tells those who allow it, once.
     expect((await call(m1, 'PATCH', path, { target: 20 })).statusCode).toBe(403);
@@ -1010,6 +1012,9 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
 
     // Declined, or unanswered until its week starts: it goes.
     const again = clubMatchListSchema.parse((await call(A, 'POST', path, { code: away.code, metric: 'active-days' })).json()).items[0]!;
+    // The admin sees the latest match in words.
+    const listed = ((await call(admin, 'GET', '/admin/community/clubs')).json() as { items: { id: string; match: string | null; challenge: string | null }[] }).items;
+    expect(listed.find((c) => c.id === home.id)).toMatchObject({ match: `vs C65 Gym B · week of ${weekFrom} · pending`, challenge: null });
     expect((await call(B, 'DELETE', `/community/clubs/${away.id}/matches/${again.id}`)).statusCode).toBe(204);
     expect(await matchesOf(A, home.id)).toEqual([]);
     expect((await call(A, 'POST', path, { code: away.code, metric: 'distance' })).statusCode).toBe(201);

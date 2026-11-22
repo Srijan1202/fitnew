@@ -1146,7 +1146,22 @@ export class CommunityService {
   }
 
   async adminClubs() {
-    return { items: (await this.repo.allClubs()).map((c) => ({ id: c.id, name: c.name, ownerHandle: c.ownerHandle, members: c.members, createdAt: c.createdAt.toISOString() })) };
+    return {
+      items: (await this.repo.allClubs()).map((c) => {
+        const ch = c.challenge;
+        const metric = ch?.metric as ChallengeMetric;
+        return {
+          id: c.id,
+          name: c.name,
+          ownerHandle: c.ownerHandle,
+          members: c.members,
+          createdAt: c.createdAt.toISOString(),
+          challenge:
+            ch === null ? null : `${challengeTitle(metric, ch.target, ch.month)} · ${inTargetUnit(metric, ch.total)} so far${ch.reached ? ' · reached' : ''}`,
+          match: c.match === null ? null : `vs ${c.match.other} · week of ${c.match.weekFrom} · ${c.match.status}`,
+        };
+      }),
+    };
   }
 
   async adminDeleteClub(actor: string | null, clubId: string): Promise<void> {

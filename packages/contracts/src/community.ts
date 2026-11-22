@@ -854,7 +854,17 @@ export const adminUpdateMemberSchema = z
   .refine((b) => b.hidden !== undefined || b.handle !== undefined, 'Nothing to change.');
 
 export const adminClubSchema = z
-  .object({ id: z.string().uuid(), name: z.string(), ownerHandle: z.string().nullable(), members: z.number().int(), createdAt: iso })
+  .object({
+    id: z.string().uuid(),
+    name: z.string(),
+    ownerHandle: z.string().nullable(),
+    members: z.number().int(),
+    createdAt: iso,
+    /** Beta 6.5 (K2): the open challenge in words ("200 sessions together in December · 143 so far"); null when none. */
+    challenge: z.string().nullable(),
+    /** Beta 6.5 (K3): the latest match in words ("vs Gym B · week of 2026-11-30 · accepted"); null when none. */
+    match: z.string().nullable(),
+  })
   .strict();
 export const adminClubListSchema = z.object({ items: z.array(adminClubSchema) }).strict();
 export type AdminCommunityReport = z.infer<typeof adminCommunityReportSchema>;

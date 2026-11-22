@@ -160,7 +160,12 @@ export default function Social() {
             <tbody>
               {(clubs.data?.items ?? []).map((c) => (
                 <tr key={c.id}>
-                  <td><strong>{c.name}</strong></td>
+                  <td>
+                    <strong>{c.name}</strong>
+                    {/* Beta 6.5: the club's challenge and its latest match. */}
+                    {c.challenge !== null && <div className="small muted">Challenge: {c.challenge}</div>}
+                    {c.match !== null && <div className="small muted">Match: {c.match}</div>}
+                  </td>
                   <td className="small">{c.ownerHandle === null ? '—' : `@${c.ownerHandle}`}</td>
                   <td>{c.members}</td>
                   <td className="small">{when(c.createdAt)}</td>
