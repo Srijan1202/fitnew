@@ -26,6 +26,9 @@ import {
   type BoardPeriod,
   type BoardRow,
   type Club,
+  type ClubChallenge,
+  type ClubChallengeView,
+  type SetChallengeRequest,
   type CommunityMe,
   type CommunityPerson,
   type CommunityProfile,
@@ -41,6 +44,20 @@ import {
   type WeekCounts,
   type UpdateCommunityRequest,
 } from '@fitos/contracts';
+import {
+  CHALLENGE_HISTORY_SHOWN,
+  CHALLENGES_KEPT_MONTHS,
+  challengeReachedLine,
+  challengeTitle,
+  daysLeft,
+  inTargetUnit,
+  isReached,
+  monthOf,
+  monthOverEverywhere,
+  monthRange,
+  suggestTarget,
+  type ChallengeMetric,
+} from '@fitos/core/community/challenge';
 import { boardKey, keptPlanPct, placesMoved, rankBy, type BoardMetricKey } from '@fitos/core/community/board';
 import {
   FEED_DAYS,
@@ -58,9 +75,10 @@ import {
 import { addDays, localDateOf, localHourOf } from '@fitos/core/nutrition/log';
 import { isoWeekday } from '@fitos/core/progress/streak';
 
+import { uniqueViolationOf } from '../../db/errors.js';
 import { AppError } from '../../lib/errors.js';
 import type { PushSender } from '../../lib/push.js';
-import type { CommunityRepository, PersonRow, PostRow, StatRow, WeekRow } from './repository.js';
+import type { ChallengeRow, CommunityRepository, PersonRow, PostRow, StatRow, WeekRow } from './repository.js';
 
 /** The person's current streak (the progress service's own count). */
 export type StreakOf = (userId: string) => Promise<number>;
@@ -130,6 +148,10 @@ const counted = (metric: BoardMetricKey, r: StatRow): boolean => (boardKey(metri
 /** Beta 6.3: nudges show in the feed for as long as a friend stays quiet. */
 const NUDGES_SHOWN_DAYS = NUDGE_QUIET_DAYS;
 const CHEERERS_SHOWN = 10;
+
+/** A challenge's raw count from a member's month (metres for distance). */
+const partOf = (metric: string, c: { sessions: number; runM: number; activeDays: number }): number =>
+  metric === 'distance' ? c.runM : metric === 'active-days' ? c.activeDays : c.sessions;
 
 const postOf = (p: PostRow, viewer: string, cheeredBy: CommunityPerson[]): FeedPost => ({
   id: p.id,
@@ -225,7 +247,7 @@ export class CommunityService {
     try {
       await this.repo.updateProfile(userId, { ...body, feedSince });
     } catch (e) {
-      if (String((e as { code?: string }).code) === '23505') throw handleRefused('taken');
+      if (uniqueViolationOf(e) !== null) throw handleRefused('taken');
       throw e;
     }
     if (body.feed !== undefined) await this.repo.prunePosts(userId, body.feed);
@@ -621,6 +643,99 @@ export class CommunityService {
     if (!(await this.repo.letBack(clubId, userId))) throw new AppError('NOT_FOUND', 'They were not removed from this club.');
   }
 
+  /* --------------------------------------- beta 6.5 (K2): club challenge -- */
+
+  private challengeOf(c: ChallengeRow, mine: number | null, today: string): ClubChallenge {
+    const metric = c.metric as ChallengeMetric;
+    return {
+      id: c.id,
+      metric,
+      target: c.target,
+      month: c.month,
+      title: challengeTitle(metric, c.target, c.month),
+      total: inTargetUnit(metric, c.total),
+      mine: mine === null ? null : inTargetUnit(metric, mine),
+      reachedAt: c.reachedAt?.toISOString() ?? null,
+      closedAt: c.closedAt?.toISOString() ?? null,
+      endedEarly: c.endedEarly,
+      daysLeft: c.closedAt === null ? daysLeft(c.month, today) : 0,
+      started: today >= monthRange(c.month).from,
+    };
+  }
+
+  /** The viewer's month, and the one after. */
+  private async monthsOf(userId: string): Promise<{ today: string; thisMonth: string; nextMonth: string }> {
+    const today = localDateOf(this.now(), await this.repo.timezoneOf(userId));
+    const thisMonth = monthOf(today);
+    return { today, thisMonth, nextMonth: monthOf(addDays(monthRange(thisMonth).to, 1)) };
+  }
+
+  /** The club's challenge now, its last three finished, and for the owner the suggested targets. */
+  async clubChallenge(viewer: string, clubId: string): Promise<ClubChallengeView> {
+    await this.requireMember(viewer);
+    const club = await this.repo.club(clubId);
+    if (club === null || !(await this.repo.isMember(clubId, viewer))) throw new AppError('NOT_FOUND', 'No such club.');
+    await this.refreshOne(viewer);
+    const { today, thisMonth } = await this.monthsOf(viewer);
+    const open = await this.repo.openChallenge(clubId);
+    const history = await this.repo.finishedChallenges(clubId, CHALLENGE_HISTORY_SHOWN);
+    let suggested: ClubChallengeView['suggested'] = null;
+    if (club.ownerId === viewer) {
+      const w = await this.week(viewer);
+      const last = await this.repo.clubWeeksTotal(clubId, [1, 2, 3, 4].map((i) => addDays(w.from, -7 * i)));
+      const month = open?.month ?? thisMonth;
+      const of = (m: ChallengeMetric) => suggestTarget(m, partOf(m, last), month);
+      suggested = { sessions: of('sessions'), distance: of('distance'), 'active-days': of('active-days') };
+    }
+    return {
+      current: open === null ? null : this.challengeOf(open, await this.repo.challengePart(open.id, viewer), today),
+      history: history.map((c) => this.challengeOf(c, null, today)),
+      suggested,
+    };
+  }
+
+  /**
+   * The owner sets the club's one challenge, for their month or the next;
+   * every member's part is counted at once.
+   */
+  async setChallenge(viewer: string, clubId: string, body: SetChallengeRequest): Promise<ClubChallengeView> {
+    await this.requireOwner(viewer, clubId);
+    const { thisMonth, nextMonth } = await this.monthsOf(viewer);
+    const month = body.month ?? thisMonth;
+    if (month !== thisMonth && month !== nextMonth) {
+      throw new AppError('VALIDATION_FAILED', 'Set a challenge for this month or the next.', [{ path: 'month', issue: 'out-of-range' }]);
+    }
+    const made = await this.repo.createChallenge(clubId, viewer, body.metric, body.target, month);
+    if (made === null) throw new AppError('CONFLICT', 'This club has a challenge already: change it or end it first.', [{ path: 'challenge', issue: 'open' }]);
+    for (const userId of await this.repo.clubMemberIds(clubId)) {
+      try {
+        const tz = await this.repo.timezoneOf(userId);
+        await this.countParts(userId, tz, localDateOf(this.now(), tz));
+      } catch {
+        // The hourly round counts them.
+      }
+    }
+    return this.clubChallenge(viewer, clubId);
+  }
+
+  /** A new target, until the challenge is reached. */
+  async changeChallenge(viewer: string, clubId: string, target: number): Promise<ClubChallengeView> {
+    await this.requireOwner(viewer, clubId);
+    const open = await this.repo.openChallenge(clubId);
+    if (open === null) throw new AppError('NOT_FOUND', 'This club has no challenge now.');
+    if (open.reachedAt !== null) throw new AppError('CONFLICT', 'It is reached: end it and set a new one.', [{ path: 'challenge', issue: 'reached' }]);
+    await this.repo.setChallengeTarget(open.id, target);
+    return this.clubChallenge(viewer, clubId);
+  }
+
+  /** End it before the month is over; it stays in the club's history. */
+  async endChallenge(viewer: string, clubId: string): Promise<void> {
+    await this.requireOwner(viewer, clubId);
+    const open = await this.repo.openChallenge(clubId);
+    if (open === null) throw new AppError('NOT_FOUND', 'This club has no challenge now.');
+    await this.repo.closeChallenge(open.id, this.now(), true);
+  }
+
   /* --------------------------------------------------------------- boards -- */
 
   private async week(viewer: string): Promise<{ from: string; to: string }> {
@@ -749,11 +864,30 @@ export class CommunityService {
     }
     // Beta 6.3 (C1): their posts.
     await this.sweepPosts(userId, p, tz, today, streak);
+    // Beta 6.5 (K2): their part in their clubs' challenges.
+    await this.countParts(userId, tz, today);
   }
 
   /** Beta 6.2 (A2): recount someone after they sync a session or a run, when they are in Community. */
   async refreshIfMember(userId: string): Promise<void> {
     if ((await this.repo.profile(userId)) !== null) await this.refreshOne(userId);
+  }
+
+  /**
+   * Beta 6.5 (K2): this member's part in each open challenge of their clubs,
+   * from the month's first day to today (or its last day) in their own time
+   * zone; nothing before the month starts. The club's count follows.
+   */
+  private async countParts(userId: string, tz: string, today: string): Promise<void> {
+    const months = new Map<string, Promise<{ sessions: number; runM: number; activeDays: number }>>();
+    for (const c of await this.repo.openChallengesOf(userId)) {
+      const { from, to } = monthRange(c.month);
+      if (today < from) continue;
+      const end = today < to ? today : to;
+      if (!months.has(c.month)) months.set(c.month, this.repo.periodCounts(userId, tz, from, end, COUNTED_SESSION, COUNTED_RUN));
+      await this.repo.savePart(c.id, userId, partOf(c.metric, await months.get(c.month)!));
+      await this.repo.recountChallenge(c.id);
+    }
   }
 
   /** Every member, one at a time (the timer); a failure skips that person. */
@@ -769,7 +903,36 @@ export class CommunityService {
         // The next round tries again.
       }
     }
+    await this.challengeRound();
     return n;
+  }
+
+  /**
+   * Beta 6.5 (K2), after every member is recounted: each open challenge's
+   * count; the one push to its members when it is reached (owner Q4, only to
+   * those who allow Community notifications); closing once its month is over
+   * in every time zone; finished ones kept a year.
+   */
+  async challengeRound(): Promise<void> {
+    const now = this.now();
+    const utcToday = now.toISOString().slice(0, 10);
+    for (const c of await this.repo.openChallenges()) {
+      try {
+        const total = await this.repo.recountChallenge(c.id);
+        if (c.reachedAt === null && isReached(c.metric as ChallengeMetric, total, c.target) && (await this.repo.markReached(c.id, now))) {
+          const line = challengeReachedLine(c.clubName, challengeTitle(c.metric as ChallengeMetric, c.target, c.month));
+          for (const m of await this.repo.clubMembersToTell(c.clubId)) {
+            if (m.notify) await this.tell(m.userId, line.title, line.body, { type: 'community', screen: 'club', clubId: c.clubId });
+          }
+        }
+        if (monthOverEverywhere(c.month, utcToday)) await this.repo.closeChallenge(c.id, now, false);
+      } catch {
+        // The next round tries again.
+      }
+    }
+    const kept = new Date(now);
+    kept.setUTCMonth(kept.getUTCMonth() - CHALLENGES_KEPT_MONTHS);
+    await this.repo.deleteChallengesClosedBefore(kept);
   }
 
   /* -------------------------------------------------------------- reports -- */

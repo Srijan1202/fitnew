@@ -8,9 +8,12 @@ import type { BoardMetricKey } from '@fitos/core/community/board';
 import { CLUB_FEED_FROM_POLICY, type BoardPeriod } from '@fitos/core/community/feed';
 
 import type { DatabaseHandle } from '../../db/client.js';
+import { uniqueViolationOf } from '../../db/errors.js';
 import {
   auditLogs,
   clubBans,
+  clubChallengeParts,
+  clubChallenges,
   clubMembers,
   clubs,
   communityBlocks,
@@ -33,6 +36,7 @@ import {
 type Db = DatabaseHandle['db'];
 
 export type ProfileRow = typeof communityProfiles.$inferSelect;
+export type ChallengeRow = typeof clubChallenges.$inferSelect;
 
 /** A person as others see them, with their avatar. */
 export interface PersonRow {
@@ -569,7 +573,7 @@ export class CommunityRepository {
       await this.db.update(clubs).set({ code }).where(eq(clubs.id, clubId));
       return true;
     } catch (e) {
-      if (String((e as { code?: string }).code) === '23505') return false;
+      if (uniqueViolationOf(e) !== null) return false;
       throw e;
     }
   }
@@ -1280,6 +1284,141 @@ export class CommunityRepository {
       .leftJoin(communityProfiles, eq(communityProfiles.userId, clubs.ownerId))
       .orderBy(desc(clubs.createdAt))
       .limit(200);
+  }
+
+  /* ------------------------------------------ beta 6.5 (K2): challenges -- */
+
+  async openChallenge(clubId: string): Promise<ChallengeRow | null> {
+    const [r] = await this.db
+      .select()
+      .from(clubChallenges)
+      .where(and(eq(clubChallenges.clubId, clubId), sql`${clubChallenges.closedAt} is null`))
+      .limit(1);
+    return r ?? null;
+  }
+
+  /** The last finished, newest month first. */
+  async finishedChallenges(clubId: string, limit: number): Promise<ChallengeRow[]> {
+    return this.db
+      .select()
+      .from(clubChallenges)
+      .where(and(eq(clubChallenges.clubId, clubId), sql`${clubChallenges.closedAt} is not null`))
+      .orderBy(desc(clubChallenges.month), desc(clubChallenges.closedAt))
+      .limit(limit);
+  }
+
+  /** Null when the club has an open one already (one at a time). */
+  async createChallenge(clubId: string, createdBy: string, metric: string, target: number, month: string): Promise<ChallengeRow | null> {
+    try {
+      const [r] = await this.db.insert(clubChallenges).values({ clubId, createdBy, metric, target, month }).returning();
+      return r ?? null;
+    } catch (e) {
+      if (uniqueViolationOf(e) !== null) return null;
+      throw e;
+    }
+  }
+
+  async setChallengeTarget(id: string, target: number): Promise<void> {
+    await this.db.update(clubChallenges).set({ target }).where(eq(clubChallenges.id, id));
+  }
+
+  /** Closed: the total stays, the members' parts go. */
+  async closeChallenge(id: string, at: Date, endedEarly: boolean): Promise<void> {
+    await this.db.update(clubChallenges).set({ closedAt: at, endedEarly }).where(and(eq(clubChallenges.id, id), sql`${clubChallenges.closedAt} is null`));
+    await this.db.delete(clubChallengeParts).where(eq(clubChallengeParts.challengeId, id));
+  }
+
+  async challengePart(challengeId: string, userId: string): Promise<number> {
+    const [r] = await this.db
+      .select({ value: clubChallengeParts.value })
+      .from(clubChallengeParts)
+      .where(and(eq(clubChallengeParts.challengeId, challengeId), eq(clubChallengeParts.userId, userId)))
+      .limit(1);
+    return r?.value ?? 0;
+  }
+
+  /** The open challenges of the clubs this person is in. */
+  async openChallengesOf(userId: string): Promise<{ id: string; metric: string; month: string }[]> {
+    return this.db
+      .select({ id: clubChallenges.id, metric: clubChallenges.metric, month: clubChallenges.month })
+      .from(clubChallenges)
+      .innerJoin(clubMembers, and(eq(clubMembers.clubId, clubChallenges.clubId), eq(clubMembers.userId, userId)))
+      .where(sql`${clubChallenges.closedAt} is null`);
+  }
+
+  async savePart(challengeId: string, userId: string, value: number): Promise<void> {
+    await this.db
+      .insert(clubChallengeParts)
+      .values({ challengeId, userId, value })
+      .onConflictDoUpdate({ target: [clubChallengeParts.challengeId, clubChallengeParts.userId], set: { value, updatedAt: new Date() } });
+  }
+
+  /**
+   * The club's count: the parts of its current members. Someone who left
+   * takes their part with them.
+   */
+  async recountChallenge(id: string): Promise<number> {
+    await this.db.execute(sql`
+      delete from club_challenge_parts p using club_challenges c
+      where c.id = ${id} and p.challenge_id = c.id
+        and not exists (select 1 from club_members m where m.club_id = c.club_id and m.user_id = p.user_id)`);
+    const [r] = await this.db.execute<{ total: number }>(sql`
+      update club_challenges c set total = coalesce((select sum(p.value) from club_challenge_parts p where p.challenge_id = c.id), 0)::int
+      where c.id = ${id} returning c.total`);
+    return r?.total ?? 0;
+  }
+
+  /** Every open challenge, with its club's name, for the round. */
+  async openChallenges(): Promise<(ChallengeRow & { clubName: string })[]> {
+    const rows = await this.db
+      .select({ c: clubChallenges, clubName: clubs.name })
+      .from(clubChallenges)
+      .innerJoin(clubs, eq(clubs.id, clubChallenges.clubId))
+      .where(sql`${clubChallenges.closedAt} is null`);
+    return rows.map((r) => ({ ...r.c, clubName: r.clubName }));
+  }
+
+  /** True only the first time (the push goes once). */
+  async markReached(id: string, at: Date): Promise<boolean> {
+    return (
+      await this.db
+        .update(clubChallenges)
+        .set({ reachedAt: at })
+        .where(and(eq(clubChallenges.id, id), sql`${clubChallenges.reachedAt} is null`))
+        .returning({ id: clubChallenges.id })
+    ).length > 0;
+  }
+
+  /** A club's members, and whether each allows Community notifications. */
+  async clubMembersToTell(clubId: string): Promise<{ userId: string; notify: boolean }[]> {
+    return this.db
+      .select({ userId: clubMembers.userId, notify: communityProfiles.notify })
+      .from(clubMembers)
+      .innerJoin(communityProfiles, eq(communityProfiles.userId, clubMembers.userId))
+      .where(eq(clubMembers.clubId, clubId));
+  }
+
+  async clubMemberIds(clubId: string): Promise<string[]> {
+    return (await this.db.select({ userId: clubMembers.userId }).from(clubMembers).where(eq(clubMembers.clubId, clubId))).map((r) => r.userId);
+  }
+
+  /** Finished challenges are kept a year. */
+  async deleteChallengesClosedBefore(before: Date): Promise<void> {
+    await this.db.delete(clubChallenges).where(lt(clubChallenges.closedAt, before));
+  }
+
+  /** The club's current members' counts over these past weeks, summed. */
+  async clubWeeksTotal(clubId: string, weeks: readonly string[]): Promise<{ sessions: number; runM: number; activeDays: number }> {
+    const [r] = await this.db
+      .select({
+        sessions: sql<number>`coalesce(sum(${communityWeekHistory.sessions}), 0)::int`,
+        runM: sql<number>`coalesce(sum(${communityWeekHistory.runM}), 0)::int`,
+        activeDays: sql<number>`coalesce(sum(${communityWeekHistory.activeDays}), 0)::int`,
+      })
+      .from(communityWeekHistory)
+      .innerJoin(clubMembers, and(eq(clubMembers.userId, communityWeekHistory.userId), eq(clubMembers.clubId, clubId)))
+      .where(inArray(communityWeekHistory.weekFrom, [...weeks]));
+    return r ?? { sessions: 0, runM: 0, activeDays: 0 };
   }
 
   async audit(row: typeof auditLogs.$inferInsert): Promise<void> {

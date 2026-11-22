@@ -19,6 +19,7 @@ import {
   boardPeriodSchema,
   boardQuerySchema,
   boardSchema,
+  clubChallengeViewSchema,
   clubListSchema,
   clubSchema,
   communityMeSchema,
@@ -38,7 +39,9 @@ import {
   renameClubSchema,
   reportRequestSchema,
   searchQuerySchema,
+  setChallengeSchema,
   suggestionListSchema,
+  updateChallengeSchema,
   updateCommunitySchema,
 } from '@fitos/contracts';
 
@@ -406,6 +409,44 @@ export async function communityRoutes(app: FastifyInstance, opts: { ipSalt: stri
     schema: { summary: 'Let someone back: they can join again with the code', tags, security, params: clubUserParams, response: { 204: z.null(), ...errors } },
   }, async (request, reply) => {
     await service.letBack(requireUserId(request.userId), request.params.id, request.params.userId);
+    return reply.code(204).send(null);
+  });
+
+  /* ------------------------------------- beta 6.5 (K2): club challenge -- */
+
+  typed.get('/community/clubs/:id/challenge', {
+    ...on,
+    schema: {
+      summary: "A club's challenge this month (beta 6.5): the club's count and your part, the last three finished, and for the owner the suggested targets",
+      tags,
+      security,
+      params: idParams,
+      response: { 200: clubChallengeViewSchema, ...errors },
+    },
+  }, async (request) => service.clubChallenge(requireUserId(request.userId), request.params.id));
+
+  typed.post('/community/clubs/:id/challenge', {
+    ...owner,
+    schema: {
+      summary: "Set a club's one challenge, for the owner's month or the next: sessions, run km or active days, a target of 10–100,000",
+      tags,
+      security,
+      params: idParams,
+      body: setChallengeSchema,
+      response: { 201: clubChallengeViewSchema, ...errors },
+    },
+  }, async (request, reply) => reply.code(201).send(await service.setChallenge(requireUserId(request.userId), request.params.id, request.body)));
+
+  typed.patch('/community/clubs/:id/challenge', {
+    ...owner,
+    schema: { summary: "Change the challenge's target, until it is reached", tags, security, params: idParams, body: updateChallengeSchema, response: { 200: clubChallengeViewSchema, ...errors } },
+  }, async (request) => service.changeChallenge(requireUserId(request.userId), request.params.id, request.body.target));
+
+  typed.delete('/community/clubs/:id/challenge', {
+    ...owner,
+    schema: { summary: 'End the challenge before the month is over (it stays in the history)', tags, security, params: idParams, response: { 204: z.null(), ...errors } },
+  }, async (request, reply) => {
+    await service.endChallenge(requireUserId(request.userId), request.params.id);
     return reply.code(204).send(null);
   });
 

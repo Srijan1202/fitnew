@@ -597,6 +597,68 @@ export const MAX_CLUBS_JOINED = 20;
 export const MAX_CLUB_MEMBERS = 500;
 export const MAX_FRIENDS = 300;
 
+/* ----------------------------------------- beta 6.5 (K2): club challenge -- */
+
+/**
+ * A club's goal for a calendar month (owner Q2), set by its owner: a number
+ * of sessions, run kilometres or active days. No free text: the title is
+ * made from the numbers. Mirrors `@fitos/core/community/challenge` (an API
+ * test keeps them equal).
+ */
+export const CHALLENGE_METRICS = ['sessions', 'distance', 'active-days'] as const;
+export const challengeMetricSchema = z.enum(CHALLENGE_METRICS);
+export type ChallengeMetric = z.infer<typeof challengeMetricSchema>;
+export const challengeMonthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'A month is YYYY-MM.');
+export const challengeTargetSchema = z.number().int().min(10).max(100_000);
+
+export const clubChallengeSchema = z
+  .object({
+    id: z.string().uuid(),
+    metric: challengeMetricSchema,
+    /** Sessions, kilometres or active days. */
+    target: z.number().int(),
+    month: z.string(),
+    /** "200 sessions together in December". */
+    title: z.string(),
+    /** The club's count, in the target's unit (kilometres to 0.1 for distance). */
+    total: z.number().nonnegative(),
+    /** The viewer's own part, in the target's unit; null on a finished one. */
+    mine: z.number().nonnegative().nullable(),
+    reachedAt: iso.nullable(),
+    closedAt: iso.nullable(),
+    /** The owner ended it before the month was over. */
+    endedEarly: z.boolean(),
+    /** Days left in the viewer's month, today included; 0 once over. */
+    daysLeft: z.number().int().nonnegative(),
+    /** Whether the month has begun where the viewer is (one can be set for next month). */
+    started: z.boolean(),
+  })
+  .strict();
+export type ClubChallenge = z.infer<typeof clubChallengeSchema>;
+
+export const challengeSuggestionSchema = z
+  .object({ sessions: z.number().int(), distance: z.number().int(), 'active-days': z.number().int() })
+  .strict();
+
+export const clubChallengeViewSchema = z
+  .object({
+    current: clubChallengeSchema.nullable(),
+    /** The last three finished, newest first, reached or not. */
+    history: z.array(clubChallengeSchema),
+    /** For the owner: a target for each metric, from the club's last 4 weeks plus 10%; null for others. */
+    suggested: challengeSuggestionSchema.nullable(),
+  })
+  .strict();
+export type ClubChallengeView = z.infer<typeof clubChallengeViewSchema>;
+
+/** Set this month's challenge, or next month's (the owner's month). */
+export const setChallengeSchema = z
+  .object({ metric: challengeMetricSchema, target: challengeTargetSchema, month: challengeMonthSchema.optional() })
+  .strict();
+export type SetChallengeRequest = z.infer<typeof setChallengeSchema>;
+/** Change the target, until it is reached. */
+export const updateChallengeSchema = z.object({ target: challengeTargetSchema }).strict();
+
 /* ------------------------------------------------------------- boards -- */
 
 /**

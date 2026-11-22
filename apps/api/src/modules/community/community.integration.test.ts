@@ -7,8 +7,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import postgres from 'postgres';
 import {
+  CHALLENGE_METRICS,
   CURRENT_POLICY_VERSION,
   boardSchema,
+  clubChallengeViewSchema,
   clubSchema,
   communityMeSchema,
   feedSchema,
@@ -18,9 +20,11 @@ import {
   personProfileSchema,
   suggestionListSchema,
   type Board,
+  type ClubChallengeView,
   type Feed,
 } from '@fitos/contracts';
 import { keptPlanPct } from '@fitos/core/community/board';
+import { CHALLENGE_METRICS as CORE_CHALLENGE_METRICS, monthOf, monthRange } from '@fitos/core/community/challenge';
 import { addDays, localDateOf } from '@fitos/core/nutrition/log';
 import { isoWeekday } from '@fitos/core/progress/streak';
 
@@ -760,5 +764,119 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
     expect((await call(a, 'DELETE', `/community/clubs/${club.id}/membership`)).statusCode).toBe(204);
     expect((await clubFeedOf(b, club.id)).items.map((p) => p.person.handle)).toEqual(['c65_late']);
     expect((await call(b, 'DELETE', `/community/feed/${post.id}/kudos`)).statusCode).toBe(404);
+  });
+
+  const challengeOf = async (u: U, clubId: string): Promise<ClubChallengeView> => {
+    const r = await call(u, 'GET', `/community/clubs/${clubId}/challenge`);
+    expect(r.statusCode, r.body).toBe(200);
+    return clubChallengeViewSchema.parse(r.json());
+  };
+
+  it('beta 6.5 (K2): the owner sets one challenge a month; members add their part; the push once reached; closed after the month; kept a year', async () => {
+    expect([...CHALLENGE_METRICS]).toEqual([...CORE_CHALLENGE_METRICS]);
+    const push = app.push as RecordingPushSender;
+    const o = await member('c65_goal_owner');
+    const m1 = await member('c65_goal_one');
+    const m2 = await member('c65_goal_two');
+    const x = await member('c65_goal_out');
+    const club = await clubOf(o, 'C65 Goal Club', m1, m2);
+    const path = `/community/clubs/${club.id}/challenge`;
+    const service = (at: Date) => new CommunityService(new CommunityRepository(app.database.db), async () => 0, app.push, () => at);
+
+    // Nothing set: members see nothing, the owner sees suggestions; outsiders 404.
+    expect(await challengeOf(m1, club.id)).toEqual({ current: null, history: [], suggested: null });
+    const s = (await challengeOf(o, club.id)).suggested!;
+    for (const m of CHALLENGE_METRICS) expect(s[m]).toBeGreaterThanOrEqual(10);
+    expect((await call(x, 'GET', path)).statusCode).toBe(404);
+
+    // Only the owner, within the limits, for their month or the next.
+    const set = { metric: 'sessions', target: 10 };
+    const notOwner = await call(m1, 'POST', path, set);
+    expect(notOwner.statusCode).toBe(403);
+    expect(issue(notOwner)).toBe('not-owner');
+    expect((await call(o, 'POST', path, { ...set, target: 9 })).statusCode).toBe(422);
+    expect((await call(o, 'POST', path, { ...set, target: 100_001 })).statusCode).toBe(422);
+    const far = await call(o, 'POST', path, { ...set, month: '2020-01' });
+    expect(far.statusCode).toBe(422);
+    expect(issue(far)).toBe('out-of-range');
+
+    // Members' counted sessions this month make the club's count at once.
+    await session(m1, 6, 20);
+    await session(m2, 6, 20);
+    await session(m2, 2, 20);
+    const made = await call(o, 'POST', path, set);
+    expect(made.statusCode, made.body).toBe(201);
+    const month = monthOf(today());
+    expect(clubChallengeViewSchema.parse(made.json()).current).toMatchObject({
+      metric: 'sessions',
+      target: 10,
+      month,
+      total: 2,
+      mine: 0,
+      reachedAt: null,
+      closedAt: null,
+      endedEarly: false,
+      started: true,
+    });
+    const again = await call(o, 'POST', path, { metric: 'distance', target: 50 });
+    expect(again.statusCode).toBe(409);
+    expect(issue(again)).toBe('open');
+    expect((await challengeOf(m1, club.id)).current).toMatchObject({ total: 2, mine: 1 });
+
+    // The owner changes the target; the round finds it reached and tells those who allow it, once.
+    expect((await call(m1, 'PATCH', path, { target: 20 })).statusCode).toBe(403);
+    const changed = await call(o, 'PATCH', path, { target: 12 });
+    expect(changed.statusCode, changed.body).toBe(200);
+    expect(clubChallengeViewSchema.parse(changed.json()).current!.title).toMatch(/^12 sessions together in /);
+    for (const u of [m1, m2]) await sql`insert into push_tokens (user_id, token, platform) values (${u.id}, ${`cm-push-${u.id}`}, 'android')`;
+    await call(m2, 'PATCH', '/community/me', { notify: false });
+    const id = (await challengeOf(o, club.id)).current!.id;
+    await sql`update club_challenge_parts set value = 6 where challenge_id = ${id} and user_id in (${m1.id}, ${m2.id})`;
+    const tellsOf = (u: U) => push.sends.filter((t) => t.tokens.includes(`cm-push-${u.id}`)).map((t) => [t.message.title, t.message.body, t.message.data?.clubId]);
+    await service(new Date()).challengeRound();
+    await service(new Date()).challengeRound();
+    const title = `12 sessions together in ${new Date(`${month}-15`).toLocaleString('en-US', { month: 'long' })}`;
+    expect(tellsOf(m1)).toEqual([['C65 Goal Club reached its goal', `${title}. Done together.`, club.id]]);
+    expect(tellsOf(m2)).toEqual([]);
+    // (Read by the owner: a member's own read recounts their part from their sessions.)
+    expect((await challengeOf(o, club.id)).current).toMatchObject({ total: 12, mine: 0 });
+    expect((await challengeOf(o, club.id)).current!.reachedAt).not.toBeNull();
+    const late = await call(o, 'PATCH', path, { target: 40 });
+    expect(late.statusCode).toBe(409);
+    expect(issue(late)).toBe('reached');
+
+    // Someone who leaves takes their part with them.
+    expect((await call(m2, 'DELETE', `/community/clubs/${club.id}/membership`)).statusCode).toBe(204);
+    await service(new Date()).challengeRound();
+    expect((await challengeOf(o, club.id)).current).toMatchObject({ total: 6 });
+
+    // Not closed on the month's last day; closed two days after it, the parts gone.
+    const end = monthRange(month).to;
+    await service(new Date(`${end}T12:00:00Z`)).challengeRound();
+    expect((await challengeOf(o, club.id)).current).not.toBeNull();
+    await service(new Date(`${addDays(end, 2)}T00:30:00Z`)).challengeRound();
+    const closed = await challengeOf(m1, club.id);
+    expect(closed.current).toBeNull();
+    expect(closed.history).toHaveLength(1);
+    expect(closed.history[0]).toMatchObject({ id, total: 6, mine: null, endedEarly: false, daysLeft: 0 });
+    expect((await sql`select 1 from club_challenge_parts where challenge_id = ${id}`).length).toBe(0);
+
+    // Next month's challenge has not started; the owner can end one early.
+    const next = monthOf(addDays(end, 1));
+    const ahead = await call(o, 'POST', path, { metric: 'distance', target: 50, month: next });
+    expect(ahead.statusCode, ahead.body).toBe(201);
+    expect(clubChallengeViewSchema.parse(ahead.json()).current).toMatchObject({ metric: 'distance', month: next, total: 0, started: false });
+    expect((await call(m1, 'DELETE', path)).statusCode).toBe(403);
+    expect((await call(o, 'DELETE', path)).statusCode).toBe(204);
+    expect((await call(o, 'DELETE', path)).statusCode).toBe(404);
+    const ended = await challengeOf(o, club.id);
+    expect(ended.current).toBeNull();
+    expect(ended.history.map((c) => [c.metric, c.endedEarly])).toEqual([['distance', true], ['sessions', false]]);
+
+    // Finished challenges are kept a year.
+    const later = new Date();
+    later.setUTCMonth(later.getUTCMonth() + 14);
+    await service(later).challengeRound();
+    expect((await challengeOf(o, club.id)).history).toEqual([]);
   });
 });
