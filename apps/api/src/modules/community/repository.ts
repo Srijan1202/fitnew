@@ -224,6 +224,7 @@ export class CommunityRepository {
       hidden?: boolean | undefined;
       feed?: string[] | undefined;
       feedSince?: Record<string, string> | undefined;
+      feedDefaulted?: boolean | undefined;
       suggest?: boolean | undefined;
       notify?: boolean | undefined;
       kudosPushedOn?: string | undefined;
@@ -232,6 +233,18 @@ export class CommunityRepository {
   ): Promise<void> {
     const set = Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined));
     await this.db.update(communityProfiles).set({ ...set, updatedAt: new Date() }).where(eq(communityProfiles.userId, userId));
+  }
+
+  /**
+   * Beta 6.5 (K0): when this person first agreed to `version` of the policy
+   * or a later one (any purpose granted at it); null when they have not.
+   */
+  async agreedSince(userId: string, version: string): Promise<Date | null> {
+    const [r] = await this.db
+      .select({ at: sql<Date | null>`min(${consentRecords.grantedAt})` })
+      .from(consentRecords)
+      .where(and(eq(consentRecords.userId, userId), eq(consentRecords.granted, true), gte(consentRecords.policyVersion, version)));
+    return r?.at === null || r?.at === undefined ? null : new Date(r.at);
   }
 
   async timezoneOf(userId: string): Promise<string> {

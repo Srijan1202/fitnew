@@ -358,7 +358,7 @@ export const communityProfileSchema = z
     /** On the world board (a separate choice, off by default). */
     onWorld: z.boolean(),
     joinedAt: iso,
-    /** Beta 6.3 (C1): the kinds shared with friends in the feed (none at first). */
+    /** Beta 6.3 (C1): the kinds shared in the feed. Beta 6.5 (K0): every kind at first, with friends and clubs; any can be turned off. */
     feed: z.array(feedKindSchema),
     /** Beta 6.3 (C16, owner Q3): suggested to friends of friends and club-mates (on at first). */
     suggest: z.boolean(),

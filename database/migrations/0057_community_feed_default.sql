@@ -1,0 +1,1 @@
+ALTER TABLE "community_profiles" ADD COLUMN "feed_defaulted" boolean DEFAULT false NOT NULL;

@@ -486,15 +486,16 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
     return feedSchema.parse(r.json());
   };
 
-  it('beta 6.3 (C1): nothing is shared until chosen; then friends see the kinds shared, from then on; off deletes them', async () => {
+  it('beta 6.3 (C1), 6.5 (K0): every kind shared from joining; all off, nothing is posted; on again, from then on; off deletes them', async () => {
     const a = await member('c63_poster');
     const b = await member('c63_friend');
     const c = await member('c63_stranger');
     await friends(a, b, 'c63_friend');
     const me = communityMeSchema.parse((await call(a, 'GET', '/community/me')).json());
-    expect(me.profile).toMatchObject({ feed: [], suggest: true, notify: true });
+    expect(me.profile).toMatchObject({ feed: ['session', 'run', 'record', 'streak'], suggest: true, notify: true });
 
-    // Before sharing: nothing is posted.
+    // Turned off: nothing is posted.
+    expect(communityMeSchema.parse((await call(a, 'PATCH', '/community/me', { feed: [] })).json()).profile!.feed).toEqual([]);
     await session(a, 6, 20);
     await board(a, '/community/boards/friends');
     expect((await feedOf(b)).items).toEqual([]);
@@ -705,6 +706,34 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
   });
 
   /* ------------------------------------------------ beta 6.5: Clubs together -- */
+
+  it('beta 6.5 (K0, owner Q5): an earlier member has every kind switched on once, from agreeing to the 2026-11-20 policy, even kinds turned off; a later choice stays', async () => {
+    const a = await member('c65_k0_early');
+    const b = await member('c65_k0_friend');
+    await friends(a, b, 'c65_k0_friend');
+    // As someone who joined under 6.3 and shared runs only.
+    await sql`update community_profiles set feed = array['run']::text[], feed_since = ${sql.json({ run: new Date().toISOString() })}, feed_defaulted = false where user_id = ${a.id}`;
+    await sql`update consent_records set policy_version = '2026-11-12' where user_id = ${a.id}`;
+    await session(a, 6, 20, 0);
+    await board(a, '/community/boards/friends');
+    expect((await feedOf(b)).items).toEqual([]);
+    expect(communityMeSchema.parse((await call(a, 'GET', '/community/me')).json()).profile!.feed).toEqual(['run']);
+
+    // Agreeing to the new policy: every kind, from then on; the earlier session stays unposted.
+    await sql`insert into consent_records (user_id, consent_type, granted, policy_version, granted_at)
+      values (${a.id}, 'privacy-policy', true, ${CURRENT_POLICY_VERSION}, ${new Date()})`;
+    await session(a, 6, 20);
+    await board(a, '/community/boards/friends');
+    expect(communityMeSchema.parse((await call(a, 'GET', '/community/me')).json()).profile!.feed).toEqual(['session', 'run', 'record', 'streak']);
+    expect((await feedOf(b)).items.map((p) => p.kind)).toEqual(['session']);
+
+    // Once: turning a kind off again stays off.
+    await call(a, 'PATCH', '/community/me', { feed: ['run'] });
+    await session(a, 6, 20);
+    await board(a, '/community/boards/friends');
+    expect(communityMeSchema.parse((await call(a, 'GET', '/community/me')).json()).profile!.feed).toEqual(['run']);
+    expect((await feedOf(b)).items).toEqual([]);
+  });
 
   const clubFeedOf = async (u: U, clubId: string): Promise<Feed> => {
     const r = await call(u, 'GET', `/community/clubs/${clubId}/feed`);

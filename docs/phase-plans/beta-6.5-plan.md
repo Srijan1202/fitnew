@@ -41,10 +41,8 @@ Club-mates who are not friends see each other on the club board and nowhere else
 ## 3. Data and privacy
 
 - **Migration 0056** (done): `club_challenges` and `club_challenge_parts`.
-- **Migration 0057** (K3 and K0):
-  - `club_matches` and `club_match_members`;
-  - `community_profiles.feed_defaulted`;
-  - the feed default switched to every kind.
+- **Migration 0057** (K0, done): `community_profiles.feed_defaulted`.
+- **Migration 0058** (K3): `club_matches` and `club_match_members`.
 - **Ownership:**
   - A challenge and a match belong to their club, and go with it.
   - Sharing is part of the membership row, so it goes when the person leaves.
@@ -60,7 +58,7 @@ Club-mates who are not friends see each other on the club board and nowhere else
 
 ## 4. Release
 
-1. The API comes first (migrations 0056 and 0057). It deploys with `deploy.ps1`, which takes the snapshot and clears the old ones.
+1. The API comes first (migrations 0056, 0057 and 0058). It deploys with `deploy.ps1`, which takes the snapshot and clears the old ones.
 2. Then the full APK 1.0.0-beta.6.5 (40), carrying the package updates due by then.
 3. Then the website post, deployed with `-Apk`, which announces it.
 - The minimum build stays 37. Older apps ignore the new endpoints, and their club screen keeps working.
@@ -116,7 +114,7 @@ Club-mates who are not friends see each other on the club board and nowhere else
 | 1 | Package updates due | drift 2.35.4, drift_dev, sqlite3 (22 Nov). go_router, synchronized (23 Nov). shared_preferences and objective_c (25 Nov). |
 | 2 | K2 server | <ul><li>`GET`, `POST`, `PATCH` and `DELETE /community/clubs/:id/challenge`.</li><li>Parts counted in `refreshOne`.</li><li>After `refreshAll`: totals, the reached push, closing once the month is over everywhere, deleting closed challenges after 12 months.</li><li>Integration tests and the OpenAPI export.</li></ul> |
 | 3 | K0 server | <ul><li>Migration 0057 `feed_defaulted`.</li><li>Joining shares every kind.</li><li>Every earlier member switched on once, as in §7.</li><li>The policy text amended in the repo, app and website.</li><li>Tests.</li></ul> |
-| 4 | K3 server | <ul><li>Migration 0057 (with K0): `club_matches` and `club_match_members`.</li><li>Challenge a club by code; accept or decline.</li><li>One match a week, refused across a block.</li><li>The per-member average, and the result push after the week.</li><li>Tests and OpenAPI.</li></ul> |
+| 4 | K3 server | <ul><li>Migration 0058: `club_matches` and `club_match_members`.</li><li>Challenge a club by code; accept or decline.</li><li>One match a week, refused across a block.</li><li>The per-member average, and the result push after the week.</li><li>Tests and OpenAPI.</li></ul> |
 | 5 | App: K0 and K1 | <ul><li>The join screen's sharing line.</li><li>Settings switches on, "Shared with your friends and your clubs".</li><li>Club **Feed · Board** halves.</li><li>Cheers in a club.</li><li>The new policy to accept.</li></ul> |
 | 6 | App: K2 | The challenge bar, your part, the last 3 finished, and the owner's "Set a challenge" sheet. |
 | 7 | App: K3 | The match card, "Challenge a club", Accept and Decline. |
@@ -124,7 +122,7 @@ Club-mates who are not friends see each other on the club board and nowhere else
 | 9 | Admin | Admin › Clubs shows the current challenge and match. |
 | 10 | Docs | ADR-064 and the website post (not deployed). |
 | 11 | Checks | The whole app (analyze, format, every test), the API suite, the Kotlin and a debug APK in WSL, CI. |
-| 12 | Release (owner's go) | <ol><li>The API with `deploy.ps1` (0056, 0057).</li><li>`admin.ps1`.</li><li>The full APK 1.0.0-beta.6.5 (40).</li><li>The website with `-Apk`, which announces it.</li></ol> |
+| 12 | Release (owner's go) | <ol><li>The API with `deploy.ps1` (0056–0058).</li><li>`admin.ps1`.</li><li>The full APK 1.0.0-beta.6.5 (40).</li><li>The website with `-Apk`, which announces it.</li></ol> |
 
 **Outside 6.5:** `snapshots.ps1` about 2026-12-08 (deleting on the owner's yes; deadline 2026-12-11), and the S24 checks for 6.0–6.4.
 

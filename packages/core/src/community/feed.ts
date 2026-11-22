@@ -28,6 +28,14 @@ export const POSTS_KEPT_DAYS = 30;
 export const CLUB_FEED_FROM_POLICY = '2026-11-20';
 
 /**
+ * Beta 6.5 (K0, owner 2026-11-22): the feed is on by default. A new member
+ * shares every kind from joining; someone who joined earlier has every kind
+ * switched on once, from when they agree to this policy (owner Q5, even if
+ * they had turned kinds off). Anyone can turn any kind off again.
+ */
+export const FEED_ON_FROM_POLICY = CLUB_FEED_FROM_POLICY;
+
+/**
  * The first local date an event may be posted from: the later of the day
  * sharing was switched on and the catch-up window.
  */

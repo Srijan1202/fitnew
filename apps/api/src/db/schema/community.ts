@@ -27,6 +27,13 @@ export const communityProfiles = pgTable(
     feed: text('feed').array().notNull().default(sql`'{}'::text[]`),
     /** Beta 6.3: when each kind was last switched on; only later events are posted. */
     feedSince: jsonb('feed_since').$type<Record<string, string>>().notNull().default(sql`'{}'::jsonb`),
+    /**
+     * Beta 6.5 (K0, owner 2026-11-22): the feed is on by default. True once
+     * every kind was switched on for this person: at joining, or for those who
+     * joined earlier, once, from agreeing to the 2026-11-20 policy (owner Q5,
+     * even if they had turned kinds off). They can turn any off again.
+     */
+    feedDefaulted: boolean('feed_defaulted').notNull().default(false),
     /** Beta 6.3 (C16, owner Q3): suggested to friends of friends and club-mates. */
     suggest: boolean('suggest').notNull().default(true),
     /** Beta 6.3 (C2, C3): the evening kudos summary and nudges as notifications. */

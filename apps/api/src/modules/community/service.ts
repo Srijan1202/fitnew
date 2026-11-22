@@ -12,6 +12,7 @@ import {
   COUNTED_RUN,
   COUNTED_SESSION,
   CURRENT_POLICY_VERSION,
+  FEED_KINDS,
   FEED_PAGE,
   FRIEND_DECLINE_COOLDOWN_DAYS,
   SUGGESTIONS_SHOWN,
@@ -61,6 +62,7 @@ import {
 import { boardKey, keptPlanPct, placesMoved, rankBy, type BoardMetricKey } from '@fitos/core/community/board';
 import {
   FEED_DAYS,
+  FEED_ON_FROM_POLICY,
   NUDGE_QUIET_DAYS,
   POST_CATCH_UP_DAYS,
   POSTS_KEPT_DAYS,
@@ -149,6 +151,12 @@ const counted = (metric: BoardMetricKey, r: StatRow): boolean => (boardKey(metri
 const NUDGES_SHOWN_DAYS = NUDGE_QUIET_DAYS;
 const CHEERERS_SHOWN = 10;
 
+/** Beta 6.5 (K0): every kind shared, each from `at`. */
+const allKindsFrom = (at: Date): { feed: string[]; feedSince: Record<string, string> } => ({
+  feed: [...FEED_KINDS],
+  feedSince: Object.fromEntries(FEED_KINDS.map((k) => [k, at.toISOString()])),
+});
+
 /** A challenge's raw count from a member's month (metres for distance). */
 const partOf = (metric: string, c: { sessions: number; runM: number; activeDays: number }): number =>
   metric === 'distance' ? c.runM : metric === 'active-days' ? c.activeDays : c.sessions;
@@ -227,6 +235,8 @@ export class CommunityService {
     const created = await this.repo.inTransaction(async (tx) => {
       const p = await tx.insertProfile(userId, body.handle, body.country, body.onWorld);
       if (p === null) return null;
+      // Beta 6.5 (K0): every kind shared from joining; any can be turned off.
+      await tx.updateProfile(userId, { ...allKindsFrom(this.now()), feedDefaulted: true });
       await tx.recordConsent(userId, true, CURRENT_POLICY_VERSION, ipHash);
       return p;
     });
@@ -853,8 +863,17 @@ export class CommunityService {
     ]);
     await this.repo.saveStats(userId, from, c.sessions, c.runM, streak, c.activeDays, planned);
     // Beta 6.3 (C13): the same for the week, the month and since joining.
-    const p = await this.repo.profile(userId);
+    let p = await this.repo.profile(userId);
     if (p === null) return;
+    // Beta 6.5 (K0, owner Q5): someone who joined earlier has every kind switched on, once, from agreeing to the 2026-11-20 policy.
+    if (!p.feedDefaulted) {
+      const agreed = await this.repo.agreedSince(userId, FEED_ON_FROM_POLICY);
+      if (agreed !== null) {
+        const on = allKindsFrom(agreed);
+        await this.repo.updateProfile(userId, { ...on, feedDefaulted: true });
+        p = { ...p, ...on, feedDefaulted: true };
+      }
+    }
     await this.repo.savePeriod(userId, 'week', { periodFrom: from, sessions: c.sessions, runM: c.runM, streak, activeDays: c.activeDays, planned });
     const joinedOn = localDateOf(p.createdAt, tz);
     for (const period of ['month', 'all'] as const) {
