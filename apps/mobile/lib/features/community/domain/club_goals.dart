@@ -1,5 +1,5 @@
-/// Beta 6.5 (Clubs together): a club's monthly challenge (K2). The server
-/// counts; the phone only shows.
+/// Beta 6.5 (Clubs together): a club's monthly challenge (K2) and club vs
+/// club (K3). The server counts; the phone only shows.
 library;
 
 /// What a challenge counts.
@@ -143,4 +143,100 @@ class ClubChallengeView {
 
   /// For the club's owner: a target for each metric; null for others.
   final Map<ChallengeMetric, int>? suggested;
+}
+
+/* ------------------------------------------------- K3: club vs club -- */
+
+enum MatchStatus { pending, accepted, finished }
+
+enum MatchResult { won, lost, drew }
+
+/// One club in a match: the other shows only its name and its average.
+class ClubMatchSide {
+  const ClubMatchSide({
+    required this.clubId,
+    required this.name,
+    required this.score,
+  });
+
+  factory ClubMatchSide.fromJson(Map<String, dynamic> j) => ClubMatchSide(
+        clubId: j['clubId'] as String,
+        name: j['name'] as String,
+        score: j['score'] as num?,
+      );
+
+  final String clubId;
+  final String name;
+
+  /// The average per member, to 0.1; null before the week starts.
+  final num? score;
+}
+
+/// Beta 6.5 (K3, owner Q3): a week, Monday to Sunday, between two clubs.
+class ClubMatch {
+  const ClubMatch({
+    required this.id,
+    required this.metric,
+    required this.weekFrom,
+    required this.weekTo,
+    required this.status,
+    required this.challenger,
+    required this.us,
+    required this.them,
+    required this.members,
+    required this.daysLeft,
+    required this.result,
+  });
+
+  factory ClubMatch.fromJson(Map<String, dynamic> j) => ClubMatch(
+        id: j['id'] as String,
+        metric: ChallengeMetric.fromWire(j['metric'] as String),
+        weekFrom: j['weekFrom'] as String,
+        weekTo: j['weekTo'] as String,
+        status: MatchStatus.values.byName(j['status'] as String),
+        challenger: j['challenger'] as bool,
+        us: ClubMatchSide.fromJson(j['us'] as Map<String, dynamic>),
+        them: ClubMatchSide.fromJson(j['them'] as Map<String, dynamic>),
+        members: (j['members'] as num?)?.toInt(),
+        daysLeft: (j['daysLeft'] as num).toInt(),
+        result: j['result'] == null
+            ? null
+            : MatchResult.values.byName(j['result'] as String),
+      );
+
+  final String id;
+  final ChallengeMetric metric;
+  final String weekFrom;
+  final String weekTo;
+  final MatchStatus status;
+
+  /// This club challenged.
+  final bool challenger;
+  final ClubMatchSide us;
+  final ClubMatchSide them;
+
+  /// This club's members counted; null before the week starts.
+  final int? members;
+  final int daysLeft;
+  final MatchResult? result;
+
+  bool get live => status == MatchStatus.accepted && members != null;
+
+  /// Waiting or on: the club cannot take another that week.
+  bool get open => status != MatchStatus.finished;
+
+  /// "sessions per member".
+  String get perMemberUnit => '${metric.unit} per member';
+}
+
+const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const _short = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', //
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+/// "Mon 30 Nov" for "2026-11-30".
+String dayLabel(String date) {
+  final d = DateTime.parse(date);
+  return '${_days[d.weekday - 1]} ${d.day} ${_short[d.month - 1]}';
 }

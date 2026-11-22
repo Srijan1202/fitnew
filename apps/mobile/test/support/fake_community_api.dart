@@ -41,6 +41,12 @@ class FakeCommunityApi implements CommunityApi {
   ClubChallengeView Function(ChallengeMetric metric, int target, String? month)?
       onSetChallenge;
   Failure? challengeFailure;
+
+  /// Beta 6.5 (K3): each club's matches, by club id; what a challenge answers.
+  Map<String, List<ClubMatch>> matches = {};
+  List<ClubMatch> Function(String code, ChallengeMetric metric)?
+      onChallengeClub;
+  Failure? matchFailure;
   List<Suggestion> suggested = [];
   Failure? nudgeFailure;
 
@@ -165,6 +171,44 @@ class FakeCommunityApi implements CommunityApi {
   Future<Result<void>> endChallenge(String clubId) async {
     calls.add('end-challenge $clubId');
     challenges[clubId] = _noChallenge;
+    return _r(null);
+  }
+
+  @override
+  Future<Result<List<ClubMatch>>> clubMatches(String clubId) async {
+    calls.add('matches $clubId');
+    return _r(matches[clubId] ?? const []);
+  }
+
+  @override
+  Future<Result<List<ClubMatch>>> challengeClub(
+    String clubId, {
+    required String code,
+    required ChallengeMetric metric,
+  }) async {
+    calls.add('challenge-club $clubId $code ${metric.wire}');
+    if (matchFailure != null) return Err(matchFailure!);
+    final l = onChallengeClub?.call(code, metric) ?? const <ClubMatch>[];
+    matches[clubId] = l;
+    return _r(l);
+  }
+
+  @override
+  Future<Result<List<ClubMatch>>> acceptMatch(
+    String clubId,
+    String matchId,
+  ) async {
+    calls.add('accept-match $clubId $matchId');
+    return _r(matches[clubId] ?? const []);
+  }
+
+  @override
+  Future<Result<void>> cancelMatch(String clubId, String matchId) async {
+    calls.add('cancel-match $clubId $matchId');
+    matches[clubId] = [
+      for (final x in matches[clubId] ?? const <ClubMatch>[])
+        if (x.id != matchId) x,
+    ];
     return _r(null);
   }
 

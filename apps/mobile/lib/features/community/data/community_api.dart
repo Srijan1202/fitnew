@@ -44,6 +44,17 @@ abstract class CommunityApi {
   Future<Result<ClubChallengeView>> changeChallenge(String clubId, int target);
   Future<Result<void>> endChallenge(String clubId);
 
+  /// Beta 6.5 (K3): the club's matches; the owner challenges a club by its
+  /// code, accepts, declines, takes one back or calls it off.
+  Future<Result<List<ClubMatch>>> clubMatches(String clubId);
+  Future<Result<List<ClubMatch>>> challengeClub(
+    String clubId, {
+    required String code,
+    required ChallengeMetric metric,
+  });
+  Future<Result<List<ClubMatch>>> acceptMatch(String clubId, String matchId);
+  Future<Result<void>> cancelMatch(String clubId, String matchId);
+
   /// Cheer (or take it back): the post's kudos after.
   Future<Result<({int kudos, bool cheered})>> cheer(
     String postId, {
@@ -291,6 +302,47 @@ class DioCommunityApi implements CommunityApi {
   @override
   Future<Result<void>> endChallenge(String clubId) => _guard(
         () => _dio.delete<void>('/v1/community/clubs/$clubId/challenge'),
+      );
+
+  List<ClubMatch> _matches(Map<String, dynamic>? data) => [
+        for (final m in data!['items'] as List<dynamic>)
+          ClubMatch.fromJson(m as Map<String, dynamic>),
+      ];
+
+  @override
+  Future<Result<List<ClubMatch>>> clubMatches(String clubId) =>
+      _guard(() async {
+        final r = await _dio
+            .get<Map<String, dynamic>>('/v1/community/clubs/$clubId/matches');
+        return _matches(r.data);
+      });
+
+  @override
+  Future<Result<List<ClubMatch>>> challengeClub(
+    String clubId, {
+    required String code,
+    required ChallengeMetric metric,
+  }) =>
+      _guard(() async {
+        final r = await _dio.post<Map<String, dynamic>>(
+          '/v1/community/clubs/$clubId/matches',
+          data: {'code': code, 'metric': metric.wire},
+        );
+        return _matches(r.data);
+      });
+
+  @override
+  Future<Result<List<ClubMatch>>> acceptMatch(String clubId, String matchId) =>
+      _guard(() async {
+        final r = await _dio.post<Map<String, dynamic>>(
+          '/v1/community/clubs/$clubId/matches/$matchId/accept',
+        );
+        return _matches(r.data);
+      });
+
+  @override
+  Future<Result<void>> cancelMatch(String clubId, String matchId) => _guard(
+        () => _dio.delete<void>('/v1/community/clubs/$clubId/matches/$matchId'),
       );
 
   @override

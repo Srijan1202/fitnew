@@ -13,6 +13,7 @@ import '../domain/community.dart';
 import 'community_providers.dart';
 import 'community_screen.dart';
 import 'club_challenge_card.dart';
+import 'club_match_card.dart';
 import 'feed_view.dart';
 import 'invite_qr.dart';
 
@@ -236,6 +237,8 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
           const SizedBox(height: FitSpacing.md),
           // Beta 6.5 (K2): the club's goal for the month.
           ClubChallengeCard(clubId: clubId, owner: c?.mine ?? false),
+          // Beta 6.5 (K3): club vs club.
+          ClubMatchCard(clubId: clubId, owner: c?.mine ?? false),
           const BoardMetricPicker(),
           const SizedBox(height: FitSpacing.md),
           BoardLoader(

@@ -172,6 +172,17 @@ final clubChallengeProvider =
   retry: (_, __) => null,
 );
 
+/// Beta 6.5 (K3): a club's matches.
+final clubMatchesProvider =
+    FutureProvider.autoDispose.family<List<ClubMatch>, String>(
+  (ref, clubId) async {
+    requireSession(ref);
+    final r = await ref.watch(communityApiProvider).clubMatches(clubId);
+    return r.when(ok: (l) => l, err: (f) => throw f);
+  },
+  retry: (_, __) => null,
+);
+
 /// Beta 6.3 (C16): people you may know.
 final suggestionsProvider = FutureProvider.autoDispose<List<Suggestion>>(
   (ref) async {
@@ -219,5 +230,6 @@ void refreshCommunity(WidgetRef ref) {
     ..invalidate(feedProvider)
     ..invalidate(clubFeedProvider)
     ..invalidate(clubChallengeProvider)
+    ..invalidate(clubMatchesProvider)
     ..invalidate(suggestionsProvider);
 }

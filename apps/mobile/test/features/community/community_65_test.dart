@@ -340,4 +340,149 @@ void main() {
     expect(api.calls, contains('end-challenge club-2'));
     expect(key('challenge.set'), findsOneWidget);
   });
+  /* -------------------------------------------------- K3: club vs club -- */
+
+  ClubMatch match({
+    String id = 'm1',
+    MatchStatus status = MatchStatus.pending,
+    bool challenger = false,
+    ChallengeMetric metric = ChallengeMetric.sessions,
+    num? us,
+    num? them,
+    int? members,
+    int daysLeft = 7,
+    MatchResult? result,
+  }) =>
+      ClubMatch(
+        id: id,
+        metric: metric,
+        weekFrom: '2026-11-30',
+        weekTo: '2026-12-06',
+        status: status,
+        challenger: challenger,
+        us: ClubMatchSide(clubId: 'club-2', name: 'Hostel A', score: us),
+        them: ClubMatchSide(clubId: 'club-9', name: 'Gym B', score: them),
+        members: members,
+        daysLeft: daysLeft,
+        result: result,
+      );
+
+  const ownClub = Club(
+    id: 'club-2',
+    name: 'Hostel A',
+    code: 'WXYZ2345',
+    members: 12,
+    mine: true,
+  );
+  const memberClub = Club(
+    id: 'club-2',
+    name: 'Hostel A',
+    code: 'WXYZ2345',
+    members: 12,
+    mine: false,
+  );
+
+  Future<void> openClub(WidgetTester tester, Club c) async {
+    tester.view.physicalSize = const Size(1080, 3600);
+    tester.view.devicePixelRatio = 1.5;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(app(initial: Routes.communityClub(c.id), extra: c));
+    await tester.pumpAndSettle();
+  }
+
+  test('a week shown by its Monday', () {
+    expect(dayLabel('2026-11-30'), 'Mon 30 Nov');
+    expect(match(status: MatchStatus.accepted, members: 3).live, isTrue);
+    expect(match(status: MatchStatus.accepted).live, isFalse);
+  });
+
+  testWidgets(
+      'the owner challenges a club by its code; waiting, they can '
+      'take it back', (tester) async {
+    api = FakeCommunityApi(profile: me())
+      ..myClubs = [ownClub]
+      ..onChallengeClub = (code, m) => [match(challenger: true, metric: m)];
+    await openClub(tester, ownClub);
+    await tap(tester, 'match.challenge');
+    await tester.enterText(key('match.code'), 'nope');
+    await tap(tester, 'match.send');
+    expect(find.text('A club code is 8 letters and numbers.'), findsOneWidget);
+    await tester.enterText(key('match.code'), 'abcd-2345');
+    await tap(tester, 'match.metric.distance');
+    await tap(tester, 'match.send');
+    expect(api.calls, contains('challenge-club club-2 ABCD2345 distance'));
+    expect(find.text('You challenged Gym B'), findsOneWidget);
+    expect(
+      find.text(
+        'km per member, the week of Mon 30 Nov · waiting for them to accept',
+      ),
+      findsOneWidget,
+    );
+    expect(key('match.challenge'), findsNothing);
+    await tap(tester, 'match.cancel.m1');
+    expect(api.calls, contains('cancel-match club-2 m1'));
+    expect(key('match.challenge'), findsOneWidget);
+  });
+
+  testWidgets(
+      'a challenge to the club: the owner accepts or declines; a '
+      'member only sees it', (tester) async {
+    api = FakeCommunityApi(profile: me())
+      ..myClubs = [ownClub]
+      ..matches = {
+        'club-2': [match()],
+      };
+    await openClub(tester, ownClub);
+    expect(find.text('Gym B challenged your club'), findsOneWidget);
+    await tap(tester, 'match.accept.m1');
+    expect(api.calls, contains('accept-match club-2 m1'));
+    expect(key('match.decline.m1'), findsOneWidget);
+
+    api = FakeCommunityApi(profile: me())
+      ..myClubs = [memberClub]
+      ..matches = {
+        'club-2': [match()],
+      };
+    await openClub(tester, memberClub);
+    expect(
+      find.text('sessions per member, the week of Mon 30 Nov · waiting for '
+          'the owner'),
+      findsOneWidget,
+    );
+    expect(key('match.accept.m1'), findsNothing);
+    expect(key('match.challenge'), findsNothing);
+  });
+
+  testWidgets('on: the two averages and the days left; over: the result',
+      (tester) async {
+    api = FakeCommunityApi(profile: me())
+      ..myClubs = [memberClub]
+      ..matches = {
+        'club-2': [
+          match(
+            id: 'm2',
+            status: MatchStatus.accepted,
+            members: 12,
+            us: 2.4,
+            them: 2.1,
+            daysLeft: 3,
+          ),
+          match(
+            id: 'm0',
+            status: MatchStatus.finished,
+            members: 11,
+            us: 3,
+            them: 2.5,
+            daysLeft: 0,
+            result: MatchResult.won,
+          ),
+        ],
+      };
+    await openClub(tester, memberClub);
+    expect(find.text('Hostel A 2.4 · 2.1 Gym B'), findsOneWidget);
+    expect(find.text('sessions per member · 3 days left'), findsOneWidget);
+    expect(find.text('Won against Gym B'), findsOneWidget);
+    expect(find.text('3 to 2.5 sessions per member'), findsOneWidget);
+    expect(key('match.cancel.m2'), findsNothing);
+  });
 }
