@@ -31,6 +31,9 @@ class FakeCommunityApi implements CommunityApi {
   /// and what a nudge answers.
   Feed feedPage = const Feed(items: [], next: null, nudges: []);
   Feed? older;
+
+  /// Beta 6.5 (K1): each club's feed, by club id.
+  Map<String, Feed> clubFeeds = {};
   List<Suggestion> suggested = [];
   Failure? nudgeFailure;
 
@@ -109,12 +112,25 @@ class FakeCommunityApi implements CommunityApi {
   }
 
   @override
+  Future<Result<Feed>> clubFeed(String clubId, {DateTime? before}) async {
+    calls.add('club-feed $clubId${before == null ? '' : ' older'}');
+    return _r(
+      before == null
+          ? clubFeeds[clubId] ?? const Feed(items: [], next: null, nudges: [])
+          : const Feed(items: [], next: null, nudges: []),
+    );
+  }
+
+  @override
   Future<Result<({int kudos, bool cheered})>> cheer(
     String postId, {
     required bool on,
   }) async {
     calls.add('${on ? 'cheer' : 'uncheer'} $postId');
-    final p = feedPage.items.firstWhere((x) => x.id == postId);
+    final p = [
+      ...feedPage.items,
+      for (final f in clubFeeds.values) ...f.items,
+    ].firstWhere((x) => x.id == postId);
     final before = p.kudos - (p.cheered ? 1 : 0);
     return _r((kudos: before + (on ? 1 : 0), cheered: on));
   }

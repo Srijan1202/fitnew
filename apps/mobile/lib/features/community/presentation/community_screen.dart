@@ -249,6 +249,15 @@ class _JoinState extends ConsumerState<JoinCommunityView> {
           ],
         ),
         const SizedBox(height: FitSpacing.md),
+        // Beta 6.5 (K0, owner 2026-11-22): sharing is on from joining.
+        Text(
+          'Your friends and your clubs will see the sessions you finish, your '
+          'runs, records and streak milestones. Turn any of them off in '
+          'Community settings.',
+          key: const ValueKey('community.join.sharing'),
+          style: t.bodyMedium,
+        ),
+        const SizedBox(height: FitSpacing.sm),
         Text(
           'Joining is your consent to share the above with other FITOS members '
           '(privacy policy, version $kPolicyVersion).',

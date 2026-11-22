@@ -150,6 +150,16 @@ final feedProvider = FutureProvider.autoDispose<Feed>(
   retry: (_, __) => null,
 );
 
+/// Beta 6.5 (K1): a club's feed, its first page.
+final clubFeedProvider = FutureProvider.autoDispose.family<Feed, String>(
+  (ref, clubId) async {
+    requireSession(ref);
+    final r = await ref.watch(communityApiProvider).clubFeed(clubId);
+    return r.when(ok: (f) => f, err: (f) => throw f);
+  },
+  retry: (_, __) => null,
+);
+
 /// Beta 6.3 (C16): people you may know.
 final suggestionsProvider = FutureProvider.autoDispose<List<Suggestion>>(
   (ref) async {
@@ -195,5 +205,6 @@ void refreshCommunity(WidgetRef ref) {
     ..invalidate(personProfileProvider)
     ..invalidate(removedFromClubProvider)
     ..invalidate(feedProvider)
+    ..invalidate(clubFeedProvider)
     ..invalidate(suggestionsProvider);
 }

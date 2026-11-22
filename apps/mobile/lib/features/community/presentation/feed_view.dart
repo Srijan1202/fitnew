@@ -12,12 +12,16 @@ import 'community_providers.dart';
 
 /// Beta 6.3 (C1–C3, owner Q1, Q2): what friends shared, newest first, with a
 /// cheer on each; nudges received at the top; a card to start sharing while
-/// nothing is.
+/// nothing is. Beta 6.5 (K1): a club's feed too, with [clubId]: what its
+/// members share, from after they joined (no nudges there).
 class FeedView extends ConsumerStatefulWidget {
-  const FeedView({super.key, this.now});
+  const FeedView({super.key, this.now, this.clubId});
 
   /// For tests: the clock the "3 h ago" lines read.
   final DateTime Function()? now;
+
+  /// A club's feed; null for friends'.
+  final String? clubId;
 
   @override
   ConsumerState<FeedView> createState() => _FeedState();
@@ -33,11 +37,20 @@ class _FeedState extends ConsumerState<FeedView> {
 
   DateTime get _now => widget.now?.call() ?? DateTime.now();
 
+  String? get _club => widget.clubId;
+
+  void _reload() => _club == null
+      ? ref.invalidate(feedProvider)
+      : ref.invalidate(clubFeedProvider(_club!));
+
   Future<void> _more() async {
     final before = _next;
     if (before == null || _loadingMore) return;
     setState(() => _loadingMore = true);
-    final r = await ref.read(communityApiProvider).feed(before: before);
+    final api = ref.read(communityApiProvider);
+    final r = _club == null
+        ? await api.feed(before: before)
+        : await api.clubFeed(_club!, before: before);
     if (!mounted) return;
     setState(() {
       _loadingMore = false;
@@ -70,7 +83,10 @@ class _FeedState extends ConsumerState<FeedView> {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
-    final feed = ref.watch(feedProvider);
+    final club = _club;
+    final feed = ref.watch(
+      club == null ? feedProvider : clubFeedProvider(club),
+    );
     final profile = ref.watch(communityMeProvider).value?.profile;
     // A fresh first page: older pages and cheers given here start again.
     final first = feed.value;
@@ -81,7 +97,7 @@ class _FeedState extends ConsumerState<FeedView> {
       _next = first.next;
     }
     return RefreshIndicator(
-      onRefresh: () async => ref.invalidate(feedProvider),
+      onRefresh: () async => _reload(),
       child: feed.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => ListView(
@@ -94,7 +110,7 @@ class _FeedState extends ConsumerState<FeedView> {
               key: const ValueKey('feed.problem'),
             ),
             TextButton(
-              onPressed: () => ref.invalidate(feedProvider),
+              onPressed: _reload,
               child: const Text('Try again'),
             ),
           ],
@@ -104,7 +120,7 @@ class _FeedState extends ConsumerState<FeedView> {
             for (final p in [...f.items, ..._older]) _changed[p.id] ?? p,
           ];
           return ListView(
-            key: const ValueKey('feed.list'),
+            key: ValueKey(club == null ? 'feed.list' : 'clubFeed.list'),
             padding: const EdgeInsets.fromLTRB(
               FitSpacing.screen,
               FitSpacing.sm,
@@ -124,8 +140,11 @@ class _FeedState extends ConsumerState<FeedView> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
                   child: Text(
-                    'Nothing here yet. When friends share their sessions, '
-                    'runs and records, they show here.',
+                    club == null
+                        ? 'Nothing here yet. When friends share their sessions, '
+                            'runs and records, they show here.'
+                        : 'Nothing here yet. When members share their '
+                            'sessions, runs and records, they show here.',
                     key: const ValueKey('feed.empty'),
                     style: t.bodyMedium?.copyWith(color: FitColors.ink60),
                   ),
@@ -157,8 +176,12 @@ class _FeedState extends ConsumerState<FeedView> {
               ],
               const SizedBox(height: FitSpacing.lg),
               Text(
-                'Friends see only what each person shares: never weights, '
-                'food, body or where they ran. Posts go after 30 days.',
+                club == null
+                    ? 'Friends see only what each person shares: never weights, '
+                        'food, body or where they ran. Posts go after 30 days.'
+                    : 'Members see only what each person shares, from after '
+                        'they joined: never weights, food, body or where they '
+                        'ran. Posts go after 30 days.',
                 style: t.bodySmall?.copyWith(color: FitColors.ink60),
               ),
             ],
@@ -212,11 +235,14 @@ class _StartSharing extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Share with your friends', style: t.titleMedium),
+          Text('Share with friends and clubs', style: t.titleMedium),
           const SizedBox(height: FitSpacing.xs),
+          // Beta 6.5 (K0): sharing is on from joining; this shows only to
+          // someone who turned every kind off.
           Text(
-            'Nothing of yours is in the feed. Choose what friends see: '
-            'sessions you finish, runs, records or streak milestones.',
+            'You turned sharing off, so nothing of yours is in the feed. '
+            'Choose what friends and your clubs see: sessions you finish, '
+            'runs, records or streak milestones.',
             style: t.bodyMedium?.copyWith(color: FitColors.ink60),
           ),
           const SizedBox(height: FitSpacing.sm),

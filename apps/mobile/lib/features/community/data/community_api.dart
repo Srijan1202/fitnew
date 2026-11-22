@@ -29,6 +29,9 @@ abstract class CommunityApi {
   /// Beta 6.3 (C1–C3, C16): the feed, kudos, nudges and suggestions.
   Future<Result<Feed>> feed({DateTime? before});
 
+  /// Beta 6.5 (K1): a club's feed, for its members.
+  Future<Result<Feed>> clubFeed(String clubId, {DateTime? before});
+
   /// Cheer (or take it back): the post's kudos after.
   Future<Result<({int kudos, bool cheered})>> cheer(
     String postId, {
@@ -213,6 +216,18 @@ class DioCommunityApi implements CommunityApi {
   Future<Result<Feed>> feed({DateTime? before}) => _guard(() async {
         final r = await _dio.get<Map<String, dynamic>>(
           '/v1/community/feed',
+          queryParameters: {
+            if (before != null) 'before': before.toUtc().toIso8601String(),
+          },
+        );
+        return Feed.fromJson(r.data!);
+      });
+
+  @override
+  Future<Result<Feed>> clubFeed(String clubId, {DateTime? before}) =>
+      _guard(() async {
+        final r = await _dio.get<Map<String, dynamic>>(
+          '/v1/community/clubs/$clubId/feed',
           queryParameters: {
             if (before != null) 'before': before.toUtc().toIso8601String(),
           },

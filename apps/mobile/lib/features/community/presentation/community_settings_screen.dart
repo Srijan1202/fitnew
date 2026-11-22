@@ -12,7 +12,8 @@ import 'invite_qr.dart';
 
 /// Beta 5.8 (ADR-057): the handle, the country, the world-board choice,
 /// people blocked, and leaving Community. Beta 6.3: what friends see in the
-/// feed (nothing until chosen), suggestions and notifications.
+/// feed (beta 6.5, K0: every kind from joining, with friends and clubs; any
+/// can be turned off), suggestions and notifications.
 class CommunitySettingsScreen extends ConsumerWidget {
   const CommunitySettingsScreen({super.key});
 
@@ -92,9 +93,11 @@ class CommunitySettingsScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: FitSpacing.lg),
-                  // Beta 6.3 (C1, owner Q1): each kind on its own; none at first.
+                  // Beta 6.3 (C1, owner Q1): each kind on its own. Beta 6.5
+                  // (K0, owner 2026-11-22): every kind on at first; friends
+                  // and clubs both see them (owner Q1).
                   FitGroup(
-                    label: 'Share with friends',
+                    label: 'Shared with your friends and your clubs',
                     children: [
                       for (final k in FeedKind.values)
                         FitRow(
@@ -158,9 +161,10 @@ class CommunitySettingsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: FitSpacing.sm),
                   Text(
-                    'Only friends see your posts, and only the kinds you turn '
-                    'on, from then on. Never weights, food, body or where you '
-                    'ran. Turning a kind off deletes its posts.',
+                    'Your friends and your clubs see the kinds turned on here: '
+                    'a club, only what you share after joining it. Never '
+                    'weights, food, body or where you ran. Turning a kind off '
+                    'deletes its posts.',
                     style: t.bodySmall?.copyWith(color: FitColors.ink60),
                   ),
                   const SizedBox(height: FitSpacing.lg),
