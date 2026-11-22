@@ -659,6 +659,51 @@ export type SetChallengeRequest = z.infer<typeof setChallengeSchema>;
 /** Change the target, until it is reached. */
 export const updateChallengeSchema = z.object({ target: challengeTargetSchema }).strict();
 
+/* ------------------------------------------ beta 6.5 (K3): club vs club -- */
+
+/**
+ * One week, Monday to Sunday, between two clubs. The score is each club's
+ * average per member (members fixed when the week starts). The other club
+ * shows only its name and its average, never who is in it.
+ */
+export const clubMatchSideSchema = z
+  .object({
+    clubId: z.string().uuid(),
+    name: z.string(),
+    /** The average per member, in the metric's unit (km for distance), to 0.1; null before the week starts. */
+    score: z.number().nonnegative().nullable(),
+  })
+  .strict();
+
+export const clubMatchSchema = z
+  .object({
+    id: z.string().uuid(),
+    metric: challengeMetricSchema,
+    weekFrom: z.string(),
+    weekTo: z.string(),
+    /** Pending: waiting for the other owner. Accepted: on (or about to start). Finished: the result. */
+    status: z.enum(['pending', 'accepted', 'finished']),
+    /** This club challenged. */
+    challenger: z.boolean(),
+    us: clubMatchSideSchema,
+    them: clubMatchSideSchema,
+    /** This club's members counted; null before the week starts. */
+    members: z.number().int().nonnegative().nullable(),
+    /** Days left in the week, today included (7 before it starts, 0 after). */
+    daysLeft: z.number().int().nonnegative(),
+    result: z.enum(['won', 'lost', 'drew']).nullable(),
+  })
+  .strict();
+export type ClubMatch = z.infer<typeof clubMatchSchema>;
+
+/** A club's matches: waiting, on, and finished in the last week. */
+export const clubMatchListSchema = z.object({ items: z.array(clubMatchSchema) }).strict();
+export type ClubMatchList = z.infer<typeof clubMatchListSchema>;
+
+/** Challenge the club with this code to next week. */
+export const challengeClubSchema = z.object({ code: clubCodeSchema, metric: challengeMetricSchema }).strict();
+export type ChallengeClubRequest = z.infer<typeof challengeClubSchema>;
+
 /* ------------------------------------------------------------- boards -- */
 
 /**

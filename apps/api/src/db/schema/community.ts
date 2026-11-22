@@ -384,3 +384,62 @@ export const clubChallengeParts = pgTable(
     check('club_challenge_parts_value', sql`${t.value} >= 0`),
   ],
 );
+
+/**
+ * Beta 6.5 (K3, owner Q3): club vs club for one week, Monday to Sunday. The
+ * home club challenged; the away club's owner accepts before the week starts
+ * (declined or unanswered, the row goes). When it ends, each club's total
+ * (in the metric's raw unit, metres for distance) and its members are kept;
+ * the score is the total per member. No person's id is kept here: the other
+ * club sees only a name and an average.
+ */
+export const clubMatches = pgTable(
+  'club_matches',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    homeClubId: uuid('home_club_id')
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    awayClubId: uuid('away_club_id')
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    metric: text('metric').notNull(),
+    /** The week's Monday, "2026-11-30". */
+    weekFrom: text('week_from').notNull(),
+    status: text('status').notNull().default('pending'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+    /** When the members were fixed (the week started). */
+    startedAt: timestamp('started_at', { withTimezone: true }),
+    homeScore: integer('home_score'),
+    awayScore: integer('away_score'),
+    homeMembers: integer('home_members'),
+    awayMembers: integer('away_members'),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('club_matches_home_idx').on(t.homeClubId, t.weekFrom),
+    index('club_matches_away_idx').on(t.awayClubId, t.weekFrom),
+    check('club_matches_not_self', sql`${t.homeClubId} <> ${t.awayClubId}`),
+    check('club_matches_metric', sql`${t.metric} in ('sessions', 'distance', 'active-days')`),
+    check('club_matches_status', sql`${t.status} in ('pending', 'accepted', 'finished')`),
+    check('club_matches_week', sql`${t.weekFrom} ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'`),
+  ],
+);
+
+/**
+ * Beta 6.5 (K3): who counts for each club in a match, fixed when the week
+ * starts; someone who joins mid-week does not count. Never exported (the
+ * privacy download's OTHER_PEOPLES): the other club never learns who.
+ */
+export const clubMatchMembers = pgTable(
+  'club_match_members',
+  {
+    matchId: uuid('match_id')
+      .notNull()
+      .references(() => clubMatches.id, { onDelete: 'cascade' }),
+    clubId: uuid('club_id').notNull(),
+    userId: userRef('user_id'),
+  },
+  (t) => [primaryKey({ columns: [t.matchId, t.clubId, t.userId] }), index('club_match_members_user_idx').on(t.userId)],
+);

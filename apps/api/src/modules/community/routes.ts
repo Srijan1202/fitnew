@@ -19,8 +19,10 @@ import {
   boardPeriodSchema,
   boardQuerySchema,
   boardSchema,
+  challengeClubSchema,
   clubChallengeViewSchema,
   clubListSchema,
+  clubMatchListSchema,
   clubSchema,
   communityMeSchema,
   createClubSchema,
@@ -88,6 +90,7 @@ const idParams = z.object({ id: z.string().uuid() }).strict();
 const clubUserParams = z.object({ id: z.string().uuid(), userId: z.string().uuid() }).strict();
 const metricQuery = z.object({ metric: boardMetricSchema.default('sessions'), period: boardPeriodSchema.default('week') }).strict();
 const postParams = z.object({ postId: z.string().uuid() }).strict();
+const matchParams = z.object({ id: z.string().uuid(), matchId: z.string().uuid() }).strict();
 
 const perUser = (prefix: string, max: number) => ({
   rateLimit: {
@@ -447,6 +450,44 @@ export async function communityRoutes(app: FastifyInstance, opts: { ipSalt: stri
     schema: { summary: 'End the challenge before the month is over (it stays in the history)', tags, security, params: idParams, response: { 204: z.null(), ...errors } },
   }, async (request, reply) => {
     await service.endChallenge(requireUserId(request.userId), request.params.id);
+    return reply.code(204).send(null);
+  });
+
+  /* ---------------------------------------- beta 6.5 (K3): club vs club -- */
+
+  typed.get('/community/clubs/:id/matches', {
+    ...on,
+    schema: {
+      summary: "A club's matches (beta 6.5): waiting, on, and finished in the last week; the other club shows only its name and average per member",
+      tags,
+      security,
+      params: idParams,
+      response: { 200: clubMatchListSchema, ...errors },
+    },
+  }, async (request) => ({ items: await service.clubMatches(requireUserId(request.userId), request.params.id) }));
+
+  typed.post('/community/clubs/:id/matches', {
+    ...owner,
+    schema: {
+      summary: 'Challenge another club, by its code, to next week (one match a week for either club; never across a block)',
+      tags,
+      security,
+      params: idParams,
+      body: challengeClubSchema,
+      response: { 201: clubMatchListSchema, ...errors },
+    },
+  }, async (request, reply) => reply.code(201).send({ items: await service.challengeClub(requireUserId(request.userId), request.params.id, request.body) }));
+
+  typed.post('/community/clubs/:id/matches/:matchId/accept', {
+    ...owner,
+    schema: { summary: 'Accept a challenge to your club, before its week starts', tags, security, params: matchParams, response: { 200: clubMatchListSchema, ...errors } },
+  }, async (request) => ({ items: await service.acceptMatch(requireUserId(request.userId), request.params.id, request.params.matchId) }));
+
+  typed.delete('/community/clubs/:id/matches/:matchId', {
+    ...owner,
+    schema: { summary: 'Decline a challenge, take yours back, or call a match off before its week starts', tags, security, params: matchParams, response: { 204: z.null(), ...errors } },
+  }, async (request, reply) => {
+    await service.cancelMatch(requireUserId(request.userId), request.params.id, request.params.matchId);
     return reply.code(204).send(null);
   });
 

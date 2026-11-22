@@ -14,6 +14,7 @@ import {
   clubBans,
   clubChallengeParts,
   clubChallenges,
+  clubMatches,
   clubMembers,
   clubs,
   communityBlocks,
@@ -37,6 +38,10 @@ type Db = DatabaseHandle['db'];
 
 export type ProfileRow = typeof communityProfiles.$inferSelect;
 export type ChallengeRow = typeof clubChallenges.$inferSelect;
+export type MatchRow = typeof clubMatches.$inferSelect & { homeName: string; awayName: string; homeOwnerId: string; awayOwnerId: string };
+
+/** Beta 6.5 (K3): a week-count column, by metric (a fixed list, never user text). */
+const WEEK_COLUMN: Record<string, string> = { sessions: 'sessions', distance: 'run_m', 'active-days': 'active_days' };
 
 /** A person as others see them, with their avatar. */
 export interface PersonRow {
@@ -1432,6 +1437,133 @@ export class CommunityRepository {
       .innerJoin(clubMembers, and(eq(clubMembers.userId, communityWeekHistory.userId), eq(clubMembers.clubId, clubId)))
       .where(inArray(communityWeekHistory.weekFrom, [...weeks]));
     return r ?? { sessions: 0, runM: 0, activeDays: 0 };
+  }
+
+  /* ------------------------------------------- beta 6.5 (K3): matches -- */
+
+  private matchSelect() {
+    const home = sql`(select name from clubs c where c.id = ${clubMatches.homeClubId})`;
+    const away = sql`(select name from clubs c where c.id = ${clubMatches.awayClubId})`;
+    return this.db
+      .select({
+        m: clubMatches,
+        homeName: sql<string>`${home}`,
+        awayName: sql<string>`${away}`,
+        homeOwnerId: sql<string>`(select owner_id from clubs c where c.id = ${clubMatches.homeClubId})`,
+        awayOwnerId: sql<string>`(select owner_id from clubs c where c.id = ${clubMatches.awayClubId})`,
+      })
+      .from(clubMatches);
+  }
+
+  private static matchRowOf(r: { m: typeof clubMatches.$inferSelect; homeName: string; awayName: string; homeOwnerId: string; awayOwnerId: string }): MatchRow {
+    return { ...r.m, homeName: r.homeName, awayName: r.awayName, homeOwnerId: r.homeOwnerId, awayOwnerId: r.awayOwnerId };
+  }
+
+  async match(id: string): Promise<MatchRow | null> {
+    const [r] = await this.matchSelect().where(eq(clubMatches.id, id)).limit(1);
+    return r === undefined ? null : CommunityRepository.matchRowOf(r);
+  }
+
+  /** A club's matches: waiting, on, and finished since `finishedSince`; the latest week first. */
+  async matchesOf(clubId: string, finishedSince: Date): Promise<MatchRow[]> {
+    const rows = await this.matchSelect()
+      .where(
+        and(
+          or(eq(clubMatches.homeClubId, clubId), eq(clubMatches.awayClubId, clubId)),
+          or(sql`${clubMatches.status} <> 'finished'`, gte(clubMatches.finishedAt, finishedSince)),
+        ),
+      )
+      .orderBy(desc(clubMatches.weekFrom), desc(clubMatches.createdAt));
+    return rows.map((r) => CommunityRepository.matchRowOf(r));
+  }
+
+  /** The club has a match that week already, waiting or on (one a week). */
+  async clubBusy(clubId: string, weekFrom: string): Promise<boolean> {
+    const [r] = await this.db
+      .select({ one: sql<number>`1` })
+      .from(clubMatches)
+      .where(and(eq(clubMatches.weekFrom, weekFrom), or(eq(clubMatches.homeClubId, clubId), eq(clubMatches.awayClubId, clubId))))
+      .limit(1);
+    return r !== undefined;
+  }
+
+  async createMatch(homeClubId: string, awayClubId: string, metric: string, weekFrom: string): Promise<void> {
+    await this.db.insert(clubMatches).values({ homeClubId, awayClubId, metric, weekFrom });
+  }
+
+  async acceptMatch(id: string, at: Date): Promise<boolean> {
+    return (
+      await this.db
+        .update(clubMatches)
+        .set({ status: 'accepted', acceptedAt: at })
+        .where(and(eq(clubMatches.id, id), eq(clubMatches.status, 'pending')))
+        .returning({ id: clubMatches.id })
+    ).length > 0;
+  }
+
+  async deleteMatch(id: string): Promise<void> {
+    await this.db.delete(clubMatches).where(eq(clubMatches.id, id));
+  }
+
+  /** Unanswered once its week has started: it lapses. */
+  async lapseMatches(utcToday: string): Promise<void> {
+    await this.db.delete(clubMatches).where(and(eq(clubMatches.status, 'pending'), sql`${clubMatches.weekFrom} <= ${utcToday}`));
+  }
+
+  /** Accepted matches whose members are not fixed yet. */
+  async matchesToStart(utcToday: string): Promise<MatchRow[]> {
+    const rows = await this.matchSelect().where(
+      and(eq(clubMatches.status, 'accepted'), sql`${clubMatches.startedAt} is null`, sql`${clubMatches.weekFrom} <= ${utcToday}`),
+    );
+    return rows.map((r) => CommunityRepository.matchRowOf(r));
+  }
+
+  /** The week starts: each club's members now are the ones who count. */
+  async startMatch(id: string, at: Date): Promise<void> {
+    await this.db.execute(sql`
+      insert into club_match_members (match_id, club_id, user_id)
+      select m.id, cm.club_id, cm.user_id from club_matches m
+      join club_members cm on cm.club_id in (m.home_club_id, m.away_club_id)
+      where m.id = ${id}
+      on conflict do nothing`);
+    await this.db.execute(sql`
+      update club_matches m set started_at = ${at.toISOString()}::timestamptz,
+        home_members = (select count(*) from club_match_members x where x.match_id = m.id and x.club_id = m.home_club_id)::int,
+        away_members = (select count(*) from club_match_members x where x.match_id = m.id and x.club_id = m.away_club_id)::int
+      where m.id = ${id}`);
+  }
+
+  /** Matches on now (members fixed, not finished). */
+  async liveMatches(): Promise<MatchRow[]> {
+    const rows = await this.matchSelect().where(and(eq(clubMatches.status, 'accepted'), sql`${clubMatches.startedAt} is not null`));
+    return rows.map((r) => CommunityRepository.matchRowOf(r));
+  }
+
+  /**
+   * Each club's total for the match's week, in the metric's raw unit, from
+   * the members who count: their week now, or that week's kept row.
+   */
+  async matchTotals(id: string, metric: string, weekFrom: string): Promise<Map<string, number>> {
+    const col = sql.raw(WEEK_COLUMN[metric] ?? 'sessions');
+    const rows = await this.db.execute<{ club_id: string; total: number }>(sql`
+      select x.club_id, coalesce(sum(coalesce(ws.${col}, wh.${col}, 0)), 0)::int as total
+      from club_match_members x
+      left join community_week_stats ws on ws.user_id = x.user_id and ws.week_from = ${weekFrom}
+      left join community_week_history wh on wh.user_id = x.user_id and wh.week_from = ${weekFrom}
+      where x.match_id = ${id}
+      group by x.club_id`);
+    return new Map([...rows].map((r) => [r.club_id, r.total]));
+  }
+
+  /** The result is kept; who counted goes. */
+  async finishMatch(id: string, homeScore: number, awayScore: number, at: Date): Promise<void> {
+    await this.db.update(clubMatches).set({ status: 'finished', homeScore, awayScore, finishedAt: at }).where(eq(clubMatches.id, id));
+    await this.db.execute(sql`delete from club_match_members where match_id = ${id}`);
+  }
+
+  /** A result stays a week. */
+  async deleteFinishedMatches(before: Date): Promise<void> {
+    await this.db.delete(clubMatches).where(and(eq(clubMatches.status, 'finished'), lt(clubMatches.finishedAt, before)));
   }
 
   async audit(row: typeof auditLogs.$inferInsert): Promise<void> {

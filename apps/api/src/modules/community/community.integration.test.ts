@@ -11,6 +11,7 @@ import {
   CURRENT_POLICY_VERSION,
   boardSchema,
   clubChallengeViewSchema,
+  clubMatchListSchema,
   clubSchema,
   communityMeSchema,
   feedSchema,
@@ -21,10 +22,12 @@ import {
   suggestionListSchema,
   type Board,
   type ClubChallengeView,
+  type ClubMatch,
   type Feed,
 } from '@fitos/contracts';
 import { keptPlanPct } from '@fitos/core/community/board';
 import { CHALLENGE_METRICS as CORE_CHALLENGE_METRICS, monthOf, monthRange } from '@fitos/core/community/challenge';
+import { nextWeekFrom } from '@fitos/core/community/match';
 import { addDays, localDateOf } from '@fitos/core/nutrition/log';
 import { isoWeekday } from '@fitos/core/progress/streak';
 
@@ -907,5 +910,110 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
     later.setUTCMonth(later.getUTCMonth() + 14);
     await service(later).challengeRound();
     expect((await challengeOf(o, club.id)).history).toEqual([]);
+  });
+
+  const matchesOf = async (u: U, clubId: string): Promise<ClubMatch[]> => {
+    const r = await call(u, 'GET', `/community/clubs/${clubId}/matches`);
+    expect(r.statusCode, r.body).toBe(200);
+    return clubMatchListSchema.parse(r.json()).items;
+  };
+
+  it('beta 6.5 (K3): club vs club — challenged by code for next week, accepted, members fixed at the start, the average per member, one result push, kept a week', async () => {
+    const push = app.push as RecordingPushSender;
+    const A = await member('c65_vs_home');
+    const a1 = await member('c65_vs_h1');
+    const a2 = await member('c65_vs_h2');
+    const B = await member('c65_vs_away');
+    const b1 = await member('c65_vs_a1');
+    const C = await member('c65_vs_other');
+    const D = await member('c65_vs_blocker');
+    const home = await clubOf(A, 'C65 Hostel A', a1, a2);
+    const away = await clubOf(B, 'C65 Gym B', b1);
+    const other = await clubOf(C, 'C65 Other');
+    const blocked = await clubOf(D, 'C65 Blocked');
+    expect((await call(D, 'POST', '/community/blocks', { userId: A.id })).statusCode).toBe(204);
+    const path = `/community/clubs/${home.id}/matches`;
+    const round = (at: Date) => new CommunityService(new CommunityRepository(app.database.db), async () => 0, app.push, () => at).matchRound();
+
+    // Only the owner; never your own club, nor across a block.
+    expect((await call(a1, 'POST', path, { code: away.code, metric: 'sessions' })).statusCode).toBe(403);
+    const self = await call(A, 'POST', path, { code: home.code, metric: 'sessions' });
+    expect(self.statusCode).toBe(422);
+    expect(issue(self)).toBe('self');
+    expect((await call(A, 'POST', path, { code: blocked.code, metric: 'sessions' })).statusCode).toBe(404);
+
+    const made = await call(A, 'POST', path, { code: away.code, metric: 'sessions' });
+    expect(made.statusCode, made.body).toBe(201);
+    const weekFrom = nextWeekFrom(today());
+    const [m] = clubMatchListSchema.parse(made.json()).items;
+    expect(m).toMatchObject({
+      metric: 'sessions',
+      weekFrom,
+      weekTo: addDays(weekFrom, 6),
+      status: 'pending',
+      challenger: true,
+      us: { clubId: home.id, name: 'C65 Hostel A', score: null },
+      them: { clubId: away.id, name: 'C65 Gym B', score: null },
+      members: null,
+      daysLeft: 7,
+      result: null,
+    });
+    // One match a week for either club.
+    const busy = await call(A, 'POST', path, { code: other.code, metric: 'distance' });
+    expect(busy.statusCode).toBe(409);
+    expect(issue(busy)).toBe('busy');
+    const otherBusy = await call(C, 'POST', `/community/clubs/${other.id}/matches`, { code: away.code, metric: 'sessions' });
+    expect(otherBusy.statusCode).toBe(409);
+    expect(issue(otherBusy)).toBe('other-busy');
+
+    // The other owner sees it and accepts; the challenger cannot accept their own.
+    const seen = (await matchesOf(B, away.id))[0]!;
+    expect(seen).toMatchObject({ challenger: false, us: { name: 'C65 Gym B' }, them: { name: 'C65 Hostel A' } });
+    expect((await call(A, 'POST', `${path}/${m!.id}/accept`)).statusCode).toBe(404);
+    expect((await call(b1, 'POST', `/community/clubs/${away.id}/matches/${m!.id}/accept`)).statusCode).toBe(403);
+    const ok = await call(B, 'POST', `/community/clubs/${away.id}/matches/${m!.id}/accept`);
+    expect(ok.statusCode, ok.body).toBe(200);
+    expect(clubMatchListSchema.parse(ok.json()).items[0]!.status).toBe('accepted');
+
+    // The week starts: the members now count; someone joining later does not.
+    await round(new Date(`${weekFrom}T01:00:00Z`));
+    const late = await member('c65_vs_late');
+    expect((await call(late, 'POST', '/community/clubs/join', { code: home.code })).statusCode).toBe(200);
+    const week = async (u: U, sessions: number) =>
+      sql`insert into community_week_history (user_id, week_from, sessions, run_m, streak, active_days) values (${u.id}, ${weekFrom}, ${sessions}, 0, 0, ${sessions})`;
+    for (const [u, s] of [[A, 3], [a1, 2], [a2, 1], [late, 7], [B, 4], [b1, 1]] as const) await week(u, s);
+    const live = (await matchesOf(a1, home.id))[0]!;
+    expect(live).toMatchObject({ status: 'accepted', members: 3, us: { score: 2 }, them: { score: 2.5 } });
+    // The other club shows a name and an average, never who.
+    expect(JSON.stringify(live)).not.toMatch(/c65_vs_a1|c65_vs_away/);
+    const started = await call(A, 'DELETE', `${path}/${m!.id}`);
+    expect(started.statusCode).toBe(409);
+    expect(issue(started)).toBe('started');
+
+    // Two days after its Sunday: the result, one push each from their club's side, only to those who allow it.
+    for (const u of [a1, a2, b1]) await sql`insert into push_tokens (user_id, token, platform) values (${u.id}, ${`cm-push-${u.id}`}, 'android')`;
+    await call(a2, 'PATCH', '/community/me', { notify: false });
+    const tellsOf = (u: U) => push.sends.filter((t) => t.tokens.includes(`cm-push-${u.id}`)).map((t) => [t.message.title, t.message.body]);
+    await round(new Date(`${addDays(weekFrom, 7)}T12:00:00Z`));
+    expect(tellsOf(a1)).toEqual([]);
+    await round(new Date(`${addDays(weekFrom, 8)}T00:30:00Z`));
+    await round(new Date(`${addDays(weekFrom, 8)}T01:30:00Z`));
+    expect(tellsOf(a1)).toEqual([['C65 Hostel A lost to C65 Gym B', '2 to 2.5 sessions per member.']]);
+    expect(tellsOf(b1)).toEqual([['C65 Gym B won against C65 Hostel A', '2.5 to 2 sessions per member.']]);
+    expect(tellsOf(a2)).toEqual([]);
+    expect((await matchesOf(b1, away.id))[0]).toMatchObject({ status: 'finished', result: 'won', daysLeft: 0, us: { score: 2.5 }, them: { score: 2 } });
+    expect((await sql`select 1 from club_match_members where match_id = ${m!.id}`).length).toBe(0);
+
+    // A result stays a week.
+    await round(new Date(`${addDays(weekFrom, 16)}T01:00:00Z`));
+    expect(await matchesOf(A, home.id)).toEqual([]);
+
+    // Declined, or unanswered until its week starts: it goes.
+    const again = clubMatchListSchema.parse((await call(A, 'POST', path, { code: away.code, metric: 'active-days' })).json()).items[0]!;
+    expect((await call(B, 'DELETE', `/community/clubs/${away.id}/matches/${again.id}`)).statusCode).toBe(204);
+    expect(await matchesOf(A, home.id)).toEqual([]);
+    expect((await call(A, 'POST', path, { code: away.code, metric: 'distance' })).statusCode).toBe(201);
+    await round(new Date(`${weekFrom}T00:00:00Z`));
+    expect(await matchesOf(B, away.id)).toEqual([]);
   });
 });

@@ -24,7 +24,8 @@
  *   Beta 5.8 community_profiles, friendships, community_blocks, clubs,
  *            club_members, community_reports, community_week_stats
  *   Beta 6.0 water_logs
- *   Beta 6.5 club_challenges, club_challenge_parts
+ *   Beta 6.5 club_challenges, club_challenge_parts, club_matches,
+ *            club_match_members
  */
 export * from './schema/enums.js';
 export * from './schema/users.js';

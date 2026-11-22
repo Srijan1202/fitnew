@@ -39,6 +39,8 @@ export const OTHER_PEOPLES: ReadonlySet<string> = new Set([
   'friend_declines',
   // Beta 6.3 (C16): a suggestion someone hid; the hidden person never learns of it.
   'community_suggestion_dismissals',
+  // Beta 6.5 (K3): who counted in a club match; the other club never learns who.
+  'club_match_members',
 ]);
 
 export class PrivacyRepository {

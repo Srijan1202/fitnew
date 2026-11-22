@@ -407,6 +407,13 @@
       "when": 1795376048266,
       "tag": "0057_community_feed_default",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1795376668679,
+      "tag": "0058_club_matches",
+      "breakpoints": true
     }
   ]
 }

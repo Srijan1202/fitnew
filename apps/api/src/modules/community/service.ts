@@ -29,6 +29,8 @@ import {
   type Club,
   type ClubChallenge,
   type ClubChallengeView,
+  type ChallengeClubRequest,
+  type ClubMatch,
   type SetChallengeRequest,
   type CommunityMe,
   type CommunityPerson,
@@ -59,6 +61,16 @@ import {
   suggestTarget,
   type ChallengeMetric,
 } from '@fitos/core/community/challenge';
+import {
+  MATCH_RESULT_SHOWN_DAYS,
+  matchDaysLeft,
+  matchResult,
+  matchResultLine,
+  matchWeekOver,
+  matchWeekStarted,
+  nextWeekFrom,
+  perMember,
+} from '@fitos/core/community/match';
 import { boardKey, keptPlanPct, placesMoved, rankBy, type BoardMetricKey } from '@fitos/core/community/board';
 import {
   FEED_DAYS,
@@ -80,7 +92,7 @@ import { isoWeekday } from '@fitos/core/progress/streak';
 import { uniqueViolationOf } from '../../db/errors.js';
 import { AppError } from '../../lib/errors.js';
 import type { PushSender } from '../../lib/push.js';
-import type { ChallengeRow, CommunityRepository, PersonRow, PostRow, StatRow, WeekRow } from './repository.js';
+import type { ChallengeRow, CommunityRepository, MatchRow, PersonRow, PostRow, StatRow, WeekRow } from './repository.js';
 
 /** The person's current streak (the progress service's own count). */
 export type StreakOf = (userId: string) => Promise<number>;
@@ -746,6 +758,89 @@ export class CommunityService {
     await this.repo.closeChallenge(open.id, this.now(), true);
   }
 
+  /* ------------------------------------------ beta 6.5 (K3): club vs club -- */
+
+  private async matchOf(m: MatchRow, clubId: string, today: string): Promise<ClubMatch> {
+    const metric = m.metric as ChallengeMetric;
+    const home = m.homeClubId === clubId;
+    let homeScore: number | null = null;
+    let awayScore: number | null = null;
+    if (m.status === 'finished') {
+      homeScore = perMember(metric, m.homeScore ?? 0, m.homeMembers ?? 0);
+      awayScore = perMember(metric, m.awayScore ?? 0, m.awayMembers ?? 0);
+    } else if (m.startedAt !== null) {
+      const totals = await this.repo.matchTotals(m.id, m.metric, m.weekFrom);
+      homeScore = perMember(metric, totals.get(m.homeClubId) ?? 0, m.homeMembers ?? 0);
+      awayScore = perMember(metric, totals.get(m.awayClubId) ?? 0, m.awayMembers ?? 0);
+    }
+    const us = { clubId, name: home ? m.homeName : m.awayName, score: home ? homeScore : awayScore };
+    const them = { clubId: home ? m.awayClubId : m.homeClubId, name: home ? m.awayName : m.homeName, score: home ? awayScore : homeScore };
+    return {
+      id: m.id,
+      metric,
+      weekFrom: m.weekFrom,
+      weekTo: addDays(m.weekFrom, 6),
+      status: m.status as ClubMatch['status'],
+      challenger: home,
+      us,
+      them,
+      members: m.startedAt === null ? null : (home ? m.homeMembers : m.awayMembers),
+      daysLeft: m.status === 'finished' ? 0 : matchDaysLeft(m.weekFrom, today),
+      result: m.status === 'finished' ? matchResult(us.score!, them.score!) : null,
+    };
+  }
+
+  /** A club's matches, for its members: waiting, on, and finished in the last week. */
+  async clubMatches(viewer: string, clubId: string): Promise<ClubMatch[]> {
+    await this.requireMember(viewer);
+    if (!(await this.repo.isMember(clubId, viewer))) throw new AppError('NOT_FOUND', 'No such club.');
+    await this.refreshOne(viewer);
+    const today = localDateOf(this.now(), await this.repo.timezoneOf(viewer));
+    const rows = await this.repo.matchesOf(clubId, new Date(this.now().getTime() - MATCH_RESULT_SHOWN_DAYS * 86_400_000));
+    const out: ClubMatch[] = [];
+    for (const m of rows) out.push(await this.matchOf(m, clubId, today));
+    return out;
+  }
+
+  /**
+   * The owner challenges the club with this code to next week (their week).
+   * One match a week for either club; never across a block between the owners.
+   */
+  async challengeClub(viewer: string, clubId: string, body: ChallengeClubRequest): Promise<ClubMatch[]> {
+    await this.requireOwner(viewer, clubId);
+    const other = await this.repo.clubByCode(body.code);
+    if (other === null || (await this.repo.blockedEitherWay(viewer, other.ownerId))) throw new AppError('NOT_FOUND', 'No club has that code.');
+    if (other.id === clubId) throw new AppError('VALIDATION_FAILED', 'Challenge another club.', [{ path: 'code', issue: 'self' }]);
+    const weekFrom = nextWeekFrom(localDateOf(this.now(), await this.repo.timezoneOf(viewer)));
+    if (await this.repo.clubBusy(clubId, weekFrom)) throw new AppError('CONFLICT', 'Your club has a match next week.', [{ path: 'match', issue: 'busy' }]);
+    if (await this.repo.clubBusy(other.id, weekFrom)) throw new AppError('CONFLICT', 'That club has a match next week.', [{ path: 'match', issue: 'other-busy' }]);
+    await this.repo.createMatch(clubId, other.id, body.metric, weekFrom);
+    return this.clubMatches(viewer, clubId);
+  }
+
+  /** The challenged club's owner accepts, before the week starts. */
+  async acceptMatch(viewer: string, clubId: string, matchId: string): Promise<ClubMatch[]> {
+    await this.requireOwner(viewer, clubId);
+    const m = await this.repo.match(matchId);
+    if (m === null || m.awayClubId !== clubId || m.status !== 'pending' || (await this.repo.blockedEitherWay(viewer, m.homeOwnerId))) {
+      throw new AppError('NOT_FOUND', 'No such challenge.');
+    }
+    if (localDateOf(this.now(), await this.repo.timezoneOf(viewer)) >= m.weekFrom) {
+      throw new AppError('CONFLICT', 'That week has started.', [{ path: 'match', issue: 'started' }]);
+    }
+    await this.repo.acceptMatch(matchId, this.now());
+    return this.clubMatches(viewer, clubId);
+  }
+
+  /** Decline a challenge, take one back, or call a match off before its week starts. */
+  async cancelMatch(viewer: string, clubId: string, matchId: string): Promise<void> {
+    await this.requireOwner(viewer, clubId);
+    const m = await this.repo.match(matchId);
+    if (m === null || (m.homeClubId !== clubId && m.awayClubId !== clubId)) throw new AppError('NOT_FOUND', 'No such match.');
+    if (m.startedAt !== null || m.status === 'finished') throw new AppError('CONFLICT', 'That week has started.', [{ path: 'match', issue: 'started' }]);
+    await this.repo.deleteMatch(matchId);
+  }
+
   /* --------------------------------------------------------------- boards -- */
 
   private async week(viewer: string): Promise<{ from: string; to: string }> {
@@ -923,7 +1018,50 @@ export class CommunityService {
       }
     }
     await this.challengeRound();
+    await this.matchRound();
     return n;
+  }
+
+  /**
+   * Beta 6.5 (K3), after every member is recounted: an unanswered challenge
+   * lapses when its week starts; an accepted one fixes its members then; once
+   * the week is over everywhere the result is kept and each member who allows
+   * Community notifications gets the one push (owner Q4), from their club's
+   * side; a result stays a week.
+   */
+  async matchRound(): Promise<void> {
+    const now = this.now();
+    const utcToday = now.toISOString().slice(0, 10);
+    await this.repo.lapseMatches(utcToday);
+    for (const m of await this.repo.matchesToStart(utcToday)) {
+      if (matchWeekStarted(m.weekFrom, utcToday)) await this.repo.startMatch(m.id, now);
+    }
+    for (const m of await this.repo.liveMatches()) {
+      if (!matchWeekOver(m.weekFrom, utcToday)) continue;
+      try {
+        const totals = await this.repo.matchTotals(m.id, m.metric, m.weekFrom);
+        const home = totals.get(m.homeClubId) ?? 0;
+        const away = totals.get(m.awayClubId) ?? 0;
+        await this.repo.finishMatch(m.id, home, away, now);
+        const metric = m.metric as ChallengeMetric;
+        const h = perMember(metric, home, m.homeMembers ?? 0);
+        const a = perMember(metric, away, m.awayMembers ?? 0);
+        const told = new Set<string>();
+        for (const [clubId, line] of [
+          [m.homeClubId, matchResultLine(m.homeName, m.awayName, metric, h, a)],
+          [m.awayClubId, matchResultLine(m.awayName, m.homeName, metric, a, h)],
+        ] as const) {
+          for (const x of await this.repo.clubMembersToTell(clubId)) {
+            if (!x.notify || told.has(x.userId)) continue;
+            told.add(x.userId);
+            await this.tell(x.userId, line.title, line.body, { type: 'community', screen: 'club', clubId });
+          }
+        }
+      } catch {
+        // The next round tries again.
+      }
+    }
+    await this.repo.deleteFinishedMatches(new Date(now.getTime() - MATCH_RESULT_SHOWN_DAYS * 86_400_000));
   }
 
   /**
