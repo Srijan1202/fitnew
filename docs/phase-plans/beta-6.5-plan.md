@@ -15,6 +15,8 @@
 
 Nothing older is shown to clubs. Community settings says "friends and your clubs" from 6.5 on.
 
+**Owner change (2026-11-22): the feed is on by default** (K0, §7). A member shares without opting in, and can opt out of any kind. This replaces 6.3's "off until chosen" (ADR-062 D2).
+
 **Asked by the owner (2026-11-20):** "Clubs together": the club items the 6.3 plan left out ("Club feeds, club challenges and club vs club (C6, C7)"), from the final audit (`docs/audits/2026-11-11-final-audit.md` §7).
 
 6.5 is a **full APK** in any case, because it carries the Flutter package updates (`docs/phase-plans/upkeep-2026-12-plan.md`).
@@ -38,13 +40,15 @@ Club-mates who are not friends see each other on the club board and nowhere else
 
 ## 3. Data and privacy
 
-- **Migration 0056:**
-  - `club_challenges`;
-  - and with K3, `club_matches` and `club_match_members`.
+- **Migration 0056** (done): `club_challenges` and `club_challenge_parts`.
+- **Migration 0057** (K3 and K0):
+  - `club_matches` and `club_match_members`;
+  - `community_profiles.feed_chosen`;
+  - the feed default switched to every kind.
 - **Ownership:**
   - A challenge and a match belong to their club, and go with it.
   - Sharing is part of the membership row, so it goes when the person leaves.
-  - Data download: challenges and matches belong to the club, not to a person (`OTHER_PEOPLES`, like suggestions).
+  - Data download: a member's own challenge parts are theirs. The download walks a club owner's clubs (as it already does for their members), so the owner's download also holds the club's challenges and matches. Nothing is marked `OTHER_PEOPLES`.
 - **Privacy policy:** a new version, which everyone accepts once (as in 6.2 and 6.3). It names:
   - that the kinds shared now reach your clubs as well as your friends, from accepting this version and from joining each club;
   - challenges (the club total and each member's part, shown to the club);
@@ -56,7 +60,7 @@ Club-mates who are not friends see each other on the club board and nowhere else
 
 ## 4. Release
 
-1. The API comes first (migration 0056). It deploys with `deploy.ps1`, which takes the snapshot and clears the old ones.
+1. The API comes first (migrations 0056 and 0057). It deploys with `deploy.ps1`, which takes the snapshot and clears the old ones.
 2. Then the full APK 1.0.0-beta.6.5 (40), carrying the package updates due by then.
 3. Then the website post, deployed with `-Apk`, which announces it.
 - The minimum build stays 37. Older apps ignore the new endpoints, and their club screen keeps working.
@@ -75,3 +79,56 @@ Club-mates who are not friends see each other on the club board and nowhere else
 - Comments, and free-text challenge titles. Both need moderation.
 - Leagues (C14).
 - Club roles beyond the owner (co-owners).
+
+## 7. Owner change (2026-11-22): the feed on by default (K0)
+
+**Asked:** "change that feed to be auto in: the person does not have to opt in, he can opt out."
+
+| | Today (6.3) | From 6.5 |
+|---|---|---|
+| A new member | Shares nothing until they switch a kind on | Shares every kind (sessions, runs, records, streaks) from joining. Community settings switches any kind off. |
+| What they are told | Policy: "Each kind is off until you turn it on" | The join screen says, before **Join**, that friends and clubs will see these posts and that any of them can be turned off in Community settings. The policy says the same. |
+| Switching off | Deletes that kind's posts | The same |
+
+**Members who joined before 6.5** (Q5):
+- Anyone who never touched the switches (`feed_since` empty) has every kind switched on **from the moment they accept the 2026-11-20 policy**. Nothing from before that is posted.
+- Anyone who changed a switch keeps exactly what they chose (`feed_chosen`).
+
+**Built as:**
+- Migration 0057 adds `community_profiles.feed_chosen`. It is true where `feed_since` is not empty, and set by any later change to the switches.
+- Joining stores every kind, with `feed_since` = now.
+- In the round, a member with `feed_chosen = false` who has a consent row at version 2026-11-20 or later gets every kind, from that consent's time.
+- `FEED_KINDS` stays the same list. The 6.3 "Share your activity" card in the feed shows only to someone who switched everything off.
+- **Policy 2026-11-20** (not released yet, so amended in place): "Each kind is on from when you join, or for members who joined earlier, from when you agree to this version, unless you turned it off; you can turn any off at any time."
+
+## 8. What is left (2026-11-22)
+
+**Done** (on phase-19, merged into main at 76c3761):
+- Policy 2026-11-20.
+- The K1 club feed on the server.
+- The K2 core rules and migration 0056.
+
+**In order, one commit each:**
+
+| # | Step | Detail |
+|---|---|---|
+| 1 | Package updates due | drift 2.35.4, drift_dev, sqlite3 (22 Nov). go_router, synchronized (23 Nov). shared_preferences and objective_c (25 Nov). |
+| 2 | K2 server | <ul><li>`GET`, `POST`, `PATCH` and `DELETE /community/clubs/:id/challenge`.</li><li>Parts counted in `refreshOne`.</li><li>After `refreshAll`: totals, the reached push, closing once the month is over everywhere, deleting closed challenges after 12 months.</li><li>Integration tests and the OpenAPI export.</li></ul> |
+| 3 | K0 server | <ul><li>Migration 0057 `feed_chosen`.</li><li>Joining shares every kind.</li><li>The earlier members as in §7.</li><li>The policy text amended in the repo, app and website.</li><li>Tests.</li></ul> |
+| 4 | K3 server | <ul><li>Migration 0057 (with K0): `club_matches` and `club_match_members`.</li><li>Challenge a club by code; accept or decline.</li><li>One match a week, refused across a block.</li><li>The per-member average, and the result push after the week.</li><li>Tests and OpenAPI.</li></ul> |
+| 5 | App: K0 and K1 | <ul><li>The join screen's sharing line.</li><li>Settings switches on, "Shared with your friends and your clubs".</li><li>Club **Feed · Board** halves.</li><li>Cheers in a club.</li><li>The new policy to accept.</li></ul> |
+| 6 | App: K2 | The challenge bar, your part, the last 3 finished, and the owner's "Set a challenge" sheet. |
+| 7 | App: K3 | The match card, "Challenge a club", Accept and Decline. |
+| 8 | Package updates due | archive, image (28 Nov). Firebase, material_ui (30 Nov). flutter_local_notifications 23 with AGP 9.1.1 and compileSdk 37 (2 Dec). |
+| 9 | Admin | Admin › Clubs shows the current challenge and match. |
+| 10 | Docs | ADR-064 and the website post (not deployed). |
+| 11 | Checks | The whole app (analyze, format, every test), the API suite, the Kotlin and a debug APK in WSL, CI. |
+| 12 | Release (owner's go) | <ol><li>The API with `deploy.ps1` (0056, 0057).</li><li>`admin.ps1`.</li><li>The full APK 1.0.0-beta.6.5 (40).</li><li>The website with `-Apk`, which announces it.</li></ol> |
+
+**Outside 6.5:** `snapshots.ps1` about 2026-12-08 (deleting on the owner's yes; deadline 2026-12-11), and the S24 checks for 6.0–6.4.
+
+## 9. Question for the owner
+
+| # | Question | Recommended |
+|---|---|---|
+| Q5 | **Members who joined before 6.5:** switch their sharing on too? | Yes, but only for those who never touched the switches, and only from when they accept the new policy. Anyone who chose keeps their choice. |
