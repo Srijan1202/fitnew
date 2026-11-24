@@ -75,6 +75,18 @@
 | Q5 | **Co-owners:** how many, and can they remove members? | **Up to 2, and yes,** so a club is looked after when its owner is away. Only the owner names co-owners and passes the club on. |
 | Q6 | **Divisions** (promotion and relegation)? | **Not yet.** One table, with pairing by similar averages. Divisions once about 30 clubs play. |
 | Q7 | **The privacy policy:** 6.5's version (2026-11-20) is not released yet. Fold leagues and co-owners into it now, or make a new version for 6.6? | **Fold them in, if 6.5 is still unreleased when 6.6's server is ready**, so people accept once, not twice in a month. Otherwise a new version for 6.6. |
+| Q8 | **More for 6.6 (§8):** which of M2–M4 come along? M1 needs no answer and is done first. | **M1, M2 and M3.** M4 only if it stays small. |
+
+## 8. More for 6.6 (owner 2026-11-24: "plan and more")
+
+| # | Item | What | Size |
+|---|---|---|---|
+| M1 | **Clock-safe tests** (no question) | Four tests fail between 00:00 and 05:30 IST, when it is Monday locally and still Sunday in UTC. Three are in `workout_screens_test.dart` (done today, and the two skip-today tests). One is in the API's `progression.integration.test.ts` ("volume equals a hand calculation", whose `daysAgo(0, 8)` falls into the week before). Each test gets one clock and one time zone, so it passes at any hour. The app's own behaviour does not change. | S |
+| M2 | **Share a result** | After a match, or at season end, "Share" makes an image on the phone: the two clubs' names, the averages and the result, or the club's place in the table. It goes out through the share sheet, as the run card does. It carries no member names and no handles. Nothing is uploaded. | S |
+| M3 | **The club in numbers** | A "This month" strip on the club's board: the club's counted sessions, run km and active days this month, and its best week so far. These are the same counts the boards use, as totals, never who. | S |
+| M4 | **Small upkeep** | <ul><li>`tsx` upgraded past its deprecation warning (E16).</li><li>Any of the 5 moderate advisories (A4) with a fixed release at least two weeks old.</li><li>The Flutter packages that turn two weeks old by then.</li></ul> | S |
+
+They come in this order: M1 first (in 6.5's checks too), then L2, L1, M3, M2 and M4.
 
 ## 7. Not in 6.6
 
