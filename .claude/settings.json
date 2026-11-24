@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "ClaudeInChromeDomain(admin.tryfitos.me)",
+      "ClaudeInChromeDomain(github.com)"
+    ]
+  }
+}
