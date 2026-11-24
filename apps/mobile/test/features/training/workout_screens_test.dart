@@ -35,6 +35,15 @@ import '../../support/workout_overrides.dart';
 /// The Phase 4 rework's UI against scripted servers: one day at a time,
 /// expandable cards, per-set edits that auto-save, three entry modes,
 /// templates previewed before applied, a step-by-step builder.
+/// The device's date (yyyy-mm-dd). The fixtures pick "today" from the
+/// device's clock, so the app's today must be the same day: with nobody
+/// signed in the app counts in UTC, which before 05:30 IST is still
+/// yesterday (beta 6.6, M1).
+String deviceToday() {
+  final n = DateTime.now();
+  return '${n.year.toString().padLeft(4, '0')}-${n.month.toString().padLeft(2, '0')}-${n.day.toString().padLeft(2, '0')}';
+}
+
 void main() {
   late FakeTrainingRepository training;
   late FakeExerciseRepository exercises;
@@ -128,6 +137,7 @@ void main() {
         trainingRepositoryProvider.overrideWithValue(training),
         exerciseRepositoryProvider.overrideWithValue(exercises),
         profileRepositoryProvider.overrideWithValue(profile),
+        localTodayProvider.overrideWithValue(deviceToday()),
         ...workoutOverrides(db, workoutApi),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
@@ -1177,10 +1187,7 @@ void main() {
   });
 
   group('rolling cycle (beta 6.1, F2)', () {
-    String localToday() {
-      final n = DateTime.now();
-      return '${n.year.toString().padLeft(4, '0')}-${n.month.toString().padLeft(2, '0')}-${n.day.toString().padLeft(2, '0')}';
-    }
+    String localToday() => deviceToday();
 
     /// Two sessions, then a rest day: a 3-day cycle whose day 1 is today.
     Program cycle() {

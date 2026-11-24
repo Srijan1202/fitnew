@@ -113,6 +113,15 @@ describeIfDb('/v1/training progression, volume and deload (real Postgres, real s
   }
 
   const daysAgo = (d: number, hour = 10) => new Date(Date.now() - d * 86_400_000 - (10 - hour) * 3_600_000);
+  /**
+   * Beta 6.6 (M1): earlier today in Kolkata (the test user's zone), two hours
+   * back but never before its midnight, so the session is in this week at any
+   * hour (two hours back at 01:00 IST on a Monday was last week).
+   */
+  const earlierToday = (): Date => {
+    const midnight = Date.parse(`${localDate(new Date(), 'Asia/Kolkata')}T00:00:00+05:30`);
+    return new Date(Math.max(midnight + 1000, Date.now() - 2 * 3_600_000));
+  };
 
   it('no history: every lift is establish-baseline with a reason; prefill has no load', async () => {
     const { token, day } = await withProgram();
@@ -260,7 +269,7 @@ describeIfDb('/v1/training progression, volume and deload (real Postgres, real s
     // Two sessions today-ish: the first exercise 4 sets at 60×10, the second 3 sets (per plan).
     const x0 = day.exercises[0]!;
     const x1 = day.exercises[1]!;
-    await session(token, day, daysAgo(0, 8), [{ index: 0, weight: 60, reps: 10, rir: 2 }, { index: 1, weight: 40, reps: 8, rir: 2 }]);
+    await session(token, day, earlierToday(), [{ index: 0, weight: 60, reps: 10, rir: 2 }, { index: 1, weight: 40, reps: 8, rir: 2 }]);
     const v = (await app.inject({ method: 'GET', url: '/v1/training/volume', headers: auth(token) })).json() as VolumeResponse;
     expect(v.weeks.length).toBe(4);
     const week = v.weeks[3]!;
