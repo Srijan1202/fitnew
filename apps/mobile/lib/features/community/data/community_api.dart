@@ -89,6 +89,13 @@ abstract class CommunityApi {
   Future<Result<Club>> renameClub(String clubId, String name);
   Future<Result<Club>> newClubCode(String clubId);
   Future<Result<Club>> passClub(String clubId, String userId);
+
+  /// Beta 6.6 (L2): the owner names a co-owner, or drops one.
+  Future<Result<Club>> setCoOwner(
+    String clubId,
+    String userId, {
+    required bool on,
+  });
   Future<Result<void>> removeMember(String clubId, String userId);
   Future<Result<List<CommunityPerson>>> removedFrom(String clubId);
   Future<Result<void>> letBack(String clubId, String userId);
@@ -501,6 +508,20 @@ class DioCommunityApi implements CommunityApi {
           '/v1/community/clubs/$clubId/owner',
           data: {'userId': userId},
         );
+        return Club.fromJson(r.data!);
+      });
+
+  @override
+  Future<Result<Club>> setCoOwner(
+    String clubId,
+    String userId, {
+    required bool on,
+  }) =>
+      _guard(() async {
+        final path = '/v1/community/clubs/$clubId/co-owners/$userId';
+        final r = on
+            ? await _dio.put<Map<String, dynamic>>(path)
+            : await _dio.delete<Map<String, dynamic>>(path);
         return Club.fromJson(r.data!);
       });
 

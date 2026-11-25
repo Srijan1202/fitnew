@@ -339,7 +339,13 @@ class FakeCommunityApi implements CommunityApi {
     return p == null ? const Err(NotFound('No such member.')) : _r(p);
   }
 
-  Club _changed(String clubId, {String? name, String? code, bool? mine}) {
+  Club _changed(
+    String clubId, {
+    String? name,
+    String? code,
+    bool? mine,
+    List<String>? coOwners,
+  }) {
     final c = myClubs.firstWhere((x) => x.id == clubId);
     final next = Club(
       id: c.id,
@@ -347,6 +353,10 @@ class FakeCommunityApi implements CommunityApi {
       code: code ?? c.code,
       members: c.members,
       mine: mine ?? c.mine,
+      ownerId: c.ownerId,
+      coOwners: coOwners ?? c.coOwners,
+      role: c.role,
+      seasonWinner: c.seasonWinner,
     );
     myClubs = [for (final x in myClubs) x.id == clubId ? next : x];
     return next;
@@ -368,6 +378,27 @@ class FakeCommunityApi implements CommunityApi {
   Future<Result<Club>> passClub(String clubId, String userId) async {
     calls.add('pass-club $clubId $userId');
     return _r(_changed(clubId, mine: false));
+  }
+
+  @override
+  Future<Result<Club>> setCoOwner(
+    String clubId,
+    String userId, {
+    required bool on,
+  }) async {
+    calls.add('${on ? 'co-owner' : 'not-co-owner'} $clubId $userId');
+    final c = myClubs.firstWhere((x) => x.id == clubId);
+    return _r(
+      _changed(
+        clubId,
+        coOwners: on
+            ? [...c.coOwners, userId]
+            : [
+                for (final x in c.coOwners)
+                  if (x != userId) x,
+              ],
+      ),
+    );
   }
 
   @override

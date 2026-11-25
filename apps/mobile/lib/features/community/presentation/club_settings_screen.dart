@@ -11,6 +11,8 @@ import 'community_screen.dart';
 
 /// Beta 6.2 (C5, audit S3): a club's owner renames it, makes a new code,
 /// removes members (kept out until let back, owner Q2) and passes it on.
+/// Beta 6.6 (L2, owner Q5): co-owners see it too; only the owner names them
+/// (up to 2) and passes the club on, and a co-owner removes only members.
 class ClubSettingsScreen extends ConsumerWidget {
   const ClubSettingsScreen({required this.clubId, super.key});
 
@@ -47,6 +49,10 @@ class ClubSettingsScreen extends ConsumerWidget {
         ),
       ) ??
       false;
+
+  /// The owner acts on anyone; a co-owner only on plain members.
+  static bool _canAct(Club? club, String userId) =>
+      club != null && (club.mine || club.tagOf(userId) == null);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -165,63 +171,121 @@ class ClubSettingsScreen extends ConsumerWidget {
                           size: 34,
                         ),
                         title: Text('@${m.handle} ${flagOf(m.country)}'),
-                        trailing: PopupMenuButton<String>(
-                          key: ValueKey('clubSettings.member.${m.handle}.menu'),
-                          onSelected: (v) async {
-                            if (v == 'remove') {
-                              final sure = await _sure(
-                                context,
-                                title: 'Remove @${m.handle}?',
-                                body:
-                                    'They leave the club and cannot join again with the code until you let them back.',
-                                ok: 'Remove',
-                                okKey: 'clubSettings.remove.ok',
-                              );
-                              if (!sure) return;
-                              final r =
-                                  await api.removeMember(clubId, m.userId);
-                              refreshCommunity(ref);
-                              if (context.mounted) {
-                                _say(
-                                  context,
-                                  r.when(
-                                    ok: (_) => '@${m.handle} was removed.',
-                                    err: (f) => f.message,
+                        subtitle: club?.tagOf(m.userId) == null
+                            ? null
+                            : Text(
+                                club!.tagOf(m.userId)!,
+                                key: ValueKey(
+                                  'clubSettings.member.${m.handle}.tag',
+                                ),
+                              ),
+                        trailing: !_canAct(club, m.userId)
+                            ? null
+                            : PopupMenuButton<String>(
+                                key: ValueKey(
+                                  'clubSettings.member.${m.handle}.menu',
+                                ),
+                                onSelected: (v) async {
+                                  if (v == 'remove') {
+                                    final sure = await _sure(
+                                      context,
+                                      title: 'Remove @${m.handle}?',
+                                      body:
+                                          'They leave the club and cannot join again with the code until you let them back.',
+                                      ok: 'Remove',
+                                      okKey: 'clubSettings.remove.ok',
+                                    );
+                                    if (!sure) return;
+                                    final r = await api.removeMember(
+                                      clubId,
+                                      m.userId,
+                                    );
+                                    refreshCommunity(ref);
+                                    if (context.mounted) {
+                                      _say(
+                                        context,
+                                        r.when(
+                                          ok: (_) =>
+                                              '@${m.handle} was removed.',
+                                          err: (f) => f.message,
+                                        ),
+                                      );
+                                    }
+                                  } else if (v == 'co-owner' ||
+                                      v == 'not-co-owner') {
+                                    final r = await api.setCoOwner(
+                                      clubId,
+                                      m.userId,
+                                      on: v == 'co-owner',
+                                    );
+                                    refreshCommunity(ref);
+                                    if (context.mounted) {
+                                      _say(
+                                        context,
+                                        r.when(
+                                          ok: (_) => v == 'co-owner'
+                                              ? '@${m.handle} is a co-owner.'
+                                              : '@${m.handle} is a member again.',
+                                          err: (f) => f.message,
+                                        ),
+                                      );
+                                    }
+                                  } else if (v == 'owner') {
+                                    final sure = await _sure(
+                                      context,
+                                      title: 'Make @${m.handle} the owner?',
+                                      body:
+                                          'They run the club from now on; you stay in it as a member.',
+                                      ok: 'Make owner',
+                                      okKey: 'clubSettings.owner.ok',
+                                    );
+                                    if (!sure) return;
+                                    final r =
+                                        await api.passClub(clubId, m.userId);
+                                    refreshCommunity(ref);
+                                    if (!context.mounted) return;
+                                    r.when(
+                                      ok: (_) => context.popOrHome(),
+                                      err: (f) => _say(context, f.message),
+                                    );
+                                  }
+                                },
+                                itemBuilder: (_) => [
+                                  if (club?.mine ?? false) ...[
+                                    if (club!.coOwners.contains(m.userId))
+                                      PopupMenuItem(
+                                        key: ValueKey(
+                                          'clubSettings.notCoOwner.${m.handle}',
+                                        ),
+                                        value: 'not-co-owner',
+                                        child: const Text('Not a co-owner'),
+                                      )
+                                    else if (club.coOwners.length <
+                                        kMaxCoOwners)
+                                      PopupMenuItem(
+                                        key: ValueKey(
+                                          'clubSettings.coOwner.${m.handle}',
+                                        ),
+                                        value: 'co-owner',
+                                        child: const Text('Make co-owner'),
+                                      ),
+                                    PopupMenuItem(
+                                      key: ValueKey(
+                                        'clubSettings.owner.${m.handle}',
+                                      ),
+                                      value: 'owner',
+                                      child: const Text('Make owner'),
+                                    ),
+                                  ],
+                                  PopupMenuItem(
+                                    key: ValueKey(
+                                      'clubSettings.remove.${m.handle}',
+                                    ),
+                                    value: 'remove',
+                                    child: const Text('Remove from the club'),
                                   ),
-                                );
-                              }
-                            } else if (v == 'owner') {
-                              final sure = await _sure(
-                                context,
-                                title: 'Make @${m.handle} the owner?',
-                                body:
-                                    'They run the club from now on; you stay in it as a member.',
-                                ok: 'Make owner',
-                                okKey: 'clubSettings.owner.ok',
-                              );
-                              if (!sure) return;
-                              final r = await api.passClub(clubId, m.userId);
-                              refreshCommunity(ref);
-                              if (!context.mounted) return;
-                              r.when(
-                                ok: (_) => context.popOrHome(),
-                                err: (f) => _say(context, f.message),
-                              );
-                            }
-                          },
-                          itemBuilder: (_) => [
-                            PopupMenuItem(
-                              key: ValueKey('clubSettings.owner.${m.handle}'),
-                              value: 'owner',
-                              child: const Text('Make owner'),
-                            ),
-                            PopupMenuItem(
-                              key: ValueKey('clubSettings.remove.${m.handle}'),
-                              value: 'remove',
-                              child: const Text('Remove from the club'),
-                            ),
-                          ],
-                        ),
+                                ],
+                              ),
                       ),
                     ],
                   ],

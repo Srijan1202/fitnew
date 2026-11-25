@@ -92,7 +92,7 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
               }
             },
             itemBuilder: (_) => [
-              if (c?.mine ?? false)
+              if (c?.runs ?? false)
                 const PopupMenuItem(
                   key: ValueKey('club.settings'),
                   value: 'settings',
@@ -236,15 +236,17 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
             ),
           const SizedBox(height: FitSpacing.md),
           // Beta 6.5 (K2): the club's goal for the month.
-          ClubChallengeCard(clubId: clubId, owner: c?.mine ?? false),
+          // Beta 6.6 (L2): the owner or a co-owner runs them.
+          ClubChallengeCard(clubId: clubId, owner: c?.runs ?? false),
           // Beta 6.5 (K3): club vs club.
-          ClubMatchCard(clubId: clubId, owner: c?.mine ?? false),
+          ClubMatchCard(clubId: clubId, owner: c?.runs ?? false),
           const BoardMetricPicker(),
           const SizedBox(height: FitSpacing.md),
           BoardLoader(
             board: ref.watch(clubBoardProvider((clubId, metric))),
             emptyText: 'Nobody here yet: share the code.',
             onRetry: () => ref.invalidate(clubBoardProvider),
+            tagOf: c?.tagOf,
             onPerson: (r) => context.push(
               Routes.communityPerson(r.userId),
               extra: r.handle,

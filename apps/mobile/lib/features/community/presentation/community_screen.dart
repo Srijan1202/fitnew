@@ -516,12 +516,16 @@ class BoardBlock extends StatelessWidget {
     required this.board,
     required this.emptyText,
     this.onPerson,
+    this.tagOf,
     super.key,
   });
 
   final Board board;
   final String emptyText;
   final void Function(BoardRow row)? onPerson;
+
+  /// Beta 6.6 (L2): "Owner" or "Co-owner" by a club's board rows.
+  final String? Function(String userId)? tagOf;
 
   @override
   Widget build(BuildContext context) {
@@ -556,7 +560,12 @@ class BoardBlock extends StatelessWidget {
               children: [
                 for (final (i, r) in rows.indexed) ...[
                   if (i > 0) const FitRule(),
-                  _BoardLine(row: r, metric: board.metric, onTap: onPerson),
+                  _BoardLine(
+                    row: r,
+                    metric: board.metric,
+                    onTap: onPerson,
+                    tag: tagOf?.call(r.userId),
+                  ),
                 ],
               ],
             ),
@@ -564,8 +573,12 @@ class BoardBlock extends StatelessWidget {
         if (board.me != null) ...[
           const SizedBox(height: FitSpacing.sm),
           FitBlock(
-            child:
-                _BoardLine(row: board.me!, metric: board.metric, onTap: null),
+            child: _BoardLine(
+              row: board.me!,
+              metric: board.metric,
+              onTap: null,
+              tag: tagOf?.call(board.me!.userId),
+            ),
           ),
         ],
       ],
@@ -645,17 +658,24 @@ class _LastWeek extends StatelessWidget {
 }
 
 class _BoardLine extends StatelessWidget {
-  const _BoardLine({required this.row, required this.metric, this.onTap});
+  const _BoardLine({
+    required this.row,
+    required this.metric,
+    this.onTap,
+    this.tag,
+  });
 
   final BoardRow row;
   final BoardMetric metric;
   final void Function(BoardRow row)? onTap;
+  final String? tag;
 
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     final value = boardValue(row, metric);
-    final other = boardOther(row, metric);
+    final shown = [tag, boardOther(row, metric)].whereType<String>();
+    final other = shown.isEmpty ? null : shown.join(' · ');
     return InkWell(
       key: ValueKey('community.row.${row.handle}'),
       onTap: row.me || onTap == null ? null : () => onTap!(row),
@@ -719,6 +739,7 @@ class BoardLoader extends ConsumerWidget {
     required this.emptyText,
     required this.onRetry,
     this.onPerson,
+    this.tagOf,
     super.key,
   });
 
@@ -726,6 +747,7 @@ class BoardLoader extends ConsumerWidget {
   final String emptyText;
   final VoidCallback onRetry;
   final void Function(BoardRow row)? onPerson;
+  final String? Function(String userId)? tagOf;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => board.when(
@@ -739,8 +761,12 @@ class BoardLoader extends ConsumerWidget {
               : 'The board is unavailable right now.',
           onRetry: onRetry,
         ),
-        data: (b) =>
-            BoardBlock(board: b, emptyText: emptyText, onPerson: onPerson),
+        data: (b) => BoardBlock(
+          board: b,
+          emptyText: emptyText,
+          onPerson: onPerson,
+          tagOf: tagOf,
+        ),
       );
 }
 

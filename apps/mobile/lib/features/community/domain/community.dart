@@ -147,6 +147,12 @@ class FriendLists {
   final List<CommunityPerson> outgoing;
 }
 
+/// Beta 6.6 (L2): your part in a club.
+enum ClubRole { owner, coOwner, member }
+
+/// Beta 6.6 (L2, owner Q5): co-owners a club may have.
+const int kMaxCoOwners = 2;
+
 class Club {
   const Club({
     required this.id,
@@ -154,6 +160,10 @@ class Club {
     required this.code,
     required this.members,
     required this.mine,
+    this.ownerId = '',
+    this.coOwners = const [],
+    this.role = ClubRole.member,
+    this.seasonWinner = false,
   });
 
   factory Club.fromJson(Map<String, dynamic> j) => Club(
@@ -162,7 +172,37 @@ class Club {
         code: j['code'] as String,
         members: (j['members'] as num).toInt(),
         mine: j['mine'] as bool,
+        ownerId: j['ownerId'] as String? ?? '',
+        coOwners: [
+          for (final c in j['coOwners'] as List<dynamic>? ?? const [])
+            c as String,
+        ],
+        role: switch (j['role']) {
+          'owner' => ClubRole.owner,
+          'co-owner' => ClubRole.coOwner,
+          _ => (j['mine'] as bool) ? ClubRole.owner : ClubRole.member,
+        },
+        seasonWinner: j['seasonWinner'] as bool? ?? false,
       );
+
+  /// Beta 6.6 (L2): who runs it.
+  final String ownerId;
+  final List<String> coOwners;
+  final ClubRole role;
+
+  /// Beta 6.6 (L1): it won the league's last finished season.
+  final bool seasonWinner;
+
+  /// The owner or a co-owner: the owner's tools, except co-owners and
+  /// passing the club on.
+  bool get runs => mine || role == ClubRole.coOwner;
+
+  /// "Owner" or "Co-owner" for a member's user id; null for the rest.
+  String? tagOf(String userId) => userId == ownerId
+      ? 'Owner'
+      : coOwners.contains(userId)
+          ? 'Co-owner'
+          : null;
 
   final String id;
   final String name;
