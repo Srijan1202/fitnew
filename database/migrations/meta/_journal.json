@@ -414,6 +414,13 @@
       "when": 1795376668679,
       "tag": "0058_club_matches",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1795630656504,
+      "tag": "0059_club_league",
+      "breakpoints": true
     }
   ]
 }

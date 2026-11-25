@@ -26,6 +26,8 @@
  *   Beta 6.0 water_logs
  *   Beta 6.5 club_challenges, club_challenge_parts, club_matches,
  *            club_match_members
+ *   Beta 6.6 club_members.role, league_clubs, league_seasons, league_entries,
+ *            club_matches.league_season_id
  */
 export * from './schema/enums.js';
 export * from './schema/users.js';

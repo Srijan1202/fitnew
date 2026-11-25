@@ -116,8 +116,14 @@ export const clubMembers = pgTable(
       .references(() => clubs.id, { onDelete: 'cascade' }),
     userId: userRef('user_id'),
     joinedAt: timestamp('joined_at', { withTimezone: true }).notNull().defaultNow(),
+    /** Beta 6.6 (L2, owner Q5): `member` or `co-owner` (up to 2 a club, kept by the service). */
+    role: text('role').notNull().default('member'),
   },
-  (t) => [primaryKey({ columns: [t.clubId, t.userId] }), index('club_members_user_idx').on(t.userId)],
+  (t) => [
+    primaryKey({ columns: [t.clubId, t.userId] }),
+    index('club_members_user_idx').on(t.userId),
+    check('club_members_role', sql`${t.role} in ('member', 'co-owner')`),
+  ],
 );
 
 /**
@@ -416,6 +422,8 @@ export const clubMatches = pgTable(
     homeMembers: integer('home_members'),
     awayMembers: integer('away_members'),
     finishedAt: timestamp('finished_at', { withTimezone: true }),
+    /** Beta 6.6 (L1): a league match; null for one set up by hand. */
+    leagueSeasonId: uuid('league_season_id').references(() => leagueSeasons.id, { onDelete: 'set null' }),
   },
   (t) => [
     index('club_matches_home_idx').on(t.homeClubId, t.weekFrom),
@@ -442,4 +450,62 @@ export const clubMatchMembers = pgTable(
     userId: userRef('user_id'),
   },
   (t) => [primaryKey({ columns: [t.matchId, t.clubId, t.userId] }), index('club_match_members_user_idx').on(t.userId)],
+);
+
+/**
+ * Beta 6.6 (L1, owner 2026-11-25): the clubs in the league. Its owner or a
+ * co-owner enters a club of 3 or more; leaving takes effect after the week.
+ */
+export const leagueClubs = pgTable('league_clubs', {
+  clubId: uuid('club_id')
+    .primaryKey()
+    .references(() => clubs.id, { onDelete: 'cascade' }),
+  enteredAt: timestamp('entered_at', { withTimezone: true }).notNull().defaultNow(),
+  /** Out after the current week: not paired again. */
+  leaving: boolean('leaving').notNull().default(false),
+});
+
+/** Beta 6.6 (L1, Q3): a season of 4 weeks, Monday to Sunday; kept a year. */
+export const leagueSeasons = pgTable(
+  'league_seasons',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    startsOn: text('starts_on').notNull(),
+    endsOn: text('ends_on').notNull(),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('league_seasons_starts_key').on(t.startsOn),
+    check('league_seasons_dates', sql`${t.startsOn} ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' and ${t.endsOn} > ${t.startsOn}`),
+  ],
+);
+
+/**
+ * Beta 6.6 (L1): a club's season in the league. `score_tenths` sums its
+ * per-member scores, in tenths (the tie-break); `place` is kept when the
+ * season ends.
+ */
+export const leagueEntries = pgTable(
+  'league_entries',
+  {
+    seasonId: uuid('season_id')
+      .notNull()
+      .references(() => leagueSeasons.id, { onDelete: 'cascade' }),
+    clubId: uuid('club_id')
+      .notNull()
+      .references(() => clubs.id, { onDelete: 'cascade' }),
+    played: integer('played').notNull().default(0),
+    won: integer('won').notNull().default(0),
+    drawn: integer('drawn').notNull().default(0),
+    lost: integer('lost').notNull().default(0),
+    byes: integer('byes').notNull().default(0),
+    points: integer('points').notNull().default(0),
+    scoreTenths: integer('score_tenths').notNull().default(0),
+    place: integer('place'),
+  },
+  (t) => [
+    primaryKey({ columns: [t.seasonId, t.clubId] }),
+    index('league_entries_club_idx').on(t.clubId),
+    check('league_entries_counts', sql`${t.played} >= 0 and ${t.won} >= 0 and ${t.drawn} >= 0 and ${t.lost} >= 0 and ${t.byes} >= 0 and ${t.points} >= 0 and ${t.scoreTenths} >= 0`),
+  ],
 );
