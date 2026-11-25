@@ -580,6 +580,8 @@ export const clubSchema = z
     ownerId: z.string().uuid(),
     coOwners: z.array(z.string().uuid()),
     role: z.enum(['owner', 'co-owner', 'member']),
+    /** Beta 6.6 (L1): it won the league's last finished season. */
+    seasonWinner: z.boolean(),
   })
   .strict();
 export type Club = z.infer<typeof clubSchema>;
@@ -709,6 +711,53 @@ export type ClubMatchList = z.infer<typeof clubMatchListSchema>;
 /** Challenge the club with this code to next week. */
 export const challengeClubSchema = z.object({ code: clubCodeSchema, metric: challengeMetricSchema }).strict();
 export type ChallengeClubRequest = z.infer<typeof challengeClubSchema>;
+
+/* ------------------------------------------------ beta 6.6 (L1): league -- */
+
+/**
+ * The club league (owner 2026-11-25): clubs of 3 or more, 4-week seasons,
+ * paired each Saturday with a club of a similar average per member; active
+ * days per member count. Every entered club sees the table: names and
+ * results, never members.
+ */
+export const LEAGUE_MIN_MEMBERS = 3;
+
+export const leagueRowSchema = z
+  .object({
+    place: z.number().int().positive(),
+    clubId: z.string().uuid(),
+    name: z.string(),
+    played: z.number().int().nonnegative(),
+    won: z.number().int().nonnegative(),
+    drawn: z.number().int().nonnegative(),
+    lost: z.number().int().nonnegative(),
+    byes: z.number().int().nonnegative(),
+    points: z.number().int().nonnegative(),
+    /** This club. */
+    mine: z.boolean(),
+  })
+  .strict();
+export type LeagueRow = z.infer<typeof leagueRowSchema>;
+
+export const clubLeagueSchema = z
+  .object({
+    entered: z.boolean(),
+    /** Entered, and out after this week. */
+    leaving: z.boolean(),
+    /** Big enough to enter (3 members or more). */
+    canEnter: z.boolean(),
+    /** The latest season; null before the first. */
+    season: z.object({ startsOn: z.string(), endsOn: z.string(), finished: z.boolean() }).strict().nullable(),
+    /** This club's row in it; null when it has none. */
+    me: leagueRowSchema.nullable(),
+    /** The top 5 and this club (with `all`, every club). */
+    table: z.array(leagueRowSchema),
+    /** Clubs in the season's table. */
+    clubs: z.number().int().nonnegative(),
+  })
+  .strict();
+export type ClubLeague = z.infer<typeof clubLeagueSchema>;
+export const clubLeagueQuerySchema = z.object({ all: z.enum(['true', 'false']).optional().transform((v) => v === 'true') }).strict();
 
 /* ------------------------------------------------------------- boards -- */
 

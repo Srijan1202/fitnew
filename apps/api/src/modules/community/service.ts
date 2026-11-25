@@ -30,6 +30,8 @@ import {
   type Club,
   type ClubChallenge,
   type ClubChallengeView,
+  type ClubLeague,
+  type LeagueRow,
   type ChallengeClubRequest,
   type ClubMatch,
   type SetChallengeRequest,
@@ -63,6 +65,20 @@ import {
   type ChallengeMetric,
 } from '@fitos/core/community/challenge';
 import {
+  LEAGUE_METRIC,
+  LEAGUE_MIN_MEMBERS,
+  LEAGUE_TABLE_SHOWN,
+  POINTS,
+  inSeason,
+  isPairingDay,
+  leagueOrder,
+  metSet,
+  pairClubs,
+  seasonEnd,
+  seasonEndLine,
+  type LeagueClub,
+} from '@fitos/core/community/league';
+import {
   MATCH_RESULT_SHOWN_DAYS,
   matchDaysLeft,
   matchResult,
@@ -93,7 +109,7 @@ import { isoWeekday } from '@fitos/core/progress/streak';
 import { uniqueViolationOf } from '../../db/errors.js';
 import { AppError } from '../../lib/errors.js';
 import type { PushSender } from '../../lib/push.js';
-import type { ChallengeRow, CommunityRepository, MatchRow, PersonRow, PostRow, StatRow, WeekRow } from './repository.js';
+import type { ChallengeRow, CommunityRepository, EntryRow, MatchRow, PersonRow, PostRow, StatRow, WeekRow } from './repository.js';
 
 /** The person's current streak (the progress service's own count). */
 export type StreakOf = (userId: string) => Promise<number>;
@@ -567,7 +583,10 @@ export class CommunityService {
 
   /* ---------------------------------------------------------------- clubs -- */
 
-  private clubOf(c: { id: string; name: string; code: string; ownerId: string; members: number; createdAt: Date; coOwners: string[] }, viewer: string): Club {
+  private clubOf(
+    c: { id: string; name: string; code: string; ownerId: string; members: number; createdAt: Date; coOwners: string[]; seasonWinner: boolean },
+    viewer: string,
+  ): Club {
     return {
       id: c.id,
       name: c.name,
@@ -578,6 +597,7 @@ export class CommunityService {
       ownerId: c.ownerId,
       coOwners: c.coOwners,
       role: c.ownerId === viewer ? 'owner' : c.coOwners.includes(viewer) ? 'co-owner' : 'member',
+      seasonWinner: c.seasonWinner,
     };
   }
 
@@ -897,7 +917,112 @@ export class CommunityService {
     const m = await this.repo.match(matchId);
     if (m === null || (m.homeClubId !== clubId && m.awayClubId !== clubId)) throw new AppError('NOT_FOUND', 'No such match.');
     if (m.startedAt !== null || m.status === 'finished') throw new AppError('CONFLICT', 'That week has started.', [{ path: 'match', issue: 'started' }]);
+    if (m.leagueSeasonId !== null) throw new AppError('CONFLICT', 'A league match cannot be called off.', [{ path: 'match', issue: 'league' }]);
     await this.repo.deleteMatch(matchId);
+  }
+
+  /* ------------------------------------------------ beta 6.6 (L1): league -- */
+
+  private ordered(entries: readonly EntryRow[]) {
+    return leagueOrder(entries.map((e) => ({ ...e, scoreSum: e.scoreTenths / 10 })));
+  }
+
+  private leagueRowOf(r: EntryRow & { place: number }, clubId: string): LeagueRow {
+    return { place: r.place, clubId: r.clubId, name: r.name, played: r.played, won: r.won, drawn: r.drawn, lost: r.lost, byes: r.byes, points: r.points, mine: r.clubId === clubId };
+  }
+
+  /** The club's place in the league: the top 5 and its own row (or every club with `all`). */
+  async clubLeague(viewer: string, clubId: string, all = false): Promise<ClubLeague> {
+    await this.requireMember(viewer);
+    const c = await this.repo.club(clubId);
+    if (c === null || !(await this.repo.isMember(clubId, viewer))) throw new AppError('NOT_FOUND', 'No such club.');
+    const entry = await this.repo.leagueClub(clubId);
+    const season = await this.repo.latestSeason();
+    const rows = season === null ? [] : this.ordered(await this.repo.entriesOf(season.id)).map((r) => this.leagueRowOf(r, clubId));
+    const me = rows.find((r) => r.mine) ?? null;
+    const top = rows.slice(0, LEAGUE_TABLE_SHOWN);
+    return {
+      entered: entry !== null,
+      leaving: entry?.leaving ?? false,
+      canEnter: c.members >= LEAGUE_MIN_MEMBERS,
+      season: season === null ? null : { startsOn: season.startsOn, endsOn: season.endsOn, finished: season.finishedAt !== null },
+      me,
+      table: all || me === null || top.includes(me) ? (all ? rows : top) : [...top, me],
+      clubs: rows.length,
+    };
+  }
+
+  /** The owner or a co-owner enters a club of 3 or more (owner Q2), or takes it back in. */
+  async enterLeague(viewer: string, clubId: string): Promise<ClubLeague> {
+    const c = await this.requireRunner(viewer, clubId);
+    if (c.members < LEAGUE_MIN_MEMBERS) {
+      throw new AppError('CONFLICT', `A club needs ${LEAGUE_MIN_MEMBERS} members to enter the league.`, [{ path: 'league', issue: 'too-small' }]);
+    }
+    await this.repo.enterLeague(clubId);
+    return this.clubLeague(viewer, clubId);
+  }
+
+  /** Out after this week: not paired again; its season row stays. */
+  async leaveLeague(viewer: string, clubId: string): Promise<ClubLeague> {
+    await this.requireRunner(viewer, clubId);
+    if ((await this.repo.leagueClub(clubId)) === null) throw new AppError('NOT_FOUND', 'This club is not in the league.');
+    await this.repo.leaveLeague(clubId);
+    return this.clubLeague(viewer, clubId);
+  }
+
+  /**
+   * Beta 6.6 (L1), after the match round: a season whose last results are in
+   * gets its places and the one push to each member who allows Community
+   * notifications (owner Q4); seasons are kept a year. On Saturdays (UTC) the
+   * entered clubs without a match are paired for the coming week, once.
+   */
+  async leagueRound(): Promise<void> {
+    const now = this.now();
+    const utcToday = now.toISOString().slice(0, 10);
+    for (const s of await this.repo.seasonsToFinish(addDays(utcToday, -2))) {
+      try {
+        const ordered = this.ordered(await this.repo.entriesOf(s.id));
+        await this.repo.finishSeason(s.id, ordered.map((r) => ({ clubId: r.clubId, place: r.place })), now);
+        for (const r of ordered) {
+          const line = seasonEndLine(r.name, r.place, ordered.length);
+          for (const m of await this.repo.clubMembersToTell(r.clubId)) {
+            if (m.notify) await this.tell(m.userId, line.title, line.body, { type: 'community', screen: 'club', clubId: r.clubId });
+          }
+        }
+      } catch {
+        // The next round tries again.
+      }
+    }
+    const kept = new Date(now);
+    kept.setUTCMonth(kept.getUTCMonth() - CHALLENGES_KEPT_MONTHS);
+    await this.repo.deleteSeasonsFinishedBefore(kept);
+
+    if (!isPairingDay(utcToday)) return;
+    const weekFrom = nextWeekFrom(utcToday);
+    const latest = await this.repo.latestSeason();
+    const season = latest !== null && inSeason(latest.startsOn, weekFrom) ? latest : await this.repo.seasonStarting(weekFrom, seasonEnd(weekFrom));
+    if (season.pairedWeek === weekFrom) return;
+    await this.repo.dropLeavingClubs();
+    const entries = new Map((await this.repo.entriesOf(season.id)).map((e) => [e.clubId, e]));
+    const weeks = [1, 2, 3, 4].map((i) => addDays(weekFrom, -7 * i));
+    const pool: LeagueClub[] = [];
+    const owners = new Map<string, string>();
+    for (const c of await this.repo.leagueClubList()) {
+      if (c.members < LEAGUE_MIN_MEMBERS || (await this.repo.clubBusy(c.clubId, weekFrom))) continue;
+      const t = await this.repo.clubWeeksTotal(c.clubId, weeks);
+      pool.push({ id: c.clubId, avg: t.activeDays / c.members, byes: entries.get(c.clubId)?.byes ?? 0 });
+      owners.set(c.clubId, c.ownerId);
+    }
+    const blocks = await this.repo.blocksAmong([...new Set(owners.values())]);
+    const met = metSet((await this.repo.seasonPairs(season.id)).map((p) => [p.home, p.away] as const));
+    const paired = pairClubs(pool, met, (a, b) => blocks.has(`${owners.get(a)}|${owners.get(b)}`));
+    for (const [home, away] of paired.pairs) {
+      await this.repo.createLeagueMatch(home, away, LEAGUE_METRIC, weekFrom, season.id, now);
+      await this.repo.ensureEntry(season.id, home);
+      await this.repo.ensureEntry(season.id, away);
+    }
+    for (const id of paired.byes) await this.repo.addBye(season.id, id, POINTS.bye);
+    await this.repo.markPaired(season.id, weekFrom);
   }
 
   /* --------------------------------------------------------------- boards -- */
@@ -1078,6 +1203,7 @@ export class CommunityService {
     }
     await this.challengeRound();
     await this.matchRound();
+    await this.leagueRound();
     return n;
   }
 
@@ -1105,6 +1231,13 @@ export class CommunityService {
         const metric = m.metric as ChallengeMetric;
         const h = perMember(metric, home, m.homeMembers ?? 0);
         const a = perMember(metric, away, m.awayMembers ?? 0);
+        // Beta 6.6 (L1): a league match's points.
+        if (m.leagueSeasonId !== null) {
+          for (const [clubId, us, them] of [[m.homeClubId, h, a], [m.awayClubId, a, h]] as const) {
+            const r = matchResult(us, them);
+            await this.repo.recordLeagueResult(m.leagueSeasonId, clubId, r, POINTS[r], Math.round(us * 10));
+          }
+        }
         const told = new Set<string>();
         for (const [clubId, line] of [
           [m.homeClubId, matchResultLine(m.homeName, m.awayName, metric, h, a)],

@@ -1,5 +1,5 @@
 {
-  "id": "c7d8f9c3-771f-4f3e-b74e-9644dee84ed4",
+  "id": "18614ffb-a9e2-47b9-badb-bb40d9a9c4eb",
   "prevId": "1403ab19-9841-4ca1-a3d1-601a156058ec",
   "version": "7",
   "dialect": "postgresql",
@@ -2905,6 +2905,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "paired_week": {
+          "name": "paired_week",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "finished_at": {
           "name": "finished_at",

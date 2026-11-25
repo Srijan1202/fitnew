@@ -23,6 +23,7 @@ CREATE TABLE "league_seasons" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"starts_on" text NOT NULL,
 	"ends_on" text NOT NULL,
+	"paired_week" text,
 	"finished_at" timestamp with time zone,
 	CONSTRAINT "league_seasons_dates" CHECK ("league_seasons"."starts_on" ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' and "league_seasons"."ends_on" > "league_seasons"."starts_on")
 );

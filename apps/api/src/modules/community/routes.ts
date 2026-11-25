@@ -21,6 +21,8 @@ import {
   boardSchema,
   challengeClubSchema,
   clubChallengeViewSchema,
+  clubLeagueQuerySchema,
+  clubLeagueSchema,
   clubListSchema,
   clubMatchListSchema,
   clubSchema,
@@ -500,6 +502,30 @@ export async function communityRoutes(app: FastifyInstance, opts: { ipSalt: stri
     await service.cancelMatch(requireUserId(request.userId), request.params.id, request.params.matchId);
     return reply.code(204).send(null);
   });
+
+  /* ---------------------------------------------- beta 6.6 (L1): league -- */
+
+  typed.get('/community/clubs/:id/league', {
+    ...on,
+    schema: {
+      summary: "The club's place in the league (beta 6.6): the season, the top 5 and this club (all=true: every club); names and results, never members",
+      tags,
+      security,
+      params: idParams,
+      querystring: clubLeagueQuerySchema,
+      response: { 200: clubLeagueSchema, ...errors },
+    },
+  }, async (request) => service.clubLeague(requireUserId(request.userId), request.params.id, request.query.all));
+
+  typed.post('/community/clubs/:id/league', {
+    ...owner,
+    schema: { summary: 'Enter a club of 3 or more in the league (its owner or a co-owner)', tags, security, params: idParams, response: { 200: clubLeagueSchema, ...errors } },
+  }, async (request) => service.enterLeague(requireUserId(request.userId), request.params.id));
+
+  typed.delete('/community/clubs/:id/league', {
+    ...owner,
+    schema: { summary: 'Leave the league after this week', tags, security, params: idParams, response: { 200: clubLeagueSchema, ...errors } },
+  }, async (request) => service.leaveLeague(requireUserId(request.userId), request.params.id));
 
   /* ------------------------------------------------------------- boards -- */
 

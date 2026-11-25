@@ -30,6 +30,9 @@ import {
   friendDeclines,
   consentRecords,
   friendships,
+  leagueClubs,
+  leagueEntries,
+  leagueSeasons,
   pushTokens,
   users,
 } from '../../db/schema.js';
@@ -38,6 +41,8 @@ type Db = DatabaseHandle['db'];
 
 export type ProfileRow = typeof communityProfiles.$inferSelect;
 export type ChallengeRow = typeof clubChallenges.$inferSelect;
+export type SeasonRow = typeof leagueSeasons.$inferSelect;
+export type EntryRow = typeof leagueEntries.$inferSelect & { name: string };
 export type MatchRow = typeof clubMatches.$inferSelect & { homeName: string; awayName: string; homeOwnerId: string; awayOwnerId: string };
 
 /** Beta 6.5 (K3): a week-count column, by metric (a fixed list, never user text). */
@@ -499,6 +504,11 @@ export class CommunityRepository {
   private coOwnersOf = sql<string[]>`coalesce((select array_agg(m2.user_id::text order by m2.joined_at) from club_members m2
       where m2.club_id = ${clubs.id} and m2.role = 'co-owner'), '{}'::text[])`;
 
+  /** Beta 6.6 (L1): first in the league's last finished season. */
+  private seasonWinnerOf = sql<boolean>`exists (select 1 from league_entries e
+      where e.club_id = ${clubs.id} and e.place = 1
+        and e.season_id = (select s.id from league_seasons s where s.finished_at is not null order by s.starts_on desc limit 1))`;
+
   async clubsOf(userId: string) {
     return this.db
       .select({
@@ -509,6 +519,7 @@ export class CommunityRepository {
         createdAt: clubs.createdAt,
         members: sql<number>`(select count(*)::int from ${clubMembers} m where m.club_id = ${clubs.id})`,
         coOwners: this.coOwnersOf,
+        seasonWinner: this.seasonWinnerOf,
       })
       .from(clubMembers)
       .innerJoin(clubs, eq(clubs.id, clubMembers.clubId))
@@ -526,6 +537,7 @@ export class CommunityRepository {
         createdAt: clubs.createdAt,
         members: sql<number>`(select count(*)::int from ${clubMembers} m where m.club_id = ${clubs.id})`,
         coOwners: this.coOwnersOf,
+        seasonWinner: this.seasonWinnerOf,
       })
       .from(clubs)
       .where(eq(clubs.id, id))
@@ -1593,6 +1605,141 @@ export class CommunityRepository {
   /** A result stays a week. */
   async deleteFinishedMatches(before: Date): Promise<void> {
     await this.db.delete(clubMatches).where(and(eq(clubMatches.status, 'finished'), lt(clubMatches.finishedAt, before)));
+  }
+
+  /* -------------------------------------------- beta 6.6 (L1): league -- */
+
+  async leagueClub(clubId: string): Promise<{ leaving: boolean } | null> {
+    const [r] = await this.db.select({ leaving: leagueClubs.leaving }).from(leagueClubs).where(eq(leagueClubs.clubId, clubId)).limit(1);
+    return r ?? null;
+  }
+
+  /** In, or back in when it was leaving. */
+  async enterLeague(clubId: string): Promise<void> {
+    await this.db.insert(leagueClubs).values({ clubId }).onConflictDoUpdate({ target: leagueClubs.clubId, set: { leaving: false } });
+  }
+
+  async leaveLeague(clubId: string): Promise<void> {
+    await this.db.update(leagueClubs).set({ leaving: true }).where(eq(leagueClubs.clubId, clubId));
+  }
+
+  /** Before pairing: the clubs that asked to leave are out. */
+  async dropLeavingClubs(): Promise<void> {
+    await this.db.delete(leagueClubs).where(eq(leagueClubs.leaving, true));
+  }
+
+  /** The entered clubs, their owner and size. */
+  async leagueClubList(): Promise<{ clubId: string; ownerId: string; members: number }[]> {
+    return this.db
+      .select({
+        clubId: leagueClubs.clubId,
+        ownerId: clubs.ownerId,
+        members: sql<number>`(select count(*)::int from ${clubMembers} m where m.club_id = ${leagueClubs.clubId})`,
+      })
+      .from(leagueClubs)
+      .innerJoin(clubs, eq(clubs.id, leagueClubs.clubId));
+  }
+
+  async latestSeason(): Promise<SeasonRow | null> {
+    const [r] = await this.db.select().from(leagueSeasons).orderBy(desc(leagueSeasons.startsOn)).limit(1);
+    return r ?? null;
+  }
+
+  /** The season starting that Monday (made once). */
+  async seasonStarting(startsOn: string, endsOn: string): Promise<SeasonRow> {
+    await this.db.insert(leagueSeasons).values({ startsOn, endsOn }).onConflictDoNothing();
+    const [r] = await this.db.select().from(leagueSeasons).where(eq(leagueSeasons.startsOn, startsOn)).limit(1);
+    return r!;
+  }
+
+  /** The league's pairs already played (or set) this season. */
+  async seasonPairs(seasonId: string): Promise<{ home: string; away: string; weekFrom: string }[]> {
+    return this.db
+      .select({ home: clubMatches.homeClubId, away: clubMatches.awayClubId, weekFrom: clubMatches.weekFrom })
+      .from(clubMatches)
+      .where(eq(clubMatches.leagueSeasonId, seasonId));
+  }
+
+  async ensureEntry(seasonId: string, clubId: string): Promise<void> {
+    await this.db.insert(leagueEntries).values({ seasonId, clubId }).onConflictDoNothing();
+  }
+
+  async entriesOf(seasonId: string): Promise<EntryRow[]> {
+    const rows = await this.db
+      .select({ e: leagueEntries, name: clubs.name })
+      .from(leagueEntries)
+      .innerJoin(clubs, eq(clubs.id, leagueEntries.clubId))
+      .where(eq(leagueEntries.seasonId, seasonId));
+    return rows.map((r) => ({ ...r.e, name: r.name }));
+  }
+
+  async addBye(seasonId: string, clubId: string, points: number): Promise<void> {
+    await this.ensureEntry(seasonId, clubId);
+    await this.db
+      .update(leagueEntries)
+      .set({ byes: sql`${leagueEntries.byes} + 1`, points: sql`${leagueEntries.points} + ${points}` })
+      .where(and(eq(leagueEntries.seasonId, seasonId), eq(leagueEntries.clubId, clubId)));
+  }
+
+  /** A league match's result in the club's season row. */
+  async recordLeagueResult(seasonId: string, clubId: string, result: 'won' | 'drew' | 'lost', points: number, scoreTenths: number): Promise<void> {
+    await this.ensureEntry(seasonId, clubId);
+    const col = { won: leagueEntries.won, drew: leagueEntries.drawn, lost: leagueEntries.lost }[result];
+    const key = { won: 'won', drew: 'drawn', lost: 'lost' } as const;
+    await this.db
+      .update(leagueEntries)
+      .set({
+        played: sql`${leagueEntries.played} + 1`,
+        [key[result]]: sql`${col} + 1`,
+        points: sql`${leagueEntries.points} + ${points}`,
+        scoreTenths: sql`${leagueEntries.scoreTenths} + ${scoreTenths}`,
+      })
+      .where(and(eq(leagueEntries.seasonId, seasonId), eq(leagueEntries.clubId, clubId)));
+  }
+
+  /** A league match is set for the clubs: accepted already. */
+  async createLeagueMatch(homeClubId: string, awayClubId: string, metric: string, weekFrom: string, seasonId: string, at: Date): Promise<void> {
+    await this.db.insert(clubMatches).values({ homeClubId, awayClubId, metric, weekFrom, status: 'accepted', acceptedAt: at, leagueSeasonId: seasonId });
+  }
+
+  /** Seasons whose last week is over and whose matches have all finished. */
+  async seasonsToFinish(lastDayBefore: string): Promise<SeasonRow[]> {
+    return this.db
+      .select()
+      .from(leagueSeasons)
+      .where(
+        and(
+          sql`${leagueSeasons.finishedAt} is null`,
+          sql`${leagueSeasons.endsOn} <= ${lastDayBefore}`,
+          sql`not exists (select 1 from club_matches m where m.league_season_id = ${leagueSeasons.id} and m.status <> 'finished')`,
+        ),
+      );
+  }
+
+  async finishSeason(seasonId: string, places: readonly { clubId: string; place: number }[], at: Date): Promise<void> {
+    for (const p of places) {
+      await this.db.update(leagueEntries).set({ place: p.place }).where(and(eq(leagueEntries.seasonId, seasonId), eq(leagueEntries.clubId, p.clubId)));
+    }
+    await this.db.update(leagueSeasons).set({ finishedAt: at }).where(eq(leagueSeasons.id, seasonId));
+  }
+
+  async markPaired(seasonId: string, weekFrom: string): Promise<void> {
+    await this.db.update(leagueSeasons).set({ pairedWeek: weekFrom }).where(eq(leagueSeasons.id, seasonId));
+  }
+
+  /** Blocks either way among these people, as "a|b" keys (either order). */
+  async blocksAmong(userIds: readonly string[]): Promise<Set<string>> {
+    if (userIds.length < 2) return new Set();
+    const rows = await this.db
+      .select({ a: communityBlocks.blockerId, b: communityBlocks.blockedId })
+      .from(communityBlocks)
+      .where(and(inArray(communityBlocks.blockerId, [...userIds]), inArray(communityBlocks.blockedId, [...userIds])));
+    return new Set(rows.flatMap((r) => [`${r.a}|${r.b}`, `${r.b}|${r.a}`]));
+  }
+
+  /** Seasons are kept a year. */
+  async deleteSeasonsFinishedBefore(before: Date): Promise<void> {
+    await this.db.delete(leagueSeasons).where(lt(leagueSeasons.finishedAt, before));
   }
 
   async audit(row: typeof auditLogs.$inferInsert): Promise<void> {

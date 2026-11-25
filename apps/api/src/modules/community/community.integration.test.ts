@@ -9,8 +9,10 @@ import postgres from 'postgres';
 import {
   CHALLENGE_METRICS,
   CURRENT_POLICY_VERSION,
+  LEAGUE_MIN_MEMBERS,
   boardSchema,
   clubChallengeViewSchema,
+  clubLeagueSchema,
   clubMatchListSchema,
   clubSchema,
   communityMeSchema,
@@ -22,11 +24,13 @@ import {
   suggestionListSchema,
   type Board,
   type ClubChallengeView,
+  type ClubLeague,
   type ClubMatch,
   type Feed,
 } from '@fitos/contracts';
 import { keptPlanPct } from '@fitos/core/community/board';
 import { CHALLENGE_METRICS as CORE_CHALLENGE_METRICS, monthOf, monthRange } from '@fitos/core/community/challenge';
+import { LEAGUE_MIN_MEMBERS as CORE_LEAGUE_MIN_MEMBERS } from '@fitos/core/community/league';
 import { nextWeekFrom } from '@fitos/core/community/match';
 import { addDays, localDateOf } from '@fitos/core/nutrition/log';
 import { isoWeekday } from '@fitos/core/progress/streak';
@@ -127,6 +131,7 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
     await sql`delete from exercises where slug = 'cm-bench'`;
     await sql`delete from audit_logs where action like 'community.%'`;
     await sql`delete from feature_flags where key = 'community'`;
+    await sql`delete from league_seasons`;
     await app.close();
     await sql.end({ timeout: 5 });
   });
@@ -1080,5 +1085,121 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
     expect((await call(o, 'DELETE', `/community/clubs/${club.id}/membership`)).statusCode).toBe(204);
     const after = (await call(co2, 'GET', '/community/clubs')).json() as { items: { id: string; role: string; ownerId: string; coOwners: string[] }[] };
     expect(after.items.find((c) => c.id === club.id)).toMatchObject({ role: 'owner', ownerId: co2.id, coOwners: [] });
+  });
+
+  /* ------------------------------------------------- beta 6.6: league -- */
+
+  const leagueOf = async (u: U, clubId: string, all = false): Promise<ClubLeague> => {
+    const r = await call(u, 'GET', `/community/clubs/${clubId}/league${all ? '?all=true' : ''}`);
+    expect(r.statusCode, r.body).toBe(200);
+    return clubLeagueSchema.parse(r.json());
+  };
+
+  it('beta 6.6 (L1): clubs of 3+ enter; Saturdays pair like with like, no rematch; win 3, draw 1; leaving after the week; the season ends with places and one push', async () => {
+    expect(LEAGUE_MIN_MEMBERS).toBe(CORE_LEAGUE_MIN_MEMBERS);
+    await sql`delete from league_seasons`;
+    const push = app.push as RecordingPushSender;
+    const made: Record<string, { owner: U; members: U[]; id: string }> = {};
+    for (const k of ['a', 'b', 'c', 'd', 'e']) {
+      const owner = await member(`c66_lg_${k}0`);
+      const members = [owner, await member(`c66_lg_${k}1`), await member(`c66_lg_${k}2`)];
+      made[k] = { owner, members, id: (await clubOf(owner, `C66 League ${k.toUpperCase()}`, ...members.slice(1))).id };
+    }
+    const small = await member('c66_lg_s0');
+    const smallClub = await clubOf(small, 'C66 League Small', await member('c66_lg_s1'));
+    const A = made.a!;
+    const B = made.b!;
+    const C = made.c!;
+    const D = made.d!;
+    const E = made.e!;
+    const enter = (u: U, id: string) => call(u, 'POST', `/community/clubs/${id}/league`);
+
+    // Too small; only the owner or a co-owner.
+    const tooSmall = await enter(small, smallClub.id);
+    expect(tooSmall.statusCode).toBe(409);
+    expect(issue(tooSmall)).toBe('too-small');
+    expect((await enter(A.members[1]!, A.id)).statusCode).toBe(403);
+    for (const k of [A, B, C, D]) expect(clubLeagueSchema.parse((await enter(k.owner, k.id)).json())).toMatchObject({ entered: true, leaving: false, canEnter: true });
+    expect(await leagueOf(A.members[1]!, A.id)).toMatchObject({ entered: true, season: null, table: [], me: null, clubs: 0 });
+
+    // The coming Saturday (UTC), and the Monday after it.
+    const utcToday = new Date().toISOString().slice(0, 10);
+    const sat = addDays(utcToday, (6 - isoWeekday(utcToday) + 7) % 7);
+    const w1 = nextWeekFrom(sat);
+    const tick = async (day: string) => {
+      const s = new CommunityService(new CommunityRepository(app.database.db), async () => 0, app.push, () => new Date(`${day}T01:00:00Z`));
+      await s.matchRound();
+      await s.leagueRound();
+    };
+    // The last 4 weeks: A and B busy, C and D not: A meets B, C meets D.
+    const history = async (k: { members: U[] }, week: string, days: number) => {
+      for (const u of k.members) {
+        await sql`insert into community_week_history (user_id, week_from, sessions, run_m, streak, active_days) values (${u.id}, ${week}, ${days}, 0, 0, ${days})
+          on conflict (user_id, week_from) do update set active_days = excluded.active_days`;
+      }
+    };
+    await history(A, addDays(w1, -7), 5);
+    await history(B, addDays(w1, -7), 4);
+    await history(C, addDays(w1, -7), 1);
+
+    await tick(sat);
+    await tick(sat);
+    const leagueMatches = async (k: { owner: U; id: string }) => (await matchesOf(k.owner, k.id)).filter((m) => m.weekFrom >= w1);
+    const first = await leagueMatches(A);
+    expect(first).toHaveLength(1);
+    expect(first[0]).toMatchObject({ status: 'accepted', metric: 'active-days', weekFrom: w1, them: { clubId: B.id } });
+    expect((await leagueMatches(C))[0]!.them.clubId).toBe(D.id);
+    // A league match cannot be called off.
+    const off = await call(A.owner, 'DELETE', `/community/clubs/${A.id}/matches/${first[0]!.id}`);
+    expect(off.statusCode).toBe(409);
+    expect(issue(off)).toBe('league');
+
+    // Week 1: A's members 3 days each, B's 1, C and D none.
+    await tick(w1);
+    await history(A, w1, 3);
+    await history(B, w1, 1);
+    // E enters, C leaves after the week; Saturday pairs week 2 without a rematch.
+    expect((await enter(E.owner, E.id)).statusCode).toBe(200);
+    expect(clubLeagueSchema.parse((await call(C.owner, 'DELETE', `/community/clubs/${C.id}/league`)).json())).toMatchObject({ entered: true, leaving: true });
+    await tick(addDays(sat, 7));
+    expect(await leagueMatches(C)).toHaveLength(1);
+    const second = (await leagueMatches(A)).filter((m) => m.weekFrom === addDays(w1, 7));
+    expect(second).toHaveLength(1);
+    expect(second[0]!.them.clubId).not.toBe(B.id);
+    expect((await leagueOf(C.owner, C.id)).entered).toBe(false);
+
+    // Week 1's result: A won 3.0 to 1.0, C and D drew.
+    await tick(addDays(w1, 8));
+    const table1 = await leagueOf(A.members[2]!, A.id, true);
+    expect(table1.season).toMatchObject({ startsOn: w1, endsOn: addDays(w1, 27), finished: false });
+    expect(table1.table.map((r) => [r.name, r.played, r.won, r.drawn, r.lost, r.points])).toEqual([
+      ['C66 League A', 1, 1, 0, 0, 3],
+      ['C66 League C', 1, 0, 1, 0, 1],
+      ['C66 League D', 1, 0, 1, 0, 1],
+      ['C66 League B', 1, 0, 0, 1, 0],
+      ['C66 League E', 0, 0, 0, 0, 0],
+    ]);
+    expect(table1.me).toMatchObject({ place: 1, mine: true });
+    // Names and results, never members.
+    expect(JSON.stringify(table1)).not.toMatch(/c66_lg_/);
+
+    // Weeks 3 and 4, then the season ends: places, and one push each.
+    await tick(addDays(sat, 14));
+    await tick(addDays(w1, 15));
+    await tick(addDays(sat, 21));
+    await tick(addDays(w1, 22));
+    for (const u of A.members) await sql`insert into push_tokens (user_id, token, platform) values (${u.id}, ${`cm-push-${u.id}`}, 'android')`;
+    await call(A.members[2]!, 'PATCH', '/community/me', { notify: false });
+    await tick(addDays(w1, 29));
+    const told = (u: U) => push.sends.filter((t) => t.tokens.includes(`cm-push-${u.id}`)).map((t) => [t.message.title, t.message.body]);
+    expect(told(A.members[1]!)).toContainEqual(['C66 League A finished 1st in the league', 'Out of 5 clubs this season. A new season starts on Monday.']);
+    expect(told(A.members[2]!).filter(([t]) => t!.includes('in the league'))).toEqual([]);
+    const final = await leagueOf(A.owner, A.id, true);
+    expect(final.season!.finished).toBe(true);
+    expect(final.table[0]).toMatchObject({ name: 'C66 League A', place: 1 });
+    expect(final.table.every((r) => r.played + r.byes === (r.name === 'C66 League C' ? 1 : r.name === 'C66 League E' ? 3 : 4))).toBe(true);
+    const list = (await call(A.owner, 'GET', '/community/clubs')).json() as { items: { id: string; seasonWinner: boolean }[] };
+    expect(list.items.find((c) => c.id === A.id)!.seasonWinner).toBe(true);
+    expect((await call(B.owner, 'GET', '/community/clubs')).json()).toMatchObject({ items: [expect.objectContaining({ id: B.id, seasonWinner: false })] });
   });
 });

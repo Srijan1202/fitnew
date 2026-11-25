@@ -472,6 +472,8 @@ export const leagueSeasons = pgTable(
     id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
     startsOn: text('starts_on').notNull(),
     endsOn: text('ends_on').notNull(),
+    /** The last week paired, so the Saturday round pairs a week once. */
+    pairedWeek: text('paired_week'),
     finishedAt: timestamp('finished_at', { withTimezone: true }),
   },
   (t) => [
