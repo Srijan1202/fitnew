@@ -1,6 +1,17 @@
 # Beta 6.6 plan — Leagues and co-owners
 
-**Status:** PLAN (2026-11-24). It waits for the owner's answers in §6 before any code.
+**Status:** GO (2026-11-25). The owner took every recommendation in §6:
+
+| # | Answer |
+|---|---|
+| Q1 | League matches count **active days per member**. |
+| Q2 | Clubs of **3 members or more** can enter. |
+| Q3 | **4-week** seasons. |
+| Q4 | **One push at season end** with the club's place, besides each match's result. |
+| Q5 | **Up to 2 co-owners**, who can also remove members. |
+| Q6 | **One table**, no divisions yet. |
+| Q7 | Leagues and co-owners are **folded into the unreleased 2026-11-20 policy**, while 6.5 is unreleased. |
+| Q8 | **M1, M2 and M3**; M4 only if small. |
 
 **Asked by the owner (2026-11-24):** "6.6 Leagues + co-owners". These build on 6.5's club vs club and on the 6.5 plan's "Not in 6.5" list (leagues, C14; club roles beyond the owner).
 
