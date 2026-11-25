@@ -1,6 +1,7 @@
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:fitos/features/community/domain/club_goals.dart';
 import 'package:fitos/features/community/domain/community.dart';
 import 'package:fitos/features/community/presentation/club_screen.dart';
 import 'package:fitos/features/community/presentation/club_settings_screen.dart';
@@ -13,7 +14,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../support/fake_community_api.dart';
 
-/// Beta 6.6 (Leagues and co-owners): co-owners (L2).
+/// Beta 6.6 (Leagues and co-owners): co-owners (L2) and the league (L1).
 void main() {
   late FakeCommunityApi api;
 
@@ -212,5 +213,159 @@ void main() {
     expect(key('match.challenge'), findsNothing);
     await tap(tester, 'club.menu');
     expect(key('club.settings'), findsNothing);
+  });
+  /* ---------------------------------------------------- L1: the league -- */
+
+  LeagueRow lrow(int place, String name, int points, {bool mine = false}) =>
+      LeagueRow(
+        place: place,
+        clubId: 'c-$name',
+        name: name,
+        played: 3,
+        won: points ~/ 3,
+        drawn: points % 3,
+        lost: 0,
+        byes: 0,
+        points: points,
+        mine: mine,
+      );
+
+  ClubLeague league({
+    bool entered = true,
+    bool leaving = false,
+    bool canEnter = true,
+    LeagueRow? me,
+    List<LeagueRow> table = const [],
+    int clubs = 0,
+  }) =>
+      ClubLeague(
+        entered: entered,
+        leaving: leaving,
+        canEnter: canEnter,
+        seasonFrom: entered ? '2026-11-30' : null,
+        seasonTo: entered ? '2026-12-27' : null,
+        seasonFinished: false,
+        me: me,
+        table: table,
+        clubs: clubs,
+      );
+
+  Future<void> openClub(WidgetTester tester, Club c) async {
+    tester.view.physicalSize = const Size(1080, 4000);
+    tester.view.devicePixelRatio = 1.5;
+    addTearDown(tester.view.reset);
+    board([row('srijan', 1, me: true)]);
+    await tester.pumpWidget(app(initial: Routes.communityClub(c.id), extra: c));
+    await tester.pumpAndSettle();
+  }
+
+  test('places in words', () {
+    expect(
+      [1, 2, 3, 4, 11, 12, 13, 21, 22, 23, 111].map(ordinalOf),
+      [
+        '1st',
+        '2nd',
+        '3rd',
+        '4th',
+        '11th',
+        '12th',
+        '13th',
+        '21st',
+        '22nd',
+        '23rd',
+        '111th',
+      ],
+    );
+  });
+
+  testWidgets(
+      'the owner enters the club; the first match is paired on '
+      'Saturday', (tester) async {
+    api = FakeCommunityApi(profile: me())
+      ..myClubs = [club(role: ClubRole.owner)]
+      ..leagues = {'club-1': league(entered: false)};
+    await openClub(tester, api.myClubs.first);
+    expect(find.textContaining('never who is in it'), findsOneWidget);
+    await tap(tester, 'league.enter');
+    expect(api.calls, contains('enter-league club-1'));
+    expect(
+      find.text('Your first match is paired on Saturday.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+      'too small to enter; a plain member sees nothing until the club '
+      'is in', (tester) async {
+    api = FakeCommunityApi(profile: me())
+      ..myClubs = [club(role: ClubRole.coOwner)]
+      ..leagues = {'club-1': league(entered: false, canEnter: false)};
+    await openClub(tester, api.myClubs.first);
+    expect(key('league.tooSmall'), findsOneWidget);
+    expect(key('league.enter'), findsNothing);
+
+    api = FakeCommunityApi(profile: me())
+      ..myClubs = [club(role: ClubRole.member)]
+      ..leagues = {'club-1': league(entered: false)};
+    await openClub(tester, api.myClubs.first);
+    expect(key('league.card'), findsNothing);
+  });
+
+  testWidgets(
+      'in the league: the place, the season, the top of the table and '
+      'the whole table; a co-owner takes the club out after the week',
+      (tester) async {
+    final mine = lrow(2, 'Hostel A', 7, mine: true);
+    api = FakeCommunityApi(profile: me())
+      ..myClubs = [club(role: ClubRole.coOwner)]
+      ..leagues = {
+        'club-1': league(
+          me: mine,
+          table: [lrow(1, 'Gym B', 9), mine, lrow(3, 'Hostel C', 4)],
+          clubs: 6,
+        ),
+      }
+      ..fullTable = [
+        lrow(1, 'Gym B', 9),
+        mine,
+        lrow(3, 'Hostel C', 4),
+        lrow(4, 'Club D', 3),
+        lrow(5, 'Club E', 1),
+        lrow(6, 'Club F', 0),
+      ];
+    await openClub(tester, api.myClubs.first);
+    expect(find.text('2nd of 6 · 7 points'), findsOneWidget);
+    expect(
+      find.text('This season: Mon 30 Nov to Sun 27 Dec'),
+      findsOneWidget,
+    );
+    expect(key('league.row.c-Gym B'), findsOneWidget);
+    await tap(tester, 'league.all');
+    expect(api.calls, contains('league club-1 all'));
+    expect(find.text('Club F'), findsOneWidget);
+    Navigator.of(tester.element(key('league.full'))).pop();
+    await tester.pumpAndSettle();
+
+    await tap(tester, 'league.leave');
+    await tap(tester, 'league.leave.confirm');
+    expect(api.calls, contains('leave-league club-1'));
+    expect(key('league.leaving'), findsOneWidget);
+    expect(key('league.stay'), findsOneWidget);
+  });
+
+  testWidgets('the last season’s winner is marked by its name', (tester) async {
+    api = FakeCommunityApi(profile: me())
+      ..myClubs = [
+        const Club(
+          id: 'club-1',
+          name: 'Hostel A',
+          code: 'ABCD2345',
+          members: 4,
+          mine: false,
+          seasonWinner: true,
+        ),
+      ];
+    await openClub(tester, api.myClubs.first);
+    expect(key('club.winner'), findsOneWidget);
   });
 }

@@ -55,6 +55,12 @@ abstract class CommunityApi {
   Future<Result<List<ClubMatch>>> acceptMatch(String clubId, String matchId);
   Future<Result<void>> cancelMatch(String clubId, String matchId);
 
+  /// Beta 6.6 (L1): the club in the league; the owner or a co-owner enters
+  /// it or takes it out after the week.
+  Future<Result<ClubLeague>> clubLeague(String clubId, {bool all = false});
+  Future<Result<ClubLeague>> enterLeague(String clubId);
+  Future<Result<ClubLeague>> leaveLeague(String clubId);
+
   /// Cheer (or take it back): the post's kudos after.
   Future<Result<({int kudos, bool cheered})>> cheer(
     String postId, {
@@ -345,6 +351,30 @@ class DioCommunityApi implements CommunityApi {
           '/v1/community/clubs/$clubId/matches/$matchId/accept',
         );
         return _matches(r.data);
+      });
+
+  @override
+  Future<Result<ClubLeague>> clubLeague(String clubId, {bool all = false}) =>
+      _guard(() async {
+        final r = await _dio.get<Map<String, dynamic>>(
+          '/v1/community/clubs/$clubId/league',
+          queryParameters: {if (all) 'all': 'true'},
+        );
+        return ClubLeague.fromJson(r.data!);
+      });
+
+  @override
+  Future<Result<ClubLeague>> enterLeague(String clubId) => _guard(() async {
+        final r = await _dio
+            .post<Map<String, dynamic>>('/v1/community/clubs/$clubId/league');
+        return ClubLeague.fromJson(r.data!);
+      });
+
+  @override
+  Future<Result<ClubLeague>> leaveLeague(String clubId) => _guard(() async {
+        final r = await _dio
+            .delete<Map<String, dynamic>>('/v1/community/clubs/$clubId/league');
+        return ClubLeague.fromJson(r.data!);
       });
 
   @override

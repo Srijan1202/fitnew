@@ -13,6 +13,7 @@ import '../domain/community.dart';
 import 'community_providers.dart';
 import 'community_screen.dart';
 import 'club_challenge_card.dart';
+import 'club_league_card.dart';
 import 'club_match_card.dart';
 import 'feed_view.dart';
 import 'invite_qr.dart';
@@ -52,7 +53,27 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: () => context.popOrHome()),
-        title: Text(c?.name ?? 'Club'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(c?.name ?? 'Club', overflow: TextOverflow.ellipsis),
+            ),
+            // Beta 6.6 (L1): the last season's winner, for a season.
+            if (c?.seasonWinner ?? false) ...[
+              const SizedBox(width: FitSpacing.xs),
+              Tooltip(
+                message: 'Won the last league season',
+                child: Icon(
+                  Icons.emoji_events,
+                  key: const ValueKey('club.winner'),
+                  color: FitColors.accent,
+                  size: 20,
+                ),
+              ),
+            ],
+          ],
+        ),
         actions: [
           PopupMenuButton<String>(
             key: const ValueKey('club.menu'),
@@ -240,6 +261,8 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
           ClubChallengeCard(clubId: clubId, owner: c?.runs ?? false),
           // Beta 6.5 (K3): club vs club.
           ClubMatchCard(clubId: clubId, owner: c?.runs ?? false),
+          // Beta 6.6 (L1): the league.
+          ClubLeagueCard(clubId: clubId, runs: c?.runs ?? false),
           const BoardMetricPicker(),
           const SizedBox(height: FitSpacing.md),
           BoardLoader(

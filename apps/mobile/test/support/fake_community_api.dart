@@ -47,6 +47,10 @@ class FakeCommunityApi implements CommunityApi {
   List<ClubMatch> Function(String code, ChallengeMetric metric)?
       onChallengeClub;
   Failure? matchFailure;
+
+  /// Beta 6.6 (L1): each club's league view, by club id; the full table.
+  Map<String, ClubLeague> leagues = {};
+  List<LeagueRow> fullTable = [];
   List<Suggestion> suggested = [];
   Failure? nudgeFailure;
 
@@ -200,6 +204,68 @@ class FakeCommunityApi implements CommunityApi {
   ) async {
     calls.add('accept-match $clubId $matchId');
     return _r(matches[clubId] ?? const []);
+  }
+
+  static const _outOfLeague = ClubLeague(
+    entered: false,
+    leaving: false,
+    canEnter: true,
+    seasonFrom: null,
+    seasonTo: null,
+    seasonFinished: false,
+    me: null,
+    table: [],
+    clubs: 0,
+  );
+
+  ClubLeague _league(String clubId, {bool? entered, bool? leaving}) {
+    final l = leagues[clubId] ?? _outOfLeague;
+    return leagues[clubId] = ClubLeague(
+      entered: entered ?? l.entered,
+      leaving: leaving ?? l.leaving,
+      canEnter: l.canEnter,
+      seasonFrom: l.seasonFrom,
+      seasonTo: l.seasonTo,
+      seasonFinished: l.seasonFinished,
+      me: l.me,
+      table: l.table,
+      clubs: l.clubs,
+    );
+  }
+
+  @override
+  Future<Result<ClubLeague>> clubLeague(
+    String clubId, {
+    bool all = false,
+  }) async {
+    calls.add('league $clubId${all ? ' all' : ''}');
+    final l = _league(clubId);
+    if (!all) return _r(l);
+    return _r(
+      ClubLeague(
+        entered: l.entered,
+        leaving: l.leaving,
+        canEnter: l.canEnter,
+        seasonFrom: l.seasonFrom,
+        seasonTo: l.seasonTo,
+        seasonFinished: l.seasonFinished,
+        me: l.me,
+        table: fullTable,
+        clubs: fullTable.length,
+      ),
+    );
+  }
+
+  @override
+  Future<Result<ClubLeague>> enterLeague(String clubId) async {
+    calls.add('enter-league $clubId');
+    return _r(_league(clubId, entered: true, leaving: false));
+  }
+
+  @override
+  Future<Result<ClubLeague>> leaveLeague(String clubId) async {
+    calls.add('leave-league $clubId');
+    return _r(_league(clubId, leaving: true));
   }
 
   @override

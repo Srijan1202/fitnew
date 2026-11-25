@@ -183,6 +183,18 @@ final clubMatchesProvider =
   retry: (_, __) => null,
 );
 
+/// Beta 6.6 (L1): a club in the league (the full table with `all`).
+final clubLeagueProvider =
+    FutureProvider.autoDispose.family<ClubLeague, (String, bool)>(
+  (ref, key) async {
+    requireSession(ref);
+    final r =
+        await ref.watch(communityApiProvider).clubLeague(key.$1, all: key.$2);
+    return r.when(ok: (l) => l, err: (f) => throw f);
+  },
+  retry: (_, __) => null,
+);
+
 /// Beta 6.3 (C16): people you may know.
 final suggestionsProvider = FutureProvider.autoDispose<List<Suggestion>>(
   (ref) async {
@@ -231,5 +243,6 @@ void refreshCommunity(WidgetRef ref) {
     ..invalidate(clubFeedProvider)
     ..invalidate(clubChallengeProvider)
     ..invalidate(clubMatchesProvider)
+    ..invalidate(clubLeagueProvider)
     ..invalidate(suggestionsProvider);
 }

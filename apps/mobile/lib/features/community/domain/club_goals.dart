@@ -240,3 +240,115 @@ String dayLabel(String date) {
   final d = DateTime.parse(date);
   return '${_days[d.weekday - 1]} ${d.day} ${_short[d.month - 1]}';
 }
+
+/* --------------------------------------------------- L1: the league -- */
+
+/// "1st", "2nd", "3rd", "11th", "22nd".
+String ordinalOf(int n) {
+  final teen = n % 100 >= 11 && n % 100 <= 13;
+  final end = teen
+      ? 'th'
+      : switch (n % 10) {
+          1 => 'st',
+          2 => 'nd',
+          3 => 'rd',
+          _ => 'th',
+        };
+  return '$n$end';
+}
+
+/// Beta 6.6 (L1): one club's row in the league table: names and results,
+/// never members.
+class LeagueRow {
+  const LeagueRow({
+    required this.place,
+    required this.clubId,
+    required this.name,
+    required this.played,
+    required this.won,
+    required this.drawn,
+    required this.lost,
+    required this.byes,
+    required this.points,
+    required this.mine,
+  });
+
+  factory LeagueRow.fromJson(Map<String, dynamic> j) => LeagueRow(
+        place: (j['place'] as num).toInt(),
+        clubId: j['clubId'] as String,
+        name: j['name'] as String,
+        played: (j['played'] as num).toInt(),
+        won: (j['won'] as num).toInt(),
+        drawn: (j['drawn'] as num).toInt(),
+        lost: (j['lost'] as num).toInt(),
+        byes: (j['byes'] as num).toInt(),
+        points: (j['points'] as num).toInt(),
+        mine: j['mine'] as bool,
+      );
+
+  final int place;
+  final String clubId;
+  final String name;
+  final int played;
+  final int won;
+  final int drawn;
+  final int lost;
+  final int byes;
+  final int points;
+
+  /// This club.
+  final bool mine;
+}
+
+/// Beta 6.6 (L1, owner 2026-11-25): a club in the league.
+class ClubLeague {
+  const ClubLeague({
+    required this.entered,
+    required this.leaving,
+    required this.canEnter,
+    required this.seasonFrom,
+    required this.seasonTo,
+    required this.seasonFinished,
+    required this.me,
+    required this.table,
+    required this.clubs,
+  });
+
+  factory ClubLeague.fromJson(Map<String, dynamic> j) {
+    final s = j['season'] as Map<String, dynamic>?;
+    return ClubLeague(
+      entered: j['entered'] as bool,
+      leaving: j['leaving'] as bool,
+      canEnter: j['canEnter'] as bool,
+      seasonFrom: s?['startsOn'] as String?,
+      seasonTo: s?['endsOn'] as String?,
+      seasonFinished: s?['finished'] as bool? ?? false,
+      me: j['me'] == null
+          ? null
+          : LeagueRow.fromJson(j['me'] as Map<String, dynamic>),
+      table: [
+        for (final r in j['table'] as List<dynamic>)
+          LeagueRow.fromJson(r as Map<String, dynamic>),
+      ],
+      clubs: (j['clubs'] as num).toInt(),
+    );
+  }
+
+  final bool entered;
+
+  /// Entered, and out after this week.
+  final bool leaving;
+
+  /// 3 members or more.
+  final bool canEnter;
+
+  /// The latest season's Monday and Sunday; null before the first.
+  final String? seasonFrom;
+  final String? seasonTo;
+  final bool seasonFinished;
+  final LeagueRow? me;
+
+  /// The top 5 and this club (or every club).
+  final List<LeagueRow> table;
+  final int clubs;
+}
