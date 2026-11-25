@@ -5,6 +5,7 @@ import '../../../core/theme/tokens.dart';
 import '../../../shared/widgets/fit_glass.dart';
 import '../domain/club_goals.dart';
 import 'community_providers.dart';
+import 'share_result.dart';
 
 /// Beta 6.6 (L1, owner 2026-11-25): the club in the league, under its match.
 /// Clubs of 3 or more enter; each Saturday the league pairs them for the
@@ -140,6 +141,17 @@ class ClubLeagueCard extends ConsumerWidget {
                   ),
                   child: const Text('See the table'),
                 ),
+                // Beta 6.6 (M2): the club's place as a picture.
+                if (me != null && l.seasonFrom != null)
+                  TextButton.icon(
+                    key: const ValueKey('league.share'),
+                    onPressed: () => showShareResult(
+                      context,
+                      ResultCardText.league(me.name, l),
+                    ),
+                    icon: const Icon(Icons.ios_share),
+                    label: const Text('Share our place'),
+                  ),
               ],
               if (runs)
                 l.leaving

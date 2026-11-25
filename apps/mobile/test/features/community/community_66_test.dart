@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:fitos/core/routing/router.dart';
 import 'package:fitos/core/theme/app_theme.dart';
 import 'package:fitos/features/auth/presentation/controllers/auth_controller.dart';
@@ -7,6 +9,8 @@ import 'package:fitos/features/community/presentation/club_screen.dart';
 import 'package:fitos/features/community/presentation/club_settings_screen.dart';
 import 'package:fitos/features/community/presentation/community_providers.dart';
 import 'package:fitos/features/community/presentation/community_screen.dart';
+import 'package:fitos/features/community/presentation/share_result.dart';
+import 'package:fitos/features/running/presentation/screens/share_run_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,8 +19,17 @@ import 'package:go_router/go_router.dart';
 import '../../support/fake_community_api.dart';
 
 /// Beta 6.6 (Leagues and co-owners): co-owners (L2) and the league (L1).
+class _RecordingSharer implements RunSharer {
+  final shared = <(int, String, String)>[];
+
+  @override
+  Future<void> share(Uint8List bytes, String fileName, String mimeType) async =>
+      shared.add((bytes.length, fileName, mimeType));
+}
+
 void main() {
   late FakeCommunityApi api;
+  final sharer = _RecordingSharer();
 
   CommunityProfile me() => CommunityProfile(
         handle: 'srijan',
@@ -84,6 +97,7 @@ void main() {
       overrides: [
         sessionUserIdProvider.overrideWithValue('user-1'),
         communityApiProvider.overrideWithValue(api),
+        runSharerProvider.overrideWithValue(sharer),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
     );
@@ -399,5 +413,72 @@ void main() {
       ..myClubs = [club(role: ClubRole.member)];
     await openClub(tester, api.myClubs.first);
     expect(key('numbers.card'), findsNothing);
+  });
+  /* --------------------------------------------- M2: share a result -- */
+
+  ClubMatch finished() => const ClubMatch(
+        id: 'm0',
+        metric: ChallengeMetric.activeDays,
+        weekFrom: '2026-11-30',
+        weekTo: '2026-12-06',
+        status: MatchStatus.finished,
+        challenger: true,
+        us: ClubMatchSide(clubId: 'club-1', name: 'Hostel A', score: 3),
+        them: ClubMatchSide(clubId: 'club-9', name: 'Gym B', score: 2.5),
+        members: 12,
+        daysLeft: 0,
+        result: MatchResult.won,
+      );
+
+  test('a shared result names clubs, never members', () {
+    final m = ResultCardText.match(finished());
+    expect([
+      m.title,
+      m.big,
+      m.line,
+      m.fileName,
+    ], [
+      'Hostel A won',
+      'Hostel A 3 · 2.5 Gym B',
+      'active days per member · the week of Mon 30 Nov',
+      'fitos-match-2026-11-30.png',
+    ]);
+    final l = ResultCardText.league(
+      'Hostel A',
+      league(me: lrow(2, 'Hostel A', 7, mine: true), clubs: 14),
+    );
+    expect([
+      l.title,
+      l.big,
+      l.line,
+    ], [
+      'Hostel A is 2nd',
+      '2nd of 14 · 7 points',
+      'FITOS club league · Mon 30 Nov to Sun 27 Dec',
+    ]);
+  });
+
+  testWidgets('a finished match shares as a picture through the share sheet',
+      (tester) async {
+    sharer.shared.clear();
+    api = FakeCommunityApi(profile: me())
+      ..myClubs = [club(role: ClubRole.member)]
+      ..matches = {
+        'club-1': [finished()],
+      };
+    await openClub(tester, api.myClubs.first);
+    await tap(tester, 'match.share.m0');
+    expect(key('shareResult.card'), findsOneWidget);
+    expect(find.text('Hostel A 3 · 2.5 Gym B'), findsWidgets);
+    await tester.runAsync(() async {
+      await tester.tap(key('shareResult.share'));
+      for (var i = 0; i < 50 && sharer.shared.isEmpty; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        await tester.pump();
+      }
+    });
+    expect(sharer.shared.single.$2, 'fitos-match-2026-11-30.png');
+    expect(sharer.shared.single.$3, 'image/png');
+    expect(sharer.shared.single.$1, greaterThan(0));
   });
 }

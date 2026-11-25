@@ -5,6 +5,7 @@ import '../../../core/theme/tokens.dart';
 import '../../../shared/widgets/fit_glass.dart';
 import '../domain/club_goals.dart';
 import 'community_providers.dart';
+import 'share_result.dart';
 
 /// Beta 6.5 (K3, owner Q3): club vs club under the club's challenge. A match
 /// is a week, Monday to Sunday; the score is each club's average per member,
@@ -166,6 +167,14 @@ class _MatchRow extends StatelessWidget {
             child: Text(
               m.status == MatchStatus.pending ? 'Take it back' : 'Call it off',
             ),
+          ),
+        // Beta 6.6 (M2): a result as a picture, names of clubs only.
+        if (m.status == MatchStatus.finished)
+          TextButton.icon(
+            key: ValueKey('match.share.${m.id}'),
+            onPressed: () => showShareResult(context, ResultCardText.match(m)),
+            icon: const Icon(Icons.ios_share),
+            label: const Text('Share'),
           ),
       ],
     );
