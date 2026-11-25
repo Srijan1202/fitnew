@@ -51,6 +51,9 @@ class FakeCommunityApi implements CommunityApi {
   /// Beta 6.6 (L1): each club's league view, by club id; the full table.
   Map<String, ClubLeague> leagues = {};
   List<LeagueRow> fullTable = [];
+
+  /// Beta 6.6 (M3): each club's month in totals.
+  Map<String, ClubNumbers> numbers = {};
   List<Suggestion> suggested = [];
   Failure? nudgeFailure;
 
@@ -253,6 +256,22 @@ class FakeCommunityApi implements CommunityApi {
         table: fullTable,
         clubs: fullTable.length,
       ),
+    );
+  }
+
+  @override
+  Future<Result<ClubNumbers>> clubNumbers(String clubId) async {
+    calls.add('numbers $clubId');
+    return _r(
+      numbers[clubId] ??
+          const ClubNumbers(
+            month: '2026-11',
+            sessions: 0,
+            runKm: 0,
+            activeDays: 0,
+            bestWeekFrom: null,
+            bestWeekSessions: null,
+          ),
     );
   }
 

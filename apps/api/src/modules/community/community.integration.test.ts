@@ -13,6 +13,7 @@ import {
   boardSchema,
   clubChallengeViewSchema,
   clubLeagueSchema,
+  clubNumbersSchema,
   clubMatchListSchema,
   clubSchema,
   communityMeSchema,
@@ -1085,6 +1086,27 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
     expect((await call(o, 'DELETE', `/community/clubs/${club.id}/membership`)).statusCode).toBe(204);
     const after = (await call(co2, 'GET', '/community/clubs')).json() as { items: { id: string; role: string; ownerId: string; coOwners: string[] }[] };
     expect(after.items.find((c) => c.id === club.id)).toMatchObject({ role: 'owner', ownerId: co2.id, coOwners: [] });
+  });
+
+  /* ------------------------------------------- beta 6.6: club numbers -- */
+
+  it('beta 6.6 (M3): the club this month in totals and its best week; members only', async () => {
+    const o = await member('c66_num_owner');
+    const m = await member('c66_num_mate');
+    const x = await member('c66_num_out');
+    const club = await clubOf(o, 'C66 Numbers', m);
+    await session(o, 6, 20);
+    await session(m, 6, 20);
+    await run(m, 5200, 1700);
+    await board(m, '/community/boards/friends');
+    const r = await call(o, 'GET', `/community/clubs/${club.id}/numbers`);
+    expect(r.statusCode, r.body).toBe(200);
+    const n = clubNumbersSchema.parse(r.json());
+    const day = today();
+    expect(n).toMatchObject({ month: monthOf(day), sessions: 2, runKm: 5.2, activeDays: 2 });
+    expect(n.bestWeek).toEqual({ weekFrom: addDays(day, 1 - isoWeekday(day)), sessions: 2 });
+    expect(JSON.stringify(n)).not.toMatch(/c66_num_/);
+    expect((await call(x, 'GET', `/community/clubs/${club.id}/numbers`)).statusCode).toBe(404);
   });
 
   /* ------------------------------------------------- beta 6.6: league -- */

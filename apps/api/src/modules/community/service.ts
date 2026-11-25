@@ -31,6 +31,7 @@ import {
   type ClubChallenge,
   type ClubChallengeView,
   type ClubLeague,
+  type ClubNumbers,
   type LeagueRow,
   type ChallengeClubRequest,
   type ClubMatch,
@@ -919,6 +920,24 @@ export class CommunityService {
     if (m.startedAt !== null || m.status === 'finished') throw new AppError('CONFLICT', 'That week has started.', [{ path: 'match', issue: 'started' }]);
     if (m.leagueSeasonId !== null) throw new AppError('CONFLICT', 'A league match cannot be called off.', [{ path: 'match', issue: 'league' }]);
     await this.repo.deleteMatch(matchId);
+  }
+
+  /* ------------------------------------------ beta 6.6 (M3): club numbers -- */
+
+  /** The club this month in totals, and its best week so far (weeks that touch the month). */
+  async clubNumbers(viewer: string, clubId: string): Promise<ClubNumbers> {
+    await this.requireMember(viewer);
+    if (!(await this.repo.isMember(clubId, viewer))) throw new AppError('NOT_FOUND', 'No such club.');
+    await this.refreshOne(viewer);
+    const { thisMonth } = await this.monthsOf(viewer);
+    const m = await this.repo.clubMonth(clubId);
+    return {
+      month: thisMonth,
+      sessions: m.sessions,
+      runKm: inTargetUnit('distance', m.runM),
+      activeDays: m.activeDays,
+      bestWeek: await this.repo.clubBestWeek(clubId, addDays(monthRange(thisMonth).from, -6)),
+    };
   }
 
   /* ------------------------------------------------ beta 6.6 (L1): league -- */

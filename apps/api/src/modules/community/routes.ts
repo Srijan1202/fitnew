@@ -23,6 +23,7 @@ import {
   clubChallengeViewSchema,
   clubLeagueQuerySchema,
   clubLeagueSchema,
+  clubNumbersSchema,
   clubListSchema,
   clubMatchListSchema,
   clubSchema,
@@ -502,6 +503,19 @@ export async function communityRoutes(app: FastifyInstance, opts: { ipSalt: stri
     await service.cancelMatch(requireUserId(request.userId), request.params.id, request.params.matchId);
     return reply.code(204).send(null);
   });
+
+  /* ---------------------------------------- beta 6.6 (M3): club numbers -- */
+
+  typed.get('/community/clubs/:id/numbers', {
+    ...on,
+    schema: {
+      summary: 'The club this month in totals (beta 6.6): sessions, run km, active days and its best week; never who',
+      tags,
+      security,
+      params: idParams,
+      response: { 200: clubNumbersSchema, ...errors },
+    },
+  }, async (request) => service.clubNumbers(requireUserId(request.userId), request.params.id));
 
   /* ---------------------------------------------- beta 6.6 (L1): league -- */
 

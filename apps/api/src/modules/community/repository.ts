@@ -1607,6 +1607,34 @@ export class CommunityRepository {
     await this.db.delete(clubMatches).where(and(eq(clubMatches.status, 'finished'), lt(clubMatches.finishedAt, before)));
   }
 
+  /* --------------------------------------- beta 6.6 (M3): club numbers -- */
+
+  /** The members' month counts, summed. */
+  async clubMonth(clubId: string): Promise<{ sessions: number; runM: number; activeDays: number }> {
+    const [r] = await this.db.execute<{ sessions: number; run_m: number; active_days: number }>(sql`
+      select coalesce(sum(ps.sessions), 0)::int as sessions, coalesce(sum(ps.run_m), 0)::int as run_m, coalesce(sum(ps.active_days), 0)::int as active_days
+      from club_members cm join community_period_stats ps on ps.user_id = cm.user_id and ps.period = 'month'
+      where cm.club_id = ${clubId}`);
+    return { sessions: r?.sessions ?? 0, runM: r?.run_m ?? 0, activeDays: r?.active_days ?? 0 };
+  }
+
+  /** The week since `from` with the most sessions among the members (kept weeks and this one). */
+  async clubBestWeek(clubId: string, from: string): Promise<{ weekFrom: string; sessions: number } | null> {
+    const [r] = await this.db.execute<{ week_from: string; sessions: number }>(sql`
+      select w.week_from, sum(w.sessions)::int as sessions from (
+        select user_id, week_from, sessions from community_week_history
+        union all
+        select user_id, week_from, sessions from community_week_stats
+      ) w
+      join club_members cm on cm.user_id = w.user_id and cm.club_id = ${clubId}
+      where w.week_from >= ${from}
+      group by w.week_from
+      having sum(w.sessions) > 0
+      order by sessions desc, w.week_from desc
+      limit 1`);
+    return r === undefined ? null : { weekFrom: r.week_from, sessions: r.sessions };
+  }
+
   /* -------------------------------------------- beta 6.6 (L1): league -- */
 
   async leagueClub(clubId: string): Promise<{ leaving: boolean } | null> {

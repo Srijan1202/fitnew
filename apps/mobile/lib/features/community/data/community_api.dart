@@ -61,6 +61,9 @@ abstract class CommunityApi {
   Future<Result<ClubLeague>> enterLeague(String clubId);
   Future<Result<ClubLeague>> leaveLeague(String clubId);
 
+  /// Beta 6.6 (M3): the club this month in totals.
+  Future<Result<ClubNumbers>> clubNumbers(String clubId);
+
   /// Cheer (or take it back): the post's kudos after.
   Future<Result<({int kudos, bool cheered})>> cheer(
     String postId, {
@@ -361,6 +364,13 @@ class DioCommunityApi implements CommunityApi {
           queryParameters: {if (all) 'all': 'true'},
         );
         return ClubLeague.fromJson(r.data!);
+      });
+
+  @override
+  Future<Result<ClubNumbers>> clubNumbers(String clubId) => _guard(() async {
+        final r = await _dio
+            .get<Map<String, dynamic>>('/v1/community/clubs/$clubId/numbers');
+        return ClubNumbers.fromJson(r.data!);
       });
 
   @override

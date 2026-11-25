@@ -757,6 +757,21 @@ export const clubLeagueSchema = z
   })
   .strict();
 export type ClubLeague = z.infer<typeof clubLeagueSchema>;
+/**
+ * Beta 6.6 (M3): the club this month, as totals only: its members' counted
+ * sessions, run kilometres and active days, and its best week so far.
+ */
+export const clubNumbersSchema = z
+  .object({
+    month: z.string(),
+    sessions: z.number().int().nonnegative(),
+    runKm: z.number().nonnegative(),
+    activeDays: z.number().int().nonnegative(),
+    bestWeek: z.object({ weekFrom: z.string(), sessions: z.number().int().nonnegative() }).strict().nullable(),
+  })
+  .strict();
+export type ClubNumbers = z.infer<typeof clubNumbersSchema>;
+
 export const clubLeagueQuerySchema = z.object({ all: z.enum(['true', 'false']).optional().transform((v) => v === 'true') }).strict();
 
 /* ------------------------------------------------------------- boards -- */

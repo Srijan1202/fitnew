@@ -368,4 +368,36 @@ void main() {
     await openClub(tester, api.myClubs.first);
     expect(key('club.winner'), findsOneWidget);
   });
+  /* --------------------------------------------- M3: club in numbers -- */
+
+  testWidgets(
+      'the club this month in totals and its best week; nothing while '
+      'the month is empty', (tester) async {
+    api = FakeCommunityApi(profile: me())
+      ..myClubs = [club(role: ClubRole.member)]
+      ..numbers = {
+        'club-1': const ClubNumbers(
+          month: '2026-11',
+          sessions: 143,
+          runKm: 212.4,
+          activeDays: 260,
+          bestWeekFrom: '2026-11-16',
+          bestWeekSessions: 41,
+        ),
+      };
+    await openClub(tester, api.myClubs.first);
+    expect(find.text('NOVEMBER, TOGETHER'), findsOneWidget);
+    expect(find.text('143'), findsOneWidget);
+    expect(find.text('212.4'), findsOneWidget);
+    expect(find.text('260'), findsOneWidget);
+    expect(
+      find.text('Best week: 41 sessions, the week of Mon 16 Nov'),
+      findsOneWidget,
+    );
+
+    api = FakeCommunityApi(profile: me())
+      ..myClubs = [club(role: ClubRole.member)];
+    await openClub(tester, api.myClubs.first);
+    expect(key('numbers.card'), findsNothing);
+  });
 }

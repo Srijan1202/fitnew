@@ -352,3 +352,38 @@ class ClubLeague {
   final List<LeagueRow> table;
   final int clubs;
 }
+
+/* ------------------------------------------------ M3: club in numbers -- */
+
+/// Beta 6.6 (M3): the club this month, as totals only.
+class ClubNumbers {
+  const ClubNumbers({
+    required this.month,
+    required this.sessions,
+    required this.runKm,
+    required this.activeDays,
+    required this.bestWeekFrom,
+    required this.bestWeekSessions,
+  });
+
+  factory ClubNumbers.fromJson(Map<String, dynamic> j) {
+    final b = j['bestWeek'] as Map<String, dynamic>?;
+    return ClubNumbers(
+      month: j['month'] as String,
+      sessions: (j['sessions'] as num).toInt(),
+      runKm: j['runKm'] as num,
+      activeDays: (j['activeDays'] as num).toInt(),
+      bestWeekFrom: b?['weekFrom'] as String?,
+      bestWeekSessions: (b?['sessions'] as num?)?.toInt(),
+    );
+  }
+
+  final String month;
+  final int sessions;
+  final num runKm;
+  final int activeDays;
+
+  /// The best week so far (by sessions); null before any.
+  final String? bestWeekFrom;
+  final int? bestWeekSessions;
+}

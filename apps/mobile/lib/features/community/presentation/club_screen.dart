@@ -15,6 +15,7 @@ import 'community_screen.dart';
 import 'club_challenge_card.dart';
 import 'club_league_card.dart';
 import 'club_match_card.dart';
+import 'club_numbers_strip.dart';
 import 'feed_view.dart';
 import 'invite_qr.dart';
 
@@ -256,6 +257,8 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
               ),
             ),
           const SizedBox(height: FitSpacing.md),
+          // Beta 6.6 (M3): the club this month in totals.
+          ClubNumbersStrip(clubId: clubId),
           // Beta 6.5 (K2): the club's goal for the month.
           // Beta 6.6 (L2): the owner or a co-owner runs them.
           ClubChallengeCard(clubId: clubId, owner: c?.runs ?? false),
