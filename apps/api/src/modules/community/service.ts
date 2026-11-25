@@ -17,6 +17,7 @@ import {
   FRIEND_DECLINE_COOLDOWN_DAYS,
   SUGGESTIONS_SHOWN,
   MAX_CLUB_MEMBERS,
+  MAX_CO_OWNERS,
   MAX_CLUBS_JOINED,
   MAX_CLUBS_OWNED,
   MAX_FRIENDS,
@@ -566,8 +567,18 @@ export class CommunityService {
 
   /* ---------------------------------------------------------------- clubs -- */
 
-  private clubOf(c: { id: string; name: string; code: string; ownerId: string; members: number; createdAt: Date }, viewer: string): Club {
-    return { id: c.id, name: c.name, code: c.code, members: c.members, mine: c.ownerId === viewer, createdAt: c.createdAt.toISOString() };
+  private clubOf(c: { id: string; name: string; code: string; ownerId: string; members: number; createdAt: Date; coOwners: string[] }, viewer: string): Club {
+    return {
+      id: c.id,
+      name: c.name,
+      code: c.code,
+      members: c.members,
+      mine: c.ownerId === viewer,
+      createdAt: c.createdAt.toISOString(),
+      ownerId: c.ownerId,
+      coOwners: c.coOwners,
+      role: c.ownerId === viewer ? 'owner' : c.coOwners.includes(viewer) ? 'co-owner' : 'member',
+    };
   }
 
   async clubs(viewer: string): Promise<Club[]> {
@@ -607,7 +618,7 @@ export class CommunityService {
     return this.clubOf((await this.repo.club(club.id))!, viewer);
   }
 
-  /** Leaving a club you made passes it to its longest member (or deletes it when empty). */
+  /** Leaving a club you made passes it to a co-owner, else its longest member (or deletes it when empty). */
   async leaveClub(viewer: string, clubId: string): Promise<void> {
     await this.repo.inTransaction((tx) => tx.leaveClub(clubId, viewer));
   }
@@ -623,15 +634,50 @@ export class CommunityService {
     return c;
   }
 
+  /**
+   * Beta 6.6 (L2, owner Q5): the club when the viewer runs it, as its owner
+   * or a co-owner: 404 when they are not in it, 403 when they only belong.
+   */
+  private async requireRunner(viewer: string, clubId: string) {
+    await this.requireMember(viewer);
+    const c = await this.repo.club(clubId);
+    if (c === null || !(await this.repo.isMember(clubId, viewer))) throw new AppError('NOT_FOUND', 'No such club.');
+    if (c.ownerId !== viewer && !c.coOwners.includes(viewer)) {
+      throw new AppError('FORBIDDEN', "Only the club's owner or a co-owner can do that.", [{ path: 'clubs', issue: 'not-owner' }]);
+    }
+    return c;
+  }
+
+  /**
+   * Beta 6.6 (L2, owner Q5): the owner names a member co-owner (up to 2) or
+   * drops one; the person is told either way.
+   */
+  async setCoOwner(viewer: string, clubId: string, userId: string, on: boolean): Promise<Club> {
+    const c = await this.requireOwner(viewer, clubId);
+    if (userId === viewer || !(await this.repo.isMember(clubId, userId))) throw new AppError('NOT_FOUND', 'No such member in this club.');
+    const already = c.coOwners.includes(userId);
+    if (on && !already) {
+      if (c.coOwners.length >= MAX_CO_OWNERS) {
+        throw new AppError('CONFLICT', `A club has ${MAX_CO_OWNERS} co-owners at most.`, [{ path: 'coOwners', issue: 'limit' }]);
+      }
+      await this.repo.setRole(clubId, userId, 'co-owner');
+      await this.tell(userId, 'You help run a club', `You are now a co-owner of ${c.name} on FITOS.`, { type: 'community', screen: 'clubs' });
+    } else if (!on && already) {
+      await this.repo.setRole(clubId, userId, 'member');
+      await this.tell(userId, 'A club change', `You are no longer a co-owner of ${c.name}.`, { type: 'community', screen: 'clubs' });
+    }
+    return this.clubOf((await this.repo.club(clubId))!, viewer);
+  }
+
   async renameClub(viewer: string, clubId: string, name: string): Promise<Club> {
-    await this.requireOwner(viewer, clubId);
+    await this.requireRunner(viewer, clubId);
     await this.repo.renameClub(clubId, name);
     return this.clubOf((await this.repo.club(clubId))!, viewer);
   }
 
   /** A new code: the old one stops working at once. */
   async newClubCode(viewer: string, clubId: string): Promise<Club> {
-    await this.requireOwner(viewer, clubId);
+    await this.requireRunner(viewer, clubId);
     for (let attempt = 0; attempt < 5; attempt++) {
       if (await this.repo.setClubCode(clubId, newClubCode())) return this.clubOf((await this.repo.club(clubId))!, viewer);
     }
@@ -649,19 +695,23 @@ export class CommunityService {
 
   /** Out, and kept out until let back (owner Q2). */
   async removeMember(viewer: string, clubId: string, userId: string): Promise<void> {
-    await this.requireOwner(viewer, clubId);
+    const c = await this.requireRunner(viewer, clubId);
     if (userId === viewer) throw new AppError('VALIDATION_FAILED', 'Pass the club to someone, or leave it.');
+    // Beta 6.6 (L2): a co-owner removes members, never the owner or another co-owner.
+    if (c.ownerId !== viewer && (userId === c.ownerId || c.coOwners.includes(userId))) {
+      throw new AppError('FORBIDDEN', 'Only the owner can do that.', [{ path: 'clubs', issue: 'co-owner' }]);
+    }
     if (!(await this.repo.isMember(clubId, userId))) throw new AppError('NOT_FOUND', 'No such member in this club.');
     await this.repo.inTransaction((tx) => tx.removeFromClub(clubId, userId));
   }
 
   async removedFrom(viewer: string, clubId: string): Promise<CommunityPerson[]> {
-    await this.requireOwner(viewer, clubId);
+    await this.requireRunner(viewer, clubId);
     return (await this.repo.removedFrom(clubId)).map(personOf);
   }
 
   async letBack(viewer: string, clubId: string, userId: string): Promise<void> {
-    await this.requireOwner(viewer, clubId);
+    await this.requireRunner(viewer, clubId);
     if (!(await this.repo.letBack(clubId, userId))) throw new AppError('NOT_FOUND', 'They were not removed from this club.');
   }
 
@@ -702,7 +752,7 @@ export class CommunityService {
     const open = await this.repo.openChallenge(clubId);
     const history = await this.repo.finishedChallenges(clubId, CHALLENGE_HISTORY_SHOWN);
     let suggested: ClubChallengeView['suggested'] = null;
-    if (club.ownerId === viewer) {
+    if (club.ownerId === viewer || club.coOwners.includes(viewer)) {
       const w = await this.week(viewer);
       const last = await this.repo.clubWeeksTotal(clubId, [1, 2, 3, 4].map((i) => addDays(w.from, -7 * i)));
       const month = open?.month ?? thisMonth;
@@ -721,7 +771,7 @@ export class CommunityService {
    * every member's part is counted at once.
    */
   async setChallenge(viewer: string, clubId: string, body: SetChallengeRequest): Promise<ClubChallengeView> {
-    await this.requireOwner(viewer, clubId);
+    await this.requireRunner(viewer, clubId);
     const { thisMonth, nextMonth } = await this.monthsOf(viewer);
     const month = body.month ?? thisMonth;
     if (month !== thisMonth && month !== nextMonth) {
@@ -742,7 +792,7 @@ export class CommunityService {
 
   /** A new target, until the challenge is reached. */
   async changeChallenge(viewer: string, clubId: string, target: number): Promise<ClubChallengeView> {
-    await this.requireOwner(viewer, clubId);
+    await this.requireRunner(viewer, clubId);
     const open = await this.repo.openChallenge(clubId);
     if (open === null) throw new AppError('NOT_FOUND', 'This club has no challenge now.');
     if (open.reachedAt !== null) throw new AppError('CONFLICT', 'It is reached: end it and set a new one.', [{ path: 'challenge', issue: 'reached' }]);
@@ -752,7 +802,7 @@ export class CommunityService {
 
   /** End it before the month is over; it stays in the club's history. */
   async endChallenge(viewer: string, clubId: string): Promise<void> {
-    await this.requireOwner(viewer, clubId);
+    await this.requireRunner(viewer, clubId);
     const open = await this.repo.openChallenge(clubId);
     if (open === null) throw new AppError('NOT_FOUND', 'This club has no challenge now.');
     await this.repo.closeChallenge(open.id, this.now(), true);
@@ -807,9 +857,12 @@ export class CommunityService {
    * One match a week for either club; never across a block between the owners.
    */
   async challengeClub(viewer: string, clubId: string, body: ChallengeClubRequest): Promise<ClubMatch[]> {
-    await this.requireOwner(viewer, clubId);
+    const c = await this.requireRunner(viewer, clubId);
     const other = await this.repo.clubByCode(body.code);
-    if (other === null || (await this.repo.blockedEitherWay(viewer, other.ownerId))) throw new AppError('NOT_FOUND', 'No club has that code.');
+    // A block between the owners, or between a co-owner and the other owner.
+    if (other === null || (await this.repo.blockedEitherWay(c.ownerId, other.ownerId)) || (await this.repo.blockedEitherWay(viewer, other.ownerId))) {
+      throw new AppError('NOT_FOUND', 'No club has that code.');
+    }
     if (other.id === clubId) throw new AppError('VALIDATION_FAILED', 'Challenge another club.', [{ path: 'code', issue: 'self' }]);
     const weekFrom = nextWeekFrom(localDateOf(this.now(), await this.repo.timezoneOf(viewer)));
     if (await this.repo.clubBusy(clubId, weekFrom)) throw new AppError('CONFLICT', 'Your club has a match next week.', [{ path: 'match', issue: 'busy' }]);
@@ -820,9 +873,15 @@ export class CommunityService {
 
   /** The challenged club's owner accepts, before the week starts. */
   async acceptMatch(viewer: string, clubId: string, matchId: string): Promise<ClubMatch[]> {
-    await this.requireOwner(viewer, clubId);
+    const c = await this.requireRunner(viewer, clubId);
     const m = await this.repo.match(matchId);
-    if (m === null || m.awayClubId !== clubId || m.status !== 'pending' || (await this.repo.blockedEitherWay(viewer, m.homeOwnerId))) {
+    if (
+      m === null ||
+      m.awayClubId !== clubId ||
+      m.status !== 'pending' ||
+      (await this.repo.blockedEitherWay(c.ownerId, m.homeOwnerId)) ||
+      (await this.repo.blockedEitherWay(viewer, m.homeOwnerId))
+    ) {
       throw new AppError('NOT_FOUND', 'No such challenge.');
     }
     if (localDateOf(this.now(), await this.repo.timezoneOf(viewer)) >= m.weekFrom) {
@@ -834,7 +893,7 @@ export class CommunityService {
 
   /** Decline a challenge, take one back, or call a match off before its week starts. */
   async cancelMatch(viewer: string, clubId: string, matchId: string): Promise<void> {
-    await this.requireOwner(viewer, clubId);
+    await this.requireRunner(viewer, clubId);
     const m = await this.repo.match(matchId);
     if (m === null || (m.homeClubId !== clubId && m.awayClubId !== clubId)) throw new AppError('NOT_FOUND', 'No such match.');
     if (m.startedAt !== null || m.status === 'finished') throw new AppError('CONFLICT', 'That week has started.', [{ path: 'match', issue: 'started' }]);

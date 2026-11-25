@@ -394,6 +394,16 @@ export async function communityRoutes(app: FastifyInstance, opts: { ipSalt: stri
     schema: { summary: 'Pass a club you own to another member', tags, security, params: idParams, body: passClubSchema, response: { 200: clubSchema, ...errors } },
   }, async (request) => service.passClub(requireUserId(request.userId), request.params.id, request.body.userId));
 
+  typed.put('/community/clubs/:id/co-owners/:userId', {
+    ...owner,
+    schema: { summary: 'Name a member co-owner of a club you own (up to 2; beta 6.6)', tags, security, params: clubUserParams, response: { 200: clubSchema, ...errors } },
+  }, async (request) => service.setCoOwner(requireUserId(request.userId), request.params.id, request.params.userId, true));
+
+  typed.delete('/community/clubs/:id/co-owners/:userId', {
+    ...owner,
+    schema: { summary: 'Drop a co-owner of a club you own (they stay a member)', tags, security, params: clubUserParams, response: { 200: clubSchema, ...errors } },
+  }, async (request) => service.setCoOwner(requireUserId(request.userId), request.params.id, request.params.userId, false));
+
   typed.delete('/community/clubs/:id/members/:userId', {
     ...owner,
     schema: { summary: 'Remove a member from a club you own; they cannot rejoin with the code until let back', tags, security, params: clubUserParams, response: { 204: z.null(), ...errors } },

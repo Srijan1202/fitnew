@@ -1021,4 +1021,59 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
     await round(new Date(`${weekFrom}T00:00:00Z`));
     expect(await matchesOf(B, away.id)).toEqual([]);
   });
+
+  /* ---------------------------------------------- beta 6.6: co-owners -- */
+
+  it('beta 6.6 (L2): the owner names up to 2 co-owners; they run the club, except co-owners and passing it; a co-owner takes over first', async () => {
+    const push = app.push as RecordingPushSender;
+    const o = await member('c66_owner');
+    const early = await member('c66_early');
+    const co1 = await member('c66_co_one');
+    const co2 = await member('c66_co_two');
+    const extra = await member('c66_extra');
+    const club = await clubOf(o, 'C66 Hostel', early, co1, co2, extra);
+    // The plain member joined first: on leaving, a co-owner still comes before them.
+    await sql`update club_members set joined_at = now() - interval '3 days' where club_id = ${club.id} and user_id = ${early.id}`;
+    await sql`update club_members set joined_at = now() - interval '2 days' where club_id = ${club.id} and user_id = ${co2.id}`;
+    await sql`update club_members set joined_at = now() - interval '1 day' where club_id = ${club.id} and user_id = ${co1.id}`;
+    await sql`insert into push_tokens (user_id, token, platform) values (${co1.id}, ${`cm-push-${co1.id}`}, 'android')`;
+    const path = (u: U) => `/community/clubs/${club.id}/co-owners/${u.id}`;
+
+    // Only the owner names them; at most 2; the person is told.
+    expect((await call(early, 'PUT', path(co1))).statusCode).toBe(403);
+    const named = clubSchema.parse((await call(o, 'PUT', path(co1))).json());
+    expect(named).toMatchObject({ role: 'owner', ownerId: o.id, coOwners: [co1.id] });
+    expect(push.sends.filter((t) => t.tokens.includes(`cm-push-${co1.id}`)).map((t) => t.message.body)).toEqual(['You are now a co-owner of C66 Hostel on FITOS.']);
+    expect((await call(o, 'PUT', path(co2))).statusCode).toBe(200);
+    const third = await call(o, 'PUT', path(extra));
+    expect(third.statusCode).toBe(409);
+    expect(issue(third)).toBe('limit');
+    expect((await call(o, 'PUT', path(o))).statusCode).toBe(404);
+    const seen = (await call(co1, 'GET', '/community/clubs')).json() as { items: { id: string; role: string; coOwners: string[] }[] };
+    expect(seen.items.find((c) => c.id === club.id)).toMatchObject({ role: 'co-owner', coOwners: [co2.id, co1.id] });
+
+    // A co-owner runs the club: rename, a challenge, remove a member.
+    expect((await call(co1, 'PATCH', `/community/clubs/${club.id}`, { name: 'C66 Hostel A' })).statusCode).toBe(200);
+    expect((await call(co1, 'POST', `/community/clubs/${club.id}/challenge`, { metric: 'sessions', target: 20 })).statusCode).toBe(201);
+    expect((await call(co1, 'DELETE', `/community/clubs/${club.id}/members/${extra.id}`)).statusCode).toBe(204);
+    // Never the owner or the other co-owner; never co-owners or passing the club.
+    const notOwner = await call(co1, 'DELETE', `/community/clubs/${club.id}/members/${co2.id}`);
+    expect(notOwner.statusCode).toBe(403);
+    expect(issue(notOwner)).toBe('co-owner');
+    expect((await call(co1, 'DELETE', `/community/clubs/${club.id}/members/${o.id}`)).statusCode).toBe(403);
+    expect((await call(co1, 'DELETE', path(co2))).statusCode).toBe(403);
+    expect((await call(co1, 'POST', `/community/clubs/${club.id}/owner`, { userId: co1.id })).statusCode).toBe(403);
+    // A plain member still cannot.
+    expect(issue(await call(early, 'PATCH', `/community/clubs/${club.id}`, { name: 'Mine now' }))).toBe('not-owner');
+
+    // Dropped: told, and back to a member.
+    expect(clubSchema.parse((await call(o, 'DELETE', path(co1))).json()).coOwners).toEqual([co2.id]);
+    expect(push.sends.filter((t) => t.tokens.includes(`cm-push-${co1.id}`)).at(-1)!.message.body).toBe('You are no longer a co-owner of C66 Hostel A.');
+    expect((await call(co1, 'PATCH', `/community/clubs/${club.id}`, { name: 'C66 Again' })).statusCode).toBe(403);
+
+    // The owner leaves: the co-owner takes over, not the member who joined first, and is owner only.
+    expect((await call(o, 'DELETE', `/community/clubs/${club.id}/membership`)).statusCode).toBe(204);
+    const after = (await call(co2, 'GET', '/community/clubs')).json() as { items: { id: string; role: string; ownerId: string; coOwners: string[] }[] };
+    expect(after.items.find((c) => c.id === club.id)).toMatchObject({ role: 'owner', ownerId: co2.id, coOwners: [] });
+  });
 });

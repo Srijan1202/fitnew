@@ -495,6 +495,10 @@ export class CommunityRepository {
 
   /* ---------------------------------------------------------------- clubs -- */
 
+  /** Beta 6.6 (L2): a club's co-owners, longest in the club first. */
+  private coOwnersOf = sql<string[]>`coalesce((select array_agg(m2.user_id::text order by m2.joined_at) from club_members m2
+      where m2.club_id = ${clubs.id} and m2.role = 'co-owner'), '{}'::text[])`;
+
   async clubsOf(userId: string) {
     return this.db
       .select({
@@ -504,6 +508,7 @@ export class CommunityRepository {
         ownerId: clubs.ownerId,
         createdAt: clubs.createdAt,
         members: sql<number>`(select count(*)::int from ${clubMembers} m where m.club_id = ${clubs.id})`,
+        coOwners: this.coOwnersOf,
       })
       .from(clubMembers)
       .innerJoin(clubs, eq(clubs.id, clubMembers.clubId))
@@ -520,6 +525,7 @@ export class CommunityRepository {
         ownerId: clubs.ownerId,
         createdAt: clubs.createdAt,
         members: sql<number>`(select count(*)::int from ${clubMembers} m where m.club_id = ${clubs.id})`,
+        coOwners: this.coOwnersOf,
       })
       .from(clubs)
       .where(eq(clubs.id, id))
@@ -568,9 +574,15 @@ export class CommunityRepository {
     if (c === null) return;
     await this.db.delete(clubMembers).where(and(eq(clubMembers.clubId, clubId), eq(clubMembers.userId, userId)));
     if (c.ownerId !== userId) return;
-    const [heir] = await this.db.select({ userId: clubMembers.userId }).from(clubMembers).where(eq(clubMembers.clubId, clubId)).orderBy(asc(clubMembers.joinedAt)).limit(1);
+    // Beta 6.6 (L2): a co-owner first (the longest in the club), then the longest member.
+    const [heir] = await this.db
+      .select({ userId: clubMembers.userId })
+      .from(clubMembers)
+      .where(eq(clubMembers.clubId, clubId))
+      .orderBy(sql`${clubMembers.role} = 'co-owner' desc`, asc(clubMembers.joinedAt))
+      .limit(1);
     if (heir === undefined) await this.db.delete(clubs).where(eq(clubs.id, clubId));
-    else await this.db.update(clubs).set({ ownerId: heir.userId }).where(eq(clubs.id, clubId));
+    else await this.setClubOwner(clubId, heir.userId);
   }
 
   async deleteClub(clubId: string): Promise<boolean> {
@@ -596,8 +608,15 @@ export class CommunityRepository {
     }
   }
 
+  /** The new owner is no longer a co-owner; the old one stays a member. */
   async setClubOwner(clubId: string, userId: string): Promise<void> {
     await this.db.update(clubs).set({ ownerId: userId }).where(eq(clubs.id, clubId));
+    await this.setRole(clubId, userId, 'member');
+  }
+
+  /** Beta 6.6 (L2): a member's role in a club. */
+  async setRole(clubId: string, userId: string, role: 'member' | 'co-owner'): Promise<void> {
+    await this.db.update(clubMembers).set({ role }).where(and(eq(clubMembers.clubId, clubId), eq(clubMembers.userId, userId)));
   }
 
   /** Out of the club, and kept out until let back (owner Q2). */

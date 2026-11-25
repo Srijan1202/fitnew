@@ -576,6 +576,10 @@ export const clubSchema = z
     /** You made it: you can remove members' access by deleting it. */
     mine: z.boolean(),
     createdAt: iso,
+    /** Beta 6.6 (L2): who runs it, and your part in that. */
+    ownerId: z.string().uuid(),
+    coOwners: z.array(z.string().uuid()),
+    role: z.enum(['owner', 'co-owner', 'member']),
   })
   .strict();
 export type Club = z.infer<typeof clubSchema>;
@@ -596,6 +600,8 @@ export const MAX_CLUBS_OWNED = 5;
 export const MAX_CLUBS_JOINED = 20;
 export const MAX_CLUB_MEMBERS = 500;
 export const MAX_FRIENDS = 300;
+/** Beta 6.6 (L2, owner Q5): co-owners a club may have. */
+export const MAX_CO_OWNERS = 2;
 
 /* ----------------------------------------- beta 6.5 (K2): club challenge -- */
 
