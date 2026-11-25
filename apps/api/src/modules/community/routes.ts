@@ -9,6 +9,7 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import {
   adminClubListSchema,
+  adminLeagueSchema,
   adminCommunityMemberListSchema,
   adminCommunityMemberQuerySchema,
   adminCommunityReportListSchema,
@@ -607,6 +608,19 @@ export async function communityRoutes(app: FastifyInstance, opts: { ipSalt: stri
     ...admin,
     schema: { summary: 'Clubs, newest first', tags: ['admin'], security, response: { 200: adminClubListSchema, ...errors } },
   }, async () => service.adminClubs());
+
+  typed.get('/admin/community/league', {
+    ...admin,
+    schema: { summary: 'The league: the latest season and its whole table (beta 6.6)', tags: ['admin'], security, response: { 200: adminLeagueSchema, ...errors } },
+  }, async () => service.adminLeague());
+
+  typed.delete('/admin/community/clubs/:id/league', {
+    ...admin,
+    schema: { summary: 'Take a club out of the league at once (audited)', tags: ['admin'], security, params: idParams, response: { 204: z.null(), ...errors } },
+  }, async (request, reply) => {
+    await service.adminRemoveFromLeague(request.userId, request.params.id);
+    return reply.code(204).send(null);
+  });
 
   typed.delete('/admin/community/clubs/:id', {
     ...admin,

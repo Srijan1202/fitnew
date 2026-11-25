@@ -1223,5 +1223,18 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
     const list = (await call(A.owner, 'GET', '/community/clubs')).json() as { items: { id: string; seasonWinner: boolean }[] };
     expect(list.items.find((c) => c.id === A.id)!.seasonWinner).toBe(true);
     expect((await call(B.owner, 'GET', '/community/clubs')).json()).toMatchObject({ items: [expect.objectContaining({ id: B.id, seasonWinner: false })] });
+
+    // The admin: the clubs in the league, the whole table, and a club taken out (audited).
+    const listed = ((await call(admin, 'GET', '/admin/community/clubs')).json() as { items: { id: string; inLeague: boolean; leavingLeague: boolean }[] }).items;
+    expect(listed.find((c) => c.id === A.id)).toMatchObject({ inLeague: true, leavingLeague: false });
+    expect(listed.find((c) => c.id === C.id)).toMatchObject({ inLeague: false });
+    const lg = (await call(admin, 'GET', '/admin/community/league')).json() as { season: { finished: boolean }; table: { name: string; place: number }[] };
+    expect(lg.season.finished).toBe(true);
+    expect(lg.table.map((r) => r.name)).toHaveLength(5);
+    expect((await call(A.owner, 'GET', '/admin/community/league')).statusCode).toBe(403);
+    expect((await call(admin, 'DELETE', `/admin/community/clubs/${A.id}/league`)).statusCode).toBe(204);
+    expect((await call(admin, 'DELETE', `/admin/community/clubs/${A.id}/league`)).statusCode).toBe(404);
+    expect((await leagueOf(A.owner, A.id)).entered).toBe(false);
+    expect((await sql`select 1 from audit_logs where action = 'community.club.league.remove' and entity_id = ${A.id}`).length).toBe(1);
   });
 });

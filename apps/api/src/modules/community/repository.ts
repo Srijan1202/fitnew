@@ -1338,6 +1338,10 @@ export class CommunityRepository {
           join clubs o on o.id = case when m.home_club_id = ${clubs.id} then m.away_club_id else m.home_club_id end
           where m.home_club_id = ${clubs.id} or m.away_club_id = ${clubs.id}
           order by m.week_from desc limit 1)`,
+        // Beta 6.6: co-owners by handle, and the league.
+        coOwners: sql<string[]>`coalesce((select array_agg(cp.handle order by m.joined_at) from club_members m
+          join community_profiles cp on cp.user_id = m.user_id where m.club_id = ${clubs.id} and m.role = 'co-owner'), '{}'::text[])`,
+        league: sql<boolean | null>`(select lc.leaving from league_clubs lc where lc.club_id = ${clubs.id})`,
       })
       .from(clubs)
       .leftJoin(communityProfiles, eq(communityProfiles.userId, clubs.ownerId))
@@ -1645,6 +1649,11 @@ export class CommunityRepository {
   /** In, or back in when it was leaving. */
   async enterLeague(clubId: string): Promise<void> {
     await this.db.insert(leagueClubs).values({ clubId }).onConflictDoUpdate({ target: leagueClubs.clubId, set: { leaving: false } });
+  }
+
+  /** The admin takes a club out at once. */
+  async removeFromLeague(clubId: string): Promise<boolean> {
+    return (await this.db.delete(leagueClubs).where(eq(leagueClubs.clubId, clubId)).returning()).length > 0;
   }
 
   async leaveLeague(clubId: string): Promise<void> {

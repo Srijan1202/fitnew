@@ -1,13 +1,13 @@
 'use client';
 
-import type { AdminClubList, AdminCommunityMemberList, AdminCommunityReport, AdminCommunityReportList } from '@fitos/contracts';
+import type { AdminClubList, AdminCommunityMemberList, AdminCommunityReport, AdminCommunityReportList, AdminLeague } from '@fitos/contracts';
 import { COUNTRIES } from '@fitos/contracts';
 import { useState } from 'react';
 
 import { Badge, Header, SearchBox, Status, useGet, when } from '@/components/ui';
 import { api, errorText } from '@/lib/api';
 
-type Tab = 'reports' | 'members' | 'clubs';
+type Tab = 'reports' | 'members' | 'clubs' | 'league';
 
 const REASONS: Record<AdminCommunityReport['reason'], string> = {
   handle: 'Handle',
@@ -36,6 +36,7 @@ export default function Social() {
   const reports = useGet<AdminCommunityReportList>(tab === 'reports' ? `/admin/community/reports?status=${status}` : null);
   const members = useGet<AdminCommunityMemberList>(tab === 'members' ? `/admin/community/members${query === '' ? '' : `?q=${encodeURIComponent(query)}`}` : null);
   const clubs = useGet<AdminClubList>(tab === 'clubs' ? '/admin/community/clubs' : null);
+  const league = useGet<AdminLeague>(tab === 'league' ? '/admin/community/league' : null);
 
   const act = async (method: 'POST' | 'PATCH' | 'DELETE', path: string, body: unknown, reload: () => void) => {
     setError(null);
@@ -62,7 +63,7 @@ export default function Social() {
         audited. The App features page switches Community off for everyone.
       </Header>
       <p>
-        {(['reports', 'members', 'clubs'] as const).map((t) => (
+        {(['reports', 'members', 'clubs', 'league'] as const).map((t) => (
           <button key={t} className={`button${tab === t ? ' active' : ''}`} onClick={() => setTab(t)}>
             {t}
           </button>
@@ -165,6 +166,16 @@ export default function Social() {
                     {/* Beta 6.5: the club's challenge and its latest match. */}
                     {c.challenge !== null && <div className="small muted">Challenge: {c.challenge}</div>}
                     {c.match !== null && <div className="small muted">Match: {c.match}</div>}
+                    {/* Beta 6.6: co-owners and the league. */}
+                    {c.coOwners.length > 0 && <div className="small muted">Co-owners: {c.coOwners.map((h) => `@${h}`).join(', ')}</div>}
+                    {c.inLeague && (
+                      <div className="small muted">
+                        In the league{c.leavingLeague ? ' (leaving after this week)' : ''}{' '}
+                        <button className="button small" onClick={() => void act('DELETE', `/admin/community/clubs/${c.id}/league`, undefined, clubs.reload)}>
+                          Take out
+                        </button>
+                      </div>
+                    )}
                   </td>
                   <td className="small">{c.ownerHandle === null ? '—' : `@${c.ownerHandle}`}</td>
                   <td>{c.members}</td>
@@ -181,6 +192,36 @@ export default function Social() {
             </tbody>
           </table>
           {clubs.data?.items.length === 0 && <p className="muted">No clubs yet.</p>}
+        </>
+      )}
+
+      {tab === 'league' && (
+        <>
+          <Status error={league.error} loading={league.loading} />
+          {league.data?.season === null && <p className="muted">No season yet: the first is paired on the Saturday after a club enters.</p>}
+          {league.data?.season != null && (
+            <p className="small muted">
+              {league.data.season.finished ? 'Last season' : 'This season'}: {league.data.season.startsOn} to {league.data.season.endsOn}. Win 3, draw 1,
+              a bye 1.
+            </p>
+          )}
+          {(league.data?.table.length ?? 0) > 0 && (
+            <table>
+              <thead><tr><th>#</th><th>Club</th><th>Played</th><th>W-D-L</th><th>Byes</th><th>Points</th></tr></thead>
+              <tbody>
+                {league.data!.table.map((r) => (
+                  <tr key={r.clubId}>
+                    <td>{r.place}</td>
+                    <td><strong>{r.name}</strong></td>
+                    <td>{r.played}</td>
+                    <td>{r.won}-{r.drawn}-{r.lost}</td>
+                    <td>{r.byes}</td>
+                    <td><strong>{r.points}</strong></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </>
       )}
     </>

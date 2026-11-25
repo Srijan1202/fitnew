@@ -934,9 +934,23 @@ export const adminClubSchema = z
     challenge: z.string().nullable(),
     /** Beta 6.5 (K3): the latest match in words ("vs Gym B · week of 2026-11-30 · accepted"); null when none. */
     match: z.string().nullable(),
+    /** Beta 6.6 (L2): its co-owners' handles. */
+    coOwners: z.array(z.string()),
+    /** Beta 6.6 (L1): entered in the league (and whether it is leaving). */
+    inLeague: z.boolean(),
+    leavingLeague: z.boolean(),
   })
   .strict();
 export const adminClubListSchema = z.object({ items: z.array(adminClubSchema) }).strict();
+
+/** Beta 6.6 (L1): the league for the admin: the latest season and its whole table. */
+export const adminLeagueSchema = z
+  .object({
+    season: z.object({ startsOn: z.string(), endsOn: z.string(), finished: z.boolean() }).strict().nullable(),
+    table: z.array(leagueRowSchema),
+  })
+  .strict();
+export type AdminLeague = z.infer<typeof adminLeagueSchema>;
 export type AdminCommunityReport = z.infer<typeof adminCommunityReportSchema>;
 export type AdminCommunityReportList = z.infer<typeof adminCommunityReportListSchema>;
 export type AdminCommunityMember = z.infer<typeof adminCommunityMemberSchema>;

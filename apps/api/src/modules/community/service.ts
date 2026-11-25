@@ -1370,9 +1370,28 @@ export class CommunityService {
           challenge:
             ch === null ? null : `${challengeTitle(metric, ch.target, ch.month)} · ${inTargetUnit(metric, ch.total)} so far${ch.reached ? ' · reached' : ''}`,
           match: c.match === null ? null : `vs ${c.match.other} · week of ${c.match.weekFrom} · ${c.match.status}`,
+          coOwners: c.coOwners,
+          inLeague: c.league !== null,
+          leavingLeague: c.league === true,
         };
       }),
     };
+  }
+
+  /** Beta 6.6 (L1): the latest season and its whole table. */
+  async adminLeague() {
+    const season = await this.repo.latestSeason();
+    return {
+      season: season === null ? null : { startsOn: season.startsOn, endsOn: season.endsOn, finished: season.finishedAt !== null },
+      table: season === null ? [] : this.ordered(await this.repo.entriesOf(season.id)).map((r) => this.leagueRowOf(r, '')),
+    };
+  }
+
+  /** Beta 6.6 (L1): out of the league at once (audited); its season row stays. */
+  async adminRemoveFromLeague(actor: string | null, clubId: string): Promise<void> {
+    const c = await this.repo.club(clubId);
+    if (c === null || !(await this.repo.removeFromLeague(clubId))) throw new AppError('NOT_FOUND', 'That club is not in the league.');
+    await this.repo.audit({ actorUserId: actor, action: 'community.club.league.remove', entity: 'club', entityId: clubId, metadata: { name: c.name } });
   }
 
   async adminDeleteClub(actor: string | null, clubId: string): Promise<void> {
