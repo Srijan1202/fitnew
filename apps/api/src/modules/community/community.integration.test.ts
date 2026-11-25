@@ -88,10 +88,15 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
     }
   }
 
-  /** A run today. */
+  /**
+   * A run today. Beta 6.6 (M1): it starts no earlier than Kolkata's midnight,
+   * so a run made just after midnight still counts today (it may end a little
+   * ahead of the clock).
+   */
   async function run(u: U, metres: number, seconds: number, opts: { source?: 'phone' | 'watch'; kind?: 'outdoor' | 'treadmill'; gps?: boolean } = {}): Promise<void> {
-    const end = new Date();
-    const start = new Date(end.getTime() - seconds * 1000);
+    const midnight = Date.parse(`${localDateOf(new Date(), 'Asia/Kolkata')}T00:00:00+05:30`);
+    const start = new Date(Math.max(midnight + 1000, Date.now() - seconds * 1000));
+    const end = new Date(start.getTime() + seconds * 1000);
     const source = opts.source ?? 'phone';
     const gps = opts.gps !== false;
     await sql`insert into runs (user_id, client_run_id, kind, name, started_at, ended_at, duration_seconds, goal_kind, distance_m, avg_pace_sec_per_km,
