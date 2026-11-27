@@ -150,20 +150,30 @@ class _FeedState extends ConsumerState<FeedView> {
                   ),
                 )
               else
-                FitBlock(
-                  child: Column(
-                    children: [
-                      for (final (i, p) in posts.indexed) ...[
-                        if (i > 0) const FitRule(),
-                        _PostTile(
-                          post: p,
-                          now: _now,
-                          onCheer: p.mine ? null : () => _cheer(p),
-                        ),
-                      ],
-                    ],
+                // Beta 6.7 (R4): posts under Today, Yesterday or the date.
+                for (final (gi, g) in feedDays(posts, _now).indexed) ...[
+                  if (gi > 0) const SizedBox(height: FitSpacing.lg),
+                  Text(
+                    g.label.toUpperCase(),
+                    key: ValueKey('feed.day.$gi'),
+                    style: t.labelSmall,
                   ),
-                ),
+                  const SizedBox(height: FitSpacing.sm),
+                  FitBlock(
+                    child: Column(
+                      children: [
+                        for (final (i, p) in g.posts.indexed) ...[
+                          if (i > 0) const FitRule(),
+                          _PostTile(
+                            post: p,
+                            now: _now,
+                            onCheer: p.mine ? null : () => _cheer(p),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               if (_next != null) ...[
                 const SizedBox(height: FitSpacing.sm),
                 Center(
@@ -257,6 +267,57 @@ class _StartSharing extends StatelessWidget {
   }
 }
 
+/// Beta 6.7 (R4): the feed's posts by the day they happened, newest first.
+List<({String label, List<FeedPost> posts})> feedDays(
+  List<FeedPost> posts,
+  DateTime now,
+) {
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  final n = now.toLocal();
+  final today = DateTime(n.year, n.month, n.day);
+  String label(DateTime at) {
+    final l = at.toLocal();
+    final d = DateTime(l.year, l.month, l.day);
+    final back = today.difference(d).inDays;
+    if (back <= 0) return 'Today';
+    if (back == 1) return 'Yesterday';
+    return '${days[d.weekday - 1]} ${d.day} ${months[d.month - 1]}';
+  }
+
+  final out = <({String label, List<FeedPost> posts})>[];
+  for (final p in posts) {
+    final l = label(p.at);
+    if (out.isNotEmpty && out.last.label == l) {
+      out.last.posts.add(p);
+    } else {
+      out.add((label: l, posts: [p]));
+    }
+  }
+  return out;
+}
+
+/// Beta 6.7 (R4): what kind of post, as a small mark on the avatar.
+IconData postIcon(PostKind kind) => switch (kind) {
+      PostKind.session => Icons.fitness_center,
+      PostKind.run => Icons.directions_run,
+      PostKind.liftRecord || PostKind.runRecord => Icons.emoji_events,
+      PostKind.streak => Icons.local_fire_department,
+    };
+
 class _PostTile extends StatelessWidget {
   const _PostTile({required this.post, required this.now, this.onCheer});
 
@@ -280,11 +341,38 @@ class _PostTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ProfileAvatar(
-            avatarId: p.person.avatarId,
-            name: p.person.handle,
-            premium: false,
-            size: 36,
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              ProfileAvatar(
+                avatarId: p.person.avatarId,
+                name: p.person.handle,
+                premium: false,
+                size: 36,
+              ),
+              Positioned(
+                right: -4,
+                bottom: -4,
+                child: Container(
+                  key: ValueKey('feed.kind.${p.id}.${p.kind.wire}'),
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: FitColors.paper2,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: FitColors.rule),
+                  ),
+                  child: Icon(
+                    postIcon(p.kind),
+                    size: 12,
+                    color: p.kind == PostKind.liftRecord ||
+                            p.kind == PostKind.runRecord
+                        ? FitColors.amber
+                        : FitColors.accent,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(width: FitSpacing.sm),
           Expanded(
@@ -312,29 +400,45 @@ class _PostTile extends StatelessWidget {
               ],
             ),
           ),
-          if (onCheer != null)
-            TextButton.icon(
-              key: ValueKey('feed.cheer.${p.id}'),
-              onPressed: onCheer,
-              icon: Icon(
-                p.cheered ? Icons.favorite : Icons.favorite_border,
-                color: p.cheered ? FitColors.accent : FitColors.ink60,
-              ),
-              label: Text(p.kudos > 0 ? '${p.kudos}' : 'Cheer'),
-            )
-          else if (p.kudos > 0)
-            Padding(
-              padding: const EdgeInsets.only(top: FitSpacing.xs),
-              child: Row(
-                key: ValueKey('feed.kudos.${p.id}'),
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.favorite, size: 18, color: FitColors.accent),
-                  const SizedBox(width: FitSpacing.xs),
-                  Text('${p.kudos}', style: t.labelLarge),
-                ],
-              ),
-            ),
+          // Beta 6.7 (R4): always a heart and its count, in a column of
+          // its own width, so lines don't jump between posts.
+          SizedBox(
+            width: 56,
+            child: onCheer != null
+                ? TextButton.icon(
+                    key: ValueKey('feed.cheer.${p.id}'),
+                    onPressed: onCheer,
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      foregroundColor:
+                          p.cheered ? FitColors.accent : FitColors.ink60,
+                    ),
+                    icon: Icon(
+                      p.cheered ? Icons.favorite : Icons.favorite_border,
+                      color: p.cheered ? FitColors.accent : FitColors.ink60,
+                      semanticLabel: p.cheered ? 'Cheered' : 'Cheer',
+                    ),
+                    label: Text(p.kudos > 0 ? '${p.kudos}' : ''),
+                  )
+                : p.kudos > 0
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: FitSpacing.sm),
+                        child: Row(
+                          key: ValueKey('feed.kudos.${p.id}'),
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.favorite,
+                              size: 18,
+                              color: FitColors.accent,
+                            ),
+                            const SizedBox(width: FitSpacing.xs),
+                            Text('${p.kudos}', style: t.labelLarge),
+                          ],
+                        ),
+                      )
+                    : null,
+          ),
         ],
       ),
     );
