@@ -504,14 +504,14 @@ class NotificationCoordinator extends Notifier<NotifyState> {
           ..push(Routes.runLive);
       case 'progress':
         // Beta 5.7: the check-in reminder opens Recovery; the weigh-in and
-        // the weekly recap open Progress. Beta 5.9: both are parts of the
-        // Nutrition tab.
-        ref.read(nutritionModeProvider.notifier).set(
+        // the weekly recap open Progress. Beta 6.7 (H1): both are parts of
+        // the Home tab.
+        ref.read(homeModeProvider.notifier).set(
               p['kind'] == 'recovery-checkin'
-                  ? NutritionMode.recovery
-                  : NutritionMode.progress,
+                  ? HomeMode.recovery
+                  : HomeMode.progress,
             );
-        router.go(Routes.nutrition);
+        router.go(Routes.today);
       case 'food-log':
         router
           ..go(Routes.nutrition)

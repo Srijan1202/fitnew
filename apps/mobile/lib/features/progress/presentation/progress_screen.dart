@@ -13,8 +13,8 @@ import '../../health/presentation/controllers/health_providers.dart';
 import '../../home/domain/home_context.dart';
 import '../../home/domain/home_suggestion_engine.dart';
 import '../../home/presentation/controllers/home_providers.dart';
+import '../../home/presentation/screens/home_screen.dart';
 import '../../home/presentation/widgets/home_sections.dart';
-import '../../nutrition/presentation/screens/eat_screen.dart';
 import '../../recovery/domain/recovery.dart';
 import '../../recovery/presentation/recovery_panel.dart';
 import '../../recovery/presentation/recovery_providers.dart';
@@ -49,25 +49,26 @@ part 'progress_start.dart';
 /// red for a single day (§17). Athletic Editorial (§6): sections divided by
 /// hairlines, metric tiles with big numbers, colour only where it means
 /// something.
-/// Beta 5.9 (owner): the Nutrition tab — Food · Progress · Recovery, chosen
-/// at the top with Training's switch, opening on Food. Food is EAT
-/// ([EatScreen]); Progress and Recovery are the parts that were their own tab
-/// in beta 5.7. Each part is built the first time it is chosen, then kept.
-class NutritionTabScreen extends ConsumerStatefulWidget {
-  const NutritionTabScreen({super.key});
+/// Beta 6.7 (H1, owner): the Home tab — Today · Progress · Recovery, chosen
+/// at the top with Training's switch, opening on Today. Today is Home as it
+/// was ([HomeScreen]); Progress and Recovery are the parts that were in
+/// Nutrition from beta 5.9. Each part is built the first time it is chosen,
+/// then kept.
+class HomeTabScreen extends ConsumerStatefulWidget {
+  const HomeTabScreen({super.key});
 
   @override
-  ConsumerState<NutritionTabScreen> createState() => _NutritionTabScreenState();
+  ConsumerState<HomeTabScreen> createState() => _HomeTabScreenState();
 }
 
-class _NutritionTabScreenState extends ConsumerState<NutritionTabScreen> {
-  final Set<NutritionMode> _built = <NutritionMode>{};
+class _HomeTabScreenState extends ConsumerState<HomeTabScreen> {
+  final Set<HomeMode> _built = <HomeMode>{};
 
   @override
   Widget build(BuildContext context) {
-    final mode = ref.watch(nutritionModeProvider);
+    final mode = ref.watch(homeModeProvider);
     _built.add(mode);
-    Widget part(NutritionMode m, Widget child) =>
+    Widget part(HomeMode m, Widget child) =>
         _built.contains(m) ? child : const SizedBox.shrink();
     return Scaffold(
       body: Column(
@@ -81,31 +82,31 @@ class _NutritionTabScreenState extends ConsumerState<NutritionTabScreen> {
                 FitSpacing.screen,
                 0,
               ),
-              child: FitModeSwitch<NutritionMode>(
-                key: const ValueKey('nutrition.mode'),
-                thumbKey: const ValueKey('nutrition.mode.thumb'),
+              child: FitModeSwitch<HomeMode>(
+                key: const ValueKey('home.mode'),
+                thumbKey: const ValueKey('home.mode.thumb'),
                 value: mode,
                 halves: const [
                   FitModeHalf(
-                    NutritionMode.food,
-                    'Food',
-                    Icons.restaurant,
-                    key: ValueKey('nutrition.mode.food'),
+                    HomeMode.today,
+                    'Today',
+                    Icons.today_outlined,
+                    key: ValueKey('home.mode.today'),
                   ),
                   FitModeHalf(
-                    NutritionMode.progress,
+                    HomeMode.progress,
                     'Progress',
                     Icons.insights,
-                    key: ValueKey('nutrition.mode.progress'),
+                    key: ValueKey('home.mode.progress'),
                   ),
                   FitModeHalf(
-                    NutritionMode.recovery,
+                    HomeMode.recovery,
                     'Recovery',
                     Icons.self_improvement,
-                    key: ValueKey('nutrition.mode.recovery'),
+                    key: ValueKey('home.mode.recovery'),
                   ),
                 ],
-                onChanged: ref.read(nutritionModeProvider.notifier).set,
+                onChanged: ref.read(homeModeProvider.notifier).set,
               ),
             ),
           ),
@@ -116,9 +117,9 @@ class _NutritionTabScreenState extends ConsumerState<NutritionTabScreen> {
               child: IndexedStack(
                 index: mode.index,
                 children: <Widget>[
-                  part(NutritionMode.food, const EatScreen()),
-                  part(NutritionMode.progress, const _ProgressHalf()),
-                  part(NutritionMode.recovery, const _RecoveryHalf()),
+                  part(HomeMode.today, const HomeScreen()),
+                  part(HomeMode.progress, const _ProgressHalf()),
+                  part(HomeMode.recovery, const _RecoveryHalf()),
                 ],
               ),
             ),

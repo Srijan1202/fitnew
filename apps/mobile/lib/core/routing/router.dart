@@ -18,6 +18,7 @@ import '../../features/mess/presentation/mess_week_screen.dart';
 import '../../features/training/presentation/screens/ai_programme_screen.dart';
 import '../../features/exercise/presentation/screens/exercise_demos_screen.dart';
 import '../../features/mess/presentation/mess_screen.dart';
+import '../../features/nutrition/presentation/screens/nutrition_tab_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
 import '../../features/progress/presentation/weekly_report_screen.dart';
 import '../../features/profile/presentation/screens/food_preferences_screen.dart';
@@ -33,7 +34,6 @@ import '../../features/profile/presentation/screens/goal_editor_screen.dart';
 import '../../features/profile/presentation/screens/targets_editor_screen.dart';
 import '../../features/profile/presentation/screens/personal_details_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
-import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/training/presentation/screens/custom_builder_screen.dart';
 import '../../features/training/presentation/screens/day_editor_screen.dart';
 import '../../features/training/presentation/screens/generate_options_screen.dart';
@@ -234,7 +234,7 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
         builder: (context, state) => const OnboardingFlowScreen(),
       ),
       // Beta 3.4 / 4.x: progress photos and the weekly report (opened from
-      // the Nutrition tab's Progress part).
+      // Home's Progress part since beta 6.7).
       GoRoute(
         path: Routes.progressPhotos,
         name: 'progress-photos',
@@ -355,7 +355,8 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
               GoRoute(
                 path: Routes.today,
                 name: 'today',
-                builder: (context, state) => const HomeScreen(),
+                // Beta 6.7 (H1, owner): Today · Progress · Recovery.
+                builder: (context, state) => const HomeTabScreen(),
               ),
             ],
           ),
@@ -540,7 +541,8 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
               GoRoute(
                 path: Routes.nutrition,
                 name: 'nutrition',
-                // Beta 5.9 (owner): Food · Progress · Recovery.
+                // Beta 6.7 (H1): Food alone; Progress and Recovery are on
+                // Home.
                 builder: (context, state) => const NutritionTabScreen(),
                 routes: <RouteBase>[
                   GoRoute(

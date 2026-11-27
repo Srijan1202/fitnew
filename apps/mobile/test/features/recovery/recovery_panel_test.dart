@@ -108,11 +108,11 @@ void main() {
 
   Widget app() {
     final router = GoRouter(
-      initialLocation: Routes.nutrition,
+      initialLocation: Routes.today,
       routes: [
         GoRoute(
-          path: Routes.nutrition,
-          builder: (_, __) => const NutritionTabScreen(),
+          path: Routes.today,
+          builder: (_, __) => const HomeTabScreen(),
         ),
       ],
     );
@@ -130,7 +130,7 @@ void main() {
         ...workoutOverrides(db, api, recovery: recovery, running: running),
         ...healthOverrides(health),
         // Beta 5.7: the panel is in Recovery (beta 5.9: Nutrition's part).
-        nutritionModeProvider.overrideWith(_OnRecovery.new),
+        homeModeProvider.overrideWith(_OnRecovery.new),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
     );
@@ -147,7 +147,7 @@ void main() {
   String textOf(WidgetTester tester, String k) =>
       tester.widget<Text>(key(k)).data!;
   ProviderContainer container(WidgetTester tester) => ProviderScope.containerOf(
-        tester.element(find.byType(NutritionTabScreen, skipOffstage: false)),
+        tester.element(find.byType(HomeTabScreen, skipOffstage: false)),
       );
 
   Future<void> reveal(WidgetTester tester, Finder f) async {
@@ -635,7 +635,7 @@ void main() {
   });
 }
 
-class _OnRecovery extends NutritionModeController {
+class _OnRecovery extends HomeModeController {
   @override
-  NutritionMode build() => NutritionMode.recovery;
+  HomeMode build() => HomeMode.recovery;
 }

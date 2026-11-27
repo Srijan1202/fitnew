@@ -320,8 +320,8 @@ void main() {
     late NotificationCoordinator n;
     await tester.runAsync(() async => n = await started(cc));
     for (final (kind, mode) in [
-      ('recovery-checkin', NutritionMode.recovery),
-      ('weigh-in', NutritionMode.progress),
+      ('recovery-checkin', HomeMode.recovery),
+      ('weigh-in', HomeMode.progress),
     ]) {
       final item = plannedItem(
         'c9999999-9999-4999-8999-99999999999${mode.index}',
@@ -335,9 +335,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         router.routerDelegate.currentConfiguration.uri.toString(),
-        Routes.nutrition,
+        Routes.today,
       );
-      expect(cc.read(nutritionModeProvider), mode, reason: kind);
+      expect(cc.read(homeModeProvider), mode, reason: kind);
     }
   });
 

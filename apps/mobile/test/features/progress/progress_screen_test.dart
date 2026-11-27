@@ -175,10 +175,10 @@ void main() {
 
   /// [shell]: Progress inside the app's own tab shell, its bar floating
   /// over the tab (beta 4.8: Log weight's Save hid behind it).
-  Widget app({bool shell = false, bool onFood = false}) {
+  Widget app({bool shell = false, bool onToday = false}) {
     final router = shell
         ? GoRouter(
-            initialLocation: Routes.nutrition,
+            initialLocation: Routes.today,
             routes: [
               StatefulShellRoute.indexedStack(
                 builder: (_, __, navigationShell) =>
@@ -187,8 +187,8 @@ void main() {
                   StatefulShellBranch(
                     routes: [
                       GoRoute(
-                        path: Routes.nutrition,
-                        builder: (_, __) => const NutritionTabScreen(),
+                        path: Routes.today,
+                        builder: (_, __) => const HomeTabScreen(),
                       ),
                     ],
                   ),
@@ -197,11 +197,11 @@ void main() {
             ],
           )
         : GoRouter(
-            initialLocation: Routes.nutrition,
+            initialLocation: Routes.today,
             routes: [
               GoRoute(
-                path: Routes.nutrition,
-                builder: (_, __) => const NutritionTabScreen(),
+                path: Routes.today,
+                builder: (_, __) => const HomeTabScreen(),
               ),
               GoRoute(
                 path: Routes.volume,
@@ -226,7 +226,7 @@ void main() {
         localTodayProvider.overrideWithValue(today),
         ...workoutOverrides(db, api, progress: progress),
         ...healthOverrides(health),
-        if (!onFood) nutritionModeProvider.overrideWith(_OnProgress.new),
+        if (!onToday) homeModeProvider.overrideWith(_OnProgress.new),
       ],
       child: MaterialApp.router(theme: FitTheme.build(), routerConfig: router),
     );
@@ -243,7 +243,7 @@ void main() {
   String textOf(WidgetTester tester, String k) =>
       tester.widget<Text>(key(k)).data!;
   ProviderContainer container(WidgetTester tester) => ProviderScope.containerOf(
-        tester.element(find.byType(NutritionTabScreen, skipOffstage: false)),
+        tester.element(find.byType(HomeTabScreen, skipOffstage: false)),
       );
 
   Future<void> reveal(WidgetTester tester, Finder f) async {
@@ -257,7 +257,7 @@ void main() {
 
   /// Beta 5.7: the tab's Recovery half.
   Future<void> toRecovery(WidgetTester tester) async {
-    await tester.tap(key('nutrition.mode.recovery'));
+    await tester.tap(key('home.mode.recovery'));
     await tester.pumpAndSettle();
   }
 
@@ -616,29 +616,29 @@ void main() {
   });
 
   testWidgets(
-      'beta 5.9 (owner): Food · Progress · Recovery at the top of Nutrition, '
-      'like Gym | Running; it opens on Food, and Recovery holds Today and the '
-      'check-in', (tester) async {
+      'beta 6.7 (H1, owner): Today · Progress · Recovery at the top of Home, '
+      'like Gym | Running; it opens on Today, and Recovery holds Today and '
+      'the check-in', (tester) async {
     progress.summaries[ProgressWindow.d7] = rich();
-    await tester.pumpWidget(app(onFood: true));
+    await tester.pumpWidget(app(onToday: true));
     await settle(tester);
-    expect(key('nutrition.mode'), findsOneWidget);
-    expect(container(tester).read(nutritionModeProvider), NutritionMode.food);
-    expect(key('eat.list'), findsOneWidget);
+    expect(key('home.mode'), findsOneWidget);
+    expect(container(tester).read(homeModeProvider), HomeMode.today);
+    expect(key('home.list'), findsOneWidget);
     expect(key('progress.title'), findsNothing);
-    final food = tester.getCenter(key('nutrition.mode.food')).dx;
+    final todayHalf = tester.getCenter(key('home.mode.today')).dx;
     expect(
-      (tester.getCenter(key('nutrition.mode.thumb')).dx - food).abs(),
+      (tester.getCenter(key('home.mode.thumb')).dx - todayHalf).abs(),
       lessThan(40),
     );
 
-    await tester.tap(key('nutrition.mode.progress'));
+    await tester.tap(key('home.mode.progress'));
     await settle(tester);
     expect(key('progress.title'), findsOneWidget);
     expect(key('recovery.title'), findsNothing);
     expect(key('recovery.checkIn.open'), findsNothing);
-    final left = tester.getCenter(key('nutrition.mode.progress')).dx;
-    final thumbAt = tester.getCenter(key('nutrition.mode.thumb')).dx;
+    final left = tester.getCenter(key('home.mode.progress')).dx;
+    final thumbAt = tester.getCenter(key('home.mode.thumb')).dx;
     expect((thumbAt - left).abs(), lessThan(40));
 
     await toRecovery(tester);
@@ -648,11 +648,11 @@ void main() {
     expect(key('progress.window'), findsNothing);
     expect(key('progress.weight.trend'), findsNothing);
     expect(
-      tester.getCenter(key('nutrition.mode.thumb')).dx,
+      tester.getCenter(key('home.mode.thumb')).dx,
       greaterThan(thumbAt),
     );
 
-    await tester.tap(key('nutrition.mode.progress'));
+    await tester.tap(key('home.mode.progress'));
     await tester.pumpAndSettle();
     expect(textOf(tester, 'progress.weight.trend'), '74.1 kg');
   });
@@ -1011,7 +1011,7 @@ void main() {
 }
 
 /// Beta 5.9: the Nutrition tab opens on Food; these tests start on Progress.
-class _OnProgress extends NutritionModeController {
+class _OnProgress extends HomeModeController {
   @override
-  NutritionMode build() => NutritionMode.progress;
+  HomeMode build() => HomeMode.progress;
 }

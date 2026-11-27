@@ -1,21 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Beta 5.9 (owner: "move progress and recovery to the nutrition, make food
-/// the default"): the Nutrition tab has three parts, Food · Progress ·
-/// Recovery, chosen at the top with Training's switch. It opens on Food; the
+/// Beta 6.7 (H1, owner 2026-11-27: "move progress and recovery to the home
+/// page"): the Home tab has three parts, Today · Progress · Recovery, chosen
+/// at the top with Training's switch. It opens on Today (Home as it was); the
 /// choice holds while the app is open. Home's readiness and check-in sleep,
-/// and the check-in reminder, open Recovery. (Beta 5.7 had Progress | Recovery
-/// as a tab of its own; Community took that place in the bar.)
-enum NutritionMode { food, progress, recovery }
+/// and the check-in reminder, open Recovery; the weigh-in and the weekly
+/// recap open Progress. (Beta 5.9 to 6.6 had them in Nutrition, ADR-058.)
+enum HomeMode { today, progress, recovery }
 
-class NutritionModeController extends Notifier<NutritionMode> {
+class HomeModeController extends Notifier<HomeMode> {
   @override
-  NutritionMode build() => NutritionMode.food;
+  HomeMode build() => HomeMode.today;
 
-  void set(NutritionMode mode) => state = mode;
+  void set(HomeMode mode) => state = mode;
 }
 
-final nutritionModeProvider =
-    NotifierProvider<NutritionModeController, NutritionMode>(
-  NutritionModeController.new,
+final homeModeProvider = NotifierProvider<HomeModeController, HomeMode>(
+  HomeModeController.new,
 );

@@ -192,15 +192,15 @@ void main() {
 
     Widget app({bool lostPhotoHost = false}) {
       router = GoRouter(
-        initialLocation: Routes.nutrition,
+        initialLocation: Routes.today,
         routes: [
           GoRoute(
             path: '/elsewhere',
             builder: (_, __) => const Scaffold(body: Text('elsewhere')),
           ),
           GoRoute(
-            path: Routes.nutrition,
-            builder: (_, __) => const NutritionTabScreen(),
+            path: Routes.today,
+            builder: (_, __) => const HomeTabScreen(),
           ),
           GoRoute(
             path: Routes.progressPhotos,
@@ -221,7 +221,7 @@ void main() {
           ),
           ...workoutOverrides(db, FakeWorkoutApi(), meta: meta),
           // Beta 5.9: Progress is a part of the Nutrition tab.
-          nutritionModeProvider.overrideWith(_OnProgress.new),
+          homeModeProvider.overrideWith(_OnProgress.new),
         ],
         child: MaterialApp.router(
           theme: FitTheme.build(),
@@ -495,7 +495,7 @@ void main() {
 }
 
 /// Beta 5.9: the Nutrition tab opens on Food; these tests start on Progress.
-class _OnProgress extends NutritionModeController {
+class _OnProgress extends HomeModeController {
   @override
-  NutritionMode build() => NutritionMode.progress;
+  HomeMode build() => HomeMode.progress;
 }
