@@ -585,7 +585,6 @@ export const clubSchema = z
   })
   .strict();
 export type Club = z.infer<typeof clubSchema>;
-export const clubListSchema = z.object({ items: z.array(clubSchema) }).strict();
 export const createClubSchema = z.object({ name: clubNameSchema }).strict();
 export const joinClubSchema = z.object({ code: clubCodeSchema }).strict();
 
@@ -618,6 +617,40 @@ export const challengeMetricSchema = z.enum(CHALLENGE_METRICS);
 export type ChallengeMetric = z.infer<typeof challengeMetricSchema>;
 export const challengeMonthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'A month is YYYY-MM.');
 export const challengeTargetSchema = z.number().int().min(10).max(100_000);
+
+/**
+ * Beta 6.7 (R5): one line of what's on in a club, for its card in the list:
+ * this week's match while it's on, else this month's challenge once it has
+ * started, else nothing. Counts only, like the cards they come from.
+ */
+export const clubNowSchema = z
+  .discriminatedUnion('kind', [
+    z
+      .object({
+        kind: z.literal('match'),
+        metric: challengeMetricSchema,
+        opponent: z.string(),
+        /** Averages per member so far; null before anything counts. */
+        us: z.number().nullable(),
+        them: z.number().nullable(),
+        daysLeft: z.number().int().nonnegative(),
+      })
+      .strict(),
+    z
+      .object({
+        kind: z.literal('challenge'),
+        metric: challengeMetricSchema,
+        total: z.number().nonnegative(),
+        target: z.number().int(),
+        daysLeft: z.number().int().nonnegative(),
+      })
+      .strict(),
+  ])
+  .nullable();
+export type ClubNow = z.infer<typeof clubNowSchema>;
+export const clubListItemSchema = clubSchema.extend({ now: clubNowSchema }).strict();
+export type ClubListItem = z.infer<typeof clubListItemSchema>;
+export const clubListSchema = z.object({ items: z.array(clubListItemSchema) }).strict();
 
 export const clubChallengeSchema = z
   .object({

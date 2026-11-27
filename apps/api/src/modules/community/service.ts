@@ -34,7 +34,9 @@ import {
   type ClubNumbers,
   type LeagueRow,
   type ChallengeClubRequest,
+  type ClubListItem,
   type ClubMatch,
+  type ClubNow,
   type SetChallengeRequest,
   type CommunityMe,
   type CommunityPerson,
@@ -602,9 +604,30 @@ export class CommunityService {
     };
   }
 
-  async clubs(viewer: string): Promise<Club[]> {
+  /** Beta 6.7 (R5): each club with one line of what's on (`ClubNow`). */
+  async clubs(viewer: string): Promise<ClubListItem[]> {
     await this.requireMember(viewer);
-    return (await this.repo.clubsOf(viewer)).map((c) => this.clubOf(c, viewer));
+    const clubs = await this.repo.clubsOf(viewer);
+    if (clubs.length === 0) return [];
+    await this.refreshOne(viewer);
+    const today = localDateOf(this.now(), await this.repo.timezoneOf(viewer));
+    const out: ClubListItem[] = [];
+    for (const c of clubs) out.push({ ...this.clubOf(c, viewer), now: await this.nowOf(c.id, today) });
+    return out;
+  }
+
+  /** This week's match while it's on, else this month's challenge once started. */
+  private async nowOf(clubId: string, today: string): Promise<ClubNow> {
+    for (const row of await this.repo.matchesOf(clubId, this.now())) {
+      if (row.status !== 'accepted' || row.startedAt === null) continue;
+      const m = await this.matchOf(row, clubId, today);
+      return { kind: 'match', metric: m.metric, opponent: m.them.name, us: m.us.score, them: m.them.score, daysLeft: m.daysLeft };
+    }
+    const open = await this.repo.openChallenge(clubId);
+    if (open === null) return null;
+    const c = this.challengeOf(open, null, today);
+    if (!c.started) return null;
+    return { kind: 'challenge', metric: c.metric, total: c.total, target: c.target, daysLeft: c.daysLeft };
   }
 
   async createClub(viewer: string, name: string): Promise<Club> {

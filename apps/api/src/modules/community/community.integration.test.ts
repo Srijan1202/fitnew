@@ -7,6 +7,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import postgres from 'postgres';
 import {
+  clubListSchema,
   CHALLENGE_METRICS,
   CURRENT_POLICY_VERSION,
   LEAGUE_MIN_MEMBERS,
@@ -453,7 +454,7 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
     const passed = clubSchema.parse((await call(owner, 'POST', `/community/clubs/${club.id}/owner`, { userId: m.id })).json());
     expect(passed.mine).toBe(false);
     expect(push.sends.slice(sent).map((s) => s.message.title)).toEqual(['A club is yours']);
-    expect(clubSchema.array().parse((await call(m, 'GET', '/community/clubs')).json().items).find((c) => c.id === club.id)!.mine).toBe(true);
+    expect(clubListSchema.parse((await call(m, 'GET', '/community/clubs')).json()).items.find((c) => c.id === club.id)!.mine).toBe(true);
     expect((await call(owner, 'POST', `/community/clubs/${club.id}/code`)).statusCode).toBe(403);
   });
 
@@ -865,6 +866,9 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
     expect(again.statusCode).toBe(409);
     expect(issue(again)).toBe('open');
     expect((await challengeOf(m1, club.id)).current).toMatchObject({ total: 2, mine: 1 });
+    // Beta 6.7 (R5): the club's card in the list says what's on.
+    const cards = clubListSchema.parse((await call(m1, 'GET', '/community/clubs')).json()).items;
+    expect(cards.find((c) => c.id === club.id)!.now).toMatchObject({ kind: 'challenge', metric: 'sessions', total: 2, target: 10 });
     const listed = ((await call(admin, 'GET', '/admin/community/clubs')).json() as { items: { id: string; challenge: string | null }[] }).items;
     expect(listed.find((c) => c.id === club.id)!.challenge).toMatch(/^10 sessions together in \w+ · 2 so far$/);
 
@@ -997,6 +1001,10 @@ describeIfDb('/v1/community (real Postgres)', { timeout: 120_000 }, () => {
     for (const [u, s] of [[A, 3], [a1, 2], [a2, 1], [late, 7], [B, 4], [b1, 1]] as const) await week(u, s);
     const live = (await matchesOf(a1, home.id))[0]!;
     expect(live).toMatchObject({ status: 'accepted', members: 3, us: { score: 2 }, them: { score: 2.5 } });
+    // Beta 6.7 (R5): the match on is the club's line in the list, over a challenge.
+    const card = clubListSchema.parse((await call(a1, 'GET', '/community/clubs')).json()).items.find((c) => c.id === home.id)!;
+    expect(card.now).toMatchObject({ kind: 'match', metric: 'sessions', opponent: 'C65 Gym B', us: 2, them: 2.5 });
+    expect(JSON.stringify(card)).not.toMatch(/c65_vs_away/);
     // The other club shows a name and an average, never who.
     expect(JSON.stringify(live)).not.toMatch(/c65_vs_a1|c65_vs_away/);
     const started = await call(A, 'DELETE', `${path}/${m!.id}`);
