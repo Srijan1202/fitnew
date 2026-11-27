@@ -413,7 +413,9 @@ void main() {
     expect(key('club.settings'), findsNothing);
     await tester.tapAt(Offset.zero);
     await tester.pumpAndSettle();
-    await tap(tester, 'club.qr');
+    // Beta 6.7 (R6): the QR and the code are in the Invite sheet.
+    await tap(tester, 'club.invite');
+    expect(key('club.qr'), findsOneWidget);
     final qr = tester.widget<InviteQr>(find.byType(InviteQr));
     expect(qr.data, 'https://tryfitos.me/c/WXYZ6789');
   });

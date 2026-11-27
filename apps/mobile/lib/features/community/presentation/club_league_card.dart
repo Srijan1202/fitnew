@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/tokens.dart';
+import '../../../shared/widgets/fit_action_row.dart';
 import '../../../shared/widgets/fit_glass.dart';
 import '../domain/club_goals.dart';
 import 'community_providers.dart';
@@ -83,7 +84,24 @@ class ClubLeagueCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('LEAGUE', style: t.labelSmall),
+            Row(
+              children: [
+                Expanded(child: Text('LEAGUE', style: t.labelSmall)),
+                // Beta 6.6 (M2): the club's place as a picture; beta 6.7
+                // (A4): an icon on the card, not a link under it.
+                if (l.entered && me != null && l.seasonFrom != null)
+                  IconButton(
+                    key: const ValueKey('league.share'),
+                    tooltip: 'Share our place',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => showShareResult(
+                      context,
+                      ResultCardText.league(me.name, l),
+                    ),
+                    icon: Icon(Icons.ios_share, color: FitColors.accent),
+                  ),
+              ],
+            ),
             const SizedBox(height: FitSpacing.xs),
             if (!l.entered) ...[
               Text(
@@ -130,41 +148,39 @@ class ClubLeagueCard extends ConsumerWidget {
               if (l.table.isNotEmpty) ...[
                 const SizedBox(height: FitSpacing.sm),
                 LeagueTable(rows: l.table),
-                TextButton(
-                  key: const ValueKey('league.all'),
-                  onPressed: () => showModalBottomSheet<void>(
-                    context: context,
-                    useRootNavigator: true,
-                    useSafeArea: true,
-                    isScrollControlled: true,
-                    builder: (_) => _FullTable(clubId: clubId),
-                  ),
-                  child: const Text('See the table'),
-                ),
-                // Beta 6.6 (M2): the club's place as a picture.
-                if (me != null && l.seasonFrom != null)
-                  TextButton.icon(
-                    key: const ValueKey('league.share'),
-                    onPressed: () => showShareResult(
-                      context,
-                      ResultCardText.league(me.name, l),
-                    ),
-                    icon: const Icon(Icons.ios_share),
-                    label: const Text('Share our place'),
-                  ),
               ],
-              if (runs)
-                l.leaving
-                    ? TextButton(
-                        key: const ValueKey('league.stay'),
-                        onPressed: () => _enter(context, ref),
-                        child: const Text('Stay in the league'),
-                      )
-                    : TextButton(
-                        key: const ValueKey('league.leave'),
-                        onPressed: () => _leave(context, ref),
-                        child: const Text('Leave the league'),
+              // Beta 6.7 (A4): one line; leaving is in the ⋯ menu.
+              FitActionRow(
+                menuKey: const ValueKey('league.more'),
+                shown: l.leaving ? 2 : 1,
+                actions: [
+                  if (l.table.isNotEmpty)
+                    FitAction(
+                      'See the table',
+                      () => showModalBottomSheet<void>(
+                        context: context,
+                        useRootNavigator: true,
+                        useSafeArea: true,
+                        isScrollControlled: true,
+                        builder: (_) => _FullTable(clubId: clubId),
                       ),
+                      key: const ValueKey('league.all'),
+                    ),
+                  if (runs && l.leaving)
+                    FitAction(
+                      'Stay in the league',
+                      () => _enter(context, ref),
+                      key: const ValueKey('league.stay'),
+                    ),
+                  if (runs && !l.leaving)
+                    FitAction(
+                      'Leave the league',
+                      () => _leave(context, ref),
+                      key: const ValueKey('league.leave'),
+                      destructive: true,
+                    ),
+                ],
+              ),
             ],
           ],
         ),

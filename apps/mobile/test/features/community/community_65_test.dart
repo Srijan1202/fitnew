@@ -158,7 +158,7 @@ void main() {
     await tester
         .pumpWidget(app(initial: Routes.communityClub(club.id), extra: club));
     await tester.pumpAndSettle();
-    expect(key('club.code'), findsOneWidget);
+    expect(key('club.invite'), findsOneWidget);
     expect(key('clubFeed.list'), findsNothing);
 
     await tap(tester, 'club.half.feed');

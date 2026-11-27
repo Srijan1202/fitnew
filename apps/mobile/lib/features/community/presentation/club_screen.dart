@@ -189,81 +189,37 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
         key: const ValueKey('club.list'),
         padding: const EdgeInsets.all(FitSpacing.screen),
         children: [
+          // Beta 6.7 (R6): who you are here and the way to invite; the code
+          // is in the Invite sheet (a member uses it once).
           if (c != null)
-            FitBlock(
-              padding: const EdgeInsets.all(FitSpacing.md),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('CODE', style: t.labelSmall),
-                        Text(
-                          c.shownCode,
-                          key: const ValueKey('club.code'),
-                          style: t.headlineSmall?.copyWith(letterSpacing: 2),
-                        ),
-                        Text(
-                          '${c.members} ${c.members == 1 ? 'member' : 'members'}',
-                          style: t.bodySmall?.copyWith(color: FitColors.ink60),
-                        ),
-                      ],
-                    ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    [
+                      '${c.members} ${c.members == 1 ? 'member' : 'members'}',
+                      if (c.role == ClubRole.owner) 'Owner',
+                      if (c.role == ClubRole.coOwner) 'Co-owner',
+                    ].join(' · '),
+                    key: const ValueKey('club.meta'),
+                    style: t.bodyMedium?.copyWith(color: FitColors.ink60),
                   ),
-                  IconButton.outlined(
-                    key: const ValueKey('club.qr'),
-                    tooltip: 'QR code',
-                    icon: const Icon(Icons.qr_code_2),
-                    onPressed: () => showModalBottomSheet<void>(
-                      useRootNavigator: true,
-                      context: context,
-                      useSafeArea: true,
-                      builder: (sheet) => SafeArea(
-                        child: Padding(
-                          padding: const EdgeInsets.all(FitSpacing.lg),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                c.name,
-                                style: Theme.of(sheet).textTheme.titleLarge,
-                              ),
-                              const SizedBox(height: FitSpacing.md),
-                              InviteQr(data: clubInviteUrl(c.code)),
-                              const SizedBox(height: FitSpacing.sm),
-                              Text('Code ${c.shownCode}'),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: FitSpacing.xs),
-                  IconButton.filledTonal(
-                    key: const ValueKey('club.share'),
-                    tooltip: 'Share an invite link',
-                    icon: const Icon(Icons.ios_share),
-                    // Beta 6.2 (C8): the link opens FITOS on "Join this club?".
-                    onPressed: () => SharePlus.instance.share(
-                      ShareParams(
-                        text: 'Join "${c.name}" on FITOS: '
-                            '${clubInviteUrl(c.code)} (or Community › Clubs › '
-                            'Join with a code: ${c.shownCode})',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                FilledButton.tonalIcon(
+                  key: const ValueKey('club.invite'),
+                  onPressed: () => showClubInvite(context, c),
+                  icon: const Icon(Icons.person_add_alt, size: 18),
+                  label: const Text('Invite'),
+                ),
+              ],
             ),
           const SizedBox(height: FitSpacing.md),
-          // Beta 6.6 (M3): the club this month in totals.
-          ClubNumbersStrip(clubId: clubId),
-          // Beta 6.5 (K2): the club's goal for the month.
-          // Beta 6.6 (L2): the owner or a co-owner runs them.
-          ClubChallengeCard(clubId: clubId, owner: c?.runs ?? false),
-          // Beta 6.5 (K3): club vs club.
+          // Beta 6.7 (R6): what's on first — this week's match, then the
+          // month's challenge (beta 6.5, K3 and K2; beta 6.6, L2: the owner
+          // or a co-owner runs them), then the month in numbers (M3).
           ClubMatchCard(clubId: clubId, owner: c?.runs ?? false),
+          ClubChallengeCard(clubId: clubId, owner: c?.runs ?? false),
+          ClubNumbersStrip(clubId: clubId),
           // Beta 6.6 (L1): the league.
           ClubLeagueCard(clubId: clubId, runs: c?.runs ?? false),
           const BoardMetricPicker(),
@@ -283,3 +239,61 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
     );
   }
 }
+
+/// Beta 6.7 (R6): the club's code, its QR and the invite link, in one sheet
+/// (beta 6.2, C8: the link opens FITOS on "Join this club?").
+Future<void> showClubInvite(BuildContext context, Club c) =>
+    showModalBottomSheet<void>(
+      useRootNavigator: true,
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      builder: (sheet) {
+        final t = Theme.of(sheet).textTheme;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              FitSpacing.lg,
+              0,
+              FitSpacing.lg,
+              FitSpacing.lg,
+            ),
+            child: Column(
+              key: const ValueKey('club.inviteSheet'),
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Invite to ${c.name}', style: t.titleLarge),
+                const SizedBox(height: FitSpacing.md),
+                InviteQr(
+                  key: const ValueKey('club.qr'),
+                  data: clubInviteUrl(c.code),
+                ),
+                const SizedBox(height: FitSpacing.md),
+                Text('CODE', style: t.labelSmall),
+                Text(
+                  c.shownCode,
+                  key: const ValueKey('club.code'),
+                  style: t.headlineSmall?.copyWith(letterSpacing: 2),
+                ),
+                const SizedBox(height: FitSpacing.md),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    key: const ValueKey('club.share'),
+                    icon: const Icon(Icons.ios_share),
+                    label: const Text('Share an invite link'),
+                    onPressed: () => SharePlus.instance.share(
+                      ShareParams(
+                        text: 'Join "${c.name}" on FITOS: '
+                            '${clubInviteUrl(c.code)} (or Community › Clubs › '
+                            'Join with a code: ${c.shownCode})',
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );

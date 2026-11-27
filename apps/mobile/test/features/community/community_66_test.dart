@@ -365,6 +365,8 @@ void main() {
     Navigator.of(tester.element(key('league.full'))).pop();
     await tester.pumpAndSettle();
 
+    // Beta 6.7 (A4): leaving is in the card's ⋯ menu.
+    await tap(tester, 'league.more');
     await tap(tester, 'league.leave');
     await tap(tester, 'league.leave.confirm');
     expect(api.calls, contains('leave-league club-1'));

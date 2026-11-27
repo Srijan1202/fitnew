@@ -264,8 +264,12 @@ void main() {
     await tester.enterText(key('community.club.field'), "VIT Men's Hostel");
     await tap(tester, 'community.club.ok');
     expect(api.calls, contains("club VIT Men's Hostel"));
-    expect(tester.widget<Text>(key('club.code')).data, 'ABCD-2345');
     expect(api.calls, contains('club-board club-1 sessions'));
+    // Beta 6.7 (R6): the code is in the Invite sheet.
+    await tap(tester, 'club.invite');
+    expect(tester.widget<Text>(key('club.code')).data, 'ABCD-2345');
+    await tester.tapAt(Offset.zero);
+    await tester.pumpAndSettle();
     await tap(tester, 'club.menu');
     await tester.tap(find.text('Leave the club'));
     await tester.pumpAndSettle();
