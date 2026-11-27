@@ -318,24 +318,6 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: FitSpacing.lg),
                   const SectionLabel('This week'),
                   WeekSection(week: c.week),
-                  const SizedBox(height: FitSpacing.md),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: FitSpacing.screen,
-                    ),
-                    child: OutlinedButton(
-                      key: const ValueKey('today.volume'),
-                      onPressed: () => context.push(Routes.volume),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Flexible(child: Text('Training volume')),
-                          SizedBox(width: 6),
-                          Icon(Icons.arrow_forward, size: 16),
-                        ],
-                      ),
-                    ),
-                  ),
                   const SizedBox(height: FitSpacing.lg),
                   // Beta 5.8 (ADR-057): friends, clubs and the world board.
                   const CommunityHomeCard(),

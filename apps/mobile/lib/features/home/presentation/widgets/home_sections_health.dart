@@ -298,6 +298,34 @@ class WeekSection extends StatelessWidget {
           if (week.sleepDays != null)
             row('Sleep', week.sleepDays!, 7, 'home.week.sleep'),
           const FitRule(),
+          // Beta 6.7 (A3): the way to volume sits in the week's card (it was
+          // a lone outlined button under it).
+          InkWell(
+            key: const ValueKey('today.volume'),
+            onTap: () => context.push(Routes.volume),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: fitGlass ? FitSpacing.md : FitSpacing.screen,
+                vertical: FitSpacing.sm,
+              ),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      'Training volume',
+                      style: textTheme.titleSmall
+                          ?.copyWith(color: FitColors.accent),
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: FitColors.accent,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
