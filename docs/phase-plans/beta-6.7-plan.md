@@ -10,6 +10,8 @@
 | Q4 | 6.7 ships **with 6.5 + 6.6**, in one APK. |
 | Q5 | Not asked separately (the form takes four). Built as recommended: the small `now` field, no migration. |
 
+**Added by the owner (2026-11-27):** "i also want to move progress and recovery to the home page" (H1 in §3).
+
 **Asked by the owner (2026-11-27):** "work on ui revamp, specially focused on the community tab, but also check and see what we can change."
 
 **How this was checked:** every Community screen was drawn at phone width (412 px, Cobalt) with a full set of sample data: friends, requests, suggestions, a feed, two clubs, a challenge, a match, the league and the month in numbers. Home, Training and Nutrition were drawn through the whole-app test harness. That harness gets the colours wrong, so only their layout was judged.
@@ -70,6 +72,7 @@ Nothing in R1–R8 changes what is shared or with whom, so the privacy policy is
 | A1 | Selected chips are green (pine) on every Cobalt screen. There are 20 files with chips. | Selected chips use the accent everywhere, through one `chipTheme` in `FitTheme` (Q3). Pine keeps its meaning: done, progress, records. |
 | A2 | Community is the only main tab with an app bar. Training and Nutrition start with their switch, and Home starts with the greeting. ADR-046 says one header. | Community starts with its switch, like Training and Nutrition. Its settings and People icons sit at the right of the switch row. |
 | A3 | Home's "Training volume" is an outlined button floating between the This week card and Train with friends. The next-move card is outlined while the blocks around it are glass. | "Training volume ›" goes inside the This week card. The next-move card becomes glass with an accent edge. |
+| H1 | **Owner 2026-11-27:** Progress and Recovery move to Home. They have been parts of Nutrition since beta 5.9 (ADR-058). | Home gets the same switch: **Today · Progress · Recovery**, opening on Today (Home as it is now). Nutrition goes back to Food alone, with no switch. Home's sleep and readiness tiles and the check-in reminder open Home › Recovery; the weigh-in and weekly recap open Home › Progress. The Progress and Recovery parts themselves don't change. |
 | A4 | Stacks of text links with large gaps: the league card, and the challenge card's "Change the target · End it". | One shared `FitActionRow`: up to two text buttons on one line, the rest in a ⋯ menu. |
 
 Only Home's layout could be judged outside Community, so A2–A4 are the safe set. A screen-by-screen pass on the S24 after 6.7 will find more.
@@ -104,7 +107,7 @@ If 6.7 comes later instead, it can be a Shorebird patch only if it uses icons al
 5. R5: server `now`, then the clubs list.
 6. R6: the club screen.
 7. R7 and R8: empty states and the join screen.
-8. A3: Home.
+8. A3 and H1: Home, with Today · Progress · Recovery (H1 was built third, right after the owner asked).
 9. Tests and screenshots of every changed screen for the owner, then analyze, the full app suite, the API suite and the APK build.
 
 ## 8. Not in 6.7
