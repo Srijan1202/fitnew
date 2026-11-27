@@ -146,117 +146,146 @@ class _JoinState extends ConsumerState<JoinCommunityView> {
             ],
           ),
         );
-    return ListView(
-      key: const ValueKey('community.join'),
-      // Room for the floating bar.
-      padding: const EdgeInsets.fromLTRB(
-        FitSpacing.screen,
-        FitSpacing.screen,
-        FitSpacing.screen,
-        112,
-      ),
+    Widget block(String title, List<Widget> lines) => Padding(
+          padding: const EdgeInsets.only(bottom: FitSpacing.sm),
+          child: FitBlock(
+            padding: const EdgeInsets.all(FitSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [Text(title, style: t.titleMedium), ...lines],
+            ),
+          ),
+        );
+    // Beta 6.7 (R8): the same words in three short blocks, and the button
+    // with its consent line pinned under the list, always in view.
+    return Column(
       children: [
-        Text('TRAIN TOGETHER', style: t.labelSmall),
-        const SizedBox(height: FitSpacing.xs),
-        Text('Friends, clubs and the world board', style: t.displaySmall),
-        const SizedBox(height: FitSpacing.md),
-        FitBlock(
-          padding: const EdgeInsets.all(FitSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        Expanded(
+          child: ListView(
+            key: const ValueKey('community.join'),
+            padding: const EdgeInsets.fromLTRB(
+              FitSpacing.screen,
+              FitSpacing.screen,
+              FitSpacing.screen,
+              FitSpacing.md,
+            ),
             children: [
-              Text('What others see', style: t.titleMedium),
-              line(
-                Icons.person_outline,
-                'Your handle, your profile picture and your country. Never your name or email.',
-              ),
-              line(
-                Icons.fitness_center,
-                'Gym sessions and run distance this week, and your streak.',
+              Text('TRAIN TOGETHER', style: t.labelSmall),
+              const SizedBox(height: FitSpacing.xs),
+              Text(
+                'Friends, clubs and the world board',
+                style: t.displaySmall,
               ),
               const SizedBox(height: FitSpacing.md),
-              Text('Never shared', style: t.titleMedium),
-              line(
-                Icons.lock_outline,
-                'Weights, food, body measurements, photos, readiness, sleep, heart rate and run routes.',
+              block('What others see', [
+                line(
+                  Icons.person_outline,
+                  'Your handle, your profile picture and your country. Never your name or email.',
+                ),
+                line(
+                  Icons.fitness_center,
+                  'Gym sessions and run distance this week, and your streak.',
+                ),
+              ]),
+              block('Never shared', [
+                line(
+                  Icons.lock_outline,
+                  'Weights, food, body measurements, photos, readiness, sleep, heart rate and run routes.',
+                ),
+              ]),
+              block('Yours to control', [
+                line(
+                  Icons.public,
+                  'The world board is a separate choice, off unless you turn it on.',
+                ),
+                line(
+                  Icons.logout,
+                  'Leave any time: you are off every board and friends list at once.',
+                ),
+              ]),
+              const SizedBox(height: FitSpacing.md),
+              TextField(
+                key: const ValueKey('community.join.handle'),
+                controller: _handle,
+                maxLength: 21,
+                autocorrect: false,
+                enableSuggestions: false,
+                textInputAction: TextInputAction.done,
+                decoration: InputDecoration(
+                  labelText: 'Your handle',
+                  prefixText: '@',
+                  helperText:
+                      '3–20 letters, numbers or _. Others find you by it.',
+                  errorText: _error,
+                  counterText: '',
+                ),
               ),
               const SizedBox(height: FitSpacing.md),
-              Text('Yours to control', style: t.titleMedium),
-              line(
-                Icons.public,
-                'The world board is a separate choice, off unless you turn it on.',
+              FitGroup(
+                children: [
+                  FitRow(
+                    key: const ValueKey('community.join.country'),
+                    icon: Icons.flag_outlined,
+                    title: 'Country',
+                    value: _country == null
+                        ? 'Not shown'
+                        : '${flagOf(_country)} ${kCountries[_country]}',
+                    onTap: () async {
+                      final c = await pickCountry(context, current: _country);
+                      if (c != null) {
+                        setState(() => _country = c.isEmpty ? null : c);
+                      }
+                    },
+                  ),
+                  FitRow(
+                    key: const ValueKey('community.join.world'),
+                    icon: Icons.public,
+                    title: 'Show me on the world board',
+                    trailing: Switch(
+                      key: const ValueKey('community.join.worldSwitch'),
+                      value: _onWorld,
+                      onChanged: (v) => setState(() => _onWorld = v),
+                    ),
+                    onTap: () => setState(() => _onWorld = !_onWorld),
+                  ),
+                ],
               ),
-              line(
-                Icons.logout,
-                'Leave any time: you are off every board and friends list at once.',
+              const SizedBox(height: FitSpacing.md),
+              // Beta 6.5 (K0, owner 2026-11-22): sharing is on from joining.
+              Text(
+                'Your friends and your clubs will see the sessions you finish, '
+                'your runs, records and streak milestones. Turn any of them '
+                'off in Community settings.',
+                key: const ValueKey('community.join.sharing'),
+                style: t.bodyMedium,
               ),
             ],
           ),
         ),
-        const SizedBox(height: FitSpacing.lg),
-        TextField(
-          key: const ValueKey('community.join.handle'),
-          controller: _handle,
-          maxLength: 21,
-          autocorrect: false,
-          enableSuggestions: false,
-          textInputAction: TextInputAction.done,
-          decoration: InputDecoration(
-            labelText: 'Your handle',
-            prefixText: '@',
-            helperText: '3–20 letters, numbers or _. Others find you by it.',
-            errorText: _error,
-            counterText: '',
+        Padding(
+          // Room for the floating bar under it.
+          padding: const EdgeInsets.fromLTRB(
+            FitSpacing.screen,
+            FitSpacing.sm,
+            FitSpacing.screen,
+            104,
           ),
-        ),
-        const SizedBox(height: FitSpacing.md),
-        FitGroup(
-          children: [
-            FitRow(
-              key: const ValueKey('community.join.country'),
-              icon: Icons.flag_outlined,
-              title: 'Country',
-              value: _country == null
-                  ? 'Not shown'
-                  : '${flagOf(_country)} ${kCountries[_country]}',
-              onTap: () async {
-                final c = await pickCountry(context, current: _country);
-                if (c != null) setState(() => _country = c.isEmpty ? null : c);
-              },
-            ),
-            FitRow(
-              key: const ValueKey('community.join.world'),
-              icon: Icons.public,
-              title: 'Show me on the world board',
-              trailing: Switch(
-                key: const ValueKey('community.join.worldSwitch'),
-                value: _onWorld,
-                onChanged: (v) => setState(() => _onWorld = v),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Joining is your consent to share the above with other FITOS '
+                'members (privacy policy, version $kPolicyVersion).',
+                style: t.bodySmall?.copyWith(color: FitColors.ink60),
               ),
-              onTap: () => setState(() => _onWorld = !_onWorld),
-            ),
-          ],
-        ),
-        const SizedBox(height: FitSpacing.md),
-        // Beta 6.5 (K0, owner 2026-11-22): sharing is on from joining.
-        Text(
-          'Your friends and your clubs will see the sessions you finish, your '
-          'runs, records and streak milestones. Turn any of them off in '
-          'Community settings.',
-          key: const ValueKey('community.join.sharing'),
-          style: t.bodyMedium,
-        ),
-        const SizedBox(height: FitSpacing.sm),
-        Text(
-          'Joining is your consent to share the above with other FITOS members '
-          '(privacy policy, version $kPolicyVersion).',
-          style: t.bodySmall?.copyWith(color: FitColors.ink60),
-        ),
-        const SizedBox(height: FitSpacing.md),
-        FilledButton(
-          key: const ValueKey('community.join.submit'),
-          onPressed: _busy ? null : _join,
-          child: Text(_busy ? 'Joining…' : 'Join Community'),
+              const SizedBox(height: FitSpacing.sm),
+              FilledButton(
+                key: const ValueKey('community.join.submit'),
+                onPressed: _busy ? null : _join,
+                child: Text(_busy ? 'Joining…' : 'Join Community'),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -539,11 +568,15 @@ class BoardBlock extends StatelessWidget {
     required this.emptyText,
     this.onPerson,
     this.tagOf,
+    this.emptyAction,
     super.key,
   });
 
   final Board board;
   final String emptyText;
+
+  /// Beta 6.7 (R7): the next step under an empty board.
+  final Widget? emptyAction;
   final void Function(BoardRow row)? onPerson;
 
   /// Beta 6.6 (L2): "Owner" or "Co-owner" by a club's board rows.
@@ -570,10 +603,19 @@ class BoardBlock extends StatelessWidget {
         if (rows.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: FitSpacing.md),
-            child: Text(
-              emptyText,
-              key: const ValueKey('community.board.empty'),
-              style: t.bodyMedium?.copyWith(color: FitColors.ink60),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  emptyText,
+                  key: const ValueKey('community.board.empty'),
+                  style: t.bodyMedium?.copyWith(color: FitColors.ink60),
+                ),
+                if (emptyAction != null) ...[
+                  const SizedBox(height: FitSpacing.sm),
+                  emptyAction!,
+                ],
+              ],
             ),
           )
         else
@@ -817,9 +859,11 @@ class BoardLoader extends ConsumerWidget {
     required this.onRetry,
     this.onPerson,
     this.tagOf,
+    this.emptyAction,
     super.key,
   });
 
+  final Widget? emptyAction;
   final AsyncValue<Board> board;
   final String emptyText;
   final VoidCallback onRetry;
@@ -843,6 +887,7 @@ class BoardLoader extends ConsumerWidget {
           emptyText: emptyText,
           onPerson: onPerson,
           tagOf: tagOf,
+          emptyAction: emptyAction,
         ),
       );
 }
@@ -1313,6 +1358,12 @@ class _BoardsView extends ConsumerWidget {
             BoardLoader(
               board: ref.watch(friendsBoardProvider(metric)),
               emptyText: 'Add friends to see their week here.',
+              emptyAction: OutlinedButton.icon(
+                key: const ValueKey('community.board.people'),
+                onPressed: () => context.push(Routes.communityPeople),
+                icon: const Icon(Icons.person_add_alt),
+                label: const Text('Find people'),
+              ),
               onRetry: () => ref.invalidate(friendsBoardProvider),
               // Beta 6.2 (C4): a friend's week.
               onPerson: (r) => friendIds.contains(r.userId)

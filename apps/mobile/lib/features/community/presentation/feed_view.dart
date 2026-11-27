@@ -148,6 +148,17 @@ class _FeedState extends ConsumerState<FeedView> {
                     key: const ValueKey('feed.empty'),
                     style: t.bodyMedium?.copyWith(color: FitColors.ink60),
                   ),
+                ),
+              // Beta 6.7 (R7): an empty friends' feed leads to People.
+              if (posts.isEmpty && club == null)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    key: const ValueKey('feed.empty.people'),
+                    onPressed: () => context.push(Routes.communityPeople),
+                    icon: const Icon(Icons.person_add_alt),
+                    label: const Text('Find people'),
+                  ),
                 )
               else
                 // Beta 6.7 (R4): posts under Today, Yesterday or the date.

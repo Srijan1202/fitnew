@@ -105,7 +105,17 @@ void main() {
       findsOneWidget,
     );
     expect(key('community.settings'), findsNothing);
+    // Beta 6.7 (R8): the button stays in view under the list.
+    expect(key('community.join.submit').hitTestable(), findsOneWidget);
 
+    await tester.scrollUntilVisible(
+      key('community.join.handle'),
+      200,
+      scrollable: find.descendant(
+        of: key('community.join'),
+        matching: find.byType(Scrollable),
+      ),
+    );
     await tester.enterText(key('community.join.handle'), 'a b');
     await tap(tester, 'community.join.submit');
     expect(find.text('Use 3–20 letters, numbers or _.'), findsOneWidget);
@@ -180,6 +190,25 @@ void main() {
     await tap(tester, 'community.accept.ben');
     expect(api.calls, contains('accept u-ben'));
     expect(key('community.incoming.ben'), findsNothing);
+  });
+
+  testWidgets(
+      'beta 6.7 (R7): an empty feed and an empty friends board lead to People',
+      (tester) async {
+    api.profile = me();
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    expect(key('feed.empty'), findsOneWidget);
+    await tap(tester, 'community.tab.boards');
+    expect(key('community.board.empty'), findsOneWidget);
+    await tap(tester, 'community.board.people');
+    expect(key('community.people'), findsOneWidget);
+    expect(key('community.friends.empty'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tap(tester, 'community.tab.feed');
+    await tap(tester, 'feed.empty.people');
+    expect(key('community.people'), findsOneWidget);
   });
 
   testWidgets('add a friend by handle: search, then Add', (tester) async {
