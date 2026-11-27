@@ -201,15 +201,16 @@ class NotificationCoordinator extends Notifier<NotifyState> {
           ref.read(routerProvider).push(Routes.feedback);
         // Beta 5.8 (ADR-057): a friend request, or one accepted; beta 6.3:
         // kudos and nudges open the Feed, a club passed on opens Clubs.
+        // Beta 6.7 (R1): a friend request opens People over the Feed.
         case 'community':
+          final screen = data['screen'];
           ref.read(communityTabProvider.notifier).set(
-                switch (data['screen']) {
-                  'feed' => CommunityTab.feed,
-                  'clubs' => CommunityTab.clubs,
-                  _ => CommunityTab.friends,
-                },
+                screen == 'clubs' ? CommunityTab.clubs : CommunityTab.feed,
               );
-          ref.read(routerProvider).go(Routes.community);
+          final router = ref.read(routerProvider)..go(Routes.community);
+          if (screen != 'feed' && screen != 'clubs') {
+            router.push(Routes.communityPeople);
+          }
         case 'update':
           ref.read(updateControllerProvider.notifier).checkNow();
       }

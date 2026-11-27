@@ -67,6 +67,7 @@ import '../../features/community/presentation/community_screen.dart';
 import '../../features/community/presentation/community_settings_screen.dart';
 import '../../features/community/presentation/club_settings_screen.dart';
 import '../../features/community/presentation/invite_screen.dart';
+import '../../features/community/presentation/people_screen.dart';
 import '../../features/community/presentation/person_profile_screen.dart';
 
 /// Application routes.
@@ -114,6 +115,9 @@ abstract final class Routes {
   static String communityClub(String id) => '/community/clubs/$id';
   // Beta 6.2: a member's week, a club's settings, an opened invite link.
   static String communityPerson(String id) => '/community/people/$id';
+
+  /// Beta 6.7 (R1): requests, friends, suggestions and invites.
+  static const String communityPeople = '/community/people';
   static String communityClubSettings(String id) =>
       '/community/clubs/$id/settings';
   static const String communityInvite = '/community/invite';
@@ -626,6 +630,12 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> rootNavigatorKey) =>
                         ),
                       ),
                     ],
+                  ),
+                  GoRoute(
+                    path: 'people',
+                    name: 'community-people',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const PeopleScreen(),
                   ),
                   GoRoute(
                     path: 'people/:id',

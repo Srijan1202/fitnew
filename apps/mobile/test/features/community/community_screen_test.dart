@@ -6,6 +6,7 @@ import 'package:fitos/features/community/domain/community.dart';
 import 'package:fitos/features/community/presentation/club_screen.dart';
 import 'package:fitos/features/community/presentation/community_providers.dart';
 import 'package:fitos/features/community/presentation/community_screen.dart';
+import 'package:fitos/features/community/presentation/people_screen.dart';
 import 'package:fitos/features/community/presentation/community_settings_screen.dart';
 import 'package:fitos/features/privacy/presentation/policy_text.dart';
 import 'package:flutter/material.dart';
@@ -43,6 +44,10 @@ void main() {
           path: Routes.community,
           builder: (_, __) => const CommunityScreen(),
           routes: [
+            GoRoute(
+              path: 'people',
+              builder: (_, __) => const PeopleScreen(),
+            ),
             GoRoute(
               path: 'settings',
               builder: (_, __) => const CommunitySettingsScreen(),
@@ -125,8 +130,9 @@ void main() {
   });
 
   testWidgets(
-      'friends: a request answered; the board with your row marked; run km '
-      'instead of sessions', (tester) async {
+      'Feed first; the friends board with your row marked, run km instead '
+      'of sessions; a request waits behind People and is answered there',
+      (tester) async {
     api
       ..profile = me()
       ..lists = FriendLists(
@@ -147,22 +153,33 @@ void main() {
           );
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
-    expect(find.text('Friends · 1'), findsOneWidget);
-    expect(key('community.incoming.ben'), findsOneWidget);
-    expect(key('community.outgoing.cara'), findsOneWidget);
+    // Beta 6.7 (R1): the Feed opens first; the request shows as a badge.
+    expect(key('feed.list'), findsWidgets);
+    expect(
+      tester.widget<Badge>(key('community.people.badge')).isLabelVisible,
+      isTrue,
+    );
+    expect(find.byTooltip('People, 1 waiting'), findsOneWidget);
+
+    await tap(tester, 'community.tab.boards');
     expect(find.textContaining('@srijan (you)'), findsOneWidget);
     expect(
       tester.widget<Text>(key('community.value.ana')).data,
       '4 sessions',
     );
     expect(find.textContaining('9-day streak'), findsOneWidget);
-    await tap(tester, 'community.accept.ben');
-    expect(api.calls, contains('accept u-ben'));
-    expect(key('community.incoming.ben'), findsNothing);
-
     await tap(tester, 'community.metric.distance');
     expect(tester.widget<Text>(key('community.value.ana')).data, '12.4 km');
     expect(api.calls, contains('friends-board distance'));
+
+    await tap(tester, 'community.people.open');
+    expect(key('community.incoming.ben'), findsOneWidget);
+    expect(key('community.outgoing.cara'), findsOneWidget);
+    expect(key('community.friend.ana'), findsOneWidget);
+    expect(find.text('FRIENDS · 1'), findsOneWidget);
+    await tap(tester, 'community.accept.ben');
+    expect(api.calls, contains('accept u-ben'));
+    expect(key('community.incoming.ben'), findsNothing);
   });
 
   testWidgets('add a friend by handle: search, then Add', (tester) async {
@@ -171,6 +188,8 @@ void main() {
       ..found = [person('dev_lifts'), person('devika')];
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
+    await tap(tester, 'community.people.open');
+    expect(key('community.friends.empty'), findsOneWidget);
     await tap(tester, 'community.addFriend');
     await tester.enterText(key('community.add.search'), '@Dev');
     await tester.pumpAndSettle();
@@ -195,6 +214,7 @@ void main() {
           );
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
+    await tap(tester, 'community.tab.boards');
     // Your own row opens nothing.
     await tester.tap(key('community.row.srijan'));
     await tester.pumpAndSettle();
@@ -216,17 +236,20 @@ void main() {
 
   testWidgets(
       'the world board: seen without being on it, joined by choice; '
-      'everywhere or your country', (tester) async {
+      'friends, your country or the world on one Boards tab', (tester) async {
     api.profile = me();
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
-    await tap(tester, 'community.tab.world');
+    await tap(tester, 'community.tab.boards');
+    // Beta 6.7 (R1): friends first, with no world note.
+    expect(key('community.world.off'), findsNothing);
+    await tap(tester, 'community.scope.world');
     expect(key('community.world.off'), findsOneWidget);
     expect(api.calls, contains('world-board sessions all'));
     await tap(tester, 'community.world.join');
     expect(api.calls, contains('update   true'));
     expect(key('community.world.off'), findsNothing);
-    await tap(tester, 'community.world.country');
+    await tap(tester, 'community.scope.country');
     expect(api.calls, contains('world-board sessions IN'));
   });
 

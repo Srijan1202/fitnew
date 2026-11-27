@@ -159,7 +159,13 @@ abstract final class FitTheme {
       chipTheme: ChipThemeData(
         selectedColor: FitColors.accent,
         checkmarkColor: FitColors.onAccent,
+        // Barlow at Material's chip size (the text theme has no labelLarge,
+        // and a bare style would fall back to Roboto).
         labelStyle: TextStyle(
+          fontFamily: FitTypography.family,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.1,
           color: WidgetStateColor.resolveWith(
             (s) => s.contains(WidgetState.selected)
                 ? FitColors.onAccent

@@ -5,6 +5,7 @@ import 'package:fitos/features/auth/presentation/controllers/auth_controller.dar
 import 'package:fitos/features/community/domain/community.dart';
 import 'package:fitos/features/community/presentation/community_providers.dart';
 import 'package:fitos/features/community/presentation/community_screen.dart';
+import 'package:fitos/features/community/presentation/people_screen.dart';
 import 'package:fitos/features/community/presentation/community_settings_screen.dart';
 import 'package:fitos/features/community/presentation/person_profile_screen.dart';
 import 'package:flutter/material.dart';
@@ -66,6 +67,10 @@ void main() {
           path: Routes.community,
           builder: (_, __) => const CommunityScreen(),
           routes: [
+            GoRoute(
+              path: 'people',
+              builder: (_, __) => const PeopleScreen(),
+            ),
             GoRoute(
               path: 'settings',
               builder: (_, __) => const CommunitySettingsScreen(),
@@ -315,6 +320,7 @@ void main() {
         );
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
+    await tap(tester, 'community.tab.boards');
     expect(find.textContaining('THIS WEEK'), findsOneWidget);
     await tap(tester, 'community.period.month');
     expect(api.calls, contains('friends-board sessions month'));
@@ -323,7 +329,7 @@ void main() {
     expect(api.calls, contains('friends-board sessions all'));
     expect(find.text('ALL TIME · SINCE JOINING COMMUNITY'), findsOneWidget);
     // The period holds on the world board too.
-    await tap(tester, 'community.tab.world');
+    await tap(tester, 'community.scope.world');
     expect(api.calls.last, startsWith('world-board sessions all all'));
   });
 
@@ -333,7 +339,7 @@ void main() {
       Suggestion(person: person('fof'), mutualFriends: 2, club: null),
       Suggestion(person: person('mate'), mutualFriends: 0, club: 'Gym Bros'),
     ];
-    await tester.pumpWidget(app());
+    await tester.pumpWidget(app(initial: Routes.communityPeople));
     await tester.pumpAndSettle();
     expect(key('community.suggestions'), findsOneWidget);
     expect(find.text('2 friends in common'), findsOneWidget);

@@ -54,5 +54,6 @@ void main() {
     final label = chips.labelStyle!.color! as WidgetStateColor;
     expect(label.resolve({WidgetState.selected}), FitColors.onAccent);
     expect(label.resolve({}), FitColors.ink);
+    expect(chips.labelStyle!.fontFamily, 'Barlow');
   });
 }

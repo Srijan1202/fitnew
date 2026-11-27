@@ -6,6 +6,7 @@ import 'package:fitos/features/community/domain/community.dart';
 import 'package:fitos/features/community/presentation/club_screen.dart';
 import 'package:fitos/features/community/presentation/community_providers.dart';
 import 'package:fitos/features/community/presentation/community_screen.dart';
+import 'package:fitos/features/community/presentation/people_screen.dart';
 import 'package:fitos/features/community/presentation/community_settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -65,6 +66,10 @@ void main() {
           path: Routes.community,
           builder: (_, __) => const CommunityScreen(),
           routes: [
+            GoRoute(
+              path: 'people',
+              builder: (_, __) => const PeopleScreen(),
+            ),
             GoRoute(
               path: 'settings',
               builder: (_, __) => const CommunitySettingsScreen(),

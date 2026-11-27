@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../core/errors/failure.dart';
 import '../../../core/routing/router.dart';
@@ -13,7 +12,6 @@ import '../../privacy/presentation/policy_text.dart';
 import '../domain/community.dart';
 import 'community_providers.dart';
 import 'feed_view.dart';
-import 'invite_qr.dart';
 
 /// Beta 5.8 (ADR-057; owner 2026-11-08: "Friends / VIT leaderboard ... we
 /// have to make world level"): friends, clubs and the world board. Nobody
@@ -24,36 +22,26 @@ class CommunityScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final me = ref.watch(communityMeProvider);
-    final joined = me.value?.joined ?? false;
+    // Beta 6.7 (A2, ADR-046): like Training and Nutrition, Community starts
+    // with its switch; no app bar.
     return Scaffold(
-      appBar: AppBar(
-        // Beta 5.9 (owner): Community is the last tab, so no back button.
-        automaticallyImplyLeading: false,
-        title: const Text('Community'),
-        actions: [
-          if (joined)
-            IconButton(
-              key: const ValueKey('community.settings'),
-              tooltip: 'Community settings',
-              icon: const Icon(Icons.tune),
-              onPressed: () => context.push(Routes.communitySettings),
-            ),
-        ],
-      ),
       body: FitBackdrop(
-        child: me.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => _Problem(
-            e is Forbidden && e.issue == 'feature-off'
-                ? 'Community is switched off for now.'
-                : e is Offline
-                    ? 'Community needs a connection.'
-                    : 'Community is unavailable right now.',
-            onRetry: () => ref.invalidate(communityMeProvider),
+        child: SafeArea(
+          bottom: false,
+          child: me.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => _Problem(
+              e is Forbidden && e.issue == 'feature-off'
+                  ? 'Community is switched off for now.'
+                  : e is Offline
+                      ? 'Community needs a connection.'
+                      : 'Community is unavailable right now.',
+              onRetry: () => ref.invalidate(communityMeProvider),
+            ),
+            data: (m) => m.profile == null
+                ? const JoinCommunityView()
+                : _Joined(profile: m.profile!, incoming: m.incoming),
           ),
-          data: (m) => m.profile == null
-              ? const JoinCommunityView()
-              : _Joined(profile: m.profile!, incoming: m.incoming),
         ),
       ),
     );
@@ -369,51 +357,68 @@ class _Joined extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(
             FitSpacing.screen,
             FitSpacing.sm,
-            FitSpacing.screen,
+            FitSpacing.xs,
             FitSpacing.sm,
           ),
-          child: FitModeSwitch<CommunityTab>(
-            key: const ValueKey('community.tab'),
-            thumbKey: const ValueKey('community.tab.thumb'),
-            value: tab,
-            halves: [
-              FitModeHalf(
-                CommunityTab.friends,
-                incoming > 0 ? 'Friends · $incoming' : 'Friends',
-                Icons.person_outline,
-                key: const ValueKey('community.tab.friends'),
+          child: Row(
+            children: [
+              Expanded(
+                child: FitModeSwitch<CommunityTab>(
+                  key: const ValueKey('community.tab'),
+                  thumbKey: const ValueKey('community.tab.thumb'),
+                  value: tab,
+                  halves: const [
+                    // Beta 6.3 (C1): what friends shared; first since 6.7.
+                    FitModeHalf(
+                      CommunityTab.feed,
+                      'Feed',
+                      Icons.chat_bubble_outline,
+                      key: ValueKey('community.tab.feed'),
+                    ),
+                    FitModeHalf(
+                      CommunityTab.boards,
+                      'Boards',
+                      Icons.leaderboard_outlined,
+                      key: ValueKey('community.tab.boards'),
+                    ),
+                    FitModeHalf(
+                      CommunityTab.clubs,
+                      'Clubs',
+                      Icons.flag_outlined,
+                      key: ValueKey('community.tab.clubs'),
+                    ),
+                  ],
+                  onChanged: ref.read(communityTabProvider.notifier).set,
+                ),
               ),
-              // Beta 6.3 (C1): what friends shared.
-              const FitModeHalf(
-                CommunityTab.feed,
-                'Feed',
-                Icons.chat_bubble_outline,
-                key: ValueKey('community.tab.feed'),
+              // Beta 6.7 (R1): requests, friends and invites.
+              IconButton(
+                key: const ValueKey('community.people.open'),
+                tooltip: incoming > 0 ? 'People, $incoming waiting' : 'People',
+                onPressed: () => context.push(Routes.communityPeople),
+                icon: Badge(
+                  key: const ValueKey('community.people.badge'),
+                  isLabelVisible: incoming > 0,
+                  label: Text('$incoming'),
+                  child: const Icon(Icons.people_outline),
+                ),
               ),
-              const FitModeHalf(
-                CommunityTab.clubs,
-                'Clubs',
-                Icons.flag_outlined,
-                key: ValueKey('community.tab.clubs'),
-              ),
-              const FitModeHalf(
-                CommunityTab.world,
-                'World',
-                Icons.public,
-                key: ValueKey('community.tab.world'),
+              IconButton(
+                key: const ValueKey('community.settings'),
+                tooltip: 'Community settings',
+                icon: const Icon(Icons.tune),
+                onPressed: () => context.push(Routes.communitySettings),
               ),
             ],
-            onChanged: ref.read(communityTabProvider.notifier).set,
           ),
         ),
         Expanded(
           child: IndexedStack(
             index: tab.index,
             children: [
-              const _FriendsView(),
               const FeedView(),
+              _BoardsView(profile: profile),
               const _ClubsView(),
-              _WorldView(profile: profile),
             ],
           ),
         ),
@@ -894,370 +899,6 @@ Future<void> showReportSheet(
   }
 }
 
-/* -------------------------------------------------------------- friends -- */
-
-class _FriendsView extends ConsumerWidget {
-  const _FriendsView();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final t = Theme.of(context).textTheme;
-    final metric = ref.watch(boardMetricProvider);
-    final lists = ref.watch(friendListsProvider).value;
-    final api = ref.read(communityApiProvider);
-    final friendIds = {
-      for (final f in lists?.friends ?? const <CommunityPerson>[]) f.userId,
-    };
-    return RefreshIndicator(
-      onRefresh: () async => refreshCommunity(ref),
-      child: ListView(
-        key: const ValueKey('community.friends'),
-        padding: const EdgeInsets.fromLTRB(
-          FitSpacing.screen,
-          FitSpacing.sm,
-          FitSpacing.screen,
-          112,
-        ),
-        children: [
-          if (lists != null && lists.incoming.isNotEmpty) ...[
-            Text('FRIEND REQUESTS', style: t.labelSmall),
-            const SizedBox(height: FitSpacing.sm),
-            FitBlock(
-              child: Column(
-                children: [
-                  for (final p in lists.incoming)
-                    ListTile(
-                      key: ValueKey('community.incoming.${p.handle}'),
-                      leading: ProfileAvatar(
-                        avatarId: p.avatarId,
-                        name: p.handle,
-                        premium: false,
-                        size: 34,
-                      ),
-                      title: Text('@${p.handle} ${flagOf(p.country)}'),
-                      onTap: () => context.push(
-                        Routes.communityPerson(p.userId),
-                        extra: p.handle,
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            key: ValueKey('community.decline.${p.handle}'),
-                            tooltip: 'Decline',
-                            icon: const Icon(Icons.close),
-                            onPressed: () async {
-                              await api.unfriend(p.userId);
-                              refreshCommunity(ref);
-                            },
-                          ),
-                          IconButton(
-                            key: ValueKey('community.accept.${p.handle}'),
-                            tooltip: 'Accept',
-                            icon: const Icon(Icons.check),
-                            onPressed: () async {
-                              await api.accept(p.userId);
-                              refreshCommunity(ref);
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: FitSpacing.lg),
-          ],
-          Row(
-            children: [
-              const Expanded(child: BoardMetricPicker()),
-              const SizedBox(width: FitSpacing.sm),
-              IconButton.filledTonal(
-                key: const ValueKey('community.addFriend'),
-                tooltip: 'Add a friend',
-                icon: const Icon(Icons.add),
-                onPressed: () => _addFriend(context, ref),
-              ),
-            ],
-          ),
-          const SizedBox(height: FitSpacing.md),
-          BoardLoader(
-            board: ref.watch(friendsBoardProvider(metric)),
-            emptyText: 'Add friends to see their week here.',
-            onRetry: () => ref.invalidate(friendsBoardProvider),
-            // Beta 6.2 (C4): a friend's week.
-            onPerson: (r) => friendIds.contains(r.userId)
-                ? context.push(
-                    Routes.communityPerson(r.userId),
-                    extra: r.handle,
-                  )
-                : showPersonSheet(
-                    context,
-                    ref,
-                    userId: r.userId,
-                    handle: r.handle,
-                  ),
-          ),
-          // Beta 6.3 (C16, owner Q3): a count or a club, never which friends.
-          const _Suggestions(),
-          if (lists != null && lists.outgoing.isNotEmpty) ...[
-            const SizedBox(height: FitSpacing.lg),
-            Text('WAITING FOR AN ANSWER', style: t.labelSmall),
-            for (final p in lists.outgoing)
-              ListTile(
-                key: ValueKey('community.outgoing.${p.handle}'),
-                contentPadding: EdgeInsets.zero,
-                title: Text('@${p.handle}'),
-                trailing: TextButton(
-                  onPressed: () async {
-                    await api.unfriend(p.userId);
-                    refreshCommunity(ref);
-                  },
-                  child: const Text('Cancel'),
-                ),
-              ),
-          ],
-          const SizedBox(height: FitSpacing.lg),
-          _InviteLine(
-            handle: ref.watch(communityMeProvider).value?.profile?.handle,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Beta 6.3 (C16): friends of friends and club-mates, five at a time.
-class _Suggestions extends ConsumerWidget {
-  const _Suggestions();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final t = Theme.of(context).textTheme;
-    final items = ref.watch(suggestionsProvider).value ?? const <Suggestion>[];
-    if (items.isEmpty) return const SizedBox.shrink();
-    final api = ref.read(communityApiProvider);
-    return Column(
-      key: const ValueKey('community.suggestions'),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const SizedBox(height: FitSpacing.lg),
-        Text('PEOPLE YOU MAY KNOW', style: t.labelSmall),
-        const SizedBox(height: FitSpacing.sm),
-        FitBlock(
-          child: Column(
-            children: [
-              for (final (i, s) in items.take(5).indexed) ...[
-                if (i > 0) const FitRule(),
-                ListTile(
-                  key: ValueKey('community.suggestion.${s.person.handle}'),
-                  leading: ProfileAvatar(
-                    avatarId: s.person.avatarId,
-                    name: s.person.handle,
-                    premium: false,
-                    size: 34,
-                  ),
-                  title:
-                      Text('@${s.person.handle} ${flagOf(s.person.country)}'),
-                  subtitle: Text(s.why),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        key: ValueKey(
-                          'community.suggestion.hide.${s.person.handle}',
-                        ),
-                        tooltip: 'Not now',
-                        icon: const Icon(Icons.close),
-                        onPressed: () async {
-                          await api.dismissSuggestion(s.person.userId);
-                          ref.invalidate(suggestionsProvider);
-                        },
-                      ),
-                      IconButton(
-                        key: ValueKey(
-                          'community.suggestion.add.${s.person.handle}',
-                        ),
-                        tooltip: 'Add friend',
-                        icon: const Icon(Icons.add),
-                        onPressed: () async {
-                          final r = await api.addFriend(s.person.handle);
-                          refreshCommunity(ref);
-                          if (context.mounted) {
-                            _snack(
-                              context,
-                              r.when(
-                                ok: (v) => v == 'friends'
-                                    ? 'You are now friends.'
-                                    : 'Request sent.',
-                                err: (f) => f.message,
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Tell a friend your handle (the share sheet).
-class _InviteLine extends StatelessWidget {
-  const _InviteLine({required this.handle});
-
-  final String? handle;
-
-  @override
-  Widget build(BuildContext context) => handle == null
-      ? const SizedBox.shrink()
-      : Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                key: const ValueKey('community.invite'),
-                icon: const Icon(Icons.ios_share),
-                label: Text('Invite a friend · @$handle'),
-                // Beta 6.2 (C15): the link opens FITOS on "Add @you?".
-                onPressed: () => SharePlus.instance.share(
-                  ShareParams(
-                    text: 'Train with me on FITOS: ${friendInviteUrl(handle!)}',
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: FitSpacing.sm),
-            IconButton.outlined(
-              key: const ValueKey('community.invite.qr'),
-              tooltip: 'My QR code',
-              icon: const Icon(Icons.qr_code_2),
-              onPressed: () => showHandleQr(context, handle!),
-            ),
-          ],
-        );
-}
-
-Future<void> _addFriend(BuildContext context, WidgetRef ref) =>
-    showModalBottomSheet<void>(
-      useRootNavigator: true,
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (_) => Padding(
-        padding:
-            EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-        child: const _AddFriendSheet(),
-      ),
-    );
-
-class _AddFriendSheet extends ConsumerStatefulWidget {
-  const _AddFriendSheet();
-
-  @override
-  ConsumerState<_AddFriendSheet> createState() => _AddFriendState();
-}
-
-class _AddFriendState extends ConsumerState<_AddFriendSheet> {
-  List<CommunityPerson> _found = const [];
-  String _q = '';
-  String? _note;
-
-  Future<void> _search(String raw) async {
-    final q = normalizeHandle(raw);
-    setState(() => _q = q);
-    if (q.length < 2) {
-      setState(() => _found = const []);
-      return;
-    }
-    final r = await ref.read(communityApiProvider).search(q);
-    if (!mounted || q != _q) return;
-    setState(() => _found = r.when(ok: (p) => p, err: (_) => const []));
-  }
-
-  Future<void> _add(String handle) async {
-    final r = await ref.read(communityApiProvider).addFriend(handle);
-    if (!mounted) return;
-    refreshCommunity(ref);
-    setState(
-      () => _note = r.when(
-        ok: (s) => s == 'friends'
-            ? 'You and @$handle are friends.'
-            : 'Request sent to @$handle.',
-        err: (f) => f.message,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final t = Theme.of(context).textTheme;
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.6,
-      child: Padding(
-        padding: const EdgeInsets.all(FitSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('Add a friend', style: t.titleLarge),
-            const SizedBox(height: FitSpacing.sm),
-            TextField(
-              key: const ValueKey('community.add.search'),
-              autofocus: true,
-              autocorrect: false,
-              decoration: const InputDecoration(
-                prefixText: '@',
-                hintText: 'Their handle',
-              ),
-              onChanged: _search,
-            ),
-            if (_note != null)
-              Padding(
-                padding: const EdgeInsets.only(top: FitSpacing.sm),
-                child: Text(_note!, key: const ValueKey('community.add.note')),
-              ),
-            Expanded(
-              child: ListView(
-                children: [
-                  for (final p in _found)
-                    ListTile(
-                      key: ValueKey('community.found.${p.handle}'),
-                      leading: ProfileAvatar(
-                        avatarId: p.avatarId,
-                        name: p.handle,
-                        premium: false,
-                        size: 34,
-                      ),
-                      title: Text('@${p.handle} ${flagOf(p.country)}'),
-                      trailing: TextButton(
-                        key: ValueKey('community.add.${p.handle}'),
-                        onPressed: () => _add(p.handle),
-                        child: const Text('Add'),
-                      ),
-                    ),
-                  if (_found.isEmpty && _q.length >= 3)
-                    Padding(
-                      padding: const EdgeInsets.only(top: FitSpacing.md),
-                      child: Text(
-                        'No one with a handle starting @$_q.',
-                        style: t.bodyMedium?.copyWith(color: FitColors.ink60),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 /* ---------------------------------------------------------------- clubs -- */
 
 class _ClubsView extends ConsumerWidget {
@@ -1385,10 +1026,12 @@ Future<void> _clubDialog(
   );
 }
 
-/* ---------------------------------------------------------------- world -- */
+/* --------------------------------------------------------------- boards -- */
 
-class _WorldView extends ConsumerWidget {
-  const _WorldView({required this.profile});
+/// Beta 6.7 (R1, owner 2026-11-27): one board for friends, the person's
+/// country or the world, with one set of controls (they were on two tabs).
+class _BoardsView extends ConsumerWidget {
+  const _BoardsView({required this.profile});
 
   final CommunityProfile profile;
 
@@ -1396,36 +1039,76 @@ class _WorldView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final t = Theme.of(context).textTheme;
     final metric = ref.watch(boardMetricProvider);
-    final countryOnly =
-        ref.watch(worldCountryOnlyProvider) && profile.country != null;
-    final country = countryOnly ? profile.country : null;
+    var scope = ref.watch(boardScopeProvider);
+    if (scope == BoardScope.country && profile.country == null) {
+      scope = BoardScope.world;
+    }
+    final friendIds = {
+      for (final f in ref.watch(friendListsProvider).value?.friends ??
+          const <CommunityPerson>[])
+        f.userId,
+    };
     return RefreshIndicator(
       onRefresh: () async => refreshCommunity(ref),
       child: ListView(
-        key: const ValueKey('community.world'),
+        key: const ValueKey('community.boards'),
         padding: const EdgeInsets.fromLTRB(
           FitSpacing.screen,
-          FitSpacing.sm,
+          FitSpacing.xs,
           FitSpacing.screen,
           112,
         ),
         children: [
-          if (!profile.onWorld) ...[
+          SegmentedButton<BoardScope>(
+            key: const ValueKey('community.scope'),
+            showSelectedIcon: false,
+            segments: [
+              const ButtonSegment(
+                value: BoardScope.friends,
+                label: Text(
+                  'Friends',
+                  key: ValueKey('community.scope.friends'),
+                ),
+              ),
+              if (profile.country != null)
+                ButtonSegment(
+                  value: BoardScope.country,
+                  label: Text(
+                    '${flagOf(profile.country)} ${kCountries[profile.country] ?? profile.country}',
+                    key: const ValueKey('community.scope.country'),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              const ButtonSegment(
+                value: BoardScope.world,
+                label: Text(
+                  'World',
+                  key: ValueKey('community.scope.world'),
+                ),
+              ),
+            ],
+            selected: {scope},
+            onSelectionChanged: (v) =>
+                ref.read(boardScopeProvider.notifier).set(v.first),
+          ),
+          const SizedBox(height: FitSpacing.sm),
+          const BoardMetricPicker(),
+          const SizedBox(height: FitSpacing.md),
+          if (scope != BoardScope.friends && !profile.onWorld) ...[
             FitBlock(
               key: const ValueKey('community.world.off'),
               padding: const EdgeInsets.all(FitSpacing.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text('You are not on the world board', style: t.titleMedium),
-                  const SizedBox(height: FitSpacing.xs),
-                  Text(
-                    'You can see it; others see your handle, country and '
-                    'counts here only if you choose to.',
-                    style: t.bodyMedium,
+                  Expanded(
+                    child: Text(
+                      'You can see this board. Others see your handle, '
+                      'country and counts here only if you choose to.',
+                      style: t.bodyMedium,
+                    ),
                   ),
-                  const SizedBox(height: FitSpacing.sm),
-                  FilledButton(
+                  const SizedBox(width: FitSpacing.sm),
+                  TextButton(
                     key: const ValueKey('community.world.join'),
                     onPressed: () async {
                       await ref
@@ -1433,53 +1116,50 @@ class _WorldView extends ConsumerWidget {
                           .update(onWorld: true);
                       refreshCommunity(ref);
                     },
-                    child: const Text('Show me on it'),
+                    child: const Text('Show me'),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: FitSpacing.md),
           ],
-          const BoardMetricPicker(),
-          if (profile.country != null) ...[
-            const SizedBox(height: FitSpacing.sm),
-            SegmentedButton<bool>(
-              key: const ValueKey('community.world.scope'),
-              showSelectedIcon: false,
-              segments: [
-                const ButtonSegment(
-                  value: false,
-                  label: Text(
-                    'Everywhere',
-                    key: ValueKey('community.world.everywhere'),
+          if (scope == BoardScope.friends)
+            BoardLoader(
+              board: ref.watch(friendsBoardProvider(metric)),
+              emptyText: 'Add friends to see their week here.',
+              onRetry: () => ref.invalidate(friendsBoardProvider),
+              // Beta 6.2 (C4): a friend's week.
+              onPerson: (r) => friendIds.contains(r.userId)
+                  ? context.push(
+                      Routes.communityPerson(r.userId),
+                      extra: r.handle,
+                    )
+                  : showPersonSheet(
+                      context,
+                      ref,
+                      userId: r.userId,
+                      handle: r.handle,
+                    ),
+            )
+          else
+            BoardLoader(
+              board: ref.watch(
+                worldBoardProvider(
+                  (
+                    metric,
+                    scope == BoardScope.country ? profile.country : null,
                   ),
                 ),
-                ButtonSegment(
-                  value: true,
-                  label: Text(
-                    '${flagOf(profile.country)} ${kCountries[profile.country] ?? profile.country}',
-                    key: const ValueKey('community.world.country'),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-              selected: {countryOnly},
-              onSelectionChanged: (v) =>
-                  ref.read(worldCountryOnlyProvider.notifier).set(v.first),
+              ),
+              emptyText: 'Nobody has counted anything here this week yet.',
+              onRetry: () => ref.invalidate(worldBoardProvider),
+              onPerson: (r) => showPersonSheet(
+                context,
+                ref,
+                userId: r.userId,
+                handle: r.handle,
+              ),
             ),
-          ],
-          const SizedBox(height: FitSpacing.md),
-          BoardLoader(
-            board: ref.watch(worldBoardProvider((metric, country))),
-            emptyText: 'Nobody has counted anything here this week yet.',
-            onRetry: () => ref.invalidate(worldBoardProvider),
-            onPerson: (r) => showPersonSheet(
-              context,
-              ref,
-              userId: r.userId,
-              handle: r.handle,
-            ),
-          ),
           const SizedBox(height: FitSpacing.md),
           Text(
             'Counts only what the server can check: a gym session of 6 sets '

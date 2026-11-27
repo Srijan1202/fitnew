@@ -9,6 +9,7 @@ import 'package:fitos/features/community/presentation/club_screen.dart';
 import 'package:fitos/features/community/presentation/club_settings_screen.dart';
 import 'package:fitos/features/community/presentation/community_providers.dart';
 import 'package:fitos/features/community/presentation/community_screen.dart';
+import 'package:fitos/features/community/presentation/people_screen.dart';
 import 'package:fitos/features/community/presentation/share_result.dart';
 import 'package:fitos/features/running/presentation/screens/share_run_screen.dart';
 import 'package:flutter/material.dart';
@@ -75,6 +76,10 @@ void main() {
           path: Routes.community,
           builder: (_, __) => const CommunityScreen(),
           routes: [
+            GoRoute(
+              path: 'people',
+              builder: (_, __) => const PeopleScreen(),
+            ),
             GoRoute(
               path: 'clubs/:id',
               builder: (_, s) => ClubScreen(

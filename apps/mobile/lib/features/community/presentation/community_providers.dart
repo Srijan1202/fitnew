@@ -47,13 +47,14 @@ final blockedProvider = FutureProvider.autoDispose<List<CommunityPerson>>(
   retry: (_, __) => null,
 );
 
-/// Community's parts, chosen at the top (Friends first; beta 6.3: the Feed
-/// beside it).
-enum CommunityTab { friends, feed, clubs, world }
+/// Community's parts, chosen at the top. Beta 6.7 (R1, owner 2026-11-27):
+/// the Feed first, one Boards tab for friends, country and world, and the
+/// clubs; people (requests, friends, invites) behind an icon.
+enum CommunityTab { feed, boards, clubs }
 
 class CommunityTabController extends Notifier<CommunityTab> {
   @override
-  CommunityTab build() => CommunityTab.friends;
+  CommunityTab build() => CommunityTab.feed;
 
   void set(CommunityTab tab) => state = tab;
 }
@@ -76,17 +77,18 @@ final boardMetricProvider =
   BoardMetricController.new,
 );
 
-/// The world board everywhere, or in the person's own country.
-class WorldScopeController extends Notifier<bool> {
-  @override
-  bool build() => false;
+/// Beta 6.7 (R1): whose board the Boards tab shows.
+enum BoardScope { friends, country, world }
 
-  // ignore: avoid_positional_boolean_parameters
-  void set(bool countryOnly) => state = countryOnly;
+class BoardScopeController extends Notifier<BoardScope> {
+  @override
+  BoardScope build() => BoardScope.friends;
+
+  void set(BoardScope scope) => state = scope;
 }
 
-final worldCountryOnlyProvider = NotifierProvider<WorldScopeController, bool>(
-  WorldScopeController.new,
+final boardScopeProvider = NotifierProvider<BoardScopeController, BoardScope>(
+  BoardScopeController.new,
 );
 
 /// Beta 6.3 (C13): every board's period, the week unless the person picks.

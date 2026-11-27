@@ -6,6 +6,7 @@ import 'package:fitos/features/community/presentation/club_screen.dart';
 import 'package:fitos/features/community/presentation/club_settings_screen.dart';
 import 'package:fitos/features/community/presentation/community_providers.dart';
 import 'package:fitos/features/community/presentation/community_screen.dart';
+import 'package:fitos/features/community/presentation/people_screen.dart';
 import 'package:fitos/features/community/presentation/community_settings_screen.dart';
 import 'package:fitos/features/community/presentation/invite_qr.dart';
 import 'package:fitos/features/community/presentation/invite_screen.dart';
@@ -52,6 +53,10 @@ void main() {
           path: Routes.community,
           builder: (_, __) => const CommunityScreen(),
           routes: [
+            GoRoute(
+              path: 'people',
+              builder: (_, __) => const PeopleScreen(),
+            ),
             GoRoute(
               path: 'settings',
               builder: (_, __) => const CommunitySettingsScreen(),
@@ -231,6 +236,7 @@ void main() {
           );
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
+    await tap(tester, 'community.tab.boards');
     for (final m in BoardMetric.values) {
       expect(key('community.metric.${m.wire}'), findsOneWidget);
     }
@@ -313,6 +319,7 @@ void main() {
     );
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
+    await tap(tester, 'community.tab.boards');
     await tap(tester, 'community.row.ana');
     expect(api.calls, contains('profile u-ana'));
     expect(find.text('Friends since 3 Nov'), findsOneWidget);
