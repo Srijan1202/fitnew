@@ -387,3 +387,81 @@ class ClubNumbers {
   final String? bestWeekFrom;
   final int? bestWeekSessions;
 }
+
+/// Beta 6.7 (R5): one line of what's on in a club, for its card in the list:
+/// this week's match while it's on, else this month's challenge once
+/// started; null when nothing is.
+sealed class ClubNow {
+  const ClubNow({required this.metric, required this.daysLeft});
+
+  static ClubNow? fromJson(Object? raw) {
+    if (raw is! Map<String, dynamic>) return null;
+    final metric = ChallengeMetric.fromWire(raw['metric'] as String);
+    final daysLeft = (raw['daysLeft'] as num).toInt();
+    return switch (raw['kind']) {
+      'match' => ClubNowMatch(
+          metric: metric,
+          daysLeft: daysLeft,
+          opponent: raw['opponent'] as String,
+          us: raw['us'] as num?,
+          them: raw['them'] as num?,
+        ),
+      'challenge' => ClubNowChallenge(
+          metric: metric,
+          daysLeft: daysLeft,
+          total: raw['total'] as num,
+          target: (raw['target'] as num).toInt(),
+        ),
+      _ => null,
+    };
+  }
+
+  final ChallengeMetric metric;
+  final int daysLeft;
+
+  String get daysText => daysLeft <= 1 ? 'last day' : '$daysLeft days left';
+
+  /// "vs Gym B · 2.4 – 2.1 · 3 days left", "143 of 200 sessions · 4 days left".
+  String get line;
+}
+
+class ClubNowMatch extends ClubNow {
+  const ClubNowMatch({
+    required super.metric,
+    required super.daysLeft,
+    required this.opponent,
+    required this.us,
+    required this.them,
+  });
+
+  final String opponent;
+  final num? us;
+  final num? them;
+
+  @override
+  String get line => [
+        'vs $opponent',
+        if (us != null && them != null)
+          '${countText(us!)} – ${countText(them!)}',
+        daysText,
+      ].join(' · ');
+}
+
+class ClubNowChallenge extends ClubNow {
+  const ClubNowChallenge({
+    required super.metric,
+    required super.daysLeft,
+    required this.total,
+    required this.target,
+  });
+
+  final num total;
+  final int target;
+
+  double get progress =>
+      target <= 0 ? 0 : (total / target).clamp(0, 1).toDouble();
+
+  @override
+  String get line =>
+      '${countText(total)} of $target ${metric.unit} · $daysText';
+}

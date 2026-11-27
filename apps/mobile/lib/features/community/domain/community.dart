@@ -6,6 +6,8 @@
 /// month and all-time boards.
 library;
 
+import 'club_goals.dart';
+
 /// A handle: 3–20 of a–z, 0–9 and _ (the server checks the rest).
 final kHandlePattern = RegExp(r'^[a-z0-9_]{3,20}$');
 
@@ -164,6 +166,7 @@ class Club {
     this.coOwners = const [],
     this.role = ClubRole.member,
     this.seasonWinner = false,
+    this.now,
   });
 
   factory Club.fromJson(Map<String, dynamic> j) => Club(
@@ -183,7 +186,11 @@ class Club {
           _ => (j['mine'] as bool) ? ClubRole.owner : ClubRole.member,
         },
         seasonWinner: j['seasonWinner'] as bool? ?? false,
+        now: ClubNow.fromJson(j['now']),
       );
+
+  /// Beta 6.7 (R5): what's on, in the list only.
+  final ClubNow? now;
 
   /// Beta 6.6 (L2): who runs it.
   final String ownerId;

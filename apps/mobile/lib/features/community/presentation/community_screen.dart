@@ -9,6 +9,7 @@ import '../../../shared/widgets/fit_glass.dart';
 import '../../../shared/widgets/fit_mode_switch.dart';
 import '../../premium/presentation/profile_avatar.dart';
 import '../../privacy/presentation/policy_text.dart';
+import '../domain/club_goals.dart';
 import '../domain/community.dart';
 import 'community_providers.dart';
 import 'feed_view.dart';
@@ -990,12 +991,6 @@ class _ClubsView extends ConsumerWidget {
           112,
         ),
         children: [
-          Text(
-            'A club is any group: your hostel, your gym, your running crew, '
-            'anywhere in the world. Share its code to let people in.',
-            style: t.bodyMedium?.copyWith(color: FitColors.ink60),
-          ),
-          const SizedBox(height: FitSpacing.md),
           Row(
             children: [
               Expanded(
@@ -1028,41 +1023,161 @@ class _ClubsView extends ConsumerWidget {
             data: (list) => list.isEmpty
                 ? [
                     Text(
-                      'No clubs yet.',
+                      'No clubs yet. A club is any group: your hostel, your '
+                      'gym, your running crew, anywhere in the world. Make '
+                      'one and share its code, or join one with a code.',
                       key: const ValueKey('community.clubs.empty'),
-                      style: t.bodyMedium,
+                      style: t.bodyMedium?.copyWith(color: FitColors.ink60),
                     ),
                   ]
                 : [
-                    for (final c in list) ...[
-                      FitBlock(
-                        key: ValueKey('community.club.${c.id}'),
-                        padding: const EdgeInsets.all(FitSpacing.md),
-                        onTap: () =>
-                            context.push(Routes.communityClub(c.id), extra: c),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(c.name, style: t.titleMedium),
-                                  Text(
-                                    '${c.members} ${c.members == 1 ? 'member' : 'members'} · code ${c.shownCode}${c.mine ? ' · yours' : ''}',
-                                    style: t.bodySmall
-                                        ?.copyWith(color: FitColors.ink60),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const Icon(Icons.chevron_right),
-                          ],
-                        ),
-                      ),
+                    // Beta 6.7 (R5): the clubs you run first.
+                    for (final c in [
+                      ...list.where((c) => c.runs),
+                      ...list.where((c) => !c.runs),
+                    ]) ...[
+                      ClubCard(club: c),
                       const SizedBox(height: FitSpacing.sm),
                     ],
                   ],
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Beta 6.7 (R5): a club in the list — its mark, name, members and your
+/// part, and one line of what's on (the match or the challenge's bar).
+class ClubCard extends StatelessWidget {
+  const ClubCard({required this.club, super.key});
+
+  final Club club;
+
+  /// Each club keeps one colour from the palette, by its id.
+  static Color colourOf(String id) {
+    final colours = [
+      FitColors.accent,
+      FitColors.pine,
+      FitColors.amber,
+      FitColors.sky,
+      FitColors.oxide,
+    ];
+    return colours[id.codeUnits.fold<int>(0, (a, b) => a + b) % colours.length];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final c = club;
+    final colour = colourOf(c.id);
+    final role = switch (c.role) {
+      ClubRole.owner => 'Owner',
+      ClubRole.coOwner => 'Co-owner',
+      ClubRole.member => null,
+    };
+    final now = c.now;
+    return FitBlock(
+      key: ValueKey('community.club.${c.id}'),
+      padding: const EdgeInsets.all(FitSpacing.md),
+      onTap: () => context.push(Routes.communityClub(c.id), extra: c),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: colour.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.all(FitRadius.small),
+                ),
+                child: Text(
+                  c.name.characters.first.toUpperCase(),
+                  style: t.titleMedium?.copyWith(
+                    color: colour,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: FitSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            c.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: t.titleMedium,
+                          ),
+                        ),
+                        if (c.seasonWinner) ...[
+                          const SizedBox(width: FitSpacing.xs),
+                          Icon(
+                            Icons.emoji_events,
+                            size: 16,
+                            color: FitColors.amber,
+                          ),
+                        ],
+                      ],
+                    ),
+                    Text(
+                      [
+                        '${c.members} ${c.members == 1 ? 'member' : 'members'}',
+                        if (role != null) role,
+                      ].join(' · '),
+                      key: ValueKey('community.club.${c.id}.meta'),
+                      style: t.bodySmall?.copyWith(color: FitColors.ink60),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: FitColors.ink60),
+            ],
+          ),
+          if (now != null) ...[
+            const SizedBox(height: FitSpacing.sm),
+            Row(
+              children: [
+                Icon(
+                  now is ClubNowMatch
+                      ? Icons.sports_score
+                      : Icons.flag_outlined,
+                  size: 16,
+                  color: FitColors.accent,
+                ),
+                const SizedBox(width: FitSpacing.xs),
+                Expanded(
+                  child: Text(
+                    now.line,
+                    key: ValueKey('community.club.${c.id}.now'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: t.bodySmall,
+                  ),
+                ),
+              ],
+            ),
+            if (now is ClubNowChallenge) ...[
+              const SizedBox(height: FitSpacing.xs),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: LinearProgressIndicator(
+                  key: ValueKey('community.club.${c.id}.bar'),
+                  value: now.progress,
+                  minHeight: 4,
+                  color: FitColors.accent,
+                  backgroundColor: FitColors.rule,
+                ),
+              ),
+            ],
+          ],
         ],
       ),
     );
