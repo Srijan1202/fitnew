@@ -322,9 +322,16 @@ void main() {
     await tester.pumpAndSettle();
     await tap(tester, 'community.tab.boards');
     expect(find.textContaining('THIS WEEK'), findsOneWidget);
+    expect(find.text('Week'), findsOneWidget);
+    await tap(tester, 'community.period');
     await tap(tester, 'community.period.month');
+    expect(
+      tester.widget<Text>(key('community.period.shown')).data,
+      'Month',
+    );
     expect(api.calls, contains('friends-board sessions month'));
     expect(find.text('THIS MONTH · FROM 1 NOV'), findsOneWidget);
+    await tap(tester, 'community.period');
     await tap(tester, 'community.period.all');
     expect(api.calls, contains('friends-board sessions all'));
     expect(find.text('ALL TIME · SINCE JOINING COMMUNITY'), findsOneWidget);

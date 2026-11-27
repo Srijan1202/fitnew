@@ -439,50 +439,66 @@ class BoardMetricPicker extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final metric = ref.watch(boardMetricProvider);
     final period = ref.watch(boardPeriodProvider);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          key: const ValueKey('community.period'),
-          children: [
-            for (final p in BoardPeriod.values)
-              Padding(
-                padding: const EdgeInsets.only(right: FitSpacing.xs),
-                child: ChoiceChip(
+    final t = Theme.of(context).textTheme;
+    // Beta 6.7 (R2): one row. The period is a small menu at its start; the
+    // metrics scroll beside it.
+    return SingleChildScrollView(
+      key: const ValueKey('community.metric'),
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          PopupMenuButton<BoardPeriod>(
+            key: const ValueKey('community.period'),
+            tooltip: 'Week, month or all time',
+            initialValue: period,
+            onSelected: ref.read(boardPeriodProvider.notifier).set,
+            itemBuilder: (_) => [
+              for (final p in BoardPeriod.values)
+                PopupMenuItem<BoardPeriod>(
                   key: ValueKey('community.period.${p.wire}'),
-                  label: Text(p.label),
-                  selected: p == period,
-                  showCheckmark: false,
-                  visualDensity: VisualDensity.compact,
-                  onSelected: (_) =>
-                      ref.read(boardPeriodProvider.notifier).set(p),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: FitSpacing.xs),
-        SingleChildScrollView(
-          key: const ValueKey('community.metric'),
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              for (final m in BoardMetric.values)
-                Padding(
-                  padding: const EdgeInsets.only(right: FitSpacing.xs),
-                  child: ChoiceChip(
-                    key: ValueKey('community.metric.${m.wire}'),
-                    label: Text(m.label),
-                    selected: m == metric,
-                    showCheckmark: false,
-                    onSelected: (_) =>
-                        ref.read(boardMetricProvider.notifier).set(m),
-                  ),
+                  value: p,
+                  child: Text(p.label),
                 ),
             ],
+            child: Container(
+              height: 32,
+              padding: const EdgeInsets.only(left: 12, right: 6),
+              decoration: BoxDecoration(
+                border: Border.all(color: FitColors.accent),
+                borderRadius: BorderRadius.all(FitRadius.small),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    period.label,
+                    key: const ValueKey('community.period.shown'),
+                    style: t.labelLarge?.copyWith(color: FitColors.accent),
+                  ),
+                  Icon(
+                    Icons.arrow_drop_down,
+                    size: 20,
+                    color: FitColors.accent,
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ],
+          const SizedBox(width: FitSpacing.sm),
+          for (final m in BoardMetric.values)
+            Padding(
+              padding: const EdgeInsets.only(right: FitSpacing.xs),
+              child: ChoiceChip(
+                key: ValueKey('community.metric.${m.wire}'),
+                label: Text(m.label),
+                selected: m == metric,
+                showCheckmark: false,
+                onSelected: (_) =>
+                    ref.read(boardMetricProvider.notifier).set(m),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -591,7 +607,8 @@ class BoardBlock extends StatelessWidget {
   }
 }
 
-/// Beta 6.2 (C12): last week's top three and your place.
+/// Beta 6.2 (C12): last week's top three and your place. Beta 6.7 (R3): a
+/// podium, first in the middle and raised, with medal colours.
 class _LastWeek extends StatelessWidget {
   const _LastWeek({required this.last, required this.metric});
 
@@ -602,6 +619,9 @@ class _LastWeek extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     final mine = last.myLine;
+    // Second, first, third: the winner in the middle.
+    final byRank = {for (final r in last.podium) r.rank: r};
+    final order = [2, 1, 3].where(byRank.containsKey).map((k) => byRank[k]!);
     return Column(
       key: const ValueKey('community.lastWeek'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -610,42 +630,12 @@ class _LastWeek extends StatelessWidget {
           'LAST WEEK · FROM ${_day(last.weekFrom)}'.toUpperCase(),
           style: t.labelSmall,
         ),
-        const SizedBox(height: FitSpacing.sm),
+        const SizedBox(height: FitSpacing.md),
         Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            for (final r in last.podium)
-              Expanded(
-                child: Column(
-                  key: ValueKey('community.podium.${r.handle}'),
-                  children: [
-                    ProfileAvatar(
-                      avatarId: r.avatarId,
-                      name: r.handle,
-                      premium: false,
-                      size: r.rank == 1 ? 48 : 40,
-                    ),
-                    const SizedBox(height: FitSpacing.xs),
-                    Text(
-                      ordinal(r.rank),
-                      style: t.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: r.rank == 1 ? FitColors.accent : null,
-                      ),
-                    ),
-                    Text(
-                      '@${r.handle}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: t.bodySmall,
-                    ),
-                    Text(
-                      boardValue(r, metric),
-                      style: t.bodySmall?.copyWith(color: FitColors.ink60),
-                    ),
-                  ],
-                ),
-              ),
+            for (final r in order)
+              Expanded(child: _Step(row: r, metric: metric)),
           ],
         ),
         if (mine != null) ...[
@@ -658,6 +648,87 @@ class _LastWeek extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// One place on the podium: the person over a step as high as the place.
+class _Step extends StatelessWidget {
+  const _Step({required this.row, required this.metric});
+
+  final BoardRow row;
+  final BoardMetric metric;
+
+  /// Gold, silver and bronze from the palette, so every theme keeps them.
+  static Color medal(int rank) => switch (rank) {
+        1 => FitColors.amber,
+        2 => FitColors.ink60,
+        _ => FitColors.oxide,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final first = row.rank == 1;
+    final colour = medal(row.rank);
+    return Padding(
+      key: ValueKey('community.podium.${row.handle}'),
+      padding: const EdgeInsets.symmetric(horizontal: FitSpacing.xs),
+      child: Column(
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: colour, width: 2),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(2),
+              child: ProfileAvatar(
+                avatarId: row.avatarId,
+                name: row.handle,
+                premium: false,
+                size: first ? 56 : 44,
+              ),
+            ),
+          ),
+          const SizedBox(height: FitSpacing.xs),
+          Text(
+            '@${row.handle}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: t.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          Text(
+            boardValue(row, metric),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: t.bodySmall?.copyWith(color: FitColors.ink60),
+          ),
+          const SizedBox(height: FitSpacing.xs),
+          Container(
+            height: switch (row.rank) {
+              1 => 56.0,
+              2 => 40.0,
+              _ => 28.0,
+            },
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: colour.withValues(alpha: 0.18),
+              border: Border(top: BorderSide(color: colour, width: 2)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(8),
+              ),
+            ),
+            child: Text(
+              ordinal(row.rank),
+              style: t.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: colour,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
