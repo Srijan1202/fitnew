@@ -14,6 +14,7 @@ import 'package:fitos/features/profile/data/profile_repository.dart';
 import 'package:fitos/features/training/presentation/controllers/program_controller.dart';
 import 'package:fitos/features/training/presentation/screens/day_editor_screen.dart';
 import 'package:fitos/features/training/presentation/screens/workout_week_screen.dart';
+import 'package:fitos/features/community/presentation/community_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -208,17 +209,24 @@ void main() {
       expect(find.byKey(const ValueKey('eat.library')), findsOneWidget);
       expect(selected('Nutrition'), isTrue);
 
-      // Beta 5.9 (owner): Food · Progress · Recovery, opening on Food.
-      expect(find.byKey(const ValueKey('nutrition.mode')), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('nutrition.mode.progress')));
+      // Beta 6.7 (H1, owner): Nutrition is Food alone; Progress and
+      // Recovery are parts of Home.
+      expect(find.byKey(const ValueKey('nutrition.mode')), findsNothing);
+      await go('Home');
+      expect(find.byKey(const ValueKey('home.mode')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('home.mode.progress')));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('progress.title')), findsOneWidget);
       expect(find.text('Your progress'), findsOneWidget);
-      expect(selected('Nutrition'), isTrue);
+      expect(selected('Home'), isTrue);
+      await tester.tap(find.byKey(const ValueKey('home.mode.today')));
+      await tester.pumpAndSettle();
+      expect(find.byType(HomeScreen), findsOneWidget);
 
       // Beta 5.9 (owner): Community is the last tab, with no back button.
       await go('Community');
-      expect(find.text('Community'), findsWidgets);
+      // Beta 6.7 (A2): no app bar title; the Community screen itself.
+      expect(find.byType(CommunityScreen), findsOneWidget);
       expect(find.byType(BackButton), findsNothing);
       expect(find.textContaining('Supplements and gear'), findsNothing);
       expect(selected('Community'), isTrue);
