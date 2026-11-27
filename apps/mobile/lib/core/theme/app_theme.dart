@@ -152,6 +152,21 @@ abstract final class FitTheme {
           foregroundColor: FitColors.ink,
         ),
       ),
+      // Beta 6.7 (A1, owner 2026-11-27): a chosen chip is in the accent on
+      // every screen. Material took `secondary` (pine), so Cobalt screens
+      // showed green chips beside blue buttons; pine keeps its own meaning
+      // (done, progress, records).
+      chipTheme: ChipThemeData(
+        selectedColor: FitColors.accent,
+        checkmarkColor: FitColors.onAccent,
+        labelStyle: TextStyle(
+          color: WidgetStateColor.resolveWith(
+            (s) => s.contains(WidgetState.selected)
+                ? FitColors.onAccent
+                : FitColors.ink,
+          ),
+        ),
+      ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: FitColors.paper,
         surfaceTintColor: Colors.transparent,
