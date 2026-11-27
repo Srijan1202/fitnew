@@ -1,6 +1,14 @@
 # Beta 6.7 plan — Community revamp
 
-**Status:** PLAN, waiting for the owner's answers in §6. No code until then.
+**Status:** GO (2026-11-27). The owner's answers:
+
+| # | Answer |
+|---|---|
+| Q1 | **Three tabs:** Feed · Boards · Clubs, with People behind an icon. |
+| Q2 | **Feed** opens first. |
+| Q3 | Selected chips in the accent, **app-wide**. |
+| Q4 | 6.7 ships **with 6.5 + 6.6**, in one APK. |
+| Q5 | Not asked separately (the form takes four). Built as recommended: the small `now` field, no migration. |
 
 **Asked by the owner (2026-11-27):** "work on ui revamp, specially focused on the community tab, but also check and see what we can change."
 
